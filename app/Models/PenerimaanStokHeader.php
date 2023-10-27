@@ -1487,37 +1487,37 @@ class PenerimaanStokHeader extends MyModel
                                 "urutfifo" => $urutfifo,
                             ]);
                         }
-                    } else {
-                        if ($keluargudang_id == $gdgkantor->text) {
-                            $kartuStok = (new KartuStok())->processStore([
-                                "gudang_id" => $keluargudang_id,
-                                "trado_id" => $keluartrado_id,
-                                "gandengan_id" => $keluargandengan_id,
-                                "stok_id" => $data['detail_stok_id'][$i],
-                                "nobukti" => $penerimaanStokHeader->nobukti,
-                                "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
-                                "qtymasuk" => 0,
-                                "nilaimasuk" => 0,
-                                "qtykeluar" => $ksqty ?? 0,
-                                "nilaikeluar" => $ksnilai ?? 0,
-                                "urutfifo" => $urutfifo,
-                            ]);
-                        } else {
-                            $kartuStok = (new KartuStok())->processStore([
-                                "gudang_id" => $keluargudang_id,
-                                "trado_id" => $keluartrado_id,
-                                "gandengan_id" => $keluargandengan_id,
-                                "stok_id" => $data['detail_stok_id'][$i],
-                                "nobukti" => $penerimaanStokHeader->nobukti,
-                                "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
-                                "qtymasuk" => 0,
-                                "nilaimasuk" => 0,
-                                "qtykeluar" => $ksqty ?? 0,
-                                "nilaikeluar" => 0,
-                                "urutfifo" => $urutfifo,
-                            ]);
-                        }
-                    }
+                    } //else {
+                        // if ($keluargudang_id == $gdgkantor->text) {
+                        //     $kartuStok = (new KartuStok())->processStore([
+                        //         "gudang_id" => $keluargudang_id,
+                        //         "trado_id" => $keluartrado_id,
+                        //         "gandengan_id" => $keluargandengan_id,
+                        //         "stok_id" => $data['detail_stok_id'][$i],
+                        //         "nobukti" => $penerimaanStokHeader->nobukti,
+                        //         "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
+                        //         "qtymasuk" => 0,
+                        //         "nilaimasuk" => 0,
+                        //         "qtykeluar" => $ksqty ?? 0,
+                        //         "nilaikeluar" => $ksnilai ?? 0,
+                        //         "urutfifo" => $urutfifo,
+                        //     ]);
+                        // } else {
+                            // $kartuStok = (new KartuStok())->processStore([
+                            //     "gudang_id" => $keluargudang_id,
+                            //     "trado_id" => $keluartrado_id,
+                            //     "gandengan_id" => $keluargandengan_id,
+                            //     "stok_id" => $data['detail_stok_id'][$i],
+                            //     "nobukti" => $penerimaanStokHeader->nobukti,
+                            //     "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
+                            //     "qtymasuk" => 0,
+                            //     "nilaimasuk" => 0,
+                            //     "qtykeluar" => $ksqty ?? 0,
+                            //     "nilaikeluar" => 0,
+                            //     "urutfifo" => $urutfifo,
+                            // ]);
+                        // }
+                    // }
                 }
             }
 
@@ -1563,7 +1563,13 @@ class PenerimaanStokHeader extends MyModel
                 $penerimaanStokDetail = penerimaanStokDetail::where('id', $penerimaanStokDetail->id)->first();
 
                 $nominal_detail[] = $penerimaanStokDetail->total;
-                if ($totalsat) {
+                if ($data['penerimaanstok_id'] == $spb->text || $data['penerimaanstok_id'] == $spbs->text) {
+                    // $totalsat = ($data['detail_qty'][$i] * $data['detail_harga'][$i]);
+                    $totalsat = $data['totalItem'][$i];
+                } else {
+                    $totalsat = 0;
+                }
+                if ($totalsat != 0) {
                     $isPostJurnal = true;
                 }
 

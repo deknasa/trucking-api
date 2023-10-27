@@ -59,7 +59,7 @@ class LaporanSaldoInventory extends MyModel
             $table->double('nilaisaldo', 15, 2)->nullable();
             $table->string('modifiedby', 100)->nullable();
             $table->integer('urutfifo')->nullable();
-            $table->integer('iddata')->nullable();            
+            $table->integer('iddata')->nullable();
         });
 
         $filtergudang = Parameter::where('grp', 'STOK PERSEDIAAN')->where('subgrp', 'STOK PERSEDIAAN')->where('text', 'GUDANG')->first();
@@ -131,24 +131,24 @@ class LaporanSaldoInventory extends MyModel
         });
 
         $querymaxin = db::table($temprekapall)->from(db::raw($temprekapall . " a"))
-        ->select(
-            db::raw("isnull(a.stok_id,0) as stok_id"),
-            db::raw("isnull(a.gudang_id,0) as gudang_id"),
-            db::raw("isnull(a.trado_id,0) as trado_id"),
-            db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
-            db::raw("max(e.tglbukti) as tglbukti"),
-        )
-        ->join(DB::raw("kartustok as e"), function ($join)  {
-            $join->on('a.stok_id', '=', db::raw("isnull(e.stok_id,0)"));
-            $join->on('a.trado_id', '=', db::raw("isnull(e.trado_id,0)"));
-            $join->on('a.gudang_id', '=', db::raw("isnull(e.gudang_id,0)"));
-            $join->on('a.gandengan_id', '=', db::raw("isnull(e.gandengan_id,0)"));
-        })  
-        ->whereRaw("isnull(e.qtymasuk,0)<>0")
-        ->groupby(db::raw("isnull(a.stok_id,0)"))
-        ->groupby(db::raw("isnull(a.gudang_id,0)"))
-        ->groupby(db::raw("isnull(a.trado_id,0)"))
-        ->groupby(db::raw("isnull(a.gandengan_id,0)"));
+            ->select(
+                db::raw("isnull(a.stok_id,0) as stok_id"),
+                db::raw("isnull(a.gudang_id,0) as gudang_id"),
+                db::raw("isnull(a.trado_id,0) as trado_id"),
+                db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
+                db::raw("max(e.tglbukti) as tglbukti"),
+            )
+            ->join(DB::raw("kartustok as e"), function ($join) {
+                $join->on('a.stok_id', '=', db::raw("isnull(e.stok_id,0)"));
+                $join->on('a.trado_id', '=', db::raw("isnull(e.trado_id,0)"));
+                $join->on('a.gudang_id', '=', db::raw("isnull(e.gudang_id,0)"));
+                $join->on('a.gandengan_id', '=', db::raw("isnull(e.gandengan_id,0)"));
+            })
+            ->whereRaw("isnull(e.qtymasuk,0)<>0")
+            ->groupby(db::raw("isnull(a.stok_id,0)"))
+            ->groupby(db::raw("isnull(a.gudang_id,0)"))
+            ->groupby(db::raw("isnull(a.trado_id,0)"))
+            ->groupby(db::raw("isnull(a.gandengan_id,0)"));
 
         DB::table($tempmaxin)->insertUsing([
             'stok_id',
@@ -158,7 +158,7 @@ class LaporanSaldoInventory extends MyModel
             'tglbukti',
         ],  $querymaxin);
 
-// dd(db::table($tempmaxin)->get());
+        // dd(db::table($tempmaxin)->get());
         $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
             ->select('text')
             ->where('grp', 'DISETUJUI')
@@ -221,6 +221,120 @@ class LaporanSaldoInventory extends MyModel
                 ->first()->kategori ?? '';
         }
 
+
+        $querytgl = $priode1;
+
+
+        $tempumuraki = '##tempumuraki' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempumuraki, function ($table) {
+            $table->Integer('stok_id')->nullable();
+            $table->integer('jumlahhari')->nullable();
+            $table->date('tglawal')->nullable();
+        });
+
+        DB::table($tempumuraki)->insertUsing([
+            'stok_id',
+            'jumlahhari',
+            'tglawal',
+        ], (new SaldoUmurAki())->getallstok());
+
+        $hariaki = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.text as id'
+            )
+            ->where('a.grp', 'HARIAKI')
+            ->where('a.subgrp', 'HARIAKI')
+            ->where('a.text', 'TANGGAL')
+            ->first();
+        if (isset($hariaki)) {
+            $bytgl = 1;
+        } else {
+            $bytgl = 0;
+        }
+
+        //update total vulkanisir
+        $reuse = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select('a.id')
+            ->where('grp', 'STATUS REUSE')
+            ->where('subgrp', 'STATUS REUSE')
+            ->where('text', 'REUSE')
+            ->first()->id ?? 0;
+
+
+        $tempvulkan = '##tempvulkan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempvulkan, function ($table) {
+            $table->integer('stok_id')->nullable();
+            $table->integer('vulkan')->nullable();
+        });
+
+        $tempvulkanplus = '##tempvulkanplus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempvulkanplus, function ($table) {
+            $table->integer('stok_id')->nullable();
+            $table->integer('vulkan')->nullable();
+        });
+
+
+        $tempvulkanminus = '##tempvulkanminus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempvulkanminus, function ($table) {
+            $table->integer('stok_id')->nullable();
+            $table->integer('vulkan')->nullable();
+        });
+
+
+        $queryvulkanplus = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+            ->select(
+                db::raw("a.id as stok_id"),
+                db::raw("sum(b.vulkanisirke) as vulkan"),
+            )
+            ->join(db::raw("penerimaanstokdetail b with (readuncommitted)"), 'a.id', 'b.stok_id')
+            ->join(db::raw("penerimaanstokheader c with (readuncommitted)"), 'b.nobukti', 'c.nobukti')
+            ->where('a.statusreuse', $reuse)
+            ->whereraw("c.tglbukti<='" . $querytgl . "'")
+            ->groupby('a.id');
+
+        DB::table($tempvulkanplus)->insertUsing([
+            'stok_id',
+            'vulkan',
+        ],  $queryvulkanplus);
+
+        $queryvulkanminus = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+            ->select(
+                db::raw("a.id as stok_id"),
+                db::raw("sum(b.vulkanisirke) as vulkan"),
+            )
+            ->join(db::raw("pengeluaranstokdetail b with (readuncommitted)"), 'a.id', 'b.stok_id')
+            ->join(db::raw("pengeluaranstokheader c with (readuncommitted)"), 'b.nobukti', 'c.nobukti')
+            ->where('a.statusreuse', $reuse)
+            ->whereraw("c.tglbukti<='" . $querytgl . "'")
+            ->groupby('a.id');
+
+        DB::table($tempvulkanminus)->insertUsing([
+            'stok_id',
+            'vulkan',
+        ],  $queryvulkanminus);
+
+
+        $queryvulkan = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+            ->select(
+                db::raw("a.id  as stok_id"),
+                db::raw("((isnull(a.vulkanisirawal,0)+isnull(b.vulkan,0))-isnull(c.vulkan,0)) as vulkan"),
+            )
+            ->leftjoin(db::raw($tempvulkanplus . " b "), 'a.id', 'b.stok_id')
+            ->leftjoin(db::raw($tempvulkanminus . " c "), 'a.id', 'c.stok_id')
+            ->where('a.statusreuse', $reuse);
+
+        DB::table($tempvulkan)->insertUsing([
+            'stok_id',
+            'vulkan',
+        ],  $queryvulkan);
+
+
+
+
+
+        // end update vulkanisir
+
+
         $query = DB::table($temprekapall)->from(
             DB::raw($temprekapall . " a")
         )
@@ -238,7 +352,15 @@ class LaporanSaldoInventory extends MyModel
                 DB::raw("'" . $priode1 . "' as tglsampai"),
                 DB::raw("'' as stokdari"),
                 DB::raw("'' as stoksampai"),
-                DB::raw("'VulKe :'+trim(str(isnull(b.totalvulkanisir,0))) as vulkanisirke"),
+                db::raw("
+                (case when isnull(c1.stok_id,0)<>0 then ' ( '+
+                    (case when " . $bytgl . "=1 then 'TGL PAKAI '+format(c1.tglawal,'dd-MM-yyyy')+',' else '' end)+
+                    'UMUR AKI : '+format(isnull(c1.jumlahhari,0),'#,#0')+' HARI )' 
+                      when isnull(b.kelompok_id,0)=1 then ' ( VULKE:'+format(isnull(d1.vulkan,0),'#,#0')+', STATUS BAN :'+isnull(parameter.text,'') +' )' 
+                else '' end)
+                as vulkanisirke"),
+
+                // DB::raw("'VulKe :'+trim(str(isnull(b.totalvulkanisir,0))) as vulkanisirke"),
                 'a.kodebarang as id',
                 'a.kodebarang',
                 db::raw("(case when isnull(b.keterangan,'')='' then b.namastok else b.keterangan end) as namabarang"),
@@ -253,15 +375,18 @@ class LaporanSaldoInventory extends MyModel
             ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
             ->leftjoin(db::raw("kelompok c with (readuncommitted)"), 'b.kelompok_id', 'c.id')
             ->leftjoin(db::raw("satuan d with (readuncommitted)"), 'b.satuan_id', 'd.id')
-            ->leftjoin(DB::raw($tempmaxin . " as e"), function ($join)  {
+            ->leftjoin(DB::raw($tempmaxin . " as e"), function ($join) {
                 $join->on('a.stok_id', '=', 'e.stok_id');
                 $join->on('a.trado_id', '=', 'e.trado_id');
                 $join->on('a.gudang_id', '=', 'e.gudang_id');
                 $join->on('a.gandengan_id', '=', 'e.gandengan_id');
-            })            
+            })
+            ->leftJoin(db::raw($tempumuraki . " c1"), "b.id", "c1.stok_id")
+            ->leftJoin(db::raw($tempvulkan . " d1"), "b.id", "d1.stok_id")
+            ->leftJoin("parameter", "b.statusban", "parameter.id")
             ->whereraw("(a.qtysaldo<>0 or a.nilaisaldo<>0)");
 
-            
+
         if ($prosesneraca != 1) {
             $query->whereRaw("(isnull(b.kelompok_id,0)=" . $kelompok_id . " or " . $kelompok_id . "='')");
         }
@@ -272,12 +397,11 @@ class LaporanSaldoInventory extends MyModel
 
         if ($statusban != '') {
             $query->whereRaw("(isnull(b.statusban,0)=" . $statusban . ")");
-
         }
 
-        $query->OrderBY('a.lokasi','asc');
-        $query->OrderBY('c.kodekelompok','asc');
-        $query->OrderBY('a.kodebarang','asc');
+        $query->OrderBY('a.lokasi', 'asc');
+        $query->OrderBY('c.kodekelompok', 'asc');
+        $query->OrderBY('a.kodebarang', 'asc');
 
 
 

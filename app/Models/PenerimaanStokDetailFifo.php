@@ -237,18 +237,18 @@ class PenerimaanStokDetailFifo extends MyModel
                     $kstotal = $ksqty * ($belitotal / $beliqty);
                     $ksnobukti = $data['nobukti'] ?? '';
 
-                    $pengeluaranstok_id = db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader as a with (readuncommitted)"))
-                        ->select('a.pengeluaranstok_id', 'a.tglbukti')->where('a.nobukti', $ksnobukti)->first();
+                    $penerimaanstok_id = db::table("penerimaanstokheader")->from(db::raw("penerimaanstokheader as a with (readuncommitted)"))
+                        ->select('a.penerimaanstok_id', 'a.tglbukti')->where('a.nobukti', $ksnobukti)->first();
 
-                    $kspengeluaranstok_id = $pengeluaranstok_id->pengeluaranstok_id ?? 0;
-                    $kstglbukti = $pengeluaranstok_id->tglbukti ?? '1900/1/1';
+                    $kspenerimaanstok_id = $penerimaanstok_id->penerimaanstok_id ?? 0;
+                    $kstglbukti = $penerimaanstok_id->tglbukti ?? '1900/1/1';
 
-                    $urutfifo = db::table("pengeluaranstok")->from(db::raw("pengeluaranstok as a with (readuncommitted)"))
-                        ->select('a.urutfifo')->where('a.id', $kspengeluaranstok_id)->first()->urutfifo ?? 0;
+                    $urutfifo = db::table("penerimaanstok")->from(db::raw("penerimaanstok as a with (readuncommitted)"))
+                        ->select('a.urutfifo')->where('a.id', $kspenerimaanstok_id)->first()->urutfifo ?? 0;
 
 
 
-                    if ($kspengeluaranstok_id != 6) {
+                    if ($kspenerimaanstok_id != 6) {
                         $kartuStok = (new KartuStok())->processStore([
                             "gudang_id" => $data['gudang_id'] ?? 0,
                             "trado_id" => 0,
