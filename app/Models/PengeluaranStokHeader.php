@@ -441,7 +441,7 @@ class PengeluaranStokHeader extends MyModel
             ->leftJoin('bank', 'pengeluaranstokheader.bank_id', 'bank.id')
             ->leftJoin('parameter as statuscetak', 'pengeluaranstokheader.statuscetak', 'statuscetak.id')
             ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id');
-        
+
         if (request()->tgldariheader) {
             $query->whereBetween('pengeluaranstokheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
         }
@@ -843,6 +843,11 @@ class PengeluaranStokHeader extends MyModel
                     $data['detail_qty'][$i] = 0;
                 }
             }
+            if ($afkir->id == $data['pengeluaranstok_id']) {
+                $vulkanisirke = 0;
+            } else {
+                $vulkanisirke = ($data['detail_vulkanisirke']) ? $data['detail_vulkanisirke'][$i] : null ?? 0;
+            }
             $pengeluaranStokDetail = (new PengeluaranStokDetail())->processStore($pengeluaranStokHeader, [
                 "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
                 "nobukti" => $pengeluaranStokHeader->nobukti,
@@ -852,7 +857,7 @@ class PengeluaranStokHeader extends MyModel
                 "harga" => ($data['detail_harga']) ? $data['detail_harga'][$i] : null,
                 "persentasediscount" => ($data['detail_persentasediscount']) ? $data['detail_persentasediscount'][$i] : null,
                 'statusoli' => ($fetchFormat->kodepengeluaran == 'SPK') ? $data['detail_statusoli'][$i] : "",
-                "vulkanisirke" => ($data['detail_vulkanisirke']) ? $data['detail_vulkanisirke'][$i] : null,
+                "vulkanisirke" => $vulkanisirke,
                 "statusban" => ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null,
                 "detail_keterangan" => ($data['detail_keterangan']) ? $data['detail_keterangan'][$i] : null,
                 "detail_statusban" => ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null,
@@ -861,6 +866,54 @@ class PengeluaranStokHeader extends MyModel
                 "gudang_id" => ($gudang_id == null) ? 0 : $gudang_id,
 
             ]);
+
+            //update total vulkanisir
+            $reuse = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                ->select('a.id')
+                ->where('grp', 'STATUS REUSE')
+                ->where('subgrp', 'STATUS REUSE')
+                ->where('text', 'REUSE')
+                ->first()->id ?? 0;
+
+            $stokreuse = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    db::raw("isnull(a.vulkanisirawal,0) as vulawal"),
+                )
+                ->where('a.id', $data['detail_stok_id'][$i])
+                ->where('a.statusreuse', $reuse)
+                ->first();
+
+            if (isset($stokreuse)) {
+
+                $queryvulkan = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+                    ->select(
+                        db::raw("sum(isnull(b.vulkanisirke,0)) as vulkanplus"),
+                        db::raw("sum(isnull(c.vulkanisirke,0)) as vulkanminus")
+                    )
+                    ->leftjoin(db::raw("penerimaanstokdetail b with (readuncommitted)"), 'a.id', 'b.stok_id')
+                    ->leftjoin(db::raw("pengeluaranstokdetail c with (readuncommitted)"), 'a.id', 'c.stok_id')
+                    ->where('a.id', $data['detail_stok_id'][$i])
+                    ->groupby('a.id')
+                    ->first();
+
+                $totalplus = $queryvulkan->vulkanplus ?? 0;
+                $totalminus = $queryvulkan->vulkanminus ?? 0;
+                $vulawal = $stokreuse->vulawal ?? 0;
+                $total = ($totalplus + $vulawal) - $totalminus;
+
+                if (isset($queryvulkan)) {
+                    $totalvulkan = $total ?? 0;
+                } else {
+                    $totalvulkan = 0;
+                }
+                $datastok  = Stok::lockForUpdate()->where("id", $data['detail_stok_id'][$i])
+                    ->firstorFail();
+                $datastok->totalvulkanisir = $totalvulkan;
+                $datastok->save();
+            }
+            // end update vulkanisir
+
 
             $ksgudang_id = $gudang_id ?? 0;
             $kstrado_id = $trado_id ?? 0;
@@ -905,7 +958,6 @@ class PengeluaranStokHeader extends MyModel
                         "nilaikeluar" => 0,
                         "urutfifo" => $urutfifo,
                     ]);
-    
                 } else {
                     $kartuStok = (new KartuStok())->processStore([
                         "gudang_id" =>  $ksgudang_id,
@@ -920,7 +972,6 @@ class PengeluaranStokHeader extends MyModel
                         "nilaikeluar" => $kstotal,
                         "urutfifo" => $urutfifo,
                     ]);
-    
                 }
             }
             if ($pengeluaranstok_id == 1 ||  $pengeluaranstok_id == 5) {
@@ -1435,6 +1486,12 @@ class PengeluaranStokHeader extends MyModel
                 }
             }
 
+            if ($afkir->id ==  $pengeluaranstok_id) {
+                $vulkanisirke = 0;
+            } else {
+                $vulkanisirke = ($data['detail_vulkanisirke']) ? $data['detail_vulkanisirke'][$i] : null ?? 0;
+            }
+
             $pengeluaranStokDetail = (new PengeluaranStokDetail())->processStore($pengeluaranStokHeader, [
                 "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
                 "nobukti" => $pengeluaranStokHeader->nobukti,
@@ -1444,7 +1501,7 @@ class PengeluaranStokHeader extends MyModel
                 "harga" => ($data['detail_harga']) ? $data['detail_harga'][$i] : null,
                 "persentasediscount" => ($data['detail_persentasediscount']) ? $data['detail_persentasediscount'][$i] : null,
                 'statusoli' => ($fetchFormat->kodepengeluaran == 'SPK') ? $data['detail_statusoli'][$i] : "",
-                "vulkanisirke" => ($data['detail_vulkanisirke']) ? $data['detail_vulkanisirke'][$i] : null,
+                "vulkanisirke" => $vulkanisirke,
                 "statusban" => ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null,
                 "detail_keterangan" => ($data['detail_keterangan']) ? $data['detail_keterangan'][$i] : null,
                 "detail_statusban" => ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null,
@@ -1453,6 +1510,53 @@ class PengeluaranStokHeader extends MyModel
                 "gudang_id" => ($gudang_id == null) ? "" : $gudang_id,
 
             ]);
+
+            //update total vulkanisir
+            $reuse = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                ->select('a.id')
+                ->where('grp', 'STATUS REUSE')
+                ->where('subgrp', 'STATUS REUSE')
+                ->where('text', 'REUSE')
+                ->first()->id ?? 0;
+
+            $stokreuse = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    db::raw("isnull(a.vulkanisirawal,0) as vulawal"),
+                )
+                ->where('a.id', $data['detail_stok_id'][$i])
+                ->where('a.statusreuse', $reuse)
+                ->first();
+
+            if (isset($stokreuse)) {
+
+                $queryvulkan = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+                    ->select(
+                        db::raw("sum(isnull(b.vulkanisirke,0)) as vulkanplus"),
+                        db::raw("sum(isnull(c.vulkanisirke,0)) as vulkanminus")
+                    )
+                    ->leftjoin(db::raw("penerimaanstokdetail b with (readuncommitted)"), 'a.id', 'b.stok_id')
+                    ->leftjoin(db::raw("pengeluaranstokdetail c with (readuncommitted)"), 'a.id', 'c.stok_id')
+                    ->where('a.id', $data['detail_stok_id'][$i])
+                    ->groupby('a.id')
+                    ->first();
+
+                $totalplus = $queryvulkan->vulkanplus ?? 0;
+                $totalminus = $queryvulkan->vulkanminus ?? 0;
+                $vulawal = $stokreuse->vulawal ?? 0;
+                $total = ($totalplus + $vulawal) - $totalminus;
+
+                if (isset($queryvulkan)) {
+                    $totalvulkan = $total ?? 0;
+                } else {
+                    $totalvulkan = 0;
+                }
+                $datastok  = Stok::lockForUpdate()->where("id", $data['detail_stok_id'][$i])
+                    ->firstorFail();
+                $datastok->totalvulkanisir = $totalvulkan;
+                $datastok->save();
+            }
+            // end update vulkanisir
 
             $pengeluaranStokDetails[] = $pengeluaranStokDetail->toArray();
             $coadebet_detail[] = $memo['JURNAL'];
@@ -1521,7 +1625,6 @@ class PengeluaranStokHeader extends MyModel
                         "urutfifo" => $urutfifo,
                     ]);
                 }
-     
             }
 
             if ($pengeluaranstok_id == 1 ||  $pengeluaranstok_id == 5) {
@@ -1970,19 +2073,19 @@ class PengeluaranStokHeader extends MyModel
                             ->where('a.id', $stokid)
                             ->where('a.statusreuse', $reuse)
                             ->first();
-        
+
                         if (isset($stokreuse)) {
-        
-                            $ksqty =$itemspkdetail['qty'] ?? 0;
-                            $ksnobukti = $itemspkheader['nobukti']?? '';
-                            $ksgudang_id = $itemspkheader['gudang_id']?? '';
-                            $kstrado_id = $itemspkheader['trado_id']?? '';
-                            $ksgandengan_id = $itemspkheader['gandengan_id']?? '';
+
+                            $ksqty = $itemspkdetail['qty'] ?? 0;
+                            $ksnobukti = $itemspkheader['nobukti'] ?? '';
+                            $ksgudang_id = $itemspkheader['gudang_id'] ?? '';
+                            $kstrado_id = $itemspkheader['trado_id'] ?? '';
+                            $ksgandengan_id = $itemspkheader['gandengan_id'] ?? '';
 
                             $urutfifo = db::table("pengeluaranstok")->from(db::raw("pengeluaranstok as a with (readuncommitted)"))
-                            ->select('a.urutfifo')->where('a.id', $itemspkheader['pengeluaranstok_id'])->first()->urutfifo ?? 0;
-                
-        
+                                ->select('a.urutfifo')->where('a.id', $itemspkheader['pengeluaranstok_id'])->first()->urutfifo ?? 0;
+
+
                             $kartuStok = (new KartuStok())->processStore([
                                 "gudang_id" =>  $ksgudang_id,
                                 "trado_id" =>  $kstrado_id,
@@ -2003,7 +2106,7 @@ class PengeluaranStokHeader extends MyModel
 
 
                 }
-                
+
                 $jurnalRequestreset = [
                     'tanpaprosesnobukti' => 1,
                     'nobukti' => $itemspkheader['nobukti'],

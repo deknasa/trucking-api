@@ -845,6 +845,52 @@ class PenerimaanStokHeader extends MyModel
                 "detail_keterangan" => $data['detail_keterangan'][$i],
                 "detail_penerimaanstoknobukti" => $data['detail_penerimaanstoknobukti'][$i],
             ]);
+            //update total vulkanisir
+            $reuse = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                ->select('a.id')
+                ->where('grp', 'STATUS REUSE')
+                ->where('subgrp', 'STATUS REUSE')
+                ->where('text', 'REUSE')
+                ->first()->id ?? 0;
+
+            $stokreuse = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    db::raw("isnull(a.vulkanisirawal,0) as vulawal"),
+                )
+                ->where('a.id', $data['detail_stok_id'][$i])
+                ->where('a.statusreuse', $reuse)
+                ->first();
+
+            if (isset($stokreuse)) {
+
+                $queryvulkan = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+                    ->select(
+                        db::raw("sum(isnull(b.vulkanisirke,0)) as vulkanplus"),
+                        db::raw("sum(isnull(c.vulkanisirke,0)) as vulkanminus")
+                    )
+                    ->leftjoin(db::raw("penerimaanstokdetail b with (readuncommitted)"), 'a.id', 'b.stok_id')
+                    ->leftjoin(db::raw("pengeluaranstokdetail c with (readuncommitted)"), 'a.id', 'c.stok_id')
+                    ->where('a.id', $data['detail_stok_id'][$i])
+                    ->groupby('a.id')
+                    ->first();
+
+                $totalplus = $queryvulkan->vulkanplus ?? 0;
+                $totalminus = $queryvulkan->vulkanminus ?? 0;
+                $vulawal = $stokreuse->vulawal ?? 0;
+                $total = ($totalplus + $vulawal) - $totalminus;
+
+                if (isset($queryvulkan)) {
+                    $totalvulkan = $total ?? 0;
+                } else {
+                    $totalvulkan = 0;
+                }
+                $datastok  = Stok::lockForUpdate()->where("id", $data['detail_stok_id'][$i])
+                    ->firstorFail();
+                $datastok->totalvulkanisir = $totalvulkan;
+                $datastok->save();
+            }
+            // end update vulkanisir
             // dd($penerimaanstok_id);
             if ($penerimaanstok_id != 2 && $penerimaanstok_id != 10  && $penerimaanstok_id != 11) {
                 if ($masukgudang_id != 0 || $masuktrado_id != 0  || $masukgandengan_id != 0) {
@@ -911,7 +957,6 @@ class PenerimaanStokHeader extends MyModel
                                 "urutfifo" => $urutfifo,
                             ]);
                         }
-          
                     } else {
                         if ($keluargudang_id == $gdgkantor->text) {
                             $kartuStok = (new KartuStok())->processStore([
@@ -942,7 +987,6 @@ class PenerimaanStokHeader extends MyModel
                                 "urutfifo" => $urutfifo,
                             ]);
                         }
-                
                     }
                 }
             }
@@ -1327,6 +1371,53 @@ class PenerimaanStokHeader extends MyModel
                 "detail_penerimaanstoknobukti" => $data['detail_penerimaanstoknobukti'][$i],
             ]);
 
+            //update total vulkanisir
+            $reuse = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                ->select('a.id')
+                ->where('grp', 'STATUS REUSE')
+                ->where('subgrp', 'STATUS REUSE')
+                ->where('text', 'REUSE')
+                ->first()->id ?? 0;
+
+            $stokreuse = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    db::raw("isnull(a.vulkanisirawal,0) as vulawal"),
+                )
+                ->where('a.id', $data['detail_stok_id'][$i])
+                ->where('a.statusreuse', $reuse)
+                ->first();
+
+            if (isset($stokreuse)) {
+
+                $queryvulkan = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+                    ->select(
+                        db::raw("sum(isnull(b.vulkanisirke,0)) as vulkanplus"),
+                        db::raw("sum(isnull(c.vulkanisirke,0)) as vulkanminus")
+                    )
+                    ->leftjoin(db::raw("penerimaanstokdetail b with (readuncommitted)"), 'a.id', 'b.stok_id')
+                    ->leftjoin(db::raw("pengeluaranstokdetail c with (readuncommitted)"), 'a.id', 'c.stok_id')
+                    ->where('a.id', $data['detail_stok_id'][$i])
+                    ->groupby('a.id')
+                    ->first();
+
+                $totalplus = $queryvulkan->vulkanplus ?? 0;
+                $totalminus = $queryvulkan->vulkanminus ?? 0;
+                $vulawal = $stokreuse->vulawal ?? 0;
+                $total = ($totalplus + $vulawal) - $totalminus;
+
+                if (isset($queryvulkan)) {
+                    $totalvulkan = $total ?? 0;
+                } else {
+                    $totalvulkan = 0;
+                }
+                $datastok  = Stok::lockForUpdate()->where("id", $data['detail_stok_id'][$i])
+                    ->firstorFail();
+                $datastok->totalvulkanisir = $totalvulkan;
+                $datastok->save();
+            }
+            // end update vulkanisir
+
 
             $keterangan_detail[] = $data['detail_keterangan'][$i] ?? 'PENERIMAAN STOK HEADER';
 
@@ -1363,7 +1454,6 @@ class PenerimaanStokHeader extends MyModel
                             "urutfifo" => $urutfifo,
                         ]);
                     }
-       
                 }
 
                 if ($keluargudang_id != 0 || $keluartrado_id != 0  || $keluargandengan_id != 0) {
@@ -1397,7 +1487,6 @@ class PenerimaanStokHeader extends MyModel
                                 "urutfifo" => $urutfifo,
                             ]);
                         }
-                       
                     } else {
                         if ($keluargudang_id == $gdgkantor->text) {
                             $kartuStok = (new KartuStok())->processStore([
@@ -1428,7 +1517,6 @@ class PenerimaanStokHeader extends MyModel
                                 "urutfifo" => $urutfifo,
                             ]);
                         }
-                
                     }
                 }
             }

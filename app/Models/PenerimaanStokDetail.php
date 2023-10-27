@@ -43,6 +43,17 @@ class PenerimaanStokDetail extends MyModel
             $query->where("$this->table.penerimaanstokheader_id", request()->penerimaanstokheader_id);
         }
         if (isset(request()->forReport) && request()->forReport) {
+
+            $idheader = request()->penerimaanstokheader_id ?? 0;
+
+            $querytgl = db::table("penerimaanstokheader a")->from(db::raw("penerimaanstokheader a with (readuncommitted)"))
+                ->select(
+                    db::raw("format(a.tglbukti,'yyyy/MM/dd') as tglbukti"),
+                )
+                ->where('a.id', $idheader)
+                ->first()->tglbukti ?? '1900/1/1';
+
+
             $tempumuraki = '##tempumuraki' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempumuraki, function ($table) {
                 $table->Integer('stok_id')->nullable();
@@ -57,18 +68,100 @@ class PenerimaanStokDetail extends MyModel
             ], (new SaldoUmurAki())->getallstok());
 
             $hariaki = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
-            ->select(
-                'a.text as id'
-            )
-            ->where('a.grp', 'HARIAKI')
-            ->where('a.subgrp', 'HARIAKI')
-            ->where('a.text', 'TANGGAL')
-            ->first();
+                ->select(
+                    'a.text as id'
+                )
+                ->where('a.grp', 'HARIAKI')
+                ->where('a.subgrp', 'HARIAKI')
+                ->where('a.text', 'TANGGAL')
+                ->first();
             if (isset($hariaki)) {
-                $bytgl=1;
+                $bytgl = 1;
             } else {
-                $bytgl=0;
+                $bytgl = 0;
             }
+            //update total vulkanisir
+            $reuse = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                ->select('a.id')
+                ->where('grp', 'STATUS REUSE')
+                ->where('subgrp', 'STATUS REUSE')
+                ->where('text', 'REUSE')
+                ->first()->id ?? 0;
+
+
+            $tempvulkan = '##tempvulkan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempvulkan, function ($table) {
+                $table->integer('stok_id')->nullable();
+                $table->integer('vulkan')->nullable();
+            });
+
+            $tempvulkanplus = '##tempvulkanplus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempvulkanplus, function ($table) {
+                $table->integer('stok_id')->nullable();
+                $table->integer('vulkan')->nullable();
+            });
+
+
+            $tempvulkanminus = '##tempvulkanminus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempvulkanminus, function ($table) {
+                $table->integer('stok_id')->nullable();
+                $table->integer('vulkan')->nullable();
+            });
+
+
+            $queryvulkanplus = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+                ->select(
+                    db::raw("a.id as stok_id"),
+                    db::raw("sum(b.vulkanisirke) as vulkan"),
+                )
+                ->join(db::raw("penerimaanstokdetail b with (readuncommitted)"), 'a.id', 'b.stok_id')
+                ->join(db::raw("penerimaanstokheader c with (readuncommitted)"), 'b.nobukti', 'c.nobukti')
+                ->where('a.statusreuse', $reuse)
+                ->whereraw("c.tglbukti<='" . $querytgl . "'")
+                ->groupby('a.id');
+
+            DB::table($tempvulkanplus)->insertUsing([
+                'stok_id',
+                'vulkan',
+            ],  $queryvulkanplus);
+
+            $queryvulkanminus = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+                ->select(
+                    db::raw("a.id as stok_id"),
+                    db::raw("sum(b.vulkanisirke) as vulkan"),
+                )
+                ->join(db::raw("pengeluaranstokdetail b with (readuncommitted)"), 'a.id', 'b.stok_id')
+                ->join(db::raw("pengeluaranstokheader c with (readuncommitted)"), 'b.nobukti', 'c.nobukti')
+                ->where('a.statusreuse', $reuse)
+                ->whereraw("c.tglbukti<='" . $querytgl . "'")
+                ->groupby('a.id');
+
+            DB::table($tempvulkanminus)->insertUsing([
+                'stok_id',
+                'vulkan',
+            ],  $queryvulkanminus);
+
+
+            $queryvulkan = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+                ->select(
+                    db::raw("a.id  as stok_id"),
+                    db::raw("((isnull(a.vulkanisirawal,0)+isnull(b.vulkan,0))-isnull(c.vulkan,0)) as vulkan"),
+                )
+                ->leftjoin(db::raw($tempvulkanplus . " b "), 'a.id','b.stok_id')
+                ->leftjoin(db::raw($tempvulkanminus . " c "), 'a.id','c.stok_id')
+                ->where('a.statusreuse', $reuse);
+
+            DB::table($tempvulkan)->insertUsing([
+                'stok_id',
+                'vulkan',
+            ],  $queryvulkan);
+
+
+
+
+
+            // end update vulkanisir
+
 
             $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->select('text')
@@ -81,9 +174,9 @@ class PenerimaanStokDetail extends MyModel
                 "$this->table.stok_id",
                 db::raw("trim(stok.namastok)+
                 (case when isnull(c.stok_id,0)<>0 then ' ( '+
-                    (case when ".$bytgl. "=1 then 'TGL PAKAI '+format(c.tglawal,'dd-MM-yyyy')+',' else '' end)+
+                    (case when " . $bytgl . "=1 then 'TGL PAKAI '+format(c.tglawal,'dd-MM-yyyy')+',' else '' end)+
                     'UMUR AKI : '+format(isnull(c.jumlahhari,0),'#,#0')+' HARI )' 
-                      when isnull(stok.kelompok_id,0)=1 then ' ( VULKANISIR KE-'+format(isnull(stok.totalvulkanisir,0),'#,#0')+', STATUS BAN :'+isnull(parameter.text,'') +' )' 
+                      when isnull(stok.kelompok_id,0)=1 then ' ( VULKANISIR KE-'+format(isnull(d.vulkan,0),'#,#0')+', STATUS BAN :'+isnull(parameter.text,'') +' )' 
                 else '' end)
                 as stok"),
                 "$this->table.qty",
@@ -103,8 +196,9 @@ class PenerimaanStokDetail extends MyModel
                 ->leftJoin("penerimaanstokheader", "$this->table.penerimaanstokheader_id", "penerimaanstokheader.id")
                 ->leftJoin("stok", "$this->table.stok_id", "stok.id")
                 ->leftJoin("parameter", "stok.statusban", "parameter.id")
-                ->leftJoin(db::raw($tempumuraki ." c"), "$this->table.stok_id", "c.stok_id");
-                
+                ->leftJoin(db::raw($tempumuraki . " c"), "$this->table.stok_id", "c.stok_id")
+                ->leftJoin(db::raw($tempvulkan . " d"), "$this->table.stok_id", "d.stok_id");
+
             $totalRows =  $query->count();
             $penerimaanStokDetail = $query->get();
         } else {
@@ -660,7 +754,7 @@ class PenerimaanStokDetail extends MyModel
         $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
         $spbs = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
         foreach ($penerimaanStokDetail as $item) {
-            if (($penerimaanStokHeader->penerimaanstok_id == $korv->id) ||($penerimaanStokHeader->penerimaanstok_id == $spbs->text)) {
+            if (($penerimaanStokHeader->penerimaanstok_id == $korv->id) || ($penerimaanStokHeader->penerimaanstok_id == $spbs->text)) {
                 $dari = $this->vulkanStokMinus($item->stok_id, $item->vulkanisirke);
             }
         }
