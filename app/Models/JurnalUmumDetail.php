@@ -102,9 +102,7 @@ class JurnalUmumDetail extends MyModel
 
             $this->paginate($jurnalUmumDetail);
             $temp = $this->getNominal($nobukti);
-            $tempNominal = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))->select(DB::raw("
-            sum((case when nominaldebet<=0 then 0 else nominaldebet end)) as nominaldebet,
-            sum((case when nominalkredit>=0 then 0 else abs(nominalkredit) end)) as nominalkredit"))->first();
+            $tempNominal = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))->select(DB::raw("nominaldebet,nominalkredit"))->first();
 
             $this->totalNominalDebet = $tempNominal->nominaldebet;
             $this->totalNominalKredit = $tempNominal->nominalkredit;
@@ -122,9 +120,8 @@ class JurnalUmumDetail extends MyModel
             DB::raw("jurnalumumdetail with (readuncommitted)")
         )
             ->select(
-
-                DB::raw("(case when jurnalumumdetail.nominal<=0 then 0 else jurnalumumdetail.nominal end) as nominaldebet"),
-                DB::raw("(case when jurnalumumdetail.nominal>=0 then 0 else abs(jurnalumumdetail.nominal) end) as nominalkredit"),
+                DB::raw("sum((case when jurnalumumdetail.nominal<=0 then 0 else jurnalumumdetail.nominal end)) as nominaldebet"),
+                DB::raw("sum((case when jurnalumumdetail.nominal>=0 then 0 else abs(jurnalumumdetail.nominal) end)) as nominalkredit"),
             )
             ->where([
                 ['jurnalumumdetail.nobukti', '=', $nobukti]
@@ -132,8 +129,8 @@ class JurnalUmumDetail extends MyModel
 
 
         Schema::create($temp, function ($table) {
-            $table->bigInteger('nominaldebet')->nullable();
-            $table->bigInteger('nominalkredit')->nullable();
+            $table->float('nominaldebet')->nullable();
+            $table->float('nominalkredit')->nullable();
         });
 
         $tes = DB::table($temp)->insertUsing(['nominaldebet', 'nominalkredit'], $jurnalUmumDetail);
