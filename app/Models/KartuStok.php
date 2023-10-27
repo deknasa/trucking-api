@@ -137,8 +137,7 @@ class KartuStok extends MyModel
                 $table->index('nobukti', 'temtabel_nobukti_index');
                 $table->index('kategori_id', 'temtabel_kategori_id_index');
             });
-
-            if ($datafilter == '') {
+            if ($datafilter == 0 || $datafilter == '' ) {
                 DB::table($temprekapall)->insertUsing([
                     'stok_id',
                     'gudang_id',
@@ -283,7 +282,7 @@ class KartuStok extends MyModel
                 $table->integer('gandengan_id')->nullable();
                 $table->integer('jumlah')->nullable();
             });
-
+ 
             $tempstoktransaksi = '##tempstoktransaksi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempstoktransaksi, function ($table) {
                 $table->id();
@@ -313,9 +312,7 @@ class KartuStok extends MyModel
                 DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a  inner join stok b on a.stok_id=b.id
                 WHERE isnull(b.kelompok_id,0) not in(" . $kelompok_id . ")"));
             }
-
-          
-
+            
             if (isset($queryytampilan)) {
 
                 $queryjumlah = db::table($temprekapall)->from(db::raw($temprekapall . " a"))
@@ -356,6 +353,11 @@ class KartuStok extends MyModel
                 // dd(db::table($temprekapall)->get());
             }
             // dd('test1');
+            
+          
+
+          
+
 
             $tempstok = '##tempstok' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempstok, function ($table) {
@@ -947,7 +949,7 @@ class KartuStok extends MyModel
 
     public function getlaporan($tgldari, $tglsampai, $stokdari, $stoksampai, $gudang_id, $trado_id, $gandengan_id, $filter)
     {
-        // dump($filter);
+        
         // dd($gandengan_id);
 
         $tglsaldo = date('Y-m-d', strtotime('-1 days', strtotime($tgldari)));
@@ -1012,15 +1014,15 @@ class KartuStok extends MyModel
             $stoksampai = $querystoksampai->id;
         }
 
-        if ($filter == '') {
+        if ($filter == '' || $filter == 0) {
             $queryrekap = db::table('stok')->from(
                 DB::raw("stok as a1 with (readuncommitted)")
             )
                 ->select(
                     'a1.id as stok_id',
-                    'a.gudang_id',
-                    'a.trado_id',
-                    'a.gandengan_id',
+                    db::raw("isnull(a.gudang_id,0) as gudang_id"),
+                    db::raw("isnull(a.trado_id,0) as trado_id"),
+                    db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
                     db::raw("max(a.lokasi) as lokasi"),
                     db::raw("max(a1.namastok) as kodebarang"),
                     db::raw("max(a1.namastok) as namabarang"),
@@ -1039,15 +1041,17 @@ class KartuStok extends MyModel
                 ->leftjoin(db::raw("kartustok a with (readuncommitted)"), 'a1.id', 'a.stok_id')
                 ->whereRaw("a.tglbukti<='" . $tglsaldo . "'")
                 ->whereRaw("(a1.id>=" . $stokdari . " and a1.id<=" . $stoksampai . ")")
-                ->whereRaw("(a.gudang_id=" . $gudang_id . " or " . $gudang_id . "=0)")
-                ->whereRaw("(a.gandengan_id=" . $gandengan_id . " or " . $gandengan_id . "=0)")
-                ->whereRaw("(a.trado_id=" . $trado_id . " or " . $trado_id . "=0)")
+                ->whereRaw("(isnull(a.gudang_id,0)=" . $gudang_id . " or " . $gudang_id . "=0)")
+                ->whereRaw("(isnull(a.gandengan_id,0)=" . $gandengan_id . " or " . $gandengan_id . "=0)")
+                ->whereRaw("(isnull(a.trado_id,0)=" . $trado_id . " or " . $trado_id . "=0)")
                 ->groupBy('a1.id')
-                ->groupBy('a.gudang_id')
-                ->groupBy('a.trado_id')
-                ->groupBy('a.gandengan_id');
+                // ->groupBy('a.gudang_id')
+                // ->groupBy('a.trado_id')
+                // ->groupBy('a.gandengan_id');                
+                ->groupBy(db::raw("isnull(a.gudang_id,0)"))
+                ->groupBy(db::raw("isnull(a.trado_id,0)"))
+                ->groupBy(db::raw("isnull(a.gandengan_id,0)"));
 
-            // dd($queryrekap ->get());
             // dd('test');
             // dd
         } else if ($filter == 'GUDANG') {
@@ -1057,9 +1061,9 @@ class KartuStok extends MyModel
                 )
                     ->select(
                         'a1.id as stok_id',
-                        'a.gudang_id',
-                        'a.trado_id',
-                        'a.gandengan_id',
+                        db::raw("isnull(a.gudang_id,0) as gudang_id"),
+                        db::raw("isnull(a.trado_id,0) as trado_id"),
+                        db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
                         db::raw("max(a.lokasi) as lokasi"),
                         db::raw("max(a1.namastok) as kodebarang"),
                         db::raw("max(a1.namastok) as namabarang"),
@@ -1080,18 +1084,18 @@ class KartuStok extends MyModel
                     ->whereRaw("(a1.id>=" . $stokdari . " and a1.id<=" . $stoksampai . ")")
                     ->whereRaw("(isnull(a.gudang_id,0)<>0)")
                     ->groupBy('a1.id')
-                    ->groupBy('a.gudang_id')
-                    ->groupBy('a.trado_id')
-                    ->groupBy('a.gandengan_id');
-            } else {
+                    ->groupBy(db::raw("isnull(a.gudang_id,0)"))
+                    ->groupBy(db::raw("isnull(a.trado_id,0)"))
+                    ->groupBy(db::raw("isnull(a.gandengan_id,0)"));
+                } else {
                 $queryrekap = db::table('stok')->from(
                     DB::raw("stok as a1 with (readuncommitted)")
                 )
                     ->select(
                         'a1.id as stok_id',
-                        'a.gudang_id',
-                        'a.trado_id',
-                        'a.gandengan_id',
+                        db::raw("isnull(a.gudang_id,0) as gudang_id"),
+                        db::raw("isnull(a.trado_id,0) as trado_id"),
+                        db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
                         db::raw("max(a.lokasi) as lokasi"),
                         db::raw("max(a1.namastok) as kodebarang"),
                         db::raw("max(a1.namastok) as namabarang"),
@@ -1112,9 +1116,9 @@ class KartuStok extends MyModel
                     ->whereRaw("(a1.id>=" . $stokdari . " and a1.id<=" . $stoksampai . ")")
                     ->whereRaw("(a.gudang_id=" . $gudang_id . ")")
                     ->groupBy('a1.id')
-                    ->groupBy('a.gudang_id')
-                    ->groupBy('a.trado_id')
-                    ->groupBy('a.gandengan_id');
+                    ->groupBy(db::raw("isnull(a.gudang_id,0)"))
+                    ->groupBy(db::raw("isnull(a.trado_id,0)"))
+                    ->groupBy(db::raw("isnull(a.gandengan_id,0)"));
             }
         } else if ($filter == 'TRADO') {
             if ($trado_id == 0) {
@@ -1123,9 +1127,9 @@ class KartuStok extends MyModel
                 )
                     ->select(
                         'a1.id as stok_id',
-                        'a.gudang_id',
-                        'a.trado_id',
-                        'a.gandengan_id',
+                        db::raw("isnull(a.gudang_id,0) as gudang_id"),
+                        db::raw("isnull(a.trado_id,0) as trado_id"),
+                        db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
                         db::raw("max(a.lokasi) as lokasi"),
                         db::raw("max(a1.namastok) as kodebarang"),
                         db::raw("max(a1.namastok) as namabarang"),
@@ -1146,18 +1150,18 @@ class KartuStok extends MyModel
                     ->whereRaw("(a1.id>=" . $stokdari . " and a1.id<=" . $stoksampai . ")")
                     ->whereRaw("(isnull(a.trado_id,0)<>0)")
                     ->groupBy('a1.id')
-                    ->groupBy('a.gudang_id')
-                    ->groupBy('a.trado_id')
-                    ->groupBy('a.gandengan_id');
+                    ->groupBy(db::raw("isnull(a.gudang_id,0)"))
+                    ->groupBy(db::raw("isnull(a.trado_id,0)"))
+                    ->groupBy(db::raw("isnull(a.gandengan_id,0)"));
             } else {
                 $queryrekap = db::table('stok')->from(
                     DB::raw("stok as a1 with (readuncommitted)")
                 )
                     ->select(
                         'a1.id as stok_id',
-                        'a.gudang_id',
-                        'a.trado_id',
-                        'a.gandengan_id',
+                        db::raw("isnull(a.gudang_id,0) as gudang_id"),
+                        db::raw("isnull(a.trado_id,0) as trado_id"),
+                        db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
                         db::raw("max(a.lokasi) as lokasi"),
                         db::raw("max(a1.namastok) as kodebarang"),
                         db::raw("max(a1.namastok) as namabarang"),
@@ -1178,9 +1182,9 @@ class KartuStok extends MyModel
                     ->whereRaw("(a1.id>=" . $stokdari . " and a1.id<=" . $stoksampai . ")")
                     ->whereRaw("(a.trado_id=" . $trado_id . ")")
                     ->groupBy('a1.id')
-                    ->groupBy('a.gudang_id')
-                    ->groupBy('a.trado_id')
-                    ->groupBy('a.gandengan_id');
+                    ->groupBy(db::raw("isnull(a.gudang_id,0)"))
+                    ->groupBy(db::raw("isnull(a.trado_id,0)"))
+                    ->groupBy(db::raw("isnull(a.gandengan_id,0)"));
             }
         } else if ($filter == 'GANDENGAN') {
             if ($gandengan_id == 0) {
@@ -1189,9 +1193,9 @@ class KartuStok extends MyModel
                 )
                     ->select(
                         'a1.id as stok_id',
-                        'a.gudang_id',
-                        'a.trado_id',
-                        'a.gandengan_id',
+                        db::raw("isnull(a.gudang_id,0) as gudang_id"),
+                        db::raw("isnull(a.trado_id,0) as trado_id"),
+                        db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
                         db::raw("max(a.lokasi) as lokasi"),
                         db::raw("max(a1.namastok) as kodebarang"),
                         db::raw("max(a1.namastok) as namabarang"),
@@ -1212,18 +1216,18 @@ class KartuStok extends MyModel
                     ->whereRaw("(a1.id>=" . $stokdari . " and a1.id<=" . $stoksampai . ")")
                     ->whereRaw("(isnull(a.gandengan_id,0)<>0)")
                     ->groupBy('a1.id')
-                    ->groupBy('a.gudang_id')
-                    ->groupBy('a.trado_id')
-                    ->groupBy('a.gandengan_id');
+                    ->groupBy(db::raw("isnull(a.gudang_id,0)"))
+                    ->groupBy(db::raw("isnull(a.trado_id,0)"))
+                    ->groupBy(db::raw("isnull(a.gandengan_id,0)"));
             } else {
                 $queryrekap = db::table('stok')->from(
                     DB::raw("stok as a1 with (readuncommitted)")
                 )
                     ->select(
                         'a1.id as stok_id',
-                        'a.gudang_id',
-                        'a.trado_id',
-                        'a.gandengan_id',
+                        db::raw("isnull(a.gudang_id,0) as gudang_id"),
+                        db::raw("isnull(a.trado_id,0) as trado_id"),
+                        db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
                         db::raw("max(a.lokasi) as lokasi"),
                         db::raw("max(a1.namastok) as kodebarang"),
                         db::raw("max(a1.namastok) as namabarang"),
@@ -1244,9 +1248,9 @@ class KartuStok extends MyModel
                     ->whereRaw("(a1.id>=" . $stokdari . " and a1.id<=" . $stoksampai . ")")
                     ->whereRaw("(a.gandengan_id=" . $gandengan_id . ")")
                     ->groupBy('a1.id')
-                    ->groupBy('a.gudang_id')
-                    ->groupBy('a.trado_id')
-                    ->groupBy('a.gandengan_id');
+                    ->groupBy(db::raw("isnull(a.gudang_id,0)"))
+                    ->groupBy(db::raw("isnull(a.trado_id,0)"))
+                    ->groupBy(db::raw("isnull(a.gandengan_id,0)"));
             }
         } else {
             $queryrekap = db::table('stok')->from(
@@ -1254,9 +1258,9 @@ class KartuStok extends MyModel
             )
                 ->select(
                     'a1.id as stok_id',
-                    'a.gudang_id',
-                    'a.trado_id',
-                    'a.gandengan_id',
+                    db::raw("isnull(a.gudang_id,0) as gudang_id"),
+                    db::raw("isnull(a.trado_id,0) as trado_id"),
+                    db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
                     db::raw("max(a.lokasi) as lokasi"),
                     db::raw("max(a1.namastok) as kodebarang"),
                     db::raw("max(a1.namastok) as namabarang"),
@@ -1279,9 +1283,9 @@ class KartuStok extends MyModel
                 ->whereRaw("(a.gandengan_id=" . $gandengan_id . " or " . $gandengan_id . "=0)")
                 ->whereRaw("(a.trado_id=" . $trado_id . " or " . $trado_id . "=0)")
                 ->groupBy('a1.id')
-                ->groupBy('a.gudang_id')
-                ->groupBy('a.trado_id')
-                ->groupBy('a.gandengan_id');
+                ->groupBy(db::raw("isnull(a.gudang_id,0)"))
+                ->groupBy(db::raw("isnull(a.trado_id,0)"))
+                ->groupBy(db::raw("isnull(a.gandengan_id,0)"));
         }
 
 
@@ -1312,15 +1316,15 @@ class KartuStok extends MyModel
 
         // dd(db::table($temprekap)->get());
 
-        if ($filter == '') {
+        if ($filter == '' || $filter == 0) {
             $queryrekap = db::table('kartustok')->from(
                 DB::raw("kartustok as a with (readuncommitted)")
             )
                 ->select(
                     'a.stok_id',
-                    'a.gudang_id',
-                    'a.trado_id',
-                    'a.gandengan_id',
+                    db::raw("isnull(a.gudang_id,0) as gudang_id"),
+                    db::raw("isnull(a.trado_id,0) as trado_id"),
+                    db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
                     db::raw("(a.lokasi) as lokasi"),
                     db::raw("(a.kodebarang) as kodebarang"),
                     db::raw("(a.namabarang) as namabarang"),
@@ -1352,9 +1356,9 @@ class KartuStok extends MyModel
                 )
                     ->select(
                         'a.stok_id',
-                        'a.gudang_id',
-                        'a.trado_id',
-                        'a.gandengan_id',
+                        db::raw("isnull(a.gudang_id,0) as gudang_id"),
+                        db::raw("isnull(a.trado_id,0) as trado_id"),
+                        db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
                         db::raw("(a.lokasi) as lokasi"),
                         db::raw("(a.kodebarang) as kodebarang"),
                         db::raw("(a.namabarang) as namabarang"),
@@ -1383,9 +1387,9 @@ class KartuStok extends MyModel
                 )
                     ->select(
                         'a.stok_id',
-                        'a.gudang_id',
-                        'a.trado_id',
-                        'a.gandengan_id',
+                        db::raw("isnull(a.gudang_id,0) as gudang_id"),
+                        db::raw("isnull(a.trado_id,0) as trado_id"),
+                        db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
                         db::raw("(a.lokasi) as lokasi"),
                         db::raw("(a.kodebarang) as kodebarang"),
                         db::raw("(a.namabarang) as namabarang"),
@@ -1416,9 +1420,9 @@ class KartuStok extends MyModel
                 )
                     ->select(
                         'a.stok_id',
-                        'a.gudang_id',
-                        'a.trado_id',
-                        'a.gandengan_id',
+                        db::raw("isnull(a.gudang_id,0) as gudang_id"),
+                        db::raw("isnull(a.trado_id,0) as trado_id"),
+                        db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
                         db::raw("(a.lokasi) as lokasi"),
                         db::raw("(a.kodebarang) as kodebarang"),
                         db::raw("(a.namabarang) as namabarang"),
@@ -1447,9 +1451,9 @@ class KartuStok extends MyModel
                 )
                     ->select(
                         'a.stok_id',
-                        'a.gudang_id',
-                        'a.trado_id',
-                        'a.gandengan_id',
+                        db::raw("isnull(a.gudang_id,0) as gudang_id"),
+                        db::raw("isnull(a.trado_id,0) as trado_id"),
+                        db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
                         db::raw("(a.lokasi) as lokasi"),
                         db::raw("(a.kodebarang) as kodebarang"),
                         db::raw("(a.namabarang) as namabarang"),
@@ -1480,9 +1484,9 @@ class KartuStok extends MyModel
                 )
                     ->select(
                         'a.stok_id',
-                        'a.gudang_id',
-                        'a.trado_id',
-                        'a.gandengan_id',
+                        db::raw("isnull(a.gudang_id,0) as gudang_id"),
+                        db::raw("isnull(a.trado_id,0) as trado_id"),
+                        db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
                         db::raw("(a.lokasi) as lokasi"),
                         db::raw("(a.kodebarang) as kodebarang"),
                         db::raw("(a.namabarang) as namabarang"),
@@ -1511,9 +1515,9 @@ class KartuStok extends MyModel
                 )
                     ->select(
                         'a.stok_id',
-                        'a.gudang_id',
-                        'a.trado_id',
-                        'a.gandengan_id',
+                        db::raw("isnull(a.gudang_id,0) as gudang_id"),
+                        db::raw("isnull(a.trado_id,0) as trado_id"),
+                        db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
                         db::raw("(a.lokasi) as lokasi"),
                         db::raw("(a.kodebarang) as kodebarang"),
                         db::raw("(a.namabarang) as namabarang"),
@@ -1543,9 +1547,9 @@ class KartuStok extends MyModel
             )
                 ->select(
                     'a.stok_id',
-                    'a.gudang_id',
-                    'a.trado_id',
-                    'a.gandengan_id',
+                    db::raw("isnull(a.gudang_id,0) as gudang_id"),
+                    db::raw("isnull(a.trado_id,0) as trado_id"),
+                    db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
                     db::raw("(a.lokasi) as lokasi"),
                     db::raw("(a.kodebarang) as kodebarang"),
                     db::raw("(a.namabarang) as namabarang"),
