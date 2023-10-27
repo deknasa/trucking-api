@@ -227,58 +227,62 @@ class ReminderOli extends MyModel
             $table->string('statusreminder', 100);
             $table->date('tglawal');
             $table->date('tglsampai');
-            $table->double('jarak',15,2);
-
+            $table->double('jarak', 15, 2);
+            $table->double('jaraktransaksi', 15, 2)->nullable();
         });
 
-       
-        $querysaldo=db::table("saldoreminderpergantian")->from(DB::raw("saldoreminderpergantian a with (readuncommitted)"))
-          ->select(
-            'a.id',
-            'a.trado_id',
-            'a.nopol',
-            'a.statusreminder',
-            'a.tglawal',
-            'a.tglsampai',
-            'a.jarak',
-          )->orderby('a.id','asc');
+
+        $querysaldo = db::table("saldoreminderpergantian")->from(DB::raw("saldoreminderpergantian a with (readuncommitted)"))
+            ->select(
+                'a.id',
+                db::raw("isnull(b.id,0) as trado_id"),
+                'a.nopol',
+                'a.statusreminder',
+                'a.tglawal',
+                'a.tglsampai',
+                'a.jarak',
+            )
+            ->leftjoin(db::raw("trado b with (readuncommitted)"), 'a.nopol', 'b.kodetrado')
+            ->orderby('a.id', 'asc');
+
+        //   dd($querysaldo->get());
 
         DB::table($Tempsaldoreminderoli)->insertUsing([
             'id',
             'trado_id',
-            'nopol', 
+            'nopol',
             'statusreminder',
             'tglawal',
             'tglsampai',
             'jarak',
-        ], $querysaldo);   
+        ], $querysaldo);
 
-        $tglsaldo=db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
-                ->select('a.text')
-                ->where('a.grp','SALDO')
-                ->where('a.subgrp','SALDO')
-                ->first()->text ?? '1900-01-01';
-        
-        $tglsaldoawal= date("Y-m-d", strtotime("+1 day", strtotime($tglsaldo)));
+        $tglsaldo = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select('a.text')
+            ->where('a.grp', 'SALDO')
+            ->where('a.subgrp', 'SALDO')
+            ->first()->text ?? '1900-01-01';
+
+        $tglsaldoawal = date("Y-m-d", strtotime("+1 day", strtotime($tglsaldo)));
 
         $Tempservicerutin = '##Tempservicerutin' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($Tempservicerutin, function ($table) {
             $table->integer('id');
-        }); 
-        $queryservicerutin=db::table("parameter")->from(DB::raw("parameter a with (readuncommitted)"))
-        ->select(
-          'a.id',
-        ) 
-        ->where('a.grp','STATUS SERVICE RUTIN')
-        ->where('a.subgrp','STATUS SERVICE RUTIN')
-        ->orderby('a.id','asc');
+        });
+        $queryservicerutin = db::table("parameter")->from(DB::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.id',
+            )
+            ->where('a.grp', 'STATUS SERVICE RUTIN')
+            ->where('a.subgrp', 'STATUS SERVICE RUTIN')
+            ->orderby('a.id', 'asc');
 
         DB::table($Tempservicerutin)->insertUsing([
             'id',
         ], $queryservicerutin);
 
-        	
-        $pengeluaranstok_id=1;
+
+        $pengeluaranstok_id = 1;
 
 
         $Temppergantian = '##Temppergantian' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -286,31 +290,295 @@ class ReminderOli extends MyModel
             $table->integer('trado_id');
             $table->string('statusreminder', 100);
             $table->date('tgl');
+        });
 
-        });    
+        $querypergantian = db::table("pengeluaranstokheader")->from(DB::raw("pengeluaranstokheader a with (readuncommitted)"))
+            ->select(
+                'a.trado_id',
+                'e.text as statusreminder',
+                db::raw("max(a.tglbukti) as tgl"),
+            )
+            ->join(db::raw("pengeluaranstokdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(db::raw("stok c with (readuncommitted)"), 'b.stok_id', 'c.id')
+            ->join(db::raw($Tempservicerutin . " d "), 'c.statusservicerutin', 'd.id')
+            ->join(db::raw("parameter e with (readuncommitted)"), 'd.id', 'e.id')
+            ->where('a.pengeluaranstok_id', $pengeluaranstok_id)
+            ->groupBy('a.trado_id')
+            ->groupBy('e.text');
 
-        $querypergantian=db::table("pengeluaranstokheader")->from(DB::raw("pengeluaranstokheader a with (readuncommitted)"))
-        ->select(
-          'a.trado_id',
-          'e.text as statusreminder',
-          db::raw("max(a.tglbukti) as tgl"),
-        )
-        ->join(db::raw("pengeluaranstokdetail b with (readuncommitted)"),'a.nobukti','b.nobukti')
-        ->join(db::raw("stok c with (readuncommitted)"),'b.stok_id','c.id')
-        ->join(db::raw($Tempservicerutin ." d "),'c.statusservicerutin','d.id')
-        ->join(db::raw("parameter e with (readuncommitted)"),'d.id','e.id')
-        ->where('a.pengeluaranstok_id',$pengeluaranstok_id)
-        ->groupBy('a.trado_id')
-        ->groupBy('e.text');
-        
+        // dd($querypergantian->get());
+
         DB::table($Temppergantian)->insertUsing([
             'trado_id',
             'statusreminder',
             'tgl',
-        ], $querypergantian);           
+        ], $querypergantian);
+
+        DB::update(DB::raw("UPDATE " . $Tempsaldoreminderoli . " SET tglawal=b.tgl,jarak=0 
+        from " . $Tempsaldoreminderoli . " a inner join " . $Temppergantian . " b on a.trado_id=b.trado_id and a.statusreminder=b.statusreminder 
+        "));
+
+        $param1 = 'PENGGANTIAN OLI MESIN';
+        $queryrimderernonsaldo = db::table("trado")->from(db::raw("trado a with (readuncommitted)"))
+            ->select(
+                db::raw("0 as id"),
+                'a.id as trado_id',
+                'a.kodetrado as nopol',
+                db::raw("'" . $param1 . "' as statusreminder"),
+                db::raw("'1900/1/1' as tglawal"),
+                db::raw("'1900/1/1' as tglsampai"),
+                db::raw("0 as jarak"),
+            )
+            ->leftjoin(DB::raw($Tempsaldoreminderoli . " as b"), function ($join) use ($param1) {
+                $join->on('a.id', '=', 'b.trado_id');
+                $join->on('b.statusreminder', '=', DB::raw("'" . $param1 . "'"));
+            })
+            ->whereraw("isnull(b.trado_id,0)=0");
+
+        DB::table($Tempsaldoreminderoli)->insertUsing([
+            'id',
+            'trado_id',
+            'nopol',
+            'statusreminder',
+            'tglawal',
+            'tglsampai',
+            'jarak',
+        ], $queryrimderernonsaldo);
+        //         
+
+        // PENGGANTIAN OLI PERSNELING
+        // PENGGANTIAN SARINGAN HAWA
+
+        $param1 = 'PENGGANTIAN OLI GARDAN';
+        $queryrimderernonsaldo = db::table("trado")->from(db::raw("trado a with (readuncommitted)"))
+            ->select(
+                db::raw("0 as id"),
+                'a.id as trado_id',
+                'a.kodetrado as nopol',
+                db::raw("'" . $param1 . "' as statusreminder"),
+                db::raw("'1900/1/1' as tglawal"),
+                db::raw("'1900/1/1' as tglsampai"),
+                db::raw("0 as jarak"),
+            )
+            ->leftjoin(DB::raw($Tempsaldoreminderoli . " as b"), function ($join) use ($param1) {
+                $join->on('a.id', '=', 'b.trado_id');
+                $join->on('b.statusreminder', '=', DB::raw("'" . $param1 . "'"));
+            })
+            ->whereraw("isnull(b.trado_id,0)=0");
+
+        DB::table($Tempsaldoreminderoli)->insertUsing([
+            'id',
+            'trado_id',
+            'nopol',
+            'statusreminder',
+            'tglawal',
+            'tglsampai',
+            'jarak',
+        ], $queryrimderernonsaldo);
+
+        // 
+        // PENGGANTIAN SARINGAN HAWA
+
+        $param1 = 'PENGGANTIAN OLI PERSNELING';
+        $queryrimderernonsaldo = db::table("trado")->from(db::raw("trado a with (readuncommitted)"))
+            ->select(
+                db::raw("0 as id"),
+                'a.id as trado_id',
+                'a.kodetrado as nopol',
+                db::raw("'" . $param1 . "' as statusreminder"),
+                db::raw("'1900/1/1' as tglawal"),
+                db::raw("'1900/1/1' as tglsampai"),
+                db::raw("0 as jarak"),
+            )
+            ->leftjoin(DB::raw($Tempsaldoreminderoli . " as b"), function ($join) use ($param1) {
+                $join->on('a.id', '=', 'b.trado_id');
+                $join->on('b.statusreminder', '=', DB::raw("'" . $param1 . "'"));
+            })
+            ->whereraw("isnull(b.trado_id,0)=0");
+
+        DB::table($Tempsaldoreminderoli)->insertUsing([
+            'id',
+            'trado_id',
+            'nopol',
+            'statusreminder',
+            'tglawal',
+            'tglsampai',
+            'jarak',
+        ], $queryrimderernonsaldo);
+
+        // 
+
+        $param1 = 'PENGGANTIAN SARINGAN HAWA';
+        $queryrimderernonsaldo = db::table("trado")->from(db::raw("trado a with (readuncommitted)"))
+            ->select(
+                db::raw("0 as id"),
+                'a.id as trado_id',
+                'a.kodetrado as nopol',
+                db::raw("'" . $param1 . "' as statusreminder"),
+                db::raw("'1900/1/1' as tglawal"),
+                db::raw("'1900/1/1' as tglsampai"),
+                db::raw("0 as jarak"),
+            )
+            ->leftjoin(DB::raw($Tempsaldoreminderoli . " as b"), function ($join) use ($param1) {
+                $join->on('a.id', '=', 'b.trado_id');
+                $join->on('b.statusreminder', '=', DB::raw("'" . $param1 . "'"));
+            })
+            ->whereraw("isnull(b.trado_id,0)=0");
+
+        DB::table($Tempsaldoreminderoli)->insertUsing([
+            'id',
+            'trado_id',
+            'nopol',
+            'statusreminder',
+            'tglawal',
+            'tglsampai',
+            'jarak',
+        ], $queryrimderernonsaldo);
+
+        // dd(db::table($TempPENGGANTIAN)->get());
+
+        // dd(db::table($Tempsaldoreminderoli)->get());
+
+        $Temptradotransakdi = '##Temptradotransakdi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($Temptradotransakdi, function ($table) {
+            $table->integer('trado_id');
+            $table->double('jarak',15,2);
+            $table->date('tgl');
+            $table->string('statusreminder', 100);
+        });
 
 
-        $query = DB::table("saldoreminderpergantian")->from(DB::raw("saldoreminderpergantian a with (readuncommitted)"))
+        $param1 = 'PENGGANTIAN OLI MESIN';
+        $querytradoolimesin = db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+            ->select(
+                'a.trado_id',
+                db::raw("sum(a.jarak) as jarak"),
+                db::raw("max(a.tglbukti) as tgl"),
+                db::raw("'PENGGANTIAN OLI MESIN' as statusreminder")
+            )
+            ->join(DB::raw($Tempsaldoreminderoli . " as b"), function ($join) use ($param1) {
+                $join->on('a.trado_id', '=', 'b.trado_id');
+                $join->on('b.statusreminder', '=', DB::raw("'" . $param1 . "'"));
+            })
+            ->whereRaw("a.tglBukti>=b.tglawal")
+            ->groupby('a.trado_id');
+
+
+        DB::table($Temptradotransakdi)->insertUsing([
+            'trado_id',
+            'jarak',
+            'tgl',
+            'statusreminder',
+        ], $querytradoolimesin);
+
+        $param1 = 'PENGGANTIAN OLI GARDAN';
+        $querytradooligardan = db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+            ->select(
+                'a.trado_id',
+                db::raw("sum(a.jarak) as jarak"),
+                db::raw("max(a.tglbukti) as tgl"),
+                db::raw("'PENGGANTIAN OLI GARDAN' as statusreminder")
+            )
+            ->join(DB::raw($Tempsaldoreminderoli . " as b"), function ($join) use ($param1) {
+                $join->on('a.trado_id', '=', 'b.trado_id');
+                $join->on('b.statusreminder', '=', DB::raw("'" . $param1 . "'"));
+            })
+            ->whereRaw("a.tglBukti>=b.tglawal")
+            ->groupby('a.trado_id');
+
+
+        DB::table($Temptradotransakdi)->insertUsing([
+            'trado_id',
+            'jarak',
+            'tgl',
+            'statusreminder',
+        ], $querytradooligardan);
+
+        $param1 = 'PENGGANTIAN OLI PERSNELING';
+        $querytradoolipersneling = db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+            ->select(
+                'a.trado_id',
+                db::raw("sum(a.jarak) as jarak"),
+                db::raw("max(a.tglbukti) as tgl"),
+                db::raw("'PENGGANTIAN OLI PERSNELING' as statusreminder")
+            )
+            ->join(DB::raw($Tempsaldoreminderoli . " as b"), function ($join) use ($param1) {
+                $join->on('a.trado_id', '=', 'b.trado_id');
+                $join->on('b.statusreminder', '=', DB::raw("'" . $param1 . "'"));
+            })
+            ->whereRaw("a.tglBukti>=b.tglawal")
+            ->groupby('a.trado_id');
+
+
+        DB::table($Temptradotransakdi)->insertUsing([
+            'trado_id',
+            'jarak',
+            'tgl',
+            'statusreminder',
+        ], $querytradoolipersneling);    
+        
+        $param1 = 'PENGGANTIAN SARINGAN HAWA';
+        $querytradosaringanhawa = db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+            ->select(
+                'a.trado_id',
+                db::raw("sum(a.jarak) as jarak"),
+                db::raw("max(a.tglbukti) as tgl"),
+                db::raw("'PENGGANTIAN SARINGAN HAWA' as statusreminder")
+            )
+            ->join(DB::raw($Tempsaldoreminderoli . " as b"), function ($join) use ($param1) {
+                $join->on('a.trado_id', '=', 'b.trado_id');
+                $join->on('b.statusreminder', '=', DB::raw("'" . $param1 . "'"));
+            })
+            ->whereRaw("a.tglBukti>=b.tglawal")
+            ->groupby('a.trado_id');
+
+
+        DB::table($Temptradotransakdi)->insertUsing([
+            'trado_id',
+            'jarak',
+            'tgl',
+            'statusreminder',
+        ], $querytradosaringanhawa); 
+
+        $param1 = 'PENGGANTIAN AKI';
+        $querytradoaki = db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+            ->select(
+                'a.trado_id',
+                db::raw("sum(a.jarak) as jarak"),
+                db::raw("max(a.tglbukti) as tgl"),
+                db::raw("'PENGGANTIAN AKI' as statusreminder")
+            )
+            ->join(DB::raw($Tempsaldoreminderoli . " as b"), function ($join) use ($param1) {
+                $join->on('a.trado_id', '=', 'b.trado_id');
+                $join->on('b.statusreminder', '=', DB::raw("'" . $param1 . "'"));
+            })
+            ->whereRaw("a.tglBukti>=b.tglawal")
+            ->groupby('a.trado_id');
+
+
+        DB::table($Temptradotransakdi)->insertUsing([
+            'trado_id',
+            'jarak',
+            'tgl',
+            'statusreminder',
+        ], $querytradoaki);         
+        
+        DB::update(DB::raw("UPDATE " . $Tempsaldoreminderoli . " SET jaraktransaksi=b.jarak,tglsampai=b.tgl
+        from " . $Tempsaldoreminderoli . " a inner join " . $Temptradotransakdi . " b on a.trado_id=b.trado_id and upper(a.statusreminder)=upper(b.statusreminder) 
+        "));
+
+        // dump(db::table($Temptradotransakdi)->whereraw("trado_id=3")->get());
+        // dd(db::table($Tempsaldoreminderoli)->whereraw("trado_id=3")->get());
+
+        //         
+
+        // 
+        // 
+
+        // dd(db::table($Tempsaldoreminderoli)->get());
+        // dd(db::table($tempstatus)->get());
+
+        $query = DB::table($Tempsaldoreminderoli)->from(DB::raw($Tempsaldoreminderoli . " a "))
             ->select(
                 'a.nopol',
                 'a.tglsampai as tanggal',
@@ -322,7 +590,7 @@ class ReminderOli extends MyModel
                     else $batassaringanhawa end) 
                     
                     as km"),
-                db::raw("a.jarak as kmperjalanan"),
+                db::raw("isnull(a.jarak,0)+isnull(a.jaraktransaksi,0) as kmperjalanan"),
                 DB::raw("(CASE 
                     WHEN upper(a.statusreminder) = 'PENGGANTIAN OLI PERSNELING' then 
                         CASE
@@ -359,9 +627,9 @@ class ReminderOli extends MyModel
             )
             ->Join(DB::raw("trado  b with (readuncommitted)"), 'a.trado_id', 'b.id')
             ->Join(DB::raw("$tempstatus with (readuncommitted)"), 'a.statusreminder', $tempstatus . '.status')
-            ->Where('b.statusaktif',1);
+            ->Where('b.statusaktif', 1);
 
-            // dd($query->get());
+        // dd($query->get());
         return $query;
     }
 
