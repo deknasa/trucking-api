@@ -48,7 +48,7 @@ class KartuStok extends MyModel
         // if (request()->filter == $filter->id) {
         // dd('test');
         // dd($filter->text);
-        $datafilter = request()->filter ?? 0;
+        $datafilter = request()->filter ?? '';
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
         $class = 'KartuStokController';
@@ -138,7 +138,7 @@ class KartuStok extends MyModel
                 $table->index('kategori_id', 'temtabel_kategori_id_index');
             });
 
-            if ($datafilter == 0) {
+            if ($datafilter == '') {
                 DB::table($temprekapall)->insertUsing([
                     'stok_id',
                     'gudang_id',
@@ -257,6 +257,7 @@ class KartuStok extends MyModel
                     ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, 0, 0, $filtergudang->text));
                 }
             }
+            // dd(db::table($temprekapall)->whereraw("stok_id=29")->get());
             // dd(request()->statustampil);
             $statustampilan = request()->statustampil ?? 0;
             // $statustampilan=531;
@@ -282,39 +283,6 @@ class KartuStok extends MyModel
                 $table->integer('gandengan_id')->nullable();
                 $table->integer('jumlah')->nullable();
             });
-
-            if (isset($queryytampilan)) {
-                // dd('test');
-                $queryjumlah = db::table($temprekapall)->from(db::raw($temprekapall . " a"))
-                    ->select(
-                        'a.stok_id',
-                        'a.gudang_id',
-                        'a.trado_id',
-                        'a.gandengan_id',
-                        db::raw("count(a.stok_id) as jumlah"),
-                    )
-                    ->groupby('a.stok_id')
-                    ->groupby('a.gudang_id')
-                    ->groupby('a.trado_id')
-                    ->groupby('a.gandengan_id');
-
-                DB::table($tempstokjumlah)->insertUsing([
-                    'stok_id',
-                    'gudang_id',
-                    'trado_id',
-                    'gandengan_id',
-                    'jumlah',
-                ],  $queryjumlah);
-
-                DB::delete(DB::raw("delete " . $tempstokjumlah . " from " . $tempstokjumlah . " as a  
-                WHERE isnull(a.jumlah,0)>1"));
-
-                // dd(db::table($temprekapall)->where('stok_id',3492)->get());
-
-                DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a inner join " . $tempstokjumlah . " b on a.stok_id=b.stok_id
-                and isnull(a.trado_id,0)=isnull(b.trado_id,0) and isnull(a.gudang_id,0)=isnull(b.gudang_id,0) and isnull(a.gandengan_id,0)=isnull(b.gandengan_id,0)"));
-            }
-            // dd('test1');
 
             $tempstoktransaksi = '##tempstoktransaksi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempstoktransaksi, function ($table) {
@@ -345,6 +313,49 @@ class KartuStok extends MyModel
                 DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a  inner join stok b on a.stok_id=b.id
                 WHERE isnull(b.kelompok_id,0) not in(" . $kelompok_id . ")"));
             }
+
+          
+
+            if (isset($queryytampilan)) {
+
+                $queryjumlah = db::table($temprekapall)->from(db::raw($temprekapall . " a"))
+                    ->select(
+                        'a.stok_id',
+                        'a.gudang_id',
+                        'a.trado_id',
+                        'a.gandengan_id',
+                        db::raw("count(a.stok_id) as jumlah"),
+                    )
+                    ->groupby('a.stok_id')
+                    ->groupby('a.gudang_id')
+                    ->groupby('a.trado_id')
+                    ->groupby('a.gandengan_id');
+
+
+
+                DB::table($tempstokjumlah)->insertUsing([
+                    'stok_id',
+                    'gudang_id',
+                    'trado_id',
+                    'gandengan_id',
+                    'jumlah',
+                ],  $queryjumlah);
+
+                // dd(db::table($temprekapall)->whereraw("stok_id=29")->get());
+                // dump(db::table($tempstokjumlah)->whereraw("stok_id=29")->get());
+
+                DB::delete(DB::raw("delete " . $tempstokjumlah . " from " . $tempstokjumlah . " as a  
+                WHERE isnull(a.jumlah,0)>1"));
+
+
+                // dd(db::table($temprekapall)->where('stok_id',3492)->get());
+
+                DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a inner join " . $tempstokjumlah . " b on isnull(a.stok_id,0)=isnull(b.stok_id,0)
+                and isnull(a.trado_id,0)=isnull(b.trado_id,0) and isnull(a.gudang_id,0)=isnull(b.gudang_id,0) and isnull(a.gandengan_id,0)=isnull(b.gandengan_id,0)"));
+
+                // dd(db::table($temprekapall)->get());
+            }
+            // dd('test1');
 
             $tempstok = '##tempstok' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempstok, function ($table) {
@@ -2942,8 +2953,8 @@ class KartuStok extends MyModel
                         // } else if ($filters['field'] == 'tglbukti') {
                         //     $query = $query->whereRaw("format(a.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         // } else {
-                            // $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw('a' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        // $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        $query = $query->whereRaw('a' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                         // }
                     }
 
@@ -2967,8 +2978,8 @@ class KartuStok extends MyModel
                             // } else if ($filters['field'] == 'tglbukti') {
                             //     $query = $query->orWhereRaw("format(a.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             // } else {
-                                // $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw('a' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            // $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->OrwhereRaw('a' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                             // }
                         }
                     });
