@@ -396,6 +396,11 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
     Route::apiResource('penerimaanstok', PenerimaanStokController::class)->whereNumber('penerimaanstok');
     Route::apiResource('pengeluaranstok', PengeluaranStokController::class)->whereNumber('pengeluaranstok');
+    
+    Route::resource('karyawan', KaryawanController::class)->whereNumber('karyawan');
+    Route::resource('akuntansi', AkuntansiController::class)->whereNumber('akuntansi');
+    Route::resource('typeakuntansi', TypeAkuntansiController::class)->whereNumber('typeakuntansi');
+    Route::resource('maintypeakuntansi', MainTypeAkuntansiController::class)->whereNumber('maintypeakuntansi');
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
@@ -1563,7 +1568,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('karyawan/{id}/cekValidasi', [KaryawanController::class, 'cekValidasi'])->name('karyawan.cekValidasi')->whereNumber('id');
     Route::get('karyawan/export', [KaryawanController::class, 'export']);
     Route::get('karyawan/report', [KaryawanController::class, 'report']);
-    Route::resource('karyawan', KaryawanController::class)->whereNumber('karyawan');
 
     Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
     Route::get('cabang/default', [CabangController::class, 'default']);
@@ -1586,7 +1590,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('akuntansi/report', [AkuntansiController::class, 'report']);
     Route::get('akuntansi/export', [AkuntansiController::class, 'export']);
     Route::get('akuntansi/getPosition2', [AkuntansiController::class, 'getPosition2']);
-    Route::resource('akuntansi', AkuntansiController::class)->whereNumber('akuntansi');
 
     Route::get('typeakuntansi/field_length', [TypeAkuntansiController::class, 'fieldLength']);
     Route::get('typeakuntansi/combostatus', [TypeAkuntansiController::class, 'combostatus']);
@@ -1594,7 +1597,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('typeakuntansi/report', [TypeAkuntansiController::class, 'report']);
     Route::get('typeakuntansi/export', [TypeAkuntansiController::class, 'export']);
     Route::get('typeakuntansi/getPosition2', [TypeAkuntansiController::class, 'getPosition2']);
-    Route::resource('typeakuntansi', TypeAkuntansiController::class)->whereNumber('typeakuntansi');
 
     Route::get('maintypeakuntansi/field_length', [MainTypeAkuntansiController::class, 'fieldLength']);
     Route::get('maintypeakuntansi/combostatus', [MainTypeAkuntansiController::class, 'combostatus']);
@@ -1602,7 +1604,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('maintypeakuntansi/report', [MainTypeAkuntansiController::class, 'report']);
     Route::get('maintypeakuntansi/export', [MainTypeAkuntansiController::class, 'export']);
     Route::get('maintypeakuntansi/getPosition2', [MainTypeAkuntansiController::class, 'getPosition2']);
-    Route::resource('maintypeakuntansi', MainTypeAkuntansiController::class)->whereNumber('maintypeakuntansi');
 
     Route::get('approvaltradogambar/field_length', [ApprovalTradoGambarController::class, 'fieldLength']);
     Route::resource('approvaltradogambar', ApprovalTradoGambarController::class)->whereNumber('approvaltradogambar');
