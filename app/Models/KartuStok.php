@@ -232,7 +232,7 @@ class KartuStok extends MyModel
 
                     ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, 0, request()->datafilter, $filtergandengan->text));
                 } else {
-               
+
                     DB::table($temprekapall)->insertUsing([
                         'stok_id',
                         'gudang_id',
@@ -258,19 +258,19 @@ class KartuStok extends MyModel
                 }
             }
             // dd(request()->statustampil);
-            $statustampilan=request()->statustampil ?? 0;
+            $statustampilan = request()->statustampil ?? 0;
             // $statustampilan=531;
             // dd(db::table($temprekapall)->get());
 
-            $queryytampilan=db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
-            ->select(
-                'a.id'
-            )
-            ->where('a.grp','STATUS TAMPILAN KARTU STOK')
-            ->where('a.subgrp','STATUS TAMPILAN KARTU STOK')
-            ->where('a.text','PERGERAKAN')
-            ->where('a.id',$statustampilan)
-            ->first();
+            $queryytampilan = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                ->select(
+                    'a.id'
+                )
+                ->where('a.grp', 'STATUS TAMPILAN KARTU STOK')
+                ->where('a.subgrp', 'STATUS TAMPILAN KARTU STOK')
+                ->where('a.text', 'PERGERAKAN')
+                ->where('a.id', $statustampilan)
+                ->first();
 
             // dd($queryytampilan);
 
@@ -285,18 +285,18 @@ class KartuStok extends MyModel
 
             if (isset($queryytampilan)) {
                 // dd('test');
-                $queryjumlah=db::table($temprekapall)->from(db::raw($temprekapall ." a"))
-                ->select (
-                    'a.stok_id',
-                    'a.gudang_id',
-                    'a.trado_id',
-                    'a.gandengan_id',
-                    db::raw("count(a.stok_id) as jumlah"),
-                )
-                ->groupby('a.stok_id')
-                ->groupby('a.gudang_id')
-                ->groupby('a.trado_id')
-                ->groupby('a.gandengan_id');
+                $queryjumlah = db::table($temprekapall)->from(db::raw($temprekapall . " a"))
+                    ->select(
+                        'a.stok_id',
+                        'a.gudang_id',
+                        'a.trado_id',
+                        'a.gandengan_id',
+                        db::raw("count(a.stok_id) as jumlah"),
+                    )
+                    ->groupby('a.stok_id')
+                    ->groupby('a.gudang_id')
+                    ->groupby('a.trado_id')
+                    ->groupby('a.gandengan_id');
 
                 DB::table($tempstokjumlah)->insertUsing([
                     'stok_id',
@@ -313,8 +313,6 @@ class KartuStok extends MyModel
 
                 DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a inner join " . $tempstokjumlah . " b on a.stok_id=b.stok_id
                 and isnull(a.trado_id,0)=isnull(b.trado_id,0) and isnull(a.gudang_id,0)=isnull(b.gudang_id,0) and isnull(a.gandengan_id,0)=isnull(b.gandengan_id,0)"));
-        
-
             }
             // dd('test1');
 
@@ -347,7 +345,7 @@ class KartuStok extends MyModel
                 DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a  inner join stok b on a.stok_id=b.id
                 WHERE isnull(b.kelompok_id,0) not in(" . $kelompok_id . ")"));
             }
-     
+
             $tempstok = '##tempstok' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempstok, function ($table) {
                 $table->id();
@@ -355,22 +353,22 @@ class KartuStok extends MyModel
                 $table->unsignedBigInteger('gudang_id')->nullable();
                 $table->unsignedBigInteger('trado_id')->nullable();
                 $table->unsignedBigInteger('gandengan_id')->nullable();
-                $table->string('lokasi',500)->nullable();
-            });        
-    
-            $querystok=db::table($temprekapall)->from(db::raw($temprekapall ." a "))
-            ->select (
-                'a.stok_id',
-                'a.gudang_id',
-                'a.trado_id',
-                'a.gandengan_id',            
-                db::raw("max(a.lokasi) as lokasi"),            
-            )
-            ->groupby('a.stok_id')
-            ->groupby('a.gudang_id')
-            ->groupby('a.trado_id')
-            ->groupby('a.gandengan_id');
-    
+                $table->string('lokasi', 500)->nullable();
+            });
+
+            $querystok = db::table($temprekapall)->from(db::raw($temprekapall . " a "))
+                ->select(
+                    'a.stok_id',
+                    'a.gudang_id',
+                    'a.trado_id',
+                    'a.gandengan_id',
+                    db::raw("max(a.lokasi) as lokasi"),
+                )
+                ->groupby('a.stok_id')
+                ->groupby('a.gudang_id')
+                ->groupby('a.trado_id')
+                ->groupby('a.gandengan_id');
+
             DB::table($tempstok)->insertUsing([
                 'stok_id',
                 'gudang_id',
@@ -382,32 +380,32 @@ class KartuStok extends MyModel
             DB::delete(DB::raw("delete " . $tempstok . " from " . $tempstok . " as a inner join " . $temprekapall . " b on isnull(a.stok_id,0)=isnull(b.stok_id,0) and isnull(a.gudang_id,0)=isnull(b.gudang_id,0)
             and isnull(a.trado_id,0)=isnull(b.trado_id,0) and isnull(a.gandengan_id,0)=isnull(b.gandengan_id,0) and isnull(b.nobukti,'')='SALDO AWAL'
             "));
-    
-            $querysaldoawal=db::table($tempstok)->from(db::raw($tempstok ." a "))
-            ->select (
-                'a.stok_id',
-                'a.gudang_id',
-                'a.trado_id',
-                'a.gandengan_id',
-                db::raw("a.lokasi as lokasi"),
-                db::raw("isnull(b.namastok,'') as kodebarang"),
-                db::raw("isnull(b.namastok,'') as namabarang"),
-                db::raw("'". $tgldari ."' as tglbukti"),
-                db::raw("'SALDO AWAL' as nobukti"),
-                db::raw("'' as kategori_id"),
-                db::raw("0 as qtymasuk"),
-                db::raw("0 as nilaimasuk"),
-                db::raw("0 as qtykeluar"),
-                db::raw("0 as nilaikeluar"),
-                db::raw("0 as qtysaldo"),
-                db::raw("0 as nilaisaldo"),
-                db::raw("0 as modifiedby"),
-                db::raw("0 as urutfifo"),
-                db::raw("0 as iddata"),
 
-            )
-            ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id');
-    
+            $querysaldoawal = db::table($tempstok)->from(db::raw($tempstok . " a "))
+                ->select(
+                    'a.stok_id',
+                    'a.gudang_id',
+                    'a.trado_id',
+                    'a.gandengan_id',
+                    db::raw("a.lokasi as lokasi"),
+                    db::raw("isnull(b.namastok,'') as kodebarang"),
+                    db::raw("isnull(b.namastok,'') as namabarang"),
+                    db::raw("'" . $tgldari . "' as tglbukti"),
+                    db::raw("'SALDO AWAL' as nobukti"),
+                    db::raw("'' as kategori_id"),
+                    db::raw("0 as qtymasuk"),
+                    db::raw("0 as nilaimasuk"),
+                    db::raw("0 as qtykeluar"),
+                    db::raw("0 as nilaikeluar"),
+                    db::raw("0 as qtysaldo"),
+                    db::raw("0 as nilaisaldo"),
+                    db::raw("0 as modifiedby"),
+                    db::raw("0 as urutfifo"),
+                    db::raw("0 as iddata"),
+
+                )
+                ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id');
+
             DB::table($temprekapall)->insertUsing([
                 'stok_id',
                 'gudang_id',
@@ -431,46 +429,46 @@ class KartuStok extends MyModel
             ], $querysaldoawal);
 
 
-            $querylist=db::table($temprekapall)->from(db::raw( $temprekapall ." a"))
-            ->select(
-                'a.stok_id',
-                'a.gudang_id',
-                'a.trado_id',
-                'a.gandengan_id',
-                'a.lokasi',
-                'a.kodebarang',
-                'a.namabarang',
-                'a.tglbukti',
-                'a.nobukti',
-                'a.kategori_id',
-                'a.qtymasuk',
-                'a.nilaimasuk',
-                'a.qtykeluar',
-                'a.nilaikeluar',
-                // DB::raw("sum ((
-                //     (case when a.nobukti='SALDO AWAL' then a.qtysaldo else 0 end)+a.qtymasuk
-                //     )-a.qtykeluar) over (PARTITION BY isnull(a.stok_id,0),isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0) order by a.stok_id,isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0),isnull(a.tglbukti,0),a.urutfifo,a.nobukti,a.iddata ASC) as qtysaldo"),
-                // DB::raw("cast(sum ((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar) over (PARTITION BY a.stok_id,isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0) order by isnull(a.stok_id,0),isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0),a.tglbukti,a.urutfifo,a.nobukti,a.iddata ASC) as money) as nilaisaldo"),
+            $querylist = db::table($temprekapall)->from(db::raw($temprekapall . " a"))
+                ->select(
+                    'a.stok_id',
+                    'a.gudang_id',
+                    'a.trado_id',
+                    'a.gandengan_id',
+                    'a.lokasi',
+                    'a.kodebarang',
+                    'a.namabarang',
+                    'a.tglbukti',
+                    'a.nobukti',
+                    'a.kategori_id',
+                    'a.qtymasuk',
+                    'a.nilaimasuk',
+                    'a.qtykeluar',
+                    'a.nilaikeluar',
+                    // DB::raw("sum ((
+                    //     (case when a.nobukti='SALDO AWAL' then a.qtysaldo else 0 end)+a.qtymasuk
+                    //     )-a.qtykeluar) over (PARTITION BY isnull(a.stok_id,0),isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0) order by a.stok_id,isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0),isnull(a.tglbukti,0),a.urutfifo,a.nobukti,a.iddata ASC) as qtysaldo"),
+                    // DB::raw("cast(sum ((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar) over (PARTITION BY a.stok_id,isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0) order by isnull(a.stok_id,0),isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0),a.tglbukti,a.urutfifo,a.nobukti,a.iddata ASC) as money) as nilaisaldo"),
 
-                'a.qtysaldo',
-                'a.nilaisaldo',
-                'a.modifiedby', 
-                'a.urutfifo', 
-                'a.iddata', 
-            )
-            ->orderBy('a.stok_id', 'asc')
-            ->orderBy('a.gudang_id', 'asc')
-            ->orderBy('a.trado_id', 'asc')
-            ->orderBy('a.gandengan_id', 'asc')
-            ->orderBy('a.tglbukti', 'asc')
-            ->orderBy('a.urutfifo', 'asc')
-            ->orderBy('a.nobukti', 'asc')
-            ->orderBy('a.iddata', 'asc');
+                    'a.qtysaldo',
+                    'a.nilaisaldo',
+                    'a.modifiedby',
+                    'a.urutfifo',
+                    'a.iddata',
+                )
+                ->orderBy('a.stok_id', 'asc')
+                ->orderBy('a.gudang_id', 'asc')
+                ->orderBy('a.trado_id', 'asc')
+                ->orderBy('a.gandengan_id', 'asc')
+                ->orderBy('a.tglbukti', 'asc')
+                ->orderBy('a.urutfifo', 'asc')
+                ->orderBy('a.nobukti', 'asc')
+                ->orderBy('a.iddata', 'asc');
             // ->orderBy(db::raw("(case when UPPER(isnull(a.nobukti,''))='SALDO AWAL' then '' else isnull(a.nobukti,'') end)"), 'asc');
 
             // dd(db::table($temprekapall)->where('stok_id',94)->get());
 
-           
+
 
             DB::table($temtabel)->insertUsing([
                 'stok_id',
@@ -542,11 +540,11 @@ class KartuStok extends MyModel
                 'a.gandengan_id',
                 'a.iddata',
                 'a.urutfifo',
-                
+
                 db::raw("isnull(C.satuan,'') as satuan"),
             )
-            ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
-            ->leftjoin(db::raw("satuan c with (readuncommitted)"),'b.satuan_id','c.id');
+            ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
+            ->leftjoin(db::raw("satuan c with (readuncommitted)"), 'b.satuan_id', 'c.id');
 
 
 
@@ -754,7 +752,7 @@ class KartuStok extends MyModel
         //     ["filter" => $filter->id]
         // );
         DB::table($tempdefault)->insert(
-            ["stokdari_id" => $stokdari_id,"stokdari" => $stokdari,"stoksampai_id" => $stoksampai_id,"stoksampai" => $stoksampai,"gudang_id" => $gudang_id,"gudang" => $namagudang,"trado_id" => $trado_id,"trado" => $namatrado,"gandengan_id" => $gandengan_id,"gandengan" => $namagandengan,"filter" => $idstokpersediaan,"statustampil" => $idstatusstok]
+            ["stokdari_id" => $stokdari_id, "stokdari" => $stokdari, "stoksampai_id" => $stoksampai_id, "stoksampai" => $stoksampai, "gudang_id" => $gudang_id, "gudang" => $namagudang, "trado_id" => $trado_id, "trado" => $namatrado, "gandengan_id" => $gandengan_id, "gandengan" => $namagandengan, "filter" => $idstokpersediaan, "statustampil" => $idstatusstok]
         );
 
         // $data = [
@@ -2929,24 +2927,24 @@ class KartuStok extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'namabarang') {
-                            $query = $query->where('a.namabarang', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'kodebarang') {
-                            $query = $query->where('a.kodebarang', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'kategori_id') {
-                            $query = $query->where('a.kategori_id', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'qtymasuk' || $filters['field'] == 'nilaimasuk' || $filters['field'] == 'qtykeluar' || $filters['field'] == 'nilaikeluar') {
-                            $query = $query->whereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'qtysaldo') {
-                            $query = $query->whereRaw("format((isnull(a.qtysaldo,0)+a.qtymasuk)-a.qtykeluar, '#,#0.00') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'nilaisaldo') {
-                            $query = $query->whereRaw("format((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar, '#,#0.00') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'tglbukti') {
-                            $query = $query->whereRaw("format(a.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                        } else {
+                        // if ($filters['field'] == 'namabarang') {
+                        //     $query = $query->where('a.namabarang', 'LIKE', "%$filters[data]%");
+                        // } else if ($filters['field'] == 'kodebarang') {
+                        //     $query = $query->where('a.kodebarang', 'LIKE', "%$filters[data]%");
+                        // } else if ($filters['field'] == 'kategori_id') {
+                        //     $query = $query->where('a.kategori_id', 'LIKE', "%$filters[data]%");
+                        // } else if ($filters['field'] == 'qtymasuk' || $filters['field'] == 'nilaimasuk' || $filters['field'] == 'qtykeluar' || $filters['field'] == 'nilaikeluar') {
+                        //     $query = $query->whereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                        // } else if ($filters['field'] == 'qtysaldo') {
+                        //     $query = $query->whereRaw("format((isnull(a.qtysaldo,0)+a.qtymasuk)-a.qtykeluar, '#,#0.00') LIKE '%$filters[data]%'");
+                        // } else if ($filters['field'] == 'nilaisaldo') {
+                        //     $query = $query->whereRaw("format((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar, '#,#0.00') LIKE '%$filters[data]%'");
+                        // } else if ($filters['field'] == 'tglbukti') {
+                        //     $query = $query->whereRaw("format(a.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        // } else {
                             // $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw('a' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-                        }
+                        // }
                     }
 
                     break;
@@ -2954,24 +2952,24 @@ class KartuStok extends MyModel
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
 
-                            if ($filters['field'] == 'namabarang') {
-                                $query = $query->orWhere('a.namabarang', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'kodebarang') {
-                                $query = $query->orWhere('a.kodebarang', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'kategori') {
-                                $query = $query->orWhere('a.kategori_id', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'qtymasuk' || $filters['field'] == 'nilaimasuk' || $filters['field'] == 'qtykeluar' || $filters['field'] == 'nilaikeluar') {
-                                $query = $query->orWhereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'qtysaldo') {
-                                $query = $query->orWhereRaw("format((isnull(a.qtysaldo,0)+a.qtymasuk)-a.qtykeluar, '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'nilaisaldo') {
-                                $query = $query->orWhereRaw("format((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar, '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'tglbukti') {
-                                $query = $query->orWhereRaw("format(a.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            } else {
+                            // if ($filters['field'] == 'namabarang') {
+                            //     $query = $query->orWhere('a.namabarang', 'LIKE', "%$filters[data]%");
+                            // } else if ($filters['field'] == 'kodebarang') {
+                            //     $query = $query->orWhere('a.kodebarang', 'LIKE', "%$filters[data]%");
+                            // } else if ($filters['field'] == 'kategori') {
+                            //     $query = $query->orWhere('a.kategori_id', 'LIKE', "%$filters[data]%");
+                            // } else if ($filters['field'] == 'qtymasuk' || $filters['field'] == 'nilaimasuk' || $filters['field'] == 'qtykeluar' || $filters['field'] == 'nilaikeluar') {
+                            //     $query = $query->orWhereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                            // } else if ($filters['field'] == 'qtysaldo') {
+                            //     $query = $query->orWhereRaw("format((isnull(a.qtysaldo,0)+a.qtymasuk)-a.qtykeluar, '#,#0.00') LIKE '%$filters[data]%'");
+                            // } else if ($filters['field'] == 'nilaisaldo') {
+                            //     $query = $query->orWhereRaw("format((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar, '#,#0.00') LIKE '%$filters[data]%'");
+                            // } else if ($filters['field'] == 'tglbukti') {
+                            //     $query = $query->orWhereRaw("format(a.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            // } else {
                                 // $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw('a' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-                            }
+                            // }
                         }
                     });
 
