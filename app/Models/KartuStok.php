@@ -127,7 +127,7 @@ class KartuStok extends MyModel
                 $table->double('qtykeluar', 15, 2)->nullable();
                 $table->double('nilaikeluar', 15, 2)->nullable();
                 $table->double('qtysaldo', 15, 2)->nullable();
-                $table->double('nilaisaldo', 15, 2)->nullable();
+                $table->decimal('nilaisaldo', 15, 3)->nullable();
                 $table->string('modifiedby', 100)->nullable();
                 $table->integer('urutfifo')->nullable();
                 $table->integer('iddata')->nullable();
@@ -543,8 +543,10 @@ class KartuStok extends MyModel
                 'a.qtymasuk',
                 'a.nilaimasuk',
                 'a.qtykeluar',
+                // db::raw("round(a.nilaikeluar ,2) as nilaikeluar"),
                 'a.nilaikeluar',
                 'a.qtysaldo',
+                // db::raw("round(a.nilaisaldo ,2) as nilaisaldo"),
                 'a.nilaisaldo',
                 'a.modifiedby',
                 'a.stok_id',
@@ -1034,7 +1036,7 @@ class KartuStok extends MyModel
                     db::raw("0 as qtykeluar"),
                     db::raw("0 as nilaikeluar"),
                     DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
-                    DB::raw("sum(isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0) ) as nilaisaldo"),
+                    DB::raw("sum(round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) ) as nilaisaldo"),
                     db::raw("'ADMIN' as modifiedby"),
                     db::raw("0 as urutfifo"),
                 )
@@ -1075,7 +1077,7 @@ class KartuStok extends MyModel
                         db::raw("0 as qtykeluar"),
                         db::raw("0 as nilaikeluar"),
                         DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
-                        DB::raw("sum(isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0) ) as nilaisaldo"),
+                        DB::raw("sum(round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) ) as nilaisaldo"),
                         db::raw("'ADMIN' as modifiedby"),
                         db::raw("0 as urutfifo"),
                     )
@@ -1107,7 +1109,7 @@ class KartuStok extends MyModel
                         db::raw("0 as qtykeluar"),
                         db::raw("0 as nilaikeluar"),
                         DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
-                        DB::raw("sum(isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0) ) as nilaisaldo"),
+                        DB::raw("sum(round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) ) as nilaisaldo"),
                         db::raw("'ADMIN' as modifiedby"),
                         db::raw("0 as urutfifo"),
                     )
@@ -1141,7 +1143,7 @@ class KartuStok extends MyModel
                         db::raw("0 as qtykeluar"),
                         db::raw("0 as nilaikeluar"),
                         DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
-                        DB::raw("sum(isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0) ) as nilaisaldo"),
+                        DB::raw("sum(round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) ) as nilaisaldo"),
                         db::raw("'ADMIN' as modifiedby"),
                         db::raw("0 as urutfifo"),
                     )
@@ -1173,7 +1175,7 @@ class KartuStok extends MyModel
                         db::raw("0 as qtykeluar"),
                         db::raw("0 as nilaikeluar"),
                         DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
-                        DB::raw("sum(isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0) ) as nilaisaldo"),
+                        DB::raw("sum(round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) ) as nilaisaldo"),
                         db::raw("'ADMIN' as modifiedby"),
                         db::raw("0 as urutfifo"),
                     )
@@ -1207,7 +1209,7 @@ class KartuStok extends MyModel
                         db::raw("0 as qtykeluar"),
                         db::raw("0 as nilaikeluar"),
                         DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
-                        DB::raw("sum(isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0) ) as nilaisaldo"),
+                        DB::raw("sum(round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) ) as nilaisaldo"),
                         db::raw("'ADMIN' as modifiedby"),
                         db::raw("0 as urutfifo"),
                     )
@@ -1239,7 +1241,7 @@ class KartuStok extends MyModel
                         db::raw("0 as qtykeluar"),
                         db::raw("0 as nilaikeluar"),
                         DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
-                        DB::raw("sum(isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0) ) as nilaisaldo"),
+                        DB::raw("sum(round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) ) as nilaisaldo"),
                         db::raw("'ADMIN' as modifiedby"),
                         db::raw("0 as urutfifo"),
                     )
@@ -1272,7 +1274,7 @@ class KartuStok extends MyModel
                     db::raw("0 as qtykeluar"),
                     db::raw("0 as nilaikeluar"),
                     DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
-                    DB::raw("sum(isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0) ) as nilaisaldo"),
+                    DB::raw("sum(round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) ) as nilaisaldo"),
                     db::raw("'ADMIN' as modifiedby"),
                     db::raw("0 as urutfifo"),
                 )
@@ -1332,9 +1334,9 @@ class KartuStok extends MyModel
                     db::raw("a.nobukti as nobukti"),
                     db::raw("(a.kategori_id) as kategori_id"),
                     db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
-                    db::raw("isnull(a.nilaimasuk,0) as nilaimasuk"),
+                    db::raw("round(isnull(a.nilaimasuk,0),2) as nilaimasuk"),
                     db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
-                    db::raw("isnull(a.nilaikeluar,0) as nilaikeluar"),
+                    db::raw("round(isnull(a.nilaikeluar,0),2) as nilaikeluar"),
                     DB::raw("0 as qtysaldo"),
                     DB::raw("0 as nilaisaldo"),
                     db::raw("a.modifiedby"),
@@ -1366,9 +1368,10 @@ class KartuStok extends MyModel
                         db::raw("a.nobukti as nobukti"),
                         db::raw("(a.kategori_id) as kategori_id"),
                         db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
-                        db::raw("isnull(a.nilaimasuk,0) as nilaimasuk"),
+                        db::raw("round(isnull(a.nilaimasuk,0),2) as nilaimasuk"),
                         db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
-                        db::raw("isnull(a.nilaikeluar,0) as nilaikeluar"),
+                        db::raw("round(isnull(a.nilaikeluar,0),2) as nilaikeluar"),
+    
                         DB::raw("0 as qtysaldo"),
                         DB::raw("0 as nilaisaldo"),
                         db::raw("a.modifiedby"),
@@ -1397,9 +1400,10 @@ class KartuStok extends MyModel
                         db::raw("a.nobukti as nobukti"),
                         db::raw("(a.kategori_id) as kategori_id"),
                         db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
-                        db::raw("isnull(a.nilaimasuk,0) as nilaimasuk"),
+                        db::raw("round(isnull(a.nilaimasuk,0),2) as nilaimasuk"),
                         db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
-                        db::raw("isnull(a.nilaikeluar,0) as nilaikeluar"),
+                        db::raw("round(isnull(a.nilaikeluar,0),2) as nilaikeluar"),
+    
                         DB::raw("0 as qtysaldo"),
                         DB::raw("0 as nilaisaldo"),
                         db::raw("a.modifiedby"),
@@ -1430,9 +1434,10 @@ class KartuStok extends MyModel
                         db::raw("a.nobukti as nobukti"),
                         db::raw("(a.kategori_id) as kategori_id"),
                         db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
-                        db::raw("isnull(a.nilaimasuk,0) as nilaimasuk"),
+                        db::raw("round(isnull(a.nilaimasuk,0),2) as nilaimasuk"),
                         db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
-                        db::raw("isnull(a.nilaikeluar,0) as nilaikeluar"),
+                        db::raw("round(isnull(a.nilaikeluar,0),2) as nilaikeluar"),
+    
                         DB::raw("0 as qtysaldo"),
                         DB::raw("0 as nilaisaldo"),
                         db::raw("a.modifiedby"),
@@ -1461,9 +1466,10 @@ class KartuStok extends MyModel
                         db::raw("a.nobukti as nobukti"),
                         db::raw("(a.kategori_id) as kategori_id"),
                         db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
-                        db::raw("isnull(a.nilaimasuk,0) as nilaimasuk"),
+                        db::raw("round(isnull(a.nilaimasuk,0),2) as nilaimasuk"),
                         db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
-                        db::raw("isnull(a.nilaikeluar,0) as nilaikeluar"),
+                        db::raw("round(isnull(a.nilaikeluar,0),2) as nilaikeluar"),
+    
                         DB::raw("0 as qtysaldo"),
                         DB::raw("0 as nilaisaldo"),
                         db::raw("a.modifiedby"),
@@ -1494,9 +1500,10 @@ class KartuStok extends MyModel
                         db::raw("a.nobukti as nobukti"),
                         db::raw("(a.kategori_id) as kategori_id"),
                         db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
-                        db::raw("isnull(a.nilaimasuk,0) as nilaimasuk"),
+                        db::raw("round(isnull(a.nilaimasuk,0),2) as nilaimasuk"),
                         db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
-                        db::raw("isnull(a.nilaikeluar,0) as nilaikeluar"),
+                        db::raw("round(isnull(a.nilaikeluar,0),2) as nilaikeluar"),
+    
                         DB::raw("0 as qtysaldo"),
                         DB::raw("0 as nilaisaldo"),
                         db::raw("a.modifiedby"),
@@ -1525,9 +1532,10 @@ class KartuStok extends MyModel
                         db::raw("a.nobukti as nobukti"),
                         db::raw("(a.kategori_id) as kategori_id"),
                         db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
-                        db::raw("isnull(a.nilaimasuk,0) as nilaimasuk"),
+                        db::raw("round(isnull(a.nilaimasuk,0),2) as nilaimasuk"),
                         db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
-                        db::raw("isnull(a.nilaikeluar,0) as nilaikeluar"),
+                        db::raw("round(isnull(a.nilaikeluar,0),2) as nilaikeluar"),
+    
                         DB::raw("0 as qtysaldo"),
                         DB::raw("0 as nilaisaldo"),
                         db::raw("a.modifiedby"),
@@ -1557,9 +1565,10 @@ class KartuStok extends MyModel
                     db::raw("a.nobukti as nobukti"),
                     db::raw("(a.kategori_id) as kategori_id"),
                     db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
-                    db::raw("isnull(a.nilaimasuk,0) as nilaimasuk"),
+                    db::raw("round(isnull(a.nilaimasuk,0),2) as nilaimasuk"),
                     db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
-                    db::raw("isnull(a.nilaikeluar,0) as nilaikeluar"),
+                    db::raw("round(isnull(a.nilaikeluar,0),2) as nilaikeluar"),
+
                     DB::raw("0 as qtysaldo"),
                     DB::raw("0 as nilaisaldo"),
                     db::raw("a.modifiedby"),
@@ -1628,7 +1637,7 @@ class KartuStok extends MyModel
             $table->double('qtykeluar', 15, 2)->nullable();
             $table->double('nilaikeluar', 15, 2)->nullable();
             $table->double('qtysaldo', 15, 2)->nullable();
-            $table->double('nilaisaldo', 15, 2)->nullable();
+            $table->decimal('nilaisaldo', 15, 2)->nullable();
             $table->string('modifiedby', 100)->nullable();
             $table->integer('urutfifo')->nullable();
         });
@@ -1715,6 +1724,7 @@ class KartuStok extends MyModel
                 'a.qtykeluar',
                 'a.nilaikeluar',
                 'a.qtysaldo',
+                // db::raw("round(cast(a.nilaisaldo as money) as nilaisaldo"),
                 'a.nilaisaldo',
                 'a.modifiedby',
                 'a.urutfifo',
