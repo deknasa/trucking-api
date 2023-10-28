@@ -54,14 +54,25 @@ class PengeluaranStokHeaderController extends Controller
      */
     public function index(GetIndexRangeRequest $request)
     {
-        $pengeluaranStokHeader = new PengeluaranStokHeader();
-        return response([
-            'data' => $pengeluaranStokHeader->get(),
-            'attributes' => [
-                'totalRows' => $pengeluaranStokHeader->totalRows,
-                'totalPages' => $pengeluaranStokHeader->totalPages
-            ]
-        ]);
+        if ($request->reload == '') {
+
+            $pengeluaranStokHeader = new PengeluaranStokHeader();
+            return response([
+                'data' => $pengeluaranStokHeader->get(),
+                'attributes' => [
+                    'totalRows' => $pengeluaranStokHeader->totalRows,
+                    'totalPages' => $pengeluaranStokHeader->totalPages
+                ]
+            ]);
+        } else {
+            return response([
+                'data' => [],
+                'attributes' => [
+                    'totalRows' => [],
+                    'totalPages' => []
+                ]
+            ]);
+        }
     }
     /**
      * @ClassName 
@@ -360,7 +371,7 @@ class PengeluaranStokHeaderController extends Controller
                     'kodenobukti' => '1'
                 ];
             }
-            
+
             return response($data);
         } else {
 
