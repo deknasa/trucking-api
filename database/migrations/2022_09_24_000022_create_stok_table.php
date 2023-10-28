@@ -44,6 +44,7 @@ class CreateStokTable extends Migration
             $table->date('tglapprovaltanpaklaim')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();
+            $table->integer('statuspembulatanlebih2decimal')->Length(11)->nullable();           
             $table->timestamps();
 
             $table->foreign('jenistrado_id', 'stok_jenistrado_jenistrado_id_foreign')->references('id')->on('jenistrado');

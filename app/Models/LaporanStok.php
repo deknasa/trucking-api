@@ -283,7 +283,6 @@ class LaporanStok extends MyModel
         //         'nominal' => '8300000',
 
         // dd(DB::table($temprekapall)->get());
-
         $data = $query->get();
         return $data;
     }
