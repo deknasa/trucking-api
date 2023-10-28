@@ -44,14 +44,24 @@ class PenerimaanStokHeaderController extends Controller
      */
     public function index(GetIndexRangeRequest $request)
     {
-        $penerimaanStokHeader = new PenerimaanStokHeader();
-        return response([
-            'data' => $penerimaanStokHeader->get(),
-            'attributes' => [
-                'totalRows' => $penerimaanStokHeader->totalRows,
-                'totalPages' => $penerimaanStokHeader->totalPages
-            ]
-        ]);
+        if ($request->reload == '') {
+            $penerimaanStokHeader = new PenerimaanStokHeader();
+            return response([
+                'data' => $penerimaanStokHeader->get(),
+                'attributes' => [
+                    'totalRows' => $penerimaanStokHeader->totalRows,
+                    'totalPages' => $penerimaanStokHeader->totalPages
+                ]
+            ]);
+        } else {
+            return response([
+                'data' => [],
+                'attributes' => [
+                    'totalRows' => [],
+                    'totalPages' => []
+                ]
+            ]);
+        }
     }
 
 
