@@ -8,6 +8,7 @@ use App\Models\LaporanSaldoInventory;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreLaporanSaldoInventoryRequest;
 use App\Http\Requests\UpdateLaporanSaldoInventoryRequest;
+use Illuminate\Support\Facades\DB;
 
 class LaporanSaldoInventoryController extends Controller
 {
@@ -137,9 +138,16 @@ class LaporanSaldoInventoryController extends Controller
         //         'satuan' => 'buah',
         //         'nominal' => '8300000',
         //     ],
-        // ];
+        // ];      
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
         return response([
-            'data' => $report
+            'data' => $report,
+            'judul' => $getJudul->text
         ]);
     }
       /**
