@@ -312,52 +312,6 @@ class KartuStok extends MyModel
                 DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a  inner join stok b on a.stok_id=b.id
                 WHERE isnull(b.kelompok_id,0) not in(" . $kelompok_id . ")"));
             }
-            
-            if (isset($queryytampilan)) {
-
-                $queryjumlah = db::table($temprekapall)->from(db::raw($temprekapall . " a"))
-                    ->select(
-                        'a.stok_id',
-                        'a.gudang_id',
-                        'a.trado_id',
-                        'a.gandengan_id',
-                        db::raw("count(a.stok_id) as jumlah"),
-                    )
-                    ->groupby('a.stok_id')
-                    ->groupby('a.gudang_id')
-                    ->groupby('a.trado_id')
-                    ->groupby('a.gandengan_id');
-
-
-
-                DB::table($tempstokjumlah)->insertUsing([
-                    'stok_id',
-                    'gudang_id',
-                    'trado_id',
-                    'gandengan_id',
-                    'jumlah',
-                ],  $queryjumlah);
-
-                // dd(db::table($temprekapall)->whereraw("stok_id=29")->get());
-                // dump(db::table($tempstokjumlah)->whereraw("stok_id=29")->get());
-
-                DB::delete(DB::raw("delete " . $tempstokjumlah . " from " . $tempstokjumlah . " as a  
-                WHERE isnull(a.jumlah,0)>1"));
-
-
-                // dd(db::table($temprekapall)->where('stok_id',3492)->get());
-
-                DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a inner join " . $tempstokjumlah . " b on isnull(a.stok_id,0)=isnull(b.stok_id,0)
-                and isnull(a.trado_id,0)=isnull(b.trado_id,0) and isnull(a.gudang_id,0)=isnull(b.gudang_id,0) and isnull(a.gandengan_id,0)=isnull(b.gandengan_id,0)"));
-
-                // dd(db::table($temprekapall)->get());
-            }
-            // dd('test1');
-            
-          
-
-          
-
 
             $tempstok = '##tempstok' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempstok, function ($table) {
@@ -441,6 +395,55 @@ class KartuStok extends MyModel
                 'iddata',
             ], $querysaldoawal);
 
+            
+            
+            if (isset($queryytampilan)) {
+
+                $queryjumlah = db::table($temprekapall)->from(db::raw($temprekapall . " a"))
+                    ->select(
+                        'a.stok_id',
+                        'a.gudang_id',
+                        'a.trado_id',
+                        'a.gandengan_id',
+                        db::raw("count(a.stok_id) as jumlah"),
+                    )
+                    ->groupby('a.stok_id')
+                    ->groupby('a.gudang_id')
+                    ->groupby('a.trado_id')
+                    ->groupby('a.gandengan_id');
+
+
+
+                DB::table($tempstokjumlah)->insertUsing([
+                    'stok_id',
+                    'gudang_id',
+                    'trado_id',
+                    'gandengan_id',
+                    'jumlah',
+                ],  $queryjumlah);
+
+                // dd(db::table($temprekapall)->whereraw("stok_id=29")->get());
+                // dump(db::table($tempstokjumlah)->whereraw("stok_id=29")->get());
+
+                DB::delete(DB::raw("delete " . $tempstokjumlah . " from " . $tempstokjumlah . " as a  
+                WHERE isnull(a.jumlah,0)>1"));
+
+
+                // dd(db::table($temprekapall)->where('stok_id',3492)->get());
+
+                DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a inner join " . $tempstokjumlah . " b on isnull(a.stok_id,0)=isnull(b.stok_id,0)
+                and isnull(a.trado_id,0)=isnull(b.trado_id,0) and isnull(a.gudang_id,0)=isnull(b.gudang_id,0) and isnull(a.gandengan_id,0)=isnull(b.gandengan_id,0)"));
+
+                // dd(db::table($temprekapall)->get());
+            }
+            // dd('test1');
+            
+          
+
+          
+
+
+          
 
             $querylist = db::table($temprekapall)->from(db::raw($temprekapall . " a"))
                 ->select(
@@ -1036,7 +1039,8 @@ class KartuStok extends MyModel
                     db::raw("0 as qtykeluar"),
                     db::raw("0 as nilaikeluar"),
                     DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
-                    DB::raw("sum(round(isnull(a.nilaimasuk,0),3)-round(isnull(a.nilaikeluar,0),3) ) as nilaisaldo"),
+                    DB::raw("sum(round(isnull(a.nilaimasuk,0),3)-round(isnull(a.nilaikeluar,0),3) 
+                        ) as nilaisaldo"),
                     db::raw("'ADMIN' as modifiedby"),
                     db::raw("0 as urutfifo"),
                 )
