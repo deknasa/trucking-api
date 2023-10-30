@@ -151,6 +151,609 @@ class PengeluaranStokHeader extends MyModel
             $pst = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PST STOK')->where('subgrp', 'PST STOK')->first();
             $gst = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'GST STOK')->where('subgrp', 'GST STOK')->first();
             $pspk = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PSPK STOK')->where('subgrp', 'PSPK STOK')->first();
+
+
+            $tempbukti = '##tempbukti' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempbukti, function ($table) {
+                $table->string('nobukti', 1000)->nullable();
+                $table->string('penerimaanstok_nobukti', 1000)->nullable();
+                $table->string('penerimaan_nobukti', 1000)->nullable();
+                $table->string('hutangbayar_nobukti', 1000)->nullable();
+                $table->string('pengeluaranstok_nobukti', 1000)->nullable();
+                $table->string('servicein_nobukti', 1000)->nullable();
+                $table->string('pengeluarantrucking_nobukti', 1000)->nullable();
+            });
+
+            // temporery penerimaanstokheader
+            $temppenerimaanstokheader = '##temppenerimaanstokheader' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temppenerimaanstokheader, function ($table) {
+                $table->unsignedBigInteger('id')->nullable();
+                $table->string('nobukti', 50)->nullable();
+                $table->date('tglbukti')->nullable();
+                $table->unsignedBigInteger('penerimaanstok_id')->nullable();
+                $table->string('penerimaanstok_nobukti', 50)->nullable();
+                $table->string('pengeluaranstok_nobukti', 50)->nullable();
+                $table->string('nobuktisaldo', 50)->nullable();
+                $table->date('tglbuktisaldo')->nullable();
+                $table->unsignedBigInteger('supplier_id')->nullable();
+                $table->string('nobon', 50)->nullable();
+                $table->string('hutang_nobukti', 50)->nullable();
+                $table->unsignedBigInteger('trado_id')->nullable();
+                $table->unsignedBigInteger('gandengan_id')->nullable();
+                $table->unsignedBigInteger('gudang_id')->nullable();
+                $table->integer('statuspindahgudang')->Length(11)->nullable();
+                $table->unsignedBigInteger('gudangdari_id')->nullable();
+                $table->unsignedBigInteger('gudangke_id')->nullable();
+                $table->unsignedBigInteger('tradodari_id')->nullable();
+                $table->unsignedBigInteger('tradoke_id')->nullable();
+                $table->unsignedBigInteger('gandengandari_id')->nullable();
+                $table->unsignedBigInteger('gandenganke_id')->nullable();
+                $table->string('coa', 50)->nullable();
+                $table->longText('keterangan')->nullable();
+                $table->unsignedBigInteger('statusformat')->nullable();
+                $table->integer('statuscetak')->Length(11)->nullable();
+                $table->string('userbukacetak', 50)->nullable();
+                $table->date('tglbukacetak')->nullable();
+                $table->integer('jumlahcetak')->Length(11)->nullable();
+                $table->integer('statusapprovaledit')->Length(11)->nullable();
+                $table->string('userapprovaledit', 50)->nullable();
+                $table->date('tglapprovaledit')->nullable();
+                $table->dateTime('tglbatasedit')->nullable();
+                $table->longText('info')->nullable();
+                $table->string('modifiedby', 50)->nullable();
+            });
+
+            // temporery penerimaanheader
+            $temppenerimaanheader = '##temppenerimaanheader' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temppenerimaanheader, function ($table) {
+                $table->unsignedBigInteger('id')->nullable();
+                $table->string('nobukti', 50)->nullable();
+                $table->date('tglbukti')->nullable();
+                $table->longText('keterangan')->nullable();
+                $table->unsignedBigInteger('pelanggan_id')->nullable();
+                $table->unsignedBigInteger('agen_id')->nullable();
+                $table->unsignedBigInteger('bank_id')->nullable();
+                $table->string('postingdari', 50)->nullable();
+                $table->string('diterimadari', 100)->nullable();
+                $table->date('tgllunas')->nullable();
+                $table->string('penerimaangiro_nobukti', 50)->nullable();
+                $table->integer('statusapproval')->length(11)->nullable();
+                $table->string('userapproval', 50)->nullable();
+                $table->date('tglapproval')->nullable();
+                $table->integer('statusberkas')->length(11)->nullable();
+                $table->string('userberkas', 50)->nullable();
+                $table->date('tglberkas')->nullable();
+                $table->unsignedBigInteger('statusformat')->nullable();
+                $table->integer('statuscetak')->Length(11)->nullable();
+                $table->string('userbukacetak', 50)->nullable();
+                $table->date('tglbukacetak')->nullable();
+                $table->integer('jumlahcetak')->Length(11)->nullable();
+                $table->longText('info')->nullable();
+                $table->string('modifiedby', 50)->nullable();
+            });
+
+            // temporary hutangbayar
+
+            $temppelunasanhutangheader = '##temppelunasanhutangheader' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temppelunasanhutangheader, function ($table) {
+                $table->unsignedBigInteger('id')->nullable();
+                $table->string('nobukti', 50)->nullable();
+                $table->date('tglbukti')->nullable();
+                $table->longText('keterangan')->nullable();
+                $table->unsignedBigInteger('bank_id')->nullable();
+                $table->unsignedBigInteger('supplier_id')->nullable();
+                $table->unsignedBigInteger('pelanggan_id')->nullable();
+                $table->integer('statusbayarhutang')->Length(11)->nullable();
+                $table->string('pengeluaran_nobukti', 50)->nullable();
+                $table->string('coa', 50)->nullable();
+                $table->unsignedBigInteger('alatbayar_id')->nullable();
+                $table->date('tglcair')->nullable();
+                $table->string('nowarkat', 100)->nullable();
+                $table->integer('statusapproval')->length(11)->nullable();
+                $table->date('tglapproval')->nullable();
+                $table->string('userapproval', 50)->nullable();
+                $table->unsignedBigInteger('statusformat')->nullable();
+                $table->integer('statuscetak')->Length(11)->nullable();
+                $table->string('userbukacetak', 50)->nullable();
+                $table->date('tglbukacetak')->nullable();
+                $table->integer('jumlahcetak')->Length(11)->nullable();
+                $table->longText('info')->nullable();
+                $table->string('modifiedby', 50)->nullable();
+            });
+
+            // temporary Pengeluaranstokheader
+
+            $temppengeluaranstokheader = '##temppengeluaranstokheader' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temppengeluaranstokheader, function ($table) {
+                $table->unsignedBigInteger('id')->nullable();
+                $table->string('nobukti', 50)->nullable();
+                $table->date('tglbukti', 50)->nullable();
+                $table->longText('keterangan')->nullable();
+                $table->unsignedBigInteger('pengeluaranstok_id')->nullable();
+                $table->unsignedBigInteger('trado_id')->nullable();
+                $table->unsignedBigInteger('gudang_id')->nullable();
+                $table->unsignedBigInteger('gandengan_id')->nullable();
+                $table->unsignedBigInteger('supir_id')->nullable();
+                $table->unsignedBigInteger('supplier_id')->nullable();
+                $table->string('pengeluaranstok_nobukti', 50)->nullable();
+                $table->string('penerimaanstok_nobukti', 50)->nullable();
+                $table->string('pengeluarantrucking_nobukti', 50)->nullable();
+                $table->string('servicein_nobukti', 50)->nullable();
+                $table->unsignedBigInteger('kerusakan_id')->nullable();
+                $table->integer('statuspotongretur')->Length(11)->nullable();
+                $table->unsignedBigInteger('bank_id')->nullable();
+                $table->string('penerimaan_nobukti', 50)->nullable();
+                $table->string('coa', 50)->nullable();
+                $table->string('postingdari', 50)->nullable();
+                $table->date('tglkasmasuk')->nullable();
+                $table->string('hutangbayar_nobukti', 50)->nullable();
+                $table->unsignedBigInteger('statusformat')->nullable();
+                $table->integer('statuscetak')->Length(11)->nullable();
+                $table->string('userbukacetak', 50)->nullable();
+                $table->date('tglbukacetak')->nullable();
+                $table->integer('jumlahcetak')->Length(11)->nullable();
+                $table->integer('statusapprovaledit')->Length(11)->nullable();
+                $table->string('userapprovaledit', 50)->nullable();
+                $table->date('tglapprovaledit')->nullable();
+                $table->dateTime('tglbatasedit')->nullable();
+                $table->longText('info')->nullable();
+                $table->string('modifiedby', 50)->nullable();
+            });
+
+
+            // temporary ServiceInHeader
+
+            $tempserviceinheader = '##tempserviceinheader' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempserviceinheader, function ($table) {
+                $table->unsignedBigInteger('id')->nullable();
+                $table->string('nobukti', 50)->nullable();
+                $table->date('tglbukti')->nullable();
+                $table->longText('keterangan')->nullable();
+                $table->unsignedBigInteger('trado_id')->nullable();
+                $table->date('tglmasuk')->nullable();
+                $table->unsignedBigInteger('statusformat')->nullable();
+                $table->integer('statuscetak')->Length(11)->nullable();
+                $table->string('userbukacetak', 50)->nullable();
+                $table->date('tglbukacetak')->nullable();
+                $table->integer('jumlahcetak')->Length(11)->nullable();
+                $table->longText('info')->nullable();
+                $table->string('modifiedby', 50)->nullable();
+            });
+
+            // temporary Pengeluarantruckingheader
+
+            $temppengeluarantruckingheader = '##temppengeluarantruckingheader' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temppengeluarantruckingheader, function ($table) {
+                $table->unsignedBigInteger('id')->nullable();
+                $table->string('nobukti', 50)->nullable();
+                $table->date('tglbukti')->nullable();
+                $table->longText('keterangan')->nullable();
+                $table->unsignedBigInteger('pengeluarantrucking_id')->nullable();
+                $table->unsignedBigInteger('bank_id')->nullable();
+                $table->unsignedBigInteger('karyawan_id')->nullable();
+                $table->unsignedBigInteger('supir_id')->nullable();
+                $table->unsignedBigInteger('trado_id')->nullable();
+                $table->unsignedBigInteger('gandengan_id')->nullable();
+                $table->unsignedBigInteger('statuscabang')->nullable();
+                $table->unsignedBigInteger('tradotnl_id')->nullable();
+                $table->unsignedBigInteger('gandengantnl_id')->nullable();
+                $table->unsignedBigInteger('jenisorder_id')->nullable();
+                $table->integer('statusposting')->length(11)->nullable();
+                $table->date('periode')->nullable();
+                $table->date('periodedari')->nullable();
+                $table->date('periodesampai')->nullable();
+                $table->string('coa', 50)->nullable();
+                $table->string('pengeluaran_nobukti', 50)->nullable();
+                $table->string('pengeluarantrucking_nobukti', 50)->nullable();
+                $table->unsignedBigInteger('statusformat')->nullable();
+                $table->integer('statuscetak')->Length(11)->nullable();
+                $table->string('userbukacetak', 50)->nullable();
+                $table->date('tglbukacetak')->nullable();
+                $table->integer('jumlahcetak')->Length(11)->nullable();
+                $table->integer('statusapprovaledit')->Length(11)->nullable();
+                $table->string('userapprovaledit', 50)->nullable();
+                $table->date('tglapprovaledit')->nullable();
+                $table->dateTime('tglbatasedit')->nullable();
+                $table->longText('info')->nullable();
+                $table->string('modifiedby', 50)->nullable();
+            });
+            if (request()->tgldari) {
+                $querybukti = db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
+                    ->select(
+                        'a.nobukti',
+                        'a.penerimaanstok_nobukti',
+                        'a.penerimaan_nobukti',
+
+                    )
+                    ->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+
+                DB::table($tempbukti)->insertUsing([
+                    'nobukti',
+                    'penerimaanstok_nobukti',
+                    'penerimaan_nobukti',
+                ],  $querybukti);
+
+
+
+                $querypenerimaanstokheader = db::table("penerimaanstokheader")->from(db::raw("penerimaanstokheader a with (readuncommitted)"))
+                    ->select(
+                        'a.id',
+                        'a.nobukti',
+                        'a.tglbukti',
+                        'a.penerimaanstok_id',
+                        'a.penerimaanstok_nobukti',
+                        'a.pengeluaranstok_nobukti',
+                        'a.nobuktisaldo',
+                        'a.tglbuktisaldo',
+                        'a.supplier_id',
+                        'a.nobon',
+                        'a.hutang_nobukti',
+                        'a.trado_id',
+                        'a.gandengan_id',
+                        'a.gudang_id',
+                        'a.statuspindahgudang',
+                        'a.gudangdari_id',
+                        'a.gudangke_id',
+                        'a.tradodari_id',
+                        'a.tradoke_id',
+                        'a.gandengandari_id',
+                        'a.gandenganke_id',
+                        'a.coa',
+                        'a.keterangan',
+                        'a.statusformat',
+                        'a.statuscetak',
+                        'a.userbukacetak',
+                        'a.tglbukacetak',
+                        'a.jumlahcetak',
+                        'a.statusapprovaledit',
+                        'a.userapprovaledit',
+                        'a.tglapprovaledit',
+                        'a.tglbatasedit',
+                        'a.info',
+                        'a.modifiedby',
+                    )
+                    ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti');
+
+                DB::table($temppenerimaanstokheader)->insertUsing([
+                    'id',
+                    'nobukti',
+                    'tglbukti',
+                    'penerimaanstok_id',
+                    'penerimaanstok_nobukti',
+                    'pengeluaranstok_nobukti',
+                    'nobuktisaldo',
+                    'tglbuktisaldo',
+                    'supplier_id',
+                    'nobon',
+                    'hutang_nobukti',
+                    'trado_id',
+                    'gandengan_id',
+                    'gudang_id',
+                    'statuspindahgudang',
+                    'gudangdari_id',
+                    'gudangke_id',
+                    'tradodari_id',
+                    'tradoke_id',
+                    'gandengandari_id',
+                    'gandenganke_id',
+                    'coa',
+                    'keterangan',
+                    'statusformat',
+                    'statuscetak',
+                    'userbukacetak',
+                    'tglbukacetak',
+                    'jumlahcetak',
+                    'statusapprovaledit',
+                    'userapprovaledit',
+                    'tglapprovaledit',
+                    'tglbatasedit',
+                    'info',
+                    'modifiedby',
+                ],  $querypenerimaanstokheader);
+
+                // temporary penerimaanheader
+                $querypenerimaanheader = db::table("penerimaanheader")->from(db::raw("penerimaanheader a with (readuncommitted)"))
+                    ->select(
+                        'a.id',
+                        'a.nobukti',
+                        'a.tglbukti',
+                        'a.keterangan',
+                        'a.pelanggan_id',
+                        'a.agen_id',
+                        'a.bank_id',
+                        'a.postingdari',
+                        'a.diterimadari',
+                        'a.tgllunas',
+                        'a.penerimaangiro_nobukti',
+                        'a.statusapproval',
+                        'a.userapproval',
+                        'a.tglapproval',
+                        'a.statusberkas',
+                        'a.userberkas',
+                        'a.tglberkas',
+                        'a.statusformat',
+                        'a.statuscetak',
+                        'a.userbukacetak',
+                        'a.tglbukacetak',
+                        'a.jumlahcetak',
+                        'a.info',
+                        'a.modifiedby',
+                    )
+                    ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti');
+
+                DB::table($temppenerimaanheader)->insertUsing([
+                    'id',
+                    'nobukti',
+                    'tglbukti',
+                    'keterangan',
+                    'pelanggan_id',
+                    'agen_id',
+                    'bank_id',
+                    'postingdari',
+                    'diterimadari',
+                    'tgllunas',
+                    'penerimaangiro_nobukti',
+                    'statusapproval',
+                    'userapproval',
+                    'tglapproval',
+                    'statusberkas',
+                    'userberkas',
+                    'tglberkas',
+                    'statusformat',
+                    'statuscetak',
+                    'userbukacetak',
+                    'tglbukacetak',
+                    'jumlahcetak',
+                    'info',
+                    'modifiedby',
+                ],  $querypenerimaanheader);
+
+                // hutang bayar
+
+                $querypelunasanhutangheader = db::table("pelunasanhutangheader")->from(db::raw("pelunasanhutangheader a with (readuncommitted)"))
+                    ->select(
+                        'a.id',
+                        'a.nobukti',
+                        'a.tglbukti',
+                        'a.keterangan',
+                        'a.bank_id',
+                        'a.supplier_id',
+                        'a.pelanggan_id',
+                        'a.statusbayarhutang',
+                        'a.pengeluaran_nobukti',
+                        'a.coa',
+                        'a.alatbayar_id',
+                        'a.tglcair',
+                        'a.nowarkat',
+                        'a.statusapproval',
+                        'a.tglapproval',
+                        'a.userapproval',
+                        'a.statusformat',
+                        'a.statuscetak',
+                        'a.userbukacetak',
+                        'a.tglbukacetak',
+                        'a.jumlahcetak',
+                        'a.info',
+                        'a.modifiedby',
+                    )
+                    ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti');
+
+                DB::table($temppelunasanhutangheader)->insertUsing([
+                    'id',
+                    'nobukti',
+                    'tglbukti',
+                    'keterangan',
+                    'bank_id',
+                    'supplier_id',
+                    'pelanggan_id',
+                    'statusbayarhutang',
+                    'pengeluaran_nobukti',
+                    'coa',
+                    'alatbayar_id',
+                    'tglcair',
+                    'nowarkat',
+                    'statusapproval',
+                    'tglapproval',
+                    'userapproval',
+                    'statusformat',
+                    'statuscetak',
+                    'userbukacetak',
+                    'tglbukacetak',
+                    'jumlahcetak',
+                    'info',
+                    'modifiedby',
+                ],  $querypelunasanhutangheader);
+
+                // pengeluaran stok header
+
+                $querypengeluaranstokheader = db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
+                    ->select(
+                        'a.id',
+                        'a.nobukti',
+                        'a.tglbukti',
+                        'a.keterangan',
+                        'a.pengeluaranstok_id',
+                        'a.trado_id',
+                        'a.gudang_id',
+                        'a.gandengan_id',
+                        'a.supir_id',
+                        'a.supplier_id',
+                        'a.pengeluaranstok_nobukti',
+                        'a.penerimaanstok_nobukti',
+                        'a.pengeluarantrucking_nobukti',
+                        'a.servicein_nobukti',
+                        'a.kerusakan_id',
+                        'a.statuspotongretur',
+                        'a.bank_id',
+                        'a.penerimaan_nobukti',
+                        'a.coa',
+                        'a.postingdari',
+                        'a.tglkasmasuk',
+                        'a.hutangbayar_nobukti',
+                        'a.statusformat',
+                        'a.statuscetak',
+                        'a.userbukacetak',
+                        'a.tglbukacetak',
+                        'a.jumlahcetak',
+                        'a.statusapprovaledit',
+                        'a.userapprovaledit',
+                        'a.tglapprovaledit',
+                        'a.tglbatasedit',
+                        'a.info',
+                        'a.modifiedby',
+                    )
+                    ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti');
+
+                DB::table($temppengeluaranstokheader)->insertUsing([
+                    'id',
+                    'nobukti',
+                    'tglbukti',
+                    'keterangan',
+                    'pengeluaranstok_id',
+                    'trado_id',
+                    'gudang_id',
+                    'gandengan_id',
+                    'supir_id',
+                    'supplier_id',
+                    'pengeluaranstok_nobukti',
+                    'penerimaanstok_nobukti',
+                    'pengeluarantrucking_nobukti',
+                    'servicein_nobukti',
+                    'kerusakan_id',
+                    'statuspotongretur',
+                    'bank_id',
+                    'penerimaan_nobukti',
+                    'coa',
+                    'postingdari',
+                    'tglkasmasuk',
+                    'hutangbayar_nobukti',
+                    'statusformat',
+                    'statuscetak',
+                    'userbukacetak',
+                    'tglbukacetak',
+                    'jumlahcetak',
+                    'statusapprovaledit',
+                    'userapprovaledit',
+                    'tglapprovaledit',
+                    'tglbatasedit',
+                    'info',
+                    'modifiedby',
+                ],  $querypengeluaranstokheader);
+
+                // service in header
+
+                $queryserviceinheader = db::table("serviceinheader")->from(db::raw("serviceinheader a with (readuncommitted)"))
+                    ->select(
+                        'a.id',
+                        'a.nobukti',
+                        'a.tglbukti',
+                        'a.keterangan',
+                        'a.trado_id',
+                        'a.tglmasuk',
+                        'a.statusformat',
+                        'a.statuscetak',
+                        'a.userbukacetak',
+                        'a.tglbukacetak',
+                        'a.jumlahcetak',
+                        'a.info',
+                        'a.modifiedby',
+                    )
+                    ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti');
+
+                DB::table($tempserviceinheader)->insertUsing([
+                    'id',
+                    'nobukti',
+                    'tglbukti',
+                    'keterangan',
+                    'trado_id',
+                    'tglmasuk',
+                    'statusformat',
+                    'statuscetak',
+                    'userbukacetak',
+                    'tglbukacetak',
+                    'jumlahcetak',
+                    'info',
+                    'modifiedby',
+                ],  $queryserviceinheader);
+
+                // pengeluaran trucking header
+
+                $querypengeluarantruckingheader = db::table("pengeluarantruckingheader")->from(db::raw("pengeluarantruckingheader a with (readuncommitted)"))
+                    ->select(
+                        'a.id',
+                        'a.nobukti',
+                        'a.tglbukti',
+                        'a.keterangan',
+                        'a.pengeluarantrucking_id',
+                        'a.bank_id',
+                        'a.karyawan_id',
+                        'a.supir_id',
+                        'a.trado_id',
+                        'a.gandengan_id',
+                        'a.statuscabang',
+                        'a.tradotnl_id',
+                        'a.gandengantnl_id',
+                        'a.jenisorder_id',
+                        'a.statusposting',
+                        'a.periode',
+                        'a.periodedari',
+                        'a.periodesampai',
+                        'a.coa',
+                        'a.pengeluaran_nobukti',
+                        'a.pengeluarantrucking_nobukti',
+                        'a.statusformat',
+                        'a.statuscetak',
+                        'a.userbukacetak',
+                        'a.tglbukacetak',
+                        'a.jumlahcetak',
+                        'a.statusapprovaledit',
+                        'a.userapprovaledit',
+                        'a.tglapprovaledit',
+                        'a.tglbatasedit',
+                        'a.info',
+                        'a.modifiedby',
+                    )
+                    ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti');
+
+                DB::table($temppengeluarantruckingheader)->insertUsing([
+                    'id',
+                    'nobukti',
+                    'tglbukti',
+                    'keterangan',
+                    'pengeluarantrucking_id',
+                    'bank_id',
+                    'karyawan_id',
+                    'supir_id',
+                    'trado_id',
+                    'gandengan_id',
+                    'statuscabang',
+                    'tradotnl_id',
+                    'gandengantnl_id',
+                    'jenisorder_id',
+                    'statusposting',
+                    'periode',
+                    'periodedari',
+                    'periodesampai',
+                    'coa',
+                    'pengeluaran_nobukti',
+                    'pengeluarantrucking_nobukti',
+                    'statusformat',
+                    'statuscetak',
+                    'userbukacetak',
+                    'tglbukacetak',
+                    'jumlahcetak',
+                    'statusapprovaledit',
+                    'userapprovaledit',
+                    'tglapprovaledit',
+                    'tglbatasedit',
+                    'info',
+                    'modifiedby',
+                ],  $querypengeluarantruckingheader);
+            }
+
+
+
+
             $query = DB::table($this->table);
             $query = $this->selectColumns($query)
                 ->leftJoin('gudang', 'pengeluaranstokheader.gudang_id', 'gudang.id')
@@ -162,12 +765,12 @@ class PengeluaranStokHeader extends MyModel
                 ->leftJoin('bank', 'pengeluaranstokheader.bank_id', 'bank.id')
                 ->leftJoin('parameter as statusedit', 'pengeluaranstokheader.statusapprovaledit', 'statusedit.id')
                 ->leftJoin('parameter as statuscetak', 'pengeluaranstokheader.statuscetak', 'statuscetak.id')
-                ->leftJoin('penerimaanstokheader as penerimaan', 'pengeluaranstokheader.penerimaanstok_nobukti', 'penerimaan.nobukti')
-                ->leftJoin('penerimaanheader', 'pengeluaranstokheader.penerimaan_nobukti', 'penerimaanheader.nobukti')
-                ->leftJoin('pelunasanhutangheader', 'pengeluaranstokheader.hutangbayar_nobukti', 'pelunasanhutangheader.nobukti')
-                ->leftJoin('pengeluaranstokheader as pengeluaran', 'pengeluaranstokheader.pengeluaranstok_nobukti', 'pengeluaran.nobukti')
-                ->leftJoin('serviceinheader', 'pengeluaranstokheader.servicein_nobukti', 'serviceinheader.nobukti')
-                ->leftJoin('pengeluarantruckingheader', 'pengeluaranstokheader.pengeluarantrucking_nobukti', 'pengeluarantruckingheader.nobukti')
+                ->leftJoin(db::raw($temppenerimaanstokheader . " as penerimaan"), 'pengeluaranstokheader.penerimaanstok_nobukti', 'penerimaan.nobukti')
+                ->leftJoin(db::raw($temppenerimaanstokheader . " as penerimaanheader"), 'pengeluaranstokheader.penerimaan_nobukti', 'penerimaanheader.nobukti')
+                ->leftJoin(db::raw($temppelunasanhutangheader . " as pelunasanhutangheader"), 'pengeluaranstokheader.hutangbayar_nobukti', 'pelunasanhutangheader.nobukti')
+                ->leftJoin(db::raw($temppengeluaranstokheader . " as pengeluaran"), 'pengeluaranstokheader.pengeluaranstok_nobukti', 'pengeluaran.nobukti')
+                ->leftJoin(db::raw($tempserviceinheader . " as serviceinheader"), 'pengeluaranstokheader.servicein_nobukti', 'serviceinheader.nobukti')
+                ->leftJoin(db::raw($temppengeluarantruckingheader . " as pengeluarantruckingheader"), 'pengeluaranstokheader.pengeluarantrucking_nobukti', 'pengeluarantruckingheader.nobukti')
 
                 ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id')
                 ->join(db::raw($temprole . " d "), 'pengeluaranstok.aco_id', 'd.aco_id');
@@ -190,7 +793,7 @@ class PengeluaranStokHeader extends MyModel
                             ->where('penerimaanstokheader.pengeluaranstok_nobukti', '!=', '');
                     });
             }
-            
+
             if (request()->tgldari) {
                 $query->whereBetween('pengeluaranstokheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
             }
