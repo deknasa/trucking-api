@@ -16,7 +16,25 @@ class ReminderEmailController extends Controller
      */
     public function index()
     {
-        //
+        
+            $data =
+            [
+                (object)[
+                    "id"=> "1",
+                    "keterangan"=> "REMINDER STNK/KIR/ASURANSI/PAJAK",
+                    "statusaktif"=> "{\"MEMO\":\"AKTIF\",\"SINGKATAN\":\"A\",\"WARNA\":\"#009933\",\"WARNATULISAN\":\"#FFF\"}",
+                    ]
+            ];
+                
+                
+
+        return response([
+            'data' => $data,
+            'attributes' => [
+                'totalRows' => 1,
+                'totalPages' => 1
+            ]
+        ]);
     }
 
     /**

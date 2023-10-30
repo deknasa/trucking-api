@@ -272,7 +272,8 @@ use App\Http\Controllers\Api\StatusOliTradoController;
 use App\Http\Controllers\Api\StokPusatController;
 use App\Http\Controllers\Api\SuratPengantarBiayaTambahanController;
 use App\Http\Controllers\Api\UbahPasswordController;
-
+use App\Http\Controllers\Api\ToEmailController;
+use App\Http\Controllers\Api\ReminderEmailController;
 
 
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
@@ -308,6 +309,9 @@ Route::get('parameter/getparamrequest', [ParameterController::class, 'getparamre
 route::middleware(['auth:api'])->group(function () {
     Route::resource('dashboard', DashboardController::class)->whereNumber('dashboard');
     Route::get('error/geterrors', [ErrorController::class, 'errorUrl']);
+    Route::resource('toemail', ToEmailController::class);
+    Route::resource('reminderemail', ReminderEmailController::class);
+
 });
 
 route::middleware(['auth:api'])->group(function () {
