@@ -356,14 +356,20 @@ class LaporanSaldoInventory extends MyModel
                 (case when isnull(c1.stok_id,0)<>0 then ' ( '+
                     (case when " . $bytgl . "=1 then 'TGL PAKAI '+format(c1.tglawal,'dd-MM-yyyy')+',' else '' end)+
                     'UMUR AKI : '+format(isnull(c1.jumlahhari,0),'#,#0')+' HARI )' 
-                      when isnull(b.kelompok_id,0)=1 then ' ( VULKE:'+format(isnull(d1.vulkan,0),'#,#0')+', STATUS BAN :'+isnull(parameter.text,'') +' )' 
+                      when isnull(b.kelompok_id,0)=1 then '( VULKE:'+format(isnull(d1.vulkan,0),'#,#0')+' )' 
                 else '' end)
                 as vulkanisirke"),
 
                 // DB::raw("'VulKe :'+trim(str(isnull(b.totalvulkanisir,0))) as vulkanisirke"),
                 'a.kodebarang as id',
                 'a.kodebarang',
-                db::raw("(case when isnull(b.keterangan,'')='' then b.namastok else b.keterangan end) as namabarang"),
+                db::raw("(case when isnull(b.keterangan,'')='' then b.namastok else b.keterangan end)+ ' '+
+                (case when isnull(c1.stok_id,0)<>0 then ' ( '+
+                (case when " . $bytgl . "=1 then 'TGL PAKAI '+format(c1.tglawal,'dd-MM-yyyy')+',' else '' end)+
+                'UMUR AKI : '+format(isnull(c1.jumlahhari,0),'#,#0')+' HARI )' 
+                  when isnull(b.kelompok_id,0)=1 then ' ( VULKE:'+format(isnull(d1.vulkan,0),'#,#0')+', STATUS BAN :'+isnull(parameter.text,'') +' )' 
+            else '' end) 
+                as namabarang"),
                 DB::raw("isnull(e.tglbukti,'1900/1/1') as tanggal"),
                 db::raw("(case when " . $pusat . "=0 then 0 else a.qtysaldo  end) as qty"),
                 DB::raw("isnull(d.satuan,'') as satuan"),
