@@ -344,6 +344,8 @@ class PengeluaranStokHeaderController extends Controller
     {
         // $pengeluaran = PengeluaranStokHeader::findOrFail($id);
         $pengeluaran  = new PengeluaranStokHeader();
+        $pengeluaran  = $pengeluaran->findOrFail($id);
+
         $aksi = request()->aksi ?? '';
         if ($aksi == 'PRINTER BESAR' || $aksi == 'PRINTER KECIL') {
 
@@ -431,7 +433,8 @@ class PengeluaranStokHeaderController extends Controller
                 ];
                 return response($data);
             }
-            if ($pengeluaran->printValidation($id)) {
+            $printValidation = $pengeluaran->printValidation($id);
+            if ($printValidation) {
                 $query = Error::from(DB::raw("error with (readuncommitted)"))
                     ->select('keterangan')
                     ->whereRaw("kodeerror = 'SDC'")
@@ -445,7 +448,9 @@ class PengeluaranStokHeaderController extends Controller
                 ];
 
                 return response($data);
-            } else if (!$pengeluaran->todayValidation($pengeluaran->tglbukti)) {
+            } 
+            $todayValidation = $pengeluaran->todayValidation($pengeluaran->tglbukti);
+            if (!$todayValidation) {
                 $query = Error::from(DB::raw("error with (readuncommitted)"))
                     ->select('keterangan')
                     ->whereRaw("kodeerror = 'SDC'")
@@ -459,8 +464,9 @@ class PengeluaranStokHeaderController extends Controller
                     'kodenobukti' => '1'
                 ];
 
-                return response($data);
-            } else if (!$pengeluaran->isEditAble($id)) {
+            } 
+            $isEditAble = $pengeluaran->isEditAble($id);
+            if (!$isEditAble) {
                 $query = Error::from(DB::raw("error with (readuncommitted)"))
                     ->select('keterangan')
                     ->whereRaw("kodeerror = 'SDC'")
@@ -473,19 +479,23 @@ class PengeluaranStokHeaderController extends Controller
                     'kodestatus' => '1',
                     'kodenobukti' => '1'
                 ];
+            }
+            
+        //    dd($pengeluaran->tglbukti,$isEditAble,$printValidation);
 
-                return response($data);
-            } else {
-
+            if ($todayValidation || ($isEditAble && !$printValidation)) {
                 $data = [
                     'message' => '',
-                    'errors' => 'belum approve',
+                    'errors' => 'bisa',
                     'kodestatus' => '0',
                     'kodenobukti' => '1'
                 ];
-
+            }else {
                 return response($data);
             }
+            
+
+            return response($data);
         }
     }
 
