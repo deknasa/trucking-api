@@ -58,8 +58,28 @@ class InputTrip extends MyModel
 
         $tarifrincian = TarifRincian::where('tarif_id', $data['tarifrincian_id'])->where('container_id', $data['container_id'])->first();
             
-        $tglBatasEdit = date('Y-m-d', strtotime($data['tglbukti'].'+1 days')) . ' ' . '12:00:00';
+        $kondisi = true;
+        $tanggal = date('Y-m-d', strtotime($data['tglbukti'].'+1 days'));
+        start:
+        while ($kondisi == true) {
+            
+            $cekHarilibur = DB::table("harilibur")->from(DB::raw("harilibur with (readuncommitted)"))->where('tgl', $tanggal)->first();
+            if($cekHarilibur != '')
+            {
+                $tanggal = date('Y-m-d', strtotime($tanggal.'+1 days'));
+                goto start;
+            } 
+            
+            if(date('D',strtotime($tanggal)) == 'Sun'){
+                $tanggal = date('Y-m-d', strtotime($tanggal.'+1 days'));
+            }else{
+                $kondisi = false;
+            }
+        }
+        end:
 
+        $tglBatasEdit = date('Y-m-d', strtotime($tanggal)) . ' ' . '12:00:00';
+        
         if ($jobtrucking == '') {
             $orderan = [
                 'tglbukti' => $tglbukti,
