@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\PengajuanTripInap;
 use App\Http\Requests\StorePengajuanTripInapRequest;

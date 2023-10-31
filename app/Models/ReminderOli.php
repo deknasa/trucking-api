@@ -287,6 +287,7 @@ class ReminderOli extends MyModel
 
         $Temppergantian = '##Temppergantian' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($Temppergantian, function ($table) {
+            $table->string('nobukti', 100);
             $table->integer('trado_id');
             $table->string('statusreminder', 100);
             $table->date('tgl');
@@ -294,8 +295,15 @@ class ReminderOli extends MyModel
 
         $querypergantian = db::table("pengeluaranstokheader")->from(DB::raw("pengeluaranstokheader a with (readuncommitted)"))
             ->select(
+                db::raw("max(a.nobukti) as nobukti"),
                 'a.trado_id',
-                'e.text as statusreminder',
+                db::raw("(case when e.text='PERGANTIAN BATERE' then 'PENGGANTIAN AKI'
+                                when e.text='PERGANTIAN OLI GARDAN' then 'PENGGANTIAN OLI GARDAN'
+                                when e.text='PERGANTIAN OLI MESIN' then 'PENGGANTIAN OLI MESIN'
+                                when e.text='PERGANTIAN OLI PERSNELING' then 'PENGGANTIAN OLI PERSNELING'
+                                when e.text='PERGANTIAN SARINGAN HAWA' then 'PENGGANTIAN SARINGAN HAWA'
+                    else '' end) as statusreminder
+                ") ,
                 db::raw("max(a.tglbukti) as tgl"),
             )
             ->join(db::raw("pengeluaranstokdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
@@ -303,12 +311,14 @@ class ReminderOli extends MyModel
             ->join(db::raw($Tempservicerutin . " d "), 'c.statusservicerutin', 'd.id')
             ->join(db::raw("parameter e with (readuncommitted)"), 'd.id', 'e.id')
             ->where('a.pengeluaranstok_id', $pengeluaranstok_id)
+            ->whereraw("isnull(a.trado_id,0)<>0")
             ->groupBy('a.trado_id')
             ->groupBy('e.text');
 
         // dd($querypergantian->get());
 
         DB::table($Temppergantian)->insertUsing([
+            'nobukti',
             'trado_id',
             'statusreminder',
             'tgl',
@@ -317,6 +327,10 @@ class ReminderOli extends MyModel
         DB::update(DB::raw("UPDATE " . $Tempsaldoreminderoli . " SET tglawal=b.tgl,jarak=0 
         from " . $Tempsaldoreminderoli . " a inner join " . $Temppergantian . " b on a.trado_id=b.trado_id and a.statusreminder=b.statusreminder 
         "));
+
+        // dump(db::table($Temppergantian)->get());
+        // dd(db::table($Tempsaldoreminderoli)->whereraw("trado_id=4")->get());
+
 
         $param1 = 'PENGGANTIAN OLI MESIN';
         $queryrimderernonsaldo = db::table("trado")->from(db::raw("trado a with (readuncommitted)"))
@@ -581,7 +595,7 @@ class ReminderOli extends MyModel
         $query = DB::table($Tempsaldoreminderoli)->from(DB::raw($Tempsaldoreminderoli . " a "))
             ->select(
                 'a.nopol',
-                'a.tglsampai as tanggal',
+                db::raw("isnull(c.tgl,'1900/1/1') as tanggal"),
                 'a.statusreminder as status',
                 DB::raw("(case 
                     when a.statusreminder = 'PENGGANTIAN OLI GARDAN' then $batasgardan 
@@ -590,33 +604,33 @@ class ReminderOli extends MyModel
                     else $batassaringanhawa end) 
                     
                     as km"),
-                db::raw("isnull(a.jarak,0)+isnull(a.jaraktransaksi,0) as kmperjalanan"),
+                db::raw("(isnull(a.jarak,0)+isnull(a.jaraktransaksi,0)) as kmperjalanan"),
                 DB::raw("(CASE 
                     WHEN upper(a.statusreminder) = 'PENGGANTIAN OLI PERSNELING' then 
                         CASE
-                            WHEN ($batasgardan - a.jarak) <= $batasmax and ($batasgardan - a.jarak) > 0 then $hampirLewat
-                            WHEN ($batasgardan - a.jarak) <= 0 then $sudahLewat
+                            WHEN ($bataspersneling - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= $batasmax and ($bataspersneling - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) > 0 then $hampirLewat
+                            WHEN ($bataspersneling - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= 0 then $sudahLewat
                         ELSE ''
                         END
                     
                     WHEN upper(a.statusreminder) = 'PENGGANTIAN OLI GARDAN' then 
                         CASE
-                            WHEN ($bataspersneling - a.jarak) <= $batasmax and ($bataspersneling - a.jarak) > 0 then $hampirLewat
-                            WHEN ($bataspersneling - a.jarak) <= 0 then $sudahLewat
+                            WHEN ($batasgardan - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= $batasmax and ($batasgardan - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) > 0 then $hampirLewat
+                            WHEN ($batasgardan - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= 0 then $sudahLewat
                         ELSE ''
                         END
                     
                     WHEN upper(a.statusreminder) = 'PENGGANTIAN OLI MESIN' then 
                         CASE
-                            WHEN ($batasmesin - a.jarak) <= $batasmax and ($batasmesin - a.jarak) > 0 then $hampirLewat
-                            WHEN ($batasmesin - a.jarak) <= 0 then $sudahLewat
+                            WHEN ($batasmesin - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= $batasmax and ($batasmesin - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) > 0 then $hampirLewat
+                            WHEN ($batasmesin - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= 0 then $sudahLewat
                         ELSE ''
                         END
 
                     WHEN upper(a.statusreminder) = 'PENGGANTIAN SARINGAN HAWA' then 
                             CASE
-                                WHEN ($batassaringanhawa - a.jarak) <= $batasmax and ($batassaringanhawa - a.jarak) > 0 then $hampirLewat
-                                WHEN ($batassaringanhawa - a.jarak) <= 0 then $sudahLewat
+                                WHEN ($batassaringanhawa - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= $batasmax and ($batassaringanhawa - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) > 0 then $hampirLewat
+                                WHEN ($batassaringanhawa - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= 0 then $sudahLewat
                             ELSE ''
                             END
                                
@@ -627,6 +641,8 @@ class ReminderOli extends MyModel
             )
             ->Join(DB::raw("trado  b with (readuncommitted)"), 'a.trado_id', 'b.id')
             ->Join(DB::raw("$tempstatus with (readuncommitted)"), 'a.statusreminder', $tempstatus . '.status')
+            ->leftJoin(DB::raw($Temppergantian . " c"), 'b.id', 'c.trado_id')
+            
             ->Where('b.statusaktif', 1);
 
         // dd($query->get());
