@@ -595,7 +595,7 @@ class ReminderOli extends MyModel
         $query = DB::table($Tempsaldoreminderoli)->from(DB::raw($Tempsaldoreminderoli . " a "))
             ->select(
                 'a.nopol',
-                db::raw("isnull(c.tgl,'1900/1/1') as tanggal"),
+                db::raw("isnull(c.tgl,'2023/9/30') as tanggal"),
                 'a.statusreminder as status',
                 DB::raw("(case 
                     when a.statusreminder = 'PENGGANTIAN OLI GARDAN' then $batasgardan 
