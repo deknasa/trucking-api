@@ -53,21 +53,22 @@ class PendapatanSupirHeaderController extends Controller
 
         try {
 
+            $requestData = json_decode($request->detail, true);
             $data = [
                 "tgldari" => $request->tgldari,
                 "tglsampai" => $request->tglsampai,
                 "tglbukti" => $request->tglbukti,
                 "bank_id" => $request->bank_id,
                 "supir_id" => $request->supir_id,                
-                "supir" => $request->supir,                
-                "id_detail" => $request->id_detail,
-                "nobukti_trip" => $request->nobukti_trip,
-                "nobukti_ric" => $request->nobukti_ric,
-                "dari_id" => $request->dari_id,
-                "sampai_id" => $request->sampai_id,
-                "nominal_detail" => $request->nominal_detail,
-                "gajikenek" => $request->gajikenek,
-                "supirtrip" => $request->supirtrip,
+                "supir" => $request->supir,        
+                'id_detail' => $requestData['id_detail'],    
+                'nobukti_trip' => $requestData['nobukti_trip'],   
+                'nobukti_ric' => $requestData['nobukti_ric'],   
+                'dari_id' => $requestData['dari_id'],  
+                'sampai_id' => $requestData['sampai_id'],  
+                'nominal_detail' => $requestData['nominal_detail'],  
+                'gajikenek' => $requestData['gajikenek'],  
+                'supirtrip' => $requestData['supirtrip'],
                 "nominal_depo" => $request->nominal_depo,
                 "keterangan_depo" => $request->keterangan_depo,
                 "supir_depo" => $request->supir_depo,
@@ -127,22 +128,23 @@ class PendapatanSupirHeaderController extends Controller
      */
     public function update(UpdatePendapatanSupirHeaderRequest $request, PendapatanSupirHeader $pendapatanSupirHeader): JsonResponse
     {
-        try {
+        try {            
+            $requestData = json_decode($request->detail, true);
             $data = [
                 "tgldari" => $request->tgldari,
                 "tglsampai" => $request->tglsampai,
                 "tglbukti" => $request->tglbukti,
                 "bank_id" => $request->bank_id,
                 "supir_id" => $request->supir_id,                
-                "supir" => $request->supir,                
-                "id_detail" => $request->id_detail,
-                "nobukti_trip" => $request->nobukti_trip,
-                "nobukti_ric" => $request->nobukti_ric,
-                "dari_id" => $request->dari_id,
-                "sampai_id" => $request->sampai_id,
-                "nominal_detail" => $request->nominal_detail,
-                "gajikenek" => $request->gajikenek,
-                "supirtrip" => $request->supirtrip,
+                "supir" => $request->supir,    
+                'id_detail' => $requestData['id_detail'],    
+                'nobukti_trip' => $requestData['nobukti_trip'],   
+                'nobukti_ric' => $requestData['nobukti_ric'],   
+                'dari_id' => $requestData['dari_id'],  
+                'sampai_id' => $requestData['sampai_id'],  
+                'nominal_detail' => $requestData['nominal_detail'],  
+                'gajikenek' => $requestData['gajikenek'],  
+                'supirtrip' => $requestData['supirtrip'],
                 "nominal_depo" => $request->nominal_depo,
                 "keterangan_depo" => $request->keterangan_depo,
                 "supir_depo" => $request->supir_depo,
