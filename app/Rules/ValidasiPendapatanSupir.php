@@ -38,22 +38,19 @@ class ValidasiPendapatanSupir implements Rule
             $table->double('gajikenek')->nullable();
         });
 
-        // dd(request()->supir_id);
-        $id_detail = request()->id_detail ?? 0;
-        if ($id_detail != 0) {
-            for ($i = 0; $i < count(request()->id_detail); $i++) {
-                $supir_id =  request()->supirtrip[$i] ?? 0;
-                $komisi =  request()->nominal_detail[$i] ?? 0;
-                $gajikenek =  request()->gajikenek[$i] ?? 0;
+        $requestData = json_decode(request()->detail, true);
+        for ($i = 0; $i < count($requestData['id_detail']); $i++) {
+            $supir_id =  $requestData['supirtrip'][$i] ?? 0;
+            $komisi =  $requestData['nominal_detail'][$i] ?? 0;
+            $gajikenek =  $requestData['gajikenek'][$i] ?? 0;
 
-                DB::table($tempkomisi)->insert(
-                    [
-                        'supir_id' => $supir_id,
-                        'komisi' => $komisi,
-                        'gajikenek' => $gajikenek,
-                    ]
-                );
-            }
+            DB::table($tempkomisi)->insert(
+                [
+                    'supir_id' => $supir_id,
+                    'komisi' => $komisi,
+                    'gajikenek' => $gajikenek,
+                ]
+            );
         }
 
 
@@ -166,18 +163,16 @@ class ValidasiPendapatanSupir implements Rule
         $allowed = true;
         if (count($query) > 0) {
             $query1 = json_decode($query, true);
-            $this->supir='';
-            $hit=0;
+            $this->supir = '';
+            $hit = 0;
             foreach ($query1 as $item) {
-                if ($hit==0) {
-                    $this->supir = $this->supir . $item['namasupir'] ;
-
+                if ($hit == 0) {
+                    $this->supir = $this->supir . $item['namasupir'];
                 } else {
-                    $this->supir = $this->supir . ',' . $item['namasupir'] ;
-
+                    $this->supir = $this->supir . ',' . $item['namasupir'];
                 }
-                  
-                $hit=$hit+1;
+
+                $hit = $hit + 1;
             }
             $allowed = false;
         }
