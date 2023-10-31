@@ -735,9 +735,9 @@ class ReminderOli extends MyModel
             ->select(
                 db::raw("format(getdate(),'yyyy-MM-dd') as tgl"),
                 'a.nopol as kodetrado',
-                'a.tanggal as tanggal',
-                'a.km as batasganti',
-                'a.kmperjalanan as kberjalan',
+                db::raw("format(a.tanggal,'dd-MM-yyyy') as tanggal"),
+                db::raw("round(a.km,2) as batasganti"),
+                db::raw("round(a.kmperjalanan,2) as kberjalan"),
                 db::raw("'' as Keterangan"),
                 db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
                            when (a.km-a.kmperjalanan)>=1000 then 'YELLOW' 
