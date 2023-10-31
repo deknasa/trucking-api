@@ -52,8 +52,8 @@
                 <td>{{$loop->iteration}}</td>
                 <td>{{$sim->kodetrado}}</td>
                 <td>{{$sim->tanggal}}</td>
-                <td>{{$sim->batasganti}}</td>
-                <td>{{$sim->kberjalan}}</td>
+                <td style="text-align:right">{{$sim->batasganti}}</td>
+                <td style="text-align:right">{{$sim->kberjalan}}</td>
                 <td>{{$sim->Keterangan}}</td>
             </tr>
             @endforeach
