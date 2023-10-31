@@ -70,98 +70,104 @@ class ReminderOliController extends Controller
     public function sendEmailReminder_saringanhawa()
     {
 
-        $data = [
-            (object)[
-                "tgl" => "2023-11-15",
-                "kodetrado" => "BK SKSK HY",
-                "tanggal" => "11-Oktober-2023",
-                "batasganti" => "10000",
-                "kberjalan" => "3000",
-                "Keterangan" => "04817106",
-                "warna" => "RED",
-                "toemail" => "iqbal13rafli@gmail.com;ryan_vixy1402@yahoo.com",
-                "ccemail" => "iqbal13rafli@gmail.com;ryan_vixy1402@yahoo.com;denicetas15@gmail.com",
-                "bccemail" => "ryan_vixy1402@yahoo.com",
-                "judul" => "RReminder Penggantian Saringan Hawa (Mks)",
-            ],
-        ];
+        // $data = [
+        //     (object)[
+        //         "tgl" => "2023-11-15",
+        //         "kodetrado" => "BK SKSK HY",
+        //         "tanggal" => "11-Oktober-2023",
+        //         "batasganti" => "10000",
+        //         "kberjalan" => "3000",
+        //         "Keterangan" => "04817106",
+        //         "warna" => "RED",
+        //         "toemail" => "iqbal13rafli@gmail.com;ryan_vixy1402@yahoo.com",
+        //         "ccemail" => "iqbal13rafli@gmail.com;ryan_vixy1402@yahoo.com;denicetas15@gmail.com",
+        //         "bccemail" => "ryan_vixy1402@yahoo.com",
+        //         "judul" => "RReminder Penggantian Saringan Hawa (Mks)",
+        //     ],
+        // ];
 
-        $ExpStnk =  $data;
-        // $ExpStnk = (new ExpStnk())->reminderemailstnk()->get();
-        // $data = $ExpStnk->toArray();
-        $toemail = explode(';', $ExpStnk[0]->toemail);
-        $ccemail = explode(';', $ExpStnk[0]->ccemail);
-        $bccemail = explode(';', $ExpStnk[0]->bccemail);
-        $expSTNK = json_encode($ExpStnk);
+        $ReminderSaringanHawa = (new ReminderOli())->reminderemailsaringanhawa()->get();
+        $data = $ReminderSaringanHawa->toArray();
+        $toemail = explode(';', $data[0]->toemail);
+        $ccemail = explode(';', $data[0]->ccemail);
+        $bccemail = explode(';', $data[0]->bccemail);
+        $ReminderSaringanHawa = json_encode($ReminderSaringanHawa);
+
         Mail::to($toemail)
             ->cc($ccemail)
             ->bcc($bccemail)
-            ->send(new EmailReminderOli($expSTNK, 'saringanhawa'));
-        // return (new EmailReminderOli($expSTNK,'saringanhawa'))->render();
+            ->send(new EmailReminderOli($ReminderSaringanHawa, 'saringanhawa'));
+            
+        // return (new EmailReminderOli($ReminderSaringanHawa,'saringanhawa'))->render();
     }
     public function sendEmailReminder_perseneling()
     {
 
-        $data = [
-            (object)[
-                "tgl" => "2023-11-15",
-                "kodetrado" => "BK SKSK HY",
-                "tanggal" => "11-Oktober-2023",
-                "batasganti" => "10000",
-                "kberjalan" => "3000",
-                "Keterangan" => "04817106",
-                "warna" => "RED",
-                "toemail" => "iqbal13rafli@gmail.com;ryan_vixy1402@yahoo.com",
-                "ccemail" => "iqbal13rafli@gmail.com;ryan_vixy1402@yahoo.com;denicetas15@gmail.com",
-                "bccemail" => "ryan_vixy1402@yahoo.com",
-                "judul" => "Reminder Penggantian Oli Perseneling (Sby)",
-            ],
-        ];
+        // $data = [
+        //     (object)[
+        //         "tgl" => "2023-11-15",
+        //         "kodetrado" => "BK SKSK HY",
+        //         "tanggal" => "11-Oktober-2023",
+        //         "batasganti" => "10000",
+        //         "kberjalan" => "3000",
+        //         "Keterangan" => "04817106",
+        //         "warna" => "RED",
+        //         "toemail" => "iqbal13rafli@gmail.com;ryan_vixy1402@yahoo.com",
+        //         "ccemail" => "iqbal13rafli@gmail.com;ryan_vixy1402@yahoo.com;denicetas15@gmail.com",
+        //         "bccemail" => "ryan_vixy1402@yahoo.com",
+        //         "judul" => "Reminder Penggantian Oli Perseneling (Sby)",
+        //     ],
+        // ];
 
-        $ExpStnk =  $data;
-        // $ExpStnk = (new ExpStnk())->reminderemailstnk()->get();
-        // $data = $ExpStnk->toArray();
-        $toemail = explode(';', $ExpStnk[0]->toemail);
-        $ccemail = explode(';', $ExpStnk[0]->ccemail);
-        $bccemail = explode(';', $ExpStnk[0]->bccemail);
-        $expSTNK = json_encode($ExpStnk);
-        Mail::to($toemail)
-            ->cc($ccemail)
-            ->bcc($bccemail)
-            ->send(new EmailReminderOli($expSTNK, 'perseneling'));
-        // return (new EmailReminderOli($expSTNK,'perseneling'))->render();
+
+
+        $ReminderOliPersneling = (new ReminderOli())->reminderemailolipersneling()->get();
+        $data = $ReminderOliPersneling->toArray();
+        $toemail = explode(';', $data[0]->toemail);
+        $ccemail = explode(';', $data[0]->ccemail);
+        $bccemail = explode(';', $data[0]->bccemail);
+        $ReminderOliPersneling = json_encode($ReminderOliPersneling);
+
+        // Mail::to($toemail)
+        //     ->cc($ccemail)
+        //     ->bcc($bccemail)
+        //     ->send(new EmailReminderOli($ReminderOliPersneling, 'perseneling'));
+            
+        return (new EmailReminderOli($ReminderOliPersneling,'perseneling'))->render();
+
     }
     public function sendEmailReminder_oligardan()
     {
 
-        $data = [
-            (object)[
-                "tgl" => "2023-11-15",
-                "kodetrado" => "BK SKSK HY",
-                "tanggal" => "11-Oktober-2023",
-                "batasganti" => "10000",
-                "kberjalan" => "3000",
-                "Keterangan" => "04817106",
-                "warna" => "RED",
-                "toemail" => "iqbal13rafli@gmail.com;ryan_vixy1402@yahoo.com",
-                "ccemail" => "iqbal13rafli@gmail.com;ryan_vixy1402@yahoo.com;denicetas15@gmail.com",
-                "bccemail" => "ryan_vixy1402@yahoo.com",
-                "judul" => "Reminder Penggantian Oli Gardan (Bitung)",
-            ],
-        ];
+        // $data = [
+        //     (object)[
+        //         "tgl" => "2023-11-15",
+        //         "kodetrado" => "BK SKSK HY",
+        //         "tanggal" => "11-Oktober-2023",
+        //         "batasganti" => "10000",
+        //         "kberjalan" => "3000",
+        //         "Keterangan" => "04817106",
+        //         "warna" => "RED",
+        //         "toemail" => "iqbal13rafli@gmail.com;ryan_vixy1402@yahoo.com",
+        //         "ccemail" => "iqbal13rafli@gmail.com;ryan_vixy1402@yahoo.com;denicetas15@gmail.com",
+        //         "bccemail" => "ryan_vixy1402@yahoo.com",
+        //         "judul" => "Reminder Penggantian Oli Gardan (Bitung)",
+        //     ],
+        // ];
 
-        $ExpStnk =  $data;
-        // $ExpStnk = (new ExpStnk())->reminderemailstnk()->get();
-        // $data = $ExpStnk->toArray();
-        $toemail = explode(';', $ExpStnk[0]->toemail);
-        $ccemail = explode(';', $ExpStnk[0]->ccemail);
-        $bccemail = explode(';', $ExpStnk[0]->bccemail);
-        $expSTNK = json_encode($ExpStnk);
-        Mail::to($toemail)
-            ->cc($ccemail)
-            ->bcc($bccemail)
-            ->send(new EmailReminderOli($expSTNK, 'oligardan'));
-        // return (new EmailReminderOli($expSTNK,'oligardan'))->render();
+        $ReminderOliGardan = (new ReminderOli())->reminderemailoligardan()->get();
+        $data = $ReminderOliGardan->toArray();
+        $toemail = explode(';', $data[0]->toemail);
+        $ccemail = explode(';', $data[0]->ccemail);
+        $bccemail = explode(';', $data[0]->bccemail);
+        $ReminderOliGardan = json_encode($ReminderOliGardan);
+
+        // Mail::to($toemail)
+        //     ->cc($ccemail)
+        //     ->bcc($bccemail)
+        //     ->send(new EmailReminderOli($ReminderOliGardan, 'oligardan'));
+            
+        return (new EmailReminderOli($ReminderOliGardan,'oligardan'))->render();
     }
     public function sendEmailReminder_ServiceRutin()
     {

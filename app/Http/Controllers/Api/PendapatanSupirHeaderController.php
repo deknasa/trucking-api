@@ -413,6 +413,18 @@ class PendapatanSupirHeaderController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName 
+     */
+    public function exportsupir($id)
+    {
+        $pendapatanSupirHeader = new PendapatanSupirHeader();
+        return response([
+            'data' => $pendapatanSupirHeader->getExportsupir($id)
+        ]);
+    }
+
+
     public function gettrip(Request $request)
     {
         $tgldari  = date('Y-m-d', strtotime($request->tgldari));
