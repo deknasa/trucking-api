@@ -736,8 +736,8 @@ class ReminderOli extends MyModel
                 db::raw("format(getdate(),'yyyy-MM-dd') as tgl"),
                 'a.nopol as kodetrado',
                 db::raw("format(a.tanggal,'dd-MM-yyyy') as tanggal"),
-                db::raw("round(a.km,2) as batasganti"),
-                db::raw("round(a.kmperjalanan,2) as kberjalan"),
+                db::raw("format(a.km,'#,#0.00') as batasganti"),
+                db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
                 db::raw("'' as Keterangan"),
                 db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
                            when (a.km-a.kmperjalanan)>=1000 then 'YELLOW' 
@@ -750,6 +750,378 @@ class ReminderOli extends MyModel
                 // db::raw("'" . $ccemail . "' as ccemail"),
                 // db::raw("'" . $bccemail . "' as bccemail"),
                 db::raw("'Reminder Penggantian Oli Mesin (" . $cabang . ")' as judul"),
+            )
+            ->orderby('a.id', 'asc');
+
+            // dd($query->get());
+        return $query;
+    }
+
+    public function reminderemailolipersneling()
+    {
+
+        $tempolipersneling = '##tempolipersneling' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempolipersneling, function ($table) {
+            $table->id();
+            $table->longText('nopol')->nullable();
+            $table->date('tanggal')->nullable();
+            $table->string('status', 100)->nullable();
+            $table->double('km', 15, 2)->nullable();
+            $table->double('kmperjalanan', 15, 2)->nullable();
+            $table->integer('statusbatas')->nullable();
+        });
+
+        DB::table($tempolipersneling)->insertUsing([
+            'nopol',
+            'tanggal',
+            'status',
+            'km',
+            'kmperjalanan',
+            'statusbatas'
+        ], $this->getdata());
+
+        DB::delete(DB::raw("delete " . $tempolipersneling . " from " . $tempolipersneling . " as a WHERE a.status not in('PENGGANTIAN OLI PERSNELING')"));
+
+        $pjlhhariremind = 30;
+        $tglremind = DB::select("select format(DATEADD(d," . $pjlhhariremind . ",GETDATE()),'yyyy/MM/dd') as dadd");
+        $ptglremind = json_decode(json_encode($tglremind), true)[0]['dadd'];
+
+        $reminderemail = 1;
+        $listtoemail = db::table("toemail")->from(db::raw("toemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailtoemail = json_decode($listtoemail, true);
+        $hittoemail = 0;
+        $toemail = '';
+        foreach ($datadetailtoemail as $item) {
+
+            if ($hittoemail == 0) {
+                $toemail = $toemail . $item['email'];
+            } else {
+                $toemail = $toemail . ';' . $item['email'];
+            }
+            $hittoemail = $hittoemail + 1;
+        }
+
+        $listccemail = db::table("ccemail")->from(db::raw("ccemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailccemail = json_decode($listccemail, true);
+        $hitccemail = 0;
+        $ccemail = '';
+        foreach ($datadetailccemail as $item) {
+
+            if ($hitccemail == 0) {
+                $ccemail = $ccemail . $item['email'];
+            } else {
+                $ccemail = $ccemail . ';' . $item['email'];
+            }
+            $hitccemail = $hitccemail + 1;
+        }
+
+        $listbccemail = db::table("bccemail")->from(db::raw("bccemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailbccemail = json_decode($listbccemail, true);
+        $hitbccemail = 0;
+        $bccemail = '';
+        foreach ($datadetailbccemail as $item) {
+
+            if ($hitbccemail == 0) {
+                $bccemail = $bccemail . $item['email'];
+            } else {
+                $bccemail = $bccemail . ';' . $item['email'];
+            }
+            $hitbccemail = $hitbccemail + 1;
+        }
+
+        $cabang = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+            ->select('a.text')
+            ->where('a.grp', 'CABANG')->where('a.subgrp', 'CABANG')->first()
+            ->text ?? '';
+
+        $query = db::table($tempolipersneling)->from(db::raw($tempolipersneling . " a"))
+            ->select(
+                db::raw("format(getdate(),'yyyy-MM-dd') as tgl"),
+                'a.nopol as kodetrado',
+                db::raw("format(a.tanggal,'dd-MM-yyyy') as tanggal"),
+                db::raw("format(a.km,'#,#0.00') as batasganti"),
+                db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
+                db::raw("'' as Keterangan"),
+                db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
+                           when (a.km-a.kmperjalanan)>=1000 then 'YELLOW' 
+                           else '' end) as warna"),
+
+                db::raw("'ryan_vixy1402@yahoo.com' as toemail"),
+                db::raw("'ryan_vixy1402@yahoo.com' as ccemail"),
+                db::raw("'ryan_vixy1402@yahoo.com' as bccemail"),
+                // db::raw("'" . $toemail . "' as toemail"),
+                // db::raw("'" . $ccemail . "' as ccemail"),
+                // db::raw("'" . $bccemail . "' as bccemail"),
+                db::raw("'Reminder Penggantian Oli Persneling (" . $cabang . ")' as judul"),
+            )
+            ->orderby('a.id', 'asc');
+
+            // dd($query->get());
+        return $query;
+    }
+
+    public function reminderemailoligardan()
+    {
+
+        $tempoligardan = '##tempoligardan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempoligardan, function ($table) {
+            $table->id();
+            $table->longText('nopol')->nullable();
+            $table->date('tanggal')->nullable();
+            $table->string('status', 100)->nullable();
+            $table->double('km', 15, 2)->nullable();
+            $table->double('kmperjalanan', 15, 2)->nullable();
+            $table->integer('statusbatas')->nullable();
+        });
+
+        DB::table($tempoligardan)->insertUsing([
+            'nopol',
+            'tanggal',
+            'status',
+            'km',
+            'kmperjalanan',
+            'statusbatas'
+        ], $this->getdata());
+
+        DB::delete(DB::raw("delete " . $tempoligardan . " from " . $tempoligardan . " as a WHERE a.status not in('PENGGANTIAN OLI GARDAN')"));
+
+        $pjlhhariremind = 30;
+        $tglremind = DB::select("select format(DATEADD(d," . $pjlhhariremind . ",GETDATE()),'yyyy/MM/dd') as dadd");
+        $ptglremind = json_decode(json_encode($tglremind), true)[0]['dadd'];
+
+        $reminderemail = 1;
+        $listtoemail = db::table("toemail")->from(db::raw("toemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailtoemail = json_decode($listtoemail, true);
+        $hittoemail = 0;
+        $toemail = '';
+        foreach ($datadetailtoemail as $item) {
+
+            if ($hittoemail == 0) {
+                $toemail = $toemail . $item['email'];
+            } else {
+                $toemail = $toemail . ';' . $item['email'];
+            }
+            $hittoemail = $hittoemail + 1;
+        }
+
+        $listccemail = db::table("ccemail")->from(db::raw("ccemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailccemail = json_decode($listccemail, true);
+        $hitccemail = 0;
+        $ccemail = '';
+        foreach ($datadetailccemail as $item) {
+
+            if ($hitccemail == 0) {
+                $ccemail = $ccemail . $item['email'];
+            } else {
+                $ccemail = $ccemail . ';' . $item['email'];
+            }
+            $hitccemail = $hitccemail + 1;
+        }
+
+        $listbccemail = db::table("bccemail")->from(db::raw("bccemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailbccemail = json_decode($listbccemail, true);
+        $hitbccemail = 0;
+        $bccemail = '';
+        foreach ($datadetailbccemail as $item) {
+
+            if ($hitbccemail == 0) {
+                $bccemail = $bccemail . $item['email'];
+            } else {
+                $bccemail = $bccemail . ';' . $item['email'];
+            }
+            $hitbccemail = $hitbccemail + 1;
+        }
+
+        $cabang = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+            ->select('a.text')
+            ->where('a.grp', 'CABANG')->where('a.subgrp', 'CABANG')->first()
+            ->text ?? '';
+
+        $query = db::table($tempoligardan)->from(db::raw($tempoligardan . " a"))
+            ->select(
+                db::raw("format(getdate(),'yyyy-MM-dd') as tgl"),
+                'a.nopol as kodetrado',
+                db::raw("format(a.tanggal,'dd-MM-yyyy') as tanggal"),
+                db::raw("format(a.km,'#,#0.00') as batasganti"),
+                db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
+                db::raw("'' as Keterangan"),
+                db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
+                           when (a.km-a.kmperjalanan)>=1000 then 'YELLOW' 
+                           else '' end) as warna"),
+
+                db::raw("'ryan_vixy1402@yahoo.com' as toemail"),
+                db::raw("'ryan_vixy1402@yahoo.com' as ccemail"),
+                db::raw("'ryan_vixy1402@yahoo.com' as bccemail"),
+                // db::raw("'" . $toemail . "' as toemail"),
+                // db::raw("'" . $ccemail . "' as ccemail"),
+                // db::raw("'" . $bccemail . "' as bccemail"),
+                db::raw("'Reminder Penggantian Oli Gardan (" . $cabang . ")' as judul"),
+            )
+            ->orderby('a.id', 'asc');
+
+            // dd($query->get());
+        return $query;
+    }
+
+    public function reminderemailsaringanhawa()
+    {
+
+        $tempsaringanhawa = '##tempsaringanhawa' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsaringanhawa, function ($table) {
+            $table->id();
+            $table->longText('nopol')->nullable();
+            $table->date('tanggal')->nullable();
+            $table->string('status', 100)->nullable();
+            $table->double('km', 15, 2)->nullable();
+            $table->double('kmperjalanan', 15, 2)->nullable();
+            $table->integer('statusbatas')->nullable();
+        });
+
+        DB::table($tempsaringanhawa)->insertUsing([
+            'nopol',
+            'tanggal',
+            'status',
+            'km',
+            'kmperjalanan',
+            'statusbatas'
+        ], $this->getdata());
+
+        DB::delete(DB::raw("delete " . $tempsaringanhawa . " from " . $tempsaringanhawa . " as a WHERE a.status not in('PENGGANTIAN OLI GARDAN')"));
+
+        $pjlhhariremind = 30;
+        $tglremind = DB::select("select format(DATEADD(d," . $pjlhhariremind . ",GETDATE()),'yyyy/MM/dd') as dadd");
+        $ptglremind = json_decode(json_encode($tglremind), true)[0]['dadd'];
+
+        $reminderemail = 1;
+        $listtoemail = db::table("toemail")->from(db::raw("toemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailtoemail = json_decode($listtoemail, true);
+        $hittoemail = 0;
+        $toemail = '';
+        foreach ($datadetailtoemail as $item) {
+
+            if ($hittoemail == 0) {
+                $toemail = $toemail . $item['email'];
+            } else {
+                $toemail = $toemail . ';' . $item['email'];
+            }
+            $hittoemail = $hittoemail + 1;
+        }
+
+        $listccemail = db::table("ccemail")->from(db::raw("ccemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailccemail = json_decode($listccemail, true);
+        $hitccemail = 0;
+        $ccemail = '';
+        foreach ($datadetailccemail as $item) {
+
+            if ($hitccemail == 0) {
+                $ccemail = $ccemail . $item['email'];
+            } else {
+                $ccemail = $ccemail . ';' . $item['email'];
+            }
+            $hitccemail = $hitccemail + 1;
+        }
+
+        $listbccemail = db::table("bccemail")->from(db::raw("bccemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailbccemail = json_decode($listbccemail, true);
+        $hitbccemail = 0;
+        $bccemail = '';
+        foreach ($datadetailbccemail as $item) {
+
+            if ($hitbccemail == 0) {
+                $bccemail = $bccemail . $item['email'];
+            } else {
+                $bccemail = $bccemail . ';' . $item['email'];
+            }
+            $hitbccemail = $hitbccemail + 1;
+        }
+
+        $cabang = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+            ->select('a.text')
+            ->where('a.grp', 'CABANG')->where('a.subgrp', 'CABANG')->first()
+            ->text ?? '';
+
+        $query = db::table($tempsaringanhawa)->from(db::raw($tempsaringanhawa . " a"))
+            ->select(
+                db::raw("format(getdate(),'yyyy-MM-dd') as tgl"),
+                'a.nopol as kodetrado',
+                db::raw("format(a.tanggal,'dd-MM-yyyy') as tanggal"),
+                db::raw("format(a.km,'#,#0.00') as batasganti"),
+                db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
+                db::raw("'' as Keterangan"),
+                db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
+                           when (a.km-a.kmperjalanan)>=1000 then 'YELLOW' 
+                           else '' end) as warna"),
+
+                db::raw("'ryan_vixy1402@yahoo.com' as toemail"),
+                db::raw("'ryan_vixy1402@yahoo.com' as ccemail"),
+                db::raw("'ryan_vixy1402@yahoo.com' as bccemail"),
+                // db::raw("'" . $toemail . "' as toemail"),
+                // db::raw("'" . $ccemail . "' as ccemail"),
+                // db::raw("'" . $bccemail . "' as bccemail"),
+                db::raw("'Reminder Penggantian Saringan Hawa (" . $cabang . ")' as judul"),
             )
             ->orderby('a.id', 'asc');
 

@@ -33,6 +33,24 @@ class PendapatanSupirDetailController extends Controller
         ]);
     }
 
+        /**
+     * @ClassName 
+     */
+    public function detailsupir(): JsonResponse
+    {
+        $pendapatanSupir = new PendapatanSupirDetail();
+
+        return response()->json([
+            'data' => $pendapatanSupir->getsupir(),
+            'attributes' => [
+                'totalRows' => $pendapatanSupir->totalRows,
+                'totalPages' => $pendapatanSupir->totalPages,
+                'totalNominal' => $pendapatanSupir->totalNominal,
+                'totalGajiKenek' => $pendapatanSupir->totalGajiKenek
+            ]
+        ]);
+    }
+
     public function jurnal(Request $request): JsonResponse
     {
         $jurnalDetail = new JurnalUmumDetail();

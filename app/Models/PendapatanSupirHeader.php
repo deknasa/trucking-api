@@ -700,6 +700,42 @@ class PendapatanSupirHeader extends MyModel
         return $data;
     }
 
+    public function getExportsupir($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
+        $query = DB::table($this->table)->from(DB::raw("pendapatansupirheader with (readuncommitted)"))
+            ->select(
+                'pendapatansupirheader.id',
+                'pendapatansupirheader.nobukti',
+                'pendapatansupirheader.tglbukti',
+                'bank.namabank as bank_id',
+                'supir.namasupir as supir_id',
+                'pendapatansupirheader.tgldari',
+                'pendapatansupirheader.tglsampai',
+                'pendapatansupirheader.periode',
+                'statuscetak.memo as statuscetak',
+                'statuscetak.id as  statuscetak_id',
+                DB::raw("'Laporan Pendapatan Supir' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            )
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pendapatansupirheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pendapatansupirheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pendapatansupirheader.supir_id', 'supir.id');
+
+        $data = $query->first();
+        return $data;
+    }
+
 
     public function processStore(array $data): PendapatanSupirHeader
     {
