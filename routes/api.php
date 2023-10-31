@@ -273,6 +273,8 @@ use App\Http\Controllers\Api\StokPusatController;
 use App\Http\Controllers\Api\SuratPengantarBiayaTambahanController;
 use App\Http\Controllers\Api\UbahPasswordController;
 use App\Http\Controllers\Api\ToEmailController;
+use App\Http\Controllers\Api\CcEmailController;
+use App\Http\Controllers\Api\BccEmailController;
 use App\Http\Controllers\Api\ReminderEmailController;
 
 
@@ -310,6 +312,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('dashboard', DashboardController::class)->whereNumber('dashboard');
     Route::get('error/geterrors', [ErrorController::class, 'errorUrl']);
     Route::resource('toemail', ToEmailController::class);
+    Route::resource('ccemail', CcEmailController::class);
+    Route::resource('bccemail', BccEmailController::class);
     Route::resource('reminderemail', ReminderEmailController::class);
 
 });
