@@ -50,11 +50,11 @@
             @foreach (json_decode($data) as $sim)
             <tr  style="background-color: {{$sim->warna}}; ">
                 <td>{{$loop->iteration}}</td>
-                <td>{{$sim->batasganti}}</td>
+                <td>{{$sim->kodetrado}}</td>
                 <td>{{$sim->tanggal}}</td>
-                <td>{{$sim->kberjalan}}</td>
                 <td>{{$sim->batasganti}}</td>
                 <td>{{$sim->kberjalan}}</td>
+                <td>{{$sim->Keterangan}}</td>
             </tr>
             @endforeach
         </table>

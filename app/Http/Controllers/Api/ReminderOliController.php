@@ -55,13 +55,11 @@ class ReminderOliController extends Controller
 
         $ReminderOliMesin = (new ReminderOli())->reminderemailolimesin()->get();
         $data = $ReminderOliMesin->toArray();
-
-        $ReminderOliMesin =  $data;
-        $toemail = explode(';', $ReminderOliMesin[0]->toemail);
-        $ccemail = explode(';', $ReminderOliMesin[0]->ccemail);
-        $bccemail = explode(';', $ReminderOliMesin[0]->bccemail);
+        $toemail = explode(';', $data[0]->toemail);
+        $ccemail = explode(';', $data[0]->ccemail);
+        $bccemail = explode(';', $data[0]->bccemail);
         $ReminderOliMesin = json_encode($ReminderOliMesin);
-        // dd( $toemail, $ccemail, $bccemail);
+
         Mail::to($toemail)
             ->cc($ccemail)
             ->bcc($bccemail)
