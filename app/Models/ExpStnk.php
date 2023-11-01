@@ -400,7 +400,7 @@ class ExpStnk extends MyModel
         ], $queryreminder);
 
 
-        $cabang = DB::table('parameter')->from(db::raw("p   arameter a with (readuncommitted)"))
+        $cabang = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
             ->select('a.text')
             ->where('a.grp', 'CABANG')->where('a.subgrp', 'CABANG')->first()
             ->text ?? '';
