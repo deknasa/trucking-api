@@ -128,12 +128,12 @@ class ReminderOliController extends Controller
         $bccemail = explode(';', $data[0]->bccemail);
         $ReminderOliPersneling = json_encode($ReminderOliPersneling);
 
-        // Mail::to($toemail)
-        //     ->cc($ccemail)
-        //     ->bcc($bccemail)
-        //     ->send(new EmailReminderOli($ReminderOliPersneling, 'perseneling'));
+        Mail::to($toemail)
+            ->cc($ccemail)
+            ->bcc($bccemail)
+            ->send(new EmailReminderOli($ReminderOliPersneling, 'perseneling'));
             
-        return (new EmailReminderOli($ReminderOliPersneling,'perseneling'))->render();
+        // return (new EmailReminderOli($ReminderOliPersneling,'perseneling'))->render();
 
     }
     public function sendEmailReminder_oligardan()
@@ -162,12 +162,12 @@ class ReminderOliController extends Controller
         $bccemail = explode(';', $data[0]->bccemail);
         $ReminderOliGardan = json_encode($ReminderOliGardan);
 
-        // Mail::to($toemail)
-        //     ->cc($ccemail)
-        //     ->bcc($bccemail)
-        //     ->send(new EmailReminderOli($ReminderOliGardan, 'oligardan'));
+        Mail::to($toemail)
+            ->cc($ccemail)
+            ->bcc($bccemail)
+            ->send(new EmailReminderOli($ReminderOliGardan, 'oligardan'));
             
-        return (new EmailReminderOli($ReminderOliGardan,'oligardan'))->render();
+        // return (new EmailReminderOli($ReminderOliGardan,'oligardan'))->render();
     }
     public function sendEmailReminder_ServiceRutin()
     {
