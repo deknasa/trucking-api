@@ -38,12 +38,10 @@ class ExpStnkController extends Controller
         // ];
         $ExpStnk = (new ExpStnk())->reminderemailstnk()->get();
         $data = $ExpStnk->toArray();
-        $ExpStnk =  $data;
         $toemail = explode(';',$data[0]->toemail);
         $ccemail = explode(';',$data[0]->ccemail);
         $bccemail = explode(';',$data[0]->bccemail);
-        
-        // $ExpStnk = json_encode($ExpStnk);
+        $ExpStnk = json_encode($ExpStnk);
         Mail::to($toemail)
         ->cc($ccemail)
         ->bcc($bccemail)
