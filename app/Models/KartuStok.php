@@ -1019,7 +1019,7 @@ class KartuStok extends MyModel
             $stoksampai = $querystoksampai->id;
         }
 
-        if ($filter == '' || $filter == 0) {
+        if ($filter == '' || $filter == '0') {
             $queryrekap = db::table('stok')->from(
                 DB::raw("stok as a1 with (readuncommitted)")
             )
@@ -1369,7 +1369,7 @@ class KartuStok extends MyModel
 
         // dd(db::table($temprekap)->get());
 
-        if ($filter == '' || $filter == 0) {
+        if ($filter == '' || $filter == '0') {
             $queryrekap = db::table('kartustok')->from(
                 DB::raw("kartustok as a with (readuncommitted)")
             )
@@ -1734,6 +1734,7 @@ class KartuStok extends MyModel
                     db::raw("a.modifiedby"),
                     db::raw("a.urutfifo as urutfifo"),
                 )
+                ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
                 ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("(a.stok_id>=" . $stokdari . " and a.stok_id<=" . $stoksampai . ")")
                 ->whereRaw("(a.gudang_id=" . $gudang_id . " or " . $gudang_id . "=0)")

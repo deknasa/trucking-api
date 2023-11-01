@@ -14,7 +14,7 @@ class StatusOliTradoController extends Controller
     {
         $statusOli = new StatusOliTrado();
         return response([
-            'data' => [],
+            'data' => $statusOli->get(),
             'attributes' => [
                 'totalRows' => $statusOli->totalRows,
                 'totalPages' => $statusOli->totalPages
