@@ -392,14 +392,14 @@ class PendapatanSupirDetail extends MyModel
                 $query = DB::table($tempPendapatan)->from(DB::raw("$tempPendapatan as t1 with (readuncommitted)"))
                     ->select(
                         DB::raw(
-                            "'SUPIR' as jenis,t1.supir_id,t1.trado_id,trado.kodetrado,isnull(supir.namasupir,'') as namasupir,
+                            "'SUPIR' as jenis,t1.supir_id,max(t1.trado_id) as trado_id,max(trado.kodetrado) as kodetrado,isnull(supir.namasupir,'') as namasupir,
                     SUM(t1.nominal) AS komisi
                     "
                         )
                     )
                     ->leftJoin(DB::raw("trado with (readuncommitted)"), 't1.trado_id', 'trado.id')
                     ->leftJoin(DB::raw("supir with (readuncommitted)"), 't1.supir_id', 'supir.id')
-                    ->groupBy('t1.trado_id', 't1.supir_id', 'supir.namasupir', 'trado.kodetrado');
+                    ->groupBy('t1.supir_id', 'supir.namasupir');
 
                 // dd($query->get());
 

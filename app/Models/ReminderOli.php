@@ -166,7 +166,8 @@ class ReminderOli extends MyModel
 
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-            $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
+            // $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
+            $query->orderBy('a.id','asc');
             // dd($query->toSql());
             $this->paginate($query);
         }
@@ -592,6 +593,18 @@ class ReminderOli extends MyModel
         // dd(db::table($Tempsaldoreminderoli)->get());
         // dd(db::table($tempstatus)->get());
 
+
+        $Tempsaldoreminderolirekap = '##Tempsaldoreminderolirekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($Tempsaldoreminderolirekap, function ($table) {
+            $table->string('nopol',1000)->nullable();
+            $table->date('tanggal')->nullable();
+            $table->string('status',1000)->nullable();
+            $table->double('km', 15, 2)->nullable();
+            $table->double('kmperjalanan', 15, 2)->nullable();
+            $table->string('statusbatas', 100)->nullable();
+            $table->integer('urutid')->nullable();
+        });
+
         $query = DB::table($Tempsaldoreminderoli)->from(DB::raw($Tempsaldoreminderoli . " a "))
             ->select(
                 'a.nopol',
@@ -638,12 +651,67 @@ class ReminderOli extends MyModel
                 
                 END) 
                 as statusbatas"),
+                db::raw("
+                (CASE 
+                WHEN upper(a.statusreminder) = 'PENGGANTIAN OLI PERSNELING' then 
+                    CASE
+                        WHEN ($bataspersneling - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= $batasmax and ($bataspersneling - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) > 0 then 1
+                        WHEN ($bataspersneling - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= 0 then 2
+                    ELSE 0
+                    END
+                
+                WHEN upper(a.statusreminder) = 'PENGGANTIAN OLI GARDAN' then 
+                    CASE
+                        WHEN ($batasgardan - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= $batasmax and ($batasgardan - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) > 0 then 1
+                        WHEN ($batasgardan - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= 0 then 2
+                    ELSE 0
+                    END
+                
+                WHEN upper(a.statusreminder) = 'PENGGANTIAN OLI MESIN' then 
+                    CASE
+                        WHEN ($batasmesin - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= $batasmax and ($batasmesin - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) > 0 then 1
+                        WHEN ($batasmesin - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= 0 then 2
+                    ELSE 0
+                    END
+    
+                WHEN upper(a.statusreminder) = 'PENGGANTIAN SARINGAN HAWA' then 
+                        CASE
+                            WHEN ($batassaringanhawa - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= $batasmax and ($batassaringanhawa - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) > 0 then 1
+                            WHEN ($batassaringanhawa - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= 0 then 2
+                        ELSE 0
+                        END
+                           
+    
+            
+            END) as urutid")                 
             )
             ->Join(DB::raw("trado  b with (readuncommitted)"), 'a.trado_id', 'b.id')
             ->Join(DB::raw("$tempstatus with (readuncommitted)"), 'a.statusreminder', $tempstatus . '.status')
             ->leftJoin(DB::raw($Temppergantian . " c"), 'b.id', 'c.trado_id')
             
             ->Where('b.statusaktif', 1);
+
+            DB::table($Tempsaldoreminderolirekap)->insertUsing([
+            'nopol',
+            'tanggal',
+            'status',
+            'km', 
+            'kmperjalanan', 
+            'statusbatas', 
+            'urutid',
+            ], $query);
+
+            $query =db::table($Tempsaldoreminderolirekap)->from(db::raw($Tempsaldoreminderolirekap . " a"))
+            ->select(
+                'a.nopol',
+                'a.tanggal',
+                'a.status',
+                'a.km', 
+                'a.kmperjalanan', 
+                'a.statusbatas', 
+            )
+            ->orderby('a.urutid','desc');
+
 
         // dd($query->get());
         return $query;
