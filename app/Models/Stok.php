@@ -95,6 +95,8 @@ class Stok extends MyModel
         $penerimaanstok_id = request()->penerimaanstok_id ?? '';
         $penerimaanstokheader_nobukti = request()->penerimaanstokheader_nobukti ?? '';
         $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
+        $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
+        $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
 
         $query = DB::table($this->table)->select(
             'stok.id',
@@ -108,9 +110,11 @@ class Stok extends MyModel
             'stok.gambar',
             'stok.namaterpusat',
             'statusban.text as statusban',
+            'stok.statusban as statusban_id',
             'statusreuse.memo as statusreuse',
             'stok.modifiedby',
             'stok.totalvulkanisir',
+            'stok.vulkanisirawal',
             'jenistrado.keterangan as jenistrado',
             'kelompok.kodekelompok as kelompok',
             'subkelompok.kodesubkelompok as subkelompok',
@@ -132,7 +136,6 @@ class Stok extends MyModel
             ->leftJoin(DB::raw("parameter as statusban with (readuncommitted)"), 'stok.statusban', 'statusban.id')
             ->leftJoin(DB::raw("parameter as statusreuse with (readuncommitted)"), 'stok.statusreuse', 'statusreuse.id')
             ->leftJoin('merk', 'stok.merk_id', 'merk.id');
-
 
 
 
@@ -698,7 +701,32 @@ class Stok extends MyModel
         return $stok;
     }
 
-
+    public function getvulkanisir($id)
+    {
+        $queryvulkan = Stok::from(db::raw("stok a with (readuncommitted)"))
+        ->select(
+            'a.statusban',
+            db::raw("sum(isnull(b.vulkanisirke,0)) as vulkanplus"),
+            db::raw("sum(isnull(c.vulkanisirke,0)) as vulkanminus")
+        )
+        ->leftjoin(db::raw("penerimaanstokdetail b with (readuncommitted)"), 'a.id', 'b.stok_id')
+        ->leftjoin(db::raw("pengeluaranstokdetail c with (readuncommitted)"), 'a.id', 'c.stok_id')
+        ->where('a.id', $id)
+        ->groupby('a.id','a.statusban')
+        ->first();
+        
+        $totalplus = $queryvulkan->vulkanplus ?? 0;
+        $totalminus = $queryvulkan->vulkanminus ?? 0;
+        $vulawal = $queryvulkan->vulawal ?? 0;
+        $total = ($totalplus + $vulawal) - $totalminus;
+        if (isset($queryvulkan)) {
+            $totalvulkan = $total ?? 0;
+        } else {
+            $totalvulkan = 0;
+        }
+       
+        return ['totalvulkan' =>$totalvulkan,'statusban'=>$queryvulkan->statusban];
+    }
 
 
     private function storeFiles(array $files, string $destinationFolder): string
