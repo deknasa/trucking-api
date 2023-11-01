@@ -125,11 +125,11 @@ class InputTrip extends MyModel
         }
         $params = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'GAJI KENEK')->first();
         $komisi_gajisupir = $params->text;
-        if ($komisi_gajisupir == 'YA') {
-            $nominalSupir = $upahsupirRincian->nominalsupir - $upahsupirRincian->nominalkenek;
-        } else {
+        // if ($komisi_gajisupir == 'YA') {
+        //     $nominalSupir = $upahsupirRincian->nominalsupir - $upahsupirRincian->nominalkenek;
+        // } else {
             $nominalSupir = $upahsupirRincian->nominalsupir;
-        }
+        // }
         $dataSP = [
 
             'jobtrucking' => $nobuktiorderantrucking,
