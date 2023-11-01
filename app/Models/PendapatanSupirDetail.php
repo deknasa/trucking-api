@@ -48,6 +48,8 @@ class PendapatanSupirDetail extends MyModel
         Schema::create($tempsaldopendapatan, function ($table) {
             $table->string('nobukti', 1000)->nullable();
             $table->string('nobuktitrip', 1000)->nullable();
+            $table->integer('supir_id')->nullable();
+            $table->integer('trado_id')->nullable();
             $table->string('tgltrip', 1000)->nullable();
             $table->string('nobuktirincian', 1000)->nullable();
             $table->integer('dari_id')->nullable();
@@ -58,6 +60,8 @@ class PendapatanSupirDetail extends MyModel
         $querysaldopendapatan = $query->select(
             $this->table . '.nobukti',
             $this->table . '.nobuktitrip',
+            DB::raw("(case when ISNULL(suratpengantar.supir_id, '') = '' then ISNULL(saldosuratpengantar.supir_id, '') else ISNULL(suratpengantar.supir_id, '')  end) as supir_id"),
+            DB::raw("(case when ISNULL(suratpengantar.trado_id, '') = '' then ISNULL(saldosuratpengantar.trado_id, '') else ISNULL(suratpengantar.trado_id, '')  end) as trado_id"),
             DB::raw("(case when ISNULL(suratpengantar.tglbukti, '') = '' then ISNULL(saldopendapatansupir.suratpengantar_tglbukti, '') else ISNULL(suratpengantar.tglbukti, '')  end) as tgltrip"),
             $this->table . '.nobuktirincian',
             DB::raw("(case when ISNULL(suratpengantar.dari_id, '') = '' then ISNULL(saldopendapatansupir.dari_id, '') else ISNULL(suratpengantar.dari_id, '')  end) as dari_id"),
@@ -67,11 +71,14 @@ class PendapatanSupirDetail extends MyModel
         )
             ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), $this->table . '.nobuktitrip', 'suratpengantar.nobukti')
             ->leftJoin(DB::raw("saldopendapatansupir with (readuncommitted)"), $this->table . '.nobuktitrip', 'saldopendapatansupir.suratpengantar_nobukti')
+            ->leftJoin(DB::raw("saldosuratpengantar with (readuncommitted)"), 'saldopendapatansupir.suratpengantar_nobukti', 'saldosuratpengantar.nobukti')
             ->where($this->table . '.pendapatansupir_id', '=', request()->pendapatansupir_id);
 
         DB::table($tempsaldopendapatan)->insertUsing([
             'nobukti',
             'nobuktitrip',
+            'supir_id',
+            'trado_id',
             'tgltrip',
             'nobuktirincian',
             'dari_id',
@@ -249,20 +256,26 @@ class PendapatanSupirDetail extends MyModel
                 ->select(
                     'a.nobukti',
                     'a.nobuktitrip',
+                    'supir.namasupir as supirdetail',
+                    'trado.kodetrado as tradodetail',
                     'a.tgltrip',
                     'a.nobuktirincian',
                     DB::raw("isnull(b.kodekota,'') as dari"),
                     DB::raw("isnull(c.kodekota,'') as sampai"),
                     'a.nominal',
-                    'a.gajikenek'
+                    'a.gajikenek',
+                    DB::raw("(a.gajikenek + a.nominal) as totaldetail")
                 )
                 ->leftJoin(DB::raw("kota b with (readuncommitted)"), 'a.dari_id', 'b.id')
-                ->leftJoin(DB::raw("kota c with (readuncommitted)"), 'a.sampai_id', 'c.id');
+                ->leftJoin(DB::raw("kota c with (readuncommitted)"), 'a.sampai_id', 'c.id')
+                ->leftJoin(DB::raw("supir with (readuncommitted)"), 'a.supir_id', 'supir.id')
+                ->leftJoin(DB::raw("trado with (readuncommitted)"), 'a.trado_id', 'trado.id');
 
             $this->sort($query);
             $this->filter($query);
             $this->totalNominal = $query->sum('nominal');
             $this->totalGajiKenek = $query->sum('gajikenek');
+            $this->totalAll = $query->sum(DB::raw("(a.gajikenek + a.nominal)"));
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -480,10 +493,16 @@ class PendapatanSupirDetail extends MyModel
                                 $query = $query->where(DB::raw("isnull(b.kodekota,'')"), 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'sampai') {
                                 $query = $query->where(DB::raw("isnull(c.kodekota,'')"), 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'supirdetail') {
+                                $query = $query->where(DB::raw("isnull(supir.namasupir,'')"), 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tradodetail') {
+                                $query = $query->where(DB::raw("isnull(trado.kodetrado,'')"), 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
                                 $query = $query->whereRaw("format(a.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'gajikenek') {
                                 $query = $query->whereRaw("format(a.gajikenek, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'totaldetail') {
+                                $query = $query->whereRaw("format((a.gajikenek + a.nominal), '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -498,10 +517,16 @@ class PendapatanSupirDetail extends MyModel
                                 $query = $query->orWhere(DB::raw("isnull(b.kodekota,'')"), 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'sampai') {
                                 $query = $query->orWhere(DB::raw("isnull(c.kodekota,'')"), 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'supirdetail') {
+                                $query = $query->orWhere(DB::raw("isnull(supir.namasupir,'')"), 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tradodetail') {
+                                $query = $query->orWhere(DB::raw("isnull(trado.kodetrado,'')"), 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
                                 $query = $query->orWhereRaw("format(a.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'gajikenek') {
                                 $query = $query->orWhereRaw("format(a.gajikenek, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'totaldetail') {
+                                $query = $query->orWhereRaw("format((a.gajikenek + a.nominal), '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
