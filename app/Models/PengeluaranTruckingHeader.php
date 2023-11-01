@@ -504,7 +504,7 @@ class PengeluaranTruckingHeader extends MyModel
             ->from(
                 DB::raw("penerimaantruckingdetail with (readuncommitted)")
             )
-            ->select(DB::raw("pengeluarantruckingdetail.pengeluarantruckingheader_id,penerimaantruckingdetail.nobukti,penerimaantruckingdetail.keterangan,pengeluarantruckingdetail.nominal as bayar ,(SELECT (penerimaantruckingdetail.nominal - coalesce(SUM(pengeluarantruckingdetail.nominal),0)) FROM pengeluarantruckingdetail WHERE pengeluarantruckingdetail.penerimaantruckingheader_nobukti= penerimaantruckingdetail.nobukti) AS sisa"))
+            ->select(DB::raw("pengeluarantruckingdetail.pengeluarantruckingheader_id,penerimaantruckingdetail.nobukti,pengeluarantruckingdetail.keterangan,pengeluarantruckingdetail.nominal as bayar ,(SELECT (penerimaantruckingdetail.nominal - coalesce(SUM(pengeluarantruckingdetail.nominal),0)) FROM pengeluarantruckingdetail WHERE pengeluarantruckingdetail.penerimaantruckingheader_nobukti= penerimaantruckingdetail.nobukti) AS sisa"))
             ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingheader.nobukti', 'penerimaantruckingdetail.nobukti')
             ->leftJoin(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'pengeluarantruckingdetail.penerimaantruckingheader_nobukti', 'penerimaantruckingdetail.nobukti')
             ->whereRaw("penerimaantruckingdetail.supir_id = $supir_id")
