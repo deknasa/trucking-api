@@ -115,7 +115,7 @@ class PengeluaranStokHeaderController extends Controller
                 "detail_statusoli" => $request->detail_statusoli,
                 "detail_vulkanisirke" => $request->detail_vulkanisirke,
                 "detail_keterangan" => $request->detail_keterangan,
-                "detail_statusban" => $request->statusban,
+                "detail_statusban" => ($request->statusban) ? $request->statusban : $request->detail_statusban,
                 "detail_qty" => $request->detail_qty ?? $request->qty_afkir,
                 "detail_harga" => $request->detail_harga,
                 "detail_persentasediscount" => $request->detail_persentasediscount,

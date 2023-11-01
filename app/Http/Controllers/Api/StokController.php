@@ -431,4 +431,12 @@ class StokController extends Controller
             'gambar' => "no-image"
         ]);
     }
+
+    public function getvulkan(Stok $stok)
+    {
+        return response([
+            'data' => $stok->getvulkanisir($stok->id),
+        ]);
+        // dd($stok->getvulkanisir($stok->id));
+    }
 }

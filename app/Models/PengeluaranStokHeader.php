@@ -1431,6 +1431,7 @@ class PengeluaranStokHeader extends MyModel
                 $datastok  = Stok::lockForUpdate()->where("id", $data['detail_stok_id'][$i])
                     ->firstorFail();
                 $datastok->totalvulkanisir = $totalvulkan;
+                $datastok->statusban = $data['detail_statusban'][$i];
                 $datastok->save();
             }
             // end update vulkanisir
@@ -2075,6 +2076,7 @@ class PengeluaranStokHeader extends MyModel
                 $datastok  = Stok::lockForUpdate()->where("id", $data['detail_stok_id'][$i])
                     ->firstorFail();
                 $datastok->totalvulkanisir = $totalvulkan;
+                $datastok->statusban = $data['detail_statusban'][$i];
                 $datastok->save();
             }
             // end update vulkanisir
