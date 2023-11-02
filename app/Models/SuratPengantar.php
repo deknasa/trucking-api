@@ -987,7 +987,7 @@ class SuratPengantar extends MyModel
                     'suratpengantar.statusbatalmuat',
                     'suratpengantar.statusupahzona',
                     'suratpengantar.statusgandengan',
-                    $tempGaji . '.nominalsupir as gajisupir',
+                    'suratpengantar.gajisupir',
                     'suratpengantar.gajikenek',
                     'suratpengantar.komisisupir',
                     'suratpengantar.upah_id',
@@ -1009,7 +1009,7 @@ class SuratPengantar extends MyModel
                 ->leftJoin('cabang', 'suratpengantar.cabang_id', 'cabang.id')
                 ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
                 ->leftJoin('gandengan', 'suratpengantar.gandengan_id', 'gandengan.id')
-                ->leftJoin(DB::raw("$tempGaji with (readuncommitted)"), "$tempGaji.id", "suratpengantar.id")
+                // ->leftJoin(DB::raw("$tempGaji with (readuncommitted)"), "$tempGaji.id", "suratpengantar.id")
 
                 ->where('suratpengantar.id', $id)->first();
         } else {
@@ -1066,9 +1066,9 @@ class SuratPengantar extends MyModel
                     'suratpengantar.statusbatalmuat',
                     'suratpengantar.statusupahzona',
                     'suratpengantar.statusgandengan',
-                    $tempGaji . '.nominalsupir as gajisupir',
-                    $tempGaji . '.nominalkenek as gajikenek',
-                    $tempGaji . '.nominalkomisi as komisisupir',
+                    'suratpengantar.gajisupir',
+                    'suratpengantar.gajikenek',
+                    'suratpengantar.komisisupir',
                     'suratpengantar.upah_id',
                     'suratpengantar.statusapprovaleditsuratpengantar',
                     'suratpengantar.statusapprovalbiayatitipanemkl',
@@ -1088,7 +1088,7 @@ class SuratPengantar extends MyModel
                 ->leftJoin('cabang', 'suratpengantar.cabang_id', 'cabang.id')
                 ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
                 ->leftJoin('gandengan', 'suratpengantar.gandengan_id', 'gandengan.id')
-                ->leftJoin(DB::raw("$tempGaji with (readuncommitted)"), "$tempGaji.id", "suratpengantar.id")
+                // ->leftJoin(DB::raw("$tempGaji with (readuncommitted)"), "$tempGaji.id", "suratpengantar.id")
 
                 ->where('suratpengantar.id', $id)->first();
         }
@@ -1943,10 +1943,10 @@ class SuratPengantar extends MyModel
             $suratPengantar->agen_id = $data['agen_id'];
             $suratPengantar->jenisorder_id = $data['jenisorder_id'];
             $suratPengantar->gajisupir = $nominalSupir;
-            if (trim($isKomisiReadonly->text) == 'YA') {
-                $suratPengantar->gajikenek = $upahsupirRincian->nominalkenek;
-                $suratPengantar->komisisupir = $upahsupirRincian->nominalkomisi;
-            }
+            // if (trim($isKomisiReadonly->text) == 'YA') {
+            //     $suratPengantar->gajikenek = $upahsupirRincian->nominalkenek;
+            //     $suratPengantar->komisisupir = $upahsupirRincian->nominalkomisi;
+            // }
             $suratPengantar->tolsupir = $upahsupirRincian->nominaltol;
             $suratPengantar->liter = $upahsupirRincian->liter ?? 0;
             $suratPengantar->omset = $tarifNominal;
