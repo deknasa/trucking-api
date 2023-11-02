@@ -15,11 +15,145 @@ class LaporanBanGudangSementara extends MyModel
     protected $table = '';
 
 
+    public function reminderemailbanpihakke3()
+    {
+
+
+        $temprekapall = '##temprekapall' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temprekapall, function ($table) {
+            $table->id();
+            $table->string('nobukti', 1000)->nullable();
+            $table->datetime('tgl')->nullable();
+            $table->integer('gudang_id')->nullable();
+            $table->double('qty')->nullable();
+            $table->integer('stok_id')->nullable();
+            $table->integer('jumlahhari')->nullable();
+        });
+
+
+        DB::table($temprekapall)->insertUsing([
+            'nobukti',
+            'tgl',
+            'gudang_id',
+            'qty',
+            'stok_id',
+            'jumlahhari',
+        ], $this->getdata());
+
+        $reminderemail = 1;
+        $listtoemail = db::table("toemail")->from(db::raw("toemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailtoemail = json_decode($listtoemail, true);
+        $hittoemail = 0;
+        $toemail = '';
+        foreach ($datadetailtoemail as $item) {
+
+            if ($hittoemail == 0) {
+                $toemail = $toemail . $item['email'];
+            } else {
+                $toemail = $toemail . ';' . $item['email'];
+            }
+            $hittoemail = $hittoemail + 1;
+        }
+
+        $listccemail = db::table("ccemail")->from(db::raw("ccemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailccemail = json_decode($listccemail, true);
+        $hitccemail = 0;
+        $ccemail = '';
+        foreach ($datadetailccemail as $item) {
+
+            if ($hitccemail == 0) {
+                $ccemail = $ccemail . $item['email'];
+            } else {
+                $ccemail = $ccemail . ';' . $item['email'];
+            }
+            $hitccemail = $hitccemail + 1;
+        }
+
+        $listbccemail = db::table("bccemail")->from(db::raw("bccemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailbccemail = json_decode($listbccemail, true);
+        $hitbccemail = 0;
+        $bccemail = '';
+        foreach ($datadetailbccemail as $item) {
+
+            if ($hitbccemail == 0) {
+                $bccemail = $bccemail . $item['email'];
+            } else {
+                $bccemail = $bccemail . ';' . $item['email'];
+            }
+            $hitbccemail = $hitbccemail + 1;
+        }
+
+        // $data = [
+        //     (object)[
+        //         "tgl"=> "2023-11-15",
+        //         "gudang"=> "GUDANG PIHAK KE-3",
+        //         "tanggal"=> "11-Oktober-2023",
+        //         "nopg"=> "PG 0020/X/2023",
+        //         "kodeban"=> "04817106",
+        //         "warna"=> "RED",
+        //         "toemail"=> "iqbal13rafli@gmail.com;ryan_vixy1402@yahoo.com",
+        //         "ccemail"=> "iqbal13rafli@gmail.com;ryan_vixy1402@yahoo.com;denicetas15@gmail.com",
+        //         "bccemail"=> "ryan_vixy1402@yahoo.com",
+        //         "judul"=> "Reminder Ban Lebih dari 7 Hari di Gdg Sementara/Pihak Ke 3 (Makassar)",
+        //     ],
+
+        $cabang = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+            ->select('a.text')
+            ->where('a.grp', 'CABANG')->where('a.subgrp', 'CABANG')->first()
+            ->text ?? '';
+
+
+        $query = db::table($temprekapall)->from(db::raw($temprekapall . " a"))
+            ->select(
+                db::raw("format(getdate(),'yyyy-MM-dd') as tgl"),
+                'c.gudang',
+                db::raw("format(a.tgl,'dd-MM-yyyy') as tanggal"),
+                'a.nobukti as nopg',
+                'b.namastok as kodeban',
+                db::raw("(case when a.jumlahhari>10 then 'RED' 
+                when (a.jumlahhari)<=10 then 'YELLOW' 
+                else '' end) as warna"),
+                
+                // db::raw("'ryan_vixy1402@yahoo.com' as toemail"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as ccemail"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as bccemail"),
+                db::raw("'" . $toemail . "' as toemail"),
+                db::raw("'" . $ccemail . "' as ccemail"),
+                db::raw("'" . $bccemail . "' as bccemail"),
+                db::raw("'Reminder Ban Lebih dari 7 Hari di Gdg Sementara/Pihak Ke 3 (" . $cabang . ")' as judul"),
+            )
+            ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
+            ->join(db::raw("gudang c with (readuncommitted)"), 'a.gudang_id', 'c.id')
+            ->orderby('a.jumlahhari', 'desc');
+
+        return $query;
+    }
     public function getReport()
     {
 
         // $data = $queryRekap->get();
-   
+
         $temprekapall = '##temprekapall' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temprekapall, function ($table) {
             $table->id();
@@ -42,18 +176,18 @@ class LaporanBanGudangSementara extends MyModel
         ], $this->getdata());
 
         // dd(db::table($temprekapall)->get());
-        $query=db::table($temprekapall)->from(db::raw( $temprekapall ." a"))
-        ->select(
-            'b.namastok as kodestok',
-            'b.namastok as namabarang',
-            'c.gudang',
-            'a.nobukti',
-            'a.tgl as tanggal',
-            'a.jumlahhari as jlhhari',
-        )
-        ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
-        ->join(db::raw("gudang c with (readuncommitted)"),'a.gudang_id','c.id')
-        ->orderby('a.jumlahhari','desc');
+        $query = db::table($temprekapall)->from(db::raw($temprekapall . " a"))
+            ->select(
+                'b.namastok as kodestok',
+                'b.namastok as namabarang',
+                'c.gudang',
+                'a.nobukti',
+                'a.tgl as tanggal',
+                'a.jumlahhari as jlhhari',
+            )
+            ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
+            ->join(db::raw("gudang c with (readuncommitted)"), 'a.gudang_id', 'c.id')
+            ->orderby('a.jumlahhari', 'desc');
 
         // $data = [
         //     [
@@ -65,7 +199,7 @@ class LaporanBanGudangSementara extends MyModel
         //         'jlhhari' => '23'
         //     ]
         // ];
-        $data=$query->get();
+        $data = $query->get();
         return $data;
     }
 
@@ -193,7 +327,7 @@ class LaporanBanGudangSementara extends MyModel
             ->whereRaw("a.tgl<='" . $tglbatas . "'");
 
 
-            // dd($query->get());
+        // dd($query->get());
         $data = $query;
         return $data;
     }
