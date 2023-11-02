@@ -726,6 +726,7 @@ class SuratPengantar extends MyModel
         $this->paginate($query);
 
         $data = $query->get();
+        $this->totalJarak = $data->sum('jarak');
 
         return $data;
     }

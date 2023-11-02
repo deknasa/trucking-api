@@ -50,6 +50,7 @@ class SuratPengantarController extends Controller
         return response([
             'data' => $suratPengantar->get(),
             'attributes' => [
+                'totalJarak' => $suratPengantar->totalJarak,
                 'totalRows' => $suratPengantar->totalRows,
                 'totalPages' => $suratPengantar->totalPages
             ]
