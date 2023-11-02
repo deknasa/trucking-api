@@ -60,12 +60,12 @@ class ReminderOliController extends Controller
         $bccemail = explode(';', $data[0]->bccemail);
         $ReminderOliMesin = json_encode($ReminderOliMesin);
 
-        Mail::to($toemail)
-            ->cc($ccemail)
-            ->bcc($bccemail)
-            ->send(new EmailReminderOli($ReminderOliMesin, 'mesin'));
+        // Mail::to($toemail)
+        //     ->cc($ccemail)
+        //     ->bcc($bccemail)
+        //     ->send(new EmailReminderOli($ReminderOliMesin, 'mesin'));
             
-        // return (new EmailReminderOli($ReminderOliMesin,'mesin'))->render();
+        return (new EmailReminderOli($ReminderOliMesin,'mesin'))->render();
     }
     public function sendEmailReminder_saringanhawa()
     {
