@@ -251,15 +251,84 @@ class PenerimaanTruckingHeader extends MyModel
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
 
-        $fetch = DB::table('penerimaantruckingdetail')
-            ->from(
-                DB::raw("penerimaantruckingdetail with (readuncommitted)")
+        // $fetch = DB::table('penerimaantruckingdetail')
+        //     ->from(
+        //         DB::raw("penerimaantruckingdetail with (readuncommitted)")
+        //     )
+        //     ->select(DB::raw("penerimaantruckingdetail.nobukti, (SELECT (penerimaantruckingdetail.nominal - coalesce(SUM(pengeluarantruckingdetail.nominal),0)) FROM pengeluarantruckingdetail WHERE pengeluarantruckingdetail.penerimaantruckingheader_nobukti= penerimaantruckingdetail.nobukti) AS sisa"))
+        //     // ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti', 'pengeluarantruckingdetail.nobukti')
+        //     ->whereRaw("penerimaantruckingdetail.supir_id = $supir_id")
+        //     ->where("penerimaantruckingdetail.nobukti",  'LIKE', "%DPO%")
+        //     ->groupBy('penerimaantruckingdetail.nobukti', 'penerimaantruckingdetail.nominal');
+
+        $temppenerimaandeposito = '##temppenerimaandeposito' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temppenerimaandeposito, function ($table) {
+            $table->bigInteger('supir_id')->nullable();
+            $table->string('nobukti')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+
+        $temppengeluarandeposito = '##temppengeluarandeposito' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temppengeluarandeposito, function ($table) {
+            $table->bigInteger('supir_id')->nullable();
+            $table->string('nobukti')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+
+
+
+        $querypenerimaandeposito = db::table("penerimaantruckingheader")->from(db::raw("penerimaantruckingheader a with (readuncommitted)"))
+            ->select(
+                'b.supir_id',
+                'a.nobukti',
+                db::raw("sum(b.nominal) as nominal")
             )
-            ->select(DB::raw("penerimaantruckingdetail.nobukti, (SELECT (penerimaantruckingdetail.nominal - coalesce(SUM(pengeluarantruckingdetail.nominal),0)) FROM pengeluarantruckingdetail WHERE pengeluarantruckingdetail.penerimaantruckingheader_nobukti= penerimaantruckingdetail.nobukti) AS sisa"))
-            // ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti', 'pengeluarantruckingdetail.nobukti')
-            ->whereRaw("penerimaantruckingdetail.supir_id = $supir_id")
-            ->where("penerimaantruckingdetail.nobukti",  'LIKE', "%DPO%")
-            ->groupBy('penerimaantruckingdetail.nobukti', 'penerimaantruckingdetail.nominal');
+            ->join(db::raw("penerimaantruckingdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->whereraw("a.penerimaantrucking_id=3")
+            ->where('b.supir_id', $supir_id)
+            ->groupby('b.supir_id')
+            ->groupby('a.nobukti');
+
+
+        $querypengeluarandeposito = db::table("pengeluarantruckingheader")->from(db::raw("pengeluarantruckingheader a with (readuncommitted)"))
+            ->select(
+                'b.supir_id',
+                db::raw("b.penerimaantruckingheader_nobukti as nobukti"),
+                db::raw("sum(b.nominal) as nominal")
+            )
+            ->join(db::raw("pengeluarantruckingdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->whereraw("a.pengeluarantrucking_id=2")
+            ->where('b.supir_id', $supir_id)
+            ->groupby('b.supir_id')
+            ->groupby('b.penerimaantruckingheader_nobukti');
+
+        DB::table($temppenerimaandeposito)->insertUsing([
+            'supir_id',
+            'nobukti',
+            'nominal'
+        ], $querypenerimaandeposito);
+
+        DB::table($temppengeluarandeposito)->insertUsing([
+            'supir_id',
+            'nobukti',
+            'nominal'
+        ], $querypengeluarandeposito);
+
+        // dump(db::table($temppenerimaandeposito)->get());
+        // dd(db::table($temppengeluarandeposito)->get());
+
+        $fetch = db::table($temppenerimaandeposito)->from(db::raw($temppenerimaandeposito . " a"))
+            ->select(
+                'a.nobukti',
+                db::raw("(isnull(a.nominal,0)-isnull(b.nominal,0)) as sisa")
+
+            )
+            ->leftjoin(db::raw($temppengeluarandeposito . " b"), 'a.nobukti', 'b.nobukti')
+            ->whereRaw("(isnull(a.nominal,0)-isnull(b.nominal,0))<>0")
+            ->orderBy('a.nobukti', 'asc');
+
+
+// dd($fetch->get());
 
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
