@@ -167,7 +167,7 @@ class ReminderOli extends MyModel
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
             // $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
-            $query->orderBy('a.id','asc');
+            $query->orderBy('a.id', 'asc');
             // dd($query->toSql());
             $this->paginate($query);
         }
@@ -304,7 +304,7 @@ class ReminderOli extends MyModel
                                 when e.text='PERGANTIAN OLI PERSNELING' then 'PENGGANTIAN OLI PERSNELING'
                                 when e.text='PERGANTIAN SARINGAN HAWA' then 'PENGGANTIAN SARINGAN HAWA'
                     else '' end) as statusreminder
-                ") ,
+                "),
                 db::raw("max(a.tglbukti) as tgl"),
             )
             ->join(db::raw("pengeluaranstokdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
@@ -596,9 +596,9 @@ class ReminderOli extends MyModel
 
         $Tempsaldoreminderolirekap = '##Tempsaldoreminderolirekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($Tempsaldoreminderolirekap, function ($table) {
-            $table->string('nopol',1000)->nullable();
+            $table->string('nopol', 1000)->nullable();
             $table->date('tanggal')->nullable();
-            $table->string('status',1000)->nullable();
+            $table->string('status', 1000)->nullable();
             $table->double('km', 15, 2)->nullable();
             $table->double('kmperjalanan', 15, 2)->nullable();
             $table->string('statusbatas', 100)->nullable();
@@ -683,34 +683,34 @@ class ReminderOli extends MyModel
                            
     
             
-            END) as urutid")                 
+            END) as urutid")
             )
             ->Join(DB::raw("trado  b with (readuncommitted)"), 'a.trado_id', 'b.id')
             ->Join(DB::raw("$tempstatus with (readuncommitted)"), 'a.statusreminder', $tempstatus . '.status')
             ->leftJoin(DB::raw($Temppergantian . " c"), 'b.id', 'c.trado_id')
-            
+
             ->Where('b.statusaktif', 1);
 
-            DB::table($Tempsaldoreminderolirekap)->insertUsing([
+        DB::table($Tempsaldoreminderolirekap)->insertUsing([
             'nopol',
             'tanggal',
             'status',
-            'km', 
-            'kmperjalanan', 
-            'statusbatas', 
+            'km',
+            'kmperjalanan',
+            'statusbatas',
             'urutid',
-            ], $query);
+        ], $query);
 
-            $query =db::table($Tempsaldoreminderolirekap)->from(db::raw($Tempsaldoreminderolirekap . " a"))
+        $query = db::table($Tempsaldoreminderolirekap)->from(db::raw($Tempsaldoreminderolirekap . " a"))
             ->select(
                 'a.nopol',
                 'a.tanggal',
                 'a.status',
-                'a.km', 
-                'a.kmperjalanan', 
-                'a.statusbatas', 
+                'a.km',
+                'a.kmperjalanan',
+                'a.statusbatas',
             )
-            ->orderby('a.urutid','desc');
+            ->orderby('a.urutid', 'desc');
 
 
         // dd($query->get());
@@ -719,6 +719,8 @@ class ReminderOli extends MyModel
 
     public function reminderemailolimesin()
     {
+
+        $batasmax = Parameter::where('grp', 'BATAS MAX PERGANTIAN OLI')->where('subgrp', 'BATAS MAX PERGANTIAN OLI')->first()->text ?? '1000';
 
         $tempolimesin = '##tempolimesin' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempolimesin, function ($table) {
@@ -741,6 +743,7 @@ class ReminderOli extends MyModel
         ], $this->getdata());
 
         DB::delete(DB::raw("delete " . $tempolimesin . " from " . $tempolimesin . " as a WHERE a.status not in('PENGGANTIAN OLI MESIN')"));
+        DB::delete(DB::raw("delete " . $tempolimesin . " from " . $tempolimesin . " as a WHERE (a.km-a.kmperjalanan)>" . $batasmax));
 
         $pjlhhariremind = 30;
         $tglremind = DB::select("select format(DATEADD(d," . $pjlhhariremind . ",GETDATE()),'yyyy/MM/dd') as dadd");
@@ -824,7 +827,7 @@ class ReminderOli extends MyModel
                 db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
                 db::raw("'' as Keterangan"),
                 db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
-                           when (a.km-a.kmperjalanan)>=1000 then 'YELLOW' 
+                           when (a.km-a.kmperjalanan)<=" . $batasmax . " then 'YELLOW' 
                            else '' end) as warna"),
 
                 // db::raw("'ryan_vixy1402@yahoo.com' as toemail"),
@@ -837,12 +840,14 @@ class ReminderOli extends MyModel
             )
             ->orderby('a.id', 'asc');
 
-            // dd($query->get());
+        // dd($query->get());
         return $query;
     }
 
     public function reminderemailolipersneling()
     {
+        $batasmax = Parameter::where('grp', 'BATAS MAX PERGANTIAN OLI')->where('subgrp', 'BATAS MAX PERGANTIAN OLI')->first()->text ?? '1000';
+
 
         $tempolipersneling = '##tempolipersneling' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempolipersneling, function ($table) {
@@ -865,6 +870,9 @@ class ReminderOli extends MyModel
         ], $this->getdata());
 
         DB::delete(DB::raw("delete " . $tempolipersneling . " from " . $tempolipersneling . " as a WHERE a.status not in('PENGGANTIAN OLI PERSNELING')"));
+        DB::delete(DB::raw("delete " . $tempolipersneling . " from " . $tempolipersneling . " as a WHERE (a.km-a.kmperjalanan)>" . $batasmax));
+
+
 
         $pjlhhariremind = 30;
         $tglremind = DB::select("select format(DATEADD(d," . $pjlhhariremind . ",GETDATE()),'yyyy/MM/dd') as dadd");
@@ -948,7 +956,7 @@ class ReminderOli extends MyModel
                 db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
                 db::raw("'' as Keterangan"),
                 db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
-                           when (a.km-a.kmperjalanan)>=1000 then 'YELLOW' 
+                           when (a.km-a.kmperjalanan)<=" . $batasmax . " then 'YELLOW' 
                            else '' end) as warna"),
 
                 // db::raw("'ryan_vixy1402@yahoo.com' as toemail"),
@@ -961,12 +969,13 @@ class ReminderOli extends MyModel
             )
             ->orderby('a.id', 'asc');
 
-            // dd($query->get());
+        // dd($query->get());
         return $query;
     }
 
     public function reminderemailoligardan()
     {
+        $batasmax = Parameter::where('grp', 'BATAS MAX PERGANTIAN OLI')->where('subgrp', 'BATAS MAX PERGANTIAN OLI')->first()->text ?? '1000';
 
         $tempoligardan = '##tempoligardan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempoligardan, function ($table) {
@@ -989,6 +998,8 @@ class ReminderOli extends MyModel
         ], $this->getdata());
 
         DB::delete(DB::raw("delete " . $tempoligardan . " from " . $tempoligardan . " as a WHERE a.status not in('PENGGANTIAN OLI GARDAN')"));
+        DB::delete(DB::raw("delete " . $tempoligardan . " from " . $tempoligardan . " as a WHERE (a.km-a.kmperjalanan)>" . $batasmax));
+
 
         $pjlhhariremind = 30;
         $tglremind = DB::select("select format(DATEADD(d," . $pjlhhariremind . ",GETDATE()),'yyyy/MM/dd') as dadd");
@@ -1072,7 +1083,7 @@ class ReminderOli extends MyModel
                 db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
                 db::raw("'' as Keterangan"),
                 db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
-                           when (a.km-a.kmperjalanan)>=1000 then 'YELLOW' 
+                           when (a.km-a.kmperjalanan)<=" . $batasmax . " then 'YELLOW' 
                            else '' end) as warna"),
 
                 // db::raw("'ryan_vixy1402@yahoo.com' as toemail"),
@@ -1085,12 +1096,13 @@ class ReminderOli extends MyModel
             )
             ->orderby('a.id', 'asc');
 
-            // dd($query->get());
+        // dd($query->get());
         return $query;
     }
 
     public function reminderemailsaringanhawa()
     {
+        $batasmax = Parameter::where('grp', 'BATAS MAX PERGANTIAN OLI')->where('subgrp', 'BATAS MAX PERGANTIAN OLI')->first()->text ?? '1000';
 
         $tempsaringanhawa = '##tempsaringanhawa' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsaringanhawa, function ($table) {
@@ -1113,6 +1125,8 @@ class ReminderOli extends MyModel
         ], $this->getdata());
 
         DB::delete(DB::raw("delete " . $tempsaringanhawa . " from " . $tempsaringanhawa . " as a WHERE a.status not in('PENGGANTIAN OLI GARDAN')"));
+        DB::delete(DB::raw("delete " . $tempsaringanhawa . " from " . $tempsaringanhawa . " as a WHERE (a.km-a.kmperjalanan)>" . $batasmax));
+
 
         $pjlhhariremind = 30;
         $tglremind = DB::select("select format(DATEADD(d," . $pjlhhariremind . ",GETDATE()),'yyyy/MM/dd') as dadd");
@@ -1196,7 +1210,7 @@ class ReminderOli extends MyModel
                 db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
                 db::raw("'' as Keterangan"),
                 db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
-                           when (a.km-a.kmperjalanan)>=1000 then 'YELLOW' 
+                           when (a.km-a.kmperjalanan)<=" . $batasmax . " then 'YELLOW' 
                            else '' end) as warna"),
 
                 // db::raw("'ryan_vixy1402@yahoo.com' as toemail"),
@@ -1209,7 +1223,7 @@ class ReminderOli extends MyModel
             )
             ->orderby('a.id', 'asc');
 
-            // dd($query->get());
+        // dd($query->get());
         return $query;
     }
 
