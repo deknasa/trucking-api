@@ -1227,6 +1227,201 @@ class ReminderOli extends MyModel
         return $query;
     }
 
+    public function reminderemailservicerutin()
+    {
+
+        $reminderemail = 1;
+        $listtoemail = db::table("toemail")->from(db::raw("toemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailtoemail = json_decode($listtoemail, true);
+        $hittoemail = 0;
+        $toemail = '';
+        foreach ($datadetailtoemail as $item) {
+
+            if ($hittoemail == 0) {
+                $toemail = $toemail . $item['email'];
+            } else {
+                $toemail = $toemail . ';' . $item['email'];
+            }
+            $hittoemail = $hittoemail + 1;
+        }
+
+        $listccemail = db::table("ccemail")->from(db::raw("ccemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailccemail = json_decode($listccemail, true);
+        $hitccemail = 0;
+        $ccemail = '';
+        foreach ($datadetailccemail as $item) {
+
+            if ($hitccemail == 0) {
+                $ccemail = $ccemail . $item['email'];
+            } else {
+                $ccemail = $ccemail . ';' . $item['email'];
+            }
+            $hitccemail = $hitccemail + 1;
+        }
+
+        $listbccemail = db::table("bccemail")->from(db::raw("bccemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailbccemail = json_decode($listbccemail, true);
+        $hitbccemail = 0;
+        $bccemail = '';
+        foreach ($datadetailbccemail as $item) {
+
+            if ($hitbccemail == 0) {
+                $bccemail = $bccemail . $item['email'];
+            } else {
+                $bccemail = $bccemail . ';' . $item['email'];
+            }
+            $hitbccemail = $hitbccemail + 1;
+        }
+
+        $cabang = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+            ->select('a.text')
+            ->where('a.grp', 'CABANG')->where('a.subgrp', 'CABANG')->first()
+            ->text ?? '';
+
+        //
+
+        $tempdatatrado = '##tempdatatrado' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdatatrado, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('trado_id')->nullable();
+        });
+
+        $querydatatrado = db::table("trado")->from(db::raw("trado a with (readuncommitted)"))
+            ->select(
+                'a.id as trado_id',
+            )
+            ->whereRaw("a.statusaktif=1");
+
+        DB::table($tempdatatrado)->insertUsing([
+            'trado_id',
+        ], $querydatatrado);
+
+        $tempdataservicein = '##tempdataservicein' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdataservicein, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('trado_id')->nullable();
+            $table->datetime('tglbukti')->nullable();
+        });
+
+
+        $querydataservicein = db::table($tempdatatrado)->from(db::raw($tempdatatrado . " a"))
+            ->select(
+                'a.trado_id',
+                db::raw("max(b.tglbukti) as tglbukti")
+            )
+            ->join(db::raw("serviceinheader b with (readuncommitted)"), 'a.trado_id', 'b.trado_id')
+            ->groupBy('a.trado_id');
+
+        DB::table($tempdataservicein)->insertUsing([
+            'trado_id',
+            'tglbukti',
+        ], $querydataservicein);
+
+
+        $tempjadwalservice = '##tempjadwalservice' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempjadwalservice, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('trado_id')->nullable();
+            $table->datetime('tglservice')->nullable();
+            $table->datetime('tglserviceberikut')->nullable();
+        });
+
+
+        $queryloop = db::table($tempdatatrado)->from(db::raw($tempdatatrado . " a "))
+            ->select(
+                'a.trado_id',
+                'b.tglbukti',
+            )
+            ->leftjoin(db::raw($tempdataservicein . " b"), 'a.trado_id', 'b.trado_id')
+            ->whereRaw("year(isnull(b.tglbukti,'1900/1/1'))<>1900")
+            ->orderBy('a.trado_id', 'asc')
+            ->get();
+
+        $datadetail = json_decode($queryloop, true);
+        foreach ($datadetail as $item) {
+            $chitung = 0;
+            $dhitung = 0;
+            $btglservice = $item['tglbukti'];
+            while ($chitung <= 30) {
+                $btglservice = date('Y-m-d', strtotime($btglservice . '+1 days'));
+
+                $datepart = DB::select("select datepart(dw," . $btglservice . ") as dpart");
+                $dpart = json_decode(json_encode($datepart), true)[0]['dpart'];
+
+                $querylibur = DB::table('harilibur')->from(
+                    db::raw("harilibur as a with (readuncommitted)")
+                )
+                    ->select(
+                        'tgl'
+                    )->where('tgl', '=', $btglservice)
+                    ->first();
+
+                if (($dpart != 1)  && (!isset($querylibur))) {
+                    $dhitung = $dhitung + 1;
+                    if ($dhitung <= 14) {
+                        $ctglservice = $btglservice;
+                    }
+                }
+                $chitung = $chitung + 1;
+            }
+            DB::table($tempjadwalservice)->insert(
+                [
+                    'trado_id' => $item['trado_id'],
+                    'tglservice' => $item['tglbukti'],
+                    'tglserviceberikut' => $ctglservice,
+                ]
+            );
+        }
+
+
+
+        $query = db::table($tempjadwalservice)->from(db::raw($tempjadwalservice . " a"))
+            ->select(
+                'b.kodetrado',
+                db::raw("format(a.tglservice,'dd-MM-yyyy') as tanggaldari"),
+                db::raw("format(a.tglserviceberikut,'dd-MM-yyyy') as tanggalsampai"),
+                db::raw("'' as keterangan"),
+                db::raw("'yellow' as warna"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as toemail"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as ccemail"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as bccemail"),
+                db::raw("'" . $toemail . "' as toemail"),
+                db::raw("'" . $ccemail . "' as ccemail"),
+                db::raw("'" . $bccemail . "' as bccemail"),
+                db::raw("'Jadwal Service Rutin (" . $cabang . ")' as judul"),
+            )
+
+            ->join(db::raw("trado b with (readuncommitted)"), 'a.trado_id', 'b.id')
+            ->orderBy('a.tglserviceberikut', 'asc');
+
+        return $query;
+
+        // 
+    }
+
+
+
     public function filter($query, $relationFields = [])
     {
 
