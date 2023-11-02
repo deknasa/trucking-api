@@ -200,6 +200,9 @@ class LaporanPemakaianStok extends MyModel
                 (case when isnull(f.kodetrado,'')<>'' then isnull(f.kodetrado,'')
                         when isnull(g.gudang,'')<>'' then isnull(g.gudang,'')
                         when isnull(h.kodegandengan,'')<>'' then isnull(h.kodegandengan,'')
+                        when isnull(f2.kodetrado,'')<>'' then isnull(f2.kodetrado,'')
+                        when isnull(g2.gudang,'')<>'' then isnull(g2.gudang,'')
+                        when isnull(h2.kodegandengan,'')<>'' then isnull(h2.kodegandengan,'')                        
                 else '' end) as kodetrado
                 "),
                 'a.namabarang as namastok',
@@ -207,7 +210,7 @@ class LaporanPemakaianStok extends MyModel
                 'a.nilaikeluar as nominal',
                 db::raw("round((a.nilaikeluar/a.qtykeluar),2) as harga"),
                 db::raw("isnull(c.satuan,'') as satuan"),
-                db::raw("isnull(d.keterangan,'') as keterangan"),
+                db::raw("isnull(d.keterangan,isnull(d1.keterangan,'')) as keterangan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
 
             )
@@ -221,10 +224,26 @@ class LaporanPemakaianStok extends MyModel
             ->leftjoin(db::raw("trado f with (readuncommitted)"), 'e.trado_id', 'f.id')
             ->leftjoin(db::raw("gudang g with (readuncommitted)"), 'e.gudang_id', 'g.id')
             ->leftjoin(db::raw("gandengan h with (readuncommitted)"), 'e.gandengan_id', 'h.id')
+            ->leftjoin(db::raw("penerimaanstokheader e2 with (readuncommitted)"), 'a.nobukti', 'e2.nobukti')
+            ->leftjoin(db::raw("trado f2 with (readuncommitted)"), 'e2.tradoke_id', 'f2.id')
+            ->leftjoin(db::raw("gudang g2 with (readuncommitted)"), 'e2.gudangke_id', 'g2.id')
+            ->leftjoin(db::raw("gandengan h2 with (readuncommitted)"), 'e2.gandenganke_id', 'h2.id')
+            ->leftjoin(DB::raw("penerimaanstokdetail as d1"), function ($join) {
+                $join->on('a.nobukti', '=', 'd1.nobukti');
+                $join->on('a.stok_id', '=', 'd1.stok_id');
+            })
 
-            ->OrderBy('f.kodetrado', 'asc')
-            ->OrderBy('g.gudang', 'asc')
-            ->OrderBy('h.kodegandengan', 'asc')
+            // ->OrderBy('f.kodetrado', 'asc')
+            // ->OrderBy('g.gudang', 'asc')
+            // ->OrderBy('h.kodegandengan', 'asc')
+            ->orderBy(db::raw("
+            (case when isnull(f.kodetrado,'')<>'' then isnull(f.kodetrado,'')
+                    when isnull(g.gudang,'')<>'' then isnull(g.gudang,'')
+                    when isnull(h.kodegandengan,'')<>'' then isnull(h.kodegandengan,'')
+                    when isnull(f2.kodetrado,'')<>'' then isnull(f2.kodetrado,'')
+                    when isnull(g2.gudang,'')<>'' then isnull(g2.gudang,'')
+                    when isnull(h2.kodegandengan,'')<>'' then isnull(h2.kodegandengan,'')                        
+            else '' end)"), 'asc')
             ->OrderBy('a.tglbukti', 'asc')
             ->get();
 
