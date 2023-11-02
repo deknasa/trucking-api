@@ -36,6 +36,149 @@ class LaporanKasBank extends MyModel
         $sampai = date('Y-m-d', strtotime($sampai)) ?? '1900/1/1';
         $bank_id = $bank_id;
 
+        $tglsaldo = '2023-10-01';
+        $awalsaldo = date('Y-m-d', strtotime($tglsaldo));
+
+        $tutupbuku = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.text'
+            )
+            ->where('grp', 'TUTUP BUKU')
+            ->where('subgrp', 'TUTUP BUKU')
+            ->first()->text ?? '1900-01-01';
+
+        $awaldari = date('Y-m-', strtotime($dari)) . '01';
+        $awalcek = date('Y-m-d', strtotime($tutupbuku . ' +1 day'));
+        $akhircek = date('Y-m-d', strtotime($awaldari . ' -1 day'));
+
+
+
+        if ($awalcek <= $awalsaldo) {
+            $awalcek = $awalsaldo;
+        }
+
+        $tglawalcek = $awalcek;
+        $tglakhircek = $akhircek;
+        $bulan1 = date('m-Y', strtotime($awalcek));
+        $bulan2 = date('m-Y', strtotime('1900-01-01'));
+        // dd($bulan1);
+        while ($awalcek <= $akhircek) {
+            $bulan1 = date('m-Y', strtotime($awalcek));
+            if ($bulan1 != $bulan2) {
+                DB::delete(DB::raw("delete saldoawalbank from saldoawalbank as a WHERE isnull(a.bulan,'')='" . $bulan1 . "'"));
+            }
+
+            $awalcek = date('Y-m-d', strtotime($awalcek . ' +1 day'));
+            $awalcek2 = date('Y-m-d', strtotime($awalcek . ' +1 day'));
+            $bulan2 = date('m-Y', strtotime($awalcek2));
+        }
+
+
+        $tempsaldoawal = '##tempsaldoawal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsaldoawal, function ($table) {
+            $table->string('bulan', 1000)->nullable();
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->double('nominaldebet', 15, 2)->nullable();
+            $table->double('nominalkredit', 15, 2)->nullable();
+        });
+
+        $tempsaldoawaldebet = '##tempsaldoawaldebet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsaldoawaldebet, function ($table) {
+            $table->string('bulan', 1000)->nullable();
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+
+        $tempsaldoawalkredit = '##tempsaldoawalkredit' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsaldoawalkredit, function ($table) {
+            $table->string('bulan', 1000)->nullable();
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+
+        // penerimaan
+        $querydebet = DB::table("penerimaanheader")->from(
+            DB::raw("penerimaanheader as a with (readuncommitted)")
+        )
+            ->select(
+                DB::raw("a.bank_id"),
+                db::raw("format(a.tglbukti,'MM-yyyy') as bulan"),
+                DB::raw("sum(b.nominal) as nominal")
+            )
+            ->join(DB::raw("penerimaandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
+            ->groupby('a.bank_id')
+            ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
+
+
+        DB::table($tempsaldoawaldebet)->insertUsing([
+            'bulan',
+            'bank_id',
+            'nominal',
+        ], $querydebet);
+
+        $querydebet = DB::table("pindahbuku")->from(
+            DB::raw("pindahbuku as a with (readuncommitted)")
+        )
+            ->select(
+                DB::raw("a.bankke_id as bank_id"),
+                db::raw("format(a.tglbukti,'MM-yyyy') as bulan"),
+                DB::raw("sum(a.nominal) as nominal")
+            )
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
+            ->groupby('a.bankke_id')
+            ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
+
+
+        DB::table($tempsaldoawaldebet)->insertUsing([
+            'bulan',
+            'bank_id',
+            'nominal',
+        ], $querydebet);
+
+        // pengeluaran
+
+        $querykredit = DB::table("pengeluaranheader")->from(
+            DB::raw("pengeluaranheader as a with (readuncommitted)")
+        )
+            ->select(
+                DB::raw("a.bank_id"),
+                db::raw("format(a.tglbukti,'MM-yyyy') as bulan"),
+                DB::raw("sum(b.nominal) as nominal")
+            )
+            ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
+            ->groupby('a.bank_id')
+            ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
+
+
+        DB::table($tempsaldoawalkredit)->insertUsing([
+            'bulan',
+            'bank_id',
+            'nominal',
+        ], $querykredit);
+
+        $querykredit = DB::table("pindahbuku")->from(
+            DB::raw("pindahbuku as a with (readuncommitted)")
+        )
+            ->select(
+                DB::raw("a.bankke_id as bank_id"),
+                db::raw("format(a.tglbukti,'MM-yyyy') as bulan"),
+                DB::raw("sum(a.nominal) as nominal")
+            )
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
+            ->groupby('a.bankke_id')
+            ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
+
+
+        DB::table($tempsaldoawalkredit)->insertUsing([
+            'bulan',
+            'bank_id',
+            'nominal',
+        ], $querykredit);
+
+        // 
+
         $tempsaldo = '##tempsaldo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsaldo, function ($table) {
             $table->id();
@@ -144,6 +287,7 @@ class LaporanKasBank extends MyModel
 
         $saldoawal =  ($querysaldoawal->nominal + $querysaldoawalpenerimaan->nominal + $querysaldoawalpenerimaanpindahbuku->nominal) - ($querysaldoawalpengeluaran->nominal + $querysaldoawalpengeluaranpindahbuku->nominal + $saldoawalpengembaliankepusat);
 
+        dd($saldoawal);
         // data coba coba
 
 
