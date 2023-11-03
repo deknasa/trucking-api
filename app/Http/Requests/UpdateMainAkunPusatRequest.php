@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use App\Rules\ExistAkuntansi;
 use App\Rules\ExistTypeAkuntansi;
+use App\Rules\ValidasiParentAkunPusat;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -43,9 +44,9 @@ class UpdateMainAkunPusatRequest extends FormRequest
         }
 
         $parameter = new Parameter();
-        $dataAccount = $parameter->getcombodata('STATUS ACCOUNT PAYABLE', 'STATUS ACCOUNT PAYABLE');
-        $dataAccount = json_decode($dataAccount, true);
-        foreach ($dataAccount as $item) {
+        $dataParent = $parameter->getcombodata('STATUS PARENT', 'STATUS PARENT');
+        $dataParent = json_decode($dataParent, true);
+        foreach ($dataParent as $item) {
             $statusAccount[] = $item['id'];
         }
 
@@ -93,10 +94,11 @@ class UpdateMainAkunPusatRequest extends FormRequest
             'type' => ['required'],
             'akuntansi' => ['required'],
             'statuscoa' => ['required', Rule::in($statusCoa)],
-            'statusaccountpayable' => ['required', Rule::in($statusAccount)],
+            'statusparent' => ['required', Rule::in($statusAccount)],
             'statusneraca' => ['required', Rule::in($statusNeraca)],
             'statuslabarugi' => ['required', Rule::in($statusLabaRugi)],
             'statusaktif' => ['required', Rule::in($statusAktif)],
+            'parent' => [new ValidasiParentAkunPusat]
         ];
         $rules = array_merge(
             $rules,
@@ -113,7 +115,7 @@ class UpdateMainAkunPusatRequest extends FormRequest
             'keterangancoa' => 'keterangan coa',
             'type' => 'type',
             'statuscoa' => 'status coa',
-            'statusaccountpayable' => 'status account payable',
+            'statusparent' => 'status parent',
             'statusneraca' => 'status neraca',
             'statuslabarugi' => 'status laba rugi',
             'statusaktif' => 'status aktif',
@@ -129,7 +131,7 @@ class UpdateMainAkunPusatRequest extends FormRequest
             'keterangancoa.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'type.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statuscoa.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'statusaccountpayable.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusparent.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusneraca.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statuslabarugi.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
