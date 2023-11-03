@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use App\Rules\ExistAkuntansi;
 use App\Rules\ExistTypeAkuntansi;
+use App\Rules\ValidasiParentAkunPusat;
 use Illuminate\Validation\Rule;
 
 class StoreAkunPusatRequest extends FormRequest
@@ -43,9 +44,9 @@ class StoreAkunPusatRequest extends FormRequest
         }
 
         $parameter = new Parameter();
-        $dataAccount = $parameter->getcombodata('STATUS ACCOUNT PAYABLE', 'STATUS ACCOUNT PAYABLE');
-        $dataAccount = json_decode($dataAccount, true);
-        foreach ($dataAccount as $item) {
+        $dataParent = $parameter->getcombodata('STATUS PARENT', 'STATUS PARENT');
+        $dataParent = json_decode($dataParent, true);
+        foreach ($dataParent as $item) {
             $statusAccount[] = $item['id'];
         }
 
@@ -94,11 +95,12 @@ class StoreAkunPusatRequest extends FormRequest
             'type' => ['required'],
             'akuntansi' => ['required'],
             'statuscoa' => ['required', Rule::in($statusCoa)],
-            'statusaccountpayable' => ['required', Rule::in($statusAccount)],
+            'statusparent' => ['required', Rule::in($statusAccount)],
             'statusneraca' => ['required', Rule::in($statusNeraca)],
             'statuslabarugi' => ['required', Rule::in($statusLabaRugi)],
             'coamain' => ['required'],
             'statusaktif' => ['required', Rule::in($statusAktif)],
+            'parent' => [new ValidasiParentAkunPusat]
         ];
 
         $rules = array_merge(
@@ -117,7 +119,7 @@ class StoreAkunPusatRequest extends FormRequest
             'keterangancoa' => 'keterangan coa',
             'type' => 'type',
             'statuscoa' => 'status coa',
-            'statusaccountpayable' => 'status account payable',
+            'statusparent' => 'status parent',
             'statusneraca' => 'status neraca',
             'statuslabarugi' => 'status laba rugi',
             'coamain' => 'kode perkiraan utama',
@@ -134,7 +136,7 @@ class StoreAkunPusatRequest extends FormRequest
             'keterangancoa.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'type.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statuscoa.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'statusaccountpayable.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusparent.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusneraca.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statuslabarugi.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'coamain.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,

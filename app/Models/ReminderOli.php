@@ -166,7 +166,8 @@ class ReminderOli extends MyModel
 
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-            $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
+            // $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
+            $query->orderBy('a.id', 'asc');
             // dd($query->toSql());
             $this->paginate($query);
         }
@@ -287,6 +288,7 @@ class ReminderOli extends MyModel
 
         $Temppergantian = '##Temppergantian' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($Temppergantian, function ($table) {
+            $table->string('nobukti', 100);
             $table->integer('trado_id');
             $table->string('statusreminder', 100);
             $table->date('tgl');
@@ -294,8 +296,15 @@ class ReminderOli extends MyModel
 
         $querypergantian = db::table("pengeluaranstokheader")->from(DB::raw("pengeluaranstokheader a with (readuncommitted)"))
             ->select(
+                db::raw("max(a.nobukti) as nobukti"),
                 'a.trado_id',
-                'e.text as statusreminder',
+                db::raw("(case when e.text='PERGANTIAN BATERE' then 'PENGGANTIAN AKI'
+                                when e.text='PERGANTIAN OLI GARDAN' then 'PENGGANTIAN OLI GARDAN'
+                                when e.text='PERGANTIAN OLI MESIN' then 'PENGGANTIAN OLI MESIN'
+                                when e.text='PERGANTIAN OLI PERSNELING' then 'PENGGANTIAN OLI PERSNELING'
+                                when e.text='PERGANTIAN SARINGAN HAWA' then 'PENGGANTIAN SARINGAN HAWA'
+                    else '' end) as statusreminder
+                "),
                 db::raw("max(a.tglbukti) as tgl"),
             )
             ->join(db::raw("pengeluaranstokdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
@@ -303,12 +312,14 @@ class ReminderOli extends MyModel
             ->join(db::raw($Tempservicerutin . " d "), 'c.statusservicerutin', 'd.id')
             ->join(db::raw("parameter e with (readuncommitted)"), 'd.id', 'e.id')
             ->where('a.pengeluaranstok_id', $pengeluaranstok_id)
+            ->whereraw("isnull(a.trado_id,0)<>0")
             ->groupBy('a.trado_id')
             ->groupBy('e.text');
 
         // dd($querypergantian->get());
 
         DB::table($Temppergantian)->insertUsing([
+            'nobukti',
             'trado_id',
             'statusreminder',
             'tgl',
@@ -317,6 +328,10 @@ class ReminderOli extends MyModel
         DB::update(DB::raw("UPDATE " . $Tempsaldoreminderoli . " SET tglawal=b.tgl,jarak=0 
         from " . $Tempsaldoreminderoli . " a inner join " . $Temppergantian . " b on a.trado_id=b.trado_id and a.statusreminder=b.statusreminder 
         "));
+
+        // dump(db::table($Temppergantian)->get());
+        // dd(db::table($Tempsaldoreminderoli)->whereraw("trado_id=4")->get());
+
 
         $param1 = 'PENGGANTIAN OLI MESIN';
         $queryrimderernonsaldo = db::table("trado")->from(db::raw("trado a with (readuncommitted)"))
@@ -578,10 +593,22 @@ class ReminderOli extends MyModel
         // dd(db::table($Tempsaldoreminderoli)->get());
         // dd(db::table($tempstatus)->get());
 
+
+        $Tempsaldoreminderolirekap = '##Tempsaldoreminderolirekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($Tempsaldoreminderolirekap, function ($table) {
+            $table->string('nopol', 1000)->nullable();
+            $table->date('tanggal')->nullable();
+            $table->string('status', 1000)->nullable();
+            $table->double('km', 15, 2)->nullable();
+            $table->double('kmperjalanan', 15, 2)->nullable();
+            $table->string('statusbatas', 100)->nullable();
+            $table->integer('urutid')->nullable();
+        });
+
         $query = DB::table($Tempsaldoreminderoli)->from(DB::raw($Tempsaldoreminderoli . " a "))
             ->select(
                 'a.nopol',
-                'a.tglsampai as tanggal',
+                db::raw("isnull(c.tgl,'2023/9/30') as tanggal"),
                 'a.statusreminder as status',
                 DB::raw("(case 
                     when a.statusreminder = 'PENGGANTIAN OLI GARDAN' then $batasgardan 
@@ -590,33 +617,33 @@ class ReminderOli extends MyModel
                     else $batassaringanhawa end) 
                     
                     as km"),
-                db::raw("isnull(a.jarak,0)+isnull(a.jaraktransaksi,0) as kmperjalanan"),
+                db::raw("(isnull(a.jarak,0)+isnull(a.jaraktransaksi,0)) as kmperjalanan"),
                 DB::raw("(CASE 
                     WHEN upper(a.statusreminder) = 'PENGGANTIAN OLI PERSNELING' then 
                         CASE
-                            WHEN ($batasgardan - a.jarak) <= $batasmax and ($batasgardan - a.jarak) > 0 then $hampirLewat
-                            WHEN ($batasgardan - a.jarak) <= 0 then $sudahLewat
+                            WHEN ($bataspersneling - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= $batasmax and ($bataspersneling - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) > 0 then $hampirLewat
+                            WHEN ($bataspersneling - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= 0 then $sudahLewat
                         ELSE ''
                         END
                     
                     WHEN upper(a.statusreminder) = 'PENGGANTIAN OLI GARDAN' then 
                         CASE
-                            WHEN ($bataspersneling - a.jarak) <= $batasmax and ($bataspersneling - a.jarak) > 0 then $hampirLewat
-                            WHEN ($bataspersneling - a.jarak) <= 0 then $sudahLewat
+                            WHEN ($batasgardan - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= $batasmax and ($batasgardan - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) > 0 then $hampirLewat
+                            WHEN ($batasgardan - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= 0 then $sudahLewat
                         ELSE ''
                         END
                     
                     WHEN upper(a.statusreminder) = 'PENGGANTIAN OLI MESIN' then 
                         CASE
-                            WHEN ($batasmesin - a.jarak) <= $batasmax and ($batasmesin - a.jarak) > 0 then $hampirLewat
-                            WHEN ($batasmesin - a.jarak) <= 0 then $sudahLewat
+                            WHEN ($batasmesin - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= $batasmax and ($batasmesin - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) > 0 then $hampirLewat
+                            WHEN ($batasmesin - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= 0 then $sudahLewat
                         ELSE ''
                         END
 
                     WHEN upper(a.statusreminder) = 'PENGGANTIAN SARINGAN HAWA' then 
                             CASE
-                                WHEN ($batassaringanhawa - a.jarak) <= $batasmax and ($batassaringanhawa - a.jarak) > 0 then $hampirLewat
-                                WHEN ($batassaringanhawa - a.jarak) <= 0 then $sudahLewat
+                                WHEN ($batassaringanhawa - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= $batasmax and ($batassaringanhawa - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) > 0 then $hampirLewat
+                                WHEN ($batassaringanhawa - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= 0 then $sudahLewat
                             ELSE ''
                             END
                                
@@ -624,10 +651,67 @@ class ReminderOli extends MyModel
                 
                 END) 
                 as statusbatas"),
+                db::raw("
+                (CASE 
+                WHEN upper(a.statusreminder) = 'PENGGANTIAN OLI PERSNELING' then 
+                    CASE
+                        WHEN ($bataspersneling - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= $batasmax and ($bataspersneling - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) > 0 then 1
+                        WHEN ($bataspersneling - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= 0 then 2
+                    ELSE 0
+                    END
+                
+                WHEN upper(a.statusreminder) = 'PENGGANTIAN OLI GARDAN' then 
+                    CASE
+                        WHEN ($batasgardan - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= $batasmax and ($batasgardan - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) > 0 then 1
+                        WHEN ($batasgardan - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= 0 then 2
+                    ELSE 0
+                    END
+                
+                WHEN upper(a.statusreminder) = 'PENGGANTIAN OLI MESIN' then 
+                    CASE
+                        WHEN ($batasmesin - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= $batasmax and ($batasmesin - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) > 0 then 1
+                        WHEN ($batasmesin - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= 0 then 2
+                    ELSE 0
+                    END
+    
+                WHEN upper(a.statusreminder) = 'PENGGANTIAN SARINGAN HAWA' then 
+                        CASE
+                            WHEN ($batassaringanhawa - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= $batasmax and ($batassaringanhawa - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) > 0 then 1
+                            WHEN ($batassaringanhawa - (isnull(a.jarak,0)+isnull(a.jaraktransaksi,0))) <= 0 then 2
+                        ELSE 0
+                        END
+                           
+    
+            
+            END) as urutid")
             )
             ->Join(DB::raw("trado  b with (readuncommitted)"), 'a.trado_id', 'b.id')
             ->Join(DB::raw("$tempstatus with (readuncommitted)"), 'a.statusreminder', $tempstatus . '.status')
+            ->leftJoin(DB::raw($Temppergantian . " c"), 'b.id', 'c.trado_id')
+
             ->Where('b.statusaktif', 1);
+
+        DB::table($Tempsaldoreminderolirekap)->insertUsing([
+            'nopol',
+            'tanggal',
+            'status',
+            'km',
+            'kmperjalanan',
+            'statusbatas',
+            'urutid',
+        ], $query);
+
+        $query = db::table($Tempsaldoreminderolirekap)->from(db::raw($Tempsaldoreminderolirekap . " a"))
+            ->select(
+                'a.nopol',
+                'a.tanggal',
+                'a.status',
+                'a.km',
+                'a.kmperjalanan',
+                'a.statusbatas',
+            )
+            ->orderby('a.urutid', 'desc');
+
 
         // dd($query->get());
         return $query;
@@ -635,6 +719,8 @@ class ReminderOli extends MyModel
 
     public function reminderemailolimesin()
     {
+
+        $batasmax = Parameter::where('grp', 'BATAS MAX PERGANTIAN OLI')->where('subgrp', 'BATAS MAX PERGANTIAN OLI')->first()->text ?? '1000';
 
         $tempolimesin = '##tempolimesin' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempolimesin, function ($table) {
@@ -657,6 +743,7 @@ class ReminderOli extends MyModel
         ], $this->getdata());
 
         DB::delete(DB::raw("delete " . $tempolimesin . " from " . $tempolimesin . " as a WHERE a.status not in('PENGGANTIAN OLI MESIN')"));
+        DB::delete(DB::raw("delete " . $tempolimesin . " from " . $tempolimesin . " as a WHERE (a.km-a.kmperjalanan)>" . $batasmax));
 
         $pjlhhariremind = 30;
         $tglremind = DB::select("select format(DATEADD(d," . $pjlhhariremind . ",GETDATE()),'yyyy/MM/dd') as dadd");
@@ -736,26 +823,604 @@ class ReminderOli extends MyModel
                 db::raw("format(getdate(),'yyyy-MM-dd') as tgl"),
                 'a.nopol as kodetrado',
                 db::raw("format(a.tanggal,'dd-MM-yyyy') as tanggal"),
-                db::raw("round(a.km,2) as batasganti"),
-                db::raw("round(a.kmperjalanan,2) as kberjalan"),
+                db::raw("format(a.km,'#,#0.00') as batasganti"),
+                db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
                 db::raw("'' as Keterangan"),
                 db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
-                           when (a.km-a.kmperjalanan)>=1000 then 'YELLOW' 
+                           when (a.km-a.kmperjalanan)<=" . $batasmax . " then 'YELLOW' 
                            else '' end) as warna"),
 
-                db::raw("'ryan_vixy1402@yahoo.com' as toemail"),
-                db::raw("'ryan_vixy1402@yahoo.com' as ccemail"),
-                db::raw("'ryan_vixy1402@yahoo.com' as bccemail"),
-                // db::raw("'" . $toemail . "' as toemail"),
-                // db::raw("'" . $ccemail . "' as ccemail"),
-                // db::raw("'" . $bccemail . "' as bccemail"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as toemail"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as ccemail"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as bccemail"),
+                db::raw("'" . $toemail . "' as toemail"),
+                db::raw("'" . $ccemail . "' as ccemail"),
+                db::raw("'" . $bccemail . "' as bccemail"),
                 db::raw("'Reminder Penggantian Oli Mesin (" . $cabang . ")' as judul"),
             )
             ->orderby('a.id', 'asc');
 
-            // dd($query->get());
+        // dd($query->get());
         return $query;
     }
+
+    public function reminderemailolipersneling()
+    {
+        $batasmax = Parameter::where('grp', 'BATAS MAX PERGANTIAN OLI')->where('subgrp', 'BATAS MAX PERGANTIAN OLI')->first()->text ?? '1000';
+
+
+        $tempolipersneling = '##tempolipersneling' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempolipersneling, function ($table) {
+            $table->id();
+            $table->longText('nopol')->nullable();
+            $table->date('tanggal')->nullable();
+            $table->string('status', 100)->nullable();
+            $table->double('km', 15, 2)->nullable();
+            $table->double('kmperjalanan', 15, 2)->nullable();
+            $table->integer('statusbatas')->nullable();
+        });
+
+        DB::table($tempolipersneling)->insertUsing([
+            'nopol',
+            'tanggal',
+            'status',
+            'km',
+            'kmperjalanan',
+            'statusbatas'
+        ], $this->getdata());
+
+        DB::delete(DB::raw("delete " . $tempolipersneling . " from " . $tempolipersneling . " as a WHERE a.status not in('PENGGANTIAN OLI PERSNELING')"));
+        DB::delete(DB::raw("delete " . $tempolipersneling . " from " . $tempolipersneling . " as a WHERE (a.km-a.kmperjalanan)>" . $batasmax));
+
+
+
+        $pjlhhariremind = 30;
+        $tglremind = DB::select("select format(DATEADD(d," . $pjlhhariremind . ",GETDATE()),'yyyy/MM/dd') as dadd");
+        $ptglremind = json_decode(json_encode($tglremind), true)[0]['dadd'];
+
+        $reminderemail = 1;
+        $listtoemail = db::table("toemail")->from(db::raw("toemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailtoemail = json_decode($listtoemail, true);
+        $hittoemail = 0;
+        $toemail = '';
+        foreach ($datadetailtoemail as $item) {
+
+            if ($hittoemail == 0) {
+                $toemail = $toemail . $item['email'];
+            } else {
+                $toemail = $toemail . ';' . $item['email'];
+            }
+            $hittoemail = $hittoemail + 1;
+        }
+
+        $listccemail = db::table("ccemail")->from(db::raw("ccemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailccemail = json_decode($listccemail, true);
+        $hitccemail = 0;
+        $ccemail = '';
+        foreach ($datadetailccemail as $item) {
+
+            if ($hitccemail == 0) {
+                $ccemail = $ccemail . $item['email'];
+            } else {
+                $ccemail = $ccemail . ';' . $item['email'];
+            }
+            $hitccemail = $hitccemail + 1;
+        }
+
+        $listbccemail = db::table("bccemail")->from(db::raw("bccemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailbccemail = json_decode($listbccemail, true);
+        $hitbccemail = 0;
+        $bccemail = '';
+        foreach ($datadetailbccemail as $item) {
+
+            if ($hitbccemail == 0) {
+                $bccemail = $bccemail . $item['email'];
+            } else {
+                $bccemail = $bccemail . ';' . $item['email'];
+            }
+            $hitbccemail = $hitbccemail + 1;
+        }
+
+        $cabang = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+            ->select('a.text')
+            ->where('a.grp', 'CABANG')->where('a.subgrp', 'CABANG')->first()
+            ->text ?? '';
+
+        $query = db::table($tempolipersneling)->from(db::raw($tempolipersneling . " a"))
+            ->select(
+                db::raw("format(getdate(),'yyyy-MM-dd') as tgl"),
+                'a.nopol as kodetrado',
+                db::raw("format(a.tanggal,'dd-MM-yyyy') as tanggal"),
+                db::raw("format(a.km,'#,#0.00') as batasganti"),
+                db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
+                db::raw("'' as Keterangan"),
+                db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
+                           when (a.km-a.kmperjalanan)<=" . $batasmax . " then 'YELLOW' 
+                           else '' end) as warna"),
+
+                // db::raw("'ryan_vixy1402@yahoo.com' as toemail"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as ccemail"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as bccemail"),
+                db::raw("'" . $toemail . "' as toemail"),
+                db::raw("'" . $ccemail . "' as ccemail"),
+                db::raw("'" . $bccemail . "' as bccemail"),
+                db::raw("'Reminder Penggantian Oli Persneling (" . $cabang . ")' as judul"),
+            )
+            ->orderby('a.id', 'asc');
+
+        // dd($query->get());
+        return $query;
+    }
+
+    public function reminderemailoligardan()
+    {
+        $batasmax = Parameter::where('grp', 'BATAS MAX PERGANTIAN OLI')->where('subgrp', 'BATAS MAX PERGANTIAN OLI')->first()->text ?? '1000';
+
+        $tempoligardan = '##tempoligardan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempoligardan, function ($table) {
+            $table->id();
+            $table->longText('nopol')->nullable();
+            $table->date('tanggal')->nullable();
+            $table->string('status', 100)->nullable();
+            $table->double('km', 15, 2)->nullable();
+            $table->double('kmperjalanan', 15, 2)->nullable();
+            $table->integer('statusbatas')->nullable();
+        });
+
+        DB::table($tempoligardan)->insertUsing([
+            'nopol',
+            'tanggal',
+            'status',
+            'km',
+            'kmperjalanan',
+            'statusbatas'
+        ], $this->getdata());
+
+        DB::delete(DB::raw("delete " . $tempoligardan . " from " . $tempoligardan . " as a WHERE a.status not in('PENGGANTIAN OLI GARDAN')"));
+        DB::delete(DB::raw("delete " . $tempoligardan . " from " . $tempoligardan . " as a WHERE (a.km-a.kmperjalanan)>" . $batasmax));
+
+
+        $pjlhhariremind = 30;
+        $tglremind = DB::select("select format(DATEADD(d," . $pjlhhariremind . ",GETDATE()),'yyyy/MM/dd') as dadd");
+        $ptglremind = json_decode(json_encode($tglremind), true)[0]['dadd'];
+
+        $reminderemail = 1;
+        $listtoemail = db::table("toemail")->from(db::raw("toemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailtoemail = json_decode($listtoemail, true);
+        $hittoemail = 0;
+        $toemail = '';
+        foreach ($datadetailtoemail as $item) {
+
+            if ($hittoemail == 0) {
+                $toemail = $toemail . $item['email'];
+            } else {
+                $toemail = $toemail . ';' . $item['email'];
+            }
+            $hittoemail = $hittoemail + 1;
+        }
+
+        $listccemail = db::table("ccemail")->from(db::raw("ccemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailccemail = json_decode($listccemail, true);
+        $hitccemail = 0;
+        $ccemail = '';
+        foreach ($datadetailccemail as $item) {
+
+            if ($hitccemail == 0) {
+                $ccemail = $ccemail . $item['email'];
+            } else {
+                $ccemail = $ccemail . ';' . $item['email'];
+            }
+            $hitccemail = $hitccemail + 1;
+        }
+
+        $listbccemail = db::table("bccemail")->from(db::raw("bccemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailbccemail = json_decode($listbccemail, true);
+        $hitbccemail = 0;
+        $bccemail = '';
+        foreach ($datadetailbccemail as $item) {
+
+            if ($hitbccemail == 0) {
+                $bccemail = $bccemail . $item['email'];
+            } else {
+                $bccemail = $bccemail . ';' . $item['email'];
+            }
+            $hitbccemail = $hitbccemail + 1;
+        }
+
+        $cabang = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+            ->select('a.text')
+            ->where('a.grp', 'CABANG')->where('a.subgrp', 'CABANG')->first()
+            ->text ?? '';
+
+        $query = db::table($tempoligardan)->from(db::raw($tempoligardan . " a"))
+            ->select(
+                db::raw("format(getdate(),'yyyy-MM-dd') as tgl"),
+                'a.nopol as kodetrado',
+                db::raw("format(a.tanggal,'dd-MM-yyyy') as tanggal"),
+                db::raw("format(a.km,'#,#0.00') as batasganti"),
+                db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
+                db::raw("'' as Keterangan"),
+                db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
+                           when (a.km-a.kmperjalanan)<=" . $batasmax . " then 'YELLOW' 
+                           else '' end) as warna"),
+
+                // db::raw("'ryan_vixy1402@yahoo.com' as toemail"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as ccemail"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as bccemail"),
+                db::raw("'" . $toemail . "' as toemail"),
+                db::raw("'" . $ccemail . "' as ccemail"),
+                db::raw("'" . $bccemail . "' as bccemail"),
+                db::raw("'Reminder Penggantian Oli Gardan (" . $cabang . ")' as judul"),
+            )
+            ->orderby('a.id', 'asc');
+
+        // dd($query->get());
+        return $query;
+    }
+
+    public function reminderemailsaringanhawa()
+    {
+        $batasmax = Parameter::where('grp', 'BATAS MAX PERGANTIAN OLI')->where('subgrp', 'BATAS MAX PERGANTIAN OLI')->first()->text ?? '1000';
+
+        $tempsaringanhawa = '##tempsaringanhawa' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsaringanhawa, function ($table) {
+            $table->id();
+            $table->longText('nopol')->nullable();
+            $table->date('tanggal')->nullable();
+            $table->string('status', 100)->nullable();
+            $table->double('km', 15, 2)->nullable();
+            $table->double('kmperjalanan', 15, 2)->nullable();
+            $table->integer('statusbatas')->nullable();
+        });
+
+        DB::table($tempsaringanhawa)->insertUsing([
+            'nopol',
+            'tanggal',
+            'status',
+            'km',
+            'kmperjalanan',
+            'statusbatas'
+        ], $this->getdata());
+
+        DB::delete(DB::raw("delete " . $tempsaringanhawa . " from " . $tempsaringanhawa . " as a WHERE a.status not in('PENGGANTIAN OLI GARDAN')"));
+        DB::delete(DB::raw("delete " . $tempsaringanhawa . " from " . $tempsaringanhawa . " as a WHERE (a.km-a.kmperjalanan)>" . $batasmax));
+
+
+        $pjlhhariremind = 30;
+        $tglremind = DB::select("select format(DATEADD(d," . $pjlhhariremind . ",GETDATE()),'yyyy/MM/dd') as dadd");
+        $ptglremind = json_decode(json_encode($tglremind), true)[0]['dadd'];
+
+        $reminderemail = 1;
+        $listtoemail = db::table("toemail")->from(db::raw("toemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailtoemail = json_decode($listtoemail, true);
+        $hittoemail = 0;
+        $toemail = '';
+        foreach ($datadetailtoemail as $item) {
+
+            if ($hittoemail == 0) {
+                $toemail = $toemail . $item['email'];
+            } else {
+                $toemail = $toemail . ';' . $item['email'];
+            }
+            $hittoemail = $hittoemail + 1;
+        }
+
+        $listccemail = db::table("ccemail")->from(db::raw("ccemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailccemail = json_decode($listccemail, true);
+        $hitccemail = 0;
+        $ccemail = '';
+        foreach ($datadetailccemail as $item) {
+
+            if ($hitccemail == 0) {
+                $ccemail = $ccemail . $item['email'];
+            } else {
+                $ccemail = $ccemail . ';' . $item['email'];
+            }
+            $hitccemail = $hitccemail + 1;
+        }
+
+        $listbccemail = db::table("bccemail")->from(db::raw("bccemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailbccemail = json_decode($listbccemail, true);
+        $hitbccemail = 0;
+        $bccemail = '';
+        foreach ($datadetailbccemail as $item) {
+
+            if ($hitbccemail == 0) {
+                $bccemail = $bccemail . $item['email'];
+            } else {
+                $bccemail = $bccemail . ';' . $item['email'];
+            }
+            $hitbccemail = $hitbccemail + 1;
+        }
+
+        $cabang = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+            ->select('a.text')
+            ->where('a.grp', 'CABANG')->where('a.subgrp', 'CABANG')->first()
+            ->text ?? '';
+
+        $query = db::table($tempsaringanhawa)->from(db::raw($tempsaringanhawa . " a"))
+            ->select(
+                db::raw("format(getdate(),'yyyy-MM-dd') as tgl"),
+                'a.nopol as kodetrado',
+                db::raw("format(a.tanggal,'dd-MM-yyyy') as tanggal"),
+                db::raw("format(a.km,'#,#0.00') as batasganti"),
+                db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
+                db::raw("'' as Keterangan"),
+                db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
+                           when (a.km-a.kmperjalanan)<=" . $batasmax . " then 'YELLOW' 
+                           else '' end) as warna"),
+
+                // db::raw("'ryan_vixy1402@yahoo.com' as toemail"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as ccemail"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as bccemail"),
+                db::raw("'" . $toemail . "' as toemail"),
+                db::raw("'" . $ccemail . "' as ccemail"),
+                db::raw("'" . $bccemail . "' as bccemail"),
+                db::raw("'Reminder Penggantian Saringan Hawa (" . $cabang . ")' as judul"),
+            )
+            ->orderby('a.id', 'asc');
+
+        // dd($query->get());
+        return $query;
+    }
+
+    public function reminderemailservicerutin()
+    {
+
+        $reminderemail = 1;
+        $listtoemail = db::table("toemail")->from(db::raw("toemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailtoemail = json_decode($listtoemail, true);
+        $hittoemail = 0;
+        $toemail = '';
+        foreach ($datadetailtoemail as $item) {
+
+            if ($hittoemail == 0) {
+                $toemail = $toemail . $item['email'];
+            } else {
+                $toemail = $toemail . ';' . $item['email'];
+            }
+            $hittoemail = $hittoemail + 1;
+        }
+
+        $listccemail = db::table("ccemail")->from(db::raw("ccemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailccemail = json_decode($listccemail, true);
+        $hitccemail = 0;
+        $ccemail = '';
+        foreach ($datadetailccemail as $item) {
+
+            if ($hitccemail == 0) {
+                $ccemail = $ccemail . $item['email'];
+            } else {
+                $ccemail = $ccemail . ';' . $item['email'];
+            }
+            $hitccemail = $hitccemail + 1;
+        }
+
+        $listbccemail = db::table("bccemail")->from(db::raw("bccemail a with (readuncommitted)"))
+            ->select(
+                'a.email'
+            )
+            ->where('a.reminderemail_id', $reminderemail)
+            ->orderby('a.id', 'asc')
+            ->get();
+
+        $datadetailbccemail = json_decode($listbccemail, true);
+        $hitbccemail = 0;
+        $bccemail = '';
+        foreach ($datadetailbccemail as $item) {
+
+            if ($hitbccemail == 0) {
+                $bccemail = $bccemail . $item['email'];
+            } else {
+                $bccemail = $bccemail . ';' . $item['email'];
+            }
+            $hitbccemail = $hitbccemail + 1;
+        }
+
+        $cabang = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+            ->select('a.text')
+            ->where('a.grp', 'CABANG')->where('a.subgrp', 'CABANG')->first()
+            ->text ?? '';
+
+        //
+
+        $tempdatatrado = '##tempdatatrado' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdatatrado, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('trado_id')->nullable();
+        });
+
+        $querydatatrado = db::table("trado")->from(db::raw("trado a with (readuncommitted)"))
+            ->select(
+                'a.id as trado_id',
+            )
+            ->whereRaw("a.statusaktif=1");
+
+        DB::table($tempdatatrado)->insertUsing([
+            'trado_id',
+        ], $querydatatrado);
+
+        $tempdataservicein = '##tempdataservicein' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdataservicein, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('trado_id')->nullable();
+            $table->datetime('tglbukti')->nullable();
+        });
+
+
+        $querydataservicein = db::table($tempdatatrado)->from(db::raw($tempdatatrado . " a"))
+            ->select(
+                'a.trado_id',
+                db::raw("max(b.tglbukti) as tglbukti")
+            )
+            ->join(db::raw("serviceinheader b with (readuncommitted)"), 'a.trado_id', 'b.trado_id')
+            ->groupBy('a.trado_id');
+
+        DB::table($tempdataservicein)->insertUsing([
+            'trado_id',
+            'tglbukti',
+        ], $querydataservicein);
+
+
+        $tempjadwalservice = '##tempjadwalservice' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempjadwalservice, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('trado_id')->nullable();
+            $table->datetime('tglservice')->nullable();
+            $table->datetime('tglserviceberikut')->nullable();
+        });
+
+
+        $queryloop = db::table($tempdatatrado)->from(db::raw($tempdatatrado . " a "))
+            ->select(
+                'a.trado_id',
+                'b.tglbukti',
+            )
+            ->leftjoin(db::raw($tempdataservicein . " b"), 'a.trado_id', 'b.trado_id')
+            ->whereRaw("year(isnull(b.tglbukti,'1900/1/1'))<>1900")
+            ->orderBy('a.trado_id', 'asc')
+            ->get();
+
+        $datadetail = json_decode($queryloop, true);
+        foreach ($datadetail as $item) {
+            $chitung = 0;
+            $dhitung = 0;
+            $btglservice = $item['tglbukti'];
+            while ($chitung <= 30) {
+                $btglservice = date('Y-m-d', strtotime($btglservice . '+1 days'));
+
+                $datepart = DB::select("select datepart(dw," . $btglservice . ") as dpart");
+                $dpart = json_decode(json_encode($datepart), true)[0]['dpart'];
+
+                $querylibur = DB::table('harilibur')->from(
+                    db::raw("harilibur as a with (readuncommitted)")
+                )
+                    ->select(
+                        'tgl'
+                    )->where('tgl', '=', $btglservice)
+                    ->first();
+
+                if (($dpart != 1)  && (!isset($querylibur))) {
+                    $dhitung = $dhitung + 1;
+                    if ($dhitung <= 14) {
+                        $ctglservice = $btglservice;
+                    }
+                }
+                $chitung = $chitung + 1;
+            }
+            DB::table($tempjadwalservice)->insert(
+                [
+                    'trado_id' => $item['trado_id'],
+                    'tglservice' => $item['tglbukti'],
+                    'tglserviceberikut' => $ctglservice,
+                ]
+            );
+        }
+
+
+
+        $query = db::table($tempjadwalservice)->from(db::raw($tempjadwalservice . " a"))
+            ->select(
+                'b.kodetrado',
+                db::raw("format(a.tglservice,'dd-MM-yyyy') as tanggaldari"),
+                db::raw("format(a.tglserviceberikut,'dd-MM-yyyy') as tanggalsampai"),
+                db::raw("'' as keterangan"),
+                db::raw("'yellow' as warna"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as toemail"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as ccemail"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as bccemail"),
+                db::raw("'" . $toemail . "' as toemail"),
+                db::raw("'" . $ccemail . "' as ccemail"),
+                db::raw("'" . $bccemail . "' as bccemail"),
+                db::raw("'Jadwal Service Rutin (" . $cabang . ")' as judul"),
+            )
+
+            ->join(db::raw("trado b with (readuncommitted)"), 'a.trado_id', 'b.id')
+            ->orderBy('a.tglserviceberikut', 'asc');
+
+        return $query;
+
+        // 
+    }
+
+
 
     public function filter($query, $relationFields = [])
     {

@@ -28,6 +28,25 @@ class PendapatanSupirDetailController extends Controller
                 'totalRows' => $pendapatanSupir->totalRows,
                 'totalPages' => $pendapatanSupir->totalPages,
                 'totalNominal' => $pendapatanSupir->totalNominal,
+                'totalGajiKenek' => $pendapatanSupir->totalGajiKenek,
+                'totalAll' => $pendapatanSupir->totalAll,
+            ]
+        ]);
+    }
+
+        /**
+     * @ClassName 
+     */
+    public function detailsupir(): JsonResponse
+    {
+        $pendapatanSupir = new PendapatanSupirDetail();
+
+        return response()->json([
+            'data' => $pendapatanSupir->getsupir(),
+            'attributes' => [
+                'totalRows' => $pendapatanSupir->totalRows,
+                'totalPages' => $pendapatanSupir->totalPages,
+                'totalNominal' => $pendapatanSupir->totalNominal,
                 'totalGajiKenek' => $pendapatanSupir->totalGajiKenek
             ]
         ]);

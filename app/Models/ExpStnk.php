@@ -56,7 +56,7 @@ class ExpStnk extends MyModel
             DB::raw("parameter with (readuncommitted)")
         )
             ->where('grp', '=', 'STATUS EXPIRED')
-            ->where('text', '=', '30 HARI SEBELUM EXPIRED')
+            ->where('text', '=', '90 HARI SEBELUM EXPIRED')
             ->first();
 
         $class = 'ExpStnkController';

@@ -1307,6 +1307,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('pendapatansupirheader/{id}/printreport', [PendapatanSupirHeaderController::class, 'printReport'])->whereNumber('id');
     Route::get('pendapatansupirheader/{id}/export', [PendapatanSupirHeaderController::class, 'export'])->name('pendapatansupirheader.export')->whereNumber('id');
+    Route::get('pendapatansupirheader/{id}/exportsupir', [PendapatanSupirHeaderController::class, 'exportsupir'])->name('pendapatansupirheader.exportsupir')->whereNumber('id');
     Route::post('pendapatansupirheader/{id}/cekvalidasi', [PendapatanSupirHeaderController::class, 'cekvalidasi'])->name('pendapatansupirheader.cekvalidasi')->whereNumber('id');
     Route::post('pendapatansupirheader/{id}/cekValidasiAksi', [PendapatanSupirHeaderController::class, 'cekValidasiAksi'])->name('pendapatansupirheader.cekValidasiAksi')->whereNumber('id');
     Route::post('pendapatansupirheader/approval', [PendapatanSupirHeaderController::class, 'approval']);
@@ -1316,6 +1317,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pendapatansupirheader/default', [PendapatanSupirHeaderController::class, 'default']);
     Route::resource('pendapatansupirheader', PendapatanSupirHeaderController::class)->parameters(['pendapatansupirheader' => 'pendapatanSupirHeader'])->whereNumber('pendapatanSupirHeader');
     Route::get('pendapatansupirdetail/jurnal', [PendapatanSupirDetailController::class, 'jurnal']);
+    Route::get('pendapatansupirdetail/detailsupir', [PendapatanSupirDetailController::class, 'detailsupir']);
     Route::resource('pendapatansupirdetail', PendapatanSupirDetailController::class)->whereNumber('pendapatansupirdetail');
 
     Route::get('approvalpendapatansupir/default', [ApprovalPendapatanSupirController::class, 'default']);

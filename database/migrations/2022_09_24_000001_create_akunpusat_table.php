@@ -27,6 +27,7 @@ class CreateakunpusatTable extends Migration
             $table->string('parent', 255)->nullable();
             $table->integer('statuscoa')->length(11)->nullable();
             $table->integer('statusaccountpayable')->length(11)->nullable();
+            $table->integer('statusparent')->length(11)->nullable();
             $table->unsignedBigInteger('akuntansi_id')->nullable();
             $table->integer('statusneraca')->length(11)->nullable();
             $table->integer('statuslabarugi')->length(11)->nullable();

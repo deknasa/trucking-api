@@ -104,7 +104,7 @@ class PendapatanSupirHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal '.$jurnal->pengeluaran_nobukti,
+                'keterangan' => 'Approval Jurnal ' . $jurnal->pengeluaran_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
@@ -665,6 +665,42 @@ class PendapatanSupirHeader extends MyModel
     }
 
     public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
+        $query = DB::table($this->table)->from(DB::raw("pendapatansupirheader with (readuncommitted)"))
+            ->select(
+                'pendapatansupirheader.id',
+                'pendapatansupirheader.nobukti',
+                'pendapatansupirheader.tglbukti',
+                'bank.namabank as bank_id',
+                'supir.namasupir as supir_id',
+                'pendapatansupirheader.tgldari',
+                'pendapatansupirheader.tglsampai',
+                'pendapatansupirheader.periode',
+                'statuscetak.memo as statuscetak',
+                'statuscetak.id as  statuscetak_id',
+                DB::raw("'Laporan Pendapatan Supir' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            )
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pendapatansupirheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pendapatansupirheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pendapatansupirheader.supir_id', 'supir.id');
+
+        $data = $query->first();
+        return $data;
+    }
+
+    public function getExportsupir($id)
     {
         $this->setRequestParameters();
 
@@ -1314,17 +1350,18 @@ class PendapatanSupirHeader extends MyModel
                 ->leftJoin(DB::raw("pengeluarantruckingdetail as d"), 'c.nobukti', 'd.nobukti')
                 ->where('b.penerimaantrucking_id', "2")
                 ->where('b.pendapatansupir_bukti', $nobukti);
-
             DB::table($temp)->insertUsing(['penerimaantruckingheader_id', 'nobukti', 'tglbukti', 'supir_id', 'nominal', 'keterangan', 'sisa'], $fetch);
 
             $fetch2 = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail as a with (readuncommitted)"))
                 ->select(DB::raw("b.nobukti,b.tglbukti, a.supir_id,a.keterangan,a.nominal as sisa"))
                 ->leftJoin(DB::raw("pengeluarantruckingheader as b"), 'b.nobukti', 'a.nobukti')
-                ->where("b.pengeluarantrucking_id", 1)
-                ->whereRaw("(a.supir_id=" . $supir_id . " or " . $supir_id . "=0)")
-                ->where("b.tglbukti", "<=", $tglBukti)
-                ->whereRaw("b.nobukti not in (select a.pengeluarantruckingheader_nobukti from penerimaantruckingdetail as a 
-            left join penerimaantruckingheader as b on b.id = a.penerimaantruckingheader_id
+                ->where("b.pengeluarantrucking_id", 1);
+            if ($supir_id != 0) {
+                $fetch2->whereRaw("a.supir_id = $supir_id");
+            }
+            $fetch2->where("b.tglbukti", "<=", $tglBukti)
+                    ->whereRaw("b.nobukti not in (select a.pengeluarantruckingheader_nobukti from penerimaantruckingdetail as a 
+                        left join penerimaantruckingheader as b on b.id = a.penerimaantruckingheader_id
                         where b.pendapatansupir_bukti='$nobukti' and b.penerimaantrucking_id=2)");
 
             DB::table($temp)->insertUsing(['nobukti', 'tglbukti', 'supir_id', 'keterangan', 'sisa'], $fetch2);
@@ -1335,10 +1372,10 @@ class PendapatanSupirHeader extends MyModel
             (case when a.sisa IS NULL then 0 else a.sisa end) as pinj_sisa,
             (case when a.nominal IS NULL then 0 else a.nominal end) as pinj_nominal"))
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), 'a.supir_id', "supir.id")
-                ->where(function ($query) {
-                    $query->whereRaw("a.sisa != 0")
-                        ->orWhereRaw("a.sisa is null");
-                })
+                // ->where(function ($query) {
+                //     $query->whereRaw("a.sisa != 0")
+                //         ->orWhereRaw("a.sisa is null");
+                // })
                 ->orderBy('a.tglbukti', 'asc')
                 ->orderBy('a.nobukti', 'asc');
         } else {

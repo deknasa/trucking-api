@@ -97,6 +97,9 @@ class LaporanPembelianBarang extends MyModel
                 'c.keterangan',
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
+                db::raw("'" . $cmpy . "' as judul"),
+
+                
             )
             ->join(DB::raw("penerimaanstokheader as b with (readuncommitted)"), 'a.nobukti',  'b.nobukti')
             ->join(db::raw("penerimaanstokdetail as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')

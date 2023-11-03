@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use App\Rules\ExistAkuntansi;
 use App\Rules\ExistTypeAkuntansi;
+use App\Rules\ValidasiParentAkunPusat;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class UpdateAkunPusatRequest extends FormRequest
@@ -43,9 +45,9 @@ class UpdateAkunPusatRequest extends FormRequest
         }
 
         $parameter = new Parameter();
-        $dataAccount = $parameter->getcombodata('STATUS ACCOUNT PAYABLE', 'STATUS ACCOUNT PAYABLE');
-        $dataAccount = json_decode($dataAccount, true);
-        foreach ($dataAccount as $item) {
+        $dataParent = $parameter->getcombodata('STATUS PARENT', 'STATUS PARENT');
+        $dataParent = json_decode($dataParent, true);
+        foreach ($dataParent as $item) {
             $statusAccount[] = $item['id'];
         }
 
@@ -86,6 +88,16 @@ class UpdateAkunPusatRequest extends FormRequest
                 'akuntansi_id' => ['required', 'numeric', 'min:1', new ExistAkuntansi()],
             ];
         }
+        $ruleParent = Rule::requiredIf(function () {
+            $bukanParent = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->whereRaw("grp = 'STATUS PARENT'")
+                ->whereRaw("text = 'BUKAN PARENT'")
+                ->first();
+            if ($bukanParent->id ==  request()->statusparent) {
+                return true;
+            }
+            return false;
+        });
 
         $rules = [
             'coa' => ['required', Rule::unique('akunpusat')->whereNotIn('id', [$this->id])],
@@ -93,11 +105,12 @@ class UpdateAkunPusatRequest extends FormRequest
             'type' => ['required'],
             'akuntansi' => ['required'],
             'statuscoa' => ['required', Rule::in($statusCoa)],
-            'statusaccountpayable' => ['required', Rule::in($statusAccount)],
+            'statusparent' => ['required', Rule::in($statusAccount)],
             'statusneraca' => ['required', Rule::in($statusNeraca)],
             'statuslabarugi' => ['required', Rule::in($statusLabaRugi)],
             'coamain' => ['required'],
-            'statusaktif' => ['required', Rule::in($statusAktif)],
+            'statusaktif' => ['required', Rule::in($statusAktif)],            
+            'parent' => [$ruleParent]
         ];
         $rules = array_merge(
             $rules,
@@ -114,7 +127,7 @@ class UpdateAkunPusatRequest extends FormRequest
             'keterangancoa' => 'keterangan coa',
             'type' => 'type',
             'statuscoa' => 'status coa',
-            'statusaccountpayable' => 'status account payable',
+            'statusparent' => 'status parent',
             'statusneraca' => 'status neraca',
             'statuslabarugi' => 'status laba rugi',
             'coamain' => 'kode perkiraan utama',
@@ -131,7 +144,7 @@ class UpdateAkunPusatRequest extends FormRequest
             'keterangancoa.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'type.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statuscoa.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'statusaccountpayable.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusparent.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusneraca.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statuslabarugi.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'coamain.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
