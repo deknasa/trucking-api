@@ -703,6 +703,11 @@ class Stok extends MyModel
 
     public function getvulkanisir($id)
     {
+
+        $queryvulkanawal =  Stok::from(db::raw("stok a with (readuncommitted)"))
+        ->select(db::raw("isnull(a.vulkanisirawal,0) as vulawal"))
+        ->where('a.id', $id)->first();
+        
         $queryvulkan = Stok::from(db::raw("stok a with (readuncommitted)"))
         ->select(
             'a.statusban',
@@ -717,7 +722,7 @@ class Stok extends MyModel
         
         $totalplus = $queryvulkan->vulkanplus ?? 0;
         $totalminus = $queryvulkan->vulkanminus ?? 0;
-        $vulawal = $queryvulkan->vulawal ?? 0;
+        $vulawal = $queryvulkanawal->vulawal ?? 0;
         $total = ($totalplus + $vulawal) - $totalminus;
         if (isset($queryvulkan)) {
             $totalvulkan = $total ?? 0;

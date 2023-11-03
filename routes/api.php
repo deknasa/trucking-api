@@ -311,10 +311,7 @@ Route::get('parameter/getparamrequest', [ParameterController::class, 'getparamre
 route::middleware(['auth:api'])->group(function () {
     Route::resource('dashboard', DashboardController::class)->whereNumber('dashboard');
     Route::get('error/geterrors', [ErrorController::class, 'errorUrl']);
-    Route::resource('toemail', ToEmailController::class);
-    Route::resource('ccemail', CcEmailController::class);
-    Route::resource('bccemail', BccEmailController::class);
-    Route::resource('reminderemail', ReminderEmailController::class);
+    
 
 });
 
@@ -413,7 +410,10 @@ route::middleware(['auth:api'])->group(function () {
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
 
-
+    Route::resource('toemail', ToEmailController::class);
+    Route::resource('ccemail', CcEmailController::class);
+    Route::resource('bccemail', BccEmailController::class);
+    Route::resource('reminderemail', ReminderEmailController::class);
     // Route::resource('dashboard', DashboardController::class)->whereNumber('dashboard');
     Route::get('kota/combo', [KotaController::class, 'combo']);
     Route::get('kota/field_length', [KotaController::class, 'fieldLength']);

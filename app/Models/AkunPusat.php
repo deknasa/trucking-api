@@ -112,7 +112,7 @@ class AkunPusat extends MyModel
                 'akuntansi.kodeakuntansi as akuntansi',
                 'parameter_statusaktif.memo as statusaktif',
                 'parameter_statuscoa.memo as statuscoa',
-                'parameter_statusaccountpayable.memo as statusaccountpayable',
+                'parameter_statusparent.memo as statusparent',
                 'parameter_statusneraca.memo as statusneraca',
                 'parameter_statuslabarugi.memo as statuslabarugi',
                 'akunpusat.modifiedby',
@@ -127,7 +127,7 @@ class AkunPusat extends MyModel
             ->leftJoin(DB::raw("akuntansi with (readuncommitted)"), 'akunpusat.akuntansi_id', 'akuntansi.id')
             ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'akunpusat.statusaktif', '=', 'parameter_statusaktif.id')
             ->leftJoin(DB::raw("parameter as parameter_statuscoa with (readuncommitted)"), 'akunpusat.statuscoa', '=', 'parameter_statuscoa.id')
-            ->leftJoin(DB::raw("parameter as parameter_statusaccountpayable with (readuncommitted)"), 'akunpusat.statusaccountpayable', '=', 'parameter_statusaccountpayable.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusparent with (readuncommitted)"), 'akunpusat.statusparent', '=', 'parameter_statusparent.id')
             ->leftJoin(DB::raw("parameter as parameter_statusneraca with (readuncommitted)"), 'akunpusat.statusneraca', '=', 'parameter_statusneraca.id')
             ->leftJoin(DB::raw("parameter as parameter_statuslabarugi with (readuncommitted)"), 'akunpusat.statuslabarugi', '=', 'parameter_statuslabarugi.id');
 
@@ -201,7 +201,7 @@ class AkunPusat extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statuscoa')->nullable();
-            $table->unsignedBigInteger('statusaccountpayable')->nullable();
+            $table->unsignedBigInteger('statusparent')->nullable();
             $table->unsignedBigInteger('statuslabarugi')->nullable();
             $table->unsignedBigInteger('statusneraca')->nullable();
             $table->unsignedBigInteger('statusaktif')->nullable();
@@ -220,19 +220,19 @@ class AkunPusat extends MyModel
 
         $iddefaultstatuscoa = $status->id ?? 0;
 
-        // statusaccountpayable
+        // statusparent
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
                 'id'
             )
-            ->where('grp', '=', 'STATUS ACCOUNT PAYABLE')
-            ->where('subgrp', '=', 'STATUS ACCOUNT PAYABLE')
+            ->where('grp', '=', 'STATUS PARENT')
+            ->where('subgrp', '=', 'STATUS PARENT')
             ->where('default', '=', 'YA')
             ->first();
 
-        $iddefaultstatusaccountpayable = $status->id ?? 0;
+        $iddefaultstatusparent = $status->id ?? 0;
 
         // statuslabarugi
         $status = Parameter::from(
@@ -279,7 +279,7 @@ class AkunPusat extends MyModel
         DB::table($tempdefault)->insert(
             [
                 "statuscoa" => $iddefaultstatuscoa,
-                "statusaccountpayable" => $iddefaultstatusaccountpayable,
+                "statusparent" => $iddefaultstatusparent,
                 "statuslabarugi" => $iddefaultstatuslabarugi,
                 "statusneraca" => $iddefaultstatusneraca,
                 "statusaktif" => $iddefaultstatusaktif,
@@ -291,7 +291,7 @@ class AkunPusat extends MyModel
         )
             ->select(
                 'statuscoa',
-                'statusaccountpayable',
+                'statusparent',
                 'statuslabarugi',
                 'statusneraca',
                 'statusaktif'
@@ -317,7 +317,7 @@ class AkunPusat extends MyModel
                 'parameter_statusaktif.text as statusaktif',
                 $this->table.parent,
                 'parameter_statuscoa.text as statuscoa',
-                'parameter_statusaccountpayable.text as statusaccountpayable',
+                'parameter_statusparent.text as statusparent',
                 'parameter_statusneraca.text as statusneraca',
                 'parameter_statuslabarugi.text as statuslabarugi',
                 $this->table.coamain,
@@ -328,7 +328,7 @@ class AkunPusat extends MyModel
             )
             ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'akunpusat.statusaktif', '=', 'parameter_statusaktif.id')
             ->leftJoin(DB::raw("parameter as parameter_statuscoa with (readuncommitted)"), 'akunpusat.statuscoa', '=', 'parameter_statuscoa.id')
-            ->leftJoin(DB::raw("parameter as parameter_statusaccountpayable with (readuncommitted)"), 'akunpusat.statusaccountpayable', '=', 'parameter_statusaccountpayable.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusparent with (readuncommitted)"), 'akunpusat.statusparent', '=', 'parameter_statusparent.id')
             ->leftJoin(DB::raw("parameter as parameter_statusneraca with (readuncommitted)"), 'akunpusat.statusneraca', '=', 'parameter_statusneraca.id')
             ->leftJoin(DB::raw("parameter as parameter_statuslabarugi with (readuncommitted)"), 'akunpusat.statuslabarugi', '=', 'parameter_statuslabarugi.id');
     }
@@ -345,7 +345,7 @@ class AkunPusat extends MyModel
             $table->string('statusaktif', 1000)->nullable();
             $table->string('parent', 1000)->nullable();
             $table->string('statuscoa', 1000)->nullable();
-            $table->string('statusaccountpayable', 1000)->nullable();
+            $table->string('statusparent', 1000)->nullable();
             $table->string('statusneraca', 1000)->nullable();
             $table->string('statuslabarugi', 1000)->nullable();
             $table->string('coamain', 1000)->nullable();
@@ -360,7 +360,7 @@ class AkunPusat extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'coa', 'keterangancoa', 'type', 'level', 'statusaktif', 'parent', 'statuscoa', 'statusaccountpayable', 'statusneraca', 'statuslabarugi', 'coamain', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'coa', 'keterangancoa', 'type', 'level', 'statusaktif', 'parent', 'statuscoa', 'statusparent', 'statusneraca', 'statuslabarugi', 'coamain', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -374,11 +374,11 @@ class AkunPusat extends MyModel
                 'akunpusat.keterangancoa',
                 'typeakuntansi.kodetype as type',
                 'akunpusat.type_id',
-                'akunpusat.akuntansi_id',
+                DB::raw('(case when (akunpusat.akuntansi_id = 0) then null else akunpusat.akuntansi_id end ) as akuntansi_id'),            
                 'akuntansi.kodeakuntansi as akuntansi',
                 'akunpusat.parent',
                 'akunpusat.statuscoa',
-                'akunpusat.statusaccountpayable',
+                'akunpusat.statusparent',
                 'akunpusat.statusneraca',
                 'akunpusat.statuslabarugi',
                 'akunpusat.statusaktif',
@@ -426,8 +426,8 @@ class AkunPusat extends MyModel
                                 $query = $query->where('parameter_statusaktif.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statuscoa') {
                                 $query = $query->where('parameter_statuscoa.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'statusaccountpayable') {
-                                $query = $query->where('parameter_statusaccountpayable.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusparent') {
+                                $query = $query->where('parameter_statusparent.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statusneraca') {
                                 $query = $query->where('parameter_statusneraca.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statuslabarugi') {
@@ -456,8 +456,8 @@ class AkunPusat extends MyModel
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'statuscoa') {
                                     $query = $query->orWhere('parameter_statuscoa.text', '=', "$filters[data]");
-                                } else if ($filters['field'] == 'statusaccountpayable') {
-                                    $query = $query->orWhere('parameter_statusaccountpayable.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusparent') {
+                                    $query = $query->orWhere('parameter_statusparent.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'statusneraca') {
                                     $query = $query->orWhere('parameter_statusneraca.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'statuslabarugi') {
@@ -514,7 +514,7 @@ class AkunPusat extends MyModel
         $akunPusat->parent = $parent;
         $akunPusat->akuntansi_id = $data['akuntansi_id'];
         $akunPusat->statuscoa = $data['statuscoa'];
-        $akunPusat->statusaccountpayable = $data['statusaccountpayable'];
+        $akunPusat->statusparent = $data['statusparent'];
         $akunPusat->statusneraca = $data['statusneraca'];
         $akunPusat->statuslabarugi = $data['statuslabarugi'];
         $akunPusat->coamain = $data['coamain'];
@@ -561,7 +561,7 @@ class AkunPusat extends MyModel
         $akunPusat->parent = $parent;
         $akunPusat->akuntansi_id = $data['akuntansi_id'];
         $akunPusat->statuscoa = $data['statuscoa'];
-        $akunPusat->statusaccountpayable = $data['statusaccountpayable'];
+        $akunPusat->statusparent = $data['statusparent'];
         $akunPusat->statusneraca = $data['statusneraca'];
         $akunPusat->statuslabarugi = $data['statuslabarugi'];
         $akunPusat->statusaktif = $data['statusaktif'];
