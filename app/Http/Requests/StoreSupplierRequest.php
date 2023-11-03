@@ -88,7 +88,7 @@ class StoreSupplierRequest extends FormRequest
             'namapemilik' => 'nama pemilik',
             'jenisusaha' => 'jenis usaha',
             'bank' => 'bank',
-            'coa' => 'coa',
+            'ketcoa' => 'kode perkiraan',
             'rekeningbank' => 'rekening bank',
             'namarekening' => 'nama rekening',
             'jabatan' => 'jabatan',

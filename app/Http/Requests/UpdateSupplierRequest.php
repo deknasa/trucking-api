@@ -93,6 +93,7 @@ class UpdateSupplierRequest extends FormRequest
             'namapemilik' => 'nama pemilik',
             'jenisusaha' => 'jenis usaha',
             'bank' => 'bank',
+            'ketcoa' => 'kode perkiraan',
             'rekeningbank' => 'rekening bank',
             'namarekening' => 'nama rekening',
             'jabatan' => 'jabatan',
