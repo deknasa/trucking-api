@@ -27,7 +27,11 @@ class StorePengeluaranStokDetailRequest extends FormRequest
      */
     public function rules()
     {
-
+        // Rule::requiredIf(function ($attribute, $value, $fail) {
+        //     $item = explode('.', $attribute);
+        //     $stok = DB::table('stok')->where('id', request()->detail_stok_id[$item[1]])->first();
+        //     return in_array($stok->statusservicerutin, [345, 346, 347]);
+        // })
         $spk = DB::table('parameter')->where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
         $retur = DB::table('parameter')->where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
         $kor = DB::table('parameter')->where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')->first();
@@ -63,7 +67,16 @@ class StorePengeluaranStokDetailRequest extends FormRequest
                 },
             ],  
             'detail_persentasediscount.*' => 'numeric|max:100',
-                
+            'detail_statusoli.*'=> [
+                function ($attribute, $value, $fail) {
+                    $item = explode('.',$attribute); // Mengambil id dari detail_stok
+                    $stok = DB::table('stok')->where('id', request()->detail_stok_id[$item[1]])->first();
+                    if(in_array($stok->statusservicerutin, [345,346,347]) && !$value){
+                        $fail('Status oli '. app(ErrorController::class)->geterror('WI')->keterangan);
+                    }
+                    
+                },
+            ],
             'pengeluaranstokheader_id.*' => 'required',
             'detail_keterangan.*' => 'required',
         ];
