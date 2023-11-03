@@ -541,7 +541,8 @@ class AkunPusat extends MyModel
 
     public function processUpdate(AkunPusat $akunPusat, array $data): AkunPusat
     {
-        if ($data['parent'] == null) {
+        $parent = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS PARENT')->where('text', 'PARENT')->first();
+        if ($data['statusparent'] == $parent->id) {
             $parent = $data['coa'];
             $level = 1;
         } else {

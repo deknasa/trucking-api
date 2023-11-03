@@ -8,6 +8,7 @@ use App\Rules\ExistAkuntansi;
 use App\Rules\ExistTypeAkuntansi;
 use App\Rules\ValidasiParentAkunPusat;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class UpdateMainAkunPusatRequest extends FormRequest
@@ -88,6 +89,16 @@ class UpdateMainAkunPusatRequest extends FormRequest
             ];
         }
 
+        $ruleParent = Rule::requiredIf(function () {
+            $bukanParent = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->whereRaw("grp = 'STATUS PARENT'")
+                ->whereRaw("text = 'BUKAN PARENT'")
+                ->first();
+            if ($bukanParent->id ==  request()->statusparent) {
+                return true;
+            }
+            return false;
+        });
         $rules = [
             'coa' => ['required', Rule::unique('mainakunpusat')->whereNotIn('id', [$this->id])],
             'keterangancoa' => ['required', Rule::unique('mainakunpusat')->whereNotIn('id', [$this->id])],
@@ -98,7 +109,7 @@ class UpdateMainAkunPusatRequest extends FormRequest
             'statusneraca' => ['required', Rule::in($statusNeraca)],
             'statuslabarugi' => ['required', Rule::in($statusLabaRugi)],
             'statusaktif' => ['required', Rule::in($statusAktif)],
-            'parent' => [new ValidasiParentAkunPusat]
+            'parent' => [$ruleParent]
         ];
         $rules = array_merge(
             $rules,
