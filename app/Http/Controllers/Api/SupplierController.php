@@ -87,7 +87,7 @@ class SupplierController extends Controller
     public function show($id)
     {
 
-        $data = Supplier::find($id);
+        $data = (new Supplier())->getAll($id);
         // $detail = ServiceInDetail::getAll($id);
 
         return response([

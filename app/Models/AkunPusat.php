@@ -121,7 +121,8 @@ class AkunPusat extends MyModel
                 DB::raw("'Laporan Kode Perkiraan' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                DB::raw("(trim(akunpusat.coa)+' - '+trim(akunpusat.keterangancoa)) as kodeket"),
             )
             ->leftJoin(DB::raw("typeakuntansi with (readuncommitted)"), 'akunpusat.type_id', 'typeakuntansi.id')
             ->leftJoin(DB::raw("akuntansi with (readuncommitted)"), 'akunpusat.akuntansi_id', 'akuntansi.id')
@@ -438,6 +439,8 @@ class AkunPusat extends MyModel
                                 $query = $query->where('typeakuntansi.kodetype', 'LIKE', "%$filters[data]%");
                             } elseif ($filters['field'] == 'akuntansi') {
                                 $query = $query->where('akuntansi.kodeakuntansi', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'kodeket') {
+                                $query = $query->whereRaw("(trim(akunpusat.coa)+' - '+trim(akunpusat.keterangancoa)) LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -466,6 +469,8 @@ class AkunPusat extends MyModel
                                     $query = $query->orWhere('typeakuntansi.kodetype', 'LIKE', "%$filters[data]%");
                                 } elseif ($filters['field'] == 'akuntansi') {
                                     $query = $query->orWhere('akuntansi.kodeakuntansi', 'LIKE', "%$filters[data]%");
+                                } elseif ($filters['field'] == 'kodeket') {
+                                    $query = $query->OrwhereRaw("(trim(akunpusat.coa)+' - '+trim(akunpusat.keterangancoa)) LIKE '%$filters[data]%'");
                                 } else {
                                     // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                     $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Services\RunningNumberService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -242,5 +243,46 @@ class InputTrip extends MyModel
             $query = [];
             return $query;
         }
+    }
+
+    public function getInfo($trado_id, $upah_id, $statuscontainer)
+    {
+        $getUpah = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->where('id', $upah_id)->first();
+        if($statuscontainer == 3){
+            $jarak = number_format((float) $getUpah->jarakfullempty,2);
+        } else {
+            $jarak = number_format((float) $getUpah->jarak, 2);
+        }
+
+        $getTrado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))->where('id', $trado_id)->first();
+        $temtabel = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+
+        Schema::create($temtabel, function (Blueprint $table) {
+            $table->id();
+            $table->longText('nopol')->nullable();
+            $table->date('tanggal')->nullable();
+            $table->string('status', 100)->nullable();
+            $table->double('km', 15, 2)->nullable();
+            $table->double('kmperjalanan', 15, 2)->nullable();
+            $table->integer('statusbatas')->nullable();
+        });
+
+        DB::table($temtabel)->insertUsing([
+            'nopol',
+            'tanggal',
+            'status',
+            'km',
+            'kmperjalanan',
+            'statusbatas'
+        ], (new ReminderOli())->getdata());
+
+        $query = DB::table($temtabel)->from(DB::raw("$temtabel as a with (readuncommitted)"))
+        ->select(
+            DB::raw("REPLACE(a.status, 'PENGGANTIAN', '') as status"),
+            DB::raw("CONCAT(CAST(a.kmperjalanan AS DECIMAL(10, 2)),'(+$jarak)') as kmperjalanan"),
+            DB::raw(" CAST(ROUND((a.kmperjalanan + $jarak), 2, 1) AS DECIMAL(10, 2)) as kmtotal")
+        )
+        ->where('a.nopol', $getTrado->kodetrado)->get();
+       return $query;
     }
 }

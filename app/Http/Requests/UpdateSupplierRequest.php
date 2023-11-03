@@ -64,7 +64,7 @@ class UpdateSupplierRequest extends FormRequest
             'statusaktif' => ['required',Rule::in($status),'numeric','min:1'],
             'namapemilik' => 'required',
             'jenisusaha' => 'required',
-            'coa' => ['required',$coa],
+            'ketcoa' => ['required'],
             'namarekening' => ['required'],
             'statusdaftarharga' => ['required','numeric',Rule::in($statusDaftarHarga)],
         ];
