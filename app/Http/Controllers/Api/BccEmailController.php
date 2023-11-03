@@ -11,9 +11,7 @@ use Illuminate\Support\Facades\DB;
 class BccEmailController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function index()
     {
@@ -26,7 +24,9 @@ class BccEmailController extends Controller
             ]
         ]);
     }
-
+    /**
+     * @ClassName 
+     */
     public function store(StoreBccEmailRequest $request)
     {
         DB::beginTransaction();
@@ -61,10 +61,7 @@ class BccEmailController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\BccEmail  $bccEmail
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function show(BccEmail $bccemail)
     {
@@ -75,22 +72,7 @@ class BccEmailController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\BccEmail  $bccEmail
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(BccEmail $bccEmail)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateBccEmailRequest  $request
-     * @param  \App\Models\BccEmail  $bccEmail
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function update(UpdateBccEmailRequest $request, BccEmail $bccemail)
     {
@@ -126,10 +108,7 @@ class BccEmailController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\BccEmail  $bccEmail
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function destroy(BccEmail $bccemail)
     {
