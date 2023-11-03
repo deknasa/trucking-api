@@ -175,6 +175,13 @@ class LaporanBanGudangSementara extends MyModel
             'jumlahhari',
         ], $this->getdata());
 
+        
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
         // dd(db::table($temprekapall)->get());
         $query = db::table($temprekapall)->from(db::raw($temprekapall . " a"))
             ->select(
@@ -183,7 +190,11 @@ class LaporanBanGudangSementara extends MyModel
                 'c.gudang',
                 'a.nobukti',
                 'a.tgl as tanggal',
-                'a.jumlahhari as jlhhari',
+                'a.jumlahhari as jlhhari',                
+                DB::raw("'Laporan Ban Gudang Sementara' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
             ->join(db::raw("gudang c with (readuncommitted)"), 'a.gudang_id', 'c.id')
