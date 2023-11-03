@@ -1,105 +1,139 @@
 <?php
 
 namespace App\Http\Controllers\Api;
-use App\Http\Controllers\Controller;
-
 use App\Models\ReminderEmail;
+
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Services\ReminderEmailService;
+use App\DataTransferObject\ReminderEmailDTO;
 use App\Http\Requests\StoreReminderEmailRequest;
 use App\Http\Requests\UpdateReminderEmailRequest;
 
 class ReminderEmailController extends Controller
 {
+    protected ReminderEmailService $service;
+    function __construct(ReminderEmailService $service) {
+        $this->service = $service;
+    }
+
+    
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function index()
     {
         
-            $data =
-            [
-                (object)[
-                    "id"=> "1",
-                    "keterangan"=> "REMINDER STNK/KIR/ASURANSI/PAJAK",
-                    "statusaktif"=> "{\"MEMO\":\"AKTIF\",\"SINGKATAN\":\"A\",\"WARNA\":\"#009933\",\"WARNATULISAN\":\"#FFF\"}",
-                    ]
-            ];
-                
-                
-
+        $reminderEmail = new ReminderEmail();
         return response([
-            'data' => $data,
+            'data' => $reminderEmail->get(),
             'attributes' => [
-                'totalRows' => 1,
-                'totalPages' => 1
+                'totalRows' => $reminderEmail->totalRows,
+                'totalPages' => $reminderEmail->totalPages
             ]
         ]);
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreReminderEmailRequest  $request
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function store(StoreReminderEmailRequest $request)
     {
-        //
+        DB::beginTransaction();
+        try {
+            $reminderEmail = $this->service->store(
+                ReminderEmailDTO::dataRequest($request)
+            );
+            $reminderEmail->position = $this->getPosition($reminderEmail, $reminderEmail->getTable())->position;
+            if ($request->limit==0) {
+                $reminderEmail->page = ceil($reminderEmail->position / (10));
+            } else {
+                $reminderEmail->page = ceil($reminderEmail->position / ($request->limit ?? 10));
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil disimpan',
+                'data' => $reminderEmail
+            ], 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\ReminderEmail  $reminderEmail
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
-    public function show(ReminderEmail $reminderEmail)
+    public function show(ReminderEmail $reminderemail)
     {
-        //
+        return response([
+            'status' => true,
+            'data' => $reminderemail->findAll($reminderemail->id)
+        ]);
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\ReminderEmail  $reminderEmail
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
-    public function edit(ReminderEmail $reminderEmail)
+    public function update(StoreReminderEmailRequest $request, ReminderEmail $reminderemail)
     {
-        //
+        DB::beginTransaction();
+        try {
+            $reminderEmail = $this->service->update(
+                $reminderemail,
+                ReminderEmailDTO::dataRequest($request)
+            );
+            $reminderEmail->position = $this->getPosition($reminderEmail, $reminderEmail->getTable())->position;
+            if ($request->limit==0) {
+                $reminderEmail->page = ceil($reminderEmail->position / (10));
+            } else {
+                $reminderEmail->page = ceil($reminderEmail->position / ($request->limit ?? 10));
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil disimpan',
+                'data' => $reminderEmail
+            ], 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateReminderEmailRequest  $request
-     * @param  \App\Models\ReminderEmail  $reminderEmail
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
-    public function update(UpdateReminderEmailRequest $request, ReminderEmail $reminderEmail)
+    public function destroy(ReminderEmail $reminderemail)
     {
-        //
-    }
+        DB::beginTransaction();
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\ReminderEmail  $reminderEmail
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(ReminderEmail $reminderEmail)
-    {
-        //
+        try {
+          
+            $reminderemail = (new ReminderEmail())->processDestroy($reminderemail);
+            $reminderemail->position = $this->getPosition($reminderemail, $reminderemail->getTable())->position;
+            if (request()->limit==0) {
+                $reminderemail->page = ceil($reminderemail->position / (10));
+            } else {
+                $reminderemail->page = ceil($reminderemail->position / (request()->limit ?? 10));
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil disimpan',
+                'data' => $reminderemail
+            ], 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 }
