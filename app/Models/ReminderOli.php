@@ -686,10 +686,22 @@ class ReminderOli extends MyModel
             END) as urutid")
             )
             ->Join(DB::raw("trado  b with (readuncommitted)"), 'a.trado_id', 'b.id')
-            ->Join(DB::raw("$tempstatus with (readuncommitted)"), 'a.statusreminder', $tempstatus . '.status')
-            ->leftJoin(DB::raw($Temppergantian . " c"), 'b.id', 'c.trado_id')
-
+            ->Join(DB::raw($tempstatus ." e"), 'a.statusreminder',   'e.status')
+            // ->leftJoin(DB::raw($Temppergantian . " c"), 'b.id', 'c.trado_id')
+            ->leftjoin(DB::raw($Temppergantian . " c"), function ($join) {
+                $join->on('c.trado_id', '=', 'b.id');
+                $join->on('c.statusreminder', '=', 'e.status');
+            })            
+            // ->Where('b.id', 33)
             ->Where('b.statusaktif', 1);
+
+            // dump(db::table($Tempsaldoreminderoli)->where('trado_id',33)->get());
+            // dump(db::table($Temppergantian)->where('trado_id',33)->get());
+
+            // dd($query->get());
+            
+
+            // dd(db::table($Tempsaldoreminderolirekap)->where('nopol','B 9211 BEI')->get());
 
         DB::table($Tempsaldoreminderolirekap)->insertUsing([
             'nopol',
@@ -710,9 +722,11 @@ class ReminderOli extends MyModel
                 'a.kmperjalanan',
                 'a.statusbatas',
             )
+            
             ->orderby('a.urutid', 'desc');
 
 
+        // dd(db::table($Tempsaldoreminderolirekap)->where('nopol','B 9211 BEI')->get());
         // dd($query->get());
         return $query;
     }
