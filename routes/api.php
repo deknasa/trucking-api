@@ -516,6 +516,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::delete('mandorabsensisupir/{id}/delete', [MandorAbsensiSupirController::class, 'destroy'])->whereNumber('id');
 
     Route::post('inputtrip', [InputTripController::class, 'store']);
+    Route::get('inputtrip/getinfo', [InputTripController::class, 'getInfoTrado']);
     Route::get('inputtrip/getKotaRitasi', [InputTripController::class, 'getKotaRitasi']);
 
 

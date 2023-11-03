@@ -290,6 +290,52 @@ class Supplier extends MyModel
         return $data;
     }
 
+
+    public function getAll($id)
+    {
+        $query = DB::table('supplier')->select(
+            'supplier.id',
+            'supplier.namasupplier',
+            'supplier.namakontak',
+            'supplier.top',
+            'supplier.keterangan',
+            'supplier.alamat',
+            'supplier.kota',
+            'supplier.kodepos',
+            'supplier.notelp1',
+            'supplier.notelp2',
+            'supplier.email',
+            'supplier.statusapproval',
+            'supplier.statusaktif',
+            'supplier.web',
+            'supplier.namapemilik',
+            'supplier.jenisusaha',
+            'supplier.bank',
+            'supplier.coa',
+            DB::raw("(trim(akunpusat.coa)+' - '+trim(akunpusat.keterangancoa)) as ketcoa"),
+            'supplier.rekeningbank',
+            'supplier.namarekening',
+            'supplier.jabatan',
+
+            'supplier.statusdaftarharga',
+            'supplier.statuspostingtnl',
+            'supplier.kategoriusaha',
+            'supplier.statusapproval',
+            'supplier.tglapproval',
+            'supplier.userapproval',
+            'supplier.modifiedby',
+            'supplier.created_at',
+            'supplier.updated_at'
+
+        )
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), "supplier.coa", 'akunpusat.coa')
+            ->where('supplier.id', $id);
+
+        $data = $query->first();
+
+        return $data;
+    }
+
     public function selectColumns($query)
     { //sesuaikan dengan createtemp
 
