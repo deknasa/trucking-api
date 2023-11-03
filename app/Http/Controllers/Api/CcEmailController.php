@@ -10,10 +10,8 @@ use Illuminate\Support\Facades\DB;
 
 class CcEmailController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+   /**
+     * @ClassName 
      */
     public function index()
     {
@@ -28,20 +26,7 @@ class CcEmailController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreCcEmailRequest  $request
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function store(StoreCcEmailRequest $request)
     {
@@ -77,10 +62,7 @@ class CcEmailController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\CcEmail  $ccEmail
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function show(CcEmail $ccemail)
     {
@@ -91,11 +73,7 @@ class CcEmailController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateCcEmailRequest  $request
-     * @param  \App\Models\CcEmail  $ccEmail
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function update(UpdateCcEmailRequest $request, CcEmail $ccemail)
     {
@@ -131,10 +109,7 @@ class CcEmailController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\CcEmail  $ccEmail
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function destroy(CcEmail $ccemail)
     {

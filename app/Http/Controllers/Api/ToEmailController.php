@@ -11,9 +11,7 @@ use Illuminate\Support\Facades\DB;
 class ToEmailController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function index()
     {
@@ -28,10 +26,7 @@ class ToEmailController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreToEmailRequest  $request
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function store(StoreToEmailRequest $request)
     {
@@ -67,10 +62,7 @@ class ToEmailController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\ToEmail  $toEmail
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function show(ToEmail $toemail)
     {
@@ -81,11 +73,7 @@ class ToEmailController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateToEmailRequest  $request
-     * @param  \App\Models\ToEmail  $toEmail
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function update(UpdateToEmailRequest $request, ToEmail $toemail)
     {
@@ -121,10 +109,7 @@ class ToEmailController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\ToEmail  $toEmail
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function destroy(ToEmail $toemail)
     {
