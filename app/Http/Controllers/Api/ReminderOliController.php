@@ -37,24 +37,24 @@ class ReminderOliController extends Controller
     public function sendEmailReminder_olimesin()
     {
 
-        // $data = [
-        //     (object)[
-        //         "tgl"=> "2023-11-15",
-        //         "kodetrado"=> "BK SKSK HY",
-        //         "tanggal"=> "11-Oktober-2023",
-        //         "batasganti"=> "10000",
-        //         "kberjalan"=> "3000",
-        //         "Keterangan"=> "04817106",
-        //         "warna"=> "RED",
-        //         "toemail"=> "iqbal13rafli@gmail.com;ryan_vixy1402@yahoo.com",
-        //         "ccemail"=> "iqbal13rafli@gmail.com;ryan_vixy1402@yahoo.com;denicetas15@gmail.com",
-        //         "bccemail"=> "ryan_vixy1402@yahoo.com",
-        //         "judul"=> "Reminder Penggantian Oli Mesin (Mdn)",
-        //     ],
-        // ];
+        $data = [
+            (object)[
+                "tgl"=> "2023-11-15",
+                "kodetrado"=> "BK SKSK HY",
+                "tanggal"=> "11-Oktober-2023",
+                "batasganti"=> "10000",
+                "kberjalan"=> "3000",
+                "Keterangan"=> "04817106",
+                "warna"=> "RED",
+                "toemail"=> "iqbal13rafli@gmail.com;ryan_vixy1402@yahoo.com",
+                "ccemail"=> "iqbal13rafli@gmail.com;ryan_vixy1402@yahoo.com;denicetas15@gmail.com",
+                "bccemail"=> "ryan_vixy1402@yahoo.com",
+                "judul"=> "Reminder Penggantian Oli Mesin (Mdn)",
+            ],
+        ];
 
         $ReminderOliMesin = (new ReminderOli())->reminderemailolimesin()->get();
-        $data = $ReminderOliMesin->toArray();
+        // $data = $ReminderOliMesin->toArray();
         $toemail = explode(';', $data[0]->toemail);
         $ccemail = explode(';', $data[0]->ccemail);
         $bccemail = explode(';', $data[0]->bccemail);

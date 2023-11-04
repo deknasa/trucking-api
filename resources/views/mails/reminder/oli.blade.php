@@ -1,47 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <style>
-        /* CSS untuk gaya tabel */
-        *{
-            color: black;
-        }
-        table {
-            border-collapse: collapse;
-            width: 75%;
-            /* margin: 0 auto; */
-        }
-        th, td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        /* tr:nth-child(even) {
-            background-color: #f2f2f2;
-        } */
-        /* CSS untuk gaya kontainer email */
-        .container {
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            /* padding: 20px; */
-            width:100%;
-            margin: 0 auto;
-        }
-    </style>
+    @include('style')
 </head>
 <body>
     <div class="container">
-        <p>
+        <p class="text">
             <strong>{{json_decode($data)[0]->judul}} </strong>
             (Report generated on : {{date('d-m-Y H:i:s')}})
         </p>
         <table>
             <tr>
-                <th>No</th>
-                <th>kodetrado</th>
+                <th class="tbl-no">No</th>
+                <th>No Pol</th>
                 <th>Tanggal Ganti Terakhir</th>
                 <th>Batas Ganti (KM)</th>
                 <th>KM Berjalan	</th>
@@ -49,7 +20,7 @@
             </tr>
             @foreach (json_decode($data) as $sim)
             <tr  style="background-color: {{$sim->warna}}; ">
-                <td>{{$loop->iteration}}</td>
+                <td  class="tbl-no">{{$loop->iteration}}</td>
                 <td>{{$sim->kodetrado}}</td>
                 <td>{{$sim->tanggal}}</td>
                 <td style="text-align:right">{{$sim->batasganti}}</td>
@@ -58,6 +29,8 @@
             </tr>
             @endforeach
         </table>
+        <div class="text">
+
         
         <h1>ALUR PROSEDUR OPNAME SERVICE</h1>
         
@@ -144,6 +117,7 @@
         <p>IT Pusat</p>
         
         {{ config('app.name') }}
+    </div>
         
     </div>
 </body>

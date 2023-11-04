@@ -41,7 +41,7 @@
         <table>
             <tr>
                 <th>No</th>
-                <th>kodetrado</th>
+                <th>No Pol</th>
                 <th>Tanggal Ganti Terakhir</th>
                 <th>Batas Ganti (KM)</th>
                 <th>KM Berjalan	</th>
