@@ -1138,7 +1138,7 @@ class ReminderOli extends MyModel
             'statusbatas'
         ], $this->getdata());
 
-        DB::delete(DB::raw("delete " . $tempsaringanhawa . " from " . $tempsaringanhawa . " as a WHERE a.status not in('PENGGANTIAN OLI GARDAN')"));
+        DB::delete(DB::raw("delete " . $tempsaringanhawa . " from " . $tempsaringanhawa . " as a WHERE a.status not in('PENGGANTIAN SARINGAN HAWA')"));
         DB::delete(DB::raw("delete " . $tempsaringanhawa . " from " . $tempsaringanhawa . " as a WHERE (a.km-a.kmperjalanan)>" . $batasmax));
 
 
@@ -1227,12 +1227,12 @@ class ReminderOli extends MyModel
                            when (a.km-a.kmperjalanan)<=" . $batasmax . " then 'YELLOW' 
                            else '' end) as warna"),
 
-                // db::raw("'ryan_vixy1402@yahoo.com' as toemail"),
-                // db::raw("'ryan_vixy1402@yahoo.com' as ccemail"),
-                // db::raw("'ryan_vixy1402@yahoo.com' as bccemail"),
-                db::raw("'" . $toemail . "' as toemail"),
-                db::raw("'" . $ccemail . "' as ccemail"),
-                db::raw("'" . $bccemail . "' as bccemail"),
+                db::raw("'ryan_vixy1402@yahoo.com' as toemail"),
+                db::raw("'ryan_vixy1402@yahoo.com' as ccemail"),
+                db::raw("'ryan_vixy1402@yahoo.com' as bccemail"),
+                // db::raw("'" . $toemail . "' as toemail"),
+                // db::raw("'" . $ccemail . "' as ccemail"),
+                // db::raw("'" . $bccemail . "' as bccemail"),
                 db::raw("'Reminder Penggantian Saringan Hawa (" . $cabang . ")' as judul"),
             )
             ->orderby('a.id', 'asc');
