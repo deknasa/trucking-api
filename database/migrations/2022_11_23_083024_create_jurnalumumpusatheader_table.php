@@ -27,6 +27,7 @@ class CreateJurnalumumpusatheaderTable extends Migration
             $table->dateTime('tglapproval')->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();              
             $table->string('cabang',500)->nullable();            
+            $table->unsignedBigInteger('cabang_id')->nullable();              
             $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
