@@ -109,7 +109,7 @@ class UpdateMainAkunPusatRequest extends FormRequest
             'statusneraca' => ['required', Rule::in($statusNeraca)],
             'statuslabarugi' => ['required', Rule::in($statusLabaRugi)],
             'statusaktif' => ['required', Rule::in($statusAktif)],
-            'parent' => [$ruleParent]
+            'parentnama' => [$ruleParent]
         ];
         $rules = array_merge(
             $rules,
@@ -130,6 +130,7 @@ class UpdateMainAkunPusatRequest extends FormRequest
             'statusneraca' => 'status neraca',
             'statuslabarugi' => 'status laba rugi',
             'statusaktif' => 'status aktif',
+            'parentnama' => 'parent'
         ];
     }
 
