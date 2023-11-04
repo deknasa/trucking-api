@@ -1138,7 +1138,7 @@ class ReminderOli extends MyModel
             'statusbatas'
         ], $this->getdata());
 
-        DB::delete(DB::raw("delete " . $tempsaringanhawa . " from " . $tempsaringanhawa . " as a WHERE a.status not in('PENGGANTIAN OLI GARDAN')"));
+        DB::delete(DB::raw("delete " . $tempsaringanhawa . " from " . $tempsaringanhawa . " as a WHERE a.status not in('PENGGANTIAN SARINGAN HAWA')"));
         DB::delete(DB::raw("delete " . $tempsaringanhawa . " from " . $tempsaringanhawa . " as a WHERE (a.km-a.kmperjalanan)>" . $batasmax));
 
 
