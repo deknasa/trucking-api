@@ -17,10 +17,21 @@ class ImportDataCabang extends Model
         $cabang = Cabang::where('id',$data['cabang'])->first();
        
         $cabangMemo = json_decode($cabang->memo,TRUE);
+
+        if (empty($cabangMemo['URL']) || empty($cabangMemo['USER']) || empty($cabangMemo['PASSWORD'])) {
+            dd('kosing');
+        }else {
+            dd('ada');
+        }
         $urlCabang = env($cabangMemo['URL']);
         $userCabang = env($cabangMemo['USER']);
         $passwordCabang = env($cabangMemo['PASSWORD']);
 
+        if (empty($urlCabang) || empty($userCabang) || empty($passwordCabang)) {
+            dd('kosing');
+        }else {
+            dd('ada');
+        }
         $getToken = Http::withHeaders([
             'Content-Type' => 'application/json',
             'Accept' => 'application/json'
