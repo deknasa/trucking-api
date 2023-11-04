@@ -54,7 +54,7 @@
         <table>
             <tr>
                 <th>No</th>
-                <th>kodetrado</th>
+                <th>No Pol</th>
                 <th>Tanggal Service Terakhir</th>
                 <th>Tanggal Service Berikutnya</th>
                 <th>Keterangan</th>
