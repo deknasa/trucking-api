@@ -321,9 +321,9 @@ class Agen extends MyModel
             "agen.contactperson",
             "agen.top",
             "agen.statustas",
-            "agen.coa",
-            'coa.keterangancoa as keterangancoa',
-            'coapendapatan.keterangancoa as keterangancoapendapatan',
+            "agen.coa",            
+            DB::raw("(trim(coa.coa)+' - '+trim(coa.keterangancoa)) as keterangancoa"),
+            DB::raw("(trim(coapendapatan.coa)+' - '+trim(coapendapatan.keterangancoa)) as keterangancoapendapatan"),
             "agen.coapendapatan",
         )
         ->leftJoin(DB::raw("akunpusat as coa with (readuncommitted)"), 'agen.coa', 'coa.coa')

@@ -58,7 +58,8 @@ class MainAkunPusat extends MyModel
                 'mainakunpusat.created_at',
                 'mainakunpusat.updated_at',
                 DB::raw("'Laporan Kode Perkiraan' as judulLaporan"),
-                DB::raw("'" . $getJudul->text . "' as judul")
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("(trim(mainakunpusat.coa)+' - '+trim(mainakunpusat.keterangancoa)) as kodeket"),
             )
 
             ->leftJoin(DB::raw("typeakuntansi with (readuncommitted)"), 'mainakunpusat.type_id', 'typeakuntansi.id')
@@ -346,6 +347,7 @@ class MainAkunPusat extends MyModel
                 DB::raw('(case when (mainakunpusat.akuntansi_id = 0) then null else mainakunpusat.akuntansi_id end ) as akuntansi_id'),     
                 'akuntansi.kodeakuntansi as akuntansi',
                 'mainakunpusat.parent',
+                DB::raw("(trim(parent.coa)+' - '+trim(parent.keterangancoa)) as parentnama"),
                 'mainakunpusat.statuscoa',
                 'mainakunpusat.statusparent',
                 'mainakunpusat.statusneraca',
@@ -354,6 +356,7 @@ class MainAkunPusat extends MyModel
             )
             ->leftJoin(DB::raw("typeakuntansi with (readuncommitted)"), 'mainakunpusat.type_id', 'typeakuntansi.id')
             ->leftJoin(DB::raw("akuntansi with (readuncommitted)"), 'mainakunpusat.akuntansi_id', 'akuntansi.id')
+            ->leftJoin(DB::raw("mainakunpusat as parent with (readuncommitted)"), 'mainakunpusat.parent', 'parent.coa')
             ->where('mainakunpusat.id', $id)
             ->first();
 
@@ -391,6 +394,8 @@ class MainAkunPusat extends MyModel
                             $query = $query->where('typeakuntansi.kodetype', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'akuntansi') {
                             $query = $query->where('akuntansi.kodeakuntansi', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'kodeket') {
+                            $query = $query->whereRaw("(trim(mainakunpusat.coa)+' - '+trim(mainakunpusat.keterangancoa)) LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -417,6 +422,8 @@ class MainAkunPusat extends MyModel
                                 $query = $query->orWhere('typeakuntansi.kodetype', 'LIKE', "%$filters[data]%");
                             } elseif ($filters['field'] == 'akuntansi') {
                                 $query = $query->orWhere('akuntansi.kodeakuntansi', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'kodeket') {
+                                $query = $query->OrwhereRaw("(trim(mainakunpusat.coa)+' - '+trim(mainakunpusat.keterangancoa)) LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");

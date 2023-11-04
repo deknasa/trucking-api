@@ -99,7 +99,7 @@ class StoreMainAkunPusatRequest extends FormRequest
             'statusneraca' => ['required', Rule::in($statusNeraca)],
             'statuslabarugi' => ['required', Rule::in($statusLabaRugi)],
             'statusaktif' => ['required', Rule::in($statusAktif)],
-            'parent' => [new ValidasiParentAkunPusat]
+            'parentnama' => [new ValidasiParentAkunPusat]
         ];
 
         $rules = array_merge(
@@ -122,6 +122,7 @@ class StoreMainAkunPusatRequest extends FormRequest
             'statusneraca' => 'status neraca',
             'statuslabarugi' => 'status laba rugi',
             'statusaktif' => 'status aktif',
+            'parentnama' => 'parent'
         ];
     }
 

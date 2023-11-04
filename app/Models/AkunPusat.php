@@ -378,16 +378,20 @@ class AkunPusat extends MyModel
                 DB::raw('(case when (akunpusat.akuntansi_id = 0) then null else akunpusat.akuntansi_id end ) as akuntansi_id'),            
                 'akuntansi.kodeakuntansi as akuntansi',
                 'akunpusat.parent',
+                DB::raw("(trim(parent.coa)+' - '+trim(parent.keterangancoa)) as parentnama"),
                 'akunpusat.statuscoa',
                 'akunpusat.statusparent',
                 'akunpusat.statusneraca',
                 'akunpusat.statuslabarugi',
                 'akunpusat.statusaktif',
                 'akunpusat.level',
-                'akunpusat.coamain'
+                'akunpusat.coamain',
+                DB::raw("(trim(main.coa)+' - '+trim(main.keterangancoa)) as coamainket"),
             )
             ->leftJoin(DB::raw("typeakuntansi with (readuncommitted)"), 'akunpusat.type_id', 'typeakuntansi.id')
             ->leftJoin(DB::raw("akuntansi with (readuncommitted)"), 'akunpusat.akuntansi_id', 'akuntansi.id')
+            ->leftJoin(DB::raw("akunpusat as parent with (readuncommitted)"), 'akunpusat.parent', 'parent.coa')
+            ->leftJoin(DB::raw("mainakunpusat as main with (readuncommitted)"), 'akunpusat.coamain', 'main.coa')
             ->where('akunpusat.id', $id)
             ->first();
 
