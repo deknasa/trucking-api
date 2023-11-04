@@ -844,12 +844,12 @@ class ReminderOli extends MyModel
                            when (a.km-a.kmperjalanan)<=" . $batasmax . " then 'YELLOW' 
                            else '' end) as warna"),
 
-                db::raw("'ryan_vixy1402@yahoo.com' as toemail"),
-                db::raw("'ryan_vixy1402@yahoo.com' as ccemail"),
-                db::raw("'ryan_vixy1402@yahoo.com' as bccemail"),
-                // db::raw("'" . $toemail . "' as toemail"),
-                // db::raw("'" . $ccemail . "' as ccemail"),
-                // db::raw("'" . $bccemail . "' as bccemail"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as toemail"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as ccemail"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as bccemail"),
+                db::raw("'" . $toemail . "' as toemail"),
+                db::raw("'" . $ccemail . "' as ccemail"),
+                db::raw("'" . $bccemail . "' as bccemail"),
                 db::raw("'Reminder Penggantian Oli Mesin (" . $cabang . ")' as judul"),
             )
             ->orderby('a.id', 'asc');
