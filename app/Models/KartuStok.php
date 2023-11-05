@@ -137,7 +137,7 @@ class KartuStok extends MyModel
                 $table->index('nobukti', 'temtabel_nobukti_index');
                 $table->index('kategori_id', 'temtabel_kategori_id_index');
             });
-            if ($datafilter == 0 || $datafilter == '' ) {
+            if ($datafilter == 0 || $datafilter == '') {
                 DB::table($temprekapall)->insertUsing([
                     'stok_id',
                     'gudang_id',
@@ -282,7 +282,7 @@ class KartuStok extends MyModel
                 $table->integer('gandengan_id')->nullable();
                 $table->integer('jumlah')->nullable();
             });
- 
+
             $tempstoktransaksi = '##tempstoktransaksi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempstoktransaksi, function ($table) {
                 $table->id();
@@ -396,7 +396,7 @@ class KartuStok extends MyModel
             ], $querysaldoawal);
 
 
-            
+
             if (isset($queryytampilan)) {
 
                 $queryjumlah = db::table($temprekapall)->from(db::raw($temprekapall . " a"))
@@ -437,13 +437,13 @@ class KartuStok extends MyModel
                 // dd(db::table($temprekapall)->get());
             }
             // dd('test1');
-            
-          
-
-          
 
 
-          
+
+
+
+
+
 
             $querylist = db::table($temprekapall)->from(db::raw($temprekapall . " a"))
                 ->select(
@@ -954,7 +954,7 @@ class KartuStok extends MyModel
 
     public function getlaporan($tgldari, $tglsampai, $stokdari, $stoksampai, $gudang_id, $trado_id, $gandengan_id, $filter)
     {
-        
+
         // dd($gandengan_id);
 
         $tglsaldo = date('Y-m-d', strtotime('-1 days', strtotime($tgldari)));
@@ -1039,13 +1039,20 @@ class KartuStok extends MyModel
                     db::raw("0 as qtykeluar"),
                     db::raw("0 as nilaikeluar"),
                     DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
-                    DB::raw("sum(
-                        (case when isnull(a1.statuspembulatanlebih2decimal,0)=1 then
-                        isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0)
-                        else
-                        round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) 
-                        end)
-                        ) as nilaisaldo"),
+                    // DB::raw("sum(
+                    //     (case when isnull(a1.statuspembulatanlebih2decimal,0)=1 then
+                    //     isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0)
+                    //     else
+                    //     round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) 
+                    //     end)
+                    //     ) as nilaisaldo"),
+                    // DB::raw("sum(
+                    //     round(round(cast(isnull(a.nilaimasuk,0) as money),3),2)-round(round(cast(isnull(a.nilaikeluar,0) as money),3),2)
+                    //     ) as nilaisaldo"),
+                        DB::raw("sum(
+                            (isnull(a.nilaimasuk,0) -isnull(a.nilaikeluar,0))
+                            ) as nilaisaldo"),
+    
                     db::raw("'ADMIN' as modifiedby"),
                     db::raw("0 as urutfifo"),
                 )
@@ -1086,13 +1093,21 @@ class KartuStok extends MyModel
                         db::raw("0 as qtykeluar"),
                         db::raw("0 as nilaikeluar"),
                         DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
-                        DB::raw("sum(
-                            (case when isnull(a1.statuspembulatanlebih2decimal,0)=1 then
-                            isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0)
-                            else
-                            round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) 
-                            end)
-                                ) as nilaisaldo"),
+                        // DB::raw("sum(
+                        //     (case when isnull(a1.statuspembulatanlebih2decimal,0)=1 then
+                        //     isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0)
+                        //     else
+                        //     round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) 
+                        //     end)
+                        //         ) as nilaisaldo"),
+                     // DB::raw("sum(
+                    //     round(round(cast(isnull(a.nilaimasuk,0) as money),3),2)-round(round(cast(isnull(a.nilaikeluar,0) as money),3),2)
+                    //     ) as nilaisaldo"),
+                    DB::raw("sum(
+                        (isnull(a.nilaimasuk,0) -isnull(a.nilaikeluar,0))
+                        ) as nilaisaldo"),
+
+
                         db::raw("'ADMIN' as modifiedby"),
                         db::raw("0 as urutfifo"),
                     )
@@ -1104,7 +1119,7 @@ class KartuStok extends MyModel
                     ->groupBy(db::raw("isnull(a.gudang_id,0)"))
                     ->groupBy(db::raw("isnull(a.trado_id,0)"))
                     ->groupBy(db::raw("isnull(a.gandengan_id,0)"));
-                } else {
+            } else {
                 $queryrekap = db::table('stok')->from(
                     DB::raw("stok as a1 with (readuncommitted)")
                 )
@@ -1124,13 +1139,22 @@ class KartuStok extends MyModel
                         db::raw("0 as qtykeluar"),
                         db::raw("0 as nilaikeluar"),
                         DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
-                        DB::raw("sum(
-                            (case when isnull(a1.statuspembulatanlebih2decimal,0)=1 then
-                            isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0)
-                            else
-                            round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) 
-                            end)
-                                ) as nilaisaldo"),
+                        // DB::raw("sum(
+                        //     (case when isnull(a1.statuspembulatanlebih2decimal,0)=1 then
+                        //     isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0)
+                        //     else
+                        //     round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) 
+                        //     end)
+                        //         ) as nilaisaldo"),
+                        // DB::raw("sum(
+                    //     round(round(cast(isnull(a.nilaimasuk,0) as money),3),2)-round(round(cast(isnull(a.nilaikeluar,0) as money),3),2)
+                    //     ) as nilaisaldo"),
+                    DB::raw("sum(
+                        (isnull(a.nilaimasuk,0) -isnull(a.nilaikeluar,0))
+                        ) as nilaisaldo"),
+
+
+
                         db::raw("'ADMIN' as modifiedby"),
                         db::raw("0 as urutfifo"),
                     )
@@ -1164,13 +1188,22 @@ class KartuStok extends MyModel
                         db::raw("0 as qtykeluar"),
                         db::raw("0 as nilaikeluar"),
                         DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
-                        DB::raw("sum(
-                            (case when isnull(a1.statuspembulatanlebih2decimal,0)=1 then
-                            isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0)
-                            else
-                            round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) 
-                            end)
-                            ) as nilaisaldo"),
+                        // DB::raw("sum(
+                        //     (case when isnull(a1.statuspembulatanlebih2decimal,0)=1 then
+                        //     isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0)
+                        //     else
+                        //     round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) 
+                        //     end)
+                        //     ) as nilaisaldo"),
+                      // DB::raw("sum(
+                    //     round(round(cast(isnull(a.nilaimasuk,0) as money),3),2)-round(round(cast(isnull(a.nilaikeluar,0) as money),3),2)
+                    //     ) as nilaisaldo"),
+                    DB::raw("sum(
+                        (isnull(a.nilaimasuk,0) -isnull(a.nilaikeluar,0))
+                        ) as nilaisaldo"),
+
+
+
                         db::raw("'ADMIN' as modifiedby"),
                         db::raw("0 as urutfifo"),
                     )
@@ -1201,14 +1234,23 @@ class KartuStok extends MyModel
                         db::raw("0 as nilaimasuk"),
                         db::raw("0 as qtykeluar"),
                         db::raw("0 as nilaikeluar"),
-                        DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
-                        DB::raw("sum(
-                            (case when isnull(a1.statuspembulatanlebih2decimal,0)=1 then
-                            isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0)
-                            else
-                            round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) 
-                            end)
-                            ) as nilaisaldo"),
+                        // DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
+                        // DB::raw("sum(
+                        //     (case when isnull(a1.statuspembulatanlebih2decimal,0)=1 then
+                        //     isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0)
+                        //     else
+                        //     round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) 
+                        //     end)
+                        //     ) as nilaisaldo"),
+                            // DB::raw("sum(
+                    //     round(round(cast(isnull(a.nilaimasuk,0) as money),3),2)-round(round(cast(isnull(a.nilaikeluar,0) as money),3),2)
+                    //     ) as nilaisaldo"),
+                    DB::raw("sum(
+                        (isnull(a.nilaimasuk,0) -isnull(a.nilaikeluar,0))
+                        ) as nilaisaldo"),
+
+
+
                         db::raw("'ADMIN' as modifiedby"),
                         db::raw("0 as urutfifo"),
                     )
@@ -1242,13 +1284,22 @@ class KartuStok extends MyModel
                         db::raw("0 as qtykeluar"),
                         db::raw("0 as nilaikeluar"),
                         DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
-                        DB::raw("sum(
-                            (case when isnull(a1.statuspembulatanlebih2decimal,0)=1 then
-                            isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0)
-                            else
-                            round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) 
-                            end)
-                            ) as nilaisaldo"),
+                        // DB::raw("sum(
+                        //     (case when isnull(a1.statuspembulatanlebih2decimal,0)=1 then
+                        //     isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0)
+                        //     else
+                        //     round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) 
+                        //     end)
+                        //     ) as nilaisaldo"),
+                              // DB::raw("sum(
+                    //     round(round(cast(isnull(a.nilaimasuk,0) as money),3),2)-round(round(cast(isnull(a.nilaikeluar,0) as money),3),2)
+                    //     ) as nilaisaldo"),
+                    DB::raw("sum(
+                        (isnull(a.nilaimasuk,0) -isnull(a.nilaikeluar,0))
+                        ) as nilaisaldo"),
+
+
+
                         db::raw("'ADMIN' as modifiedby"),
                         db::raw("0 as urutfifo"),
                     )
@@ -1280,13 +1331,22 @@ class KartuStok extends MyModel
                         db::raw("0 as qtykeluar"),
                         db::raw("0 as nilaikeluar"),
                         DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
-                        DB::raw("sum(
-                            (case when isnull(a1.statuspembulatanlebih2decimal,0)=1 then
-                            isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0)
-                            else
-                            round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) 
-                            end)
-                            ) as nilaisaldo"),
+                        // DB::raw("sum(
+                        //     (case when isnull(a1.statuspembulatanlebih2decimal,0)=1 then
+                        //     isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0)
+                        //     else
+                        //     round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) 
+                        //     end)
+                        //     ) as nilaisaldo"),
+                             // DB::raw("sum(
+                    //     round(round(cast(isnull(a.nilaimasuk,0) as money),3),2)-round(round(cast(isnull(a.nilaikeluar,0) as money),3),2)
+                    //     ) as nilaisaldo"),
+                    DB::raw("sum(
+                        (isnull(a.nilaimasuk,0) -isnull(a.nilaikeluar,0))
+                        ) as nilaisaldo"),
+
+
+
                         db::raw("'ADMIN' as modifiedby"),
                         db::raw("0 as urutfifo"),
                     )
@@ -1319,13 +1379,22 @@ class KartuStok extends MyModel
                     db::raw("0 as qtykeluar"),
                     db::raw("0 as nilaikeluar"),
                     DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
+                    // DB::raw("sum(
+                    //     (case when isnull(a1.statuspembulatanlebih2decimal,0)=1 then
+                    //     isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0)
+                    //     else
+                    //     round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) 
+                    //     end)
+                    // ) as nilaisaldo"),
+                        // DB::raw("sum(
+                    //     round(round(cast(isnull(a.nilaimasuk,0) as money),3),2)-round(round(cast(isnull(a.nilaikeluar,0) as money),3),2)
+                    //     ) as nilaisaldo"),
                     DB::raw("sum(
-                        (case when isnull(a1.statuspembulatanlebih2decimal,0)=1 then
-                        isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0)
-                        else
-                        round(isnull(a.nilaimasuk,0),2)-round(isnull(a.nilaikeluar,0),2) 
-                        end)
-                    ) as nilaisaldo"),
+                        (isnull(a.nilaimasuk,0) -isnull(a.nilaikeluar,0))
+                        ) as nilaisaldo"),
+
+
+
                     db::raw("'ADMIN' as modifiedby"),
                     db::raw("0 as urutfifo"),
                 )
@@ -1385,27 +1454,39 @@ class KartuStok extends MyModel
                     db::raw("a.nobukti as nobukti"),
                     db::raw("(a.kategori_id) as kategori_id"),
                     db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
-                    db::raw("
-                    (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
-                    isnull(a.nilaimasuk,0)
-                    else
-                    round(isnull(a.nilaimasuk,0),2)
-                    end)
-                     as nilaimasuk"),
+                    // db::raw("
+                    // (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
+                    // isnull(a.nilaimasuk,0)
+                    // else
+                    // round(isnull(a.nilaimasuk,0),2)
+                    // end)
+                    //  as nilaimasuk"),
+                    // db::raw("
+                    // round(round(cast(isnull(a.nilaimasuk,0) as money),3),2)
+                    //  as nilaimasuk"),
+                     db::raw("
+                     isnull(a.nilaimasuk,0)
+                      as nilaimasuk"),                     
                     db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
+                    // db::raw("
+                    // (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
+                    // isnull(a.nilaikeluar,0)
+                    // else
+                    // round(isnull(a.nilaikeluar,0),2)
+                    // end)
+                    // as nilaikeluar"),
+                    // db::raw("
+                    // round(round(cast(isnull(a.nilaikeluar,0) as money),3),2)
+                    // as nilaikeluar"),
                     db::raw("
-                    (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
-                    isnull(a.nilaikeluar,0)
-                    else
-                    round(isnull(a.nilaikeluar,0),2)
-                    end)
+                    isnull(a.nilaikeluar,0) 
                     as nilaikeluar"),
                     DB::raw("0 as qtysaldo"),
                     DB::raw("0 as nilaisaldo"),
                     db::raw("a.modifiedby"),
                     db::raw("a.urutfifo as urutfifo"),
                 )
-                ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
+                ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
 
                 ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("(a.stok_id>=" . $stokdari . " and a.stok_id<=" . $stoksampai . ")")
@@ -1433,28 +1514,39 @@ class KartuStok extends MyModel
                         db::raw("a.nobukti as nobukti"),
                         db::raw("(a.kategori_id) as kategori_id"),
                         db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
-                        db::raw("
-                        (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
-                        isnull(a.nilaimasuk,0)
-                        else
-                        round(isnull(a.nilaimasuk,0),2)
-                        end)
-                         as nilaimasuk"),
-                        db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
-                        db::raw("
-                        (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
-                        isnull(a.nilaikeluar,0)
-                        else
-                        round(isnull(a.nilaikeluar,0),2)
-                        end)
-                        as nilaikeluar"),
-        
+                        // db::raw("
+                        // (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
+                        // isnull(a.nilaimasuk,0)
+                        // else
+                        // round(isnull(a.nilaimasuk,0),2)
+                        // end)
+                        //  as nilaimasuk"),
+                        // db::raw("
+                    // round(round(cast(isnull(a.nilaimasuk,0) as money),3),2)
+                    //  as nilaimasuk"),
+                     db::raw("
+                     isnull(a.nilaimasuk,0)
+                      as nilaimasuk"),                     
+                    db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
+                    // db::raw("
+                    // (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
+                    // isnull(a.nilaikeluar,0)
+                    // else
+                    // round(isnull(a.nilaikeluar,0),2)
+                    // end)
+                    // as nilaikeluar"),
+                    // db::raw("
+                    // round(round(cast(isnull(a.nilaikeluar,0) as money),3),2)
+                    // as nilaikeluar"),
+                    db::raw("
+                    isnull(a.nilaikeluar,0) 
+                    as nilaikeluar"),
                         DB::raw("0 as qtysaldo"),
                         DB::raw("0 as nilaisaldo"),
                         db::raw("a.modifiedby"),
                         db::raw("a.urutfifo as urutfifo"),
                     )
-                    ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
+                    ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
 
                     ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                     ->whereRaw("(a.stok_id>=" . $stokdari . " and a.stok_id<=" . $stoksampai . ")")
@@ -1479,28 +1571,40 @@ class KartuStok extends MyModel
                         db::raw("a.nobukti as nobukti"),
                         db::raw("(a.kategori_id) as kategori_id"),
                         db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
-                        db::raw("
-                        (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
-                        isnull(a.nilaimasuk,0)
-                        else
-                        round(isnull(a.nilaimasuk,0),2)
-                        end)
-                         as nilaimasuk"),
-                        db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
-                        db::raw("
-                        (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
-                        isnull(a.nilaikeluar,0)
-                        else
-                        round(isnull(a.nilaikeluar,0),2)
-                        end)
-                        as nilaikeluar"),
-        
+                        // db::raw("
+                        // (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
+                        // isnull(a.nilaimasuk,0)
+                        // else
+                        // round(isnull(a.nilaimasuk,0),2)
+                        // end)
+                        //  as nilaimasuk"),
+                       // db::raw("
+                    // round(round(cast(isnull(a.nilaimasuk,0) as money),3),2)
+                    //  as nilaimasuk"),
+                     db::raw("
+                     isnull(a.nilaimasuk,0)
+                      as nilaimasuk"),                     
+                    db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
+                    // db::raw("
+                    // (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
+                    // isnull(a.nilaikeluar,0)
+                    // else
+                    // round(isnull(a.nilaikeluar,0),2)
+                    // end)
+                    // as nilaikeluar"),
+                    // db::raw("
+                    // round(round(cast(isnull(a.nilaikeluar,0) as money),3),2)
+                    // as nilaikeluar"),
+                    db::raw("
+                    isnull(a.nilaikeluar,0) 
+                    as nilaikeluar"),
+
                         DB::raw("0 as qtysaldo"),
                         DB::raw("0 as nilaisaldo"),
                         db::raw("a.modifiedby"),
                         db::raw("a.urutfifo as urutfifo"),
                     )
-                    ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
+                    ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
 
                     ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                     ->whereRaw("(a.stok_id>=" . $stokdari . " and a.stok_id<=" . $stoksampai . ")")
@@ -1527,28 +1631,40 @@ class KartuStok extends MyModel
                         db::raw("a.nobukti as nobukti"),
                         db::raw("(a.kategori_id) as kategori_id"),
                         db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
-                        db::raw("
-                        (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
-                        isnull(a.nilaimasuk,0)
-                        else
-                        round(isnull(a.nilaimasuk,0),2)
-                        end)
-                         as nilaimasuk"),
-                        db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
-                        db::raw("
-                        (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
-                        isnull(a.nilaikeluar,0)
-                        else
-                        round(isnull(a.nilaikeluar,0),2)
-                        end)
-                        as nilaikeluar"),
-        
+                        // db::raw("
+                        // (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
+                        // isnull(a.nilaimasuk,0)
+                        // else
+                        // round(isnull(a.nilaimasuk,0),2)
+                        // end)
+                        //  as nilaimasuk"),
+                       // db::raw("
+                    // round(round(cast(isnull(a.nilaimasuk,0) as money),3),2)
+                    //  as nilaimasuk"),
+                     db::raw("
+                     isnull(a.nilaimasuk,0)
+                      as nilaimasuk"),                     
+                    db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
+                    // db::raw("
+                    // (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
+                    // isnull(a.nilaikeluar,0)
+                    // else
+                    // round(isnull(a.nilaikeluar,0),2)
+                    // end)
+                    // as nilaikeluar"),
+                    // db::raw("
+                    // round(round(cast(isnull(a.nilaikeluar,0) as money),3),2)
+                    // as nilaikeluar"),
+                    db::raw("
+                    isnull(a.nilaikeluar,0) 
+                    as nilaikeluar"),
+
                         DB::raw("0 as qtysaldo"),
                         DB::raw("0 as nilaisaldo"),
                         db::raw("a.modifiedby"),
                         db::raw("a.urutfifo as urutfifo"),
                     )
-                    ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
+                    ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
 
                     ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                     ->whereRaw("(a.stok_id>=" . $stokdari . " and a.stok_id<=" . $stoksampai . ")")
@@ -1573,28 +1689,40 @@ class KartuStok extends MyModel
                         db::raw("a.nobukti as nobukti"),
                         db::raw("(a.kategori_id) as kategori_id"),
                         db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
-                        db::raw("
-                        (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
-                        isnull(a.nilaimasuk,0)
-                        else
-                        round(isnull(a.nilaimasuk,0),2)
-                        end)
-                         as nilaimasuk"),
-                        db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
-                        db::raw("
-                        (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
-                        isnull(a.nilaikeluar,0)
-                        else
-                        round(isnull(a.nilaikeluar,0),2)
-                        end)
-                        as nilaikeluar"),
-        
+                        // db::raw("
+                        // (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
+                        // isnull(a.nilaimasuk,0)
+                        // else
+                        // round(isnull(a.nilaimasuk,0),2)
+                        // end)
+                        //  as nilaimasuk"),
+                       // db::raw("
+                    // round(round(cast(isnull(a.nilaimasuk,0) as money),3),2)
+                    //  as nilaimasuk"),
+                     db::raw("
+                     isnull(a.nilaimasuk,0)
+                      as nilaimasuk"),                     
+                    db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
+                    // db::raw("
+                    // (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
+                    // isnull(a.nilaikeluar,0)
+                    // else
+                    // round(isnull(a.nilaikeluar,0),2)
+                    // end)
+                    // as nilaikeluar"),
+                    // db::raw("
+                    // round(round(cast(isnull(a.nilaikeluar,0) as money),3),2)
+                    // as nilaikeluar"),
+                    db::raw("
+                    isnull(a.nilaikeluar,0) 
+                    as nilaikeluar"),
+
                         DB::raw("0 as qtysaldo"),
                         DB::raw("0 as nilaisaldo"),
                         db::raw("a.modifiedby"),
                         db::raw("a.urutfifo as urutfifo"),
                     )
-                    ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
+                    ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
 
                     ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                     ->whereRaw("(a.stok_id>=" . $stokdari . " and a.stok_id<=" . $stoksampai . ")")
@@ -1621,28 +1749,40 @@ class KartuStok extends MyModel
                         db::raw("a.nobukti as nobukti"),
                         db::raw("(a.kategori_id) as kategori_id"),
                         db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
-                        db::raw("
-                        (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
-                        isnull(a.nilaimasuk,0)
-                        else
-                        round(isnull(a.nilaimasuk,0),2)
-                        end)
-                         as nilaimasuk"),
-                        db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
-                        db::raw("
-                        (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
-                        isnull(a.nilaikeluar,0)
-                        else
-                        round(isnull(a.nilaikeluar,0),2)
-                        end)
-                        as nilaikeluar"),
-        
+                        // db::raw("
+                        // (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
+                        // isnull(a.nilaimasuk,0)
+                        // else
+                        // round(isnull(a.nilaimasuk,0),2)
+                        // end)
+                        //  as nilaimasuk"),
+                       // db::raw("
+                    // round(round(cast(isnull(a.nilaimasuk,0) as money),3),2)
+                    //  as nilaimasuk"),
+                     db::raw("
+                     isnull(a.nilaimasuk,0)
+                      as nilaimasuk"),                     
+                    db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
+                    // db::raw("
+                    // (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
+                    // isnull(a.nilaikeluar,0)
+                    // else
+                    // round(isnull(a.nilaikeluar,0),2)
+                    // end)
+                    // as nilaikeluar"),
+                    // db::raw("
+                    // round(round(cast(isnull(a.nilaikeluar,0) as money),3),2)
+                    // as nilaikeluar"),
+                    db::raw("
+                    isnull(a.nilaikeluar,0) 
+                    as nilaikeluar"),
+
                         DB::raw("0 as qtysaldo"),
                         DB::raw("0 as nilaisaldo"),
                         db::raw("a.modifiedby"),
                         db::raw("a.urutfifo as urutfifo"),
                     )
-                    ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
+                    ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
 
                     ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                     ->whereRaw("(a.stok_id>=" . $stokdari . " and a.stok_id<=" . $stoksampai . ")")
@@ -1667,28 +1807,40 @@ class KartuStok extends MyModel
                         db::raw("a.nobukti as nobukti"),
                         db::raw("(a.kategori_id) as kategori_id"),
                         db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
-                        db::raw("
-                        (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
-                        isnull(a.nilaimasuk,0)
-                        else
-                        round(isnull(a.nilaimasuk,0),2)
-                        end)
-                         as nilaimasuk"),
-                        db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
-                        db::raw("
-                        (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
-                        isnull(a.nilaikeluar,0)
-                        else
-                        round(isnull(a.nilaikeluar,0),2)
-                        end)
-                        as nilaikeluar"),
-        
+                        // db::raw("
+                        // (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
+                        // isnull(a.nilaimasuk,0)
+                        // else
+                        // round(isnull(a.nilaimasuk,0),2)
+                        // end)
+                        //  as nilaimasuk"),
+                      // db::raw("
+                    // round(round(cast(isnull(a.nilaimasuk,0) as money),3),2)
+                    //  as nilaimasuk"),
+                     db::raw("
+                     isnull(a.nilaimasuk,0)
+                      as nilaimasuk"),                     
+                    db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
+                    // db::raw("
+                    // (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
+                    // isnull(a.nilaikeluar,0)
+                    // else
+                    // round(isnull(a.nilaikeluar,0),2)
+                    // end)
+                    // as nilaikeluar"),
+                    // db::raw("
+                    // round(round(cast(isnull(a.nilaikeluar,0) as money),3),2)
+                    // as nilaikeluar"),
+                    db::raw("
+                    isnull(a.nilaikeluar,0) 
+                    as nilaikeluar"),
+
                         DB::raw("0 as qtysaldo"),
                         DB::raw("0 as nilaisaldo"),
                         db::raw("a.modifiedby"),
                         db::raw("a.urutfifo as urutfifo"),
                     )
-                    ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
+                    ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
                     ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                     ->whereRaw("(a.stok_id>=" . $stokdari . " and a.stok_id<=" . $stoksampai . ")")
                     ->whereRaw("(a.gandengan_id=" . $gandengan_id . ")")
@@ -1713,28 +1865,40 @@ class KartuStok extends MyModel
                     db::raw("a.nobukti as nobukti"),
                     db::raw("(a.kategori_id) as kategori_id"),
                     db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
+                    // db::raw("
+                    // (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
+                    // isnull(a.nilaimasuk,0)
+                    // else
+                    // round(isnull(a.nilaimasuk,0),2)
+                    // end)
+                    //  as nilaimasuk"),
+                   // db::raw("
+                    // round(round(cast(isnull(a.nilaimasuk,0) as money),3),2)
+                    //  as nilaimasuk"),
                     db::raw("
-                    (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
                     isnull(a.nilaimasuk,0)
-                    else
-                    round(isnull(a.nilaimasuk,0),2)
-                    end)
-                     as nilaimasuk"),
-                    db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
-                    db::raw("
-                    (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
-                    isnull(a.nilaikeluar,0)
-                    else
-                    round(isnull(a.nilaikeluar,0),2)
-                    end)
-                    as nilaikeluar"),
+                     as nilaimasuk"),                     
+                   db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
+                   // db::raw("
+                   // (case when isnull(b.statuspembulatanlebih2decimal,0)=1 then
+                   // isnull(a.nilaikeluar,0)
+                   // else
+                   // round(isnull(a.nilaikeluar,0),2)
+                   // end)
+                   // as nilaikeluar"),
+                   // db::raw("
+                   // round(round(cast(isnull(a.nilaikeluar,0) as money),3),2)
+                   // as nilaikeluar"),
+                   db::raw("
+                   isnull(a.nilaikeluar,0) 
+                   as nilaikeluar"),
 
                     DB::raw("0 as qtysaldo"),
                     DB::raw("0 as nilaisaldo"),
                     db::raw("a.modifiedby"),
                     db::raw("a.urutfifo as urutfifo"),
                 )
-                ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
+                ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
                 ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("(a.stok_id>=" . $stokdari . " and a.stok_id<=" . $stoksampai . ")")
                 ->whereRaw("(a.gudang_id=" . $gudang_id . " or " . $gudang_id . "=0)")
@@ -1823,7 +1987,23 @@ class KartuStok extends MyModel
                 db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
                 db::raw("round(isnull(a.nilaikeluar,0),2) as nilaikeluar"),
                 DB::raw("sum ((isnull(a.qtysaldo,0)+a.qtymasuk)-a.qtykeluar) over (PARTITION BY isnull(a.stok_id,0),isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0) order by a.stok_id,isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0),isnull(a.tglbukti,0),a.urutfifo,a.nobukti,a.id ASC) as qtysaldo"),
-                DB::raw("cast(sum(  ((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar))  over (PARTITION BY a.stok_id,isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0) order by isnull(a.stok_id,0),isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0),a.tglbukti,a.urutfifo,a.nobukti,a.id ASC) as money) as nilaisaldo"),
+                DB::raw("cast(
+                    sum(((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar))  
+                    over (PARTITION BY a.stok_id,isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0) order by isnull(a.stok_id,0),isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0),a.tglbukti,a.urutfifo,a.nobukti,a.id ASC) as money) as nilaisaldo"),
+                // DB::raw("
+                //         cast(left(format(cast(
+                //         sum(((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar))  
+                //         over (PARTITION BY a.stok_id,isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0) order by isnull(a.stok_id,0),isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0),a.tglbukti,a.urutfifo,a.nobukti,a.id ASC) as float),'#0.000'),charindex('.',format(cast(
+                //         sum(((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar))  
+                //         over (PARTITION BY a.stok_id,isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0) order by isnull(a.stok_id,0),isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0),a.tglbukti,a.urutfifo,a.nobukti,a.id ASC) as float),'#0.000'))-1)+
+                //         substring(format(cast(
+                //         sum(((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar))  
+                //         over (PARTITION BY a.stok_id,isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0) order by isnull(a.stok_id,0),isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0),a.tglbukti,a.urutfifo,a.nobukti,a.id ASC) as float),'#0.000'),charindex('.',format(cast(
+                //         sum(((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar))  
+                //         over (PARTITION BY a.stok_id,isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0) order by isnull(a.stok_id,0),isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0),a.tglbukti,a.urutfifo,a.nobukti,a.id ASC) as float),'#0.000')),3)  
+                //         as float)                        
+                //         as nilaisaldo"),
+
                 db::raw("a.modifiedby"),
                 db::raw("a.urutfifo as urutfifo"),
             )
@@ -1910,11 +2090,10 @@ class KartuStok extends MyModel
         //     )
         //     ->whereRaw("(a.stok_id=4316)")
         //     ->whereRaw("(a.tglbukti<='2023/10/23')");
-            
-          
+
+
         //     dd($queryrekap->get());
         return $datalist;
-
     }
 
     public function getlaporanold($tgldari, $tglsampai, $stokdari, $stoksampai, $gudang_id, $trado_id, $gandengan_id, $filter)
