@@ -250,56 +250,112 @@ class PenerimaanStokHeader extends MyModel
                 $query->where("penerimaanstokheader.statuscetak", $statusCetak);
             }
 
-            DB::table($temtabel)->insertUsing([
-                'id',
-                'nobukti',
-                'tglbukti',
-                'penerimaanstok',
-                'penerimaanstok_nobukti',
-                'tgldariheadernobuktipenerimaanstok',
-                'tglsampaiheadernobuktipenerimaanstok',
-                'pengeluaranstok_nobukti',
-                'gudang',
-                'trado',
-                'gandengan',
-                'tradodari',
-                'tradoke',
-                'gandengandari',
-                'gandenganke',
-                'supplier',
-                'nobon',
-                'hutang_nobukti',
-                'gudangdari',
-                'gudangke',
-                'statusformat',
-                'coa',
-                'keterangan',
-                'modifiedby',
-                'created_at',
-                'updated_at',
-                'gudang_id',
-                'gudangdari_id',
-                'gudangke_id',
-                'penerimaanstok_id',
-                'trado_id',
-                'tradoke_id',
-                'tradodari_id',
-                'gandenganke_id',
-                'gandengandari_id',
-                'gandengan_id',
-                'supplier_id',
-                'jumlahcetak',
-                'statuscetak',
-                'statusedit',
-                'parrenttglbukti',
-                'statuscetak_id',
-                'statusedit_id',
-                'tgldariheaderhutangheader',
-                'tglsampaiheaderhutangheader',
-                'tgldariheaderpengeluaranstok',
-                'tglsampaiheaderpengeluaranstok',
-                'judul',
-            ], $query);
+
+            $datadetail = json_decode($query->get(), true);
+            foreach ($datadetail as $item) {
+
+                DB::table($temtabel)->insert([
+                    'id' => $item['id'],
+                    'nobukti' => $item['nobukti'],
+                    'tglbukti' => $item['tglbukti'],
+                    'penerimaanstok' => $item['penerimaanstok'],
+                    'penerimaanstok_nobukti' => $item['penerimaanstok_nobukti'],
+                    'tgldariheadernobuktipenerimaanstok' => $item['tgldariheadernobuktipenerimaanstok'],
+                    'tglsampaiheadernobuktipenerimaanstok' => $item['tglsampaiheadernobuktipenerimaanstok'],
+                    'pengeluaranstok_nobukti' => $item['pengeluaranstok_nobukti'],
+                    'gudang' => $item['gudang'],
+                    'trado' => $item['trado'],
+                    'gandengan' => $item['gandengan'],
+                    'tradodari' => $item['tradodari'],
+                    'tradoke' => $item['tradoke'],
+                    'gandengandari' => $item['gandengandari'],
+                    'gandenganke' => $item['gandenganke'],
+                    'supplier' => $item['supplier'],
+                    'nobon' => $item['nobon'],
+                    'hutang_nobukti' => $item['hutang_nobukti'],
+                    'gudangdari' => $item['gudangdari'],
+                    'gudangke' => $item['gudangke'],
+                    'statusformat' => $item['statusformat'],
+                    'coa' => $item[                    'coa'],
+                    'keterangan' => $item['keterangan'],
+                    'modifiedby' => $item['modifiedby'],
+                    'created_at' => $item['created_at'],
+                    'updated_at' => $item['updated_at'],
+                    'gudang_id' => $item['gudang_id'],
+                    'gudangdari_id' => $item['gudangdari_id'],
+                    'gudangke_id' => $item['gudangke_id'],
+                    'penerimaanstok_id' => $item['penerimaanstok_id'],
+                    'trado_id' => $item['trado_id'],
+                    'tradoke_id' => $item['tradoke_id'],
+                    'tradodari_id' => $item['tradodari_id'],
+                    'gandenganke_id' => $item['gandenganke_id'],
+                    'gandengandari_id' => $item['gandengandari_id'],
+                    'gandengan_id' => $item['gandengan_id'],
+                    'supplier_id' => $item['supplier_id'],
+                    'jumlahcetak' => $item['jumlahcetak'],
+                    'statuscetak' => $item['statuscetak'],
+                    'statusedit' => $item['statusedit'],
+                    'parrenttglbukti' => $item['parrenttglbukti'],
+                    'statuscetak_id' => $item['statuscetak_id'],
+                    'statusedit_id' => $item['statusedit_id'],
+                    'tgldariheaderhutangheader' => $item['tgldariheaderhutangheader'],
+                    'tglsampaiheaderhutangheader' => $item['tglsampaiheaderhutangheader'],
+                    'tgldariheaderpengeluaranstok' => $item['tgldariheaderpengeluaranstok'],
+                    'tglsampaiheaderpengeluaranstok' => $item['tglsampaiheaderpengeluaranstok'],
+                    'judul' => $item['judul'],
+                ]);
+            }
+
+            // DB::table($temtabel)->insertUsing([
+            //     'id',
+            //     'nobukti',
+            //     'tglbukti',
+            //     'penerimaanstok',
+            //     'penerimaanstok_nobukti',
+            //     'tgldariheadernobuktipenerimaanstok',
+            //     'tglsampaiheadernobuktipenerimaanstok',
+            //     'pengeluaranstok_nobukti',
+            //     'gudang',
+            //     'trado',
+            //     'gandengan',
+            //     'tradodari',
+            //     'tradoke',
+            //     'gandengandari',
+            //     'gandenganke',
+            //     'supplier',
+            //     'nobon',
+            //     'hutang_nobukti',
+            //     'gudangdari',
+            //     'gudangke',
+            //     'statusformat',
+            //     'coa',
+            //     'keterangan',
+            //     'modifiedby',
+            //     'created_at',
+            //     'updated_at',
+            //     'gudang_id',
+            //     'gudangdari_id',
+            //     'gudangke_id',
+            //     'penerimaanstok_id',
+            //     'trado_id',
+            //     'tradoke_id',
+            //     'tradodari_id',
+            //     'gandenganke_id',
+            //     'gandengandari_id',
+            //     'gandengan_id',
+            //     'supplier_id',
+            //     'jumlahcetak',
+            //     'statuscetak',
+            //     'statusedit',
+            //     'parrenttglbukti',
+            //     'statuscetak_id',
+            //     'statusedit_id',
+            //     'tgldariheaderhutangheader',
+            //     'tglsampaiheaderhutangheader',
+            //     'tgldariheaderpengeluaranstok',
+            //     'tglsampaiheaderpengeluaranstok',
+            //     'judul',
+            // ], $query);
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
                 DB::raw("listtemporarytabel with (readuncommitted)")
@@ -664,29 +720,29 @@ class PenerimaanStokHeader extends MyModel
             'updated_at',
         ], $query);
         $query = DB::table($temptable)->from(DB::raw($temptable . " a "))
-        ->select(
-            'a.id',
-            'a.statuscetak',
-            'a.statuscetak_id',
-            'a.nobukti',
-            'a.tglbukti',
-            'a.penerimaanstok',
-            'a.keterangan',
-            'a.penerimaanstok_nobukti',
-            'a.pengeluaranstok_nobukti',
-            'a.gudang',
-            'a.trado',
-            'a.supplier',
-            'a.nobon',
-            'a.hutang_nobukti',
-            'a.gudangdari',
-            'a.gudangke',
-            'a.coa',
-            'a.modifiedby',
-            'a.created_at',
-            'a.updated_at',
+            ->select(
+                'a.id',
+                'a.statuscetak',
+                'a.statuscetak_id',
+                'a.nobukti',
+                'a.tglbukti',
+                'a.penerimaanstok',
+                'a.keterangan',
+                'a.penerimaanstok_nobukti',
+                'a.pengeluaranstok_nobukti',
+                'a.gudang',
+                'a.trado',
+                'a.supplier',
+                'a.nobon',
+                'a.hutang_nobukti',
+                'a.gudangdari',
+                'a.gudangke',
+                'a.coa',
+                'a.modifiedby',
+                'a.created_at',
+                'a.updated_at',
 
-        );
+            );
         return $query;
     }
     public function createTemp(string $modelTable)
@@ -719,7 +775,7 @@ class PenerimaanStokHeader extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
-      
+
         $query = $this->selectColumnPostion();
         $query = $this->sort($query);
         $models = $this->filter($query);
@@ -1148,7 +1204,7 @@ class PenerimaanStokHeader extends MyModel
                 $datastok  = Stok::lockForUpdate()->where("id", $data['detail_stok_id'][$i])
                     ->firstorFail();
                 $datastok->totalvulkanisir = $totalvulkan;
-                $datastok->statusban = ($data['detail_statusban']) ? $data['detail_statusban'][$i]: null;
+                $datastok->statusban = ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null;
                 $datastok->save();
             }
             // end update vulkanisir
@@ -1220,7 +1276,7 @@ class PenerimaanStokHeader extends MyModel
                         }
                     } else {
                         if ($keluargudang_id == $gdgkantor->text) {
-                            if($gudangke_id != $gudangsementara){
+                            if ($gudangke_id != $gudangsementara) {
                                 $kartuStok = (new KartuStok())->processStore([
                                     "gudang_id" => $keluargudang_id,
                                     "trado_id" => $keluartrado_id,
@@ -1677,7 +1733,7 @@ class PenerimaanStokHeader extends MyModel
                 $datastok  = Stok::lockForUpdate()->where("id", $data['detail_stok_id'][$i])
                     ->firstorFail();
                 $datastok->totalvulkanisir = $totalvulkan;
-                $datastok->statusban = ($data['detail_statusban']) ? $data['detail_statusban'][$i]: null;
+                $datastok->statusban = ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null;
                 $datastok->save();
             }
             // end update vulkanisir
@@ -1752,35 +1808,35 @@ class PenerimaanStokHeader extends MyModel
                             ]);
                         }
                     } //else {
-                        // if ($keluargudang_id == $gdgkantor->text) {
-                        //     $kartuStok = (new KartuStok())->processStore([
-                        //         "gudang_id" => $keluargudang_id,
-                        //         "trado_id" => $keluartrado_id,
-                        //         "gandengan_id" => $keluargandengan_id,
-                        //         "stok_id" => $data['detail_stok_id'][$i],
-                        //         "nobukti" => $penerimaanStokHeader->nobukti,
-                        //         "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
-                        //         "qtymasuk" => 0,
-                        //         "nilaimasuk" => 0,
-                        //         "qtykeluar" => $ksqty ?? 0,
-                        //         "nilaikeluar" => $ksnilai ?? 0,
-                        //         "urutfifo" => $urutfifo,
-                        //     ]);
-                        // } else {
-                            // $kartuStok = (new KartuStok())->processStore([
-                            //     "gudang_id" => $keluargudang_id,
-                            //     "trado_id" => $keluartrado_id,
-                            //     "gandengan_id" => $keluargandengan_id,
-                            //     "stok_id" => $data['detail_stok_id'][$i],
-                            //     "nobukti" => $penerimaanStokHeader->nobukti,
-                            //     "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
-                            //     "qtymasuk" => 0,
-                            //     "nilaimasuk" => 0,
-                            //     "qtykeluar" => $ksqty ?? 0,
-                            //     "nilaikeluar" => 0,
-                            //     "urutfifo" => $urutfifo,
-                            // ]);
-                        // }
+                    // if ($keluargudang_id == $gdgkantor->text) {
+                    //     $kartuStok = (new KartuStok())->processStore([
+                    //         "gudang_id" => $keluargudang_id,
+                    //         "trado_id" => $keluartrado_id,
+                    //         "gandengan_id" => $keluargandengan_id,
+                    //         "stok_id" => $data['detail_stok_id'][$i],
+                    //         "nobukti" => $penerimaanStokHeader->nobukti,
+                    //         "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
+                    //         "qtymasuk" => 0,
+                    //         "nilaimasuk" => 0,
+                    //         "qtykeluar" => $ksqty ?? 0,
+                    //         "nilaikeluar" => $ksnilai ?? 0,
+                    //         "urutfifo" => $urutfifo,
+                    //     ]);
+                    // } else {
+                    // $kartuStok = (new KartuStok())->processStore([
+                    //     "gudang_id" => $keluargudang_id,
+                    //     "trado_id" => $keluartrado_id,
+                    //     "gandengan_id" => $keluargandengan_id,
+                    //     "stok_id" => $data['detail_stok_id'][$i],
+                    //     "nobukti" => $penerimaanStokHeader->nobukti,
+                    //     "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
+                    //     "qtymasuk" => 0,
+                    //     "nilaimasuk" => 0,
+                    //     "qtykeluar" => $ksqty ?? 0,
+                    //     "nilaikeluar" => 0,
+                    //     "urutfifo" => $urutfifo,
+                    // ]);
+                    // }
                     // }
                 }
             }
