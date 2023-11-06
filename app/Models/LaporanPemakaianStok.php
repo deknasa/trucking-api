@@ -191,6 +191,16 @@ class LaporanPemakaianStok extends MyModel
 
 
 
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
         $query = DB::table($temprekapall)->from(DB::raw($temprekapall . "  AS a"))
 
             ->select(
@@ -212,6 +222,8 @@ class LaporanPemakaianStok extends MyModel
                 db::raw("isnull(c.satuan,'') as satuan"),
                 db::raw("isnull(d.keterangan,isnull(d1.keterangan,'')) as keterangan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
 
             )
             ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')

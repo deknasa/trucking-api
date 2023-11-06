@@ -60,7 +60,11 @@ class LaporanTitipanEmklController extends Controller
         $tgldari = date('Y-m-d', strtotime($request->tgldari));
         $tglsampai = date('Y-m-d', strtotime($request->tglsampai));
         $jenisorder = $request->jenisorder ?? 0;
-
+        $keteranganjenis = '';
+        if($jenisorder != 0 || $jenisorder != ''){
+            $getJenis = DB::table("jenisorder")->from(DB::raw("jenisorder with (readuncommitted)"))->where('id', $jenisorder)->first();
+            $keteranganjenis = $getJenis->keterangan;
+        }
         $laporanTitipanEmkl = new LaporanTitipanEmkl();
 
         $laporan_titipanemkl = $laporanTitipanEmkl->getData($tanggal,$tgldari,$tglsampai,$jenisorder);
@@ -70,7 +74,8 @@ class LaporanTitipanEmklController extends Controller
         //     $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
         // }
         return response([
-            'data' => $laporan_titipanemkl
+            'data' => $laporan_titipanemkl,
+            'jenisorder' => $keteranganjenis
             // 'data' => $report
         ]);
     }
