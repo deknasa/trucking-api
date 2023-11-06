@@ -2065,7 +2065,7 @@ class KartuStok extends MyModel
                 'a.qtykeluar',
                 'a.nilaikeluar',
                 'a.qtysaldo',
-                db::raw("round(a.nilaisaldo,3) as nilaisaldo"),
+                db::raw("round(a.nilaisaldo,2) as nilaisaldo"),
                 // 'a.nilaisaldo',
                 'a.modifiedby',
                 'a.urutfifo',
