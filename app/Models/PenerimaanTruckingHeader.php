@@ -328,7 +328,7 @@ class PenerimaanTruckingHeader extends MyModel
             ->orderBy('a.nobukti', 'asc');
 
 
-// dd($fetch->get());
+        // dd($fetch->get());
 
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
@@ -1065,6 +1065,7 @@ class PenerimaanTruckingHeader extends MyModel
             }
         }
 
+        $diterimaDari = '';
         // convert nominal dan coa pjp
         if ($fetchFormat->kodepenerimaan == 'PJP') {
             $nominalPostingNon = array_filter($nominalPostingNon, function ($value) {
@@ -1082,6 +1083,9 @@ class PenerimaanTruckingHeader extends MyModel
             $nominal_detail = $nominalPostingNon;
             $coakredit_detail = $coakreditPostingNon;
             $keterangan_detail = $keteranganPostingNon;
+
+            $getNamaSupir = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))->select('namasupir')->where('id', $data['supirheader_id'])->first();
+            $diterimaDari = $getNamaSupir->namasupir;
         }
 
         if ($fetchFormat->kodepenerimaan == 'PBT') {
@@ -1095,6 +1099,7 @@ class PenerimaanTruckingHeader extends MyModel
             $nominal_detail[] = $totalNominal;
             $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
             $keterangan_detail[] = "PENGEMBALIAN TITIPAN EMKL " . $penerimaanTruckingHeader->nobukti . ". " . $data['keteranganheader'];
+            $diterimaDari = 'DIV. EMKL';
         }
         $penerimaanTruckingDetailLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($penerimaanTruckingHeaderLogTrail->getTable()),
@@ -1140,7 +1145,10 @@ class PenerimaanTruckingHeader extends MyModel
                 $nominal_detail[] = $totalNominal;
                 $keterangan_detail[] = $data['keterangan'][0];
             }
-
+            if ($fetchFormat->kodepenerimaan == 'PJPK') {
+                $getKaryawan = DB::table("karyawan")->from(DB::raw("karyawan with (readuncommitted)"))->select("namakaryawan")->where('id', $data['karyawanheader_id'])->first();
+                $diterimaDari = $getKaryawan->namakaryawan;
+            }
             /*STORE PENERIMAAN*/
             $penerimaanRequest = [
                 'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
@@ -1148,7 +1156,7 @@ class PenerimaanTruckingHeader extends MyModel
                 'statusapproval' => $statusApproval->id,
                 'pelanggan_id' => 0,
                 'agen_id' => 0,
-                'diterimadari' => "PENERIMAAN TRUCKING HEADER",
+                'diterimadari' => $diterimaDari,
                 'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
                 'statusformat' => $format->id,
                 'bank_id' => $penerimaanTruckingHeader->bank_id,
@@ -1434,6 +1442,7 @@ class PenerimaanTruckingHeader extends MyModel
             }
 
             // convert nominal dan coa pjp
+            $diterimaDari = '';
             if ($fetchFormat->kodepenerimaan == 'PJP') {
                 $nominalPostingNon = array_filter($nominalPostingNon, function ($value) {
                     return $value !== 0;
@@ -1450,6 +1459,8 @@ class PenerimaanTruckingHeader extends MyModel
                 $nominal_detail = $nominalPostingNon;
                 $coakredit_detail = $coakreditPostingNon;
                 $keterangan_detail = $keteranganPostingNon;
+                $getNamaSupir = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))->select('namasupir')->where('id', $data['supirheader_id'])->first();
+                $diterimaDari = $getNamaSupir->namasupir;
             }
 
             if ($fetchFormat->kodepenerimaan == 'PBT') {
@@ -1463,6 +1474,7 @@ class PenerimaanTruckingHeader extends MyModel
                 $nominal_detail[] = $totalNominal;
                 $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
                 $keterangan_detail[] = "PENGEMBALIAN TITIPAN EMKL " . $penerimaanTruckingHeader->nobukti . ". " . $data['keteranganheader'];
+                $diterimaDari = 'DIV. EMKL';
             }
             //if tanpaprosesnobukti NOT 2 STORE PENERIMAAN
             if ($tanpaprosesnobukti != 2) {
@@ -1496,6 +1508,11 @@ class PenerimaanTruckingHeader extends MyModel
                     $nominal_detail[] = $totalNominal;
                     $keterangan_detail[] = $data['keterangan'][0];
                 }
+
+                if ($fetchFormat->kodepenerimaan == 'PJPK') {
+                    $getKaryawan = DB::table("karyawan")->from(DB::raw("karyawan with (readuncommitted)"))->select("namakaryawan")->where('id', $data['karyawanheader_id'])->first();
+                    $diterimaDari = $getKaryawan->namakaryawan;
+                }
                 /*UPDATE PENERIMAAN*/
                 $penerimaanRequest = [
                     'tglbukti' => $penerimaanTruckingHeader->tglbukti,
@@ -1503,7 +1520,7 @@ class PenerimaanTruckingHeader extends MyModel
                     'statusapproval' => $statusApproval->id,
                     'pelanggan_id' => 0,
                     'agen_id' => 0,
-                    'diterimadari' => "PENERIMAAN TRUCKING HEADER",
+                    'diterimadari' => $diterimaDari,
                     'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
                     'statusformat' => $format->id,
                     'bank_id' => $penerimaanTruckingHeader->bank_id,
