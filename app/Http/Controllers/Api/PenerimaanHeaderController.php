@@ -26,6 +26,7 @@ use App\Models\PenerimaanDetail;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
+use App\Http\Requests\UpdatePenerimaanDetailRequest;
 use App\Http\Requests\UpdatePenerimaanHeaderRequest;
 use App\Models\Error;
 use Exception;
@@ -299,6 +300,52 @@ class PenerimaanHeaderController extends Controller
         }
     }
 
+    public function editCoa(UpdatePenerimaanDetailRequest $request, $id)
+    {
+
+        DB::beginTransaction();
+        try {
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'pelanggan_id' => $request->pelanggan_id,
+                'agen_id' => $request->agen_id,
+                'diterimadari' => $request->diterimadari,
+                'tgllunas' => $request->tgllunas,
+                'bank_id' => $request->bank_id,
+                'nowarkat' => $request->nowarkat,
+                'tgljatuhtempo' => $request->tgljatuhtempo,
+                'nominal_detail' => $request->nominal_detail,
+                'coakredit' => $request->coakredit,
+                'keterangan_detail' => $request->keterangan_detail,
+                'bankpelanggan_id' => $request->bankpelanggan_id,
+                'penerimaangiro_nobukti' => $request->penerimaangiro_nobukti,
+            ];
+            $penerimaan = PenerimaanHeader::findOrFail($id);
+            /* Store header */
+            $penerimaanheader = (new PenerimaanHeader())->processUpdate($penerimaan, $data);
+            /* Set position and page */
+            $penerimaanheader->position = $this->getPosition($penerimaanheader, $penerimaanheader->getTable())->position;
+            if ($request->limit == 0) {
+                $penerimaanheader->page = ceil($penerimaanheader->position / (10));
+            } else {
+                $penerimaanheader->page = ceil($penerimaanheader->position / ($request->limit ?? 10));
+            }
+            $penerimaanheader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $penerimaanheader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $penerimaanheader
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
+        
+    }
 
 
     public function tarikPelunasan($id)
@@ -329,7 +376,7 @@ class PenerimaanHeaderController extends Controller
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
         $aksi = request()->aksi ?? '';
 
-        if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
+        if ($status == $statusApproval->id && ($aksi == 'DELETE')) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SAP')
@@ -383,6 +430,7 @@ class PenerimaanHeaderController extends Controller
                 'error' => true,
                 'message' => $query->keterangan,
                 'statuspesan' => 'warning',
+                'editcoa' => $cekdata['editcoa']
             ];
 
             return response($data);
@@ -392,6 +440,7 @@ class PenerimaanHeaderController extends Controller
                 'error' => false,
                 'message' => '',
                 'statuspesan' => 'success',
+                'editcoa' => false
             ];
 
             return response($data);

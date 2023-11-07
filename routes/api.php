@@ -1201,6 +1201,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('suratpengantarbiayatambahan', SuratPengantarBiayaTambahanController::class)->whereNumber('suratpengantarbiayatambahan');
 
     Route::get('penerimaanheader/{id}/printreport', [PenerimaanHeaderController::class, 'printReport'])->whereNumber('id');
+    Route::post('penerimaanheader/{id}/editcoa', [PenerimaanHeaderController::class, 'editCoa']);
     Route::post('penerimaanheader/addrow', [PenerimaanDetailController::class, 'addrow']);
     Route::post('penerimaanheader/{id}/approval', [PenerimaanHeaderController::class, 'approval'])->name('penerimaanheader.approval')->whereNumber('id');
     Route::post('penerimaanheader/{id}/cekvalidasi', [PenerimaanHeaderController::class, 'cekvalidasi'])->name('penerimaanheader.cekvalidasi')->whereNumber('id');
