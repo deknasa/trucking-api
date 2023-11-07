@@ -896,10 +896,10 @@ class LaporanKasGantung extends MyModel
                 'A.created_at',
                 'A.updated_at',
             ])
-            ->where('A.tglbukti', '<', $periode);
+            ->where('A.tglbukti', '=', $periode);
 
 
-
+            // dd($dataheader2->get());
 
         DB::table($pengembaliankasgantungheader2)->insertUsing([
             'id',
@@ -946,6 +946,7 @@ class LaporanKasGantung extends MyModel
             ->join(DB::raw($pengembaliankasgantungheader2 . " as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->groupBy('A.nobukti', 'A.kasgantung_nobukti');
 
+            // dd($kasdetail2->get());
 
         DB::table($pengembaliankasgantungdetail2)->insertUsing([
             'nobukti',
@@ -1003,7 +1004,7 @@ class LaporanKasGantung extends MyModel
         ], $temp_kasgantungheader);
         // dd($temp_kasgantungheader->get());
 
-        // dd(db::table($TempLaporan)->get());
+        // dd(db::table($pengembaliankasgantungdetail2)->get());
 
 
 
@@ -1023,7 +1024,7 @@ class LaporanKasGantung extends MyModel
                 'a.penerimaan_nobukti',
             ])
             ->join(DB::raw($pengembaliankasgantungdetail2 . " c with (readuncommitted)"), 'a.nobukti', '=', 'c.nobukti')
-            ->join(DB::raw($kasgantungheader . " b with (readuncommitted)"), 'a.nobukti', '=', 'b.nobukti')
+            ->join(DB::raw($kasgantungheader . " b with (readuncommitted)"), 'c.kasgantung_nobukti', '=', 'b.nobukti')
             // ->join('kasgantungheader as b', 'c.kasgantung_nobukti', 'b.nobukti')
             ->orderBy('a.tglbukti', 'asc')
             ->orderBy('c.kasgantung_nobukti', 'desc');
