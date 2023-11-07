@@ -624,7 +624,7 @@ class LaporanKasBank extends MyModel
                 'a.debet',
                 'a.kredit',
                 DB::raw("sum ((isnull(a.saldo,0)+a.debet)-a.Kredit) over (order by a.id asc) as saldo"),
-                DB::raw("'Laporan Kas/Bank' as judulLaporan"),
+                DB::raw("'Laporan Buku Kas Bank' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
