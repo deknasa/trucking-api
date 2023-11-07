@@ -38,11 +38,109 @@ class LaporanBukuBesar extends MyModel
 
         // dd('test');
 
+        // cek saldo awal
+        $tglsaldo = '2023-10-01';
+        $awalsaldo = date('Y-m-d', strtotime($tglsaldo));
+
+        $tutupbuku = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.text'
+            )
+            ->where('grp', 'TUTUP BUKU')
+            ->where('subgrp', 'TUTUP BUKU')
+            ->first()->text ?? '1900-01-01';
+
+        $awaldari = date('Y-m-', strtotime($dariformat)) . '01';
+        $awalcek = date('Y-m-d', strtotime($tutupbuku . ' +1 day'));
+        $akhircek = date('Y-m-d', strtotime($awaldari . ' -1 day'));
+
+
+
+        if ($awalcek <= $awalsaldo) {
+            $awalcek = $awalsaldo;
+        }
+
+        $tglawalcek = $awalcek;
+        $tglakhircek = $akhircek;
+        $bulan1 = date('m-Y', strtotime($awalcek));
+        $bulan2 = date('m-Y', strtotime('1900-01-01'));
+
+        while ($awalcek <= $akhircek) {
+            $bulan1 = date('m-Y', strtotime($awalcek));
+            if ($bulan1 != $bulan2) {
+                DB::delete(DB::raw("delete saldoawalbukubesar from saldoawalbukubesar as a WHERE isnull(a.bulan,'')='" . $bulan1 . "'"));
+            }
+
+            $awalcek = date('Y-m-d', strtotime($awalcek . ' +1 day'));
+            $awalcek2 = date('Y-m-d', strtotime($awalcek . ' +1 day'));
+            $bulan2 = date('m-Y', strtotime($awalcek2));
+        }
+
+        $tempsaldobukubesar = '##tempsaldobukubesar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsaldobukubesar, function ($table) {
+            $table->string('bulan', 1000)->nullable();
+            $table->string('coa',100)->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+
+        $querydetailsaldo = DB::table("jurnalumumpusatheader")->from(
+            DB::raw("jurnalumumpusatheader as a with (readuncommitted)")
+        )
+            ->select(
+                db::raw("format(a.tglbukti,'MM-yyyy') as bulan"),
+                'b.coa',
+                DB::raw("sum(b.nominal) as nominal"),
+            )
+            ->join(DB::raw("jurnalumumpusatdetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(DB::raw("akunpusat as c with(readuncommitted)"), 'b.coa', 'c.coa')
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
+            ->whereRaw("b.coa='01.01.01.03'")
+            ->groupby('b.coa')
+            ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
+
+            // dd($querydetailsaldo->get());
+
+            DB::table($tempsaldobukubesar)->insertUsing([
+                'bulan',
+                'coa',
+                'nominal',
+            ], $querydetailsaldo);    
+            
+            $queryrekap = db::table($tempsaldobukubesar)->from(db::raw($tempsaldobukubesar . " a"))
+            ->select(
+                'bulan',
+                'coa',
+                db::raw("sum(nominal) as nominal"),
+                db::raw("'ADMIN' as modifiedby"),
+                db::raw("'' as info"),
+                db::raw("getdate() as created_at"),
+                db::raw("getdate() as updated_at"),
+            )
+            ->groupby('a.bulan')
+            ->groupby('a.coa');
+
+            
+
+            DB::table("saldoawalbukubesar")->insertUsing([
+                'bulan',
+                'coa',
+                'nominal',
+                'info',
+                'modifiedby',
+                'created_at',
+                'updated_at',
+            ], $queryrekap);            
+
+        // akhir rekap saldo
+
         $tempsaldorekap = '##tempsaldorekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsaldorekap, function ($table) {
             $table->string('coa', 1000)->nullable();
             $table->double('saldo', 15, 2)->nullable();
         });
+
+
+
 
         $querysaldoawal = DB::table("saldoawalbukubesar")->from(
             DB::raw("saldoawalbukubesar as a with (readuncommitted)")
