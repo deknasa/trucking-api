@@ -46,6 +46,7 @@ class PenerimaanStokDetailFifo extends MyModel
             // $table->double('penerimaanstok_qty', 15, 2)->nullable();
             $table->double('qty', 15, 2)->nullable();
             $table->bigInteger('id')->nullable();
+            $table->double('penerimaanstokheader_totalterpakai', 15, 2)->nullable();
         });
 
         $temprekappengeluaranfifo = '##temprekappengeluaranfifo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -61,6 +62,7 @@ class PenerimaanStokDetailFifo extends MyModel
             $table->double('penerimaanstok_qty', 15, 2)->nullable();
             $table->double('penerimaanstok_harga', 15, 2)->nullable();
             $table->double('penerimaanstokheader_total', 15, 2)->nullable();
+            $table->double('penerimaanstokheader_totalterpakai', 15, 2)->nullable();
         });
 
 
@@ -76,6 +78,7 @@ class PenerimaanStokDetailFifo extends MyModel
                 'a.penerimaanstok_qty as penerimaanstokheader_qty',
                 'a.penerimaanstok_harga as penerimaanstokheader_harga',
                 'a.penerimaanstokheader_total as penerimaanstokheader_total',
+                'a.penerimaanstokheader_totalterpakai as penerimaanstokheader_totalterpakai',
             )
             ->where('a.stok_id', '=',   $data['stok_id'])
             ->where('a.gudang_id', '=',   $data['gudang_id'])
@@ -95,6 +98,7 @@ class PenerimaanStokDetailFifo extends MyModel
             "penerimaanstok_qty",
             "penerimaanstok_harga",
             "penerimaanstokheader_total",
+            "penerimaanstokheader_totalterpakai",
         ], $queryfifo);
 
  
@@ -111,6 +115,7 @@ class PenerimaanStokDetailFifo extends MyModel
                 'a.penerimaanstok_qty as penerimaanstokheader_qty',
                 'a.penerimaanstok_harga as penerimaanstokheader_harga',
                 'a.penerimaanstokheader_total as penerimaanstokheader_total',
+                'a.penerimaanstokheader_totalterpakai as penerimaanstokheader_totalterpakai',
             )
             ->where('a.stok_id', '=',   $data['stok_id'])
             ->where('a.gudang_id', '=',   $data['gudang_id'])
@@ -128,6 +133,7 @@ class PenerimaanStokDetailFifo extends MyModel
             "penerimaanstok_qty",
             "penerimaanstok_harga",
             "penerimaanstokheader_total",
+            "penerimaanstokheader_totalterpakai",
         ], $queryfifo);
 
 
@@ -146,6 +152,8 @@ class PenerimaanStokDetailFifo extends MyModel
                     // db::raw("sum(a.penerimaanstok_qty) as penerimaanstok_qty"),
                     db::raw("sum(a.qty) as qty"),
                     db::raw("max(b.id) as id"),
+                    db::raw("sum(a.penerimaanstokheader_totalterpakai) as penerimaanstokheader_totalterpakai"),
+
                 )
                 ->join(db::raw("penerimaanstokheader b with (readuncommitted)"), 'a.penerimaanstokheader_nobukti', 'b.nobukti')
                 ->join(db::raw("penerimaanstokdetail c with (readuncommitted)"), 'b.nobukti', 'c.nobukti')
@@ -159,6 +167,7 @@ class PenerimaanStokDetailFifo extends MyModel
                 'stok_id',
                 'qty',
                 'id',
+                'penerimaanstokheader_totalterpakai',
             ], $queryfifo);
 
             $querysisa = db::table('penerimaanstokdetail')->from(db::raw("penerimaanstokdetail a with (readuncommitted)"))
@@ -169,6 +178,7 @@ class PenerimaanStokDetailFifo extends MyModel
                     'a.harga',
                     'a.total',
                     'c.id as penerimaanstok_id',
+                    db::raw("(a.total-isnull(b.penerimaanstokheader_totalterpakai,0)) as totalsisa"),
                 )
                 // ->leftjoin(db::raw($tempfifo . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti')
                 ->leftjoin(db::raw($tempfifo . " b "), function ($join) {
@@ -194,7 +204,7 @@ class PenerimaanStokDetailFifo extends MyModel
                 $qtysisa = $querysisa->qtysisa ?? 0;
                 if ($qty <= $qtysisa) {
 
-
+                    $totalterpakai=($querysisa->total/$querysisa->qty)*$qty;
                     $penerimaanStokDetailFifo = new penerimaanStokDetailFifo();
                     $penerimaanStokDetailFifo->penerimaanstokheader_id = $data['penerimaanstokheader_id'] ?? 0;
                     $penerimaanStokDetailFifo->nobukti = $data['nobukti'] ?? '';
@@ -206,6 +216,7 @@ class PenerimaanStokDetailFifo extends MyModel
                     $penerimaanStokDetailFifo->penerimaanstok_qty = $querysisa->qty ?? 0;
                     $penerimaanStokDetailFifo->penerimaanstok_harga = $querysisa->harga ?? 0;
                     $penerimaanStokDetailFifo->penerimaanstokheader_total = $querysisa->total ?? 0;
+                    $penerimaanStokDetailFifo->penerimaanstokheader_totalterpakai = $totalterpakai ?? 0;
                     $penerimaanStokDetailFifo->modifiedby = $data['modifiedby'] ?? '';
 
                     DB::table($temprekappengeluaranfifo)->insert([
@@ -219,23 +230,32 @@ class PenerimaanStokDetailFifo extends MyModel
                         'penerimaanstok_qty' => $querysisa->qty ?? 0,
                         'penerimaanstok_harga' => $querysisa->harga ?? 0,
                         'penerimaanstokheader_total' => $querysisa->total ?? 0,
+                        'penerimaanstokheader_totalterpakai' => $totalterpakai ?? 0,
                     ]);
 
+                    $belitotalsisa = $querysisa->totalsisa ?? 0;
+                    $beliqtysisa = $querysisa->qtysisa ?? 0;
 
                     $belitotal = $querysisa->total ?? 0;
                     $beliqty = $querysisa->qty ?? 0;
 
                     $zqty = $qty ?? 0;
-                    $zharga = $querysisa->harga ?? 0;
-                    // $atotalharga = $atotalharga + ($zqty * $zharga);
-                    $atotalharga = $atotalharga + ($zqty * ($belitotal / $beliqty));
+                    // $zharga = $querysisa->harga ?? 0;
+                    $zharga = ($belitotalsisa / $beliqtysisa) ?? 0;
+
+                    // $atotalharga = $atotalharga + ($zqty * ($belitotal / $beliqty));
+                    $atotalharga = $atotalharga + ($zqty * ($belitotalsisa / $beliqtysisa));
 
 
                     // 
                     $ksqty = $qty ?? 0;
-                    $ksharga = $querysisa->harga ?? 0;
-                    $kstotal = $ksqty * ($belitotal / $beliqty);
+                    // $ksharga = $querysisa->harga ?? 0;
+                    // $kstotal = $ksqty * ($belitotal / $beliqty);
+                    $ksharga = ($belitotalsisa / $beliqtysisa) ?? 0;
+                    $kstotal = $ksqty * ($belitotalsisa / $beliqtysisa);
+
                     $ksnobukti = $data['nobukti'] ?? '';
+
 
                     $penerimaanstok_id = db::table("penerimaanstokheader")->from(db::raw("penerimaanstokheader as a with (readuncommitted)"))
                         ->select('a.penerimaanstok_id', 'a.tglbukti')->where('a.nobukti', $ksnobukti)->first();
@@ -274,7 +294,10 @@ class PenerimaanStokDetailFifo extends MyModel
                     // }
 
                     $aksqty = $querysisa->qty ?? 0;
-                    $aksharga = $querysisa->harga ?? 0;
+                    // $aksharga = $querysisa->harga ?? 0;
+                    $aksharga = ($belitotalsisa / $beliqtysisa) ?? 0;
+
+
                     $aksnobukti = $querysisa->nobukti ?? '';
                     $aksstok_id = $data['stok_id'] ?? 0;
 
@@ -292,6 +315,7 @@ class PenerimaanStokDetailFifo extends MyModel
                     // dd('test');
                     $qty = $qty - $qtysisa;
 
+                    $totalterpakai=($querysisa->total/$querysisa->qty)*$qtysisa;
 
                     $penerimaanStokDetailFifo = new penerimaanStokDetailFifo();
                     $penerimaanStokDetailFifo->penerimaanstokheader_id = $data['penerimaanstokheader_id'] ?? 0;
@@ -304,6 +328,7 @@ class PenerimaanStokDetailFifo extends MyModel
                     $penerimaanStokDetailFifo->penerimaanstok_qty = $querysisa->qty ?? 0;
                     $penerimaanStokDetailFifo->penerimaanstok_harga = $querysisa->harga ?? 0;
                     $penerimaanStokDetailFifo->penerimaanstokheader_total = $querysisa->total ?? 0;
+                    $penerimaanStokDetailFifo->penerimaanstokheader_totalterpakai = $totalterpakai ?? 0;
                     $penerimaanStokDetailFifo->modifiedby = $data['modifiedby'] ?? '';
 
                     DB::table($temprekappengeluaranfifo)->insert([
@@ -317,23 +342,36 @@ class PenerimaanStokDetailFifo extends MyModel
                         'penerimaanstok_qty' => $querysisa->qty ?? 0,
                         'penerimaanstok_harga' => $querysisa->harga ?? 0,
                         'penerimaanstokheader_total' => $querysisa->total ?? 0,
+                        'penerimaanstokheader_totalterpakai' => $totalterpakai ?? 0,
+
                     ]);
 
 
                     $belitotal = $querysisa->total ?? 0;
                     $beliqty = $querysisa->qty ?? 0;
 
+                    $belitotalsisa = $querysisa->totalsisa ?? 0;
+                    $beliqtysisa = $querysisa->qtysisa ?? 0;
+
 
                     $zqty = $qtysisa ?? 0;
-                    $zharga = $querysisa->harga ?? 0;
-                    // $atotalharga = $atotalharga + ($zqty * $zharga);
-                    $atotalharga = $atotalharga + ($zqty * ($belitotal / $beliqty));
+                    // $zharga = $querysisa->harga ?? 0;
+                    // $atotalharga = $atotalharga + ($zqty * ($belitotal / $beliqty));
+
+                    $zharga = ($belitotalsisa/$beliqtysisa) ?? 0;
+                    $atotalharga = $atotalharga + ($zqty * ($belitotalsisa / $beliqtysisa));
+
+
 
 
                     // 
                     $ksqty = $qtysisa ?? 0;
-                    $ksharga = $querysisa->harga ?? 0;
-                    $kstotal = $ksqty * ($belitotal / $beliqty);
+                    // $ksharga = $querysisa->harga ?? 0;
+                    // $kstotal = $ksqty * ($belitotal / $beliqty);
+
+                    $ksharga = ($belitotalsisa / $beliqtysisa) ?? 0;
+                    $kstotal = $ksqty * ($belitotalsisa / $beliqtysisa);
+
                     $ksnobukti = $data['nobukti'] ?? '';
 
                     $penerimaanstok_id = db::table("penerimaanstokheader")->from(db::raw("penerimaanstokheader as a with (readuncommitted)"))
@@ -373,7 +411,9 @@ class PenerimaanStokDetailFifo extends MyModel
                     }
 
                     $aksqty = $querysisa->qty ?? 0;
-                    $aksharga = $querysisa->harga ?? 0;
+                    // $aksharga = $querysisa->harga ?? 0;
+                    $aksharga = ($querysisa->totalsisa/$querysisa->qtysisa) ?? 0;
+
                     $aksnobukti = $querysisa->nobukti ?? '';
                     $aksstok_id = $data['stok_id'] ?? 0;
 

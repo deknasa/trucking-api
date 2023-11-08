@@ -228,6 +228,8 @@ class ExportLaporanKasGantung extends MyModel
                 db::raw("'" . $gantungcoa . "' as coa")
             )
             ->join(db::raw("kasgantungdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            // ->where('a.tglbukti',$tgl2)
+            ->whereRaw("a.tglbukti<='" . $tgl2 . "'")
             ->groupBy('a.nobukti');
 
 
@@ -344,6 +346,8 @@ class ExportLaporanKasGantung extends MyModel
             ->join(db::raw("pengembaliankasgantungdetail b with (readuncommitted) "), 'a.nobukti', 'b.kasgantung_nobukti')
             ->join(db::raw("pengembaliankasgantungheader c with (readuncommitted) "), 'b.nobukti', 'c.nobukti')
             ->join(db::raw("kasgantungheader d with (readuncommitted) "), 'a.nobukti', 'd.nobukti')
+            ->whereRaw("c.tglbukti<='" . $tgl2 . "'")
+
             ->orderBy('c.tglbukti', 'asc');
 
         DB::table($TempRekapkasgantung)->insertUsing([
