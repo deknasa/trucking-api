@@ -317,6 +317,8 @@ route::middleware(['auth:api'])->group(function () {
 });
 
 route::middleware(['auth:api'])->group(function () {
+    Route::get('jurnalumumpusatheader/importdatacabang', [JurnalUmumPusatHeaderController::class, 'importdatacabang']);
+    Route::post('jurnalumumpusatheader/storeimportdatacabang', [JurnalUmumPusatHeaderController::class, 'storeimportdatacabang']);
     Route::get('parameter', [ParameterController::class, 'index']);
     Route::get('user/combostatus', [UserController::class, 'combostatus']);
     Route::get('mandor/default', [MandorController::class, 'default']);

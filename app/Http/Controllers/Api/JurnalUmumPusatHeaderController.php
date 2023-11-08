@@ -36,6 +36,19 @@ class JurnalUmumPusatHeaderController extends Controller
         ]);
     }
 
+    public function importdatacabang()
+    {
+        // dd('test');
+        $jurnalUmumPusat = new JurnalUmumPusatHeader();
+        return response([
+            'data' => $jurnalUmumPusat->getimportdatacabang(),
+            'attributes' => [
+                'totalRows' => $jurnalUmumPusat->totalRows,
+                'totalPages' => $jurnalUmumPusat->totalPages
+            ]
+        ]);
+    }
+
     /**
      * @ClassName
      */
@@ -204,6 +217,90 @@ class JurnalUmumPusatHeaderController extends Controller
             }
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
+            DB::commit();
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil disimpan',
+                'data' => $jurnalUmumPusat
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+            return response($th->getMessage());
+        }
+    }
+
+    public function storeimportdatacabang(Request $request)
+    {
+        DB::BeginTransaction();
+        try {
+
+            for ($i = 0; $i < count($request->header_id); $i++) {
+
+                $header_nobukti = $request->header_nobukti[$i] ?? '';
+                $header_cabang_id = $request->header_cabang_id[$i] ?? 0;
+                $queryjurnalumumheader = db::table("jurnalumumpusatheader")->from(db::raw("jurnalumumpusatheader a with (readuncommitted)"))
+                    ->select(
+                        'a.id'
+                    )
+                    ->where('a.nobukti', $header_nobukti)
+                    ->where('a.cabang_id', $header_cabang_id)
+                    ->first();
+                if (!isset($queryjurnalumumheader)) {
+                    $jurnalUmumPusat = new JurnalUmumPusatHeader();
+                    $jurnalUmumPusat->nobukti = $request->header_nobukti[$i] ?? '';
+                    $jurnalUmumPusat->tglbukti = $request->header_tglbukti[$i] ?? '1900/1/1';
+                    $jurnalUmumPusat->postingdari = $request->header_postingdari[$i] ?? '';
+                    $jurnalUmumPusat->statusapproval = $request->header_statusapproval[$i] ?? 0;
+                    $jurnalUmumPusat->userapproval = $request->header_userapproval[$i] ?? '';
+                    $jurnalUmumPusat->tglapproval = $request->header_tglapproval[$i] ?? '1900/1/1';
+                    $jurnalUmumPusat->statusformat = $request->header_statusformat[$i] ?? 0;
+                    $jurnalUmumPusat->modifiedby =  $request->header_modifiedby[$i] ?? '';
+
+                    $jurnalUmumPusat->save();
+
+                    $logTrail = [
+                        'namatabel' => strtoupper($jurnalUmumPusat->getTable()),
+                        'postingdari' => 'IMPORT DATA CABANG JURNAL UMUM PUSAT HEADER',
+                        'idtrans' => $jurnalUmumPusat->id,
+                        'nobuktitrans' => $jurnalUmumPusat->nobukti,
+                        'aksi' => 'ENTRY',
+                        'datajson' => $jurnalUmumPusat->toArray(),
+                        'modifiedby' => $jurnalUmumPusat->modifiedby
+                    ];
+
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                }
+                $jurnalUmumPusatdetail = new JurnalUmumPusatDetail();
+
+                $jurnalUmumPusatdetail->jurnalumumpusat_id = $jurnalUmumPusat->id;
+                $jurnalUmumPusatdetail->nobukti = $request->detail_nobukti[$i] ?? '';
+                $jurnalUmumPusatdetail->tglbukti = $request->detail_tglbukti[$i] ?? '1900/1/1';
+                $jurnalUmumPusatdetail->coa = $request->detail_coa[$i] ?? '';
+                $jurnalUmumPusatdetail->nominal = $request->detail_nominal[$i] ?? '0';
+                $jurnalUmumPusatdetail->keterangan = $request->detail_keterangan[$i] ?? '';
+                $jurnalUmumPusatdetail->modifiedby = $request->detail_modifiedby[$i] ?? '';
+                $jurnalUmumPusatdetail->baris = $request->detail_baris[$i] ?? '0';
+
+
+                $jurnalUmumPusatdetail->save();
+                $logTrail = [
+                    'namatabel' => strtoupper($jurnalUmumPusatdetail->getTable()),
+                    'postingdari' => 'IMPORT DATA CABANG JURNAL UMUM PUSAT DETAIL',
+                    'idtrans' => $jurnalUmumPusat->id,
+                    'nobuktitrans' => $jurnalUmumPusat->nobukti,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $jurnalUmumPusat->toArray(),
+                    'modifiedby' => $jurnalUmumPusat->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+            }
+
+
             DB::commit();
 
             return response([
