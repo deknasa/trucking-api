@@ -26,6 +26,7 @@ class CreatePengeluaranstokdetailfifoTable extends Migration
             $table->double('penerimaanstok_qty',15,2)->nullable();
             $table->double('penerimaanstok_harga',15,2)->nullable();
             $table->double('penerimaanstok_total',15,2)->nullable();            
+            $table->double('penerimaanstok_totalterpakai',15,2)->nullable();            
             $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
