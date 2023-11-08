@@ -29,13 +29,13 @@ class ImportDataCabangController extends Controller
             $data = [
                 'cabang' => $request->cabang,
                 'import' => $request->import,
-                'priode' => $request->priode,
+                'periode' => $request->periode,
             ];
             $importDataCabang = (new ImportDataCabang())->processStore($data);
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
-                'data' => $hutangHeader
+                'data' => $importDataCabang
             ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
