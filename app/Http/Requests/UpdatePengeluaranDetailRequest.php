@@ -35,4 +35,11 @@ class UpdatePengeluaranDetailRequest extends FormRequest
             'keterangan_detail.*' => 'required'
         ];
     }
+
+    public function attributes()
+    {
+        return [
+            'ketcoadebet.*' => 'nama perkiraan'
+        ];
+    }
 }

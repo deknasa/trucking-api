@@ -1249,6 +1249,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     //pengeluaran
     Route::get('pengeluaranheader/{id}/printreport', [PengeluaranHeaderController::class, 'printReport'])->whereNumber('id');
     Route::post('pengeluaranheader/addrow', [PengeluaranDetailController::class, 'addrow']);
+    Route::post('pengeluaranheader/{id}/editcoa', [PengeluaranHeaderController::class, 'editCoa']);
     Route::post('pengeluaranheader/{id}/approval', [PengeluaranHeaderController::class, 'approval'])->name('pengeluaranheader.approval')->whereNumber('id');
     Route::get('pengeluaranheader/no_bukti', [PengeluaranHeaderController::class, 'getNoBukti']);
     Route::get('pengeluaranheader/field_length', [PengeluaranHeaderController::class, 'fieldLength']);

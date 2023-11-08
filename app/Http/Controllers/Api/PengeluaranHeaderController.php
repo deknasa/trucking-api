@@ -27,6 +27,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
+use App\Http\Requests\UpdatePengeluaranDetailRequest;
 use App\Models\Error;
 use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
@@ -316,6 +317,57 @@ class PengeluaranHeaderController extends Controller
             throw $th;
         }
     }
+    public function editCoa(UpdatePengeluaranDetailRequest $request, $id)
+    {
+        DB::beginTransaction();
+        try {
+            $pengeluaran = PengeluaranHeader::findOrFail($id);
+            /* Store header */
+            $pengeluaranHeader = (new PengeluaranHeader())->processUpdate($pengeluaran, [
+                "bank_id" => $request->bank_id,
+                "tglbukti" => $request->tglbukti,
+                "pelanggan_id" => $request->pelanggan_id,
+                "postingdari" => $request->postingdari,
+                "statusapproval" => $request->statusapproval,
+                "dibayarke" => $request->dibayarke,
+                "alatbayar_id" => $request->alatbayar_id,
+                "userapproval" => $request->userapproval,
+                "tglapproval" => $request->tglapproval,
+                "transferkeac" => $request->transferkeac,
+                "transferkean" => $request->transferkean,
+                "transferkebank" => $request->transferkebank,
+                "penerimaan_nobukti" => $request->nobukti_penerimaan,
+                "statusformat" => $request->statusformat,
+                "nominal_detail" => $request->nominal_detail,
+                "nowarkat" => $request->nowarkat,
+                "tgljatuhtempo" => $request->tgljatuhtempo,
+                "coadebet" => $request->coadebet,
+                // "coakredit"=>$request->coakredit,
+                "keterangan_detail" => $request->keterangan_detail,
+                "noinvoice" => $request->noinvoice,
+                "bank_detail" => $request->bank_detail,
+            ]);
+            /* Set position and page */
+            $pengeluaranHeader->position = $this->getPosition($pengeluaranHeader, $pengeluaranHeader->getTable())->position;
+            if ($request->limit == 0) {
+                $pengeluaranHeader->page = ceil($pengeluaranHeader->position / (10));
+            } else {
+                $pengeluaranHeader->page = ceil($pengeluaranHeader->position / ($request->limit ?? 10));
+            }
+            $pengeluaranHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $pengeluaranHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $pengeluaranHeader
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
+    }
 
     public function fieldLength()
     {
@@ -344,7 +396,7 @@ class PengeluaranHeaderController extends Controller
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
         $aksi = request()->aksi ?? '';
-        if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
+        if ($status == $statusApproval->id && ($aksi == 'DELETE')) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->whereRaw("kodeerror = 'SAP'")
@@ -398,12 +450,13 @@ class PengeluaranHeaderController extends Controller
                 ->where('kodeerror', '=', $cekdata['kodeerror'])
                 ->get();
             $keterangan = $query['0'];
-
+                    
             $data = [
                 'status' => false,
                 'message' => $keterangan,
                 'errors' => '',
                 'kondisi' => $cekdata['kondisi'],
+                'editcoa' => $cekdata['editcoa']
             ];
 
             return response($data);
@@ -414,6 +467,7 @@ class PengeluaranHeaderController extends Controller
                 'message' => '',
                 'errors' => '',
                 'kondisi' => $cekdata['kondisi'],
+                'editcoa' => false
             ];
 
             return response($data);
