@@ -111,6 +111,60 @@ class JurnalUmumPusatHeader extends MyModel
         return $data;
     }
 
+    public function getimportdatacabang()
+    {
+        // dd(request()->periode);
+        $this->setRequestParameters();
+        $periode = request()->periode ?? date('m-Y');
+        $month = substr($periode, 0, 2);
+        $year = substr($periode, 3);
+
+
+        $query = db::table("jurnalumumpusatheader")->from(db::raw("jurnalumumpusatheader a with (readuncommitted)"))
+            ->select(
+                'a.id as header_id',
+                'a.nobukti as header_nobukti',
+                'a.tglbukti as header_tglbukti',
+                'a.keterangan as header_keterangan',
+                'a.postingdari as header_postingdari',
+                'a.statusapproval as header_statusapproval',
+                'a.userapproval as header_userapproval',
+                'a.tglapproval as header_tglapproval',
+                'a.statusformat as header_statusformat',
+                'a.info as header_info',
+                'a.modifiedby as header_modifiedby',
+                'a.created_at as header_created_at',
+                'a.updated_at as header_updated_at',
+                'a.cabang as header_cabang',
+                'a.cabang_id as header_cabang_id',
+                'b.id as detail_id',
+                'b.jurnalumumpusat_id as detail_jurnalumumpusat_id',
+                'b.nobukti as detail_nobukti',
+                'b.tglbukti as detail_tglbukti',
+                'b.coa as detail_coa',
+                'b.coamain as detail_coamain',
+                'b.nominal as detail_nominal',
+                'b.keterangan as detail_keterangan',
+                'b.baris as detail_baris',
+                'b.info as detail_info',
+                'b.modifiedby as detail_modifiedby',
+                'b.created_at as detail_created_at',
+                'b.updated_at as detail_updated_at',
+            )
+            ->join(db::raw("jurnalumumpusatdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->whereRaw("MONTH(a.tglbukti) = " . $month)
+            ->whereRaw("YEAR(a.tglbukti) = " . $year)
+            ->orderby('a.id', 'asc')
+            ->orderby('b.id', 'asc');
+
+            // dd($query->get());
+
+
+        $data = $query->get();
+
+        return $data;
+    }
+
 
     public function selectColumns($query)
     {
@@ -237,6 +291,16 @@ class JurnalUmumPusatHeader extends MyModel
             DB::raw("parameter with (readuncommitted)")
         )->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
+        $cabang_id = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', 'ID CABANG')->where('text', 'ID _CABANG')->first()->text ?? 0;
+
+        $querycabang = db::table("cabang")->from(db::raw("cabang a with (readcommitted)"))
+            ->select(
+                'a.namacabang'
+            )
+            ->where('a.id', $cabang_id)
+            ->first();
         $jurnalUmumPusatHeader->nobukti = $data['nobukti'];
         $jurnalUmumPusatHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $jurnalUmumPusatHeader->postingdari = $data['postingdari'];
@@ -245,6 +309,8 @@ class JurnalUmumPusatHeader extends MyModel
         $jurnalUmumPusatHeader->tglapproval = date('Y-m-d H:i:s');
         $jurnalUmumPusatHeader->statusformat = $data['statusformat'];
         $jurnalUmumPusatHeader->modifiedby = auth('api')->user()->name;
+        $jurnalUmumPusatHeader->cabang_id = $cabang_id ?? 0;
+        $jurnalUmumPusatHeader->cabang = $querycabang->namacabang ?? '';
         $jurnalUmumPusatHeader->info = html_entity_decode(request()->info);
 
 
@@ -319,4 +385,64 @@ class JurnalUmumPusatHeader extends MyModel
 
         return $jurnalUmumHeader;
     }
+
+    public function processStoreimportdatacabang(array $data): JurnalUmumPusatHeader
+    {
+        $jurnalUmumPusatHeader = new JurnalUmumPusatHeader();
+       
+        $jurnalUmumPusatHeader->nobukti = $data['nobukti'] ?? '';
+        $jurnalUmumPusatHeader->tglbukti = $data['tglbukti'] ?? '1900/1/1';
+        $jurnalUmumPusatHeader->postingdari = $data['postingdari'] ?? '';
+        $jurnalUmumPusatHeader->statusapproval = $data['statusapproval'] ?? '0';
+        $jurnalUmumPusatHeader->userapproval = $data['userapproval'] ?? '';
+        $jurnalUmumPusatHeader->tglapproval = $data['tglapproval'] ?? '1900/1/1';
+        $jurnalUmumPusatHeader->statusformat = $data['statusformat'] ?? 0;
+        $jurnalUmumPusatHeader->modifiedby = $data['modifiedby'] ?? '';
+        $jurnalUmumPusatHeader->cabang_id = $data['cabang_id'] ?? 0;
+        $jurnalUmumPusatHeader->cabang = $data['cabang'] ?? '' ;
+        $jurnalUmumPusatHeader->info = $data['info'] ?? '';
+
+
+        if (!$jurnalUmumPusatHeader->save()) {
+            throw new \Exception("Error storing jurnal umum pusat header.");
+        }
+
+        $jurnalUmumPusatHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($jurnalUmumPusatHeader->getTable()),
+            'postingdari' => 'IMPORT DATA CABANG JURNAL UMUM PUSAT HEADER',
+            'idtrans' => $jurnalUmumPusatHeader->id,
+            'nobuktitrans' => $jurnalUmumPusatHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $jurnalUmumPusatHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        $jurnalUmumPusatDetails = [];
+
+        for ($i = 0; $i < count($data['nominal_detail']); $i++) {
+            $akunPusat = DB::table("akunpusat")->from(DB::raw("akunpusat"))->where('coa', $data['coa_detail'][$i])->first();
+            $jurnalUmumPusatDetail = (new JurnalUmumPusatDetail())->processStore($jurnalUmumPusatHeader, [
+                'coa' => $data['coa_detail'][$i],
+                'nominal' => $data['nominal_detail'][$i],
+                'coamain' => $akunPusat->coamain,
+                'keterangan' => $data['keterangan_detail'][$i],
+                'baris' => $data['baris'][$i],
+            ]);
+
+            $jurnalUmumPusatDetails[] = $jurnalUmumPusatDetail->toArray();
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($jurnalUmumPusatDetail->getTable()),
+            'postingdari' => 'ENTRY JURNAL UMUM PUSAT DETAIL',
+            'idtrans' =>  $jurnalUmumPusatHeaderLogTrail->id,
+            'nobuktitrans' => $jurnalUmumPusatHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $jurnalUmumPusatDetails,
+            'modifiedby' => auth('api')->user()->user,
+        ]);
+
+        return $jurnalUmumPusatHeader;
+    }
+
 }
