@@ -952,6 +952,7 @@ class KartuStok extends MyModel
         return $datalist;
     }
 
+   
     public function getlaporan($tgldari, $tglsampai, $stokdari, $stoksampai, $gudang_id, $trado_id, $gandengan_id, $filter)
     {
 
