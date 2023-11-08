@@ -412,25 +412,27 @@ class PengeluaranHeader extends MyModel
     }
 
     public function cekvalidasiaksi($nobukti)
-    {
-        $rekap = DB::table('rekappengeluarandetail')
+    {        
+        $jurnal = DB::table('pengeluaranheader')
             ->from(
-                DB::raw("rekappengeluarandetail as a with (readuncommitted)")
+                DB::raw("pengeluaranheader as a with (readuncommitted)")
             )
             ->select(
-                'a.nobukti',
-                'a.pengeluaran_nobukti'
+                'a.nobukti'
             )
-            ->where('a.pengeluaran_nobukti', '=', $nobukti)
+            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->where('a.nobukti', '=', $nobukti)
             ->first();
-        if (isset($rekap)) {
+        if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Rekap Pengeluaran '. $rekap->nobukti,
-                'kodeerror' => 'SATL'
+                'keterangan' => 'Approval Jurnal '. $jurnal->nobukti,
+                'kodeerror' => 'SAP',
+                'editcoa' => false
             ];
             goto selesai;
         }
+
         $pelunasanhutangheader = DB::table('pelunasanhutangheader')
             ->from(
                 DB::raw("pelunasanhutangheader as a with (readuncommitted)")
@@ -445,7 +447,8 @@ class PengeluaranHeader extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'Pelunasan Hutang '. $pelunasanhutangheader->nobukti,
-                'kodeerror' => 'TDT'
+                'kodeerror' => 'TDT',
+                'editcoa' => false
             ];
             goto selesai;
         }
@@ -464,7 +467,8 @@ class PengeluaranHeader extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'kas gantung '. $kasGantung->nobukti,
-                'kodeerror' => 'TDT'
+                'kodeerror' => 'TDT',
+                'editcoa' => false
             ];
             goto selesai;
         }
@@ -482,7 +486,8 @@ class PengeluaranHeader extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'Absensi Supir posting '. $absensiApproval->nobukti,
-                'kodeerror' => 'TDT'
+                'kodeerror' => 'TDT',
+                'editcoa' => false
             ];
             goto selesai;
         }
@@ -501,7 +506,8 @@ class PengeluaranHeader extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'proses uang jalan supir '. $prosesUangjalan->nobukti,
-                'kodeerror' => 'TDT'
+                'kodeerror' => 'TDT',
+                'editcoa' => false
             ];
             goto selesai;
         }
@@ -520,7 +526,8 @@ class PengeluaranHeader extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'PELUNASAN HUTANG '. $pelunasanHutangHeader->nobukti,
-                'kodeerror' => 'TDT'
+                'kodeerror' => 'TDT',
+                'editcoa' => false
             ];
             goto selesai;
         }
@@ -539,7 +546,8 @@ class PengeluaranHeader extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'pengeluaran trucking '. $pengeluaranTrucking->nobukti,
-                'kodeerror' => 'TDT'
+                'kodeerror' => 'TDT',
+                'editcoa' => false
             ];
             goto selesai;
         }
@@ -558,7 +566,8 @@ class PengeluaranHeader extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'pengembalian kas/bank '. $pengembalianKasbank->nobukti,
-                'kodeerror' => 'TDT'
+                'kodeerror' => 'TDT',
+                'editcoa' => false
             ];
             goto selesai;
         }
@@ -576,7 +585,8 @@ class PengeluaranHeader extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'Proses Gaji Supir '. $prosesGajiSupir->nobukti,
-                'kodeerror' => 'TDT'
+                'kodeerror' => 'TDT',
+                'editcoa' => false
             ];
             goto selesai;
         }
@@ -594,29 +604,12 @@ class PengeluaranHeader extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'Pendapatan Supir '. $pendapatanSupir->nobukti,
-                'kodeerror' => 'TDT'
+                'kodeerror' => 'TDT',
+                'editcoa' => false
             ];
             goto selesai;
         }
 
-        $jurnal = DB::table('pengeluaranheader')
-            ->from(
-                DB::raw("pengeluaranheader as a with (readuncommitted)")
-            )
-            ->select(
-                'a.nobukti'
-            )
-            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-            ->where('a.nobukti', '=', $nobukti)
-            ->first();
-        if (isset($jurnal)) {
-            $data = [
-                'kondisi' => true,
-                'keterangan' => 'Approval Jurnal '. $jurnal->nobukti,
-                'kodeerror' => 'SAP'
-            ];
-            goto selesai;
-        }
         $pelunasanPiutang = DB::table('pelunasanpiutangheader')
             ->from(
                 DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
@@ -631,11 +624,31 @@ class PengeluaranHeader extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'Pelunasan Piutang ' . $pelunasanPiutang->nobukti,
-                'kodeerror' => 'TDT'
+                'kodeerror' => 'TDT',
+                'editcoa' => false
             ];
             goto selesai;
         }
-
+        
+        $rekap = DB::table('rekappengeluarandetail')
+            ->from(
+                DB::raw("rekappengeluarandetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti',
+                'a.pengeluaran_nobukti'
+            )
+            ->where('a.pengeluaran_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($rekap)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Rekap Pengeluaran '. $rekap->nobukti,
+                'kodeerror' => 'SATL',
+                'editcoa' => true
+            ];
+            goto selesai;
+        }
         $data = [
             'kondisi' => false,
             'keterangan' => '',
@@ -867,12 +880,12 @@ class PengeluaranHeader extends MyModel
 
         $pengeluaranHeader->pelanggan_id = $data['pelanggan_id'] ?? 0;
         $pengeluaranHeader->postingdari = $data['postingdari'] ?? 'ENTRY PENGELUARAN KAS/BANK';
-        $pengeluaranHeader->statusapproval = $statusApproval->id ?? $data['statusapproval'];
+        // $pengeluaranHeader->statusapproval = $statusApproval->id ?? $data['statusapproval'];
         $pengeluaranHeader->dibayarke = $data['dibayarke'] ?? '';
         $pengeluaranHeader->alatbayar_id = $data['alatbayar_id'] ?? 0;
         $pengeluaranHeader->bank_id = $data['bank_id'] ?? 0;
-        $pengeluaranHeader->userapproval = $data['userapproval'] ?? '';
-        $pengeluaranHeader->tglapproval = $data['tglapproval'] ?? '';
+        // $pengeluaranHeader->userapproval = $data['userapproval'] ?? '';
+        // $pengeluaranHeader->tglapproval = $data['tglapproval'] ?? '';
         $pengeluaranHeader->transferkeac = $data['transferkeac'] ?? '';
         $pengeluaranHeader->transferkean = $data['transferkean'] ?? '';
         $pengeluaranHeader->transferkebank = $data['transferkebank'] ?? '';

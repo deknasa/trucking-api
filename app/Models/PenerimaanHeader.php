@@ -102,26 +102,6 @@ class PenerimaanHeader extends MyModel
         }
 
 
-        $rekap = DB::table('rekappenerimaandetail')
-            ->from(
-                DB::raw("rekappenerimaandetail as a with (readuncommitted)")
-            )
-            ->select(
-                'a.nobukti',
-                'a.penerimaan_nobukti'
-            )
-            ->where('a.penerimaan_nobukti', '=', $nobukti)
-            ->first();
-        if (isset($rekap)) {
-            $data = [
-                'kondisi' => true,
-                'keterangan' => 'Rekap Penerimaan ' . $rekap->nobukti,
-                'kodeerror' => 'SATL',
-                'editcoa' => true
-            ];
-            goto selesai;
-        }
-
         $pelunasanPiutang = DB::table('pelunasanpiutangheader')
             ->from(
                 DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
@@ -241,6 +221,26 @@ class PenerimaanHeader extends MyModel
             goto selesai;
         }
 
+
+        $rekap = DB::table('rekappenerimaandetail')
+            ->from(
+                DB::raw("rekappenerimaandetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti',
+                'a.penerimaan_nobukti'
+            )
+            ->where('a.penerimaan_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($rekap)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Rekap Penerimaan ' . $rekap->nobukti,
+                'kodeerror' => 'SATL',
+                'editcoa' => true
+            ];
+            goto selesai;
+        }
 
         $data = [
             'kondisi' => false,
