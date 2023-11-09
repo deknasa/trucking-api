@@ -221,6 +221,7 @@ class LaporanPinjamanSupirKaryawan extends MyModel
         Schema::create($temphasil, function ($table) {
             $table->id();
             $table->string('nobukti', 1000)->nullable();
+            $table->string('namakaryawan', 1000)->nullable();
             $table->string('nobuktipelunasan', 1000)->nullable();
             $table->date('tglbukti')->nullable();
             $table->date('tglbuktipelunasan')->nullable();
@@ -234,6 +235,7 @@ class LaporanPinjamanSupirKaryawan extends MyModel
         )
             ->select(
                 'a.nobukti',
+                'a.namakaryawan',
                 'a.nobuktipelunasan',
                 'a.tglbukti',
                 'a.tglbuktipelunasan',
@@ -246,6 +248,7 @@ class LaporanPinjamanSupirKaryawan extends MyModel
 
         DB::table($temphasil)->insertUsing([
             'nobukti',
+            'namakaryawan',
             'nobuktipelunasan',
             'tglbukti',
             'tglbuktipelunasan',
@@ -277,6 +280,7 @@ class LaporanPinjamanSupirKaryawan extends MyModel
         )
             ->select(
                 db::raw("(a.nobukti) + ' '+(case when isnull(a.nobuktipelunasan,'')='' then '' else '( '+isnull(a.nobuktipelunasan,'')+' )' end) as nobukti"),
+                'a.namakaryawan',
                 'a.nobuktipelunasan',
                 'a.tglbukti',
                 'a.tglbuktipelunasan',

@@ -511,6 +511,7 @@ class LaporanNeraca extends MyModel
             Schema::create($temppinjamansupir, function ($table) {
                 $table->dateTime('tanggal')->nullable();
                 $table->string('nobukti', 500)->nullable();
+                $table->string('namasupir', 500)->nullable();
                 $table->string('keterangan', 500)->nullable();
                 $table->double('debet')->nullable();
                 $table->double('kredit')->nullable();
@@ -540,6 +541,7 @@ class LaporanNeraca extends MyModel
             DB::table($temppinjamansupir)->insertUsing([
                 'tanggal',
                 'nobukti',
+                'namasupir',
                 'keterangan',
                 'debet',
                 'kredit',
@@ -557,6 +559,7 @@ class LaporanNeraca extends MyModel
             $temppinjamankaryawan = '##temppinjamankaryawan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($temppinjamankaryawan, function ($table) {
                 $table->string('nobukti', 500)->nullable();
+                $table->string('namakaryawan', 500)->nullable();
                 $table->string('nobuktipelunasan', 500)->nullable();
                 $table->date('tglbukti')->nullable();
                 $table->date('tglbuktipelunasan')->nullable();
@@ -575,6 +578,7 @@ class LaporanNeraca extends MyModel
 
             DB::table($temppinjamankaryawan)->insertUsing([
                 'nobukti',
+                'namakaryawan',
                 'nobuktipelunasan',
                 'tglbukti',
                 'tglbuktipelunasan',
