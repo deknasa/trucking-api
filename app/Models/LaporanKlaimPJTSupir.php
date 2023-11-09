@@ -58,7 +58,7 @@ class LaporanKlaimPJTSupir extends MyModel
                 'b.keterangan',
                 'd.namasupir',
                 'c.namastok',
-                DB::raw("'Laporan Klaim PJT Supir' as judulLaporan"),
+                DB::raw("'LAPORAN KLAIM PJT SUPIR' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),

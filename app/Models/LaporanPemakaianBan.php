@@ -508,7 +508,7 @@ class LaporanPemakaianBan extends MyModel
                 db::Raw("'' as noklaim"),
                 db::Raw("'' as nopjt"),
                 db::Raw("'' as ketafkir"),
-                DB::raw("'Laporan Pemakaian Ban' as judulLaporan"),
+                DB::raw("'LAPORAN PEMAKAIAN BAN' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
