@@ -100,7 +100,7 @@ class LaporanTripGandenganDetail extends MyModel
             DB::raw("(ltrim(rtrim(G.keterangan))+' - '+ltrim(rtrim(H.keterangan))) as rute"),
             "F.kodecontainer as cont",
             "A.keterangan",
-            DB::raw("'Laporan Trip Gandengan Detail' as judulLaporan"),
+            DB::raw("'LAPORAN TRIP GANDENGAN DETAIL' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
             DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),

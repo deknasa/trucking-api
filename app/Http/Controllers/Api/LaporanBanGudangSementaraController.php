@@ -51,4 +51,14 @@ class LaporanBanGudangSementaraController extends Controller
             'data' => $laporanbankgudangsementara->getReport(),
         ]);
     }
+      /**
+     * @ClassName
+     */
+    public function export()
+    {
+        $laporanbankgudangsementara = new LaporanBanGudangSementara();
+        return response([
+            'data' => $laporanbankgudangsementara->getReport(),
+        ]);
+    }
 }

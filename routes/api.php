@@ -1568,6 +1568,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('exportrincianmingguanpendapatan/export', [ExportRincianMingguanPendapatanSupirController::class, 'export'])->name('exportrincianmingguanpendapatan.export');
     Route::resource('exportrincianmingguanpendapatan', ExportRincianMingguanPendapatanSupirController::class)->whereNumber('exportrincianmingguanpendapatan');;
+    Route::get('laporanbangudangsementara/export', [LaporanBanGudangSementaraController::class, 'export'])->name('laporanbangudangsementara.export');
     Route::get('laporanbangudangsementara/report', [LaporanBanGudangSementaraController::class, 'report'])->name('laporanbangudangsementara.report');
     Route::resource('laporanbangudangsementara', LaporanBanGudangSementaraController::class)->whereNumber('laporanbangudangsementara');;
     Route::get('exportrincianmingguan/export', [ExportRincianMingguanController::class, 'export'])->name('exportrincianmingguan.export');

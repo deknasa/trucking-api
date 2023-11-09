@@ -191,7 +191,7 @@ class LaporanBanGudangSementara extends MyModel
                 'a.nobukti',
                 'a.tgl as tanggal',
                 'a.jumlahhari as jlhhari',                
-                DB::raw("'Laporan Ban Gudang Sementara' as judulLaporan"),
+                DB::raw("'LAPORAN BAN GUDANG SEMENTARA' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")

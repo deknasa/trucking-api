@@ -222,7 +222,7 @@ class LaporanTripTrado extends MyModel
                 DB::raw("isnull(D.[empty], 0) as [emptyport]"),
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
-                DB::raw("'Laporan Trip Trado' as judulLaporan"),
+                DB::raw("'LAPORAN TRIP TRADO' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")

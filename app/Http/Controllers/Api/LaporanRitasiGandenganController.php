@@ -31,8 +31,14 @@ class LaporanRitasiGandenganController extends Controller
         $periode = $request->periode;
         
         $export = new LaporanRitasiGandengan ();
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
         return response([
-            'data' => $export->Export($periode)
+            'data' => $export->Export($periode),
+            'judul' => $getJudul->text
         ]);
     }
 

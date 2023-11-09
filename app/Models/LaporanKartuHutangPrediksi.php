@@ -494,7 +494,7 @@ class LaporanKartuHutangPrediksi extends MyModel
                 'a.debet as nominal',
                 'a.kredit as bayar',
                 DB::raw("sum ( (isnull(A.saldo,0)+isnull(a.debet,0))-isnull(a.kredit,0)) over (order by a.id asc) as saldo"),
-                DB::raw("'Laporan Kartu Hutang Prediksi (EBS)' as judulLaporan"),
+                DB::raw("'LAPORAN KARTU HUTANG PREDIKSI (EBS)' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),

@@ -377,7 +377,7 @@ class LaporanHutangBBM extends MyModel
                 ) * -1 as Saldo"),
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
-                DB::raw("'Laporan Hutang BBM' as judulLaporan"),
+                DB::raw("'LAPORAN HUTANG BBM' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")

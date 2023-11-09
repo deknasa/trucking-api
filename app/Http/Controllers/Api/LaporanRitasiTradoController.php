@@ -37,8 +37,15 @@ class LaporanRitasiTradoController extends Controller
             ],
          
         ];
+        
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
         return response([
-            'data' => $laporanritasi->getExport($periode)
+            'data' => $laporanritasi->getExport($periode),
+            'judul' => $getJudul->text
             // 'data' => $export
         ]);
     }
