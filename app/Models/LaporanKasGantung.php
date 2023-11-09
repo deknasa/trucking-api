@@ -468,6 +468,11 @@ class LaporanKasGantung extends MyModel
             ->select('text')
             ->where('grp', 'DIPERIKSA')
             ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+            $getJudul = DB::table('parameter')
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
 
 
@@ -481,7 +486,8 @@ class LaporanKasGantung extends MyModel
                 DB::raw('sum((isnull(A.saldo, 0) + A.debet) - A.kredit) over (order by id asc) as Saldo'),
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
-
+                DB::raw("'Laporan Kas Gantung' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
             ])
             ->orderBy('a.id', 'asc');
         // dd($select_TempLaporan2->get());
@@ -1120,6 +1126,7 @@ class LaporanKasGantung extends MyModel
         } else {
             $data = $select_TempLaporan2->get();
         }
+        // dd($data);
 
         return $data;
     }
