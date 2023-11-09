@@ -555,6 +555,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             ->select(
                 'a.tglbukti as tanggal',
                 'a.nobukti',
+                'a.namasupir',
                 'a.keterangan',
                 'a.debet',
                 'a.kredit',
