@@ -238,6 +238,24 @@ class StokController extends Controller
             throw $th;
         }
     }
+    
+    /**
+     * @ClassName 
+     */
+    public function approvalklaim(Stok $stok) {
+        DB::beginTransaction();
+        try {
+            $stok->processApprovalklaim($stok);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
 
     private function storeFiles(array $files, string $destinationFolder): string
     {

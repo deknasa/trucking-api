@@ -36,7 +36,9 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
         $reuse = DB::table('parameter')->where('grp', 'STATUS REUSE')->where('text', 'REUSE')->first();
         $korv = DB::table('pengeluaranstok')->where('kodepengeluaran', 'KORV')->first();
         $afkir = DB::table('pengeluaranstok')->where('kodepengeluaran', 'AFKIR')->first();
-        
+        $statusApproval = DB::table('parameter')->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusNonApproval = DB::table('parameter')->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
         $afkirRules = [];
         
         $rules = [
@@ -122,17 +124,18 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
         }
         $afkirRules = [];
         if($afkir->id == request()->pengeluaranstok_id) {
-            $stok = DB::table('stok')->select('kelompok.id as kelompok_id')->where('stok.id', request()->detail_stok_id[0])->leftJoin("kategori", "kategori.id", "stok.kategori_id")->leftJoin("subkelompok", "subkelompok.id", "kategori.subkelompok_id")->leftJoin("kelompok", "kelompok.id", "subkelompok.kelompok_id")->first();
+            $stok = DB::table('stok')->select('kelompok.id as kelompok_id','stok.statusapprovaltanpaklaim as approvalklaim','stok.id')->where('stok.id', request()->detail_stok_id[0])->leftJoin("kategori", "kategori.id", "stok.kategori_id")->leftJoin("subkelompok", "subkelompok.id", "kategori.subkelompok_id")->leftJoin("kelompok", "kelompok.id", "subkelompok.kelompok_id")->first();
             $kelompok = DB::table('kelompok')->select('id')->where('kelompok.kodekelompok', 'AKI')->first();
+
+            $statusKlaim = ($stok->approvalklaim == $statusApproval->id);
             $kolom = request()->detail_vulkanisirke[0];
             $batas = 2;
             if ($stok->kelompok_id == $kelompok->id) {
                 $kolom = request()->jlhhari;
                 $batas = 730;
             }
-
             $afkirRules = [
-                'pengeluarantrucking_nobukti' => Rule::requiredIf($kolom < $batas)
+                'pengeluarantrucking_nobukti' => Rule::requiredIf(($kolom < $batas) && !$statusKlaim)
             ];
         }
 

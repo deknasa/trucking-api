@@ -701,6 +701,37 @@ class Stok extends MyModel
         return $stok;
     }
 
+    public function processApprovalklaim(Stok $stok) : Stok
+    {
+        $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+        
+        if ($stok->statusapprovaltanpaklaim == $statusApproval->id) {
+            $stok->statusapprovaltanpaklaim = $statusNonApproval->id;
+        } else {
+            $stok->statusapprovaltanpaklaim = $statusApproval->id;
+        }
+
+        $stok->tglapprovaltanpaklaim = date('Y-m-d', time());
+        $stok->userapprovaltanpaklaim = auth('api')->user()->name;
+
+        if ($stok->save()) {
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($stok->getTable()),
+                'postingdari' => 'UN/APPROVE STOK TANPA KALIM',
+                'idtrans' => $stok->id,
+                'nobuktitrans' => $stok->id,
+                'aksi' => 'UN/APPROVE',
+                'datajson' => $stok->toArray(),
+                'modifiedby' => $stok->modifiedby
+            ]);
+           
+            DB::commit();
+        }
+        return $stok;
+
+    }
+
     public function getvulkanisir($id)
     {
 
