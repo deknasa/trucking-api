@@ -54,6 +54,7 @@ class LaporanNeraca extends MyModel
         $judul = Parameter::where('grp', '=', 'JUDULAN LAPORAN')->first();
         $judulLaporan = $judul->text;
 
+            //   dd($tglsd1);
         if ($eksport == 1) {
 
             DB::table('akunpusatdetail')
@@ -728,7 +729,8 @@ class LaporanNeraca extends MyModel
             });
 
 
-
+      
+            $tglkasbank = date('Y-m-d', strtotime($tglsd1 . ' -1 days'));
 
             $kas_id = DB::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
                 ->select(
@@ -751,7 +753,7 @@ class LaporanNeraca extends MyModel
                 'judul',
                 'tglcetak',
                 'usercetak',
-            ], (new LaporanKasBank())->getReport($tglsd1, $tglsd1, $kas_id, 1));
+            ], (new LaporanKasBank())->getReport($tglkasbank, $tglkasbank, $kas_id, 1));
 
             // dd(db::table($tempkas)->get());
 
@@ -799,7 +801,7 @@ class LaporanNeraca extends MyModel
                 'judul',
                 'tglcetak',
                 'usercetak',
-            ], (new LaporanKasBank())->getReport($tglsd1, $tglsd1, $bank_id, 1));
+            ], (new LaporanKasBank())->getReport($tglkasbank, $tglkasbank, $bank_id, 1));
 
             // saldopersediaan 
 
@@ -1069,7 +1071,7 @@ class LaporanNeraca extends MyModel
 
             $bank = db::table($tempbank)->from(db::raw($tempbank . " a"))
                 ->select(
-                    db::raw("saldo as nominal")
+                    db::raw("a.saldo as nominal")
                 )->orderBy('id', 'desc')
                 ->first()->nominal ?? 0;
 
