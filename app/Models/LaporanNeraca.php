@@ -611,7 +611,7 @@ class LaporanNeraca extends MyModel
             });
 
 
-
+            $tglpiutanglain = date('Y-m-d', strtotime($tglsd1 . ' -1 days'));
             DB::table($temppiutanglain)->insertUsing([
                 'judul',
                 'judullaporan',
@@ -621,7 +621,7 @@ class LaporanNeraca extends MyModel
                 'keterangan',
                 'nominal',
                 'jenisorder',
-            ], (new LaporanRekapTitipanEmkl())->getData($tglsd1, 1));
+            ], (new LaporanRekapTitipanEmkl())->getData($tglpiutanglain, 1));
             // 
 
             // Deposito SUpir
