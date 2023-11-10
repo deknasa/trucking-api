@@ -27,6 +27,7 @@ class PenerimaanTruckingController extends Controller
         $penerimaanTrucking = new PenerimaanTrucking();
         return response([
             'data' => $penerimaanTrucking->get(),
+            'acos' => $penerimaanTrucking->acos(),
             'attributes' => [
                 'totalRows' => $penerimaanTrucking->totalRows,
                 'totalPages' => $penerimaanTrucking->totalPages
