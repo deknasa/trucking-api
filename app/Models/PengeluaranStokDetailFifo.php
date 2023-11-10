@@ -150,7 +150,7 @@ class PengeluaranStokDetailFifo extends MyModel
                     // db::raw("sum(a.penerimaanstok_qty) as penerimaanstok_qty"),
                     db::raw("sum(a.qty) as qty"),
                     db::raw("max(b.id) as id"),
-                    db::raw("sum(a.penerimaanstokheader_totalterpakai) as penerimaanstokheader_totalterpakai"),
+                    db::raw("round(sum(a.penerimaanstokheader_totalterpakai),3) as penerimaanstokheader_totalterpakai"),
                     )
                 ->join(db::raw("penerimaanstokheader b with (readuncommitted)"), 'a.penerimaanstokheader_nobukti', 'b.nobukti')
                 // ->join(db::raw("penerimaanstokdetail c with (readuncommitted)"), 'b.nobukti', 'c.nobukti')
@@ -180,7 +180,7 @@ class PengeluaranStokDetailFifo extends MyModel
                     'a.harga',
                     'a.total',
                     'c.id as penerimaanstok_id',
-                    db::raw("(a.total-isnull(b.penerimaanstokheader_totalterpakai,0)) as totalsisa"),
+                    db::raw("round((a.total-isnull(b.penerimaanstokheader_totalterpakai,0)),3) as totalsisa"),
                     )
                 // ->leftjoin(db::raw($tempfifo . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti')
                 ->leftjoin(db::raw($tempfifo . " b "), function ($join) {
