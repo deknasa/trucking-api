@@ -233,7 +233,7 @@ class LaporanStok extends MyModel
                 DB::raw("'" . $tgldari . "' as tgldari"),
                 DB::raw("'" . $tglsampai . "' as tglsampai"),
                 DB::raw("'' as vulkanisirke"),
-                DB::raw("'' as keterangan"),
+                DB::raw("isnull(c.keterangan,isnull(d.keterangan,'')) as keterangan"),
                 'a.nobukti as nobukti',
                 'a.kodebarang as id',
                 'a.kodebarang',
@@ -260,11 +260,66 @@ class LaporanStok extends MyModel
 
             )
             ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
+            ->leftjoin(db::raw("pengeluaranstokdetail c with (readuncommitted) "), function ($join) {
+                $join->on('a.nobukti', '=', 'c.nobukti');
+                $join->on('a.stok_id', '=', 'c.stok_id');
+            })            
+            ->leftjoin(db::raw("penerimaanstokdetail d with (readuncommitted) "), function ($join) {
+                $join->on('a.nobukti', '=', 'd.nobukti');
+                $join->on('a.stok_id', '=', 'd.stok_id');
+            })            
             ->orderBy('a.namabarang', 'asc')
             ->orderBy('a.tglbukti', 'asc')
             ->orderBy(db::raw("(case when UPPER(isnull(a.nobukti,''))='SALDO AWAL' then '' else isnull(a.nobukti,'') end)"), 'asc');
 
 
+            // $query = DB::table($temprekapall)->from(
+            //     DB::raw($temprekapall . " a")
+            // )
+            //     ->select(
+            //         DB::raw("'Laporan Saldo Inventory' as header"),
+            //         db::raw("max(a.lokasi) as lokasi"),
+            //         db::raw("max(a.lokasi) as namalokasi"),
+            //         DB::raw("'' as kategori"),
+            //         DB::raw("'" . $tgldari . "' as tgldari"),
+            //         DB::raw("'" . $tglsampai . "' as tglsampai"),
+            //         DB::raw("'' as vulkanisirke"),
+            //         DB::raw("max(isnull(c.keterangan,isnull(d.keterangan,''))) as keterangan"),
+            //         db::raw("max(a.nobukti) as nobukti"),
+            //         'a.kodebarang as id',
+            //         'a.kodebarang',
+            //         db::raw("max((case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') end)) as namabarang"),
+            //         db::raw("max(a.tglbukti) as tglbukti"),
+            //         db::raw("sum((isnull(a.qtymasuk,0)+
+            //         (case when a.nobukti='SALDO AWAL' then 
+            //         isnull(a.qtysaldo,0) else 0 end)
+            //         )) as qtymasuk"),
+            //         db::raw("sum((isnull(a.nilaimasuk,0)+
+            //         (case when a.nobukti='SALDO AWAL' then 
+            //         isnull(a.nilaisaldo,0) else 0 end)
+            //         )) as nominalmasuk"),                    
+            //         // db::raw("sum(isnull(a.nilaimasuk,0))  as nominalmasuk"),
+            //         db::raw("sum(isnull(a.qtykeluar,0))  as qtykeluar"),
+            //         db::raw("sum(isnull(a.nilaikeluar,0))  as nominalkeluar"),
+            //         db::raw("sum(isnull(a.qtysaldo,0))  as qtysaldo"),
+            //         db::raw("sum(isnull(a.nilaisaldo,0))  as nominalsaldo"),
+            //         db::raw("'" . $disetujui . "' as disetujui"),
+            //         db::raw("'" . $diperiksa . "' as diperiksa"),
+            //         db::raw("0 as baris"),
+            //         DB::raw("'" . $getJudul->text . "' as judul"),
+    
+            //     )
+            //     ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
+            //     ->leftjoin(db::raw("pengeluaranstokdetail c with (readuncommitted) "), function ($join) {
+            //         $join->on('a.nobukti', '=', 'c.nobukti');
+            //         $join->on('a.stok_id', '=', 'c.stok_id');
+            //     })            
+            //     ->leftjoin(db::raw("penerimaanstokdetail d with (readuncommitted) "), function ($join) {
+            //         $join->on('a.nobukti', '=', 'd.nobukti');
+            //         $join->on('a.stok_id', '=', 'd.stok_id');
+            //     })            
+            //     ->groupBY('a.kodebarang');
+    
 
         // 'header' => 'Laporan Saldo Inventory',
         //         'lokasi' => 'GUDANG',
