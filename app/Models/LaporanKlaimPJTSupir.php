@@ -71,8 +71,11 @@ class LaporanKlaimPJTSupir extends MyModel
             ->join(DB::raw("supir as d with (readuncommitted)"), 'a.supir_id', 'd.id')
             ->where('a.pengeluarantrucking_id', '=', $pidpengeluarantrucking)
             ->whereRaw("a.tglbukti >='" .  date('Y/m/d', strtotime($dari)) . "'")
-            ->whereRaw("a.tglbukti <='" .  date('Y/m/d', strtotime($sampai)) . "'")
-            ->where('c.kelompok_id', '=', $kelompok);
+            ->whereRaw("a.tglbukti <='" .  date('Y/m/d', strtotime($sampai)) . "'");
+
+            if($kelompok != ''){
+                $query->where('c.kelompok_id', '=', $kelompok);
+            }
 
 
         // dd($query->get());
