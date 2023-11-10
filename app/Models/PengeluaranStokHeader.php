@@ -125,28 +125,28 @@ class PengeluaranStokHeader extends MyModel
 
 
 
-            $temprole = '##temprole' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::create($temprole, function ($table) {
-                $table->bigInteger('aco_id')->nullable();
-            });
+            // $temprole = '##temprole' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            // Schema::create($temprole, function ($table) {
+            //     $table->bigInteger('aco_id')->nullable();
+            // });
 
-            $queryaco = db::table("useracl")->from(db::raw("useracl a with (readuncommitted)"))
-                ->select('a.aco_id')
-                ->join(db::raw("pengeluaranstok b with (readuncommitted)"), 'a.aco_id', 'b.aco_id')
-                ->where('a.user_id', $user_id);
+            // $queryaco = db::table("useracl")->from(db::raw("useracl a with (readuncommitted)"))
+            //     ->select('a.aco_id')
+            //     ->join(db::raw("pengeluaranstok b with (readuncommitted)"), 'a.aco_id', 'b.aco_id')
+            //     ->where('a.user_id', $user_id);
 
-            DB::table($temprole)->insertUsing(['aco_id'], $queryaco);
+            // DB::table($temprole)->insertUsing(['aco_id'], $queryaco);
 
 
-            $queryrole = db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
-                ->select('a.aco_id')
-                ->join(db::raw("userrole b with (readuncommitted)"), 'a.role_id', 'b.role_id')
-                ->join(db::raw("pengeluaranstok c with (readuncommitted)"), 'a.aco_id', 'c.aco_id')
-                ->leftjoin(db::raw($temprole . " d "), 'a.aco_id', 'd.aco_id')
-                ->where('b.user_id', $user_id)
-                ->whereRaw("isnull(d.aco_id,0)=0");
+            // $queryrole = db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
+            //     ->select('a.aco_id')
+            //     ->join(db::raw("userrole b with (readuncommitted)"), 'a.role_id', 'b.role_id')
+            //     ->join(db::raw("pengeluaranstok c with (readuncommitted)"), 'a.aco_id', 'c.aco_id')
+            //     ->leftjoin(db::raw($temprole . " d "), 'a.aco_id', 'd.aco_id')
+            //     ->where('b.user_id', $user_id)
+            //     ->whereRaw("isnull(d.aco_id,0)=0");
 
-            DB::table($temprole)->insertUsing(['aco_id'], $queryrole);
+            // DB::table($temprole)->insertUsing(['aco_id'], $queryrole);
 
 
             $spk = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
@@ -353,8 +353,8 @@ class PengeluaranStokHeader extends MyModel
                 ->leftJoin(db::raw($tempserviceinheader . " as serviceinheader"), 'pengeluaranstokheader.servicein_nobukti', 'serviceinheader.nobukti')
                 ->leftJoin(db::raw($temppengeluarantruckingheader . " as pengeluarantruckingheader"), 'pengeluaranstokheader.pengeluarantrucking_nobukti', 'pengeluarantruckingheader.nobukti')
 
-                ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id')
-                ->join(db::raw($temprole . " d "), 'pengeluaranstok.aco_id', 'd.aco_id');
+                ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id');
+                // ->join(db::raw($temprole . " d "), 'pengeluaranstok.aco_id', 'd.aco_id');
 
             if (request()->tgldari) {
                 // $query->whereBetween('pengeluaranstokheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);

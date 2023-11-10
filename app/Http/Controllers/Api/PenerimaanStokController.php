@@ -25,6 +25,7 @@ class PenerimaanStokController extends Controller
         $penerimaanStok = new PenerimaanStok();
         return response([
             'data' => $penerimaanStok->get(),
+            'acos' => $penerimaanStok->acos(),
             'attributes' => [
                 'totalRows' => $penerimaanStok->totalRows,
                 'totalPages' => $penerimaanStok->totalPages

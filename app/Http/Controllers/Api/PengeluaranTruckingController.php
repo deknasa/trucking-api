@@ -25,6 +25,7 @@ class PengeluaranTruckingController extends Controller
         $pengeluaranTrucking = new PengeluaranTrucking();
         return response([
             'data' => $pengeluaranTrucking->get(),
+            'acos' => $pengeluaranTrucking->acos(),
             'attributes' => [
                 'totalRows' => $pengeluaranTrucking->totalRows,
                 'totalPages' => $pengeluaranTrucking->totalPages

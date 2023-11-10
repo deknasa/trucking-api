@@ -26,6 +26,7 @@ class PengeluaranStokController extends Controller
         $pengeluaranStok = new PengeluaranStok();
         return response([
             'data' => $pengeluaranStok->get(),
+            'acos' => $pengeluaranStok->acos(),
             'attributes' => [
                 'totalRows' => $pengeluaranStok->totalRows,
                 'totalPages' => $pengeluaranStok->totalPages
