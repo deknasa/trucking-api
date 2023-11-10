@@ -66,7 +66,7 @@ class PengeluaranStokDetailFifo extends MyModel
             $table->double('penerimaanstokheader_totalterpakai', 15, 2)->nullable();
         });
 
-
+        // $pengeluaranstokheader_id=$data['pengeluaranstokheader_id'] ;
         $queryfifo = db::table('pengeluaranstokdetailfifo')->from(db::raw("pengeluaranstokdetailfifo a with (readuncommitted)"))
             ->select(
                 'a.pengeluaranstokheader_id as stokheader_id',
@@ -83,6 +83,7 @@ class PengeluaranStokDetailFifo extends MyModel
             )
             ->where('a.stok_id', '=',   $data['stok_id'])
             ->where('a.gudang_id', '=',   $data['gudang_id'])
+            // ->where('a.pengeluaranstokheader_id', '<=',   $pengeluaranstokheader_id)
             ->orderby('a.id');
 
 
@@ -152,11 +153,16 @@ class PengeluaranStokDetailFifo extends MyModel
                     db::raw("sum(a.penerimaanstokheader_totalterpakai) as penerimaanstokheader_totalterpakai"),
                     )
                 ->join(db::raw("penerimaanstokheader b with (readuncommitted)"), 'a.penerimaanstokheader_nobukti', 'b.nobukti')
-                ->join(db::raw("penerimaanstokdetail c with (readuncommitted)"), 'b.nobukti', 'c.nobukti')
+                // ->join(db::raw("penerimaanstokdetail c with (readuncommitted)"), 'b.nobukti', 'c.nobukti')
+                ->join(db::raw("penerimaanstokdetail c with (readuncommitted)"), function ($join) {
+                    $join->on('b.nobukti', '=', 'c.nobukti');
+                    $join->on('a.stok_id', '=', 'c.stok_id');
+                })                
                 ->where('c.stok_id', '=',   $data['stok_id'])
                 ->whereRaw("(b.gudang_id=" .   $data['gudang_id'] . " or b.gudangke_id=" . $data['gudang_id'] . ")")
                 ->groupBY('a.stok_id')
                 ->groupBY('a.penerimaanstokheader_nobukti');
+
 
             DB::table($tempfifo)->insertUsing([
                 'penerimaanstok_nobukti',
@@ -184,9 +190,44 @@ class PengeluaranStokDetailFifo extends MyModel
                 ->join(db::raw("penerimaanstokheader c "), 'a.nobukti', 'c.nobukti')
                 ->where('a.stok_id', '=',   $data['stok_id'])
                 ->whereRaw("(c.gudang_id=" .   $data['gudang_id'] . " or c.gudangke_id=" . $data['gudang_id'] . ")")
-                ->whereRaw("(a.qty-isnull(B.qty,0))<>0")
-                ->orderBy('a.id', 'asc')
+                ->whereRaw("(a.qty-isnull(B.qty,0))<>0 ")
+                ->orderBy('c.tglbukti', 'asc')
+                ->orderBy('c.id', 'asc')
+                                ->orderBy('a.id', 'asc')
+                
                 ->first();
+
+                // $querytest = db::table('penerimaanstokdetail')->from(db::raw("penerimaanstokdetail a with (readuncommitted)"))
+                // ->select(
+                //     db::raw("(a.qty-isnull(B.qty,0)) as qtysisa"),
+                //     'a.nobukti',
+                //     'a.qty',
+                //     'a.harga',
+                //     'a.total',
+                //     'c.id as penerimaanstok_id',
+                //     db::raw("(a.total-isnull(b.penerimaanstokheader_totalterpakai,0)) as totalsisa"),
+                //     'a.id'
+                //     )
+                // // ->leftjoin(db::raw($tempfifo . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti')
+                // ->leftjoin(db::raw($tempfifo . " b "), function ($join) {
+                //     $join->on('a.nobukti', '=', 'b.penerimaanstok_nobukti');
+                //     $join->on('a.stok_id', '=', 'b.stok_id');
+                // })
+                // ->join(db::raw("penerimaanstokheader c "), 'a.nobukti', 'c.nobukti')
+                // ->where('a.stok_id', '=',   $data['stok_id'])
+                // ->whereRaw("(c.gudang_id=" .   $data['gudang_id'] . " or c.gudangke_id=" . $data['gudang_id'] . ")")
+                // ->whereRaw("(a.qty-isnull(B.qty,0))<>0 ")
+                // ->orderBy('c.tglbukti', 'asc')
+                // ->orderBy('c.id', 'asc')
+                // ->orderBy('a.id', 'asc')
+                // ->get();
+
+                // if ($data['stok_id']==5200) {
+                //     dump(db::table($tempfifo) ->get());    
+                //     dump($querysisa);    
+                //     dump($querytest);    
+                // }
+                
             $a = $a + 1;
             // if ($a == 3) {
             //     dd('test');
