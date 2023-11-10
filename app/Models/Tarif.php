@@ -201,24 +201,32 @@ class Tarif extends MyModel
         return $query->select(
             DB::raw(
                 "$this->table.id,
+                parent.tujuan as parent_id,
              $this->table.tujuan,
              $this->table.penyesuaian,
              parameter.text as statusaktif,
-             $this->table.statussistemton,
+             sistemton.text as statussistemton,
              kota.kodekota as kota_id,
              zona.zona as zona_id,
+             jenisorder.keterangan as jenisorder,
              $this->table.tglmulaiberlaku,
              p.text as statuspenyesuaianharga,
-             $this->table.modifiedby,
+             posting.text as statuspostingtnl,
              $this->table.keterangan,
+             $this->table.modifiedby,
              $this->table.created_at,
              $this->table.updated_at"
             )
         )
-            ->leftJoin('parameter', 'tarif.statusaktif', '=', 'parameter.id')
-            ->leftJoin('kota', 'tarif.kota_id', '=', 'kota.id')
-            ->leftJoin('zona', 'tarif.zona_id', '=', 'zona.id')
-            ->leftJoin('parameter AS p', 'tarif.statuspenyesuaianharga', '=', 'p.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'tarif.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
+            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'tarif.jenisorder_id', '=', 'jenisorder.id')
+            // ->leftJoin(DB::raw("$tempUpahsupir as B with (readuncommitted)"), 'tarif.upahsupir_id', '=', "B.id")
+            ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
+            ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
+            ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id')
+            ->leftJoin(DB::raw("parameter AS posting with (readuncommitted)"), 'tarif.statuspostingtnl', '=', 'posting.id');
     }
 
     public function createTemp(string $modelTable)
@@ -226,16 +234,19 @@ class Tarif extends MyModel
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
+            $table->string('parent_id', 200)->nullable();
             $table->string('tujuan', 200)->nullable();
             $table->string('penyesuaian', 200)->nullable();
             $table->string('statusaktif')->nullable();
-            $table->integer('statussistemton')->length(11)->nullable();
-            $table->string('kota_id')->nullable()->nullable();
+            $table->string('statussistemton')->nullable();
+            $table->string('kota_id')->nullable();
             $table->string('zona_id')->nullable();
+            $table->string('jenisorder')->nullable();
             $table->date('tglmulaiberlaku')->nullable();
             $table->string('statuspenyesuaianharga')->nullable();
-            $table->string('modifiedby', 50)->nullable();
+            $table->string('statuspostingtnl')->nullable();
             $table->longText('keterangan')->nullable();
+            $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
@@ -246,7 +257,7 @@ class Tarif extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'tujuan', 'penyesuaian',  'statusaktif',  'statussistemton', 'kota_id', 'zona_id',  'tglmulaiberlaku', 'statuspenyesuaianharga', 'keterangan', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id','parent_id', 'tujuan', 'penyesuaian',  'statusaktif',  'statussistemton', 'kota_id', 'zona_id', 'jenisorder', 'tglmulaiberlaku', 'statuspenyesuaianharga','statuspostingtnl', 'keterangan', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -687,7 +698,7 @@ class Tarif extends MyModel
         if ($getToken->getStatusCode() == '404') {
             throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
         } else if ($getToken->getStatusCode() == '200') {
-            $access_token = json_decode($getToken, TRUE)['access_token'];            
+            $access_token = json_decode($getToken, TRUE)['access_token'];
             $data['from'] = 'jkt';
             $transferTarif = Http::withHeaders([
                 'Content-Type' => 'application/json',
@@ -699,7 +710,7 @@ class Tarif extends MyModel
                 'statuscode' => $tesResp->getStatusCode(),
                 'data' => $transferTarif->json(),
             ];
-            
+
             $dataResp = $transferTarif->json();
             if ($tesResp->getStatusCode() != 201) {
                 if ($tesResp->getStatusCode() == 422) {
