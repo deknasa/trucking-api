@@ -1988,9 +1988,9 @@ class KartuStok extends MyModel
                 db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
                 db::raw("round(isnull(a.nilaikeluar,0),2) as nilaikeluar"),
                 DB::raw("sum ((isnull(a.qtysaldo,0)+a.qtymasuk)-a.qtykeluar) over (PARTITION BY isnull(a.stok_id,0),isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0) order by a.stok_id,isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0),isnull(a.tglbukti,0),a.urutfifo,a.nobukti,a.id ASC) as qtysaldo"),
-                DB::raw("cast(
+                DB::raw("casT(
                     sum(((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar))  
-                    over (PARTITION BY a.stok_id,isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0) order by isnull(a.stok_id,0),isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0),a.tglbukti,a.urutfifo,a.nobukti,a.id ASC) as money) as nilaisaldo"),
+                    over (PARTITION BY a.stok_id,isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0) order by isnull(a.stok_id,0),isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0),a.tglbukti,a.urutfifo,a.nobukti,a.id ASC)  as money)as nilaisaldo"),
                 // DB::raw("
                 //         cast(left(format(cast(
                 //         sum(((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar))  
