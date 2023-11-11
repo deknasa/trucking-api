@@ -158,7 +158,7 @@ class LaporanBukuBesar extends MyModel
 
          
             
-            
+            // dd($querysaldoawal->get());
             DB::table($tempsaldorekap)->insertUsing([
                 'coa',
                 'saldo',
@@ -289,9 +289,9 @@ class LaporanBukuBesar extends MyModel
                     DB::raw("0 as kredit"),
                     DB::raw("(isnull(a.saldo,0)+isnull(b.saldo,0)) as saldo")
                 )
-                ->leftjoin(DB::raw($tempsaldorekap)." as b",'a.coa','b.coa');
-                // ->whereRaw("(isnull(a.saldo,0)+isnull(b.saldo,0))<>0");
-
+                ->leftjoin(DB::raw($tempsaldorekap)." as b",'a.coa','b.coa')
+                ->whereRaw("(isnull(a.saldo,0)+isnull(b.saldo,0))<>0");
+                
                 DB::table($tempsaldo)->insertUsing([
                     'urut',
                     'coa',
@@ -456,6 +456,7 @@ class LaporanBukuBesar extends MyModel
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
+            ->whereRaw("sum ((isnull(saldo,0)+debet)-Kredit) over (partition by coa order by id asc) < -0.001 OR sum ((isnull(saldo,0)+debet)-Kredit) over (partition by coa order by id asc) > 0.001")
             ->orderBy('id', 'Asc');
 
 
