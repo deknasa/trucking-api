@@ -456,7 +456,6 @@ class LaporanBukuBesar extends MyModel
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
-            ->whereRaw("sum ((isnull(saldo,0)+debet)-Kredit) over (partition by coa order by id asc) < -0.001 OR sum ((isnull(saldo,0)+debet)-Kredit) over (partition by coa order by id asc) > 0.001")
             ->orderBy('id', 'Asc');
 
 
