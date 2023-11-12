@@ -55,6 +55,7 @@ class LaporanNeraca extends MyModel
         $judulLaporan = $judul->text;
 
             //   dd($tglsd1);
+            // $eksport = 1;
         if ($eksport == 1) {
 
             DB::table('akunpusatdetail')
@@ -63,14 +64,14 @@ class LaporanNeraca extends MyModel
 
 
             $subquery1 = DB::table('jurnalumumpusatheader as J')
-                ->select('D.coamain as FCOA', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('SUM(D.nominal) as FNominal'))
+                ->select('D.coamain as FCOA', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('round(SUM(D.nominal),2) as FNominal'))
                 ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
                 ->join('mainakunpusat as C', 'C.coa', '=', 'D.coamain')
                 ->where('D.tglbukti', '>=', $ptgl)
                 ->groupBy('D.coamain', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
 
             $subquery2 = DB::table('jurnalumumpusatheader as J')
-                ->select('LR.coa', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('SUM(D.nominal) as FNominal'))
+                ->select('LR.coa', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('round(SUM(D.nominal),2) as FNominal'))
                 ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
                 ->join('perkiraanlabarugi as LR', function ($join) {
                     $join->on('LR.tahun', '=', DB::raw('YEAR(J.tglbukti)'))
@@ -91,7 +92,7 @@ class LaporanNeraca extends MyModel
                 ->mergeBindings($subquery1)
                 ->mergeBindings($subquery2)
                 ->groupBy('FCOA', 'FThn', 'FBln')
-                ->select('FCOA', 'FThn', 'FBln', DB::raw('SUM(FNominal) as FNominal'));
+                ->select('FCOA', 'FThn', 'FBln', DB::raw('round(SUM(FNominal),2) as FNominal'));
 
             DB::table('akunpusatdetail')->insertUsing([
                 'coa',
@@ -251,7 +252,7 @@ class LaporanNeraca extends MyModel
                     'd.coa',
                     db::raw("max(d.parent) as parent"),
                     'd.keterangancoa',
-                    db::raw("( CASE d.akuntansi_id WHEN 1 THEN SUM(d.Nominal) ELSE SUM(d.Nominal * -1) END)  AS nominal"),
+                    db::raw("( CASE d.akuntansi_id WHEN 1 THEN round(SUM(d.Nominal),2) ELSE round(SUM(d.Nominal * -1),2) END)  AS nominal"),
                     db::raw("'" . $judulLaporan . "' as cmpyname"),
                     db::raw($bulan . " as pbulan"),
                     db::raw($tahun . " as ptahun"),
@@ -1117,14 +1118,14 @@ class LaporanNeraca extends MyModel
 
 
             $subquery1 = DB::table('jurnalumumpusatheader as J')
-                ->select('D.coamain as FCOA', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('SUM(D.nominal) as FNominal'))
+                ->select('D.coamain as FCOA', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('round(SUM(D.nominal),2) as FNominal'))
                 ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
                 ->join('mainakunpusat as C', 'C.coa', '=', 'D.coamain')
                 ->where('D.tglbukti', '>=', $ptgl)
                 ->groupBy('D.coamain', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
 
             $subquery2 = DB::table('jurnalumumpusatheader as J')
-                ->select('LR.coa', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('SUM(D.nominal) as FNominal'))
+                ->select('LR.coa', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('round(SUM(D.nominal),2) as FNominal'))
                 ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
                 ->join('perkiraanlabarugi as LR', function ($join) {
                     $join->on('LR.tahun', '=', DB::raw('YEAR(J.tglbukti)'))
@@ -1145,7 +1146,7 @@ class LaporanNeraca extends MyModel
                 ->mergeBindings($subquery1)
                 ->mergeBindings($subquery2)
                 ->groupBy('FCOA', 'FThn', 'FBln')
-                ->select('FCOA', 'FThn', 'FBln', DB::raw('SUM(FNominal) as FNominal'));
+                ->select('FCOA', 'FThn', 'FBln', DB::raw('round(SUM(FNominal),2) as FNominal'));
 
             DB::table('akunpusatdetail')->insertUsing([
                 'coa',
@@ -1249,7 +1250,7 @@ class LaporanNeraca extends MyModel
                     'c.statuslabarugi',
                     db::raw("isnull(cd.tahun," . $tahun . ") as tahun"),
                     db::raw("isnull(cd.bulan,0) as bulan"),
-                    db::raw("isnull(cd.nominal,0) as nominal"),
+                    db::raw("round(isnull(cd.nominal,0),2) as nominal"),
                     'a.order',
                     'a.keterangantype',
                     'a.akuntansi_id',
@@ -1305,7 +1306,7 @@ class LaporanNeraca extends MyModel
                     'd.coa',
                     db::raw("max(d.parent) as parent"),
                     'd.keterangancoa',
-                    db::raw("( CASE d.akuntansi_id WHEN 1 THEN SUM(d.Nominal) ELSE SUM(d.Nominal * -1) END)  AS nominal"),
+                    db::raw("( CASE d.akuntansi_id WHEN 1 THEN round(SUM(d.Nominal),2) ELSE round(SUM(d.Nominal * -1),2) END)  AS nominal"),
                     db::raw("'" . $judulLaporan . "' as cmpyname"),
                     db::raw($bulan . " as pbulan"),
                     db::raw($tahun . " as ptahun"),
@@ -1466,7 +1467,7 @@ class LaporanNeraca extends MyModel
                 'xx.coa',
                 'xx.Parent',
                 'xx.KeteranganCoa',
-                'xx.Nominal',
+                db::raw("round(xx.Nominal,2) as Nominal"),
                 'xx.CmpyName',
                 'xx.pBulan',
                 'xx.pTahun',
