@@ -98,6 +98,104 @@ class Stok extends MyModel
         $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
         $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
 
+        $tempumuraki = '##tempumuraki' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempumuraki, function ($table) {
+            $table->Integer('stok_id')->nullable();
+            $table->integer('jumlahhari')->nullable();
+            $table->date('tglawal')->nullable();
+        });
+
+        DB::table($tempumuraki)->insertUsing([
+            'stok_id',
+            'jumlahhari',
+            'tglawal',
+        ], (new SaldoUmurAki())->getallstok());
+
+        //update total vulkanisir
+
+        $querytgl = date('Y/m/d');
+
+        $reuse = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select('a.id')
+            ->where('grp', 'STATUS REUSE')
+            ->where('subgrp', 'STATUS REUSE')
+            ->where('text', 'REUSE')
+            ->first()->id ?? 0;
+
+
+        $tempvulkan = '##tempvulkan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempvulkan, function ($table) {
+            $table->integer('stok_id')->nullable();
+            $table->integer('vulkan')->nullable();
+        });
+
+        $tempvulkanplus = '##tempvulkanplus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempvulkanplus, function ($table) {
+            $table->integer('stok_id')->nullable();
+            $table->integer('vulkan')->nullable();
+        });
+
+
+        $tempvulkanminus = '##tempvulkanminus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempvulkanminus, function ($table) {
+            $table->integer('stok_id')->nullable();
+            $table->integer('vulkan')->nullable();
+        });
+
+
+        $queryvulkanplus = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+            ->select(
+                db::raw("a.id as stok_id"),
+                db::raw("sum(b.vulkanisirke) as vulkan"),
+            )
+            ->join(db::raw("penerimaanstokdetail b with (readuncommitted)"), 'a.id', 'b.stok_id')
+            ->join(db::raw("penerimaanstokheader c with (readuncommitted)"), 'b.nobukti', 'c.nobukti')
+            ->where('a.statusreuse', $reuse)
+            ->whereraw("c.tglbukti<='" . $querytgl . "'")
+            ->groupby('a.id');
+
+        DB::table($tempvulkanplus)->insertUsing([
+            'stok_id',
+            'vulkan',
+        ],  $queryvulkanplus);
+
+        $queryvulkanminus = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+            ->select(
+                db::raw("a.id as stok_id"),
+                db::raw("sum(b.vulkanisirke) as vulkan"),
+            )
+            ->join(db::raw("pengeluaranstokdetail b with (readuncommitted)"), 'a.id', 'b.stok_id')
+            ->join(db::raw("pengeluaranstokheader c with (readuncommitted)"), 'b.nobukti', 'c.nobukti')
+            ->where('a.statusreuse', $reuse)
+            ->whereraw("c.tglbukti<='" . $querytgl . "'")
+            ->groupby('a.id');
+
+        DB::table($tempvulkanminus)->insertUsing([
+            'stok_id',
+            'vulkan',
+        ],  $queryvulkanminus);
+
+
+        $queryvulkan = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+            ->select(
+                db::raw("a.id  as stok_id"),
+                db::raw("((isnull(a.vulkanisirawal,0)+isnull(b.vulkan,0))-isnull(c.vulkan,0)) as vulkan"),
+            )
+            ->leftjoin(db::raw($tempvulkanplus . " b "), 'a.id', 'b.stok_id')
+            ->leftjoin(db::raw($tempvulkanminus . " c "), 'a.id', 'c.stok_id')
+            ->where('a.statusreuse', $reuse);
+
+        DB::table($tempvulkan)->insertUsing([
+            'stok_id',
+            'vulkan',
+        ],  $queryvulkan);
+
+
+
+
+
+        // end update vulkanisir
+
         $query = DB::table($this->table)->select(
             'stok.id',
             'stok.namastok',
@@ -125,7 +223,11 @@ class Stok extends MyModel
             DB::raw("'Laporan Stok' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-            DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+            DB::raw("isnull(c1.jumlahhari,0) as umuraki"),
+            DB::raw("isnull(d1.vulkan,0) as vulkan"),
+                        
+
         )
             ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
             ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
@@ -135,7 +237,9 @@ class Stok extends MyModel
             ->leftJoin(DB::raw("parameter as service with (readuncommitted)"), 'stok.statusservicerutin', 'service.id')
             ->leftJoin(DB::raw("parameter as statusban with (readuncommitted)"), 'stok.statusban', 'statusban.id')
             ->leftJoin(DB::raw("parameter as statusreuse with (readuncommitted)"), 'stok.statusreuse', 'statusreuse.id')
-            ->leftJoin('merk', 'stok.merk_id', 'merk.id');
+            ->leftJoin('merk', 'stok.merk_id', 'merk.id')
+            ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
+            ->leftJoin(db::raw($tempumuraki . " c1"), "stok.id", "c1.stok_id");
 
 
 
