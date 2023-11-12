@@ -337,7 +337,7 @@ class PengeluaranStokDetailFifo extends MyModel
 
                      // lama ryan 09-11-2023
                     // $aksharga = $querysisa->harga ?? 0;
-                    $aksharga = round(($belitotalsisa / $beliqtysisa),0) ?? 0;
+                    $aksharga = round(($belitotalsisa / $beliqtysisa),3) ?? 0;
                     $aksnobukti = $querysisa->nobukti ?? '';
                     $aksstok_id = $data['stok_id'] ?? 0;
 
@@ -458,7 +458,7 @@ class PengeluaranStokDetailFifo extends MyModel
                     $aksnobukti = $querysisa->nobukti ?? '';
                     $aksstok_id = $data['stok_id'] ?? 0;
 
-                    $totalharga += ($aksharga *  $aksqty);
+                    $totalharga += round(($aksharga *  $aksqty),3);
 
 
 
