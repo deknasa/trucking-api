@@ -137,6 +137,7 @@ class PengeluaranStokDetailFifo extends MyModel
 
         $a = 0;
         $atotalharga = 0;
+        $totalterpakai2=0;
         $kondisi = true;
         while ($kondisi == true) {
 
@@ -242,6 +243,7 @@ class PengeluaranStokDetailFifo extends MyModel
                 if ($qty <= $qtysisa) {
 
                     $totalterpakai=round((($querysisa->total/$querysisa->qty)*$qty),2);
+                    $totalterpakai2+=$totalterpakai;
                     $pengeluaranStokDetailFifo = new pengeluaranStokDetailFifo();
                     $pengeluaranStokDetailFifo->pengeluaranstokheader_id = $data['pengeluaranstokheader_id'] ?? 0;
                     $pengeluaranStokDetailFifo->nobukti = $data['nobukti'] ?? '';
@@ -319,7 +321,8 @@ class PengeluaranStokDetailFifo extends MyModel
                             "qtymasuk" => 0,
                             "nilaimasuk" =>  0,
                             "qtykeluar" => $qty ?? 0,
-                            "nilaikeluar" => $kstotal,
+                            // "nilaikeluar" => $kstotal,
+                            "nilaikeluar" => $totalterpakai,
                             "urutfifo" => $urutfifo,
                         ]);
                     }
@@ -356,6 +359,7 @@ class PengeluaranStokDetailFifo extends MyModel
                     $qty = $qty - $qtysisa;
 
                     $totalterpakai=round((($querysisa->total/$querysisa->qty)*$qtysisa),2);
+                    $totalterpakai2+=$totalterpakai;
                     $pengeluaranStokDetailFifo = new pengeluaranStokDetailFifo();
                     $pengeluaranStokDetailFifo->pengeluaranstokheader_id = $data['pengeluaranstokheader_id'] ?? 0;
                     $pengeluaranStokDetailFifo->nobukti = $data['nobukti'] ?? '';
@@ -435,7 +439,8 @@ class PengeluaranStokDetailFifo extends MyModel
                             "qtymasuk" => 0,
                             "nilaimasuk" =>  0,
                             "qtykeluar" => $qtysisa ?? 0,
-                            "nilaikeluar" => $kstotal,
+                            // "nilaikeluar" => $kstotal,
+                            "nilaikeluar" => $totalterpakai,
                             "urutfifo" => $urutfifo,
                         ]);
                     }
@@ -479,7 +484,9 @@ class PengeluaranStokDetailFifo extends MyModel
             ->where("nobukti", $nobuktipengeluaran)
             ->firstorFail();
 
-        $totalharga = $atotalharga;
+        // $totalharga = $atotalharga;
+        $totalharga = $totalterpakai2;
+        
         // dump($totalharga);
         // dd($data['qty']);
         $hrgsat = round(($totalharga / $data['qty']),10);
@@ -495,6 +502,7 @@ class PengeluaranStokDetailFifo extends MyModel
         }
         $pengeluaranstokdetail->harga =   $hrgsat;
         $pengeluaranstokdetail->total =  $totalharga;
+        
         $pengeluaranstokdetail->selisihhargafifo =  $selisih;
         // $pengeluaranstokdetail->save();
         if (!$pengeluaranstokdetail->save()) {
