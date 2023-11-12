@@ -158,7 +158,7 @@ class LaporanBukuBesar extends MyModel
 
          
             
-            
+            // dd($querysaldoawal->get());
             DB::table($tempsaldorekap)->insertUsing([
                 'coa',
                 'saldo',
@@ -289,9 +289,9 @@ class LaporanBukuBesar extends MyModel
                     DB::raw("0 as kredit"),
                     DB::raw("(isnull(a.saldo,0)+isnull(b.saldo,0)) as saldo")
                 )
-                ->leftjoin(DB::raw($tempsaldorekap)." as b",'a.coa','b.coa');
-                // ->whereRaw("(isnull(a.saldo,0)+isnull(b.saldo,0))<>0");
-
+                ->leftjoin(DB::raw($tempsaldorekap)." as b",'a.coa','b.coa')
+                ->whereRaw("(isnull(a.saldo,0)+isnull(b.saldo,0))<>0");
+                
                 DB::table($tempsaldo)->insertUsing([
                     'urut',
                     'coa',
