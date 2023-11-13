@@ -18,6 +18,19 @@ class SaldoAkunPusatDetailController extends Controller
         //
     }
 
+    public function importdatacabang()
+    {
+        // dd('test');
+        $saldoAkunPusatDetail = new SaldoAkunPusatDetail();
+        return response([
+            'data' => $saldoAkunPusatDetail->getimportdatacabang(),
+            'attributes' => [
+                'totalRows' => $saldoAkunPusatDetail->totalRows,
+                'totalPages' => $saldoAkunPusatDetail->totalPages
+            ]
+        ]);
+    }
+
     /**
      * Show the form for creating a new resource.
      *
