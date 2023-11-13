@@ -67,7 +67,7 @@ class ImportDataCabang extends Model
 
 
 
-        if ($data['import'] == $statusImportTimpa) {
+        if ($data['import'] == $statusImportTimpa->id) {
             DB::delete(DB::raw("delete  JurnalUmumPusatdetail from JurnalUmumPusatdetail as a inner join JurnalUmumPusatHeader b on a.nobukti=b.nobukti 
             WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and format(b.tglbukti,'MM-yyyy')='" . $data['periode'] . "'"));
 
@@ -80,7 +80,7 @@ class ImportDataCabang extends Model
         foreach ($konsolidasi as $item) {
             // Membuat array baru untuk setiap entri header
 
-            if ($data['import'] == $statusImportSisip) {
+            if ($data['import'] == $statusImportSisip->id) {
 
                 $nobukticabang = $item['header_nobukti'] . '-' . $item['header_cabang'];
                 $querysisip = db::table("jurnalumumpusatheader")->from(db::raw("jurnalumumpusatheader a with (readuncommitted)"))
