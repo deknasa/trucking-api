@@ -143,7 +143,7 @@ class SaldoUmurAki extends MyModel
             ->where('a.text', 'TANGGAL')
             ->first();
 
-      
+
         if (isset($hariaki)) {
             $queryaki = db::table($tempSaldoAki)->from(db::raw($tempSaldoAki . " a"))
                 ->select(
@@ -155,7 +155,6 @@ class SaldoUmurAki extends MyModel
                 $awal  = date_create(date('Y-m-d', strtotime($queryaki->tglawal)));
                 $akhir = date_create();
                 $umuraki  = date_diff($awal, $akhir)->days;
-      
             } else {
                 $umuraki = 0;
             }
@@ -315,12 +314,45 @@ class SaldoUmurAki extends MyModel
             ->where('a.subgrp', 'HARIAKI')
             ->where('a.text', 'TANGGAL')
             ->first();
+
+        $tempakipg = '##tempakipg' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempakipg, function ($table) {
+            $table->Integer('stok_id')->nullable();
+            $table->datetime('tglpg')->nullable();
+        });
+
+        $queryakipg =db::table($tempSaldoAki)->from(db::raw($tempSaldoAki . " a with(readuncommitted)"))
+        ->select(
+            'a.stok_id',
+            db::raw("max(c.tglbukti) as tglpg")
+        )
+        ->join(db::raw("penerimaanstokdetail b with (readuncommitted)"),'a.stok_id','b.stok_id')
+        ->join(db::raw("penerimaanstokheader c with (readuncommitted)"),'b.nobukti','c.nobukti')
+        ->whereRaw("isnull(c.penerimaanstok_id,0)=5")
+        ->whereRaw("isnull(c.gudangke_id,0)=3")
+        ->groupby('a.stok_id');
+
+        DB::table($tempakipg)->insertUsing([
+            'stok_id',
+            'tglpg',
+        ], $queryakipg);
+
+
         if (isset($hariaki)) {
             $umursaldo = db::table($tempSaldoAki)->from(db::raw($tempSaldoAki . " a "))
                 ->select(
                     'a.stok_id',
-                    db::raw("DATEDIFF(d ,a.tglawal,cast(format(getdate(),'yyyy/MM/dd') as datetime)) as jumlahhari ")
+                    db::raw("DATEDIFF(d ,a.tglawal,
+                    (case when isnull(b.stok_id,0)=0 then 
+                    cast(format(getdate(),'yyyy/MM/dd') as datetime)
+                    else  
+                        b.tglpg
+
+                    end)
+                    
+                    ) as jumlahhari ")
                 )
+                ->leftjoin(db::raw($tempakipg ." b "),'a.stok_id','b.stok_id')
                 ->orderby('a.stok_id', 'asc');
 
             DB::table($tempumurlistumuraki)->insertUsing([
@@ -329,15 +361,15 @@ class SaldoUmurAki extends MyModel
             ], $umursaldo);
 
             $umuraki = db::table($tempumurlistumuraki)->from(db::raw($tempumurlistumuraki . " a "))
-            ->select(
-                'a.stok_id',
-                db::raw("a.jumlahhari as jumlahhari"),
-                'b.tglawal'
-                
-            )
-            ->join(db::raw($tempSaldoAki ." b"),'a.stok_id','b.stok_id')
+                ->select(
+                    'a.stok_id',
+                    db::raw("a.jumlahhari as jumlahhari"),
+                    'b.tglawal'
 
-            ->orderby('a.stok_id', 'asc');
+                )
+                ->join(db::raw($tempSaldoAki . " b"), 'a.stok_id', 'b.stok_id')
+
+                ->orderby('a.stok_id', 'asc');
         } else {
             $umursaldo = db::table($tempSaldoAki)->from(db::raw($tempSaldoAki . " a "))
                 ->select(
@@ -365,13 +397,13 @@ class SaldoUmurAki extends MyModel
                 'jumlahhari',
             ], $umur);
             $umuraki = db::table($tempumurlistumuraki)->from(db::raw($tempumurlistumuraki . " a "))
-            ->select(
-                'a.stok_id',
-                db::raw("sum(a.jumlahhari) as jumlahhari"),
-                db::raw("'1900/1/1' as tglawal")
-            )
-            ->groupby('a.stok_id')
-            ->orderby('a.stok_id', 'asc');
+                ->select(
+                    'a.stok_id',
+                    db::raw("sum(a.jumlahhari) as jumlahhari"),
+                    db::raw("'1900/1/1' as tglawal")
+                )
+                ->groupby('a.stok_id')
+                ->orderby('a.stok_id', 'asc');
         }
 
 
