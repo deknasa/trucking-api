@@ -75,7 +75,7 @@ class LaporanHistoryPinjaman extends MyModel
 
         $select_temphistory2 = DB::table('penerimaantruckingheader')->from(DB::raw("penerimaantruckingheader AS A WITH (READUNCOMMITTED)"))
             ->select([
-                DB::raw("A.nobukti + (CASE WHEN ISNULL(D.nobukti, '') = '' THEN '' ELSE '( ' + ISNULL(D.nobukti, '') + ' ) ' END) AS nobukti"),
+                DB::raw("A.penerimaan_nobukti + (CASE WHEN ISNULL(D.nobukti, '') = '' THEN '' ELSE '( ' + ISNULL(D.nobukti, '') + ' ) ' END) AS nobukti"),
                 'A.tglbukti',
                 'B.supir_id',
                 DB::raw('(B.nominal * -1) as nominal'),
