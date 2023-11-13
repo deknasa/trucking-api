@@ -28,20 +28,22 @@ class LaporanHistoryPinjamanController extends Controller
      */
     public function report(Request $request)
     {
-        $supirdari_id = $request->supirdari_id;
-        $supirsampai_id = $request->supirsampai_id;
-        $supirdari = Supir::find($supirdari_id);
-        $supirsampai = Supir::find($supirsampai_id);
+        $supirdari_id = $request->supirdari_id ?? '';
+        $supirsampai_id = $request->supirsampai_id ?? '';
+        $supirdari = ($supirdari_id != '') ? Supir::find($supirdari_id) : '';
+        $supirsampai = ($supirsampai_id != '') ? Supir::find($supirsampai_id) : '';
 
         $laporanhistorypinjaman = new LaporanHistoryPinjaman();
-        
-        $laporan_historypinjaman= $laporanhistorypinjaman->getReport($supirdari_id, $supirsampai_id);
-        foreach($laporan_historypinjaman as $item){
+
+        $laporan_historypinjaman = $laporanhistorypinjaman->getReport($supirdari_id, $supirsampai_id);
+        foreach ($laporan_historypinjaman as $item) {
             $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
-            $item->supirdari = $supirdari->namasupir;
-            $item->supirsampai = $supirsampai->namasupir;
+            if ($supirdari_id != '') {
+                $item->supirdari = $supirdari->namasupir;
+                $item->supirsampai = $supirsampai->namasupir;
+            }
         }
-   
+
         return response([
             'data' => $laporan_historypinjaman
             // 'data' => $report
@@ -54,23 +56,24 @@ class LaporanHistoryPinjamanController extends Controller
      */
     public function export(Request $request)
     {
-        $supirdari_id = $request->supirdari_id;
-        $supirsampai_id = $request->supirsampai_id;
-        $supirdari = $request->supirdari;
-        $supirsampai = $request->supirsampai;
+        $supirdari_id = $request->supirdari_id ?? '';
+        $supirsampai_id = $request->supirsampai_id ?? '';
+        $supirdari = ($supirdari_id != '') ? Supir::find($supirdari_id) : '';
+        $supirsampai = ($supirsampai_id != '') ? Supir::find($supirsampai_id) : '';
 
         $laporanhistorypinjaman = new LaporanHistoryPinjaman();
 
 
-        $laporan_historypinjaman= $laporanhistorypinjaman->getReport($supirdari_id, $supirsampai_id);
-        foreach($laporan_historypinjaman as $item){
+        $laporan_historypinjaman = $laporanhistorypinjaman->getReport($supirdari_id, $supirsampai_id);
+        foreach ($laporan_historypinjaman as $item) {
             $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
         }
-   
+
         return response([
-            'data' => $laporan_historypinjaman
+            'data' => $laporan_historypinjaman,
+            'supirdari' => ($supirdari_id != '') ? $supirdari->namasupir : 'SEMUA',
+            'supirsampai' => ($supirsampai_id != '') ? $supirsampai->namasupir : 'SEMUA',
             // 'data' => $report
         ]);
-      
     }
 }

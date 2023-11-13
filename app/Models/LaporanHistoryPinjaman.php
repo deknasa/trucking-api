@@ -51,10 +51,12 @@ class LaporanHistoryPinjaman extends MyModel
                 DB::raw('1 as tipe'),
                 DB::raw("isnull(b.keterangan,'') as keterangan"),
             ])
-            ->join(DB::raw("pengeluarantruckingdetail AS B with (readuncommitted)"), 'A.nobukti', '=', 'B.nobukti')
-            ->whereRaw("B.supir_id >= $supirdari_id")
-            ->whereRaw("B.supir_id <= $supirsampai_id")
-            ->where('a.pengeluarantrucking_id', $pengeluarantrucking_id)
+            ->join(DB::raw("pengeluarantruckingdetail AS B with (readuncommitted)"), 'A.nobukti', '=', 'B.nobukti');
+        if ($supirdari_id != '') {
+            $select_temphistory->whereRaw("B.supir_id >= $supirdari_id")
+                ->whereRaw("B.supir_id <= $supirsampai_id");
+        }
+        $select_temphistory->where('a.pengeluarantrucking_id', $pengeluarantrucking_id)
             ->orderBy('B.supir_id')
             ->orderBy('A.tglbukti')
             ->orderBy('A.nobukti');
@@ -82,10 +84,13 @@ class LaporanHistoryPinjaman extends MyModel
             ])
             ->join(DB::raw("penerimaantruckingdetail AS B with (readuncommitted)"), 'A.nobukti', '=', 'B.nobukti')
             ->leftJoin(DB::raw("gajisupirpelunasanpinjaman AS C with (readuncommitted)"), 'A.nobukti', 'C.penerimaantrucking_nobukti')
-            ->leftJoin(DB::raw("prosesgajisupirdetail AS D with (readuncommitted)"), 'c.gajisupir_nobukti', 'd.gajisupir_nobukti')
-            ->where('B.supir_id', '>=', $supirdari_id)
-            ->where('B.supir_id', '<=', $supirsampai_id)
-            ->where('penerimaantrucking_id', '=', $penerimaantrucking_id)
+            ->leftJoin(DB::raw("prosesgajisupirdetail AS D with (readuncommitted)"), 'c.gajisupir_nobukti', 'd.gajisupir_nobukti');
+
+        if ($supirdari_id != '') {
+            $select_temphistory2->where('B.supir_id', '>=', $supirdari_id)
+                ->where('B.supir_id', '<=', $supirsampai_id);
+        }
+        $select_temphistory2->where('penerimaantrucking_id', '=', $penerimaantrucking_id)
             ->orderBy('B.supir_id')
             ->orderBy('A.tglbukti')
             ->orderBy('A.nobukti');
@@ -157,7 +162,7 @@ class LaporanHistoryPinjaman extends MyModel
             )
             ->where('a.id', $supirdari_id)
             ->first()
-            ->namasupir ?? '';
+            ->namasupir ?? 'SEMUA';
 
         $supirsampai = db::table("supir")->from(db::raw("supir a with (readuncommitted)"))
             ->select(
@@ -165,9 +170,9 @@ class LaporanHistoryPinjaman extends MyModel
             )
             ->where('a.id', $supirsampai_id)
             ->first()
-            ->namasupir ?? '';
+            ->namasupir ?? 'SEMUA';
 
-           
+
 
         $select_temphistoryrekap2 = DB::table($temphistoryrekap)->from(DB::raw($temphistoryrekap . " AS a"))
             ->select([
