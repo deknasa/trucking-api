@@ -15,6 +15,7 @@ class ReminderSpk extends MyModel
     public function get()
     {
 
+        $this->setRequestParameters();
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
         $class = 'ReminderSpkController';
@@ -65,8 +66,7 @@ class ReminderSpk extends MyModel
             $phari = 0;
             $tgl2 = date('Y-m-d');
             $ptgl = date('Y-m-d', strtotime($tgl2 . ' -' . $phari . ' day'));
-
-            $datepart = DB::select("select datepart(dw," . $ptgl . ") as dpart");
+            $datepart = DB::select("select datepart(dw,'" . $ptgl . "') as dpart");
 
             $dpart = json_decode(json_encode($datepart), true)[0]['dpart'];
             if ($dpart == 2) {
@@ -239,7 +239,7 @@ class ReminderSpk extends MyModel
                     'a.info',
                     'a.modifiedby',
                 )
-                ->join(db::raw($querypengeluaranstokheader . " b"), 'a.nobukti', 'b.nobukti')
+                ->join(db::raw($temppengeluaranstokheader . " b"), 'a.nobukti', 'b.nobukti')
                 ->join(db::raw("stok c with (readuncommitted)"), 'a.stok_id', 'c.id')
                 ->where('c.kelompok_id', $kelompoksparepart)
                 ->whereRaw("a.total>=" . $pnominal)
@@ -271,6 +271,7 @@ class ReminderSpk extends MyModel
 
             $tempdataheader = '##tempdataheader' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempdataheader, function ($table) {
+                $table->integer('id')->nullable();
                 $table->string('trado', 1000)->nullable();
                 $table->string('gandengan', 1000)->nullable();
                 $table->string('stok', 1000)->nullable();
@@ -278,11 +279,11 @@ class ReminderSpk extends MyModel
                 $table->double('total', 15, 2)->nullable();
             });
 
-
             $querydataheader = db::table($temppengeluaranstokdetail)->from(db::raw($temppengeluaranstokdetail . " a "))
                 ->select(
+                    DB::raw("row_number() Over(Order By D.kodetrado) as id"),
                     db::raw("isnull(D.kodetrado,'') as trado"),
-                    db::raw("isnull(e.kodegandengan,'') as kodegandengan"),
+                    db::raw("isnull(e.kodegandengan,'') as gandengan"),
                     db::raw("isnull(c.namastok,'') as stok"),
                     db::raw("sum(a.qty) as qty"),
                     db::raw("sum(a.total) as total")
@@ -295,8 +296,8 @@ class ReminderSpk extends MyModel
                 ->groupby('e.kodegandengan')
                 ->groupby('c.namastok');
 
-
             DB::table($tempdataheader)->insertUsing([
+                'id',
                 'trado',
                 'gandengan',
                 'stok',
@@ -306,7 +307,7 @@ class ReminderSpk extends MyModel
 
 
 
-            $query = db::table($tempdataheader)->from(db::raw($tempdataheader . " b"))
+            $query = db::table($tempdataheader)->from(db::raw($tempdataheader . " a"))
                 ->select(
                     db::raw("(case when isnull(a.trado,'')='' then a.gandengan else a.trado end) as gudang"),
                     'a.stok',
@@ -316,13 +317,12 @@ class ReminderSpk extends MyModel
                 ->orderBY('a.id');
 
 
-                DB::table($temtabel)->insertUsing([
-                    'gudang',
-                    'stok', 
-                    'qty', 
-                    'total', 
-                    ], $query);
-    
+            DB::table($temtabel)->insertUsing([
+                'gudang',
+                'stok',
+                'qty',
+                'total',
+            ], $query);
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
                 DB::raw("listtemporarytabel with (readuncommitted)")
@@ -343,12 +343,10 @@ class ReminderSpk extends MyModel
         )
             ->select(
                 'a.gudang',
-                'a.stok', 
-                'a.qty', 
+                'a.stok',
+                'a.qty',
                 'a.total',
             );
-
-
 
         $this->totalRows = $query->count();
 
@@ -370,7 +368,7 @@ class ReminderSpk extends MyModel
         return $data;
     }
 
-    
+
     public function filter($query, $relationFields = [])
     {
 
@@ -378,9 +376,9 @@ class ReminderSpk extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                      
-                            // $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw('a' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
+                        // $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        $query = $query->whereRaw('a' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                     }
 
                     break;
@@ -388,8 +386,8 @@ class ReminderSpk extends MyModel
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
 
-                                // $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw('a' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            // $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->OrwhereRaw('a' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                         }
                     });
 
