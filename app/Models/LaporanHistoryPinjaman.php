@@ -208,7 +208,8 @@ class LaporanHistoryPinjaman extends MyModel
                 db::raw("'" . $diperiksa . "' as diperiksa"),
                 db::raw("'" . $supirdari . "' as supirdari"),
                 db::raw("'" . $supirsampai . "' as supirsampai"),
-            ])
+                'A.nobuktipinjaman',
+                ])
             ->orderBy('A.tglbuktipinjaman')
             ->orderBy('A.nobuktipinjaman')
             ->orderBy('A.id');
