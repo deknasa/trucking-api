@@ -37,6 +37,7 @@ class LaporanSaldoInventory extends MyModel
         // $priode = date("Y-m-d", strtotime($priode));
         // $tglsampai= date("Y-m-d", strtotime("+1 day", strtotime($tgldari)));
 
+        $tglsaldo = '2023/9/30';
 
         $temprekapall = '##temprekapall' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temprekapall, function ($table) {
@@ -119,8 +120,8 @@ class LaporanSaldoInventory extends MyModel
         // dd($priode);
         // dd(db::table($temprekapall)->get());
 
-        DB::delete(DB::raw("delete " . $temprekapall . "  WHERE upper(nobukti)<>'SALDO AWAL'"));
-
+      
+        $querytgl = $priode1;
         $tempmaxin = '##tempmaxin' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempmaxin, function ($table) {
             $table->integer('stok_id')->nullable();
@@ -145,10 +146,13 @@ class LaporanSaldoInventory extends MyModel
                 $join->on('a.gandengan_id', '=', db::raw("isnull(e.gandengan_id,0)"));
             })
             ->whereRaw("isnull(e.qtymasuk,0)<>0")
+             ->whereRaw("e.tglbukti<='" . $querytgl . "'")
             ->groupby(db::raw("isnull(a.stok_id,0)"))
             ->groupby(db::raw("isnull(a.gudang_id,0)"))
             ->groupby(db::raw("isnull(a.trado_id,0)"))
             ->groupby(db::raw("isnull(a.gandengan_id,0)"));
+
+            // dd($querymaxin->get());
 
         DB::table($tempmaxin)->insertUsing([
             'stok_id',
@@ -157,6 +161,8 @@ class LaporanSaldoInventory extends MyModel
             'gandengan_id',
             'tglbukti',
         ],  $querymaxin);
+
+        DB::delete(DB::raw("delete " . $temprekapall . "  WHERE upper(nobukti)<>'SALDO AWAL'"));
 
         // dd(db::table($tempmaxin)->get());
         $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
@@ -222,7 +228,7 @@ class LaporanSaldoInventory extends MyModel
         }
 
 
-        $querytgl = $priode1;
+      
 
 
         $tempumuraki = '##tempumuraki' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -370,6 +376,7 @@ class LaporanSaldoInventory extends MyModel
                   when isnull(b.kelompok_id,0)=1 then ' ( VULKE:'+format(isnull(d1.vulkan,0),'#,#0')+', STATUS BAN :'+isnull(parameter.text,'') +' )' 
             else '' end) 
                 as namabarang"),
+                // DB::raw("isnull(e.tglbukti,'" . $tglsaldo . "') as tanggal"),
                 DB::raw("isnull(e.tglbukti,'1900/1/1') as tanggal"),
                 db::raw("(case when " . $pusat . "=0 then 0 else a.qtysaldo  end) as qty"),
                 DB::raw("isnull(d.satuan,'') as satuan"),
