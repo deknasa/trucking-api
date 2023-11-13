@@ -147,7 +147,7 @@ class LaporanBukuBesar extends MyModel
         )
             ->select(
                 'a.coa',
-                DB::raw("sum(isnull(a.nominal,0)) as nominal")
+                DB::raw("cast(sum(isnull(a.nominal,0)) as money) as nominal")
             )
             ->join(db::raw("akunpusat b with (readuncommitted)"),'a.coa','b.coa')
             ->join(db::raw("typeakuntansi c with (readuncommitted)"),'b.type_id','c.id')
