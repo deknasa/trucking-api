@@ -38,25 +38,27 @@ class LaporanHistoryPinjaman extends MyModel
             $table->integer('supir_id');
             $table->double('nominal');
             $table->integer('tipe');
+            $table->longtext('keterangan');
             $table->double('saldo')->nullable();
         });
 
         $select_temphistory = DB::table('pengeluarantruckingheader')->from(DB::raw("pengeluarantruckingheader AS A WITH (READUNCOMMITTED)"))
-        ->select([
-            'A.nobukti',
-            'A.tglbukti',
-            'B.supir_id',
-            'B.nominal',
-            DB::raw('1 as tipe'),
-        ])
-        ->join(DB::raw("pengeluarantruckingdetail AS B with (readuncommitted)"), 'A.nobukti', '=', 'B.nobukti')
-        ->whereRaw("B.supir_id >= $supirdari_id")
-        ->whereRaw("B.supir_id <= $supirsampai_id")
-        ->where('a.pengeluarantrucking_id',$pengeluarantrucking_id)
-        ->orderBy('B.supir_id')
-        ->orderBy('A.tglbukti')
-        ->orderBy('A.nobukti');
-        
+            ->select([
+                'A.nobukti',
+                'A.tglbukti',
+                'B.supir_id',
+                'B.nominal',
+                DB::raw('1 as tipe'),
+                DB::raw("isnull(b.keterangan,'') as keterangan"),
+            ])
+            ->join(DB::raw("pengeluarantruckingdetail AS B with (readuncommitted)"), 'A.nobukti', '=', 'B.nobukti')
+            ->whereRaw("B.supir_id >= $supirdari_id")
+            ->whereRaw("B.supir_id <= $supirsampai_id")
+            ->where('a.pengeluarantrucking_id', $pengeluarantrucking_id)
+            ->orderBy('B.supir_id')
+            ->orderBy('A.tglbukti')
+            ->orderBy('A.nobukti');
+
 
         DB::table($temphistory)->insertUsing([
             'nobukti',
@@ -64,27 +66,29 @@ class LaporanHistoryPinjaman extends MyModel
             'supir_id',
             'nominal',
             'tipe',
+            'keterangan',
         ], $select_temphistory);
         // dd($select_temphistory->get());
         // dd($select_temphistory->get());
-    
+
         $select_temphistory2 = DB::table('penerimaantruckingheader')->from(DB::raw("penerimaantruckingheader AS A WITH (READUNCOMMITTED)"))
-        ->select([
-            DB::raw("A.nobukti + (CASE WHEN ISNULL(D.nobukti, '') = '' THEN '' ELSE '( ' + ISNULL(D.nobukti, '') + ' ) ' END) AS nobukti"),
-            'A.tglbukti',
-            'B.supir_id',
-            DB::raw('(B.nominal * -1) as nominal'),
-            DB::raw('2 as tipe'),
-        ])
-        ->join(DB::raw("penerimaantruckingdetail AS B with (readuncommitted)"), 'A.nobukti', '=', 'B.nobukti')
-        ->leftJoin(DB::raw("gajisupirpelunasanpinjaman AS C with (readuncommitted)"), 'A.nobukti', 'C.penerimaantrucking_nobukti')
-        ->leftJoin(DB::raw("prosesgajisupirdetail AS D with (readuncommitted)"), 'c.gajisupir_nobukti', 'd.gajisupir_nobukti')
-        ->where('B.supir_id', '>=', $supirdari_id)
-        ->where('B.supir_id', '<=', $supirsampai_id)
-        ->where('penerimaantrucking_id', '=', $penerimaantrucking_id)
-        ->orderBy('B.supir_id')
-        ->orderBy('A.tglbukti')
-        ->orderBy('A.nobukti');
+            ->select([
+                DB::raw("A.nobukti + (CASE WHEN ISNULL(D.nobukti, '') = '' THEN '' ELSE '( ' + ISNULL(D.nobukti, '') + ' ) ' END) AS nobukti"),
+                'A.tglbukti',
+                'B.supir_id',
+                DB::raw('(B.nominal * -1) as nominal'),
+                DB::raw('2 as tipe'),
+                DB::raw("isnull(b.keterangan,'') as keterangan"),
+            ])
+            ->join(DB::raw("penerimaantruckingdetail AS B with (readuncommitted)"), 'A.nobukti', '=', 'B.nobukti')
+            ->leftJoin(DB::raw("gajisupirpelunasanpinjaman AS C with (readuncommitted)"), 'A.nobukti', 'C.penerimaantrucking_nobukti')
+            ->leftJoin(DB::raw("prosesgajisupirdetail AS D with (readuncommitted)"), 'c.gajisupir_nobukti', 'd.gajisupir_nobukti')
+            ->where('B.supir_id', '>=', $supirdari_id)
+            ->where('B.supir_id', '<=', $supirsampai_id)
+            ->where('penerimaantrucking_id', '=', $penerimaantrucking_id)
+            ->orderBy('B.supir_id')
+            ->orderBy('A.tglbukti')
+            ->orderBy('A.nobukti');
 
         DB::table($temphistory)->insertUsing([
             'nobukti',
@@ -92,6 +96,7 @@ class LaporanHistoryPinjaman extends MyModel
             'supir_id',
             'nominal',
             'tipe',
+            'keterangan',
         ], $select_temphistory2);
         // dd($select_temphistory2->get());
 
@@ -104,22 +109,24 @@ class LaporanHistoryPinjaman extends MyModel
             $table->double('nominal');
             $table->integer('tipe');
             $table->string('namasupir', 1000);
+            $table->longtext('keterangan');
             $table->double('saldo')->nullable();
         });
 
         $select_temphistoryrekap = DB::table($temphistory)->from(DB::raw($temphistory . " AS a"))
-        ->select([
-            'A.nobukti',
-            'A.tglbukti',
-            'A.supir_id',
-            'nominal',
-            'a.tipe',
-            'b.namasupir',
-        ])
-        ->join(DB::raw("supir AS B with (readuncommitted)"), 'A.supir_id', '=', 'B.id')
-        ->orderBy('B.namasupir')
-        ->orderBy('A.tglbukti')
-        ->orderBy('A.tipe');
+            ->select([
+                'A.nobukti',
+                'A.tglbukti',
+                'A.supir_id',
+                'nominal',
+                'a.tipe',
+                'b.namasupir',
+                'a.keterangan',
+            ])
+            ->join(DB::raw("supir AS B with (readuncommitted)"), 'A.supir_id', '=', 'B.id')
+            ->orderBy('B.namasupir')
+            ->orderBy('A.tglbukti')
+            ->orderBy('A.tipe');
 
 
 
@@ -130,57 +137,77 @@ class LaporanHistoryPinjaman extends MyModel
             'nominal',
             'tipe',
             'namasupir',
+            'keterangan',
         ], $select_temphistoryrekap);
-// dd($select_temphistoryrekap->get());
+        // dd($select_temphistoryrekap->get());
 
-$disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
-->select('text')
-->where('grp', 'DISETUJUI')
-->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
 
-$diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
-->select('text')
-->where('grp', 'DIPERIKSA')
-->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
-        
+        $supirdari = db::table("supir")->from(db::raw("supir a with (readuncommitted)"))
+            ->select(
+                'a.namasupir'
+            )
+            ->where('a.id', $supirdari_id)
+            ->first()
+            ->namasupir ?? '';
+
+        $supirsampai = db::table("supir")->from(db::raw("supir a with (readuncommitted)"))
+            ->select(
+                'a.namasupir'
+            )
+            ->where('a.id', $supirsampai_id)
+            ->first()
+            ->namasupir ?? '';
+
+           
+
         $select_temphistoryrekap2 = DB::table($temphistoryrekap)->from(DB::raw($temphistoryrekap . " AS a"))
-        ->select([
-        'A.nobukti',
-        'A.tglbukti',
-        'A.namasupir',
-        'A.nominal',
-        DB::raw('SUM(ISNULL(A.saldo, 0) + A.nominal) OVER (PARTITION BY A.namasupir ORDER BY A.id ASC) AS Saldo'),
+            ->select([
+                'A.nobukti',
+                'A.tglbukti',
+                'A.namasupir',
+                'A.nominal',
+                DB::raw('SUM(ISNULL(A.saldo, 0) + A.nominal) OVER (PARTITION BY A.namasupir ORDER BY A.id ASC) AS Saldo'),
+                'A.keterangan',
 
-        DB::raw("'Laporan History Pinjaman' as judulLaporan"),
-        DB::raw("'" . $getJudul->text . "' as judul"),
-        DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-        DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") ,
-        db::raw("'" . $disetujui . "' as disetujui"),
-        db::raw("'" . $diperiksa . "' as diperiksa"),
-        ])
-        ->orderBy('A.id');
+                DB::raw("'Laporan History Pinjaman' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
+                db::raw("'" . $supirdari . "' as supirdari"),
+                db::raw("'" . $supirsampai . "' as supirsampai"),
+            ])
+            ->orderBy('A.id');
         // dd($select_temphistoryrekap2->get());
         $data = $select_temphistoryrekap2->get();
         return $data;
-
     }
 
 
 
     public function getExport($supirdari_id, $supirsampai_id)
     {
-          // dd("sdad");
-    $getJudul = DB::table('parameter')
-    ->select('text')
-    ->where('grp', 'JUDULAN LAPORAN')
-    ->where('subgrp', 'JUDULAN LAPORAN')
-    ->first();
-// dd("Sdsa");
-$pengeluarantrucking_id = 1;
-$penerimaantrucking_id = 2;
+        // dd("sdad");
+        $getJudul = DB::table('parameter')
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+        // dd("Sdsa");
+        $pengeluarantrucking_id = 1;
+        $penerimaantrucking_id = 2;
 
-$temphistory = '##temphistory' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $temphistory = '##temphistory' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temphistory, function ($table) {
             $table->string('nobukti', 50);
             $table->date('tglbukti');
@@ -191,21 +218,21 @@ $temphistory = '##temphistory' . rand(1, getrandmax()) . str_replace('.', '', mi
         });
 
         $select_temphistory = DB::table('pengeluarantruckingheader')->from(DB::raw("pengeluarantruckingheader AS A WITH (READUNCOMMITTED)"))
-        ->select([
-            'A.nobukti',
-            'A.tglbukti',
-            'B.supir_id',
-            'B.nominal',
-            DB::raw('1 as tipe'),
-        ])
-        ->join(DB::raw("pengeluarantruckingdetail AS B with (readuncommitted)"), 'A.nobukti', '=', 'B.nobukti')
-        ->where('B.supir_id', '>=', $supirdari_id)
-        ->where('B.supir_id', '<=', $supirsampai_id)
-        ->where('pengeluarantrucking_id', '=', $pengeluarantrucking_id)
-        ->orderBy('B.supir_id')
-        ->orderBy('A.tglbukti')
-        ->orderBy('A.nobukti');
-        
+            ->select([
+                'A.nobukti',
+                'A.tglbukti',
+                'B.supir_id',
+                'B.nominal',
+                DB::raw('1 as tipe'),
+            ])
+            ->join(DB::raw("pengeluarantruckingdetail AS B with (readuncommitted)"), 'A.nobukti', '=', 'B.nobukti')
+            ->where('B.supir_id', '>=', $supirdari_id)
+            ->where('B.supir_id', '<=', $supirsampai_id)
+            ->where('pengeluarantrucking_id', '=', $pengeluarantrucking_id)
+            ->orderBy('B.supir_id')
+            ->orderBy('A.tglbukti')
+            ->orderBy('A.nobukti');
+
 
         DB::table($temphistory)->insertUsing([
             'nobukti',
@@ -215,25 +242,25 @@ $temphistory = '##temphistory' . rand(1, getrandmax()) . str_replace('.', '', mi
             'tipe',
         ], $select_temphistory);
         // dd($select_temphistory->get());
-    // dd($select_temphistory->get());
-    
-    $select_temphistory2 = DB::table('penerimaantruckingheader')->from(DB::raw("penerimaantruckingheader AS A WITH (READUNCOMMITTED)"))
-        ->select([
-            DB::raw("A.nobukti + (CASE WHEN ISNULL(D.nobukti, '') = '' THEN '' ELSE '( ' + ISNULL(D.nobukti, '') + ' ) ' END) AS nobukti"),
-            'A.tglbukti',
-            'B.supir_id',
-            DB::raw('(B.nominal * -1) as nominal'),
-            DB::raw('2 as tipe'),
-        ])
-        ->join(DB::raw("penerimaantruckingdetail AS B with (readuncommitted)"), 'A.nobukti', '=', 'B.nobukti')
-        ->leftJoin(DB::raw("gajisupirpelunasanpinjaman AS C with (readuncommitted)"), 'A.nobukti', 'C.penerimaantrucking_nobukti')
-        ->leftJoin(DB::raw("prosesgajisupirdetail AS D with (readuncommitted)"), 'c.gajisupir_nobukti', 'd.gajisupir_nobukti')
-        ->where('B.supir_id', '>=', $supirdari_id)
-        ->where('B.supir_id', '<=', $supirsampai_id)
-        ->where('penerimaantrucking_id', '=', $penerimaantrucking_id)
-        ->orderBy('B.supir_id')
-        ->orderBy('A.tglbukti')
-        ->orderBy('A.nobukti');
+        // dd($select_temphistory->get());
+
+        $select_temphistory2 = DB::table('penerimaantruckingheader')->from(DB::raw("penerimaantruckingheader AS A WITH (READUNCOMMITTED)"))
+            ->select([
+                DB::raw("A.nobukti + (CASE WHEN ISNULL(D.nobukti, '') = '' THEN '' ELSE '( ' + ISNULL(D.nobukti, '') + ' ) ' END) AS nobukti"),
+                'A.tglbukti',
+                'B.supir_id',
+                DB::raw('(B.nominal * -1) as nominal'),
+                DB::raw('2 as tipe'),
+            ])
+            ->join(DB::raw("penerimaantruckingdetail AS B with (readuncommitted)"), 'A.nobukti', '=', 'B.nobukti')
+            ->leftJoin(DB::raw("gajisupirpelunasanpinjaman AS C with (readuncommitted)"), 'A.nobukti', 'C.penerimaantrucking_nobukti')
+            ->leftJoin(DB::raw("prosesgajisupirdetail AS D with (readuncommitted)"), 'c.gajisupir_nobukti', 'd.gajisupir_nobukti')
+            ->where('B.supir_id', '>=', $supirdari_id)
+            ->where('B.supir_id', '<=', $supirsampai_id)
+            ->where('penerimaantrucking_id', '=', $penerimaantrucking_id)
+            ->orderBy('B.supir_id')
+            ->orderBy('A.tglbukti')
+            ->orderBy('A.nobukti');
 
         DB::table($temphistory)->insertUsing([
             'nobukti',
@@ -257,18 +284,18 @@ $temphistory = '##temphistory' . rand(1, getrandmax()) . str_replace('.', '', mi
         });
 
         $select_temphistoryrekap = DB::table($temphistory)->from(DB::raw($temphistory . " AS a"))
-        ->select([
-            'A.nobukti',
-            'A.tglbukti',
-            'A.supir_id',
-            'nominal',
-            'a.tipe',
-            'b.namasupir',
-        ])
-        ->join(DB::raw("supir AS B with (readuncommitted)"), 'A.supir_id', '=', 'B.id')
-        ->orderBy('B.namasupir')
-        ->orderBy('A.tglbukti')
-        ->orderBy('A.tipe');
+            ->select([
+                'A.nobukti',
+                'A.tglbukti',
+                'A.supir_id',
+                'nominal',
+                'a.tipe',
+                'b.namasupir',
+            ])
+            ->join(DB::raw("supir AS B with (readuncommitted)"), 'A.supir_id', '=', 'B.id')
+            ->orderBy('B.namasupir')
+            ->orderBy('A.tglbukti')
+            ->orderBy('A.tipe');
 
 
 
@@ -280,22 +307,22 @@ $temphistory = '##temphistory' . rand(1, getrandmax()) . str_replace('.', '', mi
             'tipe',
             'namasupir',
         ], $select_temphistoryrekap);
-// dd($select_temphistoryrekap->get());
-        
-        $select_temphistoryrekap2 = DB::table($temphistoryrekap)->from(DB::raw($temphistoryrekap . " AS a"))
-        ->select([
-        'A.nobukti',
-        'A.tglbukti',
-        'A.namasupir',
-        'A.nominal',
-        DB::raw('SUM(ISNULL(A.saldo, 0) + A.nominal) OVER (PARTITION BY A.namasupir ORDER BY A.id ASC) AS Saldo'),
+        // dd($select_temphistoryrekap->get());
 
-        DB::raw("'Laporan History Pinjaman' as judulLaporan"),
-        DB::raw("'" . $getJudul->text . "' as judul"),
-        DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-        DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") 
-        ])
-        ->orderBy('A.id');
+        $select_temphistoryrekap2 = DB::table($temphistoryrekap)->from(DB::raw($temphistoryrekap . " AS a"))
+            ->select([
+                'A.nobukti',
+                'A.tglbukti',
+                'A.namasupir',
+                'A.nominal',
+                DB::raw('SUM(ISNULL(A.saldo, 0) + A.nominal) OVER (PARTITION BY A.namasupir ORDER BY A.id ASC) AS Saldo'),
+
+                DB::raw("'Laporan History Pinjaman' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            ])
+            ->orderBy('A.id');
         // dd($select_temphistoryrekap2->get());
         $data = $select_temphistoryrekap2->get();
         return $data;
