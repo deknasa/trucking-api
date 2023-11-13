@@ -15,6 +15,19 @@ class AkunPusatDetailController extends Controller
         //
     }
 
+    public function importdatacabang()
+    {
+        // dd('test');
+        $akunPusatDetail = new AkunPusatDetail();
+        return response([
+            'data' => $akunPusatDetail->getimportdatacabang(),
+            'attributes' => [
+                'totalRows' => $akunPusatDetail->totalRows,
+                'totalPages' => $akunPusatDetail->totalPages
+            ]
+        ]);
+    }
+
     /**
      * Show the form for creating a new resource.
      *

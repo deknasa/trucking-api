@@ -25,7 +25,7 @@ class LaporanNeraca extends MyModel
         'updated_at',
     ];
 
-    public function getReport($sampai, $eksport)
+    public function getReport($sampai, $eksport, $cabang_id)
     {
         $bulan = substr($sampai, 0, 2);
         $tahun = substr($sampai, -4);
@@ -54,8 +54,20 @@ class LaporanNeraca extends MyModel
         $judul = Parameter::where('grp', '=', 'JUDULAN LAPORAN')->first();
         $judulLaporan = $judul->text;
 
-            //   dd($tglsd1);
-            // $eksport = 1;
+        //   dd($tglsd1);
+        // $eksport = 1;
+
+        $getcabangid = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.text'
+            )
+            ->where('a.grp', 'ID CABANG')
+            ->where('a.subgrp', 'ID CABANG')
+            ->first()->text ?? 0;
+
+        if ($cabang_id != $getcabangid) {
+            $eksport = 1;
+        }
         if ($eksport == 1) {
 
             DB::table('akunpusatdetail')
@@ -538,7 +550,7 @@ class LaporanNeraca extends MyModel
 
             // dump($tglsd);
             // DD($jenis);
-            
+
 
             DB::table($temppinjamansupir)->insertUsing([
                 'tanggal',
@@ -671,7 +683,7 @@ class LaporanNeraca extends MyModel
             ], (new LaporanDepositoSupir())->getReport($tglsd, '', 1));
 
             // Kas Gantung
-            
+
             // mulai:;
 
             $tempkasgantung = '##tempkasgantung' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -688,7 +700,6 @@ class LaporanNeraca extends MyModel
                 $table->string('judullaporan', 500)->nullable();
                 $table->longtext('tglcetak')->nullable();
                 $table->string('usercetak', 500)->nullable();
-
             });
 
 
@@ -730,7 +741,7 @@ class LaporanNeraca extends MyModel
             });
 
 
-      
+
             $tglkasbank = date('Y-m-d', strtotime($tglsd1 . ' -1 days'));
 
             $kas_id = DB::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
@@ -1481,8 +1492,8 @@ class LaporanNeraca extends MyModel
             )
             ->orderby('xx.id');
 
-            selesai:;
-            
+        selesai:;
+
         // $data = DB::select(DB::raw("
         //         SELECT xx.TipeMaster, xx.[Order], xx.[Type], xx.KeteranganType, xx.coa, xx.Parent,
         //         xx.KeteranganCoa, xx.Nominal, xx.CmpyName, xx.pBulan, xx.pTahun,

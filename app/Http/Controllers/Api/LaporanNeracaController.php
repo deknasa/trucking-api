@@ -41,8 +41,9 @@ class LaporanNeracaController extends Controller
 
         $sampai = $request->sampai;
         $eksport = 0;
+        $cabang_id=$request->cabang_id ?? 0;
 
-        $report = LaporanNeraca::getReport($sampai, $eksport);
+        $report = LaporanNeraca::getReport($sampai, $eksport,$cabang_id);
         // sleep(5);
 
         return response([
@@ -68,8 +69,9 @@ class LaporanNeracaController extends Controller
 
             $sampai = $request->sampai;
             $eksport = 0;
+            $cabang_id=$request->cabang_id ?? 0;
 
-            $export = LaporanNeraca::getReport($sampai, $eksport);
+            $export = LaporanNeraca::getReport($sampai, $eksport,$cabang_id);
 
             return response([
                 'data' => $export
