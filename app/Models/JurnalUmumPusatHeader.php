@@ -293,8 +293,7 @@ class JurnalUmumPusatHeader extends MyModel
 
         $cabang_id = Parameter::from(
             DB::raw("parameter with (readuncommitted)")
-        )->where('grp', 'ID CABANG')->where('text', 'ID _CABANG')->first()->text ?? 0;
-
+        )->where('grp', 'ID CABANG')->where('subgrp', 'ID CABANG')->first()->text;
         $querycabang = db::table("cabang")->from(db::raw("cabang a with (readcommitted)"))
             ->select(
                 'a.namacabang'
@@ -310,7 +309,7 @@ class JurnalUmumPusatHeader extends MyModel
         $jurnalUmumPusatHeader->statusformat = $data['statusformat'];
         $jurnalUmumPusatHeader->modifiedby = auth('api')->user()->name;
         $jurnalUmumPusatHeader->cabang_id = $cabang_id ?? 0;
-        $jurnalUmumPusatHeader->cabang = $querycabang->namacabang ?? '';
+        // $jurnalUmumPusatHeader->cabang = $querycabang->namacabang ?? '';
         $jurnalUmumPusatHeader->info = html_entity_decode(request()->info);
 
 
