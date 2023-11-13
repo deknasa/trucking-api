@@ -197,7 +197,7 @@ class LaporanHistoryPinjaman extends MyModel
                 'A.tglbukti',
                 'A.namasupir',
                 'A.nominal',
-                DB::raw('SUM(ISNULL(A.saldo, 0) + A.nominal) OVER (PARTITION BY A.namasupir ORDER BY A.id ASC) AS Saldo'),
+                DB::raw('SUM(ISNULL(A.saldo, 0) + A.nominal) OVER (PARTITION BY A.namasupir ORDER BY A.tglbuktipinjaman,A.nobuktipinjaman,A.id ASC) AS Saldo'),
                 'A.keterangan',
 
                 DB::raw("'Laporan History Pinjaman' as judulLaporan"),
