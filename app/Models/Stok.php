@@ -111,6 +111,27 @@ class Stok extends MyModel
             'tglawal',
         ], (new SaldoUmurAki())->getallstok());
 
+        $tempumuraki2 = '##tempumuraki2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempumuraki2, function ($table) {
+            $table->Integer('stok_id')->nullable();
+            $table->integer('jumlahhari')->nullable();
+            $table->date('tglawal')->nullable();
+        });
+
+        $queryaki=db::table($tempumuraki)->from(db::raw($tempumuraki . " a "))
+        ->select (
+            'a.stok_id',
+            db::raw("max(a.jumlahhari) as jumlahhari"),
+            db::raw("max(a.tglawal) as tglawal"),
+        )
+        ->groupby('a.stok_id');
+
+        DB::table($tempumuraki2)->insertUsing([
+            'stok_id',
+            'jumlahhari',
+            'tglawal',
+        ],  $queryaki);
+
         //update total vulkanisir
 
         $querytgl = date('Y/m/d');
@@ -239,7 +260,7 @@ class Stok extends MyModel
             ->leftJoin(DB::raw("parameter as statusreuse with (readuncommitted)"), 'stok.statusreuse', 'statusreuse.id')
             ->leftJoin('merk', 'stok.merk_id', 'merk.id')
             ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
-            ->leftJoin(db::raw($tempumuraki . " c1"), "stok.id", "c1.stok_id");
+            ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id");
 
 
 
