@@ -66,7 +66,7 @@ class PengeluaranStokDetailFifo extends MyModel
             $table->double('penerimaanstokheader_totalterpakai', 15, 2)->nullable();
         });
 
-        // $pengeluaranstokheader_id=$data['pengeluaranstokheader_id'] ;
+        $pengeluaranstokheader_id=$data['pengeluaranstokheader_id'] ;
         $queryfifo = db::table('pengeluaranstokdetailfifo')->from(db::raw("pengeluaranstokdetailfifo a with (readuncommitted)"))
             ->select(
                 'a.pengeluaranstokheader_id as stokheader_id',
@@ -83,7 +83,7 @@ class PengeluaranStokDetailFifo extends MyModel
             )
             ->where('a.stok_id', '=',   $data['stok_id'])
             ->where('a.gudang_id', '=',   $data['gudang_id'])
-            // ->where('a.pengeluaranstokheader_id', '<=',   $pengeluaranstokheader_id)
+            ->where('a.pengeluaranstokheader_id', '<=',   $pengeluaranstokheader_id)
             ->orderby('a.id');
 
 
@@ -114,7 +114,7 @@ class PengeluaranStokDetailFifo extends MyModel
                 'a.penerimaanstok_harga as penerimaanstokheader_harga',
                 'a.penerimaanstokheader_total as penerimaanstokheader_total',
                 'a.penerimaanstokheader_totalterpakai as penerimaanstokheader_totalterpakai',
-                )
+            )
             ->where('a.stok_id', '=',   $data['stok_id'])
             ->where('a.gudang_id', '=',   $data['gudang_id'])
             ->orderby('a.id');
@@ -137,7 +137,7 @@ class PengeluaranStokDetailFifo extends MyModel
 
         $a = 0;
         $atotalharga = 0;
-        $totalterpakai2=0;
+        $totalterpakai2 = 0;
         $kondisi = true;
         while ($kondisi == true) {
 
@@ -151,14 +151,14 @@ class PengeluaranStokDetailFifo extends MyModel
                     // db::raw("sum(a.penerimaanstok_qty) as penerimaanstok_qty"),
                     db::raw("sum(a.qty) as qty"),
                     db::raw("max(b.id) as id"),
-                    db::raw("round(sum(a.penerimaanstokheader_totalterpakai),10) as penerimaanstokheader_totalterpakai"),
-                    )
+                    db::raw("round(sum(a.penerimaanstokheader_totalterpakai),2) as penerimaanstokheader_totalterpakai"),
+                )
                 ->join(db::raw("penerimaanstokheader b with (readuncommitted)"), 'a.penerimaanstokheader_nobukti', 'b.nobukti')
                 // ->join(db::raw("penerimaanstokdetail c with (readuncommitted)"), 'b.nobukti', 'c.nobukti')
                 ->join(db::raw("penerimaanstokdetail c with (readuncommitted)"), function ($join) {
                     $join->on('b.nobukti', '=', 'c.nobukti');
                     $join->on('a.stok_id', '=', 'c.stok_id');
-                })                
+                })
                 ->where('c.stok_id', '=',   $data['stok_id'])
                 ->whereRaw("(b.gudang_id=" .   $data['gudang_id'] . " or b.gudangke_id=" . $data['gudang_id'] . ")")
                 ->groupBY('a.stok_id')
@@ -181,8 +181,9 @@ class PengeluaranStokDetailFifo extends MyModel
                     'a.harga',
                     'a.total',
                     'c.id as penerimaanstok_id',
-                    db::raw("round((a.total-isnull(b.penerimaanstokheader_totalterpakai,0)),10) as totalsisa"),
-                    )
+                    db::raw("(a.total-isnull(b.penerimaanstokheader_totalterpakai,0)) as totalsisa"),
+                    db::raw("isnull(b.penerimaanstokheader_totalterpakai,0) as totalterpakai"),
+                )
                 // ->leftjoin(db::raw($tempfifo . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti')
                 ->leftjoin(db::raw($tempfifo . " b "), function ($join) {
                     $join->on('a.nobukti', '=', 'b.penerimaanstok_nobukti');
@@ -194,41 +195,72 @@ class PengeluaranStokDetailFifo extends MyModel
                 ->whereRaw("(a.qty-isnull(B.qty,0))<>0 ")
                 ->orderBy('c.tglbukti', 'asc')
                 ->orderBy('c.id', 'asc')
-                                ->orderBy('a.id', 'asc')
-                
+                ->orderBy('a.id', 'asc')
+
                 ->first();
 
-                // $querytest = db::table('penerimaanstokdetail')->from(db::raw("penerimaanstokdetail a with (readuncommitted)"))
-                // ->select(
-                //     db::raw("(a.qty-isnull(B.qty,0)) as qtysisa"),
-                //     'a.nobukti',
-                //     'a.qty',
-                //     'a.harga',
-                //     'a.total',
-                //     'c.id as penerimaanstok_id',
-                //     db::raw("(a.total-isnull(b.penerimaanstokheader_totalterpakai,0)) as totalsisa"),
-                //     'a.id'
+                // if ($data['stok_id'] == 4735) {
+                //     $querysisa = db::table('penerimaanstokdetail')->from(db::raw("penerimaanstokdetail a with (readuncommitted)"))
+                //     ->select(
+                //         db::raw("(a.qty-isnull(B.qty,0)) as qtysisa"),
+                //         'a.nobukti',
+                //         'a.qty',
+                //         'a.harga',
+                //         'a.total',
+                //         'c.id as penerimaanstok_id',
+                //         db::raw("(a.total-isnull(b.penerimaanstokheader_totalterpakai,0)) as totalsisa"),
+                //         db::raw("isnull(b.penerimaanstokheader_totalterpakai,0) as totalterpakai"),
                 //     )
-                // // ->leftjoin(db::raw($tempfifo . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti')
-                // ->leftjoin(db::raw($tempfifo . " b "), function ($join) {
-                //     $join->on('a.nobukti', '=', 'b.penerimaanstok_nobukti');
-                //     $join->on('a.stok_id', '=', 'b.stok_id');
-                // })
-                // ->join(db::raw("penerimaanstokheader c "), 'a.nobukti', 'c.nobukti')
-                // ->where('a.stok_id', '=',   $data['stok_id'])
-                // ->whereRaw("(c.gudang_id=" .   $data['gudang_id'] . " or c.gudangke_id=" . $data['gudang_id'] . ")")
-                // ->whereRaw("(a.qty-isnull(B.qty,0))<>0 ")
-                // ->orderBy('c.tglbukti', 'asc')
-                // ->orderBy('c.id', 'asc')
-                // ->orderBy('a.id', 'asc')
-                // ->get();
+                //     // ->leftjoin(db::raw($tempfifo . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti')
+                //     ->leftjoin(db::raw($tempfifo . " b "), function ($join) {
+                //         $join->on('a.nobukti', '=', 'b.penerimaanstok_nobukti');
+                //         $join->on('a.stok_id', '=', 'b.stok_id');
+                //     })
+                //     ->join(db::raw("penerimaanstokheader c "), 'a.nobukti', 'c.nobukti')
+                //     ->where('a.stok_id', '=',   $data['stok_id'])
+                //     ->whereRaw("(c.gudang_id=" .   $data['gudang_id'] . " or c.gudangke_id=" . $data['gudang_id'] . ")")
+                //     ->whereRaw("(a.qty-isnull(B.qty,0))<>0 ")
+                //     ->orderBy('c.tglbukti', 'asc')
+                //     ->orderBy('c.id', 'asc')
+                //     ->orderBy('a.id', 'asc')
+    
+                //     ->get();
 
-                // if ($data['stok_id']==5200) {
-                //     dump(db::table($tempfifo) ->get());    
-                //     dump($querysisa);    
-                //     dump($querytest);    
+                //     dd( $querysisa);
+        
                 // }
-                
+
+            // $querytest = db::table('penerimaanstokdetail')->from(db::raw("penerimaanstokdetail a with (readuncommitted)"))
+            // ->select(
+            //     db::raw("(a.qty-isnull(B.qty,0)) as qtysisa"),
+            //     'a.nobukti',
+            //     'a.qty',
+            //     'a.harga',
+            //     'a.total',
+            //     'c.id as penerimaanstok_id',
+            //     db::raw("(a.total-isnull(b.penerimaanstokheader_totalterpakai,0)) as totalsisa"),
+            //     'a.id'
+            //     )
+            // // ->leftjoin(db::raw($tempfifo . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti')
+            // ->leftjoin(db::raw($tempfifo . " b "), function ($join) {
+            //     $join->on('a.nobukti', '=', 'b.penerimaanstok_nobukti');
+            //     $join->on('a.stok_id', '=', 'b.stok_id');
+            // })
+            // ->join(db::raw("penerimaanstokheader c "), 'a.nobukti', 'c.nobukti')
+            // ->where('a.stok_id', '=',   $data['stok_id'])
+            // ->whereRaw("(c.gudang_id=" .   $data['gudang_id'] . " or c.gudangke_id=" . $data['gudang_id'] . ")")
+            // ->whereRaw("(a.qty-isnull(B.qty,0))<>0 ")
+            // ->orderBy('c.tglbukti', 'asc')
+            // ->orderBy('c.id', 'asc')
+            // ->orderBy('a.id', 'asc')
+            // ->get();
+
+            // if ($data['stok_id']==5200) {
+            //     dump(db::table($tempfifo) ->get());    
+            //     dump($querysisa);    
+            //     dump($querytest);    
+            // }
+
             $a = $a + 1;
             // if ($a == 3) {
             //     dd('test');
@@ -242,8 +274,23 @@ class PengeluaranStokDetailFifo extends MyModel
                 $qtysisa = $querysisa->qtysisa ?? 0;
                 if ($qty <= $qtysisa) {
 
-                    $totalterpakai=round((($querysisa->total/$querysisa->qty)*$qty),2);
-                    $totalterpakai2+=$totalterpakai;
+                    // $hargatotalterpakai = ($querysisa->totalsisa / $querysisa->qtysisa);
+                    $totalsisa = round(($querysisa->total - $querysisa->totalterpakai), 2);
+                    $hargatotalterpakai = ($totalsisa / $querysisa->qtysisa);
+                    // if ($data['stok_id'] == 4735) {
+                    //     dump(1);
+                    //     dump($querysisa->totalterpakai);
+                    //     dump($querysisa->total);
+                    //     dump($querysisa->totalsisa);
+                    //     dump($querysisa->qtysisa);
+                    // }
+
+
+                    $totalterpakai = round(($hargatotalterpakai * $qty), 2);
+                    // dump($totalterpakai);
+                    // $num = (($querysisa->total / $querysisa->qty) * $qty);
+                    // $totalterpakai = floor($num * 100) / 100;
+                    $totalterpakai2 += $totalterpakai;
                     $pengeluaranStokDetailFifo = new pengeluaranStokDetailFifo();
                     $pengeluaranStokDetailFifo->pengeluaranstokheader_id = $data['pengeluaranstokheader_id'] ?? 0;
                     $pengeluaranStokDetailFifo->nobukti = $data['nobukti'] ?? '';
@@ -281,9 +328,9 @@ class PengeluaranStokDetailFifo extends MyModel
                     $zqty = $qty ?? 0;
                     // lama ryan 09-11-2023
                     // $zharga = $querysisa->harga ?? 0;
-                    $zharga = round(($belitotalsisa / $beliqtysisa),10) ?? 0;
+                    $zharga = round(($belitotalsisa / $beliqtysisa), 10) ?? 0;
 
-                    $atotalharga = $atotalharga + round(($zqty * (($belitotalsisa / $beliqtysisa))),2);
+                    $atotalharga = $atotalharga + round(($zqty * (($belitotalsisa / $beliqtysisa))), 2);
                     // lama ryan 09-11-2023
                     // $atotalharga = $atotalharga + ($zqty * ($belitotal / $beliqty));
 
@@ -294,8 +341,8 @@ class PengeluaranStokDetailFifo extends MyModel
                     // $ksharga = $querysisa->harga ?? 0;
                     // $kstotal = $ksqty * ($belitotal / $beliqty);
 
-                    $ksharga = round(($belitotalsisa / $beliqtysisa),10) ?? 0;
-                    $kstotal = round(($ksqty * ($belitotalsisa / $beliqtysisa)),2);
+                    $ksharga = round(($belitotalsisa / $beliqtysisa), 10) ?? 0;
+                    $kstotal = round(($ksqty * ($belitotalsisa / $beliqtysisa)), 2);
 
                     $ksnobukti = $data['nobukti'] ?? '';
 
@@ -338,13 +385,13 @@ class PengeluaranStokDetailFifo extends MyModel
 
                     $aksqty = $querysisa->qty ?? 0;
 
-                     // lama ryan 09-11-2023
+                    // lama ryan 09-11-2023
                     // $aksharga = $querysisa->harga ?? 0;
-                    $aksharga = round(($belitotalsisa / $beliqtysisa),10) ?? 0;
+                    $aksharga = round(($belitotalsisa / $beliqtysisa), 10) ?? 0;
                     $aksnobukti = $querysisa->nobukti ?? '';
                     $aksstok_id = $data['stok_id'] ?? 0;
 
-                    $totalharga += round(($aksharga  * $aksqty),2);
+                    $totalharga += round(($aksharga  * $aksqty), 2);
 
 
 
@@ -357,9 +404,25 @@ class PengeluaranStokDetailFifo extends MyModel
                 } else {
                     // dd('test');
                     $qty = $qty - $qtysisa;
+                    // $hargatotalterpakai = ($querysisa->totalsisa / $querysisa->qtysisa);
+                    $totalsisa = round(($querysisa->total - $querysisa->totalterpakai), 2);
+                    $hargatotalterpakai = ($totalsisa / $querysisa->qtysisa);
 
-                    $totalterpakai=round((($querysisa->total/$querysisa->qty)*$qtysisa),2);
-                    $totalterpakai2+=$totalterpakai;
+                    // if ($data['stok_id'] == 4735) {
+                    //     dump(2);
+                    //     dump($querysisa->totalterpakai);
+                    //     dump($querysisa->total);
+                    //     dump($querysisa->totalsisa);
+                    //     dump($querysisa->qtysisa);
+                    // }
+
+                    $totalterpakai = round(($hargatotalterpakai * $qtysisa), 2);
+                    // $totalterpakai = ( $hargatotalterpakai* $qtysisa);
+                    // dump($totalterpakai);
+                    // $num = (($querysisa->total / $querysisa->qty) * $qtysisa);
+                    // $totalterpakai = floor($num * 100) / 100;
+
+                    $totalterpakai2 += $totalterpakai;
                     $pengeluaranStokDetailFifo = new pengeluaranStokDetailFifo();
                     $pengeluaranStokDetailFifo->pengeluaranstokheader_id = $data['pengeluaranstokheader_id'] ?? 0;
                     $pengeluaranStokDetailFifo->nobukti = $data['nobukti'] ?? '';
@@ -398,12 +461,12 @@ class PengeluaranStokDetailFifo extends MyModel
                     $zqty = $qtysisa ?? 0;
                     // ryan 09-11-2023
                     // $zharga = $querysisa->harga ?? 0;
-                    $zharga = round(($belitotalsisa/$beliqtysisa),10) ?? 0;
+                    $zharga = round(($belitotalsisa / $beliqtysisa), 10) ?? 0;
 
                     // ryan 09-11-2023
 
                     // $atotalharga = $atotalharga + ($zqty * ($belitotal / $beliqty));
-                    $atotalharga = $atotalharga + round(($zqty * ($belitotalsisa / $beliqtysisa)),2);
+                    $atotalharga = $atotalharga + round(($zqty * ($belitotalsisa / $beliqtysisa)), 2);
 
                     // 
                     $ksqty = $qtysisa ?? 0;
@@ -412,8 +475,8 @@ class PengeluaranStokDetailFifo extends MyModel
                     // $ksharga = $querysisa->harga ?? 0;
                     // $kstotal = $ksqty * ($belitotal / $beliqty);
 
-                    $ksharga = round(($belitotalsisa / $beliqtysisa),10) ?? 0;
-                    $kstotal = round($ksqty * ($belitotalsisa / $beliqtysisa),2);
+                    $ksharga = round(($belitotalsisa / $beliqtysisa), 10) ?? 0;
+                    $kstotal = round($ksqty * ($belitotalsisa / $beliqtysisa), 2);
 
                     $ksnobukti = $data['nobukti'] ?? '';
 
@@ -455,15 +518,15 @@ class PengeluaranStokDetailFifo extends MyModel
                     }
 
                     $aksqty = $querysisa->qty ?? 0;
-                       // ryan 09-11-2023
+                    // ryan 09-11-2023
                     // $aksharga = $querysisa->harga ?? 0;
 
-                    $aksharga = round(($querysisa->totalsisa/$querysisa->qtysisa),10) ?? 0;
+                    $aksharga = round(($querysisa->totalsisa / $querysisa->qtysisa), 10) ?? 0;
 
                     $aksnobukti = $querysisa->nobukti ?? '';
                     $aksstok_id = $data['stok_id'] ?? 0;
 
-                    $totalharga += round(($aksharga *  $aksqty),2);
+                    $totalharga += round(($aksharga *  $aksqty), 2);
 
 
 
@@ -477,6 +540,9 @@ class PengeluaranStokDetailFifo extends MyModel
             }
         }
         // 
+        // if ($data['stok_id'] == 4735) {
+        //     dd('test');
+        // }
 
         $nobuktipengeluaran = $data['nobukti'] ?? '';
         $stokidpengeluaran = $data['stok_id'] ?? 0;
@@ -486,10 +552,10 @@ class PengeluaranStokDetailFifo extends MyModel
 
         // $totalharga = $atotalharga;
         $totalharga = $totalterpakai2;
-        
+
         // dump($totalharga);
         // dd($data['qty']);
-        $hrgsat = round(($totalharga / $data['qty']),10);
+        $hrgsat = round(($totalharga / $data['qty']), 10);
 
         if ($data['pengeluaranstok_id'] == 2) {
             $totdetailharga = $data['detail_harga'];
@@ -502,7 +568,7 @@ class PengeluaranStokDetailFifo extends MyModel
         }
         $pengeluaranstokdetail->harga =   $hrgsat;
         $pengeluaranstokdetail->total =  $totalharga;
-        
+
         $pengeluaranstokdetail->selisihhargafifo =  $selisih;
         // $pengeluaranstokdetail->save();
         if (!$pengeluaranstokdetail->save()) {
