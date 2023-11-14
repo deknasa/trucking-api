@@ -10,6 +10,46 @@ use App\Http\Requests\UpdateSaldoAwalBukuBesarRequest;
 
 class SaldoAwalBukuBesarController extends Controller
 {
+
+    public function importdatacabang()
+    {
+        // dd('test');
+        $saldoAwalBukuBesar = new SaldoAwalBukuBesar();
+        return response([
+            'data' => $saldoAwalBukuBesar->getimportdatacabang(),
+            'attributes' => [
+                'totalRows' => $saldoAwalBukuBesar->totalRows,
+                'totalPages' => $saldoAwalBukuBesar->totalPages
+            ]
+        ]);
+    }
+
+    public function importdatacabangtahun()
+    {
+        // dd('test');
+        $saldoAwalBukuBesar = new SaldoAwalBukuBesar();
+        return response([
+            'data' => $saldoAwalBukuBesar->getimportdatacabangtahun(),
+            'attributes' => [
+                'totalRows' => $saldoAwalBukuBesar->totalRows,
+                'totalPages' => $saldoAwalBukuBesar->totalPages
+            ]
+        ]);
+    }
+
+    public function importdatacabangbulan()
+    {
+        // dd('test');
+        $saldoAwalBukuBesar = new SaldoAwalBukuBesar();
+        return response([
+            'data' => $saldoAwalBukuBesar->getimportdatacabangbulan(),
+            'attributes' => [
+                'totalRows' => $saldoAwalBukuBesar->totalRows,
+                'totalPages' => $saldoAwalBukuBesar->totalPages
+            ]
+        ]);
+    }
+
     /**
      * Display a listing of the resource.
      *

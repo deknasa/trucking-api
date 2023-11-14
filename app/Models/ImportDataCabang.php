@@ -73,9 +73,6 @@ class ImportDataCabang extends Model
 
             DB::delete(DB::raw("delete  JurnalUmumPusatheader from JurnalUmumPusatheader as b 
             WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and format(b.tglbukti,'MM-yyyy')='" . $data['periode'] . "'"));
-
-
-
         }
 
 
@@ -196,46 +193,64 @@ class ImportDataCabang extends Model
             }
         }
 
-        $saldoakunpusatdetail = Http::withHeaders([
+        $saldoakunpusatdetailtahun = Http::withHeaders([
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $access_token,
             'Content-Type' => 'application/json',
         ])
-            ->get($urlCabang . "saldoakunpusatdetail/importdatacabang?periode=" . $data['periode']);
+            ->get($urlCabang . "saldoakunpusatdetail/importdatacabangtahun?periode=" . $data['periode']);
 
-        $konsolidasisaldoakunpusatdetail = $saldoakunpusatdetail->json()['data'];
-        if (!count($konsolidasisaldoakunpusatdetail)) {
+        $konsolidasisaldoakunpusatdetailtahun = $saldoakunpusatdetailtahun->json()['data'];
+        if (!count($konsolidasisaldoakunpusatdetailtahun)) {
             throw ValidationException::withMessages(["message" => "data tidak ada"]);
         }
 
-        $saldoakunpusatdetailRequest = [];
-        foreach ($konsolidasisaldoakunpusatdetail as $item2) {
-                $saldoAkunpusatdetail = new SaldoAkunPusatDetail();
-                $saldoAkunpusatdetail->coa = $item2['coa'] ;
-                $saldoAkunpusatdetail->bulan = $item2['bulan'];
-                $saldoAkunpusatdetail->tahun = $item2['tahun'];
-                $saldoAkunpusatdetail->nominal = $item2['nominal'];
-                $saldoAkunpusatdetail->info = $item2['info'];
-                $saldoAkunpusatdetail->tglbukti = $item2['tglbukti'];
-                $saldoAkunpusatdetail->modifiedby = $item2['modifiedby'];
-                $saldoAkunpusatdetail->created_at = $item2['created_at'];
-                $saldoAkunpusatdetail->updated_at = $item2['updated_at'];
-                $saldoAkunpusatdetail->cabang_id = $data['cabang'];
-                
+        foreach ($konsolidasisaldoakunpusatdetailtahun as $itemtahun2) {
+            $saldoakunpusatdetailbulan = Http::withHeaders([
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $access_token,
+                'Content-Type' => 'application/json',
+            ])
+                ->get($urlCabang . "saldoakunpusatdetail/importdatacabangbulan?periode=" . $data['periode'] . "&tahun=" . $itemtahun2['tahun']);
 
-                if (!$saldoAkunpusatdetail->save()) {
-                    throw new \Exception("Error storing saldo akun pusat detail.");
+            $konsolidasisaldoakunpusatdetailbulan = $saldoakunpusatdetailbulan->json()['data'];
+            if (!count($konsolidasisaldoakunpusatdetailbulan)) {
+                throw ValidationException::withMessages(["message" => "data tidak ada"]);
+            }
+            foreach ($konsolidasisaldoakunpusatdetailbulan as $itembulan2) {
+
+                $saldoakunpusatdetail = Http::withHeaders([
+                    'Accept' => 'application/json',
+                    'Authorization' => 'Bearer ' . $access_token,
+                    'Content-Type' => 'application/json',
+                ])
+                    ->get($urlCabang . "saldoakunpusatdetail/importdatacabang?periode=" . $data['periode'] . "&tahun=" . $itemtahun2['tahun'] . "&bulan=" . $itembulan2['bulan']);
+
+                $konsolidasisaldoakunpusatdetail = $saldoakunpusatdetail->json()['data'];
+                if (!count($konsolidasisaldoakunpusatdetail)) {
+                    throw ValidationException::withMessages(["message" => "data tidak ada"]);
                 }
-                // $saldoakunpusatdetailRequest[$item2['id']] = $saldoAkunpusatdetail;
-                // $saldoakunpusatdetailLogTrail = (new LogTrail())->processStore([
-                //     'namatabel' => strtoupper($saldoAkunpusatdetail->getTable()),
-                //     'postingdari' => 'IMPORT DATA SALDO AKUN PUSAT DETAIL',
-                //     'idtrans' => $saldoAkunpusatdetail->id,
-                //     'nobuktitrans' => $saldoAkunpusatdetail->coa,
-                //     'aksi' => 'ENTRY',
-                //     'datajson' => $saldoAkunpusatdetail->toArray(),
-                //     'modifiedby' => auth('api')->user()->user
-                // ]);
+
+                foreach ($konsolidasisaldoakunpusatdetail as $item2) {
+
+                    $saldoAkunpusatdetail = new SaldoAkunPusatDetail();
+                    $saldoAkunpusatdetail->coa = $item2['coa'];
+                    $saldoAkunpusatdetail->bulan = $item2['bulan'];
+                    $saldoAkunpusatdetail->tahun = $item2['tahun'];
+                    $saldoAkunpusatdetail->nominal = $item2['nominal'];
+                    $saldoAkunpusatdetail->info = $item2['info'];
+                    $saldoAkunpusatdetail->tglbukti = $item2['tglbukti'];
+                    $saldoAkunpusatdetail->modifiedby = $item2['modifiedby'];
+                    $saldoAkunpusatdetail->created_at = $item2['created_at'];
+                    $saldoAkunpusatdetail->updated_at = $item2['updated_at'];
+                    $saldoAkunpusatdetail->cabang_id = $data['cabang'];
+
+
+                    if (!$saldoAkunpusatdetail->save()) {
+                        throw new \Exception("Error storing saldo akun pusat detail.");
+                    }
+                }
+            }
         }
 
         $akunpusatdetail = Http::withHeaders([
@@ -250,33 +265,22 @@ class ImportDataCabang extends Model
             throw ValidationException::withMessages(["message" => "data tidak ada"]);
         }
 
-        $akunpusatdetailRequest = [];
         foreach ($konsolidasiakunpusatdetail as $item3) {
-                $Akunpusatdetail = new AkunPusatDetail();
-                $Akunpusatdetail->coa = $item3['coa'] ;
-                $Akunpusatdetail->bulan = $item3['bulan'];
-                $Akunpusatdetail->tahun = $item3['tahun'];
-                $Akunpusatdetail->nominal = $item3['nominal'];
-                $Akunpusatdetail->info = $item3['info'];
-                $Akunpusatdetail->modifiedby = $item3['modifiedby'];
-                $Akunpusatdetail->created_at = $item3['created_at'];
-                $Akunpusatdetail->updated_at = $item3['updated_at'];
-                $Akunpusatdetail->cabang_id = $data['cabang'];
-                
- 
-                if (!$Akunpusatdetail->save()) {
-                    throw new \Exception("Error storing  akun pusat detail.");
-                }
-                // $akunpusatdetailRequest[$item3['id']] = $Akunpusatdetail;
-                // $akunpusatdetailLogTrail = (new LogTrail())->processStore([
-                //     'namatabel' => strtoupper($Akunpusatdetail->getTable()),
-                //     'postingdari' => 'IMPORT DATA  AKUN PUSAT DETAIL',
-                //     'idtrans' => $Akunpusatdetail->id,
-                //     'nobuktitrans' => $Akunpusatdetail->coa,
-                //     'aksi' => 'ENTRY',
-                //     'datajson' => $Akunpusatdetail->toArray(),
-                //     'modifiedby' => auth('api')->user()->user
-                // ]);
+            $Akunpusatdetail = new AkunPusatDetail();
+            $Akunpusatdetail->coa = $item3['coa'];
+            $Akunpusatdetail->bulan = $item3['bulan'];
+            $Akunpusatdetail->tahun = $item3['tahun'];
+            $Akunpusatdetail->nominal = $item3['nominal'];
+            $Akunpusatdetail->info = $item3['info'];
+            $Akunpusatdetail->modifiedby = $item3['modifiedby'];
+            $Akunpusatdetail->created_at = $item3['created_at'];
+            $Akunpusatdetail->updated_at = $item3['updated_at'];
+            $Akunpusatdetail->cabang_id = $data['cabang'];
+
+
+            if (!$Akunpusatdetail->save()) {
+                throw new \Exception("Error storing  akun pusat detail.");
+            }
         }
 
         return "Data Periode " . $data['periode'] . " Cabang $cabang->namacabang Berhasil di Import";

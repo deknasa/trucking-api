@@ -65,6 +65,7 @@ use App\Http\Controllers\Api\ReportAllController;
 use App\Http\Controllers\Api\SpkHarianController;
 use App\Http\Controllers\Api\StokPusatController;
 use App\Http\Controllers\Api\SaldoAkunPusatDetailController;
+use App\Http\Controllers\Api\SaldoAwalBukuBesarController;
 use App\Http\Controllers\Api\AkunPusatDetailController;
 use App\Http\Controllers\Api\TutupBukuController;
 use App\Http\Controllers\Api\UpahSupirController;
@@ -321,6 +322,11 @@ route::middleware(['auth:api'])->group(function () {
 route::middleware(['auth:api'])->group(function () {
     Route::get('jurnalumumpusatheader/importdatacabang', [JurnalUmumPusatHeaderController::class, 'importdatacabang']);
     Route::get('saldoakunpusatdetail/importdatacabang', [SaldoAkunPusatDetailController::class, 'importdatacabang']);
+    Route::get('saldoakunpusatdetail/importdatacabangtahun', [SaldoAkunPusatDetailController::class, 'importdatacabangtahun']);
+    Route::get('saldoakunpusatdetail/importdatacabangbulan', [SaldoAkunPusatDetailController::class, 'importdatacabangbulan']);
+    Route::get('saldoawalbukubesar/importdatacabang', [SaldoAwalBukuBesarController::class, 'importdatacabang']);
+    Route::get('saldoawalbukubesar/importdatacabangtahun', [SaldoAwalBukuBesarController::class, 'importdatacabangtahun']);
+    Route::get('saldoawalbukubesar/importdatacabangbulan', [SaldoAwalBukuBesarController::class, 'importdatacabangbulan']);
     Route::get('akunpusatdetail/importdatacabang', [AkunPusatDetailController::class, 'importdatacabang']);
     Route::post('jurnalumumpusatheader/storeimportdatacabang', [JurnalUmumPusatHeaderController::class, 'storeimportdatacabang']);
     Route::get('parameter', [ParameterController::class, 'index']);
