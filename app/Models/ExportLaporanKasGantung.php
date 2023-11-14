@@ -116,40 +116,38 @@ class ExportLaporanKasGantung extends MyModel
                 'nominal',
             ], $querytemppengembalian);
 
-            if ($tgl1==$tgl2) {
+            if ($tgl1 == $tgl2) {
                 $querytemprekap = db::table($Tempkasgantung)->from(db::raw($Tempkasgantung . " a "))
-                ->select(
-                    db::raw("'" . $tgl1 . "' as tgl"),
-                    'b.tglbukti',
-                    'b.nobukti',
-                    'd.keterangancoa',
-                    'a.keterangan',
-                    db::raw("(isnull(A.nominal,0)-isnull(c.nominal,0)) as debet"),
-                    db::raw("0 as kredit")
-                )
-                ->join(db::raw("kasgantungheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-                ->leftjoin(db::raw($Temppengembalian . " c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
-                ->leftjoin(db::raw("akunpusat d with (readuncommitted)"), 'a.coa', 'd.coa')
-                ->whereRaw("(isnull(A.nominal,0)-isnull(c.nominal,0))<>0")
-                ->whereRaw("b.tglbukti<='" . $tgl1 . "'");
-
+                    ->select(
+                        db::raw("'" . $tgl1 . "' as tgl"),
+                        'b.tglbukti',
+                        'b.nobukti',
+                        'd.keterangancoa',
+                        'a.keterangan',
+                        db::raw("(isnull(A.nominal,0)-isnull(c.nominal,0)) as debet"),
+                        db::raw("0 as kredit")
+                    )
+                    ->join(db::raw("kasgantungheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                    ->leftjoin(db::raw($Temppengembalian . " c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+                    ->leftjoin(db::raw("akunpusat d with (readuncommitted)"), 'a.coa', 'd.coa')
+                    ->whereRaw("(isnull(A.nominal,0)-isnull(c.nominal,0))<>0")
+                    ->whereRaw("b.tglbukti<='" . $tgl1 . "'");
             } else {
                 $querytemprekap = db::table($Tempkasgantung)->from(db::raw($Tempkasgantung . " a "))
-                ->select(
-                    db::raw("'" . $tgl1 . "' as tgl"),
-                    'b.tglbukti',
-                    'b.nobukti',
-                    'd.keterangancoa',
-                    'a.keterangan',
-                    db::raw("(isnull(A.nominal,0)-isnull(c.nominal,0)) as debet"),
-                    db::raw("0 as kredit")
-                )
-                ->join(db::raw("kasgantungheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-                ->leftjoin(db::raw($Temppengembalian . " c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
-                ->leftjoin(db::raw("akunpusat d with (readuncommitted)"), 'a.coa', 'd.coa')
-                ->whereRaw("(isnull(A.nominal,0)-isnull(c.nominal,0))<>0")
-                ->whereRaw("b.tglbukti<'" . $tgl1 . "'");
-
+                    ->select(
+                        db::raw("'" . $tgl1 . "' as tgl"),
+                        'b.tglbukti',
+                        'b.nobukti',
+                        'd.keterangancoa',
+                        'a.keterangan',
+                        db::raw("(isnull(A.nominal,0)-isnull(c.nominal,0)) as debet"),
+                        db::raw("0 as kredit")
+                    )
+                    ->join(db::raw("kasgantungheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                    ->leftjoin(db::raw($Temppengembalian . " c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+                    ->leftjoin(db::raw("akunpusat d with (readuncommitted)"), 'a.coa', 'd.coa')
+                    ->whereRaw("(isnull(A.nominal,0)-isnull(c.nominal,0))<>0")
+                    ->whereRaw("b.tglbukti<'" . $tgl1 . "'");
             }
 
 
@@ -348,7 +346,8 @@ class ExportLaporanKasGantung extends MyModel
             'sisa',
         ], $queryTempRekapkasgantung);
 
-
+        $tgl1a = $tahun . '-' . $bulan . '-01';
+        // dd($tgl1a );
         $queryTempRekapkasgantung = db::table($Tempkasgantungrekap)->from(db::raw($Tempkasgantungrekap . " a"))
             ->select(
 
@@ -366,9 +365,12 @@ class ExportLaporanKasGantung extends MyModel
             ->join(db::raw("pengembaliankasgantungdetail b with (readuncommitted) "), 'a.nobukti', 'b.kasgantung_nobukti')
             ->join(db::raw("pengembaliankasgantungheader c with (readuncommitted) "), 'b.nobukti', 'c.nobukti')
             ->join(db::raw("kasgantungheader d with (readuncommitted) "), 'a.nobukti', 'd.nobukti')
-            ->whereRaw("c.tglbukti<='" . $tgl2 . "'")
+            // ->whereRaw("c.tglbukti<='" . $tgl2 . "'")
+            ->whereRaw("(c.tglbukti>='" . $tgl1a . "' and c.tglbukti<='" . $tgl2 . "')")
 
             ->orderBy('c.tglbukti', 'asc');
+
+            // dd($queryTempRekapkasgantung->get());
 
         DB::table($TempRekapkasgantung)->insertUsing([
             'jenis',
@@ -434,7 +436,7 @@ class ExportLaporanKasGantung extends MyModel
 
         $getdata2 = db::table($Temphasil)->from(db::raw($Temphasil . " a"))
             ->select(
-                 'a.jenis',
+                'a.jenis',
                 db::raw("format(a.tglbukti2,'dd-MM-yyyy') as tglbukti"),
                 'a.nobukti2 as nobukti',
                 'a.keterangan',
