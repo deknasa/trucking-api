@@ -204,31 +204,6 @@ class ImportDataCabang extends Model
                 }
             }
 
-            // $saldoakunpusatdetailtahun = Http::withHeaders([
-            //     'Accept' => 'application/json',
-            //     'Authorization' => 'Bearer ' . $access_token,
-            //     'Content-Type' => 'application/json',
-            // ])
-            //     ->get($urlCabang . "saldoakunpusatdetail/importdatacabangtahun?periode=" . $data['periode']);
-
-            // $konsolidasisaldoakunpusatdetailtahun = $saldoakunpusatdetailtahun->json()['data'];
-            // if (!count($konsolidasisaldoakunpusatdetailtahun)) {
-            //     throw ValidationException::withMessages(["message" => "data tidak ada"]);
-            // }
-
-            // foreach ($konsolidasisaldoakunpusatdetailtahun as $itemtahun2) {
-            //     $saldoakunpusatdetailbulan = Http::withHeaders([
-            //         'Accept' => 'application/json',
-            //         'Authorization' => 'Bearer ' . $access_token,
-            //         'Content-Type' => 'application/json',
-            //     ])
-            //         ->get($urlCabang . "saldoakunpusatdetail/importdatacabangbulan?periode=" . $data['periode'] . "&tahun=" . $itemtahun2['tahun']);
-
-            //     $konsolidasisaldoakunpusatdetailbulan = $saldoakunpusatdetailbulan->json()['data'];
-            //     if (!count($konsolidasisaldoakunpusatdetailbulan)) {
-            //         throw ValidationException::withMessages(["message" => "data tidak ada"]);
-            //     }
-            //     foreach ($konsolidasisaldoakunpusatdetailbulan as $itembulan2) {
 
             $saldoakunpusatdetail = Http::withHeaders([
                 'Accept' => 'application/json',
@@ -262,8 +237,48 @@ class ImportDataCabang extends Model
                     throw new \Exception("Error storing saldo akun pusat detail.");
                 }
             }
-            //     }
-            // }
+
+            // saldoawalbukubesar
+
+            $saldoawalbukubesar = Http::withHeaders([
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $access_token,
+                'Content-Type' => 'application/json',
+            ])
+                // ->get($urlCabang . "saldoakunpusatdetail/importdatacabang?periode=" . $data['periode'] . "&tahun=" . $itemtahun2['tahun'] . "&bulan=" . $itembulan2['bulan']);
+                ->get($urlCabang . "saldoawalbukubesar/importdatacabang?periode=" . $data['periode']);
+
+            $konsolidasisaldoawalbukubesar = $saldoawalbukubesar->json()['data'];
+            if (!count($konsolidasisaldoawalbukubesar)) {
+                throw ValidationException::withMessages(["message" => "data tidak ada"]);
+            }
+
+            foreach ($konsolidasisaldoawalbukubesar as $item4) {
+
+                $saldoAwalbukubesar = new SaldoAwalBukuBesar();
+                $saldoAwalbukubesar->coa = $item4['coa'];
+                $saldoAwalbukubesar->bulan = $item4['bulan'];
+                $saldoAwalbukubesar->nominal = $item4['nominal'];
+                $saldoAwalbukubesar->info = $item4['info'];
+                $saldoAwalbukubesar->tglbukti = $item4['tglbukti'];
+                $saldoAwalbukubesar->modifiedby = $item4['modifiedby'];
+                $saldoAwalbukubesar->created_at = $item4['created_at'];
+                $saldoAwalbukubesar->updated_at = $item4['updated_at'];
+                $saldoAwalbukubesar->cabang_id = $data['cabang'];
+
+               
+                if (!$saldoAwalbukubesar->save()) {
+                    throw new \Exception("Error storing saldo awal buku besar.");
+                }
+            }
+
+
+
+
+            // 
+
+
+
 
             $akunpusatdetail = Http::withHeaders([
                 'Accept' => 'application/json',
@@ -458,6 +473,72 @@ class ImportDataCabang extends Model
                     }
                 }
             }
+
+            // set akunpusatdetail
+
+            $bulan = substr($data['periode'], 0, 2);
+            $tahun = substr($data['periode'], -4);
+            $cabang_id = $cabang->id ?? 0;
+            $ptgl = $tahun . '-' . $bulan . '-01';
+            DB::table('akunpusatdetail')
+                ->where('bulan', '<>', 0)
+                ->whereRaw("cabang_id=" . $cabang_id)
+                ->whereRaw("cast(trim(str(" . $tahun . "))+'/'+trim(str(" . $bulan . "))+'/1' as datetime)>='" . $ptgl . "'")
+                ->delete();
+
+
+            $subquery1 = DB::table('jurnalumumpusatheader as J')
+                ->select('D.coamain as FCOA', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw(
+                    'round(SUM(D.nominal),2) as FNominal',
+                    db::raw($cabang_id . " as cabang_id")
+
+                ))
+                ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
+                ->join('mainakunpusat as C', 'C.coa', '=', 'D.coamain')
+                ->where('D.tglbukti', '>=', $ptgl)
+                ->where('j.cabang_id',  $cabang_id)
+                ->groupBy('D.coamain', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
+
+            $subquery2 = DB::table('jurnalumumpusatheader as J')
+                ->select(
+                    'LR.coa',
+                    DB::raw('YEAR(D.tglbukti) as FThn'),
+                    DB::raw('MONTH(D.tglbukti) as FBln'),
+                    DB::raw('round(SUM(D.nominal),2) as FNominal'),
+                    db::raw($cabang_id . " as cabang_id")
+                )
+                ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
+                ->join('perkiraanlabarugi as LR', function ($join) {
+                    $join->on('LR.tahun', '=', DB::raw('YEAR(J.tglbukti)'))
+                        ->on('LR.bulan', '=', DB::raw('MONTH(J.tglbukti)'));
+                })
+                ->whereIn('D.coamain', function ($query) {
+                    $query->select(DB::raw('DISTINCT C.coa'))
+                        ->from('maintypeakuntansi as AT')
+                        ->join('mainakunpusat as C', 'AT.kodetype', '=', 'C.Type')
+                        ->where('AT.order', '>=', 4000)
+                        ->where('AT.order', '<', 9000)
+
+                        ->where('C.type', '<>', 'Laba/Rugi');
+                })
+                ->where('D.tglbukti', '>=', $ptgl)
+                ->where('j.cabang_id',  $cabang_id)
+                ->groupBy('LR.coa', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
+
+            $RecalKdPerkiraan = DB::table(DB::raw("({$subquery1->toSql()} UNION ALL {$subquery2->toSql()}) as V"))
+                ->mergeBindings($subquery1)
+                ->mergeBindings($subquery2)
+                ->groupBy('FCOA', 'FThn', 'FBln')
+                ->select('FCOA', 'FThn', 'FBln', DB::raw('round(SUM(FNominal),2) as FNominal'));
+
+            DB::table('akunpusatdetail')->insertUsing([
+                'coa',
+                'tahun',
+                'bulan',
+                'nominal',
+                'cabang_id',
+
+            ], $RecalKdPerkiraan);
         }
 
 

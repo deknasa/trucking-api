@@ -73,11 +73,17 @@ class LaporanNeraca extends MyModel
             if ($cabang_id == $getcabangid) {
                 DB::table('akunpusatdetail')
                     ->where('bulan', '<>', 0)
+                    ->whereRaw("cabang_id=" . $cabang_id)
+                    ->whereRaw("bulan=" . $bulan . " and tahun=" . $tahun)
                     ->delete();
 
 
                 $subquery1 = DB::table('jurnalumumpusatheader as J')
-                    ->select('D.coamain as FCOA', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('round(SUM(D.nominal),2) as FNominal'))
+                    ->select('D.coamain as FCOA', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw(
+                        'round(SUM(D.nominal),2) as FNominal',
+                        db::raw($cabang_id . " as cabang_id")
+
+                    ))
                     ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
                     ->join('mainakunpusat as C', 'C.coa', '=', 'D.coamain')
                     ->where('D.tglbukti', '>=', $ptgl)
@@ -85,7 +91,13 @@ class LaporanNeraca extends MyModel
                     ->groupBy('D.coamain', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
 
                 $subquery2 = DB::table('jurnalumumpusatheader as J')
-                    ->select('LR.coa', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('round(SUM(D.nominal),2) as FNominal'))
+                    ->select(
+                        'LR.coa',
+                        DB::raw('YEAR(D.tglbukti) as FThn'),
+                        DB::raw('MONTH(D.tglbukti) as FBln'),
+                        DB::raw('round(SUM(D.nominal),2) as FNominal'),
+                        db::raw($cabang_id . " as cabang_id")
+                    )
                     ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
                     ->join('perkiraanlabarugi as LR', function ($join) {
                         $join->on('LR.tahun', '=', DB::raw('YEAR(J.tglbukti)'))
@@ -115,6 +127,7 @@ class LaporanNeraca extends MyModel
                     'tahun',
                     'bulan',
                     'nominal',
+                    'cabang_id',
 
                 ], $RecalKdPerkiraan);
             }

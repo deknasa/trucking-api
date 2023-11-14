@@ -64,6 +64,7 @@ class LaporanBukuBesar extends MyModel
             ->first()->text ?? 0;
 
         if ($cabang_id != $getcabangid) {
+            // dd('test');
             goto bedacabang;
         }
 
