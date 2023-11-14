@@ -26,9 +26,7 @@ class ImportDataCabang extends Model
 
         $cabangMemo = json_decode($cabang->memo, TRUE);
 
-        if (!$cabangMemo) {
-            throw ValidationException::withMessages(["message" => "Cabang Tidak Compatible Unutk di impor"]);
-        }
+
 
         $urlCabang = env($cabangMemo['URL']);
         $userCabang = env($cabangMemo['USER']);
@@ -36,9 +34,6 @@ class ImportDataCabang extends Model
         $web = $cabangMemo['WEB'] ?? 'YA';
         $singkatan = $cabangMemo['SINGKATAN'] ?? '';
 
-        if (empty($urlCabang) || empty($userCabang) || empty($passwordCabang)) {
-            throw ValidationException::withMessages(["message" => "Cabang Tidak Compatible Unutk di impor"]);
-        }
 
         if ($data['import'] == $statusImportTimpa->id) {
             DB::delete(DB::raw("delete  JurnalUmumPusatdetail from JurnalUmumPusatdetail as a inner join JurnalUmumPusatHeader b on a.nobukti=b.nobukti 
@@ -56,6 +51,15 @@ class ImportDataCabang extends Model
         WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and b.bulan=left(" . $data['periode'] . ",2) and b.tahun=right(" . $data['periode'] . ",4)"));
 
         if ($web == "YA") {
+
+            if (!$cabangMemo) {
+                throw ValidationException::withMessages(["message" => "Cabang Tidak Compatible Unutk di impor"]);
+            }
+
+            if (empty($urlCabang) || empty($userCabang) || empty($passwordCabang)) {
+                throw ValidationException::withMessages(["message" => "Cabang Tidak Compatible Unutk di impor"]);
+            }
+
             $getToken = Http::withHeaders([
                 'Content-Type' => 'application/json',
                 'Accept' => 'application/json'
