@@ -174,7 +174,7 @@ class stokpersediaan extends MyModel
 
     }
 
-    public function get($filter,$gudang,$gudang_id,$trado,$trado_id,$gandengan,$gandengan_id,$keterangan,$data)
+    public function get($filter,$gudang,$gudang_id,$trado,$trado_id,$gandengan,$gandengan_id,$keterangan,$data, $forReport = false)
     {
         $this->setRequestParameters();
 
@@ -310,7 +310,9 @@ if ($keterangan>0) {
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $this->sort($query);
         $this->filter($query);
-        $this->paginate($query);
+        if (!$forReport) {
+            $this->paginate($query);
+        }
 
         $data = $query->get();
 

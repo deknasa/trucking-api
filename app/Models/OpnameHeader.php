@@ -73,6 +73,12 @@ class OpnameHeader extends MyModel
         return $data;
     }
 
+
+    public function getInventory($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter, $prosesneraca){
+        $inventory = (new LaporanSaldoInventory())->getReport($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter, $prosesneraca);
+        return $inventory;
+    }
+
     public function selectColumns($query)
     {
         return $query->from(
