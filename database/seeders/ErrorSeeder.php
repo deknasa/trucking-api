@@ -94,6 +94,8 @@ class ErrorSeeder extends Seeder
         error::create(['kodeerror' => 'PTS', 'keterangan' => 'PENYESUAIAN TIDAK SAMA', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'TB-0', 'keterangan' => 'TIDAK BOLEH 0', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'POST', 'keterangan' => 'YANG SUDAH DIPOSTING TIDAK DAPAT DIUBAH MENJADI BUKAN POSTING', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'TBI', 'keterangan' => 'TIDAK BOLEH DIISI', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'TBS', 'keterangan' => 'TIDAK BOLEH SAMA', 'modifiedby' => 'ADMIN',]);
 
     }
 }
