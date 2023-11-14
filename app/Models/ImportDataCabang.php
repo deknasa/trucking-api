@@ -113,6 +113,7 @@ class ImportDataCabang extends Model
                             $jurnalUmumPusat->created_at = $item['header_created_at'];
                             $jurnalUmumPusat->updated_at = $item['header_updated_at'];
                             $jurnalUmumPusat->cabang_id = $data['cabang'];
+                            $jurnalUmumPusat->cabang = $cabang->namacabang ?? '';
 
                             if (!$jurnalUmumPusat->save()) {
                                 throw new \Exception("Error storing jurnal umum pusat header.");
@@ -162,6 +163,8 @@ class ImportDataCabang extends Model
                         $jurnalUmumPusat->created_at = $item['header_created_at'];
                         $jurnalUmumPusat->updated_at = $item['header_updated_at'];
                         $jurnalUmumPusat->cabang_id = $data['cabang'];
+                        $jurnalUmumPusat->cabang = $cabang->namacabang ?? '';
+
 
                         if (!$jurnalUmumPusat->save()) {
                             throw new \Exception("Error storing jurnal umum pusat header.");
@@ -359,6 +362,8 @@ class ImportDataCabang extends Model
                             $jurnalUmumPusat->created_at = $item['header_created_at'];
                             $jurnalUmumPusat->updated_at = $item['header_updated_at'];
                             $jurnalUmumPusat->cabang_id = $data['cabang'];
+                            $jurnalUmumPusat->cabang = $cabang->namacabang ?? '';
+
 
                             if (!$jurnalUmumPusat->save()) {
                                 throw new \Exception("Error storing jurnal umum pusat header.");
@@ -408,6 +413,8 @@ class ImportDataCabang extends Model
                         $jurnalUmumPusat->created_at = $item['header_created_at'];
                         $jurnalUmumPusat->updated_at = $item['header_updated_at'];
                         $jurnalUmumPusat->cabang_id = $data['cabang'];
+                        $jurnalUmumPusat->cabang = $cabang->namacabang ?? '';
+
 
                         if (!$jurnalUmumPusat->save()) {
                             throw new \Exception("Error storing jurnal umum pusat header.");
