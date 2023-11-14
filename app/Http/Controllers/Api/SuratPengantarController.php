@@ -704,8 +704,8 @@ class SuratPengantarController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'keterangan_detail.*' => 'required',
-            'nominal.*' => 'required|numeric|gt:0',
-            'nominalTagih.*' => 'required|numeric|gt:0',
+            'nominal.*' => 'required|numeric',
+            'nominalTagih.*' => 'required|numeric',
 
         ], [
             'keterangan_detail.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
