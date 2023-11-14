@@ -13,6 +13,17 @@ class AkunPusatDetail extends MyModel
 
     protected $table = 'akunpusatdetail';
 
+    protected $casts = [
+        'created_at' => 'date:d-m-Y H:i:s',
+        'updated_at' => 'date:d-m-Y H:i:s'
+    ];
+
+    protected $guarded = [
+        'id',
+        'created_at',
+        'updated_at',
+    ];
+
     public function getimportdatacabang()
     {
         // dd(request()->periode);
@@ -42,7 +53,7 @@ class AkunPusatDetail extends MyModel
         // dd($query->get());
 
 
-        $data = $query->get();
+        $data = $query->first();
 
         return $data;
     }
