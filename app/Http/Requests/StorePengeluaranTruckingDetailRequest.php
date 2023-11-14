@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Rules\ValidasiKlaimPenerimaanStok;
 use App\Rules\ValidasiKlaimPengeluaranStok;
 use App\Rules\ValidasiStatusTitipanEMKL;
+use App\Rules\ValidasiSupirPJT;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -162,7 +163,7 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
             'id_detail' => [$requiredBST, 'array'],
             'id_detail.*' => $requiredBST,
             'sisa.*' => [$requiredTDE, $requiredKBBM, $sisaNominus],
-            'supir.*' => $requiredPJT,
+            'supir.*' => [$requiredPJT, new ValidasiSupirPJT()],
             // 'nominal' => ['array','required', 'numeric', 'gt:0'],
             'nominal.*' => ['required', $min],
             'keterangan' => [$requiredKeterangan, 'array'],
