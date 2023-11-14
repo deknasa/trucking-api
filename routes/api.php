@@ -64,6 +64,8 @@ use App\Http\Controllers\Api\PelangganController;
 use App\Http\Controllers\Api\ReportAllController;
 use App\Http\Controllers\Api\SpkHarianController;
 use App\Http\Controllers\Api\StokPusatController;
+use App\Http\Controllers\Api\SaldoAkunPusatDetailController;
+use App\Http\Controllers\Api\AkunPusatDetailController;
 use App\Http\Controllers\Api\TutupBukuController;
 use App\Http\Controllers\Api\UpahSupirController;
 use App\Http\Controllers\Api\AbsenTradoController;
