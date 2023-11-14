@@ -54,7 +54,7 @@ class SaldoAkunPusatDetail extends MyModel
         // dd($query->get());
 
 
-        $data = $query->first();
+        $data = $query->get();
 
         return $data;
     }
