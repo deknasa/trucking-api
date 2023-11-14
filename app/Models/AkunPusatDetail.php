@@ -53,7 +53,7 @@ class AkunPusatDetail extends MyModel
         // dd($query->get());
 
 
-        $data = $query->first();
+        $data = $query->get();
 
         return $data;
     }

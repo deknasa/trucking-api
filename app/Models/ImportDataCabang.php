@@ -210,7 +210,6 @@ class ImportDataCabang extends Model
 
         $saldoakunpusatdetailRequest = [];
         foreach ($konsolidasisaldoakunpusatdetail as $item2) {
-            if (!array_key_exists($item2['id'], $saldoakunpusatdetailRequest)) {
                 $saldoAkunpusatdetail = new SaldoAkunPusatDetail();
                 $saldoAkunpusatdetail->coa = $item2['coa'] ;
                 $saldoAkunpusatdetail->bulan = $item2['bulan'];
@@ -237,7 +236,6 @@ class ImportDataCabang extends Model
                 //     'datajson' => $saldoAkunpusatdetail->toArray(),
                 //     'modifiedby' => auth('api')->user()->user
                 // ]);
-            }  
         }
 
         $akunpusatdetail = Http::withHeaders([
@@ -254,7 +252,6 @@ class ImportDataCabang extends Model
 
         $akunpusatdetailRequest = [];
         foreach ($konsolidasiakunpusatdetail as $item3) {
-            if (!array_key_exists($item3['id'], $akunpusatdetailRequest)) {
                 $Akunpusatdetail = new AkunPusatDetail();
                 $Akunpusatdetail->coa = $item3['coa'] ;
                 $Akunpusatdetail->bulan = $item3['bulan'];
@@ -280,7 +277,6 @@ class ImportDataCabang extends Model
                 //     'datajson' => $Akunpusatdetail->toArray(),
                 //     'modifiedby' => auth('api')->user()->user
                 // ]);
-            }  
         }
 
         return "Data Periode " . $data['periode'] . " Cabang $cabang->namacabang Berhasil di Import";
