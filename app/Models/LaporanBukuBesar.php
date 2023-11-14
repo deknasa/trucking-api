@@ -31,6 +31,7 @@ class LaporanBukuBesar extends MyModel
         $sampai = date('Y-m-d', strtotime(request()->sampai)) ?? '1900/1/1';
         $coadari_id = request()->coadari_id ?? '0';
         $coasampai_id = request()->coasampai_id ?? '0';
+        $cabang_id = request()->cabang_id ?? '0';
 
         $dariformat = date('Y/m/d', strtotime($dari));
         $sampaiformat = date('Y/m/d', strtotime($sampai));
@@ -53,6 +54,19 @@ class LaporanBukuBesar extends MyModel
         $awaldari = date('Y-m-', strtotime($dariformat)) . '01';
         $awalcek = date('Y-m-d', strtotime($tutupbuku . ' +1 day'));
         $akhircek = date('Y-m-d', strtotime($awaldari . ' -1 day'));
+
+        $getcabangid = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.text'
+            )
+            ->where('a.grp', 'ID CABANG')
+            ->where('a.subgrp', 'ID CABANG')
+            ->first()->text ?? 0;
+
+        if ($cabang_id != $getcabangid) {
+            goto bedacabang;
+        }
+
 
 
 
@@ -79,7 +93,7 @@ class LaporanBukuBesar extends MyModel
         $tempsaldobukubesar = '##tempsaldobukubesar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsaldobukubesar, function ($table) {
             $table->string('bulan', 1000)->nullable();
-            $table->string('coa',100)->nullable();
+            $table->string('coa', 100)->nullable();
             $table->double('nominal', 15, 2)->nullable();
         });
 
@@ -94,19 +108,19 @@ class LaporanBukuBesar extends MyModel
             ->join(DB::raw("jurnalumumpusatdetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw("akunpusat as c with(readuncommitted)"), 'b.coa', 'c.coa')
             ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
-            ->whereRaw("b.coa='01.01.01.03'")
+            // ->whereRaw("b.coa='01.01.01.03'")
             ->groupby('b.coa')
             ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
 
-            // dd($querydetailsaldo->get());
+        // dd($querydetailsaldo->get());
 
-            DB::table($tempsaldobukubesar)->insertUsing([
-                'bulan',
-                'coa',
-                'nominal',
-            ], $querydetailsaldo);    
-            
-            $queryrekap = db::table($tempsaldobukubesar)->from(db::raw($tempsaldobukubesar . " a"))
+        DB::table($tempsaldobukubesar)->insertUsing([
+            'bulan',
+            'coa',
+            'nominal',
+        ], $querydetailsaldo);
+
+        $queryrekap = db::table($tempsaldobukubesar)->from(db::raw($tempsaldobukubesar . " a"))
             ->select(
                 'bulan',
                 'coa',
@@ -115,23 +129,29 @@ class LaporanBukuBesar extends MyModel
                 db::raw("'' as info"),
                 db::raw("getdate() as created_at"),
                 db::raw("getdate() as updated_at"),
+                db::raw($getcabangid . " as cabang_id"),
+                db::raw("'" . $tglawalcek . "' as tglbukti"),
             )
             ->groupby('a.bulan')
             ->groupby('a.coa');
 
-            
 
-            DB::table("saldoawalbukubesar")->insertUsing([
-                'bulan',
-                'coa',
-                'nominal',
-                'info',
-                'modifiedby',
-                'created_at',
-                'updated_at',
-            ], $queryrekap);            
+
+        DB::table("saldoawalbukubesar")->insertUsing([
+            'bulan',
+            'coa',
+            'nominal',
+            'info',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+            'cabang_id',
+            'tglbukti',
+        ], $queryrekap);
 
         // akhir rekap saldo
+
+        bedacabang:;
 
         $tempsaldorekap = '##tempsaldorekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsaldorekap, function ($table) {
@@ -149,23 +169,24 @@ class LaporanBukuBesar extends MyModel
                 'a.coa',
                 DB::raw("cast(sum(isnull(a.nominal,0)) as money) as nominal")
             )
-            ->join(db::raw("akunpusat b with (readuncommitted)"),'a.coa','b.coa')
-            ->join(db::raw("typeakuntansi c with (readuncommitted)"),'b.type_id','c.id')
+            ->join(db::raw("akunpusat b with (readuncommitted)"), 'a.coa', 'b.coa')
+            ->join(db::raw("typeakuntansi c with (readuncommitted)"), 'b.type_id', 'c.id')
             ->whereRaw("(c.[order] BETWEEN 1110 AND 3310)")
             ->whereRaw("cast(right(a.bulan,4)+'/'+left(a.bulan,2)+'/1' as date)<'" . $dariformat . "'")
             ->whereRaw("a.bulan<>format(cast('" . $dariformat . "' as date),'MM-yyyy')")
-            ->groupBy('a.coa');     
+            ->where('a.cabang_id', $cabang_id)
+            ->groupBy('a.coa');
 
-         
-            
-            // dd($querysaldoawal->get());
-            DB::table($tempsaldorekap)->insertUsing([
-                'coa',
-                'saldo',
-            ], $querysaldoawal);            
-            // dd('test');
 
-            // dd(dB::table($tempsaldorekap)->get());
+
+        // dd($querysaldoawal->get());
+        DB::table($tempsaldorekap)->insertUsing([
+            'coa',
+            'saldo',
+        ], $querysaldoawal);
+        // dd('test');
+
+        // dd(dB::table($tempsaldorekap)->get());
 
         $tempsaldo2 = '##tempsaldo2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsaldo2, function ($table) {
@@ -197,20 +218,21 @@ class LaporanBukuBesar extends MyModel
             )
             ->join(DB::raw("jurnalumumpusatdetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw("akunpusat as c with(readuncommitted)"), 'b.coa', 'c.coa')
-            ->join(db::raw("typeakuntansi d with (readuncommitted)"),'c.type_id','d.id')
+            ->join(db::raw("typeakuntansi d with (readuncommitted)"), 'c.type_id', 'd.id')
             ->whereRaw("(d.[Order] BETWEEN 1110 AND 3310)")
             ->whereRaw("a.tglbukti>=cast(ltrim(rtrim(str(year('" . $dariformat . "'))))+'/'+ltrim(rtrim(str(month('" . $dariformat . "'))))+'/1' as datetime) ")
             ->where('a.tglbukti', '<', $dari)
             ->whereRaw("(c.id >=" . $coadari_id)
             ->whereRaw(DB::raw("c.id <=" . $coasampai_id . ")"))
-            ->groupBy('b.coa','c.keterangancoa');
-
-              
-
-            // dd($querysaldoawal->toSql());
+            ->where('a.cabang_id', $cabang_id)
+            ->groupBy('b.coa', 'c.keterangancoa');
 
 
-   
+
+        // dd($querysaldoawal->toSql());
+
+
+
         DB::table($tempsaldo2)->insertUsing([
             'urut',
             'coa',
@@ -223,7 +245,7 @@ class LaporanBukuBesar extends MyModel
             'saldo',
         ], $querysaldoawal);
 
-       
+
 
         $querysaldoawal = DB::table("akunpusat")->from(
             DB::raw("akunpusat as a with (readuncommitted)")
@@ -239,70 +261,70 @@ class LaporanBukuBesar extends MyModel
                 DB::raw("0 as kredit"),
                 DB::raw("0 as saldo")
             )
-            ->leftjoin(DB::raw($tempsaldo2)." as b",'a.coa','b.coa')
+            ->leftjoin(DB::raw($tempsaldo2) . " as b", 'a.coa', 'b.coa')
             ->join(DB::raw("akunpusat as c with(readuncommitted)"), 'a.coa', 'c.coa')
-            ->join(db::raw("typeakuntansi d with (readuncommitted)"),'c.type_id','d.id')            
+            ->join(db::raw("typeakuntansi d with (readuncommitted)"), 'c.type_id', 'd.id')
             ->whereRaw("(d.[Order] BETWEEN 1110 AND 3310)")
             ->whereRaw("(a.id >=" . $coadari_id)
             ->whereRaw(DB::raw("a.id <=" . $coasampai_id . ")"))
             ->whereRaw("isnull(B.coa,'')=''");
 
-            // dd($querysaldoawal->toSql());
-            DB::table($tempsaldo2)->insertUsing([
-                'urut',
-                'coa',
-                'keterangancoa',
-                'tglbukti',
-                'nobukti',
-                'keterangan',
-                'debet',
-                'kredit',
-                'saldo',
-            ], $querysaldoawal);
+        // dd($querysaldoawal->toSql());
+        DB::table($tempsaldo2)->insertUsing([
+            'urut',
+            'coa',
+            'keterangancoa',
+            'tglbukti',
+            'nobukti',
+            'keterangan',
+            'debet',
+            'kredit',
+            'saldo',
+        ], $querysaldoawal);
 
-            
 
-            $tempsaldo = '##tempsaldo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::create($tempsaldo, function ($table) {
-                $table->double('urut', 15, 2)->nullable();
-                $table->string('coa', 1000)->nullable();
-                $table->string('keterangancoa', 1000)->nullable();
-                $table->date('tglbukti')->nullable();
-                $table->string('nobukti', 100)->nullable();
-                $table->longText('keterangan')->nullable();
-                $table->double('debet', 15, 2)->nullable();
-                $table->double('kredit', 15, 2)->nullable();
-                $table->double('saldo', 15, 2)->nullable();
-            });
-            
-            $querysaldoawal = DB::table(DB::raw($tempsaldo) )->from(
-                DB::raw(DB::raw($tempsaldo2)." a with (readuncommitted)")
+
+        $tempsaldo = '##tempsaldo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsaldo, function ($table) {
+            $table->double('urut', 15, 2)->nullable();
+            $table->string('coa', 1000)->nullable();
+            $table->string('keterangancoa', 1000)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->string('nobukti', 100)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->double('debet', 15, 2)->nullable();
+            $table->double('kredit', 15, 2)->nullable();
+            $table->double('saldo', 15, 2)->nullable();
+        });
+
+        $querysaldoawal = DB::table(DB::raw($tempsaldo))->from(
+            DB::raw(DB::raw($tempsaldo2) . " a with (readuncommitted)")
+        )
+            ->select(
+                DB::raw("1 as urut"),
+                'a.coa',
+                'a.keterangancoa',
+                DB::raw("'1900/1/1' as tglbukti"),
+                DB::raw("'' as nobukti"),
+                DB::raw("'SALDO AWAL' as keterangan"),
+                DB::raw("0 as debet"),
+                DB::raw("0 as kredit"),
+                DB::raw("(isnull(a.saldo,0)+isnull(b.saldo,0)) as saldo")
             )
-                ->select(
-                    DB::raw("1 as urut"),
-                    'a.coa',
-                    'a.keterangancoa',
-                    DB::raw("'1900/1/1' as tglbukti"),
-                    DB::raw("'' as nobukti"),
-                    DB::raw("'SALDO AWAL' as keterangan"),
-                    DB::raw("0 as debet"),
-                    DB::raw("0 as kredit"),
-                    DB::raw("(isnull(a.saldo,0)+isnull(b.saldo,0)) as saldo")
-                )
-                ->leftjoin(DB::raw($tempsaldorekap)." as b",'a.coa','b.coa')
-                ->whereRaw("(isnull(a.saldo,0)+isnull(b.saldo,0))<>0");
-                
-                DB::table($tempsaldo)->insertUsing([
-                    'urut',
-                    'coa',
-                    'keterangancoa',
-                    'tglbukti',
-                    'nobukti',
-                    'keterangan',
-                    'debet',
-                    'kredit',
-                    'saldo',
-                ], $querysaldoawal);                
+            ->leftjoin(DB::raw($tempsaldorekap) . " as b", 'a.coa', 'b.coa')
+            ->whereRaw("(isnull(a.saldo,0)+isnull(b.saldo,0))<>0");
+
+        DB::table($tempsaldo)->insertUsing([
+            'urut',
+            'coa',
+            'keterangancoa',
+            'tglbukti',
+            'nobukti',
+            'keterangan',
+            'debet',
+            'kredit',
+            'saldo',
+        ], $querysaldoawal);
 
 
 
@@ -341,6 +363,7 @@ class LaporanBukuBesar extends MyModel
             ->where('a.tglbukti', '<=', $sampai)
             ->where('c.id', '>=', $coadari_id)
             ->where('c.id', '<=', $coasampai_id)
+            ->where('a.cabang_id', $cabang_id)
             ->orderBy('a.tglbukti', 'asc')
             ->orderBy('a.nobukti', 'asc')
             ->orderBy('b.nominal', 'desc')
@@ -414,8 +437,8 @@ class LaporanBukuBesar extends MyModel
                 'debet',
                 'kredit',
                 'saldo',
-            )->orderBy('id','asc');
-            
+            )->orderBy('id', 'asc');
+
 
         DB::table($temprekap)->insertUsing([
             'urut',
@@ -430,12 +453,21 @@ class LaporanBukuBesar extends MyModel
         ], $queryRekap);
 
 
-
-        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        if ($cabang_id != $getcabangid) {
+            $getJudul=db::table('cabang')->from(db::raw("cabang a with (readuncommitted)"))
+            ->select (
+                'a.judullaporan as text'
+            )
+            ->where('a.id',$cabang_id)
+            ->first();
+        } else {
+            $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->select('text')
             ->where('grp', 'JUDULAN LAPORAN')
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
+
+        }
 
         $queryRekap = DB::table($temprekap)
             ->select(
@@ -454,7 +486,7 @@ class LaporanBukuBesar extends MyModel
                 DB::raw("'Laporan Buku Besar' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->orderBy('id', 'Asc');
 

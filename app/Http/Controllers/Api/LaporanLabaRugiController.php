@@ -31,10 +31,11 @@ class LaporanLabaRugiController extends Controller
     {
         $bulan = substr($request->sampai, 0, 2);
         $tahun = substr($request->sampai, 3, 4);
+        $cabang_id = $request->cabang_id ?? 0;
 
         $laporanlabarugi = new LaporanLabaRugi();
 
-        $laporan_labarugi = $laporanlabarugi->getReport($bulan, $tahun);
+        $laporan_labarugi = $laporanlabarugi->getReport($bulan, $tahun,$cabang_id);
 
         if (count($laporan_labarugi) == 0) {
             return response([

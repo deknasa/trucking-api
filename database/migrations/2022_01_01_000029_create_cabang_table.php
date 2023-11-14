@@ -22,6 +22,7 @@ class CreatecabangTable extends Migration
             $table->integer('statusaktif')->length(11)->nullable();
             $table->longText('memo')->nullable();
             $table->longText('info')->nullable();
+            $table->longText('judullaporan')->nullable();
             $table->string('modifiedby', 30)->nullable();
             $table->timestamps();
         });

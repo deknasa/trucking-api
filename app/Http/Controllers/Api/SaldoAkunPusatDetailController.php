@@ -31,6 +31,32 @@ class SaldoAkunPusatDetailController extends Controller
         ]);
     }
 
+    public function importdatacabangtahun()
+    {
+        // dd('test');
+        $saldoAkunPusatDetail = new SaldoAkunPusatDetail();
+        return response([
+            'data' => $saldoAkunPusatDetail->getimportdatacabangtahun(),
+            'attributes' => [
+                'totalRows' => $saldoAkunPusatDetail->totalRows,
+                'totalPages' => $saldoAkunPusatDetail->totalPages
+            ]
+        ]);
+    }
+
+    public function importdatacabangbulan()
+    {
+        // dd('test');
+        $saldoAkunPusatDetail = new SaldoAkunPusatDetail();
+        return response([
+            'data' => $saldoAkunPusatDetail->getimportdatacabangbulan(),
+            'attributes' => [
+                'totalRows' => $saldoAkunPusatDetail->totalRows,
+                'totalPages' => $saldoAkunPusatDetail->totalPages
+            ]
+        ]);
+    }
+
     /**
      * Show the form for creating a new resource.
      *

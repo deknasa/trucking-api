@@ -39,15 +39,34 @@ class LaporanLabaRugi extends MyModel
         'updated_at',
     ];
 
-    public function getReport($bulan, $tahun)
+    public function getReport($bulan, $tahun, $cabang_id)
     {
 
 
-        $getJudul = DB::table('parameter')
-            ->select('text')
-            ->where('grp', 'JUDULAN LAPORAN')
-            ->where('subgrp', 'JUDULAN LAPORAN')
-            ->first();
+
+        $getcabangid = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.text'
+            )
+            ->where('a.grp', 'ID CABANG')
+            ->where('a.subgrp', 'ID CABANG')
+            ->first()->text ?? 0;
+
+
+        if ($cabang_id != $getcabangid) {
+            $getJudul = db::table('cabang')->from(db::raw("cabang a with (readuncommitted)"))
+                ->select(
+                    'a.judullaporan as text'
+                )
+                ->where('a.id', $cabang_id)
+                ->first();
+        } else {
+            $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->select('text')
+                ->where('grp', 'JUDULAN LAPORAN')
+                ->where('subgrp', 'JUDULAN LAPORAN')
+                ->first();
+        }
 
 
         $cmpy = DB::table('parameter')
@@ -72,6 +91,8 @@ class LaporanLabaRugi extends MyModel
             ->join(DB::raw("jurnalumumpusatheader as H with (readuncommitted)"), 'H.nobukti', '=', 'D.nobukti')
             ->join('mainakunpusat as CD', 'CD.COA', '=', 'D.coamain')
             ->whereRaw("MONTH(D.tglbukti) = " . $bulan . " AND YEAR(D.tglbukti) = " . $tahun)
+            ->where('h.cabang_id', $cabang_id)
+
             ->groupBy('D.coamain');
 
         // dd("Adas");
@@ -100,6 +121,7 @@ class LaporanLabaRugi extends MyModel
             $table->string('KeteranganParent', 1000);
             $table->string('diperiksa', 1000);
             $table->string('disetujui', 1000);
+            $table->string('judul', 1000);
         });
 
         $TempLabaRugiParent = '##TempLabaRugiParent' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -109,23 +131,23 @@ class LaporanLabaRugi extends MyModel
         });
 
         $resultsparent = DB::table('mainakunpusat AS C')
-        ->select(
-            DB::raw("ISNULL(G.keterangancoa, '') AS KeteranganParent"),
-            DB::raw('sum(ISNULL(E.nominal, 0)) AS Nominal'),
-        )
-        ->join('mainTypeakuntansi AS AT', 'AT.id', '=', 'C.type_id')
-        ->leftJoin('mainakunpusat AS G', 'C.parent', '=', 'G.coa')
-        ->leftJoin($Temprekappendapatan . ' AS E', 'C.coa', '=', 'E.CoaMAin')
-        ->whereIn('AT.kodetype', ['Pendapatan'])
-        ->whereRaw("isnull(E.nominal,0)<>0")
-        ->whereRaw("ISNULL(G.keterangancoa, '')<>''")
-        ->groupBy('G.keterangancoa');
+            ->select(
+                DB::raw("ISNULL(G.keterangancoa, '') AS KeteranganParent"),
+                DB::raw('sum(ISNULL(E.nominal, 0)) AS Nominal'),
+            )
+            ->join('mainTypeakuntansi AS AT', 'AT.id', '=', 'C.type_id')
+            ->leftJoin('mainakunpusat AS G', 'C.parent', '=', 'G.coa')
+            ->leftJoin($Temprekappendapatan . ' AS E', 'C.coa', '=', 'E.CoaMAin')
+            ->whereIn('AT.kodetype', ['Pendapatan'])
+            ->whereRaw("isnull(E.nominal,0)<>0")
+            ->whereRaw("ISNULL(G.keterangancoa, '')<>''")
+            ->groupBy('G.keterangancoa');
 
         DB::table($TempLabaRugiParent)->insertUsing([
             'KeteranganParent',
             'nominal',
-        ], $resultsparent);     
-        
+        ], $resultsparent);
+
         $results2parent = DB::table('mainakunpusat AS C')
             ->select(
                 DB::raw("ISNULL(G.keterangancoa, '') AS KeteranganParent"),
@@ -136,13 +158,13 @@ class LaporanLabaRugi extends MyModel
             ->leftJoin($Temprekappendapatan . ' AS E', 'C.coa', '=', 'E.CoaMAin')
             ->whereIn('AT.kodetype', ['Beban'])
             ->whereRaw("isnull(E.nominal,0)<>0")
-            ->whereRaw("ISNULL(G.keterangancoa, '')<>''")    
+            ->whereRaw("ISNULL(G.keterangancoa, '')<>''")
             ->groupBy('G.keterangancoa');
 
-            DB::table($TempLabaRugiParent)->insertUsing([
-                'KeteranganParent',
-                'nominal',
-            ], $results2parent);  
+        DB::table($TempLabaRugiParent)->insertUsing([
+            'KeteranganParent',
+            'nominal',
+        ], $results2parent);
 
         //    $cmpy = 'PT. TRANSPORINDO AGUNG SEJAHTERA';
 
@@ -156,6 +178,8 @@ class LaporanLabaRugi extends MyModel
             ->select('text')
             ->where('grp', 'DIPERIKSA')
             ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
+
 
 
         $results = DB::table('mainakunpusat AS C')
@@ -176,6 +200,8 @@ class LaporanLabaRugi extends MyModel
                 DB::raw("ISNULL(G.keterangancoa, '') AS KeteranganParent"),
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+
 
 
             )
@@ -207,6 +233,7 @@ class LaporanLabaRugi extends MyModel
             'KeteranganParent',
             'diperiksa',
             'disetujui',
+            'judul',
         ], $results);
         // dd($results->get()); 
 
@@ -228,6 +255,7 @@ class LaporanLabaRugi extends MyModel
                 DB::raw("ISNULL(G.keterangancoa, '') AS KeteranganParent"),
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
 
             )
             ->join('mainTypeakuntansi AS AT', 'AT.id', '=', 'C.type_id')
@@ -254,6 +282,7 @@ class LaporanLabaRugi extends MyModel
             'KeteranganParent',
             'diperiksa',
             'disetujui',
+            'judul',
         ], $results2);
 
         $data1 = $results->get();
@@ -355,7 +384,7 @@ class LaporanLabaRugi extends MyModel
                 'AT.Order',
                 'C.Parent',
                 DB::raw("ISNULL(G.keterangancoa, '') AS KeteranganParent"),
-                
+
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
 
