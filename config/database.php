@@ -110,6 +110,19 @@ return [
             'prefix_indexes' => true,
         ],
 
+        'sqlsrv2' => [
+            'driver' => 'sqlsrv',
+            'url' => env('DATABASE_URL'),
+            'host' => env('DB_HOST_DUA', 'web.transporindo.com'),
+            'port' => env('DB_PORT_DUA', '1450'),
+            'database' => env('DB_DATABASE_DUA', 'trucking'),
+            'username' => env('DB_USERNAME_DUA', 'sa'),
+            'password' => $local,
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+        ],        
+
     ],
 
     /*

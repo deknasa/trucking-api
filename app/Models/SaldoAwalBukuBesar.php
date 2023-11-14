@@ -32,8 +32,8 @@ class SaldoAwalBukuBesar extends MyModel
         $periode = request()->periode ?? date('m-Y');
         $month = substr($periode, 0, 2);
         $year = substr($periode, 3);
-        $tahun = request()->tahun ?? 0;
-        $bulan = request()->bulan ?? 0;
+        // $tahun = request()->tahun ?? 0;
+        // $bulan = request()->bulan ?? 0;
 
 
 
@@ -52,8 +52,8 @@ class SaldoAwalBukuBesar extends MyModel
             )
             ->whereRaw("MONTH(a.tglbukti) = " . $month)
             ->whereRaw("YEAR(a.tglbukti) = " . $year)
-            ->whereRaw("cast(right(a.bulan,4) as integer) = " . $tahun)
-            ->whereRaw("cast(left(a.bulan,2) as integer) = " . $bulan)            
+            // ->whereRaw("cast(right(a.bulan,4) as integer) = " . $tahun)
+            // ->whereRaw("cast(left(a.bulan,2) as integer) = " . $bulan)            
             ->orderby('a.id', 'asc');
 
         // dd($query->get());

@@ -15,6 +15,9 @@ class ImportDataCabang extends Model
 
     public function processStore(array $data)
     {
+        ini_set('memory_limit', '-1');
+        set_time_limit(0);
+
         $cabang = Cabang::where('id', $data['cabang'])->first();
         $statusImportTimpa = Parameter::where('grp', 'STATUSIMPORT')->where('text', 'HAPUS DAN TIMPA DATA JIKA SUDAH ADA')->first();
         $statusImportSisip = Parameter::where('grp', 'STATUSIMPORT')->where('text', 'HANYA TAMBAHKAN DATA YANG BELUM DATA ADA SAJA')->first();
@@ -30,42 +33,12 @@ class ImportDataCabang extends Model
         $urlCabang = env($cabangMemo['URL']);
         $userCabang = env($cabangMemo['USER']);
         $passwordCabang = env($cabangMemo['PASSWORD']);
+        $web = $cabangMemo['WEB'] ?? 'YA';
+        $singkatan = $cabangMemo['SINGKATAN'] ?? '';
 
         if (empty($urlCabang) || empty($userCabang) || empty($passwordCabang)) {
             throw ValidationException::withMessages(["message" => "Cabang Tidak Compatible Unutk di impor"]);
         }
-
-
-        $getToken = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Accept' => 'application/json'
-        ])
-            ->post($urlCabang . 'token', [
-                'user' => $userCabang,
-                'password' => $passwordCabang,
-                'ipclient' => '',
-                'ipserver' => '',
-                'latitude' => '',
-                'longitude' => '',
-                'browser' => '',
-                'os' => '',
-            ]);
-        $access_token = json_decode($getToken, TRUE)['access_token'];
-
-        $jurnalUmum = Http::withHeaders([
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $access_token,
-            'Content-Type' => 'application/json',
-        ])
-            ->get($urlCabang . "jurnalumumpusatheader/importdatacabang?periode=" . $data['periode']);
-
-        $konsolidasi = $jurnalUmum->json()['data'];
-        if (!count($konsolidasi)) {
-            throw ValidationException::withMessages(["message" => "data tidak ada"]);
-        }
-
-
-
 
         if ($data['import'] == $statusImportTimpa->id) {
             DB::delete(DB::raw("delete  JurnalUmumPusatdetail from JurnalUmumPusatdetail as a inner join JurnalUmumPusatHeader b on a.nobukti=b.nobukti 
@@ -82,21 +55,101 @@ class ImportDataCabang extends Model
         DB::delete(DB::raw("delete  AkunPusatDetail from AkunPusatDetail as b 
         WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and b.bulan=left(" . $data['periode'] . ",2) and b.tahun=right(" . $data['periode'] . ",4)"));
 
-        $jurnalRequest = [];
-        foreach ($konsolidasi as $item) {
-            // Membuat array baru untuk setiap entri header
+        if ($web == "YA") {
+            $getToken = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json'
+            ])
+                ->post($urlCabang . 'token', [
+                    'user' => $userCabang,
+                    'password' => $passwordCabang,
+                    'ipclient' => '',
+                    'ipserver' => '',
+                    'latitude' => '',
+                    'longitude' => '',
+                    'browser' => '',
+                    'os' => '',
+                ]);
+            $access_token = json_decode($getToken, TRUE)['access_token'];
 
-            if ($data['import'] == $statusImportSisip->id) {
+            $jurnalUmum = Http::withHeaders([
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $access_token,
+                'Content-Type' => 'application/json',
+            ])
+                ->get($urlCabang . "jurnalumumpusatheader/importdatacabang?periode=" . $data['periode']);
 
-                $nobukticabang = $item['header_nobukti'] . '-' . $item['header_cabang'];
-                $querysisip = db::table("jurnalumumpusatheader")->from(db::raw("jurnalumumpusatheader a with (readuncommitted)"))
-                    ->select()
-                    ->where('a.nobukti', $nobukticabang)
-                    ->first();
-                if (!isset($querysisip)) {
+            $konsolidasi = $jurnalUmum->json()['data'];
+            if (!count($konsolidasi)) {
+                throw ValidationException::withMessages(["message" => "data tidak ada"]);
+            }
+
+
+
+            $jurnalRequest = [];
+            foreach ($konsolidasi as $item) {
+                // Membuat array baru untuk setiap entri header
+
+                if ($data['import'] == $statusImportSisip->id) {
+
+                    $nobukticabang = $item['header_nobukti'] . '-' . $item['header_cabang'];
+                    $querysisip = db::table("jurnalumumpusatheader")->from(db::raw("jurnalumumpusatheader a with (readuncommitted)"))
+                        ->select()
+                        ->where('a.nobukti', $nobukticabang)
+                        ->first();
+                    if (!isset($querysisip)) {
+                        if (!array_key_exists($item['header_id'], $jurnalRequest)) {
+                            $jurnalUmumPusat = new JurnalUmumPusatHeader();
+                            $jurnalUmumPusat->nobukti = $item['header_nobukti'] . '-' . $singkatan;
+                            $jurnalUmumPusat->tglbukti = $item['header_tglbukti'];
+                            $jurnalUmumPusat->keterangan = $item['header_keterangan'];
+                            $jurnalUmumPusat->postingdari = $item['header_postingdari'];
+                            $jurnalUmumPusat->statusapproval = $item['header_statusapproval'];
+                            $jurnalUmumPusat->userapproval = $item['header_userapproval'];
+                            $jurnalUmumPusat->tglapproval = $item['header_tglapproval'];
+                            $jurnalUmumPusat->statusformat = $item['header_statusformat'];
+                            $jurnalUmumPusat->info = $item['header_info'];
+                            $jurnalUmumPusat->modifiedby = $item['header_modifiedby'];
+                            $jurnalUmumPusat->created_at = $item['header_created_at'];
+                            $jurnalUmumPusat->updated_at = $item['header_updated_at'];
+                            $jurnalUmumPusat->cabang_id = $data['cabang'];
+
+                            if (!$jurnalUmumPusat->save()) {
+                                throw new \Exception("Error storing jurnal umum pusat header.");
+                            }
+                            $jurnalRequest[$item['header_id']] = $jurnalUmumPusat;
+                            $jurnalUmumPusatHeaderLogTrail = (new LogTrail())->processStore([
+                                'namatabel' => strtoupper($jurnalUmumPusat->getTable()),
+                                'postingdari' => 'ENTRY JURNAL UMUM PUSAT HEADER',
+                                'idtrans' => $jurnalUmumPusat->id,
+                                'nobuktitrans' => $jurnalUmumPusat->nobukti,
+                                'aksi' => 'ENTRY',
+                                'datajson' => $jurnalUmumPusat->toArray(),
+                                'modifiedby' => auth('api')->user()->user
+                            ]);
+                        }
+                        // Menambahkan detail ke dalam entri header yang sesuai
+                        $jurnalUmumPusatDetail = new JurnalUmumPusatDetail();
+                        $jurnalUmumPusatDetail->jurnalumumpusat_id = $jurnalRequest[$item['header_id']]->id;
+                        $jurnalUmumPusatDetail->nobukti = $jurnalRequest[$item['header_id']]->nobukti;
+                        $jurnalUmumPusatDetail->tglbukti = $jurnalRequest[$item['header_id']]->tglbukti;
+                        $jurnalUmumPusatDetail->coa = $item['detail_coa'];
+                        $jurnalUmumPusatDetail->coamain = $item['detail_coamain'];
+                        $jurnalUmumPusatDetail->nominal = $item['detail_nominal'];
+                        $jurnalUmumPusatDetail->keterangan = $item['detail_keterangan'];
+                        $jurnalUmumPusatDetail->baris = $item['detail_baris'];
+                        $jurnalUmumPusatDetail->info = $item['detail_info'];
+                        $jurnalUmumPusatDetail->modifiedby = $item['detail_modifiedby'];
+                        $jurnalUmumPusatDetail->created_at = $item['detail_created_at'];
+                        $jurnalUmumPusatDetail->updated_at = $item['detail_updated_at'];
+                        if (!$jurnalUmumPusatDetail->save()) {
+                            throw new \Exception("Error storing jurnal umum pusat detail.");
+                        }
+                    }
+                } else {
                     if (!array_key_exists($item['header_id'], $jurnalRequest)) {
                         $jurnalUmumPusat = new JurnalUmumPusatHeader();
-                        $jurnalUmumPusat->nobukti = $item['header_nobukti'] . '-' . $item['header_cabang'];
+                        $jurnalUmumPusat->nobukti = $item['header_nobukti'] . '-' . $singkatan;
                         $jurnalUmumPusat->tglbukti = $item['header_tglbukti'];
                         $jurnalUmumPusat->keterangan = $item['header_keterangan'];
                         $jurnalUmumPusat->postingdari = $item['header_postingdari'];
@@ -142,146 +195,255 @@ class ImportDataCabang extends Model
                         throw new \Exception("Error storing jurnal umum pusat detail.");
                     }
                 }
-            } else {
-                if (!array_key_exists($item['header_id'], $jurnalRequest)) {
-                    $jurnalUmumPusat = new JurnalUmumPusatHeader();
-                    $jurnalUmumPusat->nobukti = $item['header_nobukti'] . '-' . $item['header_cabang'];
-                    $jurnalUmumPusat->tglbukti = $item['header_tglbukti'];
-                    $jurnalUmumPusat->keterangan = $item['header_keterangan'];
-                    $jurnalUmumPusat->postingdari = $item['header_postingdari'];
-                    $jurnalUmumPusat->statusapproval = $item['header_statusapproval'];
-                    $jurnalUmumPusat->userapproval = $item['header_userapproval'];
-                    $jurnalUmumPusat->tglapproval = $item['header_tglapproval'];
-                    $jurnalUmumPusat->statusformat = $item['header_statusformat'];
-                    $jurnalUmumPusat->info = $item['header_info'];
-                    $jurnalUmumPusat->modifiedby = $item['header_modifiedby'];
-                    $jurnalUmumPusat->created_at = $item['header_created_at'];
-                    $jurnalUmumPusat->updated_at = $item['header_updated_at'];
-                    $jurnalUmumPusat->cabang_id = $data['cabang'];
-
-                    if (!$jurnalUmumPusat->save()) {
-                        throw new \Exception("Error storing jurnal umum pusat header.");
-                    }
-                    $jurnalRequest[$item['header_id']] = $jurnalUmumPusat;
-                    $jurnalUmumPusatHeaderLogTrail = (new LogTrail())->processStore([
-                        'namatabel' => strtoupper($jurnalUmumPusat->getTable()),
-                        'postingdari' => 'ENTRY JURNAL UMUM PUSAT HEADER',
-                        'idtrans' => $jurnalUmumPusat->id,
-                        'nobuktitrans' => $jurnalUmumPusat->nobukti,
-                        'aksi' => 'ENTRY',
-                        'datajson' => $jurnalUmumPusat->toArray(),
-                        'modifiedby' => auth('api')->user()->user
-                    ]);
-                }
-                // Menambahkan detail ke dalam entri header yang sesuai
-                $jurnalUmumPusatDetail = new JurnalUmumPusatDetail();
-                $jurnalUmumPusatDetail->jurnalumumpusat_id = $jurnalRequest[$item['header_id']]->id;
-                $jurnalUmumPusatDetail->nobukti = $jurnalRequest[$item['header_id']]->nobukti;
-                $jurnalUmumPusatDetail->tglbukti = $jurnalRequest[$item['header_id']]->tglbukti;
-                $jurnalUmumPusatDetail->coa = $item['detail_coa'];
-                $jurnalUmumPusatDetail->coamain = $item['detail_coamain'];
-                $jurnalUmumPusatDetail->nominal = $item['detail_nominal'];
-                $jurnalUmumPusatDetail->keterangan = $item['detail_keterangan'];
-                $jurnalUmumPusatDetail->baris = $item['detail_baris'];
-                $jurnalUmumPusatDetail->info = $item['detail_info'];
-                $jurnalUmumPusatDetail->modifiedby = $item['detail_modifiedby'];
-                $jurnalUmumPusatDetail->created_at = $item['detail_created_at'];
-                $jurnalUmumPusatDetail->updated_at = $item['detail_updated_at'];
-                if (!$jurnalUmumPusatDetail->save()) {
-                    throw new \Exception("Error storing jurnal umum pusat detail.");
-                }
             }
-        }
 
-        $saldoakunpusatdetailtahun = Http::withHeaders([
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $access_token,
-            'Content-Type' => 'application/json',
-        ])
-            ->get($urlCabang . "saldoakunpusatdetail/importdatacabangtahun?periode=" . $data['periode']);
+            // $saldoakunpusatdetailtahun = Http::withHeaders([
+            //     'Accept' => 'application/json',
+            //     'Authorization' => 'Bearer ' . $access_token,
+            //     'Content-Type' => 'application/json',
+            // ])
+            //     ->get($urlCabang . "saldoakunpusatdetail/importdatacabangtahun?periode=" . $data['periode']);
 
-        $konsolidasisaldoakunpusatdetailtahun = $saldoakunpusatdetailtahun->json()['data'];
-        if (!count($konsolidasisaldoakunpusatdetailtahun)) {
-            throw ValidationException::withMessages(["message" => "data tidak ada"]);
-        }
+            // $konsolidasisaldoakunpusatdetailtahun = $saldoakunpusatdetailtahun->json()['data'];
+            // if (!count($konsolidasisaldoakunpusatdetailtahun)) {
+            //     throw ValidationException::withMessages(["message" => "data tidak ada"]);
+            // }
 
-        foreach ($konsolidasisaldoakunpusatdetailtahun as $itemtahun2) {
-            $saldoakunpusatdetailbulan = Http::withHeaders([
+            // foreach ($konsolidasisaldoakunpusatdetailtahun as $itemtahun2) {
+            //     $saldoakunpusatdetailbulan = Http::withHeaders([
+            //         'Accept' => 'application/json',
+            //         'Authorization' => 'Bearer ' . $access_token,
+            //         'Content-Type' => 'application/json',
+            //     ])
+            //         ->get($urlCabang . "saldoakunpusatdetail/importdatacabangbulan?periode=" . $data['periode'] . "&tahun=" . $itemtahun2['tahun']);
+
+            //     $konsolidasisaldoakunpusatdetailbulan = $saldoakunpusatdetailbulan->json()['data'];
+            //     if (!count($konsolidasisaldoakunpusatdetailbulan)) {
+            //         throw ValidationException::withMessages(["message" => "data tidak ada"]);
+            //     }
+            //     foreach ($konsolidasisaldoakunpusatdetailbulan as $itembulan2) {
+
+            $saldoakunpusatdetail = Http::withHeaders([
                 'Accept' => 'application/json',
                 'Authorization' => 'Bearer ' . $access_token,
                 'Content-Type' => 'application/json',
             ])
-                ->get($urlCabang . "saldoakunpusatdetail/importdatacabangbulan?periode=" . $data['periode'] . "&tahun=" . $itemtahun2['tahun']);
+                // ->get($urlCabang . "saldoakunpusatdetail/importdatacabang?periode=" . $data['periode'] . "&tahun=" . $itemtahun2['tahun'] . "&bulan=" . $itembulan2['bulan']);
+                ->get($urlCabang . "saldoakunpusatdetail/importdatacabang?periode=" . $data['periode']);
 
-            $konsolidasisaldoakunpusatdetailbulan = $saldoakunpusatdetailbulan->json()['data'];
-            if (!count($konsolidasisaldoakunpusatdetailbulan)) {
+            $konsolidasisaldoakunpusatdetail = $saldoakunpusatdetail->json()['data'];
+            if (!count($konsolidasisaldoakunpusatdetail)) {
                 throw ValidationException::withMessages(["message" => "data tidak ada"]);
             }
-            foreach ($konsolidasisaldoakunpusatdetailbulan as $itembulan2) {
 
-                $saldoakunpusatdetail = Http::withHeaders([
-                    'Accept' => 'application/json',
-                    'Authorization' => 'Bearer ' . $access_token,
-                    'Content-Type' => 'application/json',
-                ])
-                    ->get($urlCabang . "saldoakunpusatdetail/importdatacabang?periode=" . $data['periode'] . "&tahun=" . $itemtahun2['tahun'] . "&bulan=" . $itembulan2['bulan']);
+            foreach ($konsolidasisaldoakunpusatdetail as $item2) {
 
-                $konsolidasisaldoakunpusatdetail = $saldoakunpusatdetail->json()['data'];
-                if (!count($konsolidasisaldoakunpusatdetail)) {
-                    throw ValidationException::withMessages(["message" => "data tidak ada"]);
+                $saldoAkunpusatdetail = new SaldoAkunPusatDetail();
+                $saldoAkunpusatdetail->coa = $item2['coa'];
+                $saldoAkunpusatdetail->bulan = $item2['bulan'];
+                $saldoAkunpusatdetail->tahun = $item2['tahun'];
+                $saldoAkunpusatdetail->nominal = $item2['nominal'];
+                $saldoAkunpusatdetail->info = $item2['info'];
+                $saldoAkunpusatdetail->tglbukti = $item2['tglbukti'];
+                $saldoAkunpusatdetail->modifiedby = $item2['modifiedby'];
+                $saldoAkunpusatdetail->created_at = $item2['created_at'];
+                $saldoAkunpusatdetail->updated_at = $item2['updated_at'];
+                $saldoAkunpusatdetail->cabang_id = $data['cabang'];
+
+
+                if (!$saldoAkunpusatdetail->save()) {
+                    throw new \Exception("Error storing saldo akun pusat detail.");
                 }
+            }
+            //     }
+            // }
 
-                foreach ($konsolidasisaldoakunpusatdetail as $item2) {
+            $akunpusatdetail = Http::withHeaders([
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $access_token,
+                'Content-Type' => 'application/json',
+            ])
+                ->get($urlCabang . "akunpusatdetail/importdatacabang?periode=" . $data['periode']);
 
-                    $saldoAkunpusatdetail = new SaldoAkunPusatDetail();
-                    $saldoAkunpusatdetail->coa = $item2['coa'];
-                    $saldoAkunpusatdetail->bulan = $item2['bulan'];
-                    $saldoAkunpusatdetail->tahun = $item2['tahun'];
-                    $saldoAkunpusatdetail->nominal = $item2['nominal'];
-                    $saldoAkunpusatdetail->info = $item2['info'];
-                    $saldoAkunpusatdetail->tglbukti = $item2['tglbukti'];
-                    $saldoAkunpusatdetail->modifiedby = $item2['modifiedby'];
-                    $saldoAkunpusatdetail->created_at = $item2['created_at'];
-                    $saldoAkunpusatdetail->updated_at = $item2['updated_at'];
-                    $saldoAkunpusatdetail->cabang_id = $data['cabang'];
+            $konsolidasiakunpusatdetail = $akunpusatdetail->json()['data'];
+            if (!count($konsolidasiakunpusatdetail)) {
+                throw ValidationException::withMessages(["message" => "data tidak ada"]);
+            }
+
+            foreach ($konsolidasiakunpusatdetail as $item3) {
+                $Akunpusatdetail = new AkunPusatDetail();
+                $Akunpusatdetail->coa = $item3['coa'];
+                $Akunpusatdetail->bulan = $item3['bulan'];
+                $Akunpusatdetail->tahun = $item3['tahun'];
+                $Akunpusatdetail->nominal = $item3['nominal'];
+                $Akunpusatdetail->info = $item3['info'];
+                $Akunpusatdetail->modifiedby = $item3['modifiedby'];
+                $Akunpusatdetail->created_at = $item3['created_at'];
+                $Akunpusatdetail->updated_at = $item3['updated_at'];
+                $Akunpusatdetail->cabang_id = $data['cabang'];
 
 
-                    if (!$saldoAkunpusatdetail->save()) {
-                        throw new \Exception("Error storing saldo akun pusat detail.");
+                if (!$Akunpusatdetail->save()) {
+                    throw new \Exception("Error storing  akun pusat detail.");
+                }
+            }
+        } else {
+            // proses dari database lama
+            $month = substr($data['periode'], 0, 2);
+            $year = substr($data['periode'], -4);
+            $queryloop = DB::connection('sqlsrv2')->db::table("j_happ")->from(db::raw("j_happ a with (readuncommitted)"))
+                ->select(
+                    db::raw("0 as header_id"),
+                    'a.fntrans as header_nobukti',
+                    'a.ftgl as header_tglbukti',
+                    'a.fket as header_keterangan',
+                    'a.fpostfrom as header_postingdari',
+                    db::raw("(case when isnull(a.fisapp,0)=1 then 3 else 4 end) as header_statusapproval"),
+                    'a.appuserid as header_userapproval',
+                    'a.appdate as header_tglapproval',
+                    db::raw("0 as header_statusformat"),
+                    db::raw("'' as header_info"),
+                    'a.fuserid as header_modifiedby',
+                    'a.ftglinput as header_created_at',
+                    'a.ftglinput as header_updated_at',
+                    'a.cabang as header_cabang',
+                    db::raw("'" . $cabang->namacabang . "' as header_cabang"),
+                    db::raw($cabang->id . " as header_cabang_id"),
+                    db::raw("0 as detail_id"),
+                    db::raw("0 as detail_jurnalumumpusat_id"),
+                    'b.fntrans as detail_nobukti',
+                    'b.ftgl as detail_tglbukti',
+                    'b.fcoa as detail_coa',
+                    'b.fcoamain as detail_coamain',
+                    'b.fnominal as detail_nominal',
+                    'b.fket as detail_keterangan',
+                    db::raw("0 as detail_baris"),
+                    db::raw("'' as detail_info"),
+                    'b.fuserid as detail_modifiedby',
+                    'b.ftglinput as detail_created_at',
+                    'b.ftglinput as detail_updated_at',
+                )
+                ->join(db::raw("j_rapp b with (readuncommitted)"), 'a.fntrans', 'b.fntrans')
+                ->whereRaw("MONTH(a.ftgl) = " . $month)
+                ->whereRaw("YEAR(a.ftgl) = " . $year)
+                ->orderby('a.fntrans', 'asc')
+                ->orderby('b.fpostid', 'asc')
+                ->get();
+
+            $konsolidasi = json_decode($queryloop, true);
+
+            $jurnalRequest = [];
+            foreach ($konsolidasi as $item) {
+                // Membuat array baru untuk setiap entri header
+
+                if ($data['import'] == $statusImportSisip->id) {
+
+                    $nobukticabang = $item['header_nobukti'] . '-' . $item['header_cabang'];
+                    $querysisip = db::table("jurnalumumpusatheader")->from(db::raw("jurnalumumpusatheader a with (readuncommitted)"))
+                        ->select()
+                        ->where('a.nobukti', $nobukticabang)
+                        ->first();
+                    if (!isset($querysisip)) {
+                        if (!array_key_exists($item['header_nobukti'], $jurnalRequest)) {
+                            $jurnalUmumPusat = new JurnalUmumPusatHeader();
+                            $jurnalUmumPusat->nobukti = $item['header_nobukti'];
+                            $jurnalUmumPusat->tglbukti = $item['header_tglbukti'];
+                            $jurnalUmumPusat->keterangan = $item['header_keterangan'];
+                            $jurnalUmumPusat->postingdari = $item['header_postingdari'];
+                            $jurnalUmumPusat->statusapproval = $item['header_statusapproval'];
+                            $jurnalUmumPusat->userapproval = $item['header_userapproval'];
+                            $jurnalUmumPusat->tglapproval = $item['header_tglapproval'];
+                            $jurnalUmumPusat->statusformat = $item['header_statusformat'];
+                            $jurnalUmumPusat->info = $item['header_info'];
+                            $jurnalUmumPusat->modifiedby = $item['header_modifiedby'];
+                            $jurnalUmumPusat->created_at = $item['header_created_at'];
+                            $jurnalUmumPusat->updated_at = $item['header_updated_at'];
+                            $jurnalUmumPusat->cabang_id = $data['cabang'];
+
+                            if (!$jurnalUmumPusat->save()) {
+                                throw new \Exception("Error storing jurnal umum pusat header.");
+                            }
+                            $jurnalRequest[$item['header_nobukti']] = $jurnalUmumPusat;
+                            $jurnalUmumPusatHeaderLogTrail = (new LogTrail())->processStore([
+                                'namatabel' => strtoupper($jurnalUmumPusat->getTable()),
+                                'postingdari' => 'ENTRY JURNAL UMUM PUSAT HEADER',
+                                'idtrans' => $jurnalUmumPusat->id,
+                                'nobuktitrans' => $jurnalUmumPusat->nobukti,
+                                'aksi' => 'ENTRY',
+                                'datajson' => $jurnalUmumPusat->toArray(),
+                                'modifiedby' => auth('api')->user()->user
+                            ]);
+                        }
+                        // Menambahkan detail ke dalam entri header yang sesuai
+                        $jurnalUmumPusatDetail = new JurnalUmumPusatDetail();
+                        $jurnalUmumPusatDetail->jurnalumumpusat_id = $jurnalRequest[$item['header_nobukti']]->id;
+                        $jurnalUmumPusatDetail->nobukti = $jurnalRequest[$item['header_nobukti']]->nobukti;
+                        $jurnalUmumPusatDetail->tglbukti = $jurnalRequest[$item['header_nobukti']]->tglbukti;
+                        $jurnalUmumPusatDetail->coa = $item['detail_coa'];
+                        $jurnalUmumPusatDetail->coamain = $item['detail_coamain'];
+                        $jurnalUmumPusatDetail->nominal = $item['detail_nominal'];
+                        $jurnalUmumPusatDetail->keterangan = $item['detail_keterangan'];
+                        $jurnalUmumPusatDetail->baris = $item['detail_baris'];
+                        $jurnalUmumPusatDetail->info = $item['detail_info'];
+                        $jurnalUmumPusatDetail->modifiedby = $item['detail_modifiedby'];
+                        $jurnalUmumPusatDetail->created_at = $item['detail_created_at'];
+                        $jurnalUmumPusatDetail->updated_at = $item['detail_updated_at'];
+                        if (!$jurnalUmumPusatDetail->save()) {
+                            throw new \Exception("Error storing jurnal umum pusat detail.");
+                        }
+                    }
+                } else {
+                    if (!array_key_exists($item['header_nobukti'], $jurnalRequest)) {
+                        $jurnalUmumPusat = new JurnalUmumPusatHeader();
+                        $jurnalUmumPusat->nobukti = $item['header_nobukti'];
+                        $jurnalUmumPusat->tglbukti = $item['header_tglbukti'];
+                        $jurnalUmumPusat->keterangan = $item['header_keterangan'];
+                        $jurnalUmumPusat->postingdari = $item['header_postingdari'];
+                        $jurnalUmumPusat->statusapproval = $item['header_statusapproval'];
+                        $jurnalUmumPusat->userapproval = $item['header_userapproval'];
+                        $jurnalUmumPusat->tglapproval = $item['header_tglapproval'];
+                        $jurnalUmumPusat->statusformat = $item['header_statusformat'];
+                        $jurnalUmumPusat->info = $item['header_info'];
+                        $jurnalUmumPusat->modifiedby = $item['header_modifiedby'];
+                        $jurnalUmumPusat->created_at = $item['header_created_at'];
+                        $jurnalUmumPusat->updated_at = $item['header_updated_at'];
+                        $jurnalUmumPusat->cabang_id = $data['cabang'];
+
+                        if (!$jurnalUmumPusat->save()) {
+                            throw new \Exception("Error storing jurnal umum pusat header.");
+                        }
+                        $jurnalRequest[$item['header_id']] = $jurnalUmumPusat;
+                        $jurnalUmumPusatHeaderLogTrail = (new LogTrail())->processStore([
+                            'namatabel' => strtoupper($jurnalUmumPusat->getTable()),
+                            'postingdari' => 'ENTRY JURNAL UMUM PUSAT HEADER',
+                            'idtrans' => $jurnalUmumPusat->id,
+                            'nobuktitrans' => $jurnalUmumPusat->nobukti,
+                            'aksi' => 'ENTRY',
+                            'datajson' => $jurnalUmumPusat->toArray(),
+                            'modifiedby' => auth('api')->user()->user
+                        ]);
+                    }
+                    // Menambahkan detail ke dalam entri header yang sesuai
+                    $jurnalUmumPusatDetail = new JurnalUmumPusatDetail();
+                    $jurnalUmumPusatDetail->jurnalumumpusat_id = $jurnalRequest[$item['header_nobukti']]->id;
+                    $jurnalUmumPusatDetail->nobukti = $jurnalRequest[$item['header_nobukti']]->nobukti;
+                    $jurnalUmumPusatDetail->tglbukti = $jurnalRequest[$item['header_nobukti']]->tglbukti;
+                    $jurnalUmumPusatDetail->coa = $item['detail_coa'];
+                    $jurnalUmumPusatDetail->coamain = $item['detail_coamain'];
+                    $jurnalUmumPusatDetail->nominal = $item['detail_nominal'];
+                    $jurnalUmumPusatDetail->keterangan = $item['detail_keterangan'];
+                    $jurnalUmumPusatDetail->baris = $item['detail_baris'];
+                    $jurnalUmumPusatDetail->info = $item['detail_info'];
+                    $jurnalUmumPusatDetail->modifiedby = $item['detail_modifiedby'];
+                    $jurnalUmumPusatDetail->created_at = $item['detail_created_at'];
+                    $jurnalUmumPusatDetail->updated_at = $item['detail_updated_at'];
+                    if (!$jurnalUmumPusatDetail->save()) {
+                        throw new \Exception("Error storing jurnal umum pusat detail.");
                     }
                 }
             }
         }
 
-        $akunpusatdetail = Http::withHeaders([
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $access_token,
-            'Content-Type' => 'application/json',
-        ])
-            ->get($urlCabang . "akunpusatdetail/importdatacabang?periode=" . $data['periode']);
-
-        $konsolidasiakunpusatdetail = $akunpusatdetail->json()['data'];
-        if (!count($konsolidasiakunpusatdetail)) {
-            throw ValidationException::withMessages(["message" => "data tidak ada"]);
-        }
-
-        foreach ($konsolidasiakunpusatdetail as $item3) {
-            $Akunpusatdetail = new AkunPusatDetail();
-            $Akunpusatdetail->coa = $item3['coa'];
-            $Akunpusatdetail->bulan = $item3['bulan'];
-            $Akunpusatdetail->tahun = $item3['tahun'];
-            $Akunpusatdetail->nominal = $item3['nominal'];
-            $Akunpusatdetail->info = $item3['info'];
-            $Akunpusatdetail->modifiedby = $item3['modifiedby'];
-            $Akunpusatdetail->created_at = $item3['created_at'];
-            $Akunpusatdetail->updated_at = $item3['updated_at'];
-            $Akunpusatdetail->cabang_id = $data['cabang'];
-
-
-            if (!$Akunpusatdetail->save()) {
-                throw new \Exception("Error storing  akun pusat detail.");
-            }
-        }
 
         return "Data Periode " . $data['periode'] . " Cabang $cabang->namacabang Berhasil di Import";
     }
