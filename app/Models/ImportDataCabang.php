@@ -47,6 +47,10 @@ class ImportDataCabang extends Model
         DB::delete(DB::raw("delete  SaldoAkunPusatDetail from SaldoAkunPusatDetail as b 
         WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and format(b.tglbukti,'MM-yyyy')='" . $data['periode'] . "'"));
 
+        DB::delete(DB::raw("delete  SaldoAwalBukuBesar from SaldoAwalBukuBesar as b 
+        WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and format(b.tglbukti,'MM-yyyy')='" . $data['periode'] . "'"));
+
+
         DB::delete(DB::raw("delete  AkunPusatDetail from AkunPusatDetail as b 
         WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and b.bulan=left(" . $data['periode'] . ",2) and b.tahun=right(" . $data['periode'] . ",4)"));
 
