@@ -227,16 +227,16 @@ class ImportDataCabang extends Model
                 if (!$saldoAkunpusatdetail->save()) {
                     throw new \Exception("Error storing saldo akun pusat detail.");
                 }
-                $saldoakunpusatdetailRequest[$item2['id']] = $saldoAkunpusatdetail;
-                $saldoakunpusatdetailLogTrail = (new LogTrail())->processStore([
-                    'namatabel' => strtoupper($saldoAkunpusatdetail->getTable()),
-                    'postingdari' => 'IMPORT DATA SALDO AKUN PUSAT DETAIL',
-                    'idtrans' => $saldoAkunpusatdetail->id,
-                    'nobuktitrans' => $saldoAkunpusatdetail->coa,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $saldoAkunpusatdetail->toArray(),
-                    'modifiedby' => auth('api')->user()->user
-                ]);
+                // $saldoakunpusatdetailRequest[$item2['id']] = $saldoAkunpusatdetail;
+                // $saldoakunpusatdetailLogTrail = (new LogTrail())->processStore([
+                //     'namatabel' => strtoupper($saldoAkunpusatdetail->getTable()),
+                //     'postingdari' => 'IMPORT DATA SALDO AKUN PUSAT DETAIL',
+                //     'idtrans' => $saldoAkunpusatdetail->id,
+                //     'nobuktitrans' => $saldoAkunpusatdetail->coa,
+                //     'aksi' => 'ENTRY',
+                //     'datajson' => $saldoAkunpusatdetail->toArray(),
+                //     'modifiedby' => auth('api')->user()->user
+                // ]);
             }  
         }
 
@@ -270,16 +270,16 @@ class ImportDataCabang extends Model
                 if (!$Akunpusatdetail->save()) {
                     throw new \Exception("Error storing  akun pusat detail.");
                 }
-                $akunpusatdetailRequest[$item2['id']] = $Akunpusatdetail;
-                $akunpusatdetailLogTrail = (new LogTrail())->processStore([
-                    'namatabel' => strtoupper($Akunpusatdetail->getTable()),
-                    'postingdari' => 'IMPORT DATA  AKUN PUSAT DETAIL',
-                    'idtrans' => $Akunpusatdetail->id,
-                    'nobuktitrans' => $Akunpusatdetail->coa,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $Akunpusatdetail->toArray(),
-                    'modifiedby' => auth('api')->user()->user
-                ]);
+                // $akunpusatdetailRequest[$item3['id']] = $Akunpusatdetail;
+                // $akunpusatdetailLogTrail = (new LogTrail())->processStore([
+                //     'namatabel' => strtoupper($Akunpusatdetail->getTable()),
+                //     'postingdari' => 'IMPORT DATA  AKUN PUSAT DETAIL',
+                //     'idtrans' => $Akunpusatdetail->id,
+                //     'nobuktitrans' => $Akunpusatdetail->coa,
+                //     'aksi' => 'ENTRY',
+                //     'datajson' => $Akunpusatdetail->toArray(),
+                //     'modifiedby' => auth('api')->user()->user
+                // ]);
             }  
         }
 
