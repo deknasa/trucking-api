@@ -37,8 +37,7 @@ class AkunPusatDetail extends MyModel
             )
             ->whereRaw("(a.bulan) = " . $month)
             ->whereRaw("(a.tahun) = " . $year)
-            ->orderby('a.id', 'asc')
-            ->orderby('b.id', 'asc');
+            ->orderby('a.id', 'asc');
 
         // dd($query->get());
 
