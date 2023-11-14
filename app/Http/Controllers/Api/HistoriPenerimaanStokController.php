@@ -55,21 +55,21 @@ class HistoriPenerimaanStokController extends Controller
         $filter = PenerimaanStok::findOrFail($request->filter);
        
 
-        // $report = [
-        //     'stokdari' => $stokdari_id->namastok,
-        //     'stoksampai' => $stoksampai_id->namastok,
-        //     'dari' => $request->dari,
-        //     'sampai' => $request->sampai,
-        //     'filter' => $filter->keterangan,
-        // ];
+        $report = [
+            'stokdari' => $stokdari_id->namastok,
+            'stoksampai' => $stoksampai_id->namastok,
+            'dari' => $request->dari,
+            'sampai' => $request->sampai,
+            'filter' => $filter->keterangan,
+        ];
 
         return response([
             'data' => $HistoriPenerimaanStok->get(),
-            // 'dataheader' => $report
+            'dataheader' => $report
         ]);
     }
     
-     /**
+    /**
      * @ClassName
      */
     public function export(){
