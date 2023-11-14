@@ -31,8 +31,8 @@ class SaldoAkunPusatDetail extends MyModel
         $periode = request()->periode ?? date('m-Y');
         $month = substr($periode, 0, 2);
         $year = substr($periode, 3);
-        $tahun = request()->tahun ?? 0;
-        $bulan = request()->bulan ?? 0;
+        // $tahun = request()->tahun ?? 0;
+        // $bulan = request()->bulan ?? 0;
 
 
         $query = db::table("saldoakunpusatdetail")->from(db::raw("saldoakunpusatdetail a with (readuncommitted)"))
@@ -51,8 +51,8 @@ class SaldoAkunPusatDetail extends MyModel
             )
             ->whereRaw("MONTH(a.tglbukti) = " . $month)
             ->whereRaw("YEAR(a.tglbukti) = " . $year)
-            ->whereRaw("a.tahun = " . $tahun)
-            ->whereRaw("a.bulan = " . $bulan)
+            // ->whereRaw("a.tahun = " . $tahun)
+            // ->whereRaw("a.bulan = " . $bulan)
             ->orderby('a.id', 'asc');
 
         // dd($query->get());
