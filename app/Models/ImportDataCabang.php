@@ -298,7 +298,8 @@ class ImportDataCabang extends Model
             // proses dari database lama
             $month = substr($data['periode'], 0, 2);
             $year = substr($data['periode'], -4);
-            $queryloop = DB::connection('sqlsrv2')->db::table("j_happ")->from(db::raw("j_happ a with (readuncommitted)"))
+
+            $queryloop = DB::connection('sqlsrv2')->table("j_happ")->from(db::raw("j_happ a with (readuncommitted)"))
                 ->select(
                     db::raw("0 as header_id"),
                     'a.fntrans as header_nobukti',
@@ -313,7 +314,6 @@ class ImportDataCabang extends Model
                     'a.fuserid as header_modifiedby',
                     'a.ftglinput as header_created_at',
                     'a.ftglinput as header_updated_at',
-                    'a.cabang as header_cabang',
                     db::raw("'" . $cabang->namacabang . "' as header_cabang"),
                     db::raw($cabang->id . " as header_cabang_id"),
                     db::raw("0 as detail_id"),
@@ -333,9 +333,13 @@ class ImportDataCabang extends Model
                 ->join(db::raw("j_rapp b with (readuncommitted)"), 'a.fntrans', 'b.fntrans')
                 ->whereRaw("MONTH(a.ftgl) = " . $month)
                 ->whereRaw("YEAR(a.ftgl) = " . $year)
+                ->whereRaw("a.FKcabang='" . $singkatan . "'")
+
                 ->orderby('a.fntrans', 'asc')
                 ->orderby('b.fpostid', 'asc')
                 ->get();
+
+
 
             $konsolidasi = json_decode($queryloop, true);
 
@@ -423,7 +427,7 @@ class ImportDataCabang extends Model
                         if (!$jurnalUmumPusat->save()) {
                             throw new \Exception("Error storing jurnal umum pusat header.");
                         }
-                        $jurnalRequest[$item['header_id']] = $jurnalUmumPusat;
+                        $jurnalRequest[$item['header_nobukti']] = $jurnalUmumPusat;
                         $jurnalUmumPusatHeaderLogTrail = (new LogTrail())->processStore([
                             'namatabel' => strtoupper($jurnalUmumPusat->getTable()),
                             'postingdari' => 'ENTRY JURNAL UMUM PUSAT HEADER',
@@ -435,6 +439,7 @@ class ImportDataCabang extends Model
                         ]);
                     }
                     // Menambahkan detail ke dalam entri header yang sesuai
+
                     $jurnalUmumPusatDetail = new JurnalUmumPusatDetail();
                     $jurnalUmumPusatDetail->jurnalumumpusat_id = $jurnalRequest[$item['header_nobukti']]->id;
                     $jurnalUmumPusatDetail->nobukti = $jurnalRequest[$item['header_nobukti']]->nobukti;
