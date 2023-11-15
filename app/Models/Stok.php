@@ -486,18 +486,21 @@ class Stok extends MyModel
             'stok.totalvulkanisir',
             'stok.statusreuse',
             'stok.subkelompok_id',
+            'stok.satuan_id',
             'stok.kategori_id',
             'stok.merk_id',
             'stok.statusban',
             'jenistrado.keterangan as jenistrado',
             'kelompok.kodekelompok as kelompok',
             'subkelompok.kodesubkelompok as subkelompok',
+            'satuan.satuan as satuan',
             'kategori.kodekategori as kategori',
             'merk.keterangan as merk',
         )
             ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
             ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
             ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
+            ->leftJoin('satuan', 'stok.satuan_id', 'satuan.id')
             ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
             ->leftJoin('merk', 'stok.merk_id', 'merk.id')
             ->where('stok.id', $id)
@@ -726,6 +729,7 @@ class Stok extends MyModel
         $stok->qtymax = $data['qtymax'] ?? 0;
         $stok->statusreuse = $data['statusreuse'];
         $stok->statusban = $data['statusban'];
+        $stok->satuan_id = $data['satuan_id'];
         $stok->statusservicerutin = $data['statusservicerutin'];
         $stok->vulkanisirawal = $data['vulkanisirawal'];
         $stok->hargabelimin = $data['hargabelimin'];
@@ -772,6 +776,7 @@ class Stok extends MyModel
         $stok->qtymin = $data['qtymin'] ?? 0;
         $stok->qtymax = $data['qtymax'] ?? 0;
         $stok->statusban = $data['statusban'];
+        $stok->satuan_id = $data['satuan_id'];
         $stok->statusservicerutin = $data['statusservicerutin'];
         $stok->hargabelimin = $data['hargabelimin'];
         $stok->hargabelimax = $data['hargabelimax'];

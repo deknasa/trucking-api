@@ -1428,11 +1428,12 @@ class PengeluaranStokHeader extends MyModel
                 } else {
                     $totalvulkan = 0;
                 }
-                $datastok  = Stok::lockForUpdate()->where("id", $data['detail_stok_id'][$i])
-                    ->firstorFail();
-                $datastok->totalvulkanisir = $totalvulkan;
-                $datastok->statusban = ($data['detail_statusban']) ? $data['detail_statusban'][$i]: null;
-                $datastok->save();
+                $datastok  = Stok::lockForUpdate()->where("id", $data['detail_stok_id'][$i])->firstorFail();
+                if ($korv->id == $data['pengeluaranstok_id']) {
+                    $datastok->totalvulkanisir = $totalvulkan;
+                    $datastok->statusban = ($data['detail_statusban']) ? $data['detail_statusban'][$i]: null;
+                    $datastok->save();
+                }
             }
             // end update vulkanisir
 
@@ -2075,9 +2076,11 @@ class PengeluaranStokHeader extends MyModel
                 }
                 $datastok  = Stok::lockForUpdate()->where("id", $data['detail_stok_id'][$i])
                     ->firstorFail();
-                $datastok->totalvulkanisir = $totalvulkan;
-                $datastok->statusban = ($data['detail_statusban']) ? $data['detail_statusban'][$i]: null;
-                $datastok->save();
+                if ($pengeluaranStokHeader->pengeluaranstok_id == $korv->id) {
+                    $datastok->totalvulkanisir = $totalvulkan;
+                    $datastok->statusban = ($data['detail_statusban']) ? $data['detail_statusban'][$i]: null;
+                    $datastok->save();
+                }
             }
             // end update vulkanisir
 
