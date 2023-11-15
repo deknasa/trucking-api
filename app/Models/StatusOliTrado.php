@@ -21,6 +21,7 @@ class StatusOliTrado extends MyModel
         $this->setRequestParameters();
 
         $datafilter = request()->filter ?? 0;
+        $forExport = request()->forExport ?? false;
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
         $class = 'StatusOliController';
@@ -77,7 +78,7 @@ class StatusOliTrado extends MyModel
 
             ], $this->getdata($tgldari, $tglsampai, $trado_id, $statusoli));
 
-        //  dd('test');
+            //  dd('test');
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
                 DB::raw("listtemporarytabel with (readuncommitted)")
@@ -103,15 +104,26 @@ class StatusOliTrado extends MyModel
 
             );
 
-    //    dd($query->get());
+        //    dd($query->get());
 
-        $this->filter($query);
-        // dd('test');
-        $this->totalRows = $query->count();
-        
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-        $query->orderBy('a.id', 'asc');
-        $this->paginate($query);
+        if (!$forExport) {
+
+            $this->filter($query);
+            // dd('test');
+            $this->totalRows = $query->count();
+
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+            $query->orderBy('a.id', 'asc');
+            $this->paginate($query);
+        }else{
+            $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+            $query->addSelect(DB::raw("'" . $getJudul->text . "' as judul"), DB::raw("'LAPORAN STATUS OLI' as judulLaporan"));
+        }
+
         $data = $query->get();
         return $data;
     }
