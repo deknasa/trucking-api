@@ -107,6 +107,7 @@ class KartuStok extends MyModel
                 $table->string('modifiedby', 100)->nullable();
                 $table->integer('urutfifo')->nullable();
                 $table->integer('iddata')->nullable();
+                $table->datetime('tglinput')->nullable();
             });
 
 
@@ -131,6 +132,7 @@ class KartuStok extends MyModel
                 $table->string('modifiedby', 100)->nullable();
                 $table->integer('urutfifo')->nullable();
                 $table->integer('iddata')->nullable();
+                $table->datetime('tglinput')->nullable();
 
                 $table->index('kodebarang', 'temtabel_kodebarang_index');
                 $table->index('namabarang', 'temtabel_namabarang_index');
@@ -158,6 +160,7 @@ class KartuStok extends MyModel
                     'modifiedby',
                     'urutfifo',
                     'iddata',
+                    'tglinput',
                 ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, $datafilter, 0, 0, 0));
             } else {
                 $filtergudang->text;
@@ -182,6 +185,7 @@ class KartuStok extends MyModel
                         'modifiedby',
                         'urutfifo',
                         'iddata',
+                        'tglinput',
 
                     ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, request()->datafilter, 0, 0, $filtergudang->text));
                 } else if (request()->filter == $filtertrado->id) {
@@ -205,6 +209,7 @@ class KartuStok extends MyModel
                         'modifiedby',
                         'urutfifo',
                         'iddata',
+                        'tglinput',
 
                     ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, request()->datafilter, 0, $filtertrado->text));
                 } else if (request()->filter == $filtergandengan->id) {
@@ -228,6 +233,7 @@ class KartuStok extends MyModel
                         'modifiedby',
                         'urutfifo',
                         'iddata',
+                        'tglinput',
 
                     ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, 0, request()->datafilter, $filtergandengan->text));
                 } else {
@@ -252,6 +258,7 @@ class KartuStok extends MyModel
                         'modifiedby',
                         'urutfifo',
                         'iddata',
+                        'tglinput',
 
                     ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, 0, 0, $filtergudang->text));
                 }
@@ -369,6 +376,7 @@ class KartuStok extends MyModel
                     db::raw("0 as modifiedby"),
                     db::raw("0 as urutfifo"),
                     db::raw("0 as iddata"),
+                    db::raw("'1900/1/1' as tglinput"),
 
                 )
                 ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id');
@@ -393,6 +401,8 @@ class KartuStok extends MyModel
                 'modifiedby',
                 'urutfifo',
                 'iddata',
+                'tglinput',
+
             ], $querysaldoawal);
 
 
@@ -471,12 +481,14 @@ class KartuStok extends MyModel
                     'a.modifiedby',
                     'a.urutfifo',
                     'a.iddata',
+                    'a.tglinput',
                 )
                 ->orderBy('a.stok_id', 'asc')
                 ->orderBy('a.gudang_id', 'asc')
                 ->orderBy('a.trado_id', 'asc')
                 ->orderBy('a.gandengan_id', 'asc')
                 ->orderBy('a.tglbukti', 'asc')
+                ->orderBy('a.tglinput', 'asc')
                 ->orderBy('a.urutfifo', 'asc')
                 ->orderBy('a.nobukti', 'asc')
                 ->orderBy('a.iddata', 'asc');
@@ -506,6 +518,7 @@ class KartuStok extends MyModel
                 'modifiedby',
                 'urutfifo',
                 'iddata',
+                'tglinput',
             ], $querylist);
 
             // dd(db::table($temtabel)->get());
@@ -593,7 +606,7 @@ class KartuStok extends MyModel
 
         $data = $query->get();
 
-
+// dd($data);
         // } else {
         //     $data = [];
         // }
@@ -1458,6 +1471,8 @@ class KartuStok extends MyModel
         Schema::create($temprekapinput, function ($table) {
             $table->id();
             $table->string('nobukti', 100)->nullable();
+            $table->double('qtymasuk', 15,2)->nullable();
+            $table->double('qtykeluar', 15,2)->nullable();
             $table->dateTime('tglinput')->nullable();
         });
 
@@ -1469,7 +1484,9 @@ class KartuStok extends MyModel
                 ->select(
                     db::raw("a.nobukti as nobukti"),
                     db::raw("'1900/1/1' as tglinput"),
-                )
+                    db::raw("sum(A.qtymasuk) as qtymasuk"),
+                    db::raw("sum(A.qtykeluar) as qtykeluar"),
+                                    )
                 ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
                 ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("(a.stok_id>=" . $stokdari . " and a.stok_id<=" . $stoksampai . ")")
@@ -1478,14 +1495,16 @@ class KartuStok extends MyModel
                 ->whereRaw("(a.trado_id=" . $trado_id . " or " . $trado_id . "=0)")
                 ->Groupby('a.nobukti');
 
-            DB::table($temprekapinput)->insertUsing([
-                'nobukti',
-                'tglinput',
-            ], $queryinput);
-
-            DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join penerimaanstokheader b on a.nobukti=b.nobukti"));
-            DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join pengeluaranstokheader b on a.nobukti=b.nobukti"));
-
+                DB::table($temprekapinput)->insertUsing([
+                    'nobukti',
+                    'tglinput',
+                    'qtymasuk',
+                    'qtykeluar',
+                    
+                ], $queryinput);
+    
+                DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join penerimaanstokheader b on a.nobukti=b.nobukti where a.qtymasuk>0"));
+                DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join pengeluaranstokheader b on a.nobukti=b.nobukti where a.qtykeluar>0"));
 
             $queryrekap = db::table('kartustok')->from(
                 DB::raw("kartustok as a with (readuncommitted)")
@@ -1557,6 +1576,8 @@ class KartuStok extends MyModel
                     ->select(
                         db::raw("a.nobukti as nobukti"),
                         db::raw("'1900/1/1' as tglinput"),
+                        db::raw("sum(A.qtymasuk) as qtymasuk"),
+                        db::raw("sum(A.qtykeluar) as qtykeluar"),                        
                     )
                     ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
                     ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
@@ -1564,14 +1585,16 @@ class KartuStok extends MyModel
                     ->whereRaw("(isnull(a.gudang_id,0)<>0)")
                     ->Groupby('a.nobukti');
 
-                DB::table($temprekapinput)->insertUsing([
-                    'nobukti',
-                    'tglinput',
-                ], $queryinput);
-
-                DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join penerimaanstokheader b on a.nobukti=b.nobukti"));
-                DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join pengeluaranstokheader b on a.nobukti=b.nobukti"));
-
+                    DB::table($temprekapinput)->insertUsing([
+                        'nobukti',
+                        'tglinput',
+                        'qtymasuk',
+                        'qtykeluar',
+                        
+                    ], $queryinput);
+        
+                    DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join penerimaanstokheader b on a.nobukti=b.nobukti where a.qtymasuk>0"));
+                    DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join pengeluaranstokheader b on a.nobukti=b.nobukti where a.qtykeluar>0"));
 
 
                 $queryrekap = db::table('kartustok')->from(
@@ -1621,6 +1644,7 @@ class KartuStok extends MyModel
                         db::raw("a.modifiedby"),
                         db::raw("a.urutfifo as urutfifo"),
                         db::raw("c.tglinput as tglinput"),
+                        
                     )
                     ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
                     ->leftjoin(db::raw($temprekapinput . " c "), 'a.nobukti', 'c.nobukti')
@@ -1634,12 +1658,15 @@ class KartuStok extends MyModel
                     ->orderby('a.id', 'asc');
             } else {
 
+               
                 $queryinput = db::table('kartustok')->from(
                     DB::raw("kartustok as a with (readuncommitted)")
                 )
                     ->select(
                         db::raw("a.nobukti as nobukti"),
                         db::raw("'1900/1/1' as tglinput"),
+                        db::raw("sum(A.qtymasuk) as qtymasuk"),
+                        db::raw("sum(A.qtykeluar) as qtykeluar"),
                     )
                     ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
                     ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
@@ -1650,13 +1677,17 @@ class KartuStok extends MyModel
                 DB::table($temprekapinput)->insertUsing([
                     'nobukti',
                     'tglinput',
+                    'qtymasuk',
+                    'qtykeluar',
+                    
                 ], $queryinput);
 
-                DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join penerimaanstokheader b on a.nobukti=b.nobukti"));
-                DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join pengeluaranstokheader b on a.nobukti=b.nobukti"));
+                DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join penerimaanstokheader b on a.nobukti=b.nobukti where a.qtymasuk>0"));
+                DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join pengeluaranstokheader b on a.nobukti=b.nobukti where a.qtykeluar>0"));
 
+                // disini
 
-
+                // dd(db::table($temprekapinput)->get());
                 $queryrekap = db::table('kartustok')->from(
                     DB::raw("kartustok as a with (readuncommitted)")
                 )
@@ -1727,6 +1758,8 @@ class KartuStok extends MyModel
                     ->select(
                         db::raw("a.nobukti as nobukti"),
                         db::raw("'1900/1/1' as tglinput"),
+                        db::raw("sum(A.qtymasuk) as qtymasuk"),
+                        db::raw("sum(A.qtykeluar) as qtykeluar"),
                     )
                     ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
                     ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
@@ -1734,14 +1767,16 @@ class KartuStok extends MyModel
                     ->whereRaw("(isnull(a.trado_id,0)<>0)")
                     ->Groupby('a.nobukti');
 
-                DB::table($temprekapinput)->insertUsing([
-                    'nobukti',
-                    'tglinput',
-                ], $queryinput);
-
-                DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join penerimaanstokheader b on a.nobukti=b.nobukti"));
-                DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join pengeluaranstokheader b on a.nobukti=b.nobukti"));
-
+                    DB::table($temprekapinput)->insertUsing([
+                        'nobukti',
+                        'tglinput',
+                        'qtymasuk',
+                        'qtykeluar',
+                        
+                    ], $queryinput);
+        
+                    DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join penerimaanstokheader b on a.nobukti=b.nobukti where a.qtymasuk>0"));
+                    DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join pengeluaranstokheader b on a.nobukti=b.nobukti where a.qtykeluar>0"));
 
                 $queryrekap = db::table('kartustok')->from(
                     DB::raw("kartustok as a with (readuncommitted)")
@@ -1812,6 +1847,8 @@ class KartuStok extends MyModel
                     ->select(
                         db::raw("a.nobukti as nobukti"),
                         db::raw("'1900/1/1' as tglinput"),
+                        db::raw("sum(A.qtymasuk) as qtymasuk"),
+                        db::raw("sum(A.qtykeluar) as qtykeluar"),                        
                     )
                     ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
                     ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
@@ -1819,14 +1856,16 @@ class KartuStok extends MyModel
                     ->whereRaw("(a.trado_id=" . $trado_id . ")")
                     ->Groupby('a.nobukti');
 
-                DB::table($temprekapinput)->insertUsing([
-                    'nobukti',
-                    'tglinput',
-                ], $queryinput);
-
-                DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join penerimaanstokheader b on a.nobukti=b.nobukti"));
-                DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join pengeluaranstokheader b on a.nobukti=b.nobukti"));
-
+                    DB::table($temprekapinput)->insertUsing([
+                        'nobukti',
+                        'tglinput',
+                        'qtymasuk',
+                        'qtykeluar',
+                        
+                    ], $queryinput);
+        
+                    DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join penerimaanstokheader b on a.nobukti=b.nobukti where a.qtymasuk>0"));
+                    DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join pengeluaranstokheader b on a.nobukti=b.nobukti where a.qtykeluar>0"));
 
 
                 $queryrekap = db::table('kartustok')->from(
@@ -1900,6 +1939,8 @@ class KartuStok extends MyModel
                     ->select(
                         db::raw("a.nobukti as nobukti"),
                         db::raw("'1900/1/1' as tglinput"),
+                        db::raw("sum(A.qtymasuk) as qtymasuk"),
+                        db::raw("sum(A.qtykeluar) as qtykeluar"),
                     )
                     ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
                     ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
@@ -1907,14 +1948,16 @@ class KartuStok extends MyModel
                     ->whereRaw("(isnull(a.gandengan_id,0)<>0)")
                     ->Groupby('a.nobukti');
 
-                DB::table($temprekapinput)->insertUsing([
-                    'nobukti',
-                    'tglinput',
-                ], $queryinput);
-
-                DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join penerimaanstokheader b on a.nobukti=b.nobukti"));
-                DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join pengeluaranstokheader b on a.nobukti=b.nobukti"));
-
+                    DB::table($temprekapinput)->insertUsing([
+                        'nobukti',
+                        'tglinput',
+                        'qtymasuk',
+                        'qtykeluar',
+                        
+                    ], $queryinput);
+        
+                    DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join penerimaanstokheader b on a.nobukti=b.nobukti where a.qtymasuk>0"));
+                    DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join pengeluaranstokheader b on a.nobukti=b.nobukti where a.qtykeluar>0"));
 
 
                 $queryrekap = db::table('kartustok')->from(
@@ -1986,6 +2029,8 @@ class KartuStok extends MyModel
                     ->select(
                         db::raw("a.nobukti as nobukti"),
                         db::raw("'1900/1/1' as tglinput"),
+                        db::raw("sum(A.qtymasuk) as qtymasuk"),
+                        db::raw("sum(A.qtykeluar) as qtykeluar"),
                     )
                     ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
                     ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
@@ -1993,14 +2038,16 @@ class KartuStok extends MyModel
                     ->whereRaw("(a.gandengan_id=" . $gandengan_id . ")")
                     ->Groupby('a.nobukti');
 
-                DB::table($temprekapinput)->insertUsing([
-                    'nobukti',
-                    'tglinput',
-                ], $queryinput);
-
-                DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join penerimaanstokheader b on a.nobukti=b.nobukti"));
-                DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join pengeluaranstokheader b on a.nobukti=b.nobukti"));
-
+                    DB::table($temprekapinput)->insertUsing([
+                        'nobukti',
+                        'tglinput',
+                        'qtymasuk',
+                        'qtykeluar',
+                        
+                    ], $queryinput);
+        
+                    DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join penerimaanstokheader b on a.nobukti=b.nobukti where a.qtymasuk>0"));
+                    DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join pengeluaranstokheader b on a.nobukti=b.nobukti where a.qtykeluar>0"));
 
                 $queryrekap = db::table('kartustok')->from(
                     DB::raw("kartustok as a with (readuncommitted)")
@@ -2071,6 +2118,8 @@ class KartuStok extends MyModel
                 ->select(
                     db::raw("a.nobukti as nobukti"),
                     db::raw("'1900/1/1' as tglinput"),
+                    db::raw("sum(A.qtymasuk) as qtymasuk"),
+                    db::raw("sum(A.qtykeluar) as qtykeluar"),
                 )
                 ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
                 ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
@@ -2083,10 +2132,13 @@ class KartuStok extends MyModel
             DB::table($temprekapinput)->insertUsing([
                 'nobukti',
                 'tglinput',
+                'qtymasuk',
+                'qtykeluar',
+                
             ], $queryinput);
 
-            DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join penerimaanstokheader b on a.nobukti=b.nobukti"));
-            DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join pengeluaranstokheader b on a.nobukti=b.nobukti"));
+            DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join penerimaanstokheader b on a.nobukti=b.nobukti where a.qtymasuk>0"));
+            DB::update(DB::raw("UPDATE " . $temprekapinput . " SET tglinput=b.created_at from " . $temprekapinput . " a inner join pengeluaranstokheader b on a.nobukti=b.nobukti where a.qtykeluar>0"));
 
 
 
@@ -2210,6 +2262,7 @@ class KartuStok extends MyModel
             $table->double('nilaisaldo', 15, 2)->nullable();
             $table->string('modifiedby', 100)->nullable();
             $table->integer('urutfifo')->nullable();
+            $table->dateTime('tglinput')->nullable();
         });
 
 
@@ -2251,13 +2304,15 @@ class KartuStok extends MyModel
 
                 db::raw("a.modifiedby"),
                 db::raw("a.urutfifo as urutfifo"),
-            )
+                db::raw("a.tglinput as tglinput"),
+                )
             // ->where('kodebarang','3021/04831105 SWL')
             //    ->whereraw("isnull(a.gudang_id,0)=0")
             // ->orderby('a.gudang_id', 'asc')
             // ->orderby('a.trado_id', 'asc')
             // ->orderby('a.gandengan_id', 'asc')
             ->orderby('a.tglbukti', 'asc')
+            ->orderby('a.tglinput', 'asc')
             ->orderby('a.urutfifo', 'asc')
             ->orderby('a.nobukti', 'asc')
             ->orderby('a.id', 'asc');
@@ -2284,11 +2339,12 @@ class KartuStok extends MyModel
             'nilaisaldo',
             'modifiedby',
             'urutfifo',
+            'tglinput',
         ], $queryrekapall);
 
 
         // dd( db::table($temprekap)->where('kodebarang','3021/04831105 SWL')->get());
-        // dd( db::table($temprekap)->get());
+        // dd( db::table($temprekapall)->get());
 
 
         $datalist = DB::table($temprekapall)->from(
@@ -2315,6 +2371,7 @@ class KartuStok extends MyModel
                 'a.modifiedby',
                 'a.urutfifo',
                 'a.id as iddata',
+                'a.tglinput',
 
                 // 'a.created_at',
             )
@@ -2337,7 +2394,7 @@ class KartuStok extends MyModel
         //     ->whereRaw("(a.tglbukti<='2023/10/23')");
 
 
-        //     dd($queryrekap->get());
+            // dd($queryrekap->get());
         return $datalist;
     }
 
