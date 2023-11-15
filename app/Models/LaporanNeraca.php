@@ -68,6 +68,11 @@ class LaporanNeraca extends MyModel
         if ($cabang_id != $getcabangid) {
             $eksport = 1;
         }
+
+        if ($getcabangid==1) {
+            $eksport = 1;
+        }
+
         if ($eksport == 1) {
 
             if ($cabang_id == $getcabangid) {
