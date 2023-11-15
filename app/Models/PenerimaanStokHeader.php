@@ -1203,9 +1203,11 @@ class PenerimaanStokHeader extends MyModel
                 }
                 $datastok  = Stok::lockForUpdate()->where("id", $data['detail_stok_id'][$i])
                     ->firstorFail();
-                $datastok->totalvulkanisir = $totalvulkan;
-                $datastok->statusban = ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null;
-                $datastok->save();
+                if ($data['penerimaanstok_id'] == $korv->id) {
+                    $datastok->totalvulkanisir = $totalvulkan;
+                    $datastok->statusban = ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null;
+                    $datastok->save();
+                }
             }
             // end update vulkanisir
             // dd($penerimaanstok_id);
@@ -1732,9 +1734,11 @@ class PenerimaanStokHeader extends MyModel
                 }
                 $datastok  = Stok::lockForUpdate()->where("id", $data['detail_stok_id'][$i])
                     ->firstorFail();
-                $datastok->totalvulkanisir = $totalvulkan;
-                $datastok->statusban = ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null;
-                $datastok->save();
+                if($data['penerimaanstok_id'] == $korv->id){
+                    $datastok->totalvulkanisir = $totalvulkan;
+                    $datastok->statusban = ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null;
+                    $datastok->save();
+                }
             }
             // end update vulkanisir
 
