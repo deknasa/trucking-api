@@ -153,6 +153,7 @@ class Kategori extends MyModel
                 'kategori.subkelompok_id',
                 'p.keterangan as subkelompok',
                 'kategori.statusaktif',
+                'parameter.text as statusaktifnama',
                 'kategori.modifiedby',
                 'kategori.created_at',
                 'kategori.updated_at'

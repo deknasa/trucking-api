@@ -60,6 +60,8 @@ class LaporanPemakaianStok extends MyModel
             $table->string('modifiedby', 100)->nullable();
             $table->integer('urutfifo')->nullable();
             $table->integer('iddata')->nullable();
+            $table->datetime('tglinput')->nullable();
+
         });
 
         $tempstoktransaksi = '##tempstoktransaksi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -108,6 +110,7 @@ class LaporanPemakaianStok extends MyModel
             'modifiedby',
             'urutfifo',
             'iddata',
+            'tglinput',
         ], (new KartuStok())->getlaporan($tgldari, $tglsampai, $stokdari_id, $stoksampai_id, $idgudangkantor, $trado_id, $gandengan_id, $filtergudang));
 
         DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a where isnull(a.nilaikeluar,0)=0 and  isnull(a.qtykeluar,0)=0

@@ -209,9 +209,11 @@ class LaporanHistoryPinjaman extends MyModel
                 db::raw("'" . $supirdari . "' as supirdari"),
                 db::raw("'" . $supirsampai . "' as supirsampai"),
                 'A.nobuktipinjaman',
+                'A.tglbuktipinjaman',
                 ])
-            ->orderBy('A.tglbuktipinjaman')
-            ->orderBy('A.nobuktipinjaman')
+                ->orderBy('A.namasupir','asc')
+                ->orderBy('A.tglbuktipinjaman','asc')
+                ->orderBy('A.nobuktipinjaman','asc')
             ->orderBy('A.id');
         // dd($select_temphistoryrekap2->get());
         $data = $select_temphistoryrekap2->get();

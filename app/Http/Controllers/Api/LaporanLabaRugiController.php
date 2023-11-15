@@ -58,11 +58,12 @@ class LaporanLabaRugiController extends Controller
     {
         $bulan = substr($request->sampai, 0, 2);
         $tahun = substr($request->sampai, 3, 4);
+        $cabang_id = $request->cabang_id ?? 0;
 
         $laporanlabarugi = new LaporanLabaRugi();
 
 
-        $laporan_labarugi = $laporanlabarugi->getReport($bulan, $tahun);
+        $laporan_labarugi = $laporanlabarugi->getReport($bulan, $tahun,$cabang_id);
         // foreach($laporan_labarugi as $item){
         //     $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
         //     $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));

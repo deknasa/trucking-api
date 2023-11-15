@@ -370,6 +370,23 @@ class Parameter extends MyModel
             return $query;
     }
 
+    public function combo()
+    {
+        $this->setRequestParameters();
+        $query=DB::table('parameter')
+        ->from (
+            DB::raw("parameter with (readuncommitted)")
+        )
+        ->select('*')
+        ->where('grp','=',request()->grp)
+        ->where('subgrp','=',request()->subgrp);
+        $this->filter($query);
+        
+        $query = $query->get();
+
+        return $query;
+    }
+
     public function processStore(array $data): Parameter
     {
         $parameter = new Parameter();
