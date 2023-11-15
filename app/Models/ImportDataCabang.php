@@ -209,72 +209,72 @@ class ImportDataCabang extends Model
             }
 
 
-            $saldoakunpusatdetail = Http::withHeaders([
-                'Accept' => 'application/json',
-                'Authorization' => 'Bearer ' . $access_token,
-                'Content-Type' => 'application/json',
-            ])
-                // ->get($urlCabang . "saldoakunpusatdetail/importdatacabang?periode=" . $data['periode'] . "&tahun=" . $itemtahun2['tahun'] . "&bulan=" . $itembulan2['bulan']);
-                ->get($urlCabang . "saldoakunpusatdetail/importdatacabang?periode=" . $data['periode']);
+            // $saldoakunpusatdetail = Http::withHeaders([
+            //     'Accept' => 'application/json',
+            //     'Authorization' => 'Bearer ' . $access_token,
+            //     'Content-Type' => 'application/json',
+            // ])
+            //     // ->get($urlCabang . "saldoakunpusatdetail/importdatacabang?periode=" . $data['periode'] . "&tahun=" . $itemtahun2['tahun'] . "&bulan=" . $itembulan2['bulan']);
+            //     ->get($urlCabang . "saldoakunpusatdetail/importdatacabang?periode=" . $data['periode']);
 
-            $konsolidasisaldoakunpusatdetail = $saldoakunpusatdetail->json()['data'];
-            if (!count($konsolidasisaldoakunpusatdetail)) {
-                throw ValidationException::withMessages(["message" => "data tidak ada"]);
-            }
+            // $konsolidasisaldoakunpusatdetail = $saldoakunpusatdetail->json()['data'];
+            // if (!count($konsolidasisaldoakunpusatdetail)) {
+            //     throw ValidationException::withMessages(["message" => "data tidak ada"]);
+            // }
 
-            foreach ($konsolidasisaldoakunpusatdetail as $item2) {
+            // foreach ($konsolidasisaldoakunpusatdetail as $item2) {
 
-                $saldoAkunpusatdetail = new SaldoAkunPusatDetail();
-                $saldoAkunpusatdetail->coa = $item2['coa'];
-                $saldoAkunpusatdetail->bulan = $item2['bulan'];
-                $saldoAkunpusatdetail->tahun = $item2['tahun'];
-                $saldoAkunpusatdetail->nominal = $item2['nominal'];
-                $saldoAkunpusatdetail->info = $item2['info'];
-                $saldoAkunpusatdetail->tglbukti = $item2['tglbukti'];
-                $saldoAkunpusatdetail->modifiedby = $item2['modifiedby'];
-                $saldoAkunpusatdetail->created_at = $item2['created_at'];
-                $saldoAkunpusatdetail->updated_at = $item2['updated_at'];
-                $saldoAkunpusatdetail->cabang_id = $data['cabang'];
+            //     $saldoAkunpusatdetail = new SaldoAkunPusatDetail();
+            //     $saldoAkunpusatdetail->coa = $item2['coa'];
+            //     $saldoAkunpusatdetail->bulan = $item2['bulan'];
+            //     $saldoAkunpusatdetail->tahun = $item2['tahun'];
+            //     $saldoAkunpusatdetail->nominal = $item2['nominal'];
+            //     $saldoAkunpusatdetail->info = $item2['info'];
+            //     $saldoAkunpusatdetail->tglbukti = $item2['tglbukti'];
+            //     $saldoAkunpusatdetail->modifiedby = $item2['modifiedby'];
+            //     $saldoAkunpusatdetail->created_at = $item2['created_at'];
+            //     $saldoAkunpusatdetail->updated_at = $item2['updated_at'];
+            //     $saldoAkunpusatdetail->cabang_id = $data['cabang'];
 
 
-                if (!$saldoAkunpusatdetail->save()) {
-                    throw new \Exception("Error storing saldo akun pusat detail.");
-                }
-            }
+            //     if (!$saldoAkunpusatdetail->save()) {
+            //         throw new \Exception("Error storing saldo akun pusat detail.");
+            //     }
+            // }
 
-            // saldoawalbukubesar
+            // // saldoawalbukubesar
 
-            $saldoawalbukubesar = Http::withHeaders([
-                'Accept' => 'application/json',
-                'Authorization' => 'Bearer ' . $access_token,
-                'Content-Type' => 'application/json',
-            ])
-                // ->get($urlCabang . "saldoakunpusatdetail/importdatacabang?periode=" . $data['periode'] . "&tahun=" . $itemtahun2['tahun'] . "&bulan=" . $itembulan2['bulan']);
-                ->get($urlCabang . "saldoawalbukubesar/importdatacabang?periode=" . $data['periode']);
+            // $saldoawalbukubesar = Http::withHeaders([
+            //     'Accept' => 'application/json',
+            //     'Authorization' => 'Bearer ' . $access_token,
+            //     'Content-Type' => 'application/json',
+            // ])
+            //     // ->get($urlCabang . "saldoakunpusatdetail/importdatacabang?periode=" . $data['periode'] . "&tahun=" . $itemtahun2['tahun'] . "&bulan=" . $itembulan2['bulan']);
+            //     ->get($urlCabang . "saldoawalbukubesar/importdatacabang?periode=" . $data['periode']);
 
-            $konsolidasisaldoawalbukubesar = $saldoawalbukubesar->json()['data'];
-            if (!count($konsolidasisaldoawalbukubesar)) {
-                throw ValidationException::withMessages(["message" => "data tidak ada"]);
-            }
+            // $konsolidasisaldoawalbukubesar = $saldoawalbukubesar->json()['data'];
+            // if (!count($konsolidasisaldoawalbukubesar)) {
+            //     throw ValidationException::withMessages(["message" => "data tidak ada"]);
+            // }
 
-            foreach ($konsolidasisaldoawalbukubesar as $item4) {
+            // foreach ($konsolidasisaldoawalbukubesar as $item4) {
 
-                $saldoAwalbukubesar = new SaldoAwalBukuBesar();
-                $saldoAwalbukubesar->coa = $item4['coa'];
-                $saldoAwalbukubesar->bulan = $item4['bulan'];
-                $saldoAwalbukubesar->nominal = $item4['nominal'];
-                $saldoAwalbukubesar->info = $item4['info'];
-                $saldoAwalbukubesar->tglbukti = $item4['tglbukti'];
-                $saldoAwalbukubesar->modifiedby = $item4['modifiedby'];
-                $saldoAwalbukubesar->created_at = $item4['created_at'];
-                $saldoAwalbukubesar->updated_at = $item4['updated_at'];
-                $saldoAwalbukubesar->cabang_id = $data['cabang'];
+            //     $saldoAwalbukubesar = new SaldoAwalBukuBesar();
+            //     $saldoAwalbukubesar->coa = $item4['coa'];
+            //     $saldoAwalbukubesar->bulan = $item4['bulan'];
+            //     $saldoAwalbukubesar->nominal = $item4['nominal'];
+            //     $saldoAwalbukubesar->info = $item4['info'];
+            //     $saldoAwalbukubesar->tglbukti = $item4['tglbukti'];
+            //     $saldoAwalbukubesar->modifiedby = $item4['modifiedby'];
+            //     $saldoAwalbukubesar->created_at = $item4['created_at'];
+            //     $saldoAwalbukubesar->updated_at = $item4['updated_at'];
+            //     $saldoAwalbukubesar->cabang_id = $data['cabang'];
 
-               
-                if (!$saldoAwalbukubesar->save()) {
-                    throw new \Exception("Error storing saldo awal buku besar.");
-                }
-            }
+
+            //     if (!$saldoAwalbukubesar->save()) {
+            //         throw new \Exception("Error storing saldo awal buku besar.");
+            //     }
+            // }
 
 
 
@@ -317,6 +317,7 @@ class ImportDataCabang extends Model
             // proses dari database lama
             $month = substr($data['periode'], 0, 2);
             $year = substr($data['periode'], -4);
+            $aptgl = '2023-10-01';
 
             $queryloop = DB::connection('sqlsrv2')->table("j_happ")->from(db::raw("j_happ a with (readuncommitted)"))
                 ->select(
@@ -352,6 +353,7 @@ class ImportDataCabang extends Model
                 ->join(db::raw("j_rapp b with (readuncommitted)"), 'a.fntrans', 'b.fntrans')
                 ->whereRaw("MONTH(a.ftgl) = " . $month)
                 ->whereRaw("YEAR(a.ftgl) = " . $year)
+                ->whereRaw("a.ftgl >='" . $aptgl . "'")
                 ->whereRaw("a.FKcabang='" . $singkatan . "'")
 
                 ->orderby('a.fntrans', 'asc')
