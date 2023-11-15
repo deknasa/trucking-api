@@ -65,12 +65,22 @@ class LaporanNeraca extends MyModel
             ->where('a.subgrp', 'ID CABANG')
             ->first()->text ?? 0;
 
+        $cabang = db::table("cabang")->from(db::raw("cabang a with (readuncommitted)"))
+            ->select(
+                'a.namacabang'
+            )
+            ->where('a.id', $cabang_id)
+            ->first()->namacabang ?? '';
+
         if ($cabang_id != $getcabangid) {
             $eksport = 1;
         }
 
         if ($getcabangid == 1) {
             $eksport = 1;
+            if ($cabang_id==0) {
+                $cabang='SEMUA';
+            }
         }
 
         if ($eksport == 1) {
@@ -366,7 +376,9 @@ class LaporanNeraca extends MyModel
                     'xx.KeteranganCoaParent',
                     'xx.pTglSd',
                     DB::raw("'" . $getJudul->text . "' as judul"),
-                    db::raw("0 as selisih")
+                    db::raw("0 as selisih"),
+                    db::raw("(case when '" . $cabang . "'='' then '' else 'Cabang :" . $cabang . "'  end) as Cabang")
+
 
                 )
                 ->whereRaw("isnull(xx.Nominal,0)<>0")
@@ -1549,6 +1561,7 @@ class LaporanNeraca extends MyModel
                 db::raw("xx.nominalbanding"),
                 db::raw("xx.selisih"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
+                db::raw("'' as Cabang")
 
             )
             ->orderby('xx.id');
