@@ -279,10 +279,13 @@ class LaporanPinjamanSupirKaryawan extends MyModel
             DB::raw($temphasil . " a ")
         )
             ->select(
-                db::raw("(a.nobukti) + ' '+(case when isnull(a.nobuktipelunasan,'')='' then '' else '( '+isnull(a.nobuktipelunasan,'')+' )' end) as nobukti"),
+                // db::raw("(a.nobukti) + ' '+(case when isnull(a.nobuktipelunasan,'')='' then '' else '( '+isnull(a.nobuktipelunasan,'')+' )' end) as nobukti"),
+                db::raw("
+                (case when isnull(a.nobuktipelunasan,'')='' then a.nobukti else isnull(a.nobuktipelunasan,'') end) as nobukti"),
                 'a.namakaryawan',
                 'a.nobuktipelunasan',
-                'a.tglbukti',
+                db::raw("
+                (case when isnull(a.nobuktipelunasan,'')='' then a.tglbukti else isnull(c.tglbukti,'1900/1/1') end) as tglbukti"),
                 'a.tglbuktipelunasan',
                 'b.keterangan',
                 'a.debet',
@@ -297,6 +300,7 @@ class LaporanPinjamanSupirKaryawan extends MyModel
 
             )
             ->leftjoin(DB::raw("pengeluarantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+            ->leftjoin(DB::raw("penerimaanheader as c with (readuncommitted) "), 'a.nobuktipelunasan', 'c.nobukti')
 
             ->OrderBy('a.id', 'asc');
 
