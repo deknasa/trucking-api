@@ -930,7 +930,7 @@ class PengeluaranTruckingHeader extends MyModel
         return $this->hasMany(PengeluaranTruckingDetail::class, 'pengeluarantruckingheader_id');
     }
 
-    public function selectColumns($query)
+    public function selectColumns()
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
@@ -942,6 +942,7 @@ class PengeluaranTruckingHeader extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->string('pengeluaran_nobukti', 50)->nullable();
             $table->string('penerimaantrucking_nobukti', 50)->nullable();
+            $table->integer('pengeluarantruckingid')->nullable();
             $table->string('pengeluarantrucking_id', 100)->nullable();
             $table->string('bank_id', 50)->nullable();
             $table->integer('trado_id')->nullable();
@@ -994,6 +995,7 @@ class PengeluaranTruckingHeader extends MyModel
                 'pengeluarantruckingheader.updated_at',
                 'pengeluarantruckingheader.pengeluaran_nobukti',
                 db::raw("isnull(penerimaantruckingdetail.nobukti,'') as penerimaantrucking_nobukti"),
+                'pengeluarantruckingheader.pengeluarantrucking_id as pengeluarantruckingid',
                 'pengeluarantrucking.keterangan as pengeluarantrucking_id',
                 'bank.namabank as bank_id',
                 'pengeluarantruckingheader.trado_id',
@@ -1051,6 +1053,7 @@ class PengeluaranTruckingHeader extends MyModel
                 'updated_at' => $item['updated_at'],
                 'pengeluaran_nobukti' => $item['pengeluaran_nobukti'],
                 'penerimaantrucking_nobukti' => $item['penerimaantrucking_nobukti'],
+                'pengeluarantruckingid' => $item['pengeluarantruckingid'],
                 'pengeluarantrucking_id' => $item['pengeluarantrucking_id'],
                 'bank_id' => $item['bank_id'],
                 'trado_id' => $item['trado_id'],
@@ -1080,6 +1083,7 @@ class PengeluaranTruckingHeader extends MyModel
                 'a.tglbukti',
                 'a.pengeluaran_nobukti',
                 'a.penerimaantrucking_nobukti',
+                'a.pengeluarantruckingid',
                 'a.pengeluarantrucking_id',
                 'a.bank_id',
                 'a.trado_id',
@@ -1116,6 +1120,7 @@ class PengeluaranTruckingHeader extends MyModel
                 $table->dateTime('tglbukti')->nullable();
                 $table->string('pengeluaran_nobukti', 50)->nullable();
                 $table->string('penerimaantrucking_nobukti', 50)->nullable();
+                $table->integer('pengeluarantruckingid')->nullable();
                 $table->string('pengeluarantrucking_id', 100)->nullable();
                 $table->string('bank_id', 50)->nullable();
                 $table->integer('trado_id')->nullable();
@@ -1146,17 +1151,18 @@ class PengeluaranTruckingHeader extends MyModel
             request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
         }
         $this->setRequestParameters();
-        $query = DB::table($modelTable);
-        $query = $this->selectColumns($query);
+        // $query = DB::table($modelTable);
+        $query = $this->selectColumns();
         $this->sort($query);
         $models = $this->filter($query);
         if (request()->tgldariheader) {
-            $models  = $query->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+            $models->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
         }
         if (request()->pengeluaranheader_id) {
-            $query->where('a.pengeluarantrucking_id', request()->pengeluaranheader_id);
+            $models->where('a.pengeluarantruckingid', request()->pengeluaranheader_id);
         }
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti','pengeluaran_nobukti','penerimaantrucking_nobukti', 'pengeluarantrucking_id', 'bank_id', 'trado_id', 'trado', 'tradoheader_id','supirheader','supir', 'gandengan', 'pengeluarantrucking_nobukti',  'tglbukacetak','statuscetak','userbukacetak', 'coa', 'tgldariheaderpengeluaranheader','tglsampaiheaderpengeluaranheader','tgldariheaderpenerimaantrucking','tglsampaiheaderpenerimaantrucking','statusposting','qty','harga', 'modifiedby', 'created_at', 'updated_at'], $models);
+        
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti','pengeluaran_nobukti','penerimaantrucking_nobukti', 'pengeluarantruckingid','pengeluarantrucking_id', 'bank_id', 'trado_id', 'trado', 'tradoheader_id','supirheader','supir', 'gandengan', 'pengeluarantrucking_nobukti',  'tglbukacetak','statuscetak','userbukacetak', 'coa', 'tgldariheaderpengeluaranheader','tglsampaiheaderpengeluaranheader','tgldariheaderpenerimaantrucking','tglsampaiheaderpenerimaantrucking','statusposting','qty','harga', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;

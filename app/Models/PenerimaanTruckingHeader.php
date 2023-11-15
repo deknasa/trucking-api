@@ -287,6 +287,7 @@ class PenerimaanTruckingHeader extends MyModel
             $table->integer('id')->nullable();
             $table->string('nobukti', 50)->nullable();
             $table->dateTime('tglbukti')->nullable();
+            $table->integer('penerimaantruckingid')->nullable();
             $table->string('penerimaantrucking_id', 50)->nullable();
             $table->string('penerimaan_nobukti', 50)->nullable();
             $table->longText('keteranganheader')->nullable();
@@ -309,6 +310,7 @@ class PenerimaanTruckingHeader extends MyModel
                 'penerimaantruckingheader.id',
                 'penerimaantruckingheader.nobukti',
                 'penerimaantruckingheader.tglbukti',
+                'penerimaantruckingheader.penerimaantrucking_id as penerimaantruckingid',
 
                 'penerimaantrucking.keterangan as penerimaantrucking_id',
                 'penerimaantruckingheader.penerimaan_nobukti',
@@ -340,6 +342,7 @@ class PenerimaanTruckingHeader extends MyModel
             'id',
             'nobukti',
             'tglbukti',
+            'penerimaantruckingid',
             'penerimaantrucking_id',
             'penerimaan_nobukti',
             'keteranganheader',
@@ -363,6 +366,7 @@ class PenerimaanTruckingHeader extends MyModel
                 'a.id',
                 'a.nobukti',
                 'a.tglbukti',
+                'a.penerimaantruckingid',
                 'a.penerimaantrucking_id',
                 'a.penerimaan_nobukti',
                 'a.keteranganheader',
@@ -391,6 +395,7 @@ class PenerimaanTruckingHeader extends MyModel
             $table->integer('id')->nullable();
             $table->string('nobukti', 50)->nullable();
             $table->dateTime('tglbukti')->nullable();
+            $table->string('penerimaantruckingid', 50)->nullable();
             $table->string('penerimaantrucking_id', 50)->nullable();
             $table->string('penerimaan_nobukti', 50)->nullable();
             $table->longText('keteranganheader')->nullable();
@@ -421,11 +426,11 @@ class PenerimaanTruckingHeader extends MyModel
             $query->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
         }
         if (request()->penerimaanheader_id) {
-            $query->where('a.penerimaantrucking_id', request()->penerimaanheader_id);
+            $query->where('a.penerimaantruckingid', request()->penerimaanheader_id);
         }
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'penerimaantrucking_id', 'penerimaan_nobukti', 'keteranganheader', 'bank_id', 'supir_id', 'karyawan_id', 'tglbukacetak', 'statuscetak', 'userbukacetak',  'jumlahcetak', 'coa', 'modifiedby', 'created_at', 'updated_at', 'tgldariheaderpenerimaanheader', 'tglsampaiheaderpenerimaanheader'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti','penerimaantruckingid', 'penerimaantrucking_id', 'penerimaan_nobukti', 'keteranganheader', 'bank_id', 'supir_id', 'karyawan_id', 'tglbukacetak', 'statuscetak', 'userbukacetak',  'jumlahcetak', 'coa', 'modifiedby', 'created_at', 'updated_at', 'tgldariheaderpenerimaanheader', 'tglsampaiheaderpenerimaanheader'], $models);
 
 
         return  $temp;
