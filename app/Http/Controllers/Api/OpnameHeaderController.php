@@ -220,7 +220,7 @@ class OpnameHeaderController extends Controller
         $stoksampai_id = 0;
         $dataFilter = $request->gudang_id;
         // dd($request->all());
-        $report = (new OpnameHeader())->getInventory($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter,0);
+        $report = (new OpnameHeader())->getInventory($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter,1);
 
         return response([
             'data' => $report
