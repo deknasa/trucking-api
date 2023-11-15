@@ -69,7 +69,7 @@ class LaporanNeraca extends MyModel
             $eksport = 1;
         }
 
-        if ($getcabangid==1) {
+        if ($getcabangid == 1) {
             $eksport = 1;
         }
 
@@ -82,15 +82,20 @@ class LaporanNeraca extends MyModel
                     ->whereRaw("bulan=" . $bulan . " and tahun=" . $tahun)
                     ->delete();
 
-                
+
 
                 $subquery1 = DB::table('jurnalumumpusatheader as J')
-                    ->select('D.coamain as FCOA', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'),
-                    db::raw($cabang_id . ' as cabang_id'),
-                    DB::raw(
-                        'round(SUM(D.nominal),2) as FNominal',
+                    ->select(
+                        'D.coamain as FCOA',
+                        DB::raw('YEAR(D.tglbukti) as FThn'),
+                        DB::raw('MONTH(D.tglbukti) as FBln'),
+                        db::raw($cabang_id . ' as cabang_id'),
+                        DB::raw(
+                            'round(SUM(D.nominal),2) as FNominal',
 
-                    ))
+
+                        )
+                    )
                     ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
                     ->join('mainakunpusat as C', 'C.coa', '=', 'D.coamain')
                     ->where('D.tglbukti', '>=', $ptgl)
@@ -123,13 +128,13 @@ class LaporanNeraca extends MyModel
                     ->where('j.cabang_id',  $cabang_id)
                     ->groupBy('LR.coa', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
 
-                    // dd('test');
+                // dd('test');
 
                 $RecalKdPerkiraan = DB::table(DB::raw("({$subquery1->toSql()} UNION ALL {$subquery2->toSql()}) as V"))
                     ->mergeBindings($subquery1)
                     ->mergeBindings($subquery2)
-                    ->groupBy('FCOA', 'FThn', 'FBln','cabang_id')
-                    ->select('FCOA', 'FThn', 'FBln','cabang_id', DB::raw('round(SUM(FNominal),2) as FNominal'));
+                    ->groupBy('FCOA', 'FThn', 'FBln', 'cabang_id')
+                    ->select('FCOA', 'FThn', 'FBln', 'cabang_id', DB::raw('round(SUM(FNominal),2) as FNominal'));
 
                 DB::table('akunpusatdetail')->insertUsing([
                     'coa',
@@ -166,7 +171,7 @@ class LaporanNeraca extends MyModel
                     'updated_at'
 
                 )
-                ->where('cabang_id',  $cabang_id)
+                ->whereRaw("(cabang_id=" .  $cabang_id . " or " . $cabang_id . "=0)")
                 ->orderBy('id', 'asc');
 
 
@@ -194,7 +199,7 @@ class LaporanNeraca extends MyModel
                     'updated_at'
 
                 )
-                ->where('cabang_id',  $cabang_id)
+                ->whereRaw("(cabang_id=" .  $cabang_id . " or " . $cabang_id . "=0)")
                 ->orderBy('id', 'asc');
 
             DB::table($tempAkunPusatDetail)->insertUsing([
@@ -247,7 +252,7 @@ class LaporanNeraca extends MyModel
                 )
                 ->join(db::raw($tempAkunPusatDetail . " cd with (readuncommitted)"), 'c.coa', 'cd.coa')
                 ->leftjoin(db::raw("maintypeakuntansi a with (readuncommitted)"), 'a.kodetype', 'c.type');
-                // dd($query1 ->get());
+            // dd($query1 ->get());
 
             DB::table($tempquery1)->insertUsing([
                 'type',
@@ -317,7 +322,7 @@ class LaporanNeraca extends MyModel
                 ->groupBy('d.keterangancoa');
             // ->having(DB::raw('sum(d.nominal)'), '<>', 0);
 
-   
+
 
             DB::table($tempquery2)->insertUsing([
                 'tipemaster',
@@ -360,7 +365,9 @@ class LaporanNeraca extends MyModel
                     'xx.GLR',
                     'xx.KeteranganCoaParent',
                     'xx.pTglSd',
-                    DB::raw("'" . $getJudul->text . "' as judul")
+                    DB::raw("'" . $getJudul->text . "' as judul"),
+                    db::raw("0 as selisih")
+
                 )
                 ->whereRaw("isnull(xx.Nominal,0)<>0")
                 ->orderby('xx.id');
