@@ -367,7 +367,7 @@ class LaporanSaldoInventory extends MyModel
                 as vulkanisirke"),
 
                 // DB::raw("'VulKe :'+trim(str(isnull(b.totalvulkanisir,0))) as vulkanisirke"),
-                'a.kodebarang as id',
+                'a.stok_id as stok_id',
                 'a.kodebarang',
                 db::raw("(case when isnull(b.keterangan,'')='' then b.namastok else b.keterangan end)+ ' '+
                 (case when isnull(c1.stok_id,0)<>0 then ' ( '+

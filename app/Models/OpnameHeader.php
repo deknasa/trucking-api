@@ -76,7 +76,64 @@ class OpnameHeader extends MyModel
 
     public function getInventory($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter, $prosesneraca){
         $inventory = (new LaporanSaldoInventory())->getReport($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter, $prosesneraca);
-        return $inventory;
+        // dd($inventory->get());
+        $tempinevtory = '##tempinevtory' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempinevtory, function ($table) {
+            $table->string('header')->nullable();
+            $table->string('judul')->nullable();
+            $table->string('lokasi')->nullable();
+            $table->string('namalokasi')->nullable();
+            $table->string('kategori')->nullable();
+            $table->string('tgldari')->nullable();
+            $table->string('tglsampai')->nullable();
+            $table->string('stokdari')->nullable();
+            $table->string('stoksampai')->nullable();
+            $table->string('vulkanisirke')->nullable();
+            $table->unsignedBigInteger('stok_id')->nullable();
+            $table->string('kodebarang')->nullable();
+            $table->string('namabarang')->nullable();
+            $table->string('tanggal')->nullable();
+            $table->double('qty', 15, 2)->nullable();
+
+            $table->string('satuan')->nullable();
+            $table->string('nominal')->nullable();
+            $table->string('disetujui')->nullable();
+            $table->string('diperiksa')->nullable();
+        });
+        
+        DB::table($tempinevtory)->insertUsing([
+            "header",
+            "judul",
+            "lokasi",
+            "namalokasi",
+            "kategori",
+            "tgldari",
+            "tglsampai",
+            "stokdari",
+            "stoksampai",
+            "vulkanisirke",
+            "stok_id",
+            "kodebarang",
+            "namabarang",
+            "tanggal",
+            "qty",
+            "satuan",
+            "nominal",
+            "disetujui",
+            "diperiksa",
+        ], $inventory);
+        $data = DB::table($tempinevtory)
+        ->select(
+            'stok_id as id',
+            'stok_id',
+            'namabarang',
+            'tanggal',
+            db::raw("sum(qty) as qty"),
+            db::raw("0 as qtyfisik"),
+            )
+            ->groupBy('stok_id','namabarang','tanggal')
+        ->get();
+        return $data;
     }
 
     public function selectColumns($query)
