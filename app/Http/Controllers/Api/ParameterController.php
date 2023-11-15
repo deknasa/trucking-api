@@ -400,12 +400,13 @@ class ParameterController extends Controller
 
     public function combo(Request $request)
     {
-        $parameters = Parameter::where('grp', '=', $request->grp)
-            ->where('subgrp', '=', $request->subgrp)
-            ->get();
+        // $parameters = Parameter::where('grp', '=', $request->grp)
+        //     ->where('subgrp', '=', $request->subgrp)
+        //     ->get();
 
+        $parameter = new Parameter();
         return response([
-            'data' => $parameters
+            'data' => $parameter->combo()
         ]);
     }
 
