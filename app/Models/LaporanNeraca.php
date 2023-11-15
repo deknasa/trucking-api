@@ -82,11 +82,13 @@ class LaporanNeraca extends MyModel
                     ->whereRaw("bulan=" . $bulan . " and tahun=" . $tahun)
                     ->delete();
 
+                
 
                 $subquery1 = DB::table('jurnalumumpusatheader as J')
-                    ->select('D.coamain as FCOA', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw(
+                    ->select('D.coamain as FCOA', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'),
+                    db::raw($cabang_id . ' as cabang_id'),
+                    DB::raw(
                         'round(SUM(D.nominal),2) as FNominal',
-                        db::raw($cabang_id . " as cabang_id")
 
                     ))
                     ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
@@ -100,8 +102,8 @@ class LaporanNeraca extends MyModel
                         'LR.coa',
                         DB::raw('YEAR(D.tglbukti) as FThn'),
                         DB::raw('MONTH(D.tglbukti) as FBln'),
+                        db::raw($cabang_id . ' as cabang_id'),
                         DB::raw('round(SUM(D.nominal),2) as FNominal'),
-                        db::raw($cabang_id . " as cabang_id")
                     )
                     ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
                     ->join('perkiraanlabarugi as LR', function ($join) {
@@ -121,18 +123,20 @@ class LaporanNeraca extends MyModel
                     ->where('j.cabang_id',  $cabang_id)
                     ->groupBy('LR.coa', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
 
+                    // dd('test');
+
                 $RecalKdPerkiraan = DB::table(DB::raw("({$subquery1->toSql()} UNION ALL {$subquery2->toSql()}) as V"))
                     ->mergeBindings($subquery1)
                     ->mergeBindings($subquery2)
-                    ->groupBy('FCOA', 'FThn', 'FBln')
-                    ->select('FCOA', 'FThn', 'FBln', DB::raw('round(SUM(FNominal),2) as FNominal'));
+                    ->groupBy('FCOA', 'FThn', 'FBln','cabang_id')
+                    ->select('FCOA', 'FThn', 'FBln','cabang_id', DB::raw('round(SUM(FNominal),2) as FNominal'));
 
                 DB::table('akunpusatdetail')->insertUsing([
                     'coa',
                     'tahun',
                     'bulan',
-                    'nominal',
                     'cabang_id',
+                    'nominal',
 
                 ], $RecalKdPerkiraan);
             }
@@ -164,6 +168,7 @@ class LaporanNeraca extends MyModel
                 )
                 ->where('cabang_id',  $cabang_id)
                 ->orderBy('id', 'asc');
+
 
             DB::table($tempAkunPusatDetail)->insertUsing([
                 'coa',
@@ -222,6 +227,8 @@ class LaporanNeraca extends MyModel
             });
 
 
+
+
             $query1 = db::table('mainakunpusat')->from(db::raw("mainakunpusat c with (readuncommitted)"))
                 ->select(
                     'c.type',
@@ -239,7 +246,8 @@ class LaporanNeraca extends MyModel
                     'a.akuntansi_id',
                 )
                 ->join(db::raw($tempAkunPusatDetail . " cd with (readuncommitted)"), 'c.coa', 'cd.coa')
-                ->join(db::raw("maintypeakuntansi a with (readuncommitted)"), 'a.kodetype', 'c.type');
+                ->leftjoin(db::raw("maintypeakuntansi a with (readuncommitted)"), 'a.kodetype', 'c.type');
+                // dd($query1 ->get());
 
             DB::table($tempquery1)->insertUsing([
                 'type',
@@ -280,6 +288,7 @@ class LaporanNeraca extends MyModel
             });
 
 
+            // dd(db::table($tempquery1)->get());
             $query2 = db::table($tempquery1)->from(db::raw($tempquery1 . " d"))
                 ->select(
                     db::raw("(CASE d.akuntansi_id WHEN 1 THEN 'AKTIVA' ELSE 'PASSIVA' END) AS tipemaster"),
@@ -307,6 +316,8 @@ class LaporanNeraca extends MyModel
                 ->groupBy('d.coa')
                 ->groupBy('d.keterangancoa');
             // ->having(DB::raw('sum(d.nominal)'), '<>', 0);
+
+   
 
             DB::table($tempquery2)->insertUsing([
                 'tipemaster',
