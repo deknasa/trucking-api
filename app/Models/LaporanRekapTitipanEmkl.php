@@ -60,6 +60,7 @@ class LaporanRekapTitipanEmkl  extends MyModel
             $table->longText('keterangan')->nullable();
             $table->integer('jenisorder_id')->nullable();
             $table->double('nominal', 15, 2)->nullable();
+            $table->string('jenislaporan', 1000)->nullable();
         });
 
 
@@ -73,6 +74,8 @@ class LaporanRekapTitipanEmkl  extends MyModel
                 db::raw("max((case when isnull(b.keterangan,'')='' then isnull(a.keterangan,'') else  isnull(b.keterangan,'') end)) as keterangan"),
                 db::raw("max(b.jenisorder_id) as jenisorder_id"),
                 db::raw("sum(a.nominal) as nominal"),
+                db::raw("'EMKL TITIPAN' as jenislaporan"),
+
             )
             ->join(DB::raw("pengeluarantruckingheader as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
             ->leftjoin(DB::raw($tempprosestitipan . " as c with (readuncommitted) "), 'a.nobukti', 'c.pengeluarantruckingheader_nobukti')
@@ -87,6 +90,8 @@ class LaporanRekapTitipanEmkl  extends MyModel
             'keterangan',
             'jenisorder_id',
             'nominal',
+            'jenislaporan',
+
         ], $querybiayatitipan);
 
         $queryinvoiceextra=db::table("invoiceextraheader")->from(db::raw("invoiceextraheader a with (readuncommitted)"))
@@ -96,6 +101,7 @@ class LaporanRekapTitipanEmkl  extends MyModel
             db::raw("max(c.tglbukti) as tglbukti"),
             db::raw("max(b.keterangan) as keterangan"),
             db::raw("sum(b.nominal) as nominal"),
+
         )
         ->join(db::raw("invoiceextradetail b with (readuncommitted)"),'a.nobukti','b.nobukti')
         ->join(db::raw("piutangheader c with (readuncommitted)"),'a.piutang_nobukti','c.nobukti')
@@ -165,6 +171,8 @@ class LaporanRekapTitipanEmkl  extends MyModel
             'a.keterangan',
             db::raw("0 as jenisorder_id"),
             db::raw("(isnull(a.nominal,0)-isnull(b.nominal,0)) as nominal"),
+            db::raw("'PIUTANG LAIN' as jenislaporan"),
+
         )
         ->leftjoin(db::raw($temppelunasan ." b "),'a.nobukti','b.nobukti')
         ->whereRaw("(isnull(a.nominal,0)-isnull(b.nominal,0))<>0");
@@ -177,6 +185,7 @@ class LaporanRekapTitipanEmkl  extends MyModel
             'keterangan',
             'jenisorder_id',
             'nominal',
+            'jenislaporan',
         ], $querysisa);
 
         
@@ -191,13 +200,14 @@ class LaporanRekapTitipanEmkl  extends MyModel
         )
             ->select(
                 DB::raw("'" . $getJudul->text . "' as judul"),
-                db::raw("'Biaya Titipan Emkl Yang Belum Lunas' as judullaporan"),
+                db::raw("'Biaya Titipan Emkl Yang Belum Lunas/Piutang Lain' as judullaporan"),
                 db::raw("ROW_NUMBER() OVER(ORDER BY a.tglbukti,a.nobukti) as urut"),
                 'a.nobukti',
                 'a.tglbukti',
                 'a.keterangan',
                 'a.nominal',
-                'b.keterangan as jenisorder'
+                'b.keterangan as jenisorder',
+                db::raw("a.jenislaporan as jenislaporan"),
             )
             ->leftjoin(DB::raw("jenisorder as b with (readuncommitted) "), 'a.jenisorder_id', 'b.id')
             ->orderBy('a.tglbukti', 'asc')
