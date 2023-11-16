@@ -643,6 +643,10 @@ class Stok extends MyModel
             return $query->orderBy('kategori.kodekategori', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'merk') {
             return $query->orderBy('merk.keterangan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'umuraki') {
+            return $query->orderBy('c1.jumlahhari', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'vulkan') {
+            return $query->orderBy('d1.vulkan', $this->params['sortOrder']);
         } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
@@ -666,6 +670,10 @@ class Stok extends MyModel
                             $query = $query->whereRaw('kategori.kodekategori LIKE' . "'%$filters[data]%'");
                         } else if ($filters['field'] == 'merk') {
                             $query = $query->whereRaw('merk.keterangan LIKE' . "'%$filters[data]%'");
+                        } else if ($filters['field'] == 'umuraki') {
+                            $query = $query->whereRaw('c1.jumlahhari LIKE' . "'%$filters[data]%'");
+                        } else if ($filters['field'] == 'vulkan') {
+                            $query = $query->whereRaw('d1.vulkan LIKE' . "'%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
@@ -692,7 +700,11 @@ class Stok extends MyModel
                                 $query = $query->orWhereRaw('merk.keterangan LIKE ' . "'%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
+                            } else if ($filters['field'] == 'umuraki') {
+                                $query = $query->orwhereRaw('c1.jumlahhari LIKE' . "'%$filters[data]%'");
+                            } else if ($filters['field'] == 'vulkan') {
+                                $query = $query->orwhereRaw('d1.vulkan LIKE' . "'%$filters[data]%'");
+                                } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                             }

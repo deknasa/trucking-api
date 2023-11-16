@@ -369,7 +369,7 @@ class SaldoUmurAki extends MyModel
                     cast(format(getdate(),'yyyy/MM/dd') as datetime)
                     else  
                         (case when isnull(b.tglpg,'1900/1/1')>=isnull(c.tglkor,'1900/1/1') then 
-                            b.tglpg else  c.tglpg end)
+                            b.tglpg else  c.tglkor end)
 
                     end)
                     
