@@ -8,8 +8,7 @@ use App\Rules\DateTutupBuku;
 use App\Rules\ExistAgen;
 use App\Rules\ExistJenisOrder;
 use App\Rules\ValidasiDetail;
-
-
+use App\Rules\ValidasiHutangList;
 
 class StoreInvoiceHeaderRequest extends FormRequest
 {
@@ -51,6 +50,7 @@ class StoreInvoiceHeaderRequest extends FormRequest
                 'required',
                 'date_format:d-m-Y',
                 'before:' . $tglbatasakhir,
+                new ValidasiHutangList($jumlahdetail),
             ],
             'tglsampai' => [
                 'required',

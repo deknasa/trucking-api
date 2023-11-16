@@ -24,7 +24,7 @@ class StoreInvoiceDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'nominalretribusi.*' => 'numeric|min:0'
+            // 'nominalretribusi.*' => 'numeric|min:0'
         ];
     }
 }

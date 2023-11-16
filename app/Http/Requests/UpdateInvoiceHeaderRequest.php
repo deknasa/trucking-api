@@ -9,6 +9,7 @@ use App\Rules\ExistAgen;
 use App\Rules\ExistJenisOrder;
 use App\Rules\ValidasiDestroyInvoiceHeader;
 use App\Rules\ValidasiDetail;
+use App\Rules\ValidasiHutangList;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
@@ -67,6 +68,7 @@ class UpdateInvoiceHeaderRequest extends FormRequest
                 'required',
                 'date_format:d-m-Y',
                 'before:' . $tglbatasakhir,
+                new ValidasiHutangList($jumlahdetail),
             ],
             'tglsampai' => [
                 'required',

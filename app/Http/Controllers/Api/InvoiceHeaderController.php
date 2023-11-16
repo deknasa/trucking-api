@@ -64,6 +64,7 @@ class InvoiceHeaderController extends Controller
         DB::beginTransaction();
 
         try {
+            $requestData = json_decode($request->detail, true);
             $data = [
                 'tglbukti' => $request->tglbukti,
                 'tglterima' => $request->tglterima,
@@ -73,11 +74,11 @@ class InvoiceHeaderController extends Controller
                 'piutang_nobukti' => $request->piutang_nobukti,
                 'statuspilihaninvoice' => $request->statuspilihaninvoice,
                 'tgldari' => $request->tgldari,
-                'tglsampai' => $request->tglsampai,
-                'sp_id' => $request->sp_id,
-                'nominalretribusi' => $request->nominalretribusi,
-                'nominalextra' => $request->nominalextra,
-                'omset' => $request->omset,
+                'tglsampai' => $request->tglsampai,      
+                'sp_id' => $requestData['sp_id'],
+                'nominalretribusi' => $requestData['nominalretribusi'],
+                'nominalextra' => $requestData['nominalextra'],
+                'omset' => $requestData['omset'],
                 'agen' => $request->agen,
                 'jenisorder' => $request->jenisorder
             ];
@@ -122,6 +123,7 @@ class InvoiceHeaderController extends Controller
         DB::beginTransaction();
 
         try {
+            $requestData = json_decode($request->detail, true);
             $data = [
                 'tglbukti' => $request->tglbukti,
                 'tglterima' => $request->tglterima,
@@ -132,10 +134,10 @@ class InvoiceHeaderController extends Controller
                 'tgldari' => $request->tgldari,
                 'tglsampai' => $request->tglsampai,
                 'statuspilihaninvoice' => $request->statuspilihaninvoice,
-                'sp_id' => $request->sp_id,
-                'nominalretribusi' => $request->nominalretribusi,
-                'nominalextra' => $request->nominalextra,
-                'omset' => $request->omset,
+                'sp_id' => $requestData['sp_id'],
+                'nominalretribusi' => $requestData['nominalretribusi'],
+                'nominalextra' => $requestData['nominalextra'],
+                'omset' => $requestData['omset'],
                 'agen' => $request->agen,
                 'jenisorder' => $request->jenisorder
             ];
