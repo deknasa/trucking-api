@@ -165,6 +165,27 @@ class CabangController extends Controller
             throw $th;
         }
     }
+
+    /**
+     * @ClassName
+     */
+    public function approvalKonensi(Request $request, Cabang $cabang)
+    {
+        DB::beginTransaction();
+
+        try {
+            $cabang = (new Cabang())->procesApprovalKonensi(
+                $cabang
+            );
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil Diubah',
+                'data' => $cabang
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
  
 
 
