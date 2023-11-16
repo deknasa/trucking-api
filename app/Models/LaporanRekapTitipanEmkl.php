@@ -77,6 +77,7 @@ class LaporanRekapTitipanEmkl  extends MyModel
             ->join(DB::raw("pengeluarantruckingheader as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
             ->leftjoin(DB::raw($tempprosestitipan . " as c with (readuncommitted) "), 'a.nobukti', 'c.pengeluarantruckingheader_nobukti')
             ->whereRaw("isnull(c.pengeluarantruckingheader_nobukti,'')=''")
+            ->whereRaw("isnull(b.pengeluarantrucking_id,'')=9")
             ->whereRaw("b.tglbukti<='" . $tanggal . "'")
             ->groupBy('b.nobukti');
 
@@ -170,13 +171,13 @@ class LaporanRekapTitipanEmkl  extends MyModel
 
         // dd( $querysisa->get());
 
-        // DB::table($tempbiayatitipan)->insertUsing([
-        //     'nobukti',
-        //     'tglbukti',
-        //     'keterangan',
-        //     'jenisorder_id',
-        //     'nominal',
-        // ], $querysisa);
+        DB::table($tempbiayatitipan)->insertUsing([
+            'nobukti',
+            'tglbukti',
+            'keterangan',
+            'jenisorder_id',
+            'nominal',
+        ], $querysisa);
 
         
         $getJudul = DB::table('parameter')
