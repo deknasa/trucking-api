@@ -240,12 +240,31 @@ class LaporanSaldoInventory extends MyModel
             $table->integer('jumlahhari')->nullable();
             $table->date('tglawal')->nullable();
         });
+        
+        $tempumuraki1 = '##tempumuraki1' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempumuraki1, function ($table) {
+            $table->Integer('stok_id')->nullable();
+            $table->integer('jumlahhari')->nullable();
+            $table->date('tglawal')->nullable();
+        });
+
+        DB::table($tempumuraki1)->insertUsing([
+            'stok_id',
+            'jumlahhari',
+            'tglawal',
+        ], (new SaldoUmurAki())->getallstok());
+
+        $querytempumuraki1 = DB::table($tempumuraki1)->select(
+            'stok_id',
+            db::raw('max(jumlahhari) as jumlahhari'),
+            db::raw('max(tglawal) as tglawal'),
+        )->groupBy('stok_id');
 
         DB::table($tempumuraki)->insertUsing([
             'stok_id',
             'jumlahhari',
             'tglawal',
-        ], (new SaldoUmurAki())->getallstok());
+        ], $querytempumuraki1);
 
         $hariaki = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
             ->select(
