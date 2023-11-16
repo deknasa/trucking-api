@@ -676,6 +676,7 @@ class LaporanNeraca extends MyModel
                 $table->string('keterangan', 500)->nullable();
                 $table->double('nominal')->nullable();
                 $table->string('jenisorder', 500)->nullable();
+                $table->string('jenislaporan', 500)->nullable();
             });
 
 
@@ -689,6 +690,7 @@ class LaporanNeraca extends MyModel
                 'keterangan',
                 'nominal',
                 'jenisorder',
+                'jenislaporan',
             ], (new LaporanRekapTitipanEmkl())->getData($tglpiutanglain, 1));
             // 
 
