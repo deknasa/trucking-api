@@ -384,8 +384,11 @@ class Stok extends MyModel
             $table->longText('gambar')->nullable();
             $table->longText('namaterpusat')->nullable();
             $table->string('statusban', 300)->nullable();
+            $table->integer('statusban_id')->nullable();
+            $table->string('statusreuse', 300)->nullable();
             $table->string('modifiedby', 300)->nullable();
             $table->double('totalvulkanisir',15,2)->nullable();
+            $table->double('vulkanisirawal',15,2)->nullable();
             $table->string('jenistrado', 300)->nullable();
             $table->string('kelompok', 300)->nullable();
             $table->string('subkelompok', 300)->nullable();
@@ -393,6 +396,8 @@ class Stok extends MyModel
             $table->string('merk', 300)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
+            $table->integer('umuraki')->nullable();
+            $table->integer('vulkan')->nullable();
         });
 
         foreach ($data as $row) {
