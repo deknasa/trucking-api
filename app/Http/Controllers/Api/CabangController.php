@@ -61,6 +61,8 @@ class CabangController extends Controller
             'kodecabang' => $request->kodecabang,
             'namacabang' => $request->namacabang,
             'statusaktif' => $request->statusaktif,
+            "key" => $request->key,
+            "value" => $request->value,
         ];
         DB::beginTransaction();
 
@@ -105,6 +107,8 @@ class CabangController extends Controller
             'kodecabang' => $request->kodecabang,
             'namacabang' => $request->namacabang,
             'statusaktif' => $request->statusaktif,
+            "key" => $request->key,
+            "value" => $request->value,
         ];
         DB::beginTransaction();
 

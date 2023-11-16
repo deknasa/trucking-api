@@ -269,7 +269,15 @@ class Cabang extends MyModel
         $cabang->statusaktif = $data['statusaktif'];
         $cabang->modifiedby = auth('api')->user()->user;
         $cabang->info = html_entity_decode(request()->info);
-
+        $detailmemo = [];
+        for ($i = 0; $i < count($data['key']); $i++) {
+            $value = ($data['value'][$i] != null) ? $data['value'][$i] : "";
+            $datadetailmemo = [
+                $data['key'][$i] => $value,
+            ];
+            $detailmemo = array_merge($detailmemo, $datadetailmemo);
+        }
+        $cabang->memo = json_encode($detailmemo);
         if (!$cabang->save()) {
             throw new \Exception('Error storing cabang.');
         }
@@ -293,7 +301,15 @@ class Cabang extends MyModel
         $cabang->statusaktif = $data['statusaktif'];
         $cabang->modifiedby = auth('api')->user()->user;
         $cabang->info = html_entity_decode(request()->info);
-
+        $detailmemo = [];
+        for ($i = 0; $i < count($data['key']); $i++) {
+            $value = ($data['value'][$i] != null) ? $data['value'][$i] : "";
+            $datadetailmemo = [
+                $data['key'][$i] => $value,
+            ];
+            $detailmemo = array_merge($detailmemo, $datadetailmemo);
+        }
+        $cabang->memo = json_encode($detailmemo);
         if (!$cabang->save()) {
             throw new \Exception('Error updating cabang.');
         }
