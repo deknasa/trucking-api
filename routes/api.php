@@ -372,6 +372,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('mekanik', MekanikController::class)->whereNumber('mekanik');
     Route::resource('upahsupir', UpahSupirController::class)->whereNumber('upahsupir');
     Route::resource('upahsupirrincian', UpahSupirRincianController::class)->whereNumber('upahsupirrincian');
+    Route::post('cabang/{cabang}/approvalkonensi', [CabangController::class,'approvalKonensi']);
     Route::resource('cabang', CabangController::class)->whereNumber('cabang');
     Route::resource('gandengan', GandenganController::class)->whereNumber('gandengan');
     Route::resource('trado', TradoController::class)->whereNumber('trado');

@@ -38,6 +38,7 @@ class Cabang extends MyModel
                 'cabang.kodecabang',
                 'cabang.namacabang',
                 'parameter.memo as statusaktif',
+                'statuskoneksi.memo as statuskoneksi_memo',
                 'cabang.modifiedby',
                 'cabang.created_at',
                 'cabang.updated_at',
@@ -46,6 +47,7 @@ class Cabang extends MyModel
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
+            ->leftJoin(DB::raw("parameter as statuskoneksi with (readuncommitted)"), 'cabang.statuskoneksi', 'statuskoneksi.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'cabang.statusaktif', 'parameter.id');
 
 
@@ -220,6 +222,8 @@ class Cabang extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statuskoneksi_memo') {
+                            $query = $query->where('statuskoneksi.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%' escape '|'");
                         } else {
@@ -234,6 +238,8 @@ class Cabang extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statusaktif') {
                                 $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statuskoneksi_memo') {
+                                $query = $query->orWhereRaw('statuskoneksi.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
@@ -269,7 +275,15 @@ class Cabang extends MyModel
         $cabang->statusaktif = $data['statusaktif'];
         $cabang->modifiedby = auth('api')->user()->user;
         $cabang->info = html_entity_decode(request()->info);
-
+        $detailmemo = [];
+        for ($i = 0; $i < count($data['key']); $i++) {
+            $value = ($data['value'][$i] != null) ? $data['value'][$i] : "";
+            $datadetailmemo = [
+                $data['key'][$i] => $value,
+            ];
+            $detailmemo = array_merge($detailmemo, $datadetailmemo);
+        }
+        $cabang->memo = json_encode($detailmemo);
         if (!$cabang->save()) {
             throw new \Exception('Error storing cabang.');
         }
@@ -293,7 +307,15 @@ class Cabang extends MyModel
         $cabang->statusaktif = $data['statusaktif'];
         $cabang->modifiedby = auth('api')->user()->user;
         $cabang->info = html_entity_decode(request()->info);
-
+        $detailmemo = [];
+        for ($i = 0; $i < count($data['key']); $i++) {
+            $value = ($data['value'][$i] != null) ? $data['value'][$i] : "";
+            $datadetailmemo = [
+                $data['key'][$i] => $value,
+            ];
+            $detailmemo = array_merge($detailmemo, $datadetailmemo);
+        }
+        $cabang->memo = json_encode($detailmemo);
         if (!$cabang->save()) {
             throw new \Exception('Error updating cabang.');
         }
@@ -324,6 +346,31 @@ class Cabang extends MyModel
             'datajson' => $cabang->toArray(),
         ]);
 
+        return $cabang;
+    }
+
+    public function procesApprovalKonensi(Cabang $cabang) : Cabang {
+        $statusOnLine = Parameter::where('grp', '=', 'STATUS KONEKSI')->where('text', '=', 'ONLINE')->first();
+        $statusOffLine = Parameter::where('grp', '=', 'STATUS KONEKSI')->where('text', '=', 'OFFLINE')->first();
+
+        if ($cabang->statuskoneksi == $statusOffLine->id) {
+            $cabang->statuskoneksi = $statusOnLine->id;
+        } else {
+            $cabang->statuskoneksi = $statusOffLine->id;
+        }
+
+        if (!$cabang->save()) {
+            throw new \Exception('Error Setting Koneksi.');
+        }
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($cabang->getTable()),
+            'postingdari' => "STATUS KONEKSI CABANG $cabang->namacabang",
+            'idtrans' => $cabang->id,
+            'nobuktitrans' => $cabang->id,
+            'aksi' => 'STATUS KONEKSI CABANG',
+            'datajson' => $cabang->toArray(),
+            'modifiedby' => auth('api')->user()->name,
+        ]);
         return $cabang;
     }
 }
