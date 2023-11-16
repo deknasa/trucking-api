@@ -337,6 +337,28 @@ class SaldoUmurAki extends MyModel
             'tglpg',
         ], $queryakipg);
 
+        $tempakikor = '##tempakikor' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempakikor, function ($table) {
+            $table->Integer('stok_id')->nullable();
+            $table->datetime('tglkor')->nullable();
+        });
+
+
+        $queryakikor =db::table($tempSaldoAki)->from(db::raw($tempSaldoAki . " a with(readuncommitted)"))
+        ->select(
+            'a.stok_id',
+            db::raw("max(c.tglbukti) as tglkor")
+        )
+        ->join(db::raw("pengeluaranstokdetail b with (readuncommitted)"),'a.stok_id','b.stok_id')
+        ->join(db::raw("pengeluaranstokheader c with (readuncommitted)"),'b.nobukti','c.nobukti')
+        ->whereRaw("isnull(c.pengeluaranstok_id,0)=3")
+        ->groupby('a.stok_id');
+
+        DB::table($tempakikor)->insertUsing([
+            'stok_id',
+            'tglkor',
+        ], $queryakikor);
+
 
         if (isset($hariaki)) {
             $umursaldo = db::table($tempSaldoAki)->from(db::raw($tempSaldoAki . " a "))
@@ -346,13 +368,15 @@ class SaldoUmurAki extends MyModel
                     (case when isnull(b.stok_id,0)=0 then 
                     cast(format(getdate(),'yyyy/MM/dd') as datetime)
                     else  
-                        b.tglpg
+                        (case when isnull(b.tglpg,'1900/1/1')>=isnull(c.tglkor,'1900/1/1') then 
+                            b.tglpg else  c.tglkor end)
 
                     end)
                     
                     ) as jumlahhari ")
                 )
                 ->leftjoin(db::raw($tempakipg ." b "),'a.stok_id','b.stok_id')
+                ->leftjoin(db::raw($tempakikor ." c "),'a.stok_id','c.stok_id')
                 ->orderby('a.stok_id', 'asc');
 
             DB::table($tempumurlistumuraki)->insertUsing([
