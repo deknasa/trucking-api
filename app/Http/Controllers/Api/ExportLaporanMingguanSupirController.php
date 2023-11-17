@@ -28,11 +28,11 @@ class ExportLaporanMingguanSupirController extends Controller
      */
     public function export(ValidasiLaporanMingguanSupirRequest $request)
     {
-        // if ($request->isCheck) {
-        //     return response([
-        //         'data' => 'ok'
-        //     ]);
-        // } else {
+        if ($request->isCheck) {
+            return response([
+                'data' => 'ok'
+            ]);
+        } else {
 
             $dari = $request->dari;
             $sampai = $request->sampai;
@@ -51,7 +51,7 @@ class ExportLaporanMingguanSupirController extends Controller
                 'data' => $export,
                 
             ]);
-        // }
+        }
        
     }
 
