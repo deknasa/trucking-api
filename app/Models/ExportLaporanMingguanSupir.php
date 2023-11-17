@@ -633,6 +633,9 @@ class ExportLaporanMingguanSupir extends Model
             ->leftjoin(DB::raw($tempuanglain . " as f "), 'a.nobukti', 'f.nobukti')
             ->leftjoin(DB::raw($tempbuktikomisi . " as g "), 'a.nobukti', 'g.nobukti')
             ->leftjoin(DB::raw($temprekapketeranganlain . " as h "), 'a.nobukti', 'h.nobukti')
+            ->orderBy('a.nopol')
+            ->orderBy('a.tglbukti')
+            ->orderBy('a.namasupir')
 
             ->get();
 

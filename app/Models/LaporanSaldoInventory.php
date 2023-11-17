@@ -362,7 +362,9 @@ class LaporanSaldoInventory extends MyModel
 
         // end update vulkanisir
         $stokdari = db::table('stok')->from(db::raw('stok with (readuncommitted)'))->select('namastok')->where('id',$stokdari_id)->first();
+        $dariStok = ($stokdari != '') ? $stokdari->namastok : '';
         $stoksampai = db::table('stok')->from(db::raw('stok with (readuncommitted)'))->select('namastok')->where('id',$stoksampai_id)->first();
+        $sampaiStok = ($stoksampai != '') ? $stoksampai->namastok : '';
         $query = DB::table($temprekapall)->from(
             DB::raw($temprekapall . " a")
         )
@@ -378,8 +380,8 @@ class LaporanSaldoInventory extends MyModel
                 db::raw("isnull(c.kodekelompok,'') as kategori"),
                 DB::raw("'" . $priode1 . "' as tgldari"),
                 DB::raw("'" . $priode1 . "' as tglsampai"),
-                DB::raw("'".$stokdari->namastok."' as stokdari"),
-                DB::raw("'".$stoksampai->namastok."' as stoksampai"),
+                DB::raw("'".$dariStok."' as stokdari"),
+                DB::raw("'".$sampaiStok."' as stoksampai"),
                 db::raw("
                 (case when isnull(c1.stok_id,0)<>0 then ' ( '+
                     (case when " . $bytgl . "=1 then 'TGL PAKAI '+format(c1.tglawal,'dd-MM-yyyy')+',' else '' end)+
