@@ -82,6 +82,14 @@ class StokPusatController extends Controller
         }
     }
 
+    public function getData(Request $request)
+    {
+        $stokPusat = new StokPusat();
+
+        return response([
+            'data' => $stokPusat->getData($request->kelompok_id)
+        ]);
+    }
 
     public function show($id)
     {
