@@ -783,6 +783,40 @@ class ReminderOli extends MyModel
             $table->integer('statusbatas')->nullable();
         });
 
+        $tempgorupby = '##tempgorupby' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempgorupby, function ($table) {
+                $table->id();
+                $table->longText('nopol')->nullable();
+                $table->date('tanggal')->nullable();
+                $table->string('status', 100)->nullable();
+                $table->double('km', 15, 2)->nullable();
+                $table->double('kmperjalanan', 15, 2)->nullable();
+                $table->integer('statusbatas')->nullable();
+            });
+
+            DB::table($tempgorupby)->insertUsing([
+                'nopol',
+                'tanggal',
+                'status',
+                'km',
+                'kmperjalanan',
+                'statusbatas'
+            ], $this->getdata());
+
+
+            $querytempgorupby = DB::table($tempgorupby)->select(
+                'nopol',
+                db::raw('max(tanggal) as tanggal'),
+                'status',
+                db::raw('max(km) as km'),
+                db::raw('max(kmperjalanan) as kmperjalanan'),
+                db::raw('max(isnull(statusbatas,0)) as statusbatas'),
+
+            )->groupBy(
+                'nopol',
+                'status',
+            )->orderBy('statusbatas','desc');
+
         DB::table($tempolimesin)->insertUsing([
             'nopol',
             'tanggal',
@@ -790,7 +824,7 @@ class ReminderOli extends MyModel
             'km',
             'kmperjalanan',
             'statusbatas'
-        ], $this->getdata());
+        ], $querytempgorupby);
 
         DB::delete(DB::raw("delete " . $tempolimesin . " from " . $tempolimesin . " as a WHERE a.status not in('PENGGANTIAN OLI MESIN')"));
         DB::delete(DB::raw("delete " . $tempolimesin . " from " . $tempolimesin . " as a WHERE (a.km-a.kmperjalanan)>" . $batasmax));
@@ -909,7 +943,40 @@ class ReminderOli extends MyModel
             $table->double('kmperjalanan', 15, 2)->nullable();
             $table->integer('statusbatas')->nullable();
         });
+        
+        $tempgorupby = '##tempgorupby' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempgorupby, function ($table) {
+                $table->id();
+                $table->longText('nopol')->nullable();
+                $table->date('tanggal')->nullable();
+                $table->string('status', 100)->nullable();
+                $table->double('km', 15, 2)->nullable();
+                $table->double('kmperjalanan', 15, 2)->nullable();
+                $table->integer('statusbatas')->nullable();
+            });
 
+            DB::table($tempgorupby)->insertUsing([
+                'nopol',
+                'tanggal',
+                'status',
+                'km',
+                'kmperjalanan',
+                'statusbatas'
+            ], $this->getdata());
+
+
+            $querytempgorupby = DB::table($tempgorupby)->select(
+                'nopol',
+                db::raw('max(tanggal) as tanggal'),
+                'status',
+                db::raw('max(km) as km'),
+                db::raw('max(kmperjalanan) as kmperjalanan'),
+                db::raw('max(isnull(statusbatas,0)) as statusbatas'),
+
+            )->groupBy(
+                'nopol',
+                'status',
+            )->orderBy('statusbatas','desc');
         DB::table($tempolipersneling)->insertUsing([
             'nopol',
             'tanggal',
@@ -917,7 +984,7 @@ class ReminderOli extends MyModel
             'km',
             'kmperjalanan',
             'statusbatas'
-        ], $this->getdata());
+        ], $querytempgorupby);
 
         DB::delete(DB::raw("delete " . $tempolipersneling . " from " . $tempolipersneling . " as a WHERE a.status not in('PENGGANTIAN OLI PERSNELING')"));
         DB::delete(DB::raw("delete " . $tempolipersneling . " from " . $tempolipersneling . " as a WHERE (a.km-a.kmperjalanan)>" . $batasmax));
@@ -1038,6 +1105,40 @@ class ReminderOli extends MyModel
             $table->integer('statusbatas')->nullable();
         });
 
+        $tempgorupby = '##tempgorupby' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempgorupby, function ($table) {
+                $table->id();
+                $table->longText('nopol')->nullable();
+                $table->date('tanggal')->nullable();
+                $table->string('status', 100)->nullable();
+                $table->double('km', 15, 2)->nullable();
+                $table->double('kmperjalanan', 15, 2)->nullable();
+                $table->integer('statusbatas')->nullable();
+            });
+
+            DB::table($tempgorupby)->insertUsing([
+                'nopol',
+                'tanggal',
+                'status',
+                'km',
+                'kmperjalanan',
+                'statusbatas'
+            ], $this->getdata());
+
+
+            $querytempgorupby = DB::table($tempgorupby)->select(
+                'nopol',
+                db::raw('max(tanggal) as tanggal'),
+                'status',
+                db::raw('max(km) as km'),
+                db::raw('max(kmperjalanan) as kmperjalanan'),
+                db::raw('max(isnull(statusbatas,0)) as statusbatas'),
+
+            )->groupBy(
+                'nopol',
+                'status',
+            )->orderBy('statusbatas','desc');
+
         DB::table($tempoligardan)->insertUsing([
             'nopol',
             'tanggal',
@@ -1045,7 +1146,7 @@ class ReminderOli extends MyModel
             'km',
             'kmperjalanan',
             'statusbatas'
-        ], $this->getdata());
+        ], $querytempgorupby);
 
         DB::delete(DB::raw("delete " . $tempoligardan . " from " . $tempoligardan . " as a WHERE a.status not in('PENGGANTIAN OLI GARDAN')"));
         DB::delete(DB::raw("delete " . $tempoligardan . " from " . $tempoligardan . " as a WHERE (a.km-a.kmperjalanan)>" . $batasmax));
@@ -1165,6 +1266,40 @@ class ReminderOli extends MyModel
             $table->integer('statusbatas')->nullable();
         });
 
+        $tempgorupby = '##tempgorupby' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempgorupby, function ($table) {
+                $table->id();
+                $table->longText('nopol')->nullable();
+                $table->date('tanggal')->nullable();
+                $table->string('status', 100)->nullable();
+                $table->double('km', 15, 2)->nullable();
+                $table->double('kmperjalanan', 15, 2)->nullable();
+                $table->integer('statusbatas')->nullable();
+            });
+
+            DB::table($tempgorupby)->insertUsing([
+                'nopol',
+                'tanggal',
+                'status',
+                'km',
+                'kmperjalanan',
+                'statusbatas'
+            ], $this->getdata());
+
+
+            $querytempgorupby = DB::table($tempgorupby)->select(
+                'nopol',
+                db::raw('max(tanggal) as tanggal'),
+                'status',
+                db::raw('max(km) as km'),
+                db::raw('max(kmperjalanan) as kmperjalanan'),
+                db::raw('max(isnull(statusbatas,0)) as statusbatas'),
+
+            )->groupBy(
+                'nopol',
+                'status',
+            )->orderBy('statusbatas','desc');
+
         DB::table($tempsaringanhawa)->insertUsing([
             'nopol',
             'tanggal',
@@ -1172,7 +1307,7 @@ class ReminderOli extends MyModel
             'km',
             'kmperjalanan',
             'statusbatas'
-        ], $this->getdata());
+        ], $querytempgorupby);
 
         DB::delete(DB::raw("delete " . $tempsaringanhawa . " from " . $tempsaringanhawa . " as a WHERE a.status not in('PENGGANTIAN SARINGAN HAWA')"));
         DB::delete(DB::raw("delete " . $tempsaringanhawa . " from " . $tempsaringanhawa . " as a WHERE (a.km-a.kmperjalanan)>" . $batasmax));
