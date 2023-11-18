@@ -141,12 +141,30 @@ class JenisOrder extends MyModel
         return $data;
     }
 
+    public function findAll($id)  {
+        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
+            ->select(
+                'jenisorder.id',
+                'jenisorder.kodejenisorder',
+                'jenisorder.keterangan',
+                'jenisorder.statusaktif',
+                'parameter.text as statusaktifnama',
+                'jenisorder.modifiedby',
+                'jenisorder.created_at',
+                'jenisorder.updated_at',
+            )
+            ->where('jenisorder.id',$id)
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jenisorder.statusaktif', '=', 'parameter.id');
+        return $query->first();
+    }
+
     public function default()
     {
 
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama')->nullable();
         });
 
         $statusaktif = Parameter::from(
@@ -154,19 +172,22 @@ class JenisOrder extends MyModel
         )
             ->select(
                 'memo',
+                'text',
                 'id'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
-        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
+            DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id,"statusaktifnama" => $statusaktif->text]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
             ->select(
-                'statusaktif'
+                'statusaktif',
+                'statusaktifnama',
+
             );
 
         $data = $query->first();

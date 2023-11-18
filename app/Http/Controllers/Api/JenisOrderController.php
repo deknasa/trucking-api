@@ -114,7 +114,7 @@ class JenisOrderController extends Controller
     {
         return response([
             'status' => true,
-            'data' => $jenisorder
+            'data' => (new JenisOrder())->findAll($jenisorder->id)
         ]);
     }
 
