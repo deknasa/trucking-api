@@ -111,7 +111,7 @@ class DataRitasiController extends Controller
     {
         return response([
             'status' => true,
-            'data' => $dataritasi
+            'data' => (new DataRitasi())->findAll($dataritasi->id)
         ]);
     }
 

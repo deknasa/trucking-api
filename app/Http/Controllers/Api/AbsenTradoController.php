@@ -116,7 +116,7 @@ class AbsenTradoController extends Controller
     {
         return response([
             'status' => true,
-            'data' => $absentrado
+            'data' => (new AbsenTrado())->findAll($absentrado->id)
         ]);
     }
 

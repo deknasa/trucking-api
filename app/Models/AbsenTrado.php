@@ -99,11 +99,32 @@ class AbsenTrado extends MyModel
         return $data;
     }
 
+    public function findAll($id)  {
+        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
+            ->select(
+                'absentrado.id',
+                'absentrado.kodeabsen',
+                'absentrado.keterangan',
+
+                'absentrado.statusaktif',
+                'absentrado.memo',
+                'parameter.text as statusaktifnama',
+                'absentrado.modifiedby',
+                'absentrado.created_at',
+                'absentrado.updated_at',
+            )
+            ->where('absentrado.id',$id)
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'absentrado.statusaktif', '=', 'parameter.id');
+            return $query->first();
+
+    }
+
     public function default()
     {
 
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
+            $table->string('statusaktifnama')->nullable();
             $table->unsignedBigInteger('statusaktif')->nullable();
         });
 
@@ -111,18 +132,20 @@ class AbsenTrado extends MyModel
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
+                'text',
                 'id'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
-        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
+            DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id,"statusaktifnama" => $statusaktif->text]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
             ->select(
+                'statusaktifnama',
                 'statusaktif'
             );
 

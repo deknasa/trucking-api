@@ -550,6 +550,21 @@ class ImportDataCabang extends Model
 
         return "Data Periode " . $data['periode'] . " Cabang $cabang->namacabang Berhasil di Import";
     }
+
+    public function testkoneksi() {
+        $data['periode'] = '2023-10-01';
+        $month = substr($data['periode'], 0, 2);
+            $year = substr($data['periode'], -4);
+            $aptgl = '2023-10-01';
+       
+            $dbconnect = DB::connection('sqlsrv2')->getPDO();
+            $dbname = DB::connection('sqlsrv2')->getDatabaseName();
+        $queryloop = DB::connection('sqlsrv2')->table("MKAPAL")->from("MKAPAL")
+        ->select('FID','FKKapal')
+        ->get();
+
+        return $queryloop;
+    }
 }
 
 // foreach ($data as $key=>$item) {

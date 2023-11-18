@@ -310,6 +310,7 @@ Route::get('stok/{filename}/{type}', [StokController::class, 'getImage']);
 Route::get('stokpusat/{filename}/{type}', [StokPusatController::class, 'getImage']);
 Route::get('upahsupir/{filename}/{type}', [UpahSupirController::class, 'getImage']);
 Route::get('parameter/getparamrequest', [ParameterController::class, 'getparamrequest']);
+Route::get('importdatacabang/testkoneksi', [ImportDataCabangController::class, 'testkoneksi']);
 
 
 route::middleware(['auth:api'])->group(function () {

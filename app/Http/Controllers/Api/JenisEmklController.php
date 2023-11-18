@@ -132,7 +132,7 @@ class JenisEmklController extends Controller
     {
         return response([
             'status' => true,
-            'data' => $jenisemkl
+            'data' => (new JenisEmkl())->findAll( $jenisemkl->id)
         ]);
     }
 

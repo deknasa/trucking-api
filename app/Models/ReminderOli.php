@@ -73,7 +73,19 @@ class ReminderOli extends MyModel
                 $table->integer('statusbatas')->nullable();
             });
 
-            DB::table($temtabel)->insertUsing([
+
+            $tempgorupby = '##tempgorupby' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempgorupby, function ($table) {
+                $table->id();
+                $table->longText('nopol')->nullable();
+                $table->date('tanggal')->nullable();
+                $table->string('status', 100)->nullable();
+                $table->double('km', 15, 2)->nullable();
+                $table->double('kmperjalanan', 15, 2)->nullable();
+                $table->integer('statusbatas')->nullable();
+            });
+
+            DB::table($tempgorupby)->insertUsing([
                 'nopol',
                 'tanggal',
                 'status',
@@ -81,6 +93,30 @@ class ReminderOli extends MyModel
                 'kmperjalanan',
                 'statusbatas'
             ], $this->getdata());
+
+
+            $querytempgorupby = DB::table($tempgorupby)->select(
+                'nopol',
+                db::raw('max(tanggal) as tanggal'),
+                'status',
+                db::raw('max(km) as km'),
+                db::raw('max(kmperjalanan) as kmperjalanan'),
+                db::raw('max(isnull(statusbatas,0)) as statusbatas'),
+
+            )->groupBy(
+                'nopol',
+                'status',
+            )->orderBy('statusbatas','desc');
+    
+
+            DB::table($temtabel)->insertUsing([
+                'nopol',
+                'tanggal',
+                'status',
+                'km',
+                'kmperjalanan',
+                'statusbatas'
+            ], $querytempgorupby);
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
                 DB::raw("listtemporarytabel with (readuncommitted)")
