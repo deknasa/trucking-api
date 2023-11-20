@@ -31,15 +31,15 @@ class LaporanKartuHutangPerSupplier extends MyModel
         $tgl = '01-' . date('m', strtotime($dari)) . '-' . date('Y', strtotime($dari));
         $dari1 = date('Y-m-d', strtotime($tgl));
 
-        if ($supplierdari == 0) {
+        if ($supplierdari == 0 || $suppliersampai == 0 ) {
             $supplierdari = db::table('supplier')->from(db::raw("supplier with (readuncommitted)"))
                 ->select('id')->orderby('id', 'asc')->first()->id ?? 0;
-        }
 
-        if ($suppliersampai == 0) {
-            $suppliersampai = db::table('supplier')->from(db::raw("supplier with (readuncommitted)"))
+                $suppliersampai = db::table('supplier')->from(db::raw("supplier with (readuncommitted)"))
                 ->select('id')->orderby('id', 'desc')->first()->id ?? 0;
-        }
+
+            }
+
 
         if ($supplierdari > $suppliersampai) {
             $supplierdari1 = $suppliersampai;
@@ -48,6 +48,11 @@ class LaporanKartuHutangPerSupplier extends MyModel
             $suppliersampai = $suppliersampai1;
         }
 
+        $supplierdarinama=db::table('supplier')->from(db::raw("supplier with (readuncommitted)"))
+        ->select('namasupplier')->orderby('id', 'asc')->where('id',$supplierdari)->first()->namasupplier ?? '';
+
+        $suppliersampainama=db::table('supplier')->from(db::raw("supplier with (readuncommitted)"))
+        ->select('namasupplier')->orderby('id', 'asc')->where('id',$suppliersampai)->first()->namasupplier ?? '';
 
         $getJudul = DB::table('parameter')
             ->select('text')
@@ -155,6 +160,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             $table->string('nobuktihutang', 50);
             $table->dateTime('tglberjalan');
             $table->string('jenishutang', 50);
+            $table->integer('urut')->nullable();
         });
 
 
@@ -169,7 +175,8 @@ class LaporanKartuHutangPerSupplier extends MyModel
                 'a.nobukti as nobuktihutang',
                 'b.tglbukti as tglberjalan',
                 db::raw("(case when isnull(c.nobukti,'')=''  and b.tglbukti>'" . $tglsaldo . "'  then 'HUTANG PREDIKSI' else 'HUTANG USAHA' END) as jenishutang"),
-            )
+                db::raw("0 as urut"),
+                )
             ->join(db::raw("hutangheader b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
             ->leftjoin(db::raw("penerimaanstokheader c with (readuncommitted) "), 'b.nobukti', 'c.hutang_nobukti');
 
@@ -183,6 +190,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             'nobuktihutang',
             'tglberjalan',
             'jenishutang',
+            'urut',
         ], $queryrekapdata);
 
 
@@ -195,8 +203,9 @@ class LaporanKartuHutangPerSupplier extends MyModel
                 "d.tglbukti as tglbayar",
                 db::raw("(isnull(c.nominal,0)+isnull(c.potongan,0)) as nominalbayar"),
                 'a.nobukti as nobuktihutang',
-                'd.tglbukti as tglberjalan',
+                'b.tglbukti as tglberjalan',
                 db::raw("(case when isnull(b.nobukti,'')=''  and b.tglbukti>'" . $tglsaldo . "'  then 'HUTANG PREDIKSI' else 'HUTANG USAHA' END) as jenishutang"),
+                db::raw("1 as urut"),                
             )
             ->join(db::raw("hutangheader b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
             ->join(db::raw("pelunasanhutangdetail c with (readuncommitted) "), 'a.nobukti', 'c.hutang_nobukti')
@@ -213,6 +222,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             'nobuktihutang',
             'tglberjalan',
             'jenishutang',
+            'urut',
         ], $queryrekapdata);
 
 
@@ -220,7 +230,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
         $temprekaphasil = '##temprekaphasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temprekaphasil, function ($table) {
             $table->id();
-            $table->integer('supplier_id')->nullable();
+            $table->string('supplier_id',1000)->nullable();
             $table->string('nobukti', 50)->nullable();
             $table->dateTime('tglbukti')->nullable();
             $table->double('nominalhutang')->nullable();
@@ -231,11 +241,12 @@ class LaporanKartuHutangPerSupplier extends MyModel
             $table->double('saldo')->nullable();
             $table->double('saldobayar')->nullable();
             $table->string('jenishutang', 50)->nullable();
+            $table->integer('urut')->nullable();
         });
 
         $queryrekaphasil = db::table($temprekapdata)->from(db::raw($temprekapdata . " a  "))
             ->select(
-                'a.supplier_id',
+                'b.namasupplier as supplier_id',
                 'a.nobukti',
                 db::raw("(case when year(a.tglbukti)=1900 then null else a.tglbukti end ) as tglbukti"),
                 'a.nominalhutang',
@@ -243,14 +254,18 @@ class LaporanKartuHutangPerSupplier extends MyModel
                 'a.nominalbayar',
                 'a.nobuktihutang',
                 'a.tglberjalan',
-                db::raw("SUM(a.nominalhutang-a.nominalbayar) OVER (PARTITION BY a.jenishutang,a.supplier_id ORDER BY a.tglberjalan,a.nobuktihutang ASC) as saldo"),
+                db::raw("SUM(a.nominalhutang-a.nominalbayar) OVER (PARTITION BY a.jenishutang,b.namasupplier ORDER BY a.tglberjalan,a.nobuktihutang,a.urut ASC) as saldo"),
                 db::raw("a.nominalhutang-a.nominalbayar  as saldobayar"),
-                'a.jenishutang'
+                'a.jenishutang',
+                'a.urut'
             )
-            ->orderby('a.supplier_id', 'asc')
+            ->leftjoin(db::raw("supplier b with (readuncommitted) "), 'a.supplier_id', 'b.id')
+     
+            ->orderby('b.namasupplier', 'asc')
             ->orderby('a.jenishutang', 'asc')
             ->orderby('a.tglberjalan', 'asc')
-            ->orderby('a.nobuktihutang', 'asc');
+            ->orderby('a.nobuktihutang', 'asc')
+            ->orderby('a.urut', 'asc');
 
 
         DB::table($temprekaphasil)->insertUsing([
@@ -265,6 +280,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             'saldo',
             'saldobayar',
             'jenishutang',
+            'urut',
         ], $queryrekaphasil);
 
         $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
@@ -276,6 +292,42 @@ class LaporanKartuHutangPerSupplier extends MyModel
             ->select('text')
             ->where('grp', 'DIPERIKSA')
             ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
+$queryurut=db::table($temprekaphasil)->from(db::raw($temprekaphasil . " a"))
+->select(
+    'a.id',
+    'a.supplier_id',
+    'a.jenishutang',
+    'a.nobukti',
+    'a.nobuktihutang',
+    )
+    ->orderby('a.id')
+    ->get();
+    $datadetail = json_decode($queryurut, true);
+    $xuji='';
+    $xnobukti='';
+    $xnobuktihutang='';
+
+    DB::update(DB::raw("UPDATE " . $temprekaphasil . " SET urut=0"));
+    $urut=0;
+    foreach ($datadetail as $item) {
+        $xuji2=$item['supplier_id'].$item['jenishutang'];
+
+        if ($xuji2!=$xuji) {
+            $urut=0;
+        }
+            if ($item['nobukti']==$item['nobuktihutang']) {
+                $urut=$urut+1;
+                DB::update(DB::raw("UPDATE " . $temprekaphasil . " SET urut=".$urut." where id=". $item['id']));
+            }
+            
+        
+        $xuji=$item['supplier_id'].$item['jenishutang'];
+        $xnobukti=$item['nobukti'];
+        $xnobuktihutang=$item['nobuktihutang'];
+    
+    }
+
 
         $select_data = DB::table($temprekaphasil . ' AS A')
             ->select([
@@ -291,9 +343,10 @@ class LaporanKartuHutangPerSupplier extends MyModel
                 'a.saldo',
                 'a.saldobayar',
                 'a.jenishutang',
+                'a.urut',
                 DB::raw("'$getJudul->text' AS text"),
-                DB::raw("'$dari' AS dari"),
-                DB::raw("'$sampai' AS sampai"),
+                DB::raw("'$supplierdarinama' AS dari"),
+                DB::raw("'$suppliersampainama' AS sampai"),
                 DB::raw("'Laporan Kartu Hutang Per Supplier' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
@@ -305,6 +358,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
 
             ->orderBy('a.id', 'asc');
 
+            // dd($select_data->get());
 
         if ($prosesneraca == 1) {
             $data = $select_data;
@@ -317,6 +371,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
         // 
     }
 
+   
 
     public function getReportOld($dari, $sampai, $supplierdari, $suppliersampai, $prosesneraca)
     {
