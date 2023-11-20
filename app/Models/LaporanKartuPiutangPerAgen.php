@@ -29,7 +29,7 @@ class LaporanKartuPiutangPerAgen extends MyModel
 
         $prosesneraca = $prosesneraca ?? 0;
 
-        $sampai=$dari;
+        $sampai = $dari;
         $tgl = '01-' . date('m', strtotime($dari)) . '-' . date('Y', strtotime($dari));
         $dari1 = date('Y-m-d', strtotime($tgl));
         if ($agenDari == 0) {
@@ -54,6 +54,28 @@ class LaporanKartuPiutangPerAgen extends MyModel
             ->where('grp', 'JUDULAN LAPORAN')
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
+        $tempKartuPiutang = '##tempKartuPiutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempKartuPiutang, function ($table) {
+            $table->bigIncrements('id');
+            $table->string('nobukti', 50)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->double('nominal')->nullable();
+            $table->date('tglbayar')->nullable();
+            $table->double('bayar')->nullable();
+            $table->integer('agen_id');
+            $table->string('group', 50);
+        });
+
 
         // START TEMPPIUTANG
         $Temppiutang = '##Temppiutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -61,27 +83,38 @@ class LaporanKartuPiutangPerAgen extends MyModel
             $table->datetime('tglbukti')->nullable();
             $table->string('nobukti', 100)->nullable();
             $table->double('nominal')->nullable();
+            $table->integer('agen_id');
+            $table->string('group', 50);
         });
-
         $select_Temppiutang = DB::table('piutangheader')->from(DB::raw("piutangheader AS A WITH (READUNCOMMITTED)"))
             ->select([
                 DB::raw('MAX(A.tglbukti) as tglbukti'),
                 'A.nobukti',
-                DB::raw('SUM(B.nominal) as nominal')
+                DB::raw('SUM(B.nominal) as nominal'),
+                DB::raw('MAX(A.agen_id) as agen_id'),
+                'A.nobukti as group',
             ])
             ->join('piutangdetail AS B', 'A.nobukti', '=', 'B.NoBukti')
             ->where('A.agen_id', '>=', $agenDari)
             ->where('A.agen_id', '<=', $agenSampai)
             ->groupBy('A.nobukti');
 
-            // dd($select_Temppiutang->get());
 
         DB::table($Temppiutang)->insertUsing([
             'tglbukti',
             'nobukti',
             'nominal',
+            'agen_id',
+            'group',
         ], $select_Temppiutang);
-        // dd($select_Temppiutang->get());
+
+        DB::table($tempKartuPiutang)->insertUsing([
+            'tglbukti',
+            'nobukti',
+            'nominal',
+            'agen_id',
+            'group'
+        ], $select_Temppiutang);
         // END TEMPPIUTANG
 
         // START TEMPPIUTANG BAYAR
@@ -98,12 +131,11 @@ class LaporanKartuPiutangPerAgen extends MyModel
                 DB::raw('MAX(A.tglbukti) as tglbukti'),
                 'A.nobukti',
                 'B.piutang_nobukti',
-                DB::raw('SUM(B.nominal+potongan) as nominal')
+                DB::raw('SUM(B.nominal) as nominal')
             ])
             ->join(DB::raw("pelunasanPiutangdetail as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
             ->join(DB::raw($Temppiutang . " AS C with (readuncommitted)"), 'B.piutang_nobukti', 'C.nobukti')
             ->groupBy('A.nobukti', 'B.piutang_nobukti');
-
 
         DB::table($Temppiutangbyr)->insertUsing([
             'tglbukti',
@@ -171,24 +203,24 @@ class LaporanKartuPiutangPerAgen extends MyModel
         // dd($select_Temppiutangbyrsaldo->get());
 
         //NOTE - TemppiutangbyrsaldoCicil
-        $TemppiutangbyrsaldoCicil = '##TemppiutangbyrsaldoCicil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($TemppiutangbyrsaldoCicil, function ($table) {
-            $table->datetime('tglbukti');
-            $table->string('nobukti', 100);
-            $table->string('piutang_nobukti', 100);
-            $table->double('nominal');
-            $table->integer('urut');
-        });
+        // $TemppiutangbyrsaldoCicil = '##TemppiutangbyrsaldoCicil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        // Schema::create($TemppiutangbyrsaldoCicil, function ($table) {
+        //     $table->datetime('tglbukti');
+        //     $table->string('nobukti', 100);
+        //     $table->string('piutang_nobukti', 100);
+        //     $table->double('nominal');
+        //     $table->integer('urut');
+        // });
 
-        $select_TemppiutangbyrsaldoCicil = DB::table($Temppiutangbyr)->from(DB::raw($Temppiutangbyr . " AS A"))
-            ->select([
-                'A.tglbukti as tglbukti',
-                'A.nobukti',
-                'A.piutang_nobukti',
-                'A.nominal as nominal',
-                DB::raw('ROW_NUMBER() OVER (PARTITION BY A.piutang_nobukti ORDER BY A.tglbukti) as urut')
-            ])
-            ->where('A.tglbukti', '<', $dari1);
+        // $select_TemppiutangbyrsaldoCicil = DB::table($Temppiutangbyr)->from(DB::raw($Temppiutangbyr . " AS A"))
+        //     ->select([
+        //         'A.tglbukti as tglbukti',
+        //         'A.nobukti',
+        //         'A.piutang_nobukti',
+        //         'A.nominal as nominal',
+        //         DB::raw('ROW_NUMBER() OVER (PARTITION BY A.piutang_nobukti ORDER BY A.tglbukti) as urut')
+        //     ])
+        //     ->where('A.tglbukti', '<', $dari1);
         //datanya tidak ada
         // dd("ASdas");
         // dd($select_TemppiutangbyrsaldoCicil->get());
@@ -209,9 +241,6 @@ class LaporanKartuPiutangPerAgen extends MyModel
             ->where('A.tglbukti', '>', $dari1)
             ->where('A.tglbukti', '<=', $sampai);
 
-         
-            // dd(db::table($Temppiutang)->get());
-            // dd($select_Temppiutangberjalan->get());
 
         DB::table($Temppiutangberjalan)->insertUsing([
             'tglbukti',
@@ -245,180 +274,177 @@ class LaporanKartuPiutangPerAgen extends MyModel
             'nominal',
         ], $select_Temppiutangbyrberjalan);
 
-        $TemppiutangbyrberjalanCicil = '##TemppiutangbyrberjalanCicil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($TemppiutangbyrberjalanCicil, function ($table) {
-            $table->datetime('tglbukti');
-            $table->string('nobukti', 100);
-            $table->string('piutang_nobukti', 100);
-            $table->double('nominal');
-            $table->integer('urut');
-        });
+        // $TemppiutangbyrberjalanCicil = '##TemppiutangbyrberjalanCicil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        // Schema::create($TemppiutangbyrberjalanCicil, function ($table) {
+        //     $table->datetime('tglbukti');
+        //     $table->string('nobukti', 100);
+        //     $table->string('piutang_nobukti', 100);
+        //     $table->double('nominal');
+        //     $table->integer('urut');
+        // });
 
-        $select_TemppiutangbyrberjalanCicil = DB::table($Temppiutangbyr)->from(DB::raw($Temppiutangbyr . " AS A"))
-            ->select([
-                DB::raw('A.tglbukti as tglbukti'),
-                DB::raw('A.nobukti as nobukti'),
-                'A.piutang_nobukti',
-                DB::raw('A.nominal as nominal'),
-                DB::raw("row_number() Over(partition BY A.piutang_nobukti Order By A.tglbukti) as urut")
-            ])
-            ->where('A.tglbukti', '>', $dari1)
-            ->where('A.tglbukti', '<=', $sampai);
+        // $select_TemppiutangbyrberjalanCicil = DB::table($Temppiutangbyr)->from(DB::raw($Temppiutangbyr . " AS A"))
+        //     ->select([
+        //         DB::raw('A.tglbukti as tglbukti'),
+        //         DB::raw('A.nobukti as nobukti'),
+        //         'A.piutang_nobukti',
+        //         DB::raw('A.nominal as nominal'),
+        //         DB::raw("row_number() Over(partition BY A.piutang_nobukti Order By A.tglbukti) as urut")
+        //     ])
+        //     ->where('A.tglbukti', '>', $dari1)
+        //     ->where('A.tglbukti', '<=', $sampai);
 
-        DB::table($TemppiutangbyrberjalanCicil)->insertUsing([
-            'tglbukti',
-            'nobukti',
-            'piutang_nobukti',
-            'nominal',
-            'urut',
-        ], $select_TemppiutangbyrberjalanCicil);
+        // DB::table($TemppiutangbyrberjalanCicil)->insertUsing([
+        //     'tglbukti',
+        //     'nobukti',
+        //     'piutang_nobukti',
+        //     'nominal',
+        //     'urut',
+        // ], $select_TemppiutangbyrberjalanCicil);
 
-        $TempCicil = '##TempCicil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($TempCicil, function ($table) {
-            $table->string('piutang_nobukti', 50);
-            $table->integer('urut');
-        });
+        // $TempCicil = '##TempCicil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        // Schema::create($TempCicil, function ($table) {
+        //     $table->string('piutang_nobukti', 50);
+        //     $table->integer('urut');
+        // });
 
-        $select_TempCicil = DB::table($TemppiutangbyrsaldoCicil)->from(DB::raw($TemppiutangbyrsaldoCicil))
-            ->select([
-                'piutang_nobukti',
-                DB::raw('MAX(urut) as urut'),
-            ])
-            ->groupBy('piutang_nobukti');
+        // $select_TempCicil = DB::table($TemppiutangbyrsaldoCicil)->from(DB::raw($TemppiutangbyrsaldoCicil))
+        //     ->select([
+        //         'piutang_nobukti',
+        //         DB::raw('MAX(urut) as urut'),
+        //     ])
+        //     ->groupBy('piutang_nobukti');
 
-        DB::table($TempCicil)->insertUsing([
-            'piutang_nobukti',
-            'urut',
-        ], $select_TempCicil);
+        // DB::table($TempCicil)->insertUsing([
+        //     'piutang_nobukti',
+        //     'urut',
+        // ], $select_TempCicil);
 
-        $select_TempCicil2 = DB::table($TemppiutangbyrberjalanCicil)->from(DB::raw($TemppiutangbyrberjalanCicil))
-            ->select([
-                'piutang_nobukti',
-                DB::raw('MAX(urut) as urut'),
-            ])
-            ->groupBy('piutang_nobukti');
+        // $select_TempCicil2 = DB::table($TemppiutangbyrberjalanCicil)->from(DB::raw($TemppiutangbyrberjalanCicil))
+        //     ->select([
+        //         'piutang_nobukti',
+        //         DB::raw('MAX(urut) as urut'),
+        //     ])
+        //     ->groupBy('piutang_nobukti');
 
-        DB::table($TempCicil)->insertUsing([
-            'piutang_nobukti',
-            'urut',
-        ], $select_TempCicil2);
-        // dd($select_TempCicil->get());
-
-
-        $TempCicilRekap = '##TempCicilRekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($TempCicilRekap, function ($table) {
-            $table->string('piutang_nobukti', 50);
-            $table->integer('urut');
-        });
-
-        $select_TempCicilRekap = DB::table($TempCicil)->from(DB::raw($TempCicil))
-            ->select([
-                'piutang_nobukti',
-                DB::raw('SUM(urut) as urut'),
-            ])
-            ->groupBy('piutang_nobukti');
-
-        DB::table($TempCicilRekap)->insertUsing([
-            'piutang_nobukti',
-            'urut',
-        ], $select_TempCicilRekap);
-        //    dd($select_TempCicilRekap->get());
+        // DB::table($TempCicil)->insertUsing([
+        //     'piutang_nobukti',
+        //     'urut',
+        // ], $select_TempCicil2);
+        // // dd($select_TempCicil->get());
 
 
-        $TempRekappiutang = '##TempRekappiutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($TempRekappiutang, function ($table) {
-            $table->bigIncrements('id');
-            $table->string('nobukti', 50);
-            $table->double('nominal');
-            $table->double('bayar');
-        });
+        // $TempCicilRekap = '##TempCicilRekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        // Schema::create($TempCicilRekap, function ($table) {
+        //     $table->string('piutang_nobukti', 50);
+        //     $table->integer('urut');
+        // });
+
+        // $select_TempCicilRekap = DB::table($TempCicil)->from(DB::raw($TempCicil))
+        //     ->select([
+        //         'piutang_nobukti',
+        //         DB::raw('SUM(urut) as urut'),
+        //     ])
+        //     ->groupBy('piutang_nobukti');
+
+        // DB::table($TempCicilRekap)->insertUsing([
+        //     'piutang_nobukti',
+        //     'urut',
+        // ], $select_TempCicilRekap);
+        // //    dd($select_TempCicilRekap->get());
+
+
+        // $TempRekappiutang = '##TempRekappiutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        // Schema::create($TempRekappiutang, function ($table) {
+        //     $table->bigIncrements('id');
+        //     $table->string('nobukti', 50);
+        //     $table->double('nominal');
+        //     $table->double('bayar');
+        // });
 
 
 
-        $select_TempRekappiutang = DB::table($Temppiutangsaldo . ' AS A')
-            ->select([
-                'A.nobukti',
-                DB::raw("(ISNULL(A.nominal, 0) - ISNULL(B.nominal, 0)) as saldo"),
-                DB::raw("ISNULL(C.nominal, 0) as bayar")
-            ])
-            ->leftJoin($Temppiutangbyrsaldo . ' AS B', 'A.nobukti', '=', 'B.piutang_nobukti')
-            ->leftJoin($Temppiutangbyrberjalan . ' AS C', 'A.nobukti', '=', 'C.piutang_nobukti')
-            ->join(DB::raw("piutangheader AS D with (readuncommitted)"), 'A.nobukti', '=', 'D.nobukti')
-            ->where(DB::raw("(ISNULL(A.nominal, 0) - ISNULL(B.nominal, 0))"), '<>', 0)
-            ->orderBy('D.agen_id')
-            ->orderBy('D.tglbukti')
-            ->orderBy('A.nobukti');
-        // dd($select_TempRekappiutang->get()); sampai sini datanya ada
+        // $select_TempRekappiutang = DB::table($Temppiutangsaldo . ' AS A')
+        //     ->select([
+        //         'A.nobukti',
+        //         DB::raw("(ISNULL(A.nominal, 0) - ISNULL(B.nominal, 0)) as saldo"),
+        //         DB::raw("ISNULL(C.nominal, 0) as bayar")
+        //     ])
+        //     ->leftJoin($Temppiutangbyrsaldo . ' AS B', 'A.nobukti', '=', 'B.piutang_nobukti')
+        //     ->leftJoin($Temppiutangbyrberjalan . ' AS C', 'A.nobukti', '=', 'C.piutang_nobukti')
+        //     ->join(DB::raw("piutangheader AS D with (readuncommitted)"), 'A.nobukti', '=', 'D.nobukti')
+        //     ->where(DB::raw("(ISNULL(A.nominal, 0) - ISNULL(B.nominal, 0))"), '<>', 0)
+        //     ->orderBy('D.agen_id')
+        //     ->orderBy('D.tglbukti')
+        //     ->orderBy('A.nobukti');
 
-
-        DB::table($TempRekappiutang)->insertUsing([
-            'nobukti',
-            'nominal',
-            'bayar',
-        ], $select_TempRekappiutang);
+        // DB::table($TempRekappiutang)->insertUsing([
+        //     'nobukti',
+        //     'nominal',
+        //     'bayar',
+        // ], $select_TempRekappiutang);
 
         // dd($select_TempRekappiutang->get());
-
-        $select_TempRekappiutang2 = DB::table($Temppiutangberjalan . ' AS A')
-            ->select([
-                'A.nobukti',
-                'A.nominal',
-                DB::raw('ISNULL(C.nominal, 0) as bayar')
-            ])
-
-            ->leftJoin($Temppiutangbyrberjalan . ' AS C', 'A.nobukti', '=', 'C.piutang_nobukti');
-
-        // dd($select_TempRekappiutang2->get());
-
-        DB::table($TempRekappiutang)->insertUsing([
+        $select_Pelunasan = DB::table($Temppiutangsaldo . ' AS A')
+        ->select([
+            'B.nobukti',
+            'B.tglbukti as tglbayar',
+            DB::raw("ISNULL(B.nominal, 0) as bayar"),
+            'D.agen_id',
+            'A.nobukti as group',
+        ])
+        ->leftJoin($Temppiutangbyrsaldo . ' AS B', 'A.nobukti', '=', 'B.piutang_nobukti')
+        ->leftJoin($Temppiutangbyrberjalan . ' AS C', 'A.nobukti', '=', 'C.piutang_nobukti')
+        ->join(DB::raw("piutangheader AS D with (readuncommitted)"), 'A.nobukti', '=', 'D.nobukti')
+        // ->where(DB::raw("(ISNULL(A.nominal, 0) - ISNULL(B.nominal, 0))"), '<>', 0)
+        ->where(DB::raw("ISNULL(B.nominal, 0)"), '<>', 0)
+        ->orderBy('D.agen_id')
+        ->orderBy('D.tglbukti')
+        ->orderBy('A.nobukti');
+        // return $select_Pelunasan->get();
+        DB::table($tempKartuPiutang)->insertUsing([
             'nobukti',
-            'nominal',
+            'tglbayar',
             'bayar',
-        ], $select_TempRekappiutang2);
+            'agen_id',
+            'group'
+        ], $select_Pelunasan);
+        // END PELUNASAN TO REKAP
 
-        $Tempketerangan = '##Tempketerangan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($Tempketerangan, function ($table) {
-            $table->string('nobukti', 50);
-            $table->LongText('keterangan');
-        });
-
-        $select_Tempketerangan = DB::table($TempRekappiutang . ' AS A')
+        // START POTONGAN TO REKAP
+        $select_tempNotaPiutang = DB::table('pelunasanpiutangheader')->from(DB::raw("pelunasanpiutangheader as A with (readuncommitted)"))
             ->select([
-                'A.nobukti',
-                DB::raw('MAX(B.keterangan) as keterangan'),
-
+                'A.notakredit_nobukti as nobukti',
+                DB::raw('MAX(A.tglbukti) as tglbayar'),
+                DB::raw('SUM(B.potongan) as bayar'),
+                DB::raw('MAX(A.agen_id) as agen_id'),
+                'B.piutang_nobukti as group',
             ])
-            ->join('piutangdetail as b', 'A.nobukti', 'b.nobukti')
-            ->groupBy('A.nobukti');
-
-
-        DB::table($Tempketerangan)->insertUsing([
+            ->join(DB::raw("pelunasanPiutangdetail as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
+            ->join(DB::raw($Temppiutang . " AS C with (readuncommitted)"), 'B.piutang_nobukti', 'C.nobukti')
+            ->where(DB::raw("ISNULL(B.potongan, 0)"), '<>', 0)
+            ->groupBy('A.notakredit_nobukti', 'B.piutang_nobukti');
+        DB::table($tempKartuPiutang)->insertUsing([
             'nobukti',
-            'keterangan'
-        ], $select_Tempketerangan);
+            'tglbayar',
+            'bayar',
+            'agen_id',
+            'group'
+        ], $select_tempNotaPiutang);
 
-        // dd($select_TempRekappiutang2->get());
-        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
-            ->select('text')
-            ->where('grp', 'DISETUJUI')
-            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
-
-        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
-            ->select('text')
-            ->where('grp', 'DIPERIKSA')
-            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
-
-        $select_data = DB::table($TempRekappiutang . ' AS A')
+        // LAPORAN REKAP
+        $select_data = DB::table($tempKartuPiutang . ' AS A')
             ->select([
                 'D.namaagen',
-                db::raw("(case when isnull(C.keterangan,'')='' then isnull(e.keterangan,'') else isnull(C.keterangan,'') end) as keterangan"),
                 'A.nobukti',
-                'C.tglbukti',
-                DB::raw("dateadd(d,isnull(d.[top],0),c.tglbukti) as tgljatuhtempo"),
-                DB::raw('ISNULL(B.urut, 0) + 1 as cicil'),
+                'a.tglbukti',
+                // // DB::raw("ISNULL(A.tglbukti, '')"),
+                // Db::raw("(case when isnull(A.tglbukti,'')='' then '' else C.tglbukti end) as tglbukti"),                         
+                'A.tglbayar',
                 'A.nominal',
                 'A.bayar',
-                DB::raw('SUM((ISNULL(A.nominal, 0) - A.bayar)) OVER (PARTITION BY D.namaagen ORDER BY A.id ASC) as Saldo'),
+                'A.group',
+                DB::raw('SUM((ISNULL(A.nominal, 0) - ISNULL(A.bayar, 0))) OVER (PARTITION BY D.namaagen ORDER BY A.nobukti ASC) as Saldo'),
                 DB::raw("'$getJudul->text' AS text"),
                 DB::raw("'$dari' AS dari"),
                 DB::raw("'$sampai' AS sampai"),
@@ -429,15 +455,87 @@ class LaporanKartuPiutangPerAgen extends MyModel
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
             ])
-            ->leftJoin($TempCicilRekap . ' AS B', 'A.nobukti', '=', 'B.piutang_nobukti')
-            ->join(DB::raw("piutangheader AS C with (readuncommitted)"), 'A.nobukti', '=', 'C.nobukti')
-            ->join(DB::raw("agen AS D with (readuncommitted)"), 'C.agen_id', '=', 'D.id')
-            ->leftJoin($Tempketerangan . ' AS e', 'e.nobukti', '=', 'a.nobukti')
+            ->join('piutangheader AS C', 'A.group', '=', 'C.nobukti')
+            ->join(DB::raw("agen AS D with (readuncommitted)"), 'A.agen_id', '=', 'D.id')
 
-            
+
             ->orderBy('D.namaagen')
             ->orderBy('C.tglbukti')
-            ->orderBy('C.nobukti');
+            ->orderBy('A.nobukti');
+            // ->orderBy('A.tglbukti');
+
+        // END LAPORAN REKAP
+        // END POTONGAN TO REKAP
+        // $select_TempRekappiutang2 = DB::table($Temppiutangberjalan . ' AS A')
+        //     ->select([
+        //         'A.nobukti',
+        //         'A.nominal',
+        //         DB::raw('ISNULL(C.nominal, 0) as bayar')
+        //     ])
+
+        //     ->leftJoin($Temppiutangbyrberjalan . ' AS C', 'A.nobukti', '=', 'C.piutang_nobukti');
+
+        // // dd($select_TempRekappiutang2->get());
+
+        // DB::table($TempRekappiutang)->insertUsing([
+        //     'nobukti',
+        //     'nominal',
+        //     'bayar',
+        // ], $select_TempRekappiutang2);
+
+        // $Tempketerangan = '##Tempketerangan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        // Schema::create($Tempketerangan, function ($table) {
+        //     $table->string('nobukti', 50);
+        //     $table->LongText('keterangan');
+        // });
+
+        // $select_Tempketerangan = DB::table($TempRekappiutang . ' AS A')
+        //     ->select([
+        //         'A.nobukti',
+        //         DB::raw('MAX(B.keterangan) as keterangan'),
+
+        //     ])
+        //     ->join('piutangdetail as b', 'A.nobukti', 'b.nobukti')
+        //     ->groupBy('A.nobukti');
+
+
+        // DB::table($Tempketerangan)->insertUsing([
+        //     'nobukti',
+        //     'keterangan'
+        // ], $select_Tempketerangan);
+
+        // // dd($select_TempRekappiutang2->get());
+
+        // $select_data = DB::table($TempRekappiutang . ' AS A')
+        //     ->select([
+        //         'D.namaagen',
+        //         db::raw("(case when isnull(C.keterangan,'')='' then isnull(e.keterangan,'') else isnull(C.keterangan,'') end) as keterangan"),
+        //         'A.nobukti',
+        //         'C.tglbukti',
+        //         DB::raw("dateadd(d,isnull(d.[top],0),c.tglbukti) as tgljatuhtempo"),
+        //         DB::raw('ISNULL(B.urut, 0) + 1 as cicil'),
+        //         'A.nominal',
+        //         'A.bayar',
+        //         DB::raw('SUM((ISNULL(A.nominal, 0) - A.bayar)) OVER (PARTITION BY D.namaagen ORDER BY A.id ASC) as Saldo'),
+        //         DB::raw("'$getJudul->text' AS text"),
+        //         DB::raw("'$dari' AS dari"),
+        //         DB::raw("'$sampai' AS sampai"),
+        //         DB::raw("'Laporan Kartu Piutang Per Agen' as judulLaporan"),
+        //         DB::raw("'" . $getJudul->text . "' as judul"),
+        //         DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+        //         DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+        //         db::raw("'" . $disetujui . "' as disetujui"),
+        //         db::raw("'" . $diperiksa . "' as diperiksa"),
+        //     ])
+        //     ->leftJoin($TempCicilRekap . ' AS B', 'A.nobukti', '=', 'B.piutang_nobukti')
+        //     ->join(DB::raw("piutangheader AS C with (readuncommitted)"), 'A.nobukti', '=', 'C.nobukti')
+        //     ->join(DB::raw("agen AS D with (readuncommitted)"), 'C.agen_id', '=', 'D.id')
+        //     ->leftJoin($Tempketerangan . ' AS e', 'e.nobukti', '=', 'a.nobukti')
+
+
+        //     ->orderBy('D.namaagen')
+        //     ->orderBy('C.tglbukti')
+        //     ->orderBy('C.nobukti');
         // dd($select_data->get());
         // $data = $select_data->get();
 

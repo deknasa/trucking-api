@@ -535,13 +535,12 @@ class LaporanNeraca extends MyModel
             $tempkartupiutang = '##tempkartupiutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempkartupiutang, function ($table) {
                 $table->string('namaagen', 500)->nullable();
-                $table->string('keterangan', 500)->nullable();
                 $table->string('nobukti', 500)->nullable();
                 $table->date('tglbukti')->nullable();
-                $table->date('tgljatuhtempo')->nullable();
-                $table->integer('cicil')->nullable();
+                $table->date('tglbayar')->nullable();
                 $table->double('nominal')->nullable();
                 $table->double('bayar')->nullable();
+                $table->string('group', 500)->nullable();
                 $table->double('saldo')->nullable();
                 $table->string('text', 500)->nullable();
                 $table->string('dari', 500)->nullable();
@@ -557,13 +556,12 @@ class LaporanNeraca extends MyModel
 
             DB::table($tempkartupiutang)->insertUsing([
                 'namaagen',
-                'keterangan',
                 'nobukti',
                 'tglbukti',
-                'tgljatuhtempo',
-                'cicil',
+                'tglbayar',
                 'nominal',
                 'bayar',
+                'group',
                 'saldo',
                 'text',
                 'dari',
