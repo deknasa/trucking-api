@@ -49,10 +49,9 @@ class LaporanKartuPiutangPerAgenController extends Controller
 
 
             $laporan_piutangperagen = $laporankartupiutangperagen->getReport($dari, $sampai, $agendari, $agensampai,$prosesneraca);
-            foreach ($laporan_piutangperagen as $item) {
-                $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
-                $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
-            }
+            // foreach ($laporan_piutangperagen as $item) {
+            //     // $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
+            // }
 
             return response([
                 'data' => $laporan_piutangperagen

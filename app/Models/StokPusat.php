@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
@@ -718,5 +719,187 @@ class StokPusat extends MyModel
         ]);
 
         return $stokPusat;
+    }
+
+    public function getData($kelompok_id)
+    {
+        $kelompok = DB::table("kelompok")->from(DB::raw("kelompok with (readuncommitted)"))->where('id', $kelompok_id)->first();
+        $cabang = Cabang::whereRaw("memo IS NOT NULL")->where('statusaktif', 1)->get();
+        $koneksi = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS KONEKSI')->where('text', 'ONLINE')->first();
+
+        foreach ($cabang as $value) {
+            $memo = json_decode($value->memo, TRUE);
+            $cabang = strtolower($value->kodecabang);
+            if ($value->statuskoneksi != $koneksi->text) {
+                $data[$cabang] = [];
+            } else {
+
+                if ($memo['TARIK_STOK'] == 'YA' && $memo['WEB'] == 'TIDAK') {
+                    $query = DB::connection('sqlsrv' . $cabang)->table('Stck')->from(DB::raw("Stck with (readuncommitted)"))->select('FID as id', 'FKStck as namastok', 'FPic1 as gambar', 'FSubKelompok as subkelompok')->where('FKelompok', $kelompok->kodekelompok);
+                    $data[$cabang] = $query->get();
+                }
+
+                if ($memo['TARIK_STOK'] == 'YA' && $memo['WEB'] == 'YA') {
+                    $urlCabang = env($memo['URL']);
+
+                    $userCabang = env('USER_JAKARTA');
+                    $passwordCabang = env('PASSWORD_JAKARTA');
+                    $getToken = Http::withHeaders([
+                        'Content-Type' => 'application/json',
+                        'Accept' => 'application/json'
+                    ])
+                        ->post($urlCabang . 'token', [
+                            'user' => $userCabang,
+                            'password' => $passwordCabang,
+                            'ipclient' => '',
+                            'ipserver' => '',
+                            'latitude' => '',
+                            'longitude' => '',
+                            'browser' => '',
+                            'os' => '',
+                        ]);
+                    if ($getToken->getStatusCode() != '200') {
+                        $data[$cabang] = [];
+                    } else {
+                        $access_token = json_decode($getToken, TRUE)['access_token'];
+
+                        $getData = Http::withHeaders([
+                            'Accept' => 'application/json',
+                            'Authorization' => 'Bearer ' . $access_token,
+                            'Content-Type' => 'application/json',
+                        ])
+                            ->get($urlCabang . "stok?kelompok_id=" . $kelompok_id . "&limit=0");
+                        $data[$cabang] = $getData->json()['data'];
+                    }
+                }
+            }
+        }
+        return $data;
+    }
+
+
+    public function dataMnd($kelompok_id)
+    {
+        $this->setRequestParameters();
+
+        $kelompok = DB::table("kelompok")->from(DB::raw("kelompok with (readuncommitted)"))->where('id', $kelompok_id)->first();
+        $query = DB::connection('sqlsrvmnd')->table('Stck')->from(DB::raw("Stck as a with (readuncommitted)"))
+            ->select('FID as id', 'FKStck as namastok', 'FPic1 as gambar', 'FSubKelompok as subkelompok')
+            ->where('FKelompok', $kelompok->kodekelompok);
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $sortIndex = request()->sortIndex ?? 'FID';
+        $this->sortData($query,$sortIndex);
+        $this->filterData($query);
+        $this->paginateData($query);
+        $data = $query->get();
+
+        return $data;
+    }
+
+    public function dataMdn($kelompok_id)
+    {
+        $this->setRequestParameters();
+
+        $kelompok = DB::table("kelompok")->from(DB::raw("kelompok with (readuncommitted)"))->where('id', $kelompok_id)->first();
+        $query = DB::connection('sqlsrvmdn')->table('Stck')->from(DB::raw("Stck as a with (readuncommitted)"))
+            ->select('FID as id', 'FKStck as namastok', 'FPic1 as gambar', 'FSubKelompok as subkelompok')
+            ->where('FKelompok', $kelompok->kodekelompok);
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $sortIndex = request()->sortIndex ?? 'FID';
+        $this->sortData($query,$sortIndex);
+        $this->filterData($query);
+        $this->paginateData($query);
+        $data = $query->get();
+
+        return $data;
+    }
+    public function dataSby($kelompok_id)
+    {
+        $this->setRequestParameters();
+
+        $kelompok = DB::table("kelompok")->from(DB::raw("kelompok with (readuncommitted)"))->where('id', $kelompok_id)->first();
+        $query = DB::connection('sqlsrvsby')->table('Stck')->from(DB::raw("Stck as a with (readuncommitted)"))
+            ->select('FID as id', 'FKStck as namastok', 'FPic1 as gambar', 'FSubKelompok as subkelompok')
+            ->where('FKelompok', $kelompok->kodekelompok);
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $sortIndex = request()->sortIndex ?? 'FID';
+        $this->sortData($query,$sortIndex);
+        $this->filterData($query);
+        $this->paginateData($query);
+        $data = $query->get();
+
+        return $data;
+    }
+
+    public function dataMks($kelompok_id)
+    {
+        $this->setRequestParameters();
+
+        $kelompok = DB::table("kelompok")->from(DB::raw("kelompok with (readuncommitted)"))->where('id', $kelompok_id)->first();
+        $query = DB::connection('sqlsrvmks')->table('Stck')->from(DB::raw("Stck as a with (readuncommitted)"))
+            ->select('FID as id', 'FKStck as namastok', 'FPic1 as gambar', 'FSubKelompok as subkelompok')
+            ->where('FKelompok', $kelompok->kodekelompok);
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $sortIndex = request()->sortIndex ?? 'FID';
+        $this->sortData($query,$sortIndex);
+        $this->filterData($query);
+        $this->paginateData($query);
+        $data = $query->get();
+
+        return $data;
+    }
+
+    public function sortData($query,$sortIndex)
+    {
+        return $query->orderBy('a.' . $sortIndex, $this->params['sortOrder']);
+    }
+
+    public function filterData($query, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+
+                        // $query = $query->whereRaw($this->table . ".".  $filters['field'] ." LIKE '%".str_replace($filters['data'],'[','|[') ."%' escape '|'");
+                        $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                    }
+
+                    break;
+                case "OR":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+
+                            $query = $query->OrwhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        }
+                    });
+                    break;
+                default:
+
+                    break;
+            }
+
+            $this->totalRows = $query->count();
+            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+        }
+
+        return $query;
+    }
+
+    public function paginateData($query)
+    {
+        return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 }

@@ -82,6 +82,72 @@ class StokPusatController extends Controller
         }
     }
 
+    public function dataJkt(Request $request)
+    {
+        $stokPusat = new StokPusat();
+        return response([
+            'data' => $stokPusat->dataJkt($request->kelompok_id),
+            'attributes' => [
+                'totalRows' => $stokPusat->totalRows,
+                'totalPages' => $stokPusat->totalPages
+            ]
+        ]);
+    }
+    public function dataMdn(Request $request)
+    {
+        $stokPusat = new StokPusat();
+        return response([
+            'data' => $stokPusat->dataMdn($request->kelompok_id),
+            'attributes' => [
+                'totalRows' => $stokPusat->totalRows,
+                'totalPages' => $stokPusat->totalPages
+            ]
+        ]);
+    }
+    public function dataSby(Request $request)
+    {
+        $stokPusat = new StokPusat();
+        return response([
+            'data' => $stokPusat->dataSby($request->kelompok_id),
+            'attributes' => [
+                'totalRows' => $stokPusat->totalRows,
+                'totalPages' => $stokPusat->totalPages
+            ]
+        ]);
+    }
+    public function dataJktTnl(Request $request)
+    {
+        $stokPusat = new StokPusat();
+        return response([
+            'data' => $stokPusat->dataJktTnl($request->kelompok_id),
+            'attributes' => [
+                'totalRows' => $stokPusat->totalRows,
+                'totalPages' => $stokPusat->totalPages
+            ]
+        ]);
+    }
+    public function dataMks(Request $request)
+    {
+        $stokPusat = new StokPusat();
+        return response([
+            'data' => $stokPusat->dataMks($request->kelompok_id),
+            'attributes' => [
+                'totalRows' => $stokPusat->totalRows,
+                'totalPages' => $stokPusat->totalPages
+            ]
+        ]);
+    }
+    public function dataMnd(Request $request)
+    {
+        $stokPusat = new StokPusat();
+        return response([
+            'data' => $stokPusat->dataMnd($request->kelompok_id),
+            'attributes' => [
+                'totalRows' => $stokPusat->totalRows,
+                'totalPages' => $stokPusat->totalPages
+            ]
+        ]);
+    }
     public function getData(Request $request)
     {
         $stokPusat = new StokPusat();
