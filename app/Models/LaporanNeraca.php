@@ -78,8 +78,8 @@ class LaporanNeraca extends MyModel
 
         if ($getcabangid == 1) {
             $eksport = 1;
-            if ($cabang_id==0) {
-                $cabang='SEMUA';
+            if ($cabang_id == 0) {
+                $cabang = 'SEMUA';
             }
         }
 
@@ -490,15 +490,17 @@ class LaporanNeraca extends MyModel
             $tempkartuhutang = '##tempkartuhutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempkartuhutang, function ($table) {
                 $table->integer('id')->nullable();
-                $table->string('namasupplier', 500)->nullable();
-                $table->string('keterangan', 500)->nullable();
-                $table->string('nobukti', 500)->nullable();
-                $table->date('tglbukti')->nullable();
-                $table->date('tgljatuhtempo')->nullable();
-                $table->integer('cicil')->nullable();
-                $table->double('nominal')->nullable();
-                $table->double('bayar')->nullable();
+                $table->integer('supplier_id')->nullable();
+                $table->string('nobukti', 50)->nullable();
+                $table->dateTime('tglbukti')->nullable();
+                $table->double('nominalhutang')->nullable();
+                $table->dateTime('tglbayar')->nullable();
+                $table->double('nominalbayar')->nullable();
+                $table->string('nobuktihutang', 50)->nullable();
+                $table->dateTime('tglberjalan')->nullable();
                 $table->double('saldo')->nullable();
+                $table->double('saldobayar')->nullable();
+                $table->string('jenishutang', 50)->nullable();
                 $table->string('text', 500)->nullable();
                 $table->string('dari', 500)->nullable();
                 $table->string('sampai', 500)->nullable();
@@ -510,17 +512,21 @@ class LaporanNeraca extends MyModel
                 $table->string('diperiksa', 500)->nullable();
             });
 
+
+
             DB::table($tempkartuhutang)->insertUsing([
                 'id',
-                'namasupplier',
-                'keterangan',
+                'supplier_id',
                 'nobukti',
                 'tglbukti',
-                'tgljatuhtempo',
-                'cicil',
-                'nominal',
-                'bayar',
+                'nominalhutang',
+                'tglbayar',
+                'nominalbayar',
+                'nobuktihutang',
+                'tglberjalan',
                 'saldo',
+                'saldobayar',
+                'jenishutang',
                 'text',
                 'dari',
                 'sampai',
@@ -937,7 +943,7 @@ class LaporanNeraca extends MyModel
 
             $hutangusaha = db::table($tempkartuhutang)->from(db::raw($tempkartuhutang . " a"))
                 ->select(
-                    db::raw("sum(nominal-bayar) as nominal")
+                    db::raw("sum(saldobayar) as nominal")
                 )->first()->nominal ?? 0;
 
             DB::table($tempperkiraanbanding)->insert(
@@ -1180,6 +1186,8 @@ class LaporanNeraca extends MyModel
 
             DB::table('akunpusatdetail')
                 ->where('bulan', '<>', 0)
+                ->whereRaw("cabang_id=" . $cabang_id)
+                ->whereRaw("bulan=" . $bulan . " and tahun=" . $tahun)
                 ->delete();
 
 

@@ -58,10 +58,10 @@ class LaporanKartuHutangPerSupplierController extends Controller
                 ]);
             }
         } else {
-            foreach ($laporan_kartuhutangpersupplier as $item) {
-                $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
-                $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
-            }
+            // foreach ($laporan_kartuhutangpersupplier as $item) {
+            //     $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
+            //     $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
+            // }
             return response([
                 'data' => $laporan_kartuhutangpersupplier
                 // 'data' => $report
