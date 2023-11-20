@@ -43,21 +43,21 @@ class LaporanKartuHutangPerSupplierController extends Controller
 
         $laporan_kartuhutangpersupplier = $laporankartuhutangpersupplier->getReport($dari, $sampai, $supplierdari, $suppliersampai,$prosesneraca);
 
-        if ($request->isCheck) {
-            if (count($laporan_kartuhutangpersupplier) === 0) {
-                return response([
-                    'errors' => [
-                        "export" => app(ErrorController::class)->geterror('DTA')->keterangan
-                    ],
+        // if ($request->isCheck) {
+        //     if (count($laporan_kartuhutangpersupplier) === 0) {
+        //         return response([
+        //             'errors' => [
+        //                 "export" => app(ErrorController::class)->geterror('DTA')->keterangan
+        //             ],
 
-                    'message' => "The given data was invalid."
-                ], 422);
-            } else {
-                return response([
-                    'data' => 'ok'
-                ]);
-            }
-        } else {
+        //             'message' => "The given data was invalid."
+        //         ], 422);
+        //     } else {
+        //         return response([
+        //             'data' => 'ok'
+        //         ]);
+        //     }
+        // } else {
             // foreach ($laporan_kartuhutangpersupplier as $item) {
             //     $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
             //     $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
@@ -66,7 +66,7 @@ class LaporanKartuHutangPerSupplierController extends Controller
                 'data' => $laporan_kartuhutangpersupplier
                 // 'data' => $report
             ]);
-        }
+        // }
     }
 
     /**
