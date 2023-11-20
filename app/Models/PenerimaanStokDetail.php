@@ -547,6 +547,12 @@ class PenerimaanStokDetail extends MyModel
         if (!$stok) {
             return false;
         }
+        
+        $kondisiBanMasak = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp','STATUS KONDISI BAN')->where('subgrp','STATUS KONDISI BAN')->where('text','MASAK')->first();
+        $kondisiBanMentah = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp','STATUS KONDISI BAN')->where('subgrp','STATUS KONDISI BAN')->where('text','MENTAH')->first();
+        if ($stok->statusban == $kondisiBanMentah->id) {
+            $stok->statusban = $kondisiBanMasak->id;
+        }
         $total = $stok->totalvulkanisir + $vulkan;
         $stok->totalvulkanisir = $total;
         $stok->save();
