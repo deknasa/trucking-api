@@ -210,6 +210,7 @@ class LaporanNeraca extends MyModel
 
                 )
                 ->whereRaw("(cabang_id=" .  $cabang_id . " or " . $cabang_id . "=0)")
+                ->whereRaw("(cabang_id=" .  $cabang_id . " or " . $cabang_id . "=0)")
                 ->orderBy('id', 'asc');
 
             DB::table($tempAkunPusatDetail)->insertUsing([
@@ -1198,7 +1199,6 @@ class LaporanNeraca extends MyModel
 
             DB::table('akunpusatdetail')
                 ->where('bulan', '<>', 0)
-                ->whereRaw("cabang_id=" . $cabang_id)
                 ->whereRaw("bulan=" . $bulan . " and tahun=" . $tahun)
                 ->delete();
 
