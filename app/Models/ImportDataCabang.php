@@ -32,6 +32,7 @@ class ImportDataCabang extends Model
         $userCabang = env($cabangMemo['USER']);
         $passwordCabang = env($cabangMemo['PASSWORD']);
         $web = $cabangMemo['WEB'] ?? 'YA';
+        $encode = $cabangMemo['ENCODE'] ?? 'UTF-8';
         $singkatan = $cabangMemo['SINGKATAN'] ?? '';
 
 
@@ -372,26 +373,26 @@ class ImportDataCabang extends Model
 
                 if ($data['import'] == $statusImportSisip->id) {
 
-                    $nobukticabang = mb_convert_encoding($item['header_nobukti'], 'ISO-8859-1', 'UTF-8') . '-' . mb_convert_encoding($item['header_cabang'], 'ISO-8859-1', 'UTF-8');
+                    $nobukticabang = mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8') . '-' . mb_convert_encoding($item['header_cabang'],  $encode, 'UTF-8');
                     $querysisip = db::table("jurnalumumpusatheader")->from(db::raw("jurnalumumpusatheader a with (readuncommitted)"))
                         ->select()
                         ->where('a.nobukti', $nobukticabang)
                         ->first();
                     if (!isset($querysisip)) {
-                        if (!array_key_exists(mb_convert_encoding($item['header_nobukti'], 'ISO-8859-1', 'UTF-8'), $jurnalRequest)) {
+                        if (!array_key_exists(mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8'), $jurnalRequest)) {
                             $jurnalUmumPusat = new JurnalUmumPusatHeader();
-                            $jurnalUmumPusat->nobukti = mb_convert_encoding($item['header_nobukti'], 'ISO-8859-1', 'UTF-8');
-                            $jurnalUmumPusat->tglbukti = mb_convert_encoding($item['header_tglbukti'], 'ISO-8859-1', 'UTF-8');
-                            $jurnalUmumPusat->keterangan = mb_convert_encoding($item['header_keterangan'], 'ISO-8859-1', 'UTF-8');
-                            $jurnalUmumPusat->postingdari = mb_convert_encoding($item['header_postingdari'], 'ISO-8859-1', 'UTF-8');
-                            $jurnalUmumPusat->statusapproval = mb_convert_encoding($item['header_statusapproval'], 'ISO-8859-1', 'UTF-8');
-                            $jurnalUmumPusat->userapproval = mb_convert_encoding($item['header_userapproval'], 'ISO-8859-1', 'UTF-8');
-                            $jurnalUmumPusat->tglapproval = mb_convert_encoding($item['header_tglapproval'], 'ISO-8859-1', 'UTF-8');
-                            $jurnalUmumPusat->statusformat = mb_convert_encoding($item['header_statusformat'], 'ISO-8859-1', 'UTF-8');
-                            $jurnalUmumPusat->info = mb_convert_encoding($item['header_info'], 'ISO-8859-1', 'UTF-8');
-                            $jurnalUmumPusat->modifiedby = mb_convert_encoding($item['header_modifiedby'], 'ISO-8859-1', 'UTF-8');
-                            $jurnalUmumPusat->created_at = mb_convert_encoding($item['header_created_at'], 'ISO-8859-1', 'UTF-8');
-                            $jurnalUmumPusat->updated_at = mb_convert_encoding($item['header_updated_at'], 'ISO-8859-1', 'UTF-8');
+                            $jurnalUmumPusat->nobukti = mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->tglbukti = mb_convert_encoding($item['header_tglbukti'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->keterangan = mb_convert_encoding($item['header_keterangan'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->postingdari = mb_convert_encoding($item['header_postingdari'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->statusapproval = mb_convert_encoding($item['header_statusapproval'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->userapproval = mb_convert_encoding($item['header_userapproval'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->tglapproval = mb_convert_encoding($item['header_tglapproval'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->statusformat = mb_convert_encoding($item['header_statusformat'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->info = mb_convert_encoding($item['header_info'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->modifiedby = mb_convert_encoding($item['header_modifiedby'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->created_at = mb_convert_encoding($item['header_created_at'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->updated_at = mb_convert_encoding($item['header_updated_at'],  $encode, 'UTF-8');
                             $jurnalUmumPusat->cabang_id = $data['cabang'];
                             $jurnalUmumPusat->cabang = $cabang->namacabang ?? '';
 
@@ -399,7 +400,7 @@ class ImportDataCabang extends Model
                             if (!$jurnalUmumPusat->save()) {
                                 throw new \Exception("Error storing jurnal umum pusat header.");
                             }
-                            $jurnalRequest[mb_convert_encoding($item['header_nobukti'], 'ISO-8859-1', 'UTF-8')] = $jurnalUmumPusat;
+                            $jurnalRequest[mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8')] = $jurnalUmumPusat;
                             $jurnalUmumPusatHeaderLogTrail = (new LogTrail())->processStore([
                                 'namatabel' => strtoupper($jurnalUmumPusat->getTable()),
                                 'postingdari' => 'ENTRY JURNAL UMUM PUSAT HEADER',
@@ -412,37 +413,37 @@ class ImportDataCabang extends Model
                         }
                         // Menambahkan detail ke dalam entri header yang sesuai
                         $jurnalUmumPusatDetail = new JurnalUmumPusatDetail();
-                        $jurnalUmumPusatDetail->jurnalumumpusat_id = $jurnalRequest[mb_convert_encoding($item['header_nobukti'], 'ISO-8859-1', 'UTF-8')]->id;
-                        $jurnalUmumPusatDetail->nobukti = $jurnalRequest[mb_convert_encoding($item['header_nobukti'], 'ISO-8859-1', 'UTF-8')]->nobukti;
-                        $jurnalUmumPusatDetail->tglbukti = $jurnalRequest[mb_convert_encoding($item['header_nobukti'], 'ISO-8859-1', 'UTF-8')]->tglbukti;
-                        $jurnalUmumPusatDetail->coa = mb_convert_encoding($item['detail_coa'], 'ISO-8859-1', 'UTF-8');
-                        $jurnalUmumPusatDetail->coamain = mb_convert_encoding($item['detail_coamain'], 'ISO-8859-1', 'UTF-8');
-                        $jurnalUmumPusatDetail->nominal = mb_convert_encoding($item['detail_nominal'], 'ISO-8859-1', 'UTF-8');
-                        $jurnalUmumPusatDetail->keterangan = mb_convert_encoding($item['detail_keterangan'], 'ISO-8859-1', 'UTF-8');
-                        $jurnalUmumPusatDetail->baris = mb_convert_encoding($item['detail_baris'], 'ISO-8859-1', 'UTF-8');
-                        $jurnalUmumPusatDetail->info = mb_convert_encoding($item['detail_info'], 'ISO-8859-1', 'UTF-8');
-                        $jurnalUmumPusatDetail->modifiedby = mb_convert_encoding($item['detail_modifiedby'], 'ISO-8859-1', 'UTF-8');
-                        $jurnalUmumPusatDetail->created_at = mb_convert_encoding($item['detail_created_at'], 'ISO-8859-1', 'UTF-8');
-                        $jurnalUmumPusatDetail->updated_at = mb_convert_encoding($item['detail_updated_at'], 'ISO-8859-1', 'UTF-8');
+                        $jurnalUmumPusatDetail->jurnalumumpusat_id = $jurnalRequest[mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8')]->id;
+                        $jurnalUmumPusatDetail->nobukti = $jurnalRequest[mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8')]->nobukti;
+                        $jurnalUmumPusatDetail->tglbukti = $jurnalRequest[mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8')]->tglbukti;
+                        $jurnalUmumPusatDetail->coa = mb_convert_encoding($item['detail_coa'],  $encode, 'UTF-8');
+                        $jurnalUmumPusatDetail->coamain = mb_convert_encoding($item['detail_coamain'],  $encode, 'UTF-8');
+                        $jurnalUmumPusatDetail->nominal = mb_convert_encoding($item['detail_nominal'],  $encode, 'UTF-8');
+                        $jurnalUmumPusatDetail->keterangan = mb_convert_encoding($item['detail_keterangan'],  $encode, 'UTF-8');
+                        $jurnalUmumPusatDetail->baris = mb_convert_encoding($item['detail_baris'],  $encode, 'UTF-8');
+                        $jurnalUmumPusatDetail->info = mb_convert_encoding($item['detail_info'],  $encode, 'UTF-8');
+                        $jurnalUmumPusatDetail->modifiedby = mb_convert_encoding($item['detail_modifiedby'],  $encode, 'UTF-8');
+                        $jurnalUmumPusatDetail->created_at = mb_convert_encoding($item['detail_created_at'],  $encode, 'UTF-8');
+                        $jurnalUmumPusatDetail->updated_at = mb_convert_encoding($item['detail_updated_at'],  $encode, 'UTF-8');
                         if (!$jurnalUmumPusatDetail->save()) {
                             throw new \Exception("Error storing jurnal umum pusat detail.");
                         }
                     }
                 } else {
-                    if (!array_key_exists(mb_convert_encoding($item['header_nobukti'], 'ISO-8859-1', 'UTF-8'), $jurnalRequest)) {
+                    if (!array_key_exists(mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8'), $jurnalRequest)) {
                         $jurnalUmumPusat = new JurnalUmumPusatHeader();
-                        $jurnalUmumPusat->nobukti = mb_convert_encoding($item['header_nobukti'], 'ISO-8859-1', 'UTF-8');
-                        $jurnalUmumPusat->tglbukti = mb_convert_encoding($item['header_tglbukti'], 'ISO-8859-1', 'UTF-8');
-                        $jurnalUmumPusat->keterangan = mb_convert_encoding($item['header_keterangan'], 'ISO-8859-1', 'UTF-8');
-                        $jurnalUmumPusat->postingdari = mb_convert_encoding($item['header_postingdari'], 'ISO-8859-1', 'UTF-8');
-                        $jurnalUmumPusat->statusapproval = mb_convert_encoding($item['header_statusapproval'], 'ISO-8859-1', 'UTF-8');
-                        $jurnalUmumPusat->userapproval = mb_convert_encoding($item['header_userapproval'], 'ISO-8859-1', 'UTF-8');
-                        $jurnalUmumPusat->tglapproval = mb_convert_encoding($item['header_tglapproval'], 'ISO-8859-1', 'UTF-8');
-                        $jurnalUmumPusat->statusformat = mb_convert_encoding($item['header_statusformat'], 'ISO-8859-1', 'UTF-8');
-                        $jurnalUmumPusat->info = mb_convert_encoding($item['header_info'], 'ISO-8859-1', 'UTF-8');
-                        $jurnalUmumPusat->modifiedby = mb_convert_encoding($item['header_modifiedby'], 'ISO-8859-1', 'UTF-8');
-                        $jurnalUmumPusat->created_at = mb_convert_encoding($item['header_created_at'], 'ISO-8859-1', 'UTF-8');
-                        $jurnalUmumPusat->updated_at = mb_convert_encoding($item['header_updated_at'], 'ISO-8859-1', 'UTF-8');
+                        $jurnalUmumPusat->nobukti = mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8');
+                        $jurnalUmumPusat->tglbukti = mb_convert_encoding($item['header_tglbukti'],  $encode, 'UTF-8');
+                        $jurnalUmumPusat->keterangan = mb_convert_encoding($item['header_keterangan'],  $encode, 'UTF-8');
+                        $jurnalUmumPusat->postingdari = mb_convert_encoding($item['header_postingdari'],  $encode, 'UTF-8');
+                        $jurnalUmumPusat->statusapproval = mb_convert_encoding($item['header_statusapproval'],  $encode, 'UTF-8');
+                        $jurnalUmumPusat->userapproval = mb_convert_encoding($item['header_userapproval'],  $encode, 'UTF-8');
+                        $jurnalUmumPusat->tglapproval = mb_convert_encoding($item['header_tglapproval'],  $encode, 'UTF-8');
+                        $jurnalUmumPusat->statusformat = mb_convert_encoding($item['header_statusformat'],  $encode, 'UTF-8');
+                        $jurnalUmumPusat->info = mb_convert_encoding($item['header_info'],  $encode, 'UTF-8');
+                        $jurnalUmumPusat->modifiedby = mb_convert_encoding($item['header_modifiedby'],  $encode, 'UTF-8');
+                        $jurnalUmumPusat->created_at = mb_convert_encoding($item['header_created_at'],  $encode, 'UTF-8');
+                        $jurnalUmumPusat->updated_at = mb_convert_encoding($item['header_updated_at'],  $encode, 'UTF-8');
                         $jurnalUmumPusat->cabang_id = $data['cabang'];
                         $jurnalUmumPusat->cabang = $cabang->namacabang ?? '';
 
@@ -450,7 +451,7 @@ class ImportDataCabang extends Model
                         if (!$jurnalUmumPusat->save()) {
                             throw new \Exception("Error storing jurnal umum pusat header.");
                         }
-                        $jurnalRequest[mb_convert_encoding($item['header_nobukti'], 'ISO-8859-1', 'UTF-8')] = $jurnalUmumPusat;
+                        $jurnalRequest[mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8')] = $jurnalUmumPusat;
                         $jurnalUmumPusatHeaderLogTrail = (new LogTrail())->processStore([
                             'namatabel' => strtoupper($jurnalUmumPusat->getTable()),
                             'postingdari' => 'ENTRY JURNAL UMUM PUSAT HEADER',
@@ -464,18 +465,18 @@ class ImportDataCabang extends Model
                     // Menambahkan detail ke dalam entri header yang sesuai
 
                     $jurnalUmumPusatDetail = new JurnalUmumPusatDetail();
-                    $jurnalUmumPusatDetail->jurnalumumpusat_id = $jurnalRequest[mb_convert_encoding($item['header_nobukti'], 'ISO-8859-1', 'UTF-8')]->id;
-                    $jurnalUmumPusatDetail->nobukti = $jurnalRequest[mb_convert_encoding($item['header_nobukti'], 'ISO-8859-1', 'UTF-8')]->nobukti;
-                    $jurnalUmumPusatDetail->tglbukti = $jurnalRequest[mb_convert_encoding($item['header_nobukti'], 'ISO-8859-1', 'UTF-8')]->tglbukti;
-                    $jurnalUmumPusatDetail->coa = mb_convert_encoding($item['detail_coa'], 'ISO-8859-1', 'UTF-8');
-                    $jurnalUmumPusatDetail->coamain = mb_convert_encoding($item['detail_coamain'], 'ISO-8859-1', 'UTF-8');
-                    $jurnalUmumPusatDetail->nominal = mb_convert_encoding($item['detail_nominal'], 'ISO-8859-1', 'UTF-8');
-                    $jurnalUmumPusatDetail->keterangan = mb_convert_encoding($item['detail_keterangan'], 'ISO-8859-1', 'UTF-8');
-                    $jurnalUmumPusatDetail->baris = mb_convert_encoding($item['detail_baris'], 'ISO-8859-1', 'UTF-8');
-                    $jurnalUmumPusatDetail->info = mb_convert_encoding($item['detail_info'], 'ISO-8859-1', 'UTF-8');
-                    $jurnalUmumPusatDetail->modifiedby = mb_convert_encoding($item['detail_modifiedby'], 'ISO-8859-1', 'UTF-8');
-                    $jurnalUmumPusatDetail->created_at = mb_convert_encoding($item['detail_created_at'], 'ISO-8859-1', 'UTF-8');
-                    $jurnalUmumPusatDetail->updated_at = mb_convert_encoding($item['detail_updated_at'], 'ISO-8859-1', 'UTF-8');
+                    $jurnalUmumPusatDetail->jurnalumumpusat_id = $jurnalRequest[mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8')]->id;
+                    $jurnalUmumPusatDetail->nobukti = $jurnalRequest[mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8')]->nobukti;
+                    $jurnalUmumPusatDetail->tglbukti = $jurnalRequest[mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8')]->tglbukti;
+                    $jurnalUmumPusatDetail->coa = mb_convert_encoding($item['detail_coa'],  $encode, 'UTF-8');
+                    $jurnalUmumPusatDetail->coamain = mb_convert_encoding($item['detail_coamain'],  $encode, 'UTF-8');
+                    $jurnalUmumPusatDetail->nominal = mb_convert_encoding($item['detail_nominal'],  $encode, 'UTF-8');
+                    $jurnalUmumPusatDetail->keterangan = mb_convert_encoding($item['detail_keterangan'],  $encode, 'UTF-8');
+                    $jurnalUmumPusatDetail->baris = mb_convert_encoding($item['detail_baris'],  $encode, 'UTF-8');
+                    $jurnalUmumPusatDetail->info = mb_convert_encoding($item['detail_info'],  $encode, 'UTF-8');
+                    $jurnalUmumPusatDetail->modifiedby = mb_convert_encoding($item['detail_modifiedby'],  $encode, 'UTF-8');
+                    $jurnalUmumPusatDetail->created_at = mb_convert_encoding($item['detail_created_at'],  $encode, 'UTF-8');
+                    $jurnalUmumPusatDetail->updated_at = mb_convert_encoding($item['detail_updated_at'],  $encode, 'UTF-8');
                     if (!$jurnalUmumPusatDetail->save()) {
                         throw new \Exception("Error storing jurnal umum pusat detail.");
                     }
@@ -499,12 +500,15 @@ class ImportDataCabang extends Model
 
 
             $subquery1 = DB::table('jurnalumumpusatheader as J')
-                ->select('D.coamain as FCOA', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), 
+                ->select(
+                    'D.coamain as FCOA',
+                    DB::raw('YEAR(D.tglbukti) as FThn'),
+                    DB::raw('MONTH(D.tglbukti) as FBln'),
                     db::raw($cabang_id . " as cabang_id"),
                     DB::raw('round(SUM(D.nominal),2) as FNominal'),
-                    )
+                )
 
-                
+
                 ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
                 ->join('mainakunpusat as C', 'C.coa', '=', 'D.coamain')
                 ->where('D.tglbukti', '>=', $ptgl)
@@ -541,7 +545,7 @@ class ImportDataCabang extends Model
                 ->mergeBindings($subquery1)
                 ->mergeBindings($subquery2)
                 ->groupBy('FCOA', 'FThn', 'FBln', 'cabang_id')
-                ->select('FCOA', 'FThn', 'FBln','cabang_id', DB::raw('round(SUM(FNominal),2) as FNominal'));
+                ->select('FCOA', 'FThn', 'FBln', 'cabang_id', DB::raw('round(SUM(FNominal),2) as FNominal'));
 
             DB::table('akunpusatdetail')->insertUsing([
                 'coa',
