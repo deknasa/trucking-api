@@ -128,13 +128,14 @@ class LaporanKartuPiutangPerAgen extends MyModel
             $table->double('nominal')->nullable();
         });
 
+     
 
         $queryrekappiutang = db::table($temppiutangsaldo)->from(db::raw($temppiutangsaldo . " a "))
             ->select(
                 'a.nobukti',
                 db::raw("(isnull(a.nominal,0)-isnull(b.nominal,0)) as nominal"),
             )
-            ->leftjoin(db::raw($temppiutangsaldo . " b "), 'a.nobukti', 'b.nobukti')
+            ->leftjoin(db::raw($temppelunasansaldo . " b "), 'a.nobukti', 'b.nobukti')
             ->whereRaw("(isnull(a.nominal,0)-isnull(b.nominal,0))<>0");
 
         DB::table($temprekappiutang)->insertUsing([
@@ -174,6 +175,8 @@ class LaporanKartuPiutangPerAgen extends MyModel
             $table->integer('urut')->nullable();
         });
 
+
+        // dd(db::table($temprekappiutang)->get());
 
         $queryrekapdata = db::table($temprekappiutang)->from(db::raw($temprekappiutang . " a  "))
             ->select(
