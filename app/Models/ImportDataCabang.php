@@ -35,25 +35,32 @@ class ImportDataCabang extends Model
         $encode = $cabangMemo['ENCODE'] ?? 'UTF-8';
         $singkatan = $cabangMemo['SINGKATAN'] ?? '';
 
+        $periode1=date('Y-m-d', strtotime('01-'.$data['periode']));
+        
 
         if ($data['import'] == $statusImportTimpa->id) {
+            
+            // DB::delete(DB::raw("delete  JurnalUmumPusatdetail from JurnalUmumPusatdetail as a inner join JurnalUmumPusatHeader b on a.nobukti=b.nobukti 
+            // WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and format(b.tglbukti,'MM-yyyy')='" . $data['periode'] . "'"));
+
+            // DB::delete(DB::raw("delete  JurnalUmumPusatheader from JurnalUmumPusatheader as b 
+            // WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and format(b.tglbukti,'MM-yyyy')='" . $data['periode'] . "'"));
+
+                    
             DB::delete(DB::raw("delete  JurnalUmumPusatdetail from JurnalUmumPusatdetail as a inner join JurnalUmumPusatHeader b on a.nobukti=b.nobukti 
-            WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and format(b.tglbukti,'MM-yyyy')='" . $data['periode'] . "'"));
+            WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and b.tglbukti>='" . $periode1. "'"));
 
             DB::delete(DB::raw("delete  JurnalUmumPusatheader from JurnalUmumPusatheader as b 
-            WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and format(b.tglbukti,'MM-yyyy')='" . $data['periode'] . "'"));
+            WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and b.tglbukti>='" . $periode1 . "'"));
+            
+            
         }
 
 
-        DB::delete(DB::raw("delete  SaldoAkunPusatDetail from SaldoAkunPusatDetail as b 
-        WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and format(b.tglbukti,'MM-yyyy')='" . $data['periode'] . "'"));
-
-        DB::delete(DB::raw("delete  SaldoAwalBukuBesar from SaldoAwalBukuBesar as b 
-        WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and format(b.tglbukti,'MM-yyyy')='" . $data['periode'] . "'"));
-
-
-        DB::delete(DB::raw("delete  AkunPusatDetail from AkunPusatDetail as b 
-        WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and b.bulan=left(" . $data['periode'] . ",2) and b.tahun=right(" . $data['periode'] . ",4)"));
+        // dump($cabang->id);
+        // dd($data['periode']);
+        DB::delete(DB::raw("delete AkunPusatDetail 
+        WHERE isnull(cabang_id,0)=" . $cabang->id . " and bulan=cast(left('" . $data['periode'] . "',2) as integer) and tahun=cast(right('" . $data['periode'] . "',4) as integer)"));
 
         if ($web == "YA") {
 
@@ -324,7 +331,7 @@ class ImportDataCabang extends Model
                 ->select(
                     db::raw("0 as header_id"),
                     'a.fntrans as header_nobukti',
-                    'a.ftgl as header_tglbukti',
+                    'b.ftgl as header_tglbukti',
                     'a.fket as header_keterangan',
                     'a.fpostfrom as header_postingdari',
                     db::raw("(case when isnull(a.fisapp,0)=1 then 3 else 4 end) as header_statusapproval"),
@@ -352,8 +359,8 @@ class ImportDataCabang extends Model
                     'b.ftglinput as detail_updated_at',
                 )
                 ->join(db::raw("j_rapp b with (readuncommitted)"), 'a.fntrans', 'b.fntrans')
-                ->whereRaw("MONTH(a.ftgl) = " . $month)
-                ->whereRaw("YEAR(a.ftgl) = " . $year)
+                ->whereRaw("MONTH(b.ftgl) = " . $month)
+                ->whereRaw("YEAR(b.ftgl) = " . $year)
                 ->whereRaw("a.ftgl >='" . $aptgl . "'")
                 ->whereRaw("a.FKcabang='" . $singkatan . "'")
 
@@ -499,62 +506,93 @@ class ImportDataCabang extends Model
                 ->delete();
 
 
-            $subquery1 = DB::table('jurnalumumpusatheader as J')
-                ->select(
-                    'D.coamain as FCOA',
-                    DB::raw('YEAR(D.tglbukti) as FThn'),
-                    DB::raw('MONTH(D.tglbukti) as FBln'),
-                    db::raw($cabang_id . " as cabang_id"),
-                    DB::raw('round(SUM(D.nominal),2) as FNominal'),
-                )
+            // $subquery1 = DB::table('jurnalumumpusatheader as J')
+            //     ->select(
+            //         'D.coamain as FCOA',
+            //         DB::raw('YEAR(D.tglbukti) as FThn'),
+            //         DB::raw('MONTH(D.tglbukti) as FBln'),
+            //         db::raw($cabang_id . " as cabang_id"),
+            //         DB::raw('round(SUM(D.nominal),2) as FNominal'),
+            //     )
 
 
-                ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
-                ->join('mainakunpusat as C', 'C.coa', '=', 'D.coamain')
-                ->where('D.tglbukti', '>=', $ptgl)
-                ->where('j.cabang_id',  $cabang_id)
-                ->groupBy('D.coamain', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
+            //     ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
+            //     ->join('mainakunpusat as C', 'C.coa', '=', 'D.coamain')
+            //     ->where('D.tglbukti', '>=', $ptgl)
+            //     ->where('j.cabang_id',  $cabang_id)
+            //     ->groupBy('D.coamain', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
 
-            $subquery2 = DB::table('jurnalumumpusatheader as J')
-                ->select(
-                    'LR.coa',
-                    DB::raw('YEAR(D.tglbukti) as FThn'),
-                    DB::raw('MONTH(D.tglbukti) as FBln'),
-                    db::raw($cabang_id . " as cabang_id"),
-                    DB::raw('round(SUM(D.nominal),2) as FNominal'),
-                )
-                ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
-                ->join('perkiraanlabarugi as LR', function ($join) {
-                    $join->on('LR.tahun', '=', DB::raw('YEAR(J.tglbukti)'))
-                        ->on('LR.bulan', '=', DB::raw('MONTH(J.tglbukti)'));
-                })
-                ->whereIn('D.coamain', function ($query) {
-                    $query->select(DB::raw('DISTINCT C.coa'))
-                        ->from('maintypeakuntansi as AT')
-                        ->join('mainakunpusat as C', 'AT.kodetype', '=', 'C.Type')
-                        ->where('AT.order', '>=', 4000)
-                        ->where('AT.order', '<', 9000)
+            // $subquery2 = DB::table('jurnalumumpusatheader as J')
+            //     ->select(
+            //         'LR.coa',
+            //         DB::raw('YEAR(D.tglbukti) as FThn'),
+            //         DB::raw('MONTH(D.tglbukti) as FBln'),
+            //         db::raw($cabang_id . " as cabang_id"),
+            //         DB::raw('round(SUM(D.nominal),2) as FNominal'),
+            //     )
+            //     ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
+            //     ->join('perkiraanlabarugi as LR', function ($join) {
+            //         $join->on('LR.tahun', '=', DB::raw('YEAR(J.tglbukti)'))
+            //             ->on('LR.bulan', '=', DB::raw('MONTH(J.tglbukti)'));
+            //     })
+            //     ->whereIn('D.coamain', function ($query) {
+            //         $query->select(DB::raw('DISTINCT C.coa'))
+            //             ->from('maintypeakuntansi as AT')
+            //             ->join('mainakunpusat as C', 'AT.kodetype', '=', 'C.Type')
+            //             ->where('AT.order', '>=', 4000)
+            //             ->where('AT.order', '<', 9000)
 
-                        ->where('C.type', '<>', 'Laba/Rugi');
-                })
-                ->where('D.tglbukti', '>=', $ptgl)
-                ->where('j.cabang_id',  $cabang_id)
-                ->groupBy('LR.coa', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
+            //             ->where('C.type', '<>', 'Laba/Rugi');
+            //     })
+            //     ->where('D.tglbukti', '>=', $ptgl)
+            //     ->where('j.cabang_id',  $cabang_id)
+            //     ->groupBy('LR.coa', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
 
-            $RecalKdPerkiraan = DB::table(DB::raw("({$subquery1->toSql()} UNION ALL {$subquery2->toSql()}) as V"))
-                ->mergeBindings($subquery1)
-                ->mergeBindings($subquery2)
-                ->groupBy('FCOA', 'FThn', 'FBln', 'cabang_id')
-                ->select('FCOA', 'FThn', 'FBln', 'cabang_id', DB::raw('round(SUM(FNominal),2) as FNominal'));
+            // $RecalKdPerkiraan = DB::table(DB::raw("({$subquery1->toSql()} UNION ALL {$subquery2->toSql()}) as V"))
+            //     ->mergeBindings($subquery1)
+            //     ->mergeBindings($subquery2)
+            //     ->groupBy('FCOA', 'FThn', 'FBln', 'cabang_id')
+            //     ->select('FCOA', 'FThn', 'FBln', 'cabang_id', DB::raw('round(SUM(FNominal),2) as FNominal'));
 
-            DB::table('akunpusatdetail')->insertUsing([
-                'coa',
-                'tahun',
-                'bulan',
-                'cabang_id',
-                'nominal',
+            $RecalKdPerkiraan=DB::connection('sqlsrv2')->table("coa_r")->from(db::raw("coa_r a with (readuncommitted)"))     
+            ->select(
+                'a.fcoa as coa',
+                'a.fthn as tahun',
+                'a.fbln as bulan',
+                db::raw($cabang_id . " as cabang_id"),
+                'a.fnominal as nominal',
+            )   
+            ->whereRaw("a.fbln = " . $bulan)
+            ->whereRaw("a.fthn = " . $tahun)
+            ->whereRaw("a.FKcabang='" . $singkatan . "'") 
+            ->get() ;
 
-            ], $RecalKdPerkiraan);
+
+            $RecalKdPerkiraan = json_encode($RecalKdPerkiraan, JSON_INVALID_UTF8_SUBSTITUTE);
+            $konsolidasicoar = json_decode($RecalKdPerkiraan, true);
+            // dd('test');
+
+            foreach ($konsolidasicoar as $item2) {
+                $akunPusatDetail = new AkunPusatDetail();
+                $akunPusatDetail->coa = mb_convert_encoding($item2['coa'],  $encode, 'UTF-8');
+                $akunPusatDetail->tahun = mb_convert_encoding($item2['tahun'],  $encode, 'UTF-8');
+                $akunPusatDetail->bulan = mb_convert_encoding($item2['bulan'],  $encode, 'UTF-8');
+                $akunPusatDetail->cabang_id = $data['cabang'];
+                $akunPusatDetail->nominal = mb_convert_encoding($item2['nominal'],  $encode, 'UTF-8');
+
+
+                if (!$akunPusatDetail->save()) {
+                    throw new \Exception("Error storing Akun Puat Detail");
+                }
+            }
+            // DB::table('akunpusatdetail')->insertUsing([
+            //     'coa',
+            //     'tahun',
+            //     'bulan',
+            //     'cabang_id',
+            //     'nominal',
+
+            // ], $RecalKdPerkiraan);
         }
 
 

@@ -42,7 +42,7 @@ class LaporanLabaRugi extends MyModel
     public function getReport($bulan, $tahun, $cabang_id)
     {
 
-
+        $cabang_id = $cabang_id ?? 0;
 
         $getcabangid = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
             ->select(
@@ -53,19 +53,27 @@ class LaporanLabaRugi extends MyModel
             ->first()->text ?? 0;
 
 
-        if ($cabang_id != $getcabangid) {
-            $getJudul = db::table('cabang')->from(db::raw("cabang a with (readuncommitted)"))
-                ->select(
-                    'a.judullaporan as text'
-                )
-                ->where('a.id', $cabang_id)
-                ->first();
-        } else {
+        if ($cabang_id == 0) {
             $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->select('text')
                 ->where('grp', 'JUDULAN LAPORAN')
                 ->where('subgrp', 'JUDULAN LAPORAN')
                 ->first();
+        } else {
+            if ($cabang_id != $getcabangid) {
+                $getJudul = db::table('cabang')->from(db::raw("cabang a with (readuncommitted)"))
+                    ->select(
+                        'a.judullaporan as text'
+                    )
+                    ->where('a.id', $cabang_id)
+                    ->first();
+            } else {
+                $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                    ->select('text')
+                    ->where('grp', 'JUDULAN LAPORAN')
+                    ->where('subgrp', 'JUDULAN LAPORAN')
+                    ->first();
+            }
         }
 
 
@@ -91,7 +99,7 @@ class LaporanLabaRugi extends MyModel
             ->join(DB::raw("jurnalumumpusatheader as H with (readuncommitted)"), 'H.nobukti', '=', 'D.nobukti')
             ->join('mainakunpusat as CD', 'CD.COA', '=', 'D.coamain')
             ->whereRaw("MONTH(D.tglbukti) = " . $bulan . " AND YEAR(D.tglbukti) = " . $tahun)
-            ->where('h.cabang_id', $cabang_id)
+            ->whereraw("(h.cabang_id=" . $cabang_id . " or ", $cabang_id . "=0)")
 
             ->groupBy('D.coamain');
 
