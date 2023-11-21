@@ -175,7 +175,8 @@ class LaporanBukuBesar extends MyModel
             ->whereRaw("(c.[order] BETWEEN 1110 AND 3310)")
             ->whereRaw("cast(right(a.bulan,4)+'/'+left(a.bulan,2)+'/1' as date)<'" . $dariformat . "'")
             ->whereRaw("a.bulan<>format(cast('" . $dariformat . "' as date),'MM-yyyy')")
-            ->where('a.cabang_id', $cabang_id)
+            ->whereraw("(a.cabang_id=" . $cabang_id . " or ". $cabang_id . "=0)")
+
             ->groupBy('a.coa');
 
 
@@ -225,7 +226,7 @@ class LaporanBukuBesar extends MyModel
             ->where('a.tglbukti', '<', $dari)
             ->whereRaw("(c.id >=" . $coadari_id)
             ->whereRaw(DB::raw("c.id <=" . $coasampai_id . ")"))
-            ->where('a.cabang_id', $cabang_id)
+            ->whereraw("(a.cabang_id=" . $cabang_id . " or ". $cabang_id . "=0)")
             ->groupBy('b.coa', 'c.keterangancoa');
 
 
@@ -470,6 +471,21 @@ class LaporanBukuBesar extends MyModel
 
         }
 
+        $cabang = db::table("cabang")->from(db::raw("cabang a with (readuncommitted)"))
+        ->select(
+            'a.namacabang'
+        )
+        ->where('a.id', $cabang_id)
+        ->first()->namacabang ?? '';
+
+        if ($cabang_id == 0) {
+            $cabang = 'SEMUA';
+        }
+
+        if ($cabang_id == $getcabangid) {
+            $cabang = '';
+        }
+        
         $queryRekap = DB::table($temprekap)
             ->select(
                 'id',
@@ -487,7 +503,9 @@ class LaporanBukuBesar extends MyModel
                 DB::raw("'Laporan Buku Besar' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                db::raw("(case when '" . $cabang . "'='' then '' else 'Cabang :" . $cabang . "'  end) as Cabang")
+
             )
             ->orderBy('id', 'Asc');
 
