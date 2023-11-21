@@ -61,11 +61,10 @@ class LaporanLabaRugi extends MyModel
                 ->first();
         } else {
             if ($cabang_id != $getcabangid) {
-                $getJudul = db::table('cabang')->from(db::raw("cabang a with (readuncommitted)"))
-                    ->select(
-                        'a.judullaporan as text'
-                    )
-                    ->where('a.id', $cabang_id)
+                $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                    ->select('text')
+                    ->where('grp', 'JUDULAN LAPORAN')
+                    ->where('subgrp', 'JUDULAN LAPORAN')
                     ->first();
             } else {
                 $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
@@ -99,7 +98,7 @@ class LaporanLabaRugi extends MyModel
             ->join(DB::raw("jurnalumumpusatheader as H with (readuncommitted)"), 'H.nobukti', '=', 'D.nobukti')
             ->join('mainakunpusat as CD', 'CD.COA', '=', 'D.coamain')
             ->whereRaw("MONTH(D.tglbukti) = " . $bulan . " AND YEAR(D.tglbukti) = " . $tahun)
-            ->whereraw("(h.cabang_id=" . $cabang_id . " or ". $cabang_id . "=0)")
+            ->whereraw("(h.cabang_id=" . $cabang_id . " or " . $cabang_id . "=0)")
 
             ->groupBy('D.coamain');
 
@@ -189,20 +188,20 @@ class LaporanLabaRugi extends MyModel
             ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
 
-            $cabang = db::table("cabang")->from(db::raw("cabang a with (readuncommitted)"))
+        $cabang = db::table("cabang")->from(db::raw("cabang a with (readuncommitted)"))
             ->select(
                 'a.namacabang'
             )
             ->where('a.id', $cabang_id)
             ->first()->namacabang ?? '';
 
-            if ($cabang_id == 0) {
-                $cabang = 'SEMUA';
-            }
+        if ($cabang_id == 0) {
+            $cabang = 'SEMUA';
+        }
 
-            if ($cabang_id == $getcabangid) {
-                $cabang = '';
-            }
+        if ($cabang_id == $getcabangid) {
+            $cabang = '';
+        }
 
         $results = DB::table('mainakunpusat AS C')
             ->select(
@@ -309,7 +308,7 @@ class LaporanLabaRugi extends MyModel
             'diperiksa',
             'disetujui',
             'judul',
-            'cabang',            
+            'cabang',
         ], $results2);
 
         $data1 = $results->get();
