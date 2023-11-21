@@ -99,7 +99,7 @@ class LaporanLabaRugi extends MyModel
             ->join(DB::raw("jurnalumumpusatheader as H with (readuncommitted)"), 'H.nobukti', '=', 'D.nobukti')
             ->join('mainakunpusat as CD', 'CD.COA', '=', 'D.coamain')
             ->whereRaw("MONTH(D.tglbukti) = " . $bulan . " AND YEAR(D.tglbukti) = " . $tahun)
-            ->whereraw("(h.cabang_id=" . $cabang_id . " or ", $cabang_id . "=0)")
+            ->whereraw("(h.cabang_id=" . $cabang_id . " or ". $cabang_id . "=0)")
 
             ->groupBy('D.coamain');
 
@@ -130,6 +130,7 @@ class LaporanLabaRugi extends MyModel
             $table->string('diperiksa', 1000);
             $table->string('disetujui', 1000);
             $table->string('judul', 1000);
+            $table->string('cabang', 1000);
         });
 
         $TempLabaRugiParent = '##TempLabaRugiParent' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -188,7 +189,20 @@ class LaporanLabaRugi extends MyModel
             ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
 
+            $cabang = db::table("cabang")->from(db::raw("cabang a with (readuncommitted)"))
+            ->select(
+                'a.namacabang'
+            )
+            ->where('a.id', $cabang_id)
+            ->first()->namacabang ?? '';
 
+            if ($cabang_id == 0) {
+                $cabang = 'SEMUA';
+            }
+
+            if ($cabang_id == $getcabangid) {
+                $cabang = '';
+            }
 
         $results = DB::table('mainakunpusat AS C')
             ->select(
@@ -209,6 +223,7 @@ class LaporanLabaRugi extends MyModel
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
+                db::raw("(case when '" . $cabang . "'='' then '' else 'Cabang :" . $cabang . "'  end) as Cabang")
 
 
 
@@ -222,6 +237,7 @@ class LaporanLabaRugi extends MyModel
             ->orderBy('coa');
 
         // dd($results->toSql());
+
 
 
         DB::table($TempLabaRugi)->insertUsing([
@@ -242,6 +258,7 @@ class LaporanLabaRugi extends MyModel
             'diperiksa',
             'disetujui',
             'judul',
+            'cabang',
         ], $results);
         // dd($results->get()); 
 
@@ -264,6 +281,7 @@ class LaporanLabaRugi extends MyModel
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
+                db::raw("(case when '" . $cabang . "'='' then '' else 'Cabang :" . $cabang . "'  end) as Cabang")
 
             )
             ->join('mainTypeakuntansi AS AT', 'AT.id', '=', 'C.type_id')
@@ -291,6 +309,7 @@ class LaporanLabaRugi extends MyModel
             'diperiksa',
             'disetujui',
             'judul',
+            'cabang',            
         ], $results2);
 
         $data1 = $results->get();
