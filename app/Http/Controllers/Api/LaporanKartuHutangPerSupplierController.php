@@ -76,13 +76,12 @@ class LaporanKartuHutangPerSupplierController extends Controller
     {
         $dari = date('Y-m-d', strtotime($request->dari));
         $sampai = date('Y-m-d', strtotime($request->sampai));
-        $supplierdari = $request->supplierdari_id;
-        $suppliersampai = $request->suppliersampai_id;
+        $supplierdari = $request->supplierdari_id ?? 0;
+        $suppliersampai = $request->suppliersampai_id ?? 0;
         $prosesneraca=0;
 
         $laporankartuhutangpersupplier = new LaporanKartuHutangPerSupplier();
         $laporan_kartuhutangpersupplier = $laporankartuhutangpersupplier->getReport($dari, $sampai, $supplierdari, $suppliersampai,$prosesneraca);
-
 
         if ($request->isCheck) {
             if (count($laporan_kartuhutangpersupplier) === 0) {
@@ -99,11 +98,6 @@ class LaporanKartuHutangPerSupplierController extends Controller
                 ]);
             }
         } else {
-            foreach ($laporan_kartuhutangpersupplier as $item) {
-                $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
-                $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
-            }
-
 
             return response([
                 'data' => $laporan_kartuhutangpersupplier
