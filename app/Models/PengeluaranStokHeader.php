@@ -354,11 +354,11 @@ class PengeluaranStokHeader extends MyModel
                 ->leftJoin(db::raw($temppengeluarantruckingheader . " as pengeluarantruckingheader"), 'pengeluaranstokheader.pengeluarantrucking_nobukti', 'pengeluarantruckingheader.nobukti')
 
                 ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id');
-                // ->join(db::raw($temprole . " d "), 'pengeluaranstok.aco_id', 'd.aco_id');
+            // ->join(db::raw($temprole . " d "), 'pengeluaranstok.aco_id', 'd.aco_id');
 
             if (request()->tgldari) {
                 // $query->whereBetween('pengeluaranstokheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
-                $query->join(db::raw($tempbukti . " as bukti"),'pengeluaranstokheader.nobukti','bukti.nobukti');
+                $query->join(db::raw($tempbukti . " as bukti"), 'pengeluaranstokheader.nobukti', 'bukti.nobukti');
             }
 
 
@@ -404,58 +404,57 @@ class PengeluaranStokHeader extends MyModel
             foreach ($datadetail as $item) {
 
                 DB::table($temtabel)->insert([
-                    'id'=> $item['id'],
-                    'nobukti'=> $item['nobukti'],
-                    'tglbukti'=> $item['tglbukti'],
-                    'pengeluaranstok_id'=> $item['pengeluaranstok_id'],
-                    'trado_id'=> $item['trado_id'],
-                    'gandengan_id'=> $item['gandengan_id'],
-                    'gudang_id'=> $item['gudang_id'],
-                    'supir_id'=> $item['supir_id'],
-                    'supplier_id'=> $item['supplier_id'],
-                    'pengeluaranstok_nobukti'=> $item['pengeluaranstok_nobukti'],
-                    'penerimaanstok_nobukti'=> $item['penerimaanstok_nobukti'],
-                    'pengeluarantrucking_nobukti'=> $item['pengeluarantrucking_nobukti'],
-                    'penerimaan_nobukti'=> $item['penerimaan_nobukti'],
-                    'hutangbayar_nobukti'=> $item['hutangbayar_nobukti'],
-                    'servicein_nobukti'=> $item['servicein_nobukti'],
-                    'kerusakan_id'=> $item['kerusakan_id'],
-                    'statuscetak'=> $item['statuscetak'],
-                    'statusformat'=> $item['statusformat'],
-                    'statuspotongretur'=> $item['statuspotongretur'],
-                    'bank_id'=> $item['bank_id'],
-                    'tglkasmasuk'=> $item['tglkasmasuk'],
-                    'modifiedby'=> $item['modifiedby'],
-                    'created_at'=> $item['created_at'],
-                    'updated_at'=> $item['updated_at'],
-                    'jumlahcetak'=> $item['jumlahcetak'],
-                    'kerusakan'=> $item['kerusakan'],
-                    'bank'=> $item['bank'],
-                    'pengeluaranstok'=> $item['pengeluaranstok'],
-                    'trado'=> $item['trado'],
-                    'gudang'=> $item['gudang'],
-                    'gandengan'=> $item['gandengan'],
-                    'supir'=> $item['supir'],
-                    'supplier'=> $item['supplier'],
-                    'statusedit'=> $item['statusedit'],
-                    'statusedit_id'=> $item['statusedit_id'],
-                    'judul'=> $item['judul'],
-                    'tglcetak'=> $item['tglcetak'],
-                    'usercetak'=> $item['usercetak'],
-                    'tgldariheaderpenerimaanstok'=> $item['tgldariheaderpenerimaanstok'],
-                    'tglsampaiheaderpenerimaanstok'=> $item['tglsampaiheaderpenerimaanstok'],
-                    'tgldariheaderpenerimaanheader'=> $item['tgldariheaderpenerimaanheader'],
-                    'tglsampaiheaderpenerimaanheader'=> $item['tglsampaiheaderpenerimaanheader'],
-                    'tgldariheaderhutangbayarheader'=> $item['tgldariheaderhutangbayarheader'],
-                    'tglsampaiheaderhutangbayarheader'=> $item['tglsampaiheaderhutangbayarheader'],
-                    'tgldariheaderpengeluaran'=> $item['tgldariheaderpengeluaran'],
-                    'tglsampaiheaderpengeluaran'=> $item['tglsampaiheaderpengeluaran'],
-                    'tgldariheaderserviceinheader'=> $item['tgldariheaderserviceinheader'],
-                    'tglsampaiheaderserviceinheader'=> $item['tglsampaiheaderserviceinheader'],
-                    'tgldariheaderpengeluarantruckingheader'=> $item['tgldariheaderpengeluarantruckingheader'],
-                    'tglsampaiheaderpengeluarantruckingheader'=> $item['tglsampaiheaderpengeluarantruckingheader'],
+                    'id' => $item['id'],
+                    'nobukti' => $item['nobukti'],
+                    'tglbukti' => $item['tglbukti'],
+                    'pengeluaranstok_id' => $item['pengeluaranstok_id'],
+                    'trado_id' => $item['trado_id'],
+                    'gandengan_id' => $item['gandengan_id'],
+                    'gudang_id' => $item['gudang_id'],
+                    'supir_id' => $item['supir_id'],
+                    'supplier_id' => $item['supplier_id'],
+                    'pengeluaranstok_nobukti' => $item['pengeluaranstok_nobukti'],
+                    'penerimaanstok_nobukti' => $item['penerimaanstok_nobukti'],
+                    'pengeluarantrucking_nobukti' => $item['pengeluarantrucking_nobukti'],
+                    'penerimaan_nobukti' => $item['penerimaan_nobukti'],
+                    'hutangbayar_nobukti' => $item['hutangbayar_nobukti'],
+                    'servicein_nobukti' => $item['servicein_nobukti'],
+                    'kerusakan_id' => $item['kerusakan_id'],
+                    'statuscetak' => $item['statuscetak'],
+                    'statusformat' => $item['statusformat'],
+                    'statuspotongretur' => $item['statuspotongretur'],
+                    'bank_id' => $item['bank_id'],
+                    'tglkasmasuk' => $item['tglkasmasuk'],
+                    'modifiedby' => $item['modifiedby'],
+                    'created_at' => $item['created_at'],
+                    'updated_at' => $item['updated_at'],
+                    'jumlahcetak' => $item['jumlahcetak'],
+                    'kerusakan' => $item['kerusakan'],
+                    'bank' => $item['bank'],
+                    'pengeluaranstok' => $item['pengeluaranstok'],
+                    'trado' => $item['trado'],
+                    'gudang' => $item['gudang'],
+                    'gandengan' => $item['gandengan'],
+                    'supir' => $item['supir'],
+                    'supplier' => $item['supplier'],
+                    'statusedit' => $item['statusedit'],
+                    'statusedit_id' => $item['statusedit_id'],
+                    'judul' => $item['judul'],
+                    'tglcetak' => $item['tglcetak'],
+                    'usercetak' => $item['usercetak'],
+                    'tgldariheaderpenerimaanstok' => $item['tgldariheaderpenerimaanstok'],
+                    'tglsampaiheaderpenerimaanstok' => $item['tglsampaiheaderpenerimaanstok'],
+                    'tgldariheaderpenerimaanheader' => $item['tgldariheaderpenerimaanheader'],
+                    'tglsampaiheaderpenerimaanheader' => $item['tglsampaiheaderpenerimaanheader'],
+                    'tgldariheaderhutangbayarheader' => $item['tgldariheaderhutangbayarheader'],
+                    'tglsampaiheaderhutangbayarheader' => $item['tglsampaiheaderhutangbayarheader'],
+                    'tgldariheaderpengeluaran' => $item['tgldariheaderpengeluaran'],
+                    'tglsampaiheaderpengeluaran' => $item['tglsampaiheaderpengeluaran'],
+                    'tgldariheaderserviceinheader' => $item['tgldariheaderserviceinheader'],
+                    'tglsampaiheaderserviceinheader' => $item['tglsampaiheaderserviceinheader'],
+                    'tgldariheaderpengeluarantruckingheader' => $item['tgldariheaderpengeluarantruckingheader'],
+                    'tglsampaiheaderpengeluarantruckingheader' => $item['tglsampaiheaderpengeluarantruckingheader'],
                 ]);
-
             }
 
             // DB::table($temtabel)->insertUsing([
@@ -1431,7 +1430,7 @@ class PengeluaranStokHeader extends MyModel
                 $datastok  = Stok::lockForUpdate()->where("id", $data['detail_stok_id'][$i])->firstorFail();
                 if ($korv->id == $data['pengeluaranstok_id']) {
                     $datastok->totalvulkanisir = $totalvulkan;
-                    $datastok->statusban = ($data['detail_statusban']) ? $data['detail_statusban'][$i]: null;
+                    $datastok->statusban = ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null;
                     $datastok->save();
                 }
             }
@@ -1645,14 +1644,52 @@ class PengeluaranStokHeader extends MyModel
                 $jurnalselisihfifodebet = db::table("parameter")->from(db::raw("parameter as a with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL SELISIH FIFO')->where('subgrp', 'DEBET')->first();
                 $jurnalselisihfifokredit = db::table("parameter")->from(db::raw("parameter as a with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL SELISIH FIFO')->where('subgrp', 'KREDIT')->first();
 
-                $jurnalnominaldetail = db::table("pengeluaranstokdetail")->from(db::raw("pengeluaranstokdetail as a with (readuncommitted)"))->select(db::raw("sum(isnull(selisihhargafifo,0)) as selisihhargafifo"))
+                $jurnalnominaldetail = db::table("pengeluaranstokdetail")->from(db::raw("pengeluaranstokdetail as a with (readuncommitted)"))
+                    ->select(
+                        db::raw("sum(isnull(selisihhargafifo,0)) as selisihhargafifo")
+                    )
                     ->where('nobukti', $pengeluaranStokHeader->nobukti)->first()->selisihhargafifo ?? 0;
+
+                $jurnalnominaldetailreal = db::table("pengeluaranstokdetail")->from(db::raw("pengeluaranstokdetail as a with (readuncommitted)"))
+                    ->select(
+                        db::raw("sum(isnull(selisihhargafifo,0)+isnull(total,0)) as total")
+                    )
+                    ->where('nobukti', $pengeluaranStokHeader->nobukti)->first()->total ?? 0;
+
                 if ($jurnalnominaldetail != 0) {
 
                     $jurnalmemodebet = json_decode($jurnalselisihfifodebet->memo, true);
                     $jurnalmemokredit = json_decode($jurnalselisihfifokredit->memo, true);
                     $jurnalcoadebet_detail[] = $jurnalmemodebet['JURNAL'];
                     $jurnalcoakredit_detail[] = $jurnalmemokredit['JURNAL'];
+                    $jurnalnominal_detail[] = $jurnalnominaldetailreal;
+                    $jurnalketerangan_detail[] = $keterangan_detail[0];
+
+                    $jurnalRequest = [
+                        'tanpaprosesnobukti' => 1,
+                        'nobukti' => $pengeluaranStokHeader->nobukti,
+                        'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                        'postingdari' => "ENTRY Pengeluaran stok header",
+                        'statusapproval' => $statusApproval->id,
+                        'userapproval' => "",
+                        'tglapproval' => "",
+                        'modifiedby' => auth('api')->user()->name,
+                        'statusformat' => "0",
+                        'coakredit_detail' => $jurnalcoakredit_detail,
+                        'coadebet_detail' => $jurnalcoadebet_detail,
+                        'nominal_detail' => $jurnalnominal_detail,
+                        'keterangan_detail' => $jurnalketerangan_detail
+                    ];
+
+                   
+                }
+
+                if ($jurnalnominaldetailreal != 0) {
+
+                    $jurnalmemodebet = json_decode($jurnalselisihfifodebet->memo, true);
+                    $jurnalmemokredit = json_decode($jurnalselisihfifokredit->memo, true);
+                    $jurnalcoadebet_detail[] = $jurnalmemokredit['JURNAL'];
+                    $jurnalcoakredit_detail[] = $jurnalmemodebet['JURNAL'];
                     $jurnalnominal_detail[] = $jurnalnominaldetail;
                     $jurnalketerangan_detail[] = $keterangan_detail[0];
 
@@ -1724,14 +1761,31 @@ class PengeluaranStokHeader extends MyModel
                     } else {
                         $jurnalselisihfifodebet = db::table("parameter")->from(db::raw("parameter as a with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL SELISIH FIFO')->where('subgrp', 'DEBET')->first();
                         $jurnalselisihfifokredit = db::table("parameter")->from(db::raw("parameter as a with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL SELISIH FIFO')->where('subgrp', 'KREDIT')->first();
-                        $jurnalnominaldetail = db::table("pengeluaranstokdetail")->from(db::raw("pengeluaranstokdetail as a with (readuncommitted)"))->select(db::raw("sum(isnull(selisihhargafifo,0)) as selisihhargafifo"))
+                        $jurnalnominaldetail = db::table("pengeluaranstokdetail")->from(db::raw("pengeluaranstokdetail as a with (readuncommitted)"))
+                            ->select(
+                                db::raw("sum(isnull(selisihhargafifo,0)) as selisihhargafifo")
+                            )
                             ->where('nobukti', $pengeluaranStokHeader->nobukti)->first()->selisihhargafifo ?? 0;
+
+                        $jurnalnominaldetailreal = db::table("pengeluaranstokdetail")->from(db::raw("pengeluaranstokdetail as a with (readuncommitted)"))
+                            ->select(
+                                db::raw("sum(isnull(selisihhargafifo,0)+isnull(total,0)) as total")
+                            )
+                            ->where('nobukti', $pengeluaranStokHeader->nobukti)->first()->total ?? 0;
 
                         if ($jurnalnominaldetail != 0) {
                             $jurnalmemodebet = json_decode($jurnalselisihfifodebet->memo, true);
                             $jurnalmemokredit = json_decode($jurnalselisihfifokredit->memo, true);
                             $jurnalcoadebet_detail[] = $jurnalmemodebet['JURNAL'];
                             $jurnalcoakredit_detail[] = $jurnalmemokredit['JURNAL'];
+                            $jurnalnominal_detail[] = $jurnalnominaldetailreal;
+                            $jurnalketerangan_detail[] = $keterangan_detail[0];
+                        }
+                        if ($jurnalnominaldetail != 0) {
+                            $jurnalmemodebet = json_decode($jurnalselisihfifodebet->memo, true);
+                            $jurnalmemokredit = json_decode($jurnalselisihfifokredit->memo, true);
+                            $jurnalcoadebet_detail[] = $jurnalmemokredit['JURNAL'];
+                            $jurnalcoakredit_detail[] = $jurnalmemodebet['JURNAL'];
                             $jurnalnominal_detail[] = $jurnalnominaldetail;
                             $jurnalketerangan_detail[] = $keterangan_detail[0];
                         }
@@ -2078,7 +2132,7 @@ class PengeluaranStokHeader extends MyModel
                     ->firstorFail();
                 if ($pengeluaranStokHeader->pengeluaranstok_id == $korv->id) {
                     $datastok->totalvulkanisir = $totalvulkan;
-                    $datastok->statusban = ($data['detail_statusban']) ? $data['detail_statusban'][$i]: null;
+                    $datastok->statusban = ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null;
                     $datastok->save();
                 }
             }
@@ -2295,8 +2349,17 @@ class PengeluaranStokHeader extends MyModel
 
                 $jurnalselisihfifodebet = db::table("parameter")->from(db::raw("parameter as a with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL SELISIH FIFO')->where('subgrp', 'DEBET')->first();
                 $jurnalselisihfifokredit = db::table("parameter")->from(db::raw("parameter as a with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL SELISIH FIFO')->where('subgrp', 'KREDIT')->first();
-                $jurnalnominaldetail = db::table("pengeluaranstokdetail")->from(db::raw("pengeluaranstokdetail as a with (readuncommitted)"))->select(db::raw("sum(isnull(selisihhargafifo,0)) as selisihhargafifo"))
+                $jurnalnominaldetail = db::table("pengeluaranstokdetail")->from(db::raw("pengeluaranstokdetail as a with (readuncommitted)"))
+                    ->select(
+                        db::raw("sum(isnull(selisihhargafifo,0)) as selisihhargafifo")
+                    )
                     ->where('nobukti', $pengeluaranStokHeader->nobukti)->first()->selisihhargafifo ?? 0;
+
+                $jurnalnominaldetailreal = db::table("pengeluaranstokdetail")->from(db::raw("pengeluaranstokdetail as a with (readuncommitted)"))
+                    ->select(
+                        db::raw("sum(isnull(selisihhargafifo,0)+isnull(total,0)) as total")
+                    )
+                    ->where('nobukti', $pengeluaranStokHeader->nobukti)->first()->total ?? 0;
 
                 if ($jurnalnominaldetail != 0) {
 
@@ -2304,6 +2367,38 @@ class PengeluaranStokHeader extends MyModel
                     $jurnalmemokredit = json_decode($jurnalselisihfifokredit->memo, true);
                     $jurnalcoadebet_detail[] = $jurnalmemodebet['JURNAL'];
                     $jurnalcoakredit_detail[] = $jurnalmemokredit['JURNAL'];
+                    $jurnalnominal_detail[] = $jurnalnominaldetailreal;
+                    $jurnalketerangan_detail[] = $keterangan_detail[0];
+
+                    $jurnalRequest = [
+                        'tanpaprosesnobukti' => 1,
+                        'nobukti' => $pengeluaranStokHeader->nobukti,
+                        'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                        'postingdari' => "ENTRY Pengeluaran stok header",
+                        'statusapproval' => $statusApproval->id,
+                        'userapproval' => "",
+                        'tglapproval' => "",
+                        'modifiedby' => auth('api')->user()->name,
+                        'statusformat' => "0",
+                        'coakredit_detail' => $jurnalcoakredit_detail,
+                        'coadebet_detail' => $jurnalcoadebet_detail,
+                        'nominal_detail' => $jurnalnominal_detail,
+                        'keterangan_detail' => $jurnalketerangan_detail
+                    ];
+                    $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->nobukti)->lockForUpdate()->first();
+                    if ($jurnalUmumHeader != null) {
+                        $jurnalUmumHeader = (new JurnalUmumHeader())->processUpdate($jurnalUmumHeader, $jurnalRequest);
+                    } else {
+                        $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
+                    }
+                }
+
+                if ($jurnalnominaldetailreal != 0) {
+
+                    $jurnalmemodebet = json_decode($jurnalselisihfifodebet->memo, true);
+                    $jurnalmemokredit = json_decode($jurnalselisihfifokredit->memo, true);
+                    $jurnalcoadebet_detail[] = $jurnalmemokredit['JURNAL'];
+                    $jurnalcoakredit_detail[] = $jurnalmemodebet['JURNAL'];
                     $jurnalnominal_detail[] = $jurnalnominaldetail;
                     $jurnalketerangan_detail[] = $keterangan_detail[0];
 
@@ -2370,8 +2465,17 @@ class PengeluaranStokHeader extends MyModel
                     } else {
                         $jurnalselisihfifodebet = db::table("parameter")->from(db::raw("parameter as a with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL SELISIH FIFO')->where('subgrp', 'DEBET')->first();
                         $jurnalselisihfifokredit = db::table("parameter")->from(db::raw("parameter as a with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL SELISIH FIFO')->where('subgrp', 'KREDIT')->first();
-                        $jurnalnominaldetail = db::table("pengeluaranstokdetail")->from(db::raw("pengeluaranstokdetail as a with (readuncommitted)"))->select(db::raw("sum(isnull(selisihhargafifo,0)) as selisihhargafifo"))
+                        $jurnalnominaldetail = db::table("pengeluaranstokdetail")->from(db::raw("pengeluaranstokdetail as a with (readuncommitted)"))
+                            ->select(
+                                db::raw("sum(isnull(selisihhargafifo,0)) as selisihhargafifo")
+                            )
                             ->where('nobukti', $pengeluaranStokHeader->nobukti)->first()->selisihhargafifo ?? 0;
+
+                        $jurnalnominaldetailreal = db::table("pengeluaranstokdetail")->from(db::raw("pengeluaranstokdetail as a with (readuncommitted)"))
+                            ->select(
+                                db::raw("sum(isnull(selisihhargafifo,0)+isnull(total,0)) as total")
+                            )
+                            ->where('nobukti', $pengeluaranStokHeader->nobukti)->first()->total ?? 0;
 
                         if ($jurnalnominaldetail != 0) {
 
@@ -2379,6 +2483,15 @@ class PengeluaranStokHeader extends MyModel
                             $jurnalmemokredit = json_decode($jurnalselisihfifokredit->memo, true);
                             $jurnalcoadebet_detail[] = $jurnalmemodebet['JURNAL'];
                             $jurnalcoakredit_detail[] = $jurnalmemokredit['JURNAL'];
+                            $jurnalnominal_detail[] = $jurnalnominaldetailreal;
+                            $jurnalketerangan_detail[] = $keterangan_detail[0];
+                        }
+                        if ($jurnalnominaldetailreal != 0) {
+
+                            $jurnalmemodebet = json_decode($jurnalselisihfifodebet->memo, true);
+                            $jurnalmemokredit = json_decode($jurnalselisihfifokredit->memo, true);
+                            $jurnalcoadebet_detail[] = $jurnalmemokredit['JURNAL']; 
+                            $jurnalcoakredit_detail[] = $jurnalmemodebet['JURNAL'];
                             $jurnalnominal_detail[] = $jurnalnominaldetail;
                             $jurnalketerangan_detail[] = $keterangan_detail[0];
                         }
