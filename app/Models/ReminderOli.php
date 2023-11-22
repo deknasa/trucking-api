@@ -909,7 +909,7 @@ class ReminderOli extends MyModel
                 db::raw("format(a.tanggal,'dd-MM-yyyy') as tanggal"),
                 db::raw("format(a.km,'#,#0.00') as batasganti"),
                 db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
-                db::raw("'status' as Keterangan"),
+                db::raw("status as Keterangan"),
                 db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
                            when (a.km-a.kmperjalanan)<=" . $batasmax . " then 'YELLOW' 
                            else '' end) as warna"),
@@ -1071,7 +1071,7 @@ class ReminderOli extends MyModel
                 db::raw("format(a.tanggal,'dd-MM-yyyy') as tanggal"),
                 db::raw("format(a.km,'#,#0.00') as batasganti"),
                 db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
-                db::raw("'status' as Keterangan"),
+                db::raw("status as Keterangan"),
                 db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
                            when (a.km-a.kmperjalanan)<=" . $batasmax . " then 'YELLOW' 
                            else '' end) as warna"),
@@ -1232,7 +1232,7 @@ class ReminderOli extends MyModel
                 db::raw("format(a.tanggal,'dd-MM-yyyy') as tanggal"),
                 db::raw("format(a.km,'#,#0.00') as batasganti"),
                 db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
-                db::raw("'status' as Keterangan"),
+                db::raw("status as Keterangan"),
                 db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
                            when (a.km-a.kmperjalanan)<=" . $batasmax . " then 'YELLOW' 
                            else '' end) as warna"),
@@ -1393,7 +1393,7 @@ class ReminderOli extends MyModel
                 db::raw("format(a.tanggal,'dd-MM-yyyy') as tanggal"),
                 db::raw("format(a.km,'#,#0.00') as batasganti"),
                 db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
-                db::raw("'status' as Keterangan"),
+                db::raw("status as Keterangan"),
                 db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
                            when (a.km-a.kmperjalanan)<=" . $batasmax . " then 'YELLOW' 
                            else '' end) as warna"),
