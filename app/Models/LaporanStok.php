@@ -271,7 +271,7 @@ class LaporanStok extends MyModel
                 $join->on('a.nobukti', '=', 'd.nobukti');
                 $join->on('a.stok_id', '=', 'd.stok_id');
             })            
-            ->orderBy('a.namabarang', 'asc')
+            ->orderBy(db::raw("(case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') end) "), 'asc')
             ->orderBy('a.tglbukti', 'asc')
             ->orderBy(db::raw("(case when UPPER(isnull(a.nobukti,''))='SALDO AWAL' then '' else isnull(a.nobukti,'') end)"), 'asc');
 
