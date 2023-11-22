@@ -35,6 +35,7 @@ class UpdateMerkRequest extends FormRequest
 
         return [
             'kodemerk' => ['required',Rule::unique('merk')->whereNotIn('id', [$this->id])],
+            'keterangan' => ['required'],
             'statusaktif' => ['required', Rule::in($status)]
         ];
     }

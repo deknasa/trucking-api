@@ -91,6 +91,7 @@ class Kelompok extends MyModel
                 'kelompok.kodekelompok',
                 'kelompok.keterangan',
                 'parameter.memo as statusaktif',
+                'parameter.text as statusaktifnama',
                 'kelompok.modifiedby',
                 'kelompok.created_at',
                 'kelompok.updated_at',
@@ -131,30 +132,51 @@ class Kelompok extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama')->nullable();
         });
-
+ 
         $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
-        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id,"statusaktifnama" => $statusaktif->text]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
             ->select(
-                'statusaktif'
+                'statusaktif',
+                'statusaktifnama',
             );
 
         $data = $query->first();
         // dd($data);
         return $data;
+    }
+
+    public function findAll($id) {
+        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
+            ->select(
+                'kelompok.id',
+                'kelompok.kodekelompok',
+                'kelompok.keterangan',
+                'parameter.id as statusaktif',
+                'parameter.text as statusaktifnama',
+                'kelompok.modifiedby',
+                'kelompok.created_at',
+                'kelompok.updated_at',
+            )
+            ->where('kelompok.id',$id)
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kelompok.statusaktif', '=', 'parameter.id');
+            return $query->first();
+
     }
 
     public function selectColumns($query)

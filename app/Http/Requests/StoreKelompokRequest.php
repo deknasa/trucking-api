@@ -35,6 +35,7 @@ class StoreKelompokRequest extends FormRequest
 
         $rules = [
             'kodekelompok' => ['required', 'unique:kelompok'],
+            'keterangan' => ['required'],
             'statusaktif' => ['required', Rule::in($status)]
         ];
 

@@ -119,7 +119,7 @@ class GudangController extends Controller
     {
         return response([
             'status' => true,
-            'data' => $gudang
+            'data' => (new Gudang())->findAll($gudang->id)
         ]);
     }
 

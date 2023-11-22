@@ -125,6 +125,28 @@ class Satuan extends MyModel
         )->leftJoin('parameter', 'satuan.statusaktif', '=', 'parameter.id');
     }
 
+    public function findAll($id)
+    {
+        $this->setRequestParameters();
+
+        $data = satuan::from(DB::raw("satuan with (readuncommitted)"))
+            ->select(
+                'satuan.id',
+                'satuan.satuan',
+                'parameter.text as statusaktifnama',
+                'satuan.statusaktif',
+                'satuan.modifiedby',
+                'satuan.created_at',
+                'satuan.updated_at',
+            )
+            ->leftJoin('parameter', 'satuan.statusaktif', '=', 'parameter.id')
+            ->where('satuan.id', $id)->first();
+
+
+
+        return $data;
+    }
+
     public function createTemp(string $modelTable)
     { //sesuaikan dengan column index
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -210,7 +232,7 @@ class Satuan extends MyModel
         $satuan->satuan = $data['satuan'];
         $satuan->statusaktif = $data['statusaktif'];
         $satuan->modifiedby = auth('api')->user()->name;
-        $satuan->info = html_entity_decode(request()->info);
+        // $satuan->info = html_entity_decode(request()->info);
 
         if (!$satuan->save()) {
             throw new \Exception("Error storing service in header.");
@@ -234,7 +256,7 @@ class Satuan extends MyModel
         $satuan->satuan = $data['satuan'];
         $satuan->statusaktif = $data['statusaktif'];
         $satuan->modifiedby = auth('api')->user()->name;
-        $satuan->info = html_entity_decode(request()->info);
+        // $satuan->info = html_entity_decode(request()->info);
 
         if (!$satuan->save()) {
             throw new \Exception("Error update service in header.");

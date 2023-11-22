@@ -114,7 +114,7 @@ class KelompokController extends Controller
     {
         return response([
             'status' => true,
-            'data' => $kelompok
+            'data' => (new Kelompok())->findAll($kelompok->id)
         ]);
     }
 
