@@ -162,7 +162,7 @@ class PenerimaanTruckingHeader extends MyModel
             $datadetail = json_decode($query->get(), true);
             foreach ($datadetail as $item) {
                 $namasupir = $item['supir_id'] ?? '';
-                if ($item['penerimaantrucking_id'] == 'DEPOSITO SUPIR') {
+                if ($item['penerimaantrucking_id'] == 'DEPOSITO SUPIR' || $item['penerimaantrucking_id'] == 'PENGEMBALIAN PINJAMAN') {
                     // dd('test');
                     $querydetail1 = DB::table("penerimaantruckingdetail")->from(DB::raw("penerimaantruckingdetail  a with (readuncommitted)"))
                         ->select(
