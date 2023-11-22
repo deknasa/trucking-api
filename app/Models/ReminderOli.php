@@ -280,7 +280,6 @@ class ReminderOli extends MyModel
                 'a.jarak',
             )
             ->leftjoin(db::raw("trado b with (readuncommitted)"), 'a.nopol', 'b.kodetrado')
-            ->where('b.id', 46)
             ->orderby('a.id', 'asc');
 
         //   dd($querysaldo->get());
@@ -294,9 +293,6 @@ class ReminderOli extends MyModel
             'tglsampai',
             'jarak',
         ], $querysaldo);
-
-        // dd(db::table($Tempsaldoreminderoli)->where('trado_id',46)->get());
-
 
         $tglsaldo = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
             ->select('a.text')
@@ -630,7 +626,7 @@ class ReminderOli extends MyModel
         // 
         // 
 
-        // dd(db::table($Tempsaldoreminderoli)->where('trado_id',46)->get());
+        // dd(db::table($Tempsaldoreminderoli)->get());
         // dd(db::table($tempstatus)->get());
 
 
@@ -738,7 +734,7 @@ class ReminderOli extends MyModel
             // dump(db::table($Tempsaldoreminderoli)->where('trado_id',33)->get());
             // dump(db::table($Temppergantian)->where('trado_id',33)->get());
 
-            // dd($query->where('a.trado_id',46)->get());
+            // dd($query->get());
             
 
             // dd(db::table($Tempsaldoreminderolirekap)->where('nopol','B 9211 BEI')->get());
@@ -762,7 +758,6 @@ class ReminderOli extends MyModel
                 'a.kmperjalanan',
                 'a.statusbatas',
             )
-            // ->where('a.nopol', 'B 9318 WV')
             
             ->orderby('a.urutid', 'desc');
 
@@ -1076,7 +1071,7 @@ class ReminderOli extends MyModel
                 db::raw("format(a.tanggal,'dd-MM-yyyy') as tanggal"),
                 db::raw("format(a.km,'#,#0.00') as batasganti"),
                 db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
-                db::raw("'' as Keterangan"),
+                db::raw("status as Keterangan"),
                 db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
                            when (a.km-a.kmperjalanan)<=" . $batasmax . " then 'YELLOW' 
                            else '' end) as warna"),
@@ -1237,7 +1232,7 @@ class ReminderOli extends MyModel
                 db::raw("format(a.tanggal,'dd-MM-yyyy') as tanggal"),
                 db::raw("format(a.km,'#,#0.00') as batasganti"),
                 db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
-                db::raw("'' as Keterangan"),
+                db::raw("status as Keterangan"),
                 db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
                            when (a.km-a.kmperjalanan)<=" . $batasmax . " then 'YELLOW' 
                            else '' end) as warna"),
@@ -1398,7 +1393,7 @@ class ReminderOli extends MyModel
                 db::raw("format(a.tanggal,'dd-MM-yyyy') as tanggal"),
                 db::raw("format(a.km,'#,#0.00') as batasganti"),
                 db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
-                db::raw("'' as Keterangan"),
+                db::raw("status as Keterangan"),
                 db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
                            when (a.km-a.kmperjalanan)<=" . $batasmax . " then 'YELLOW' 
                            else '' end) as warna"),
