@@ -174,6 +174,7 @@ class PenerimaanTruckingHeader extends MyModel
 
                         // dd($querydetail1 );
                     $hit = 0;
+                    $namasupir = '';
                     $datadetail1 = json_decode($querydetail1->get(), true);
                     foreach ($datadetail1 as $itemdetail) {
                         $hit = $hit + 1;
