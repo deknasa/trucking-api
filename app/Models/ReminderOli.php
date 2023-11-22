@@ -919,12 +919,12 @@ class ReminderOli extends MyModel
                            when (a.km-a.kmperjalanan)<=" . $batasmax . " then 'YELLOW' 
                            else '' end) as warna"),
 
-                db::raw("'ryan_vixy1402@yahoo.com' as toemail"),
-                db::raw("'ryan_vixy1402@yahoo.com' as ccemail"),
-                db::raw("'ryan_vixy1402@yahoo.com' as bccemail"),
-                // db::raw("'" . $toemail . "' as toemail"),
-                // db::raw("'" . $ccemail . "' as ccemail"),
-                // db::raw("'" . $bccemail . "' as bccemail"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as toemail"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as ccemail"),
+                // db::raw("'ryan_vixy1402@yahoo.com' as bccemail"),
+                db::raw("'" . $toemail . "' as toemail"),
+                db::raw("'" . $ccemail . "' as ccemail"),
+                db::raw("'" . $bccemail . "' as bccemail"),
                 db::raw("'Reminder Penggantian Oli Mesin (" . $cabang . ")' as judul"),
             )
             ->orderby('a.id', 'asc');
@@ -1076,7 +1076,7 @@ class ReminderOli extends MyModel
                 db::raw("format(a.tanggal,'dd-MM-yyyy') as tanggal"),
                 db::raw("format(a.km,'#,#0.00') as batasganti"),
                 db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
-                db::raw("'' as Keterangan"),
+                db::raw("status as Keterangan"),
                 db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
                            when (a.km-a.kmperjalanan)<=" . $batasmax . " then 'YELLOW' 
                            else '' end) as warna"),
@@ -1237,7 +1237,7 @@ class ReminderOli extends MyModel
                 db::raw("format(a.tanggal,'dd-MM-yyyy') as tanggal"),
                 db::raw("format(a.km,'#,#0.00') as batasganti"),
                 db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
-                db::raw("'' as Keterangan"),
+                db::raw("status as Keterangan"),
                 db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
                            when (a.km-a.kmperjalanan)<=" . $batasmax . " then 'YELLOW' 
                            else '' end) as warna"),
@@ -1398,7 +1398,7 @@ class ReminderOli extends MyModel
                 db::raw("format(a.tanggal,'dd-MM-yyyy') as tanggal"),
                 db::raw("format(a.km,'#,#0.00') as batasganti"),
                 db::raw("format(a.kmperjalanan,'#,#0.00') as kberjalan"),
-                db::raw("'' as Keterangan"),
+                db::raw("status as Keterangan"),
                 db::raw("(case when a.kmperjalanan>=a.km then 'RED' 
                            when (a.km-a.kmperjalanan)<=" . $batasmax . " then 'YELLOW' 
                            else '' end) as warna"),
