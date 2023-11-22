@@ -64,7 +64,7 @@ class LaporanBukuBesar extends MyModel
             ->first()->text ?? 0;
 
         if ($cabang_id != $getcabangid) {
-            // dd('test');
+
             goto bedacabang;
         }
 
@@ -175,13 +175,13 @@ class LaporanBukuBesar extends MyModel
             ->whereRaw("(c.[order] BETWEEN 1110 AND 3310)")
             ->whereRaw("cast(right(a.bulan,4)+'/'+left(a.bulan,2)+'/1' as date)<'" . $dariformat . "'")
             ->whereRaw("a.bulan<>format(cast('" . $dariformat . "' as date),'MM-yyyy')")
-            ->whereraw("(a.cabang_id=" . $cabang_id . " or ". $cabang_id . "=0)")
+            ->whereraw("(a.cabang_id=" . $cabang_id . " or " . $cabang_id . "=0)")
 
             ->groupBy('a.coa');
 
 
 
-        // dd($querysaldoawal->get());
+
         DB::table($tempsaldorekap)->insertUsing([
             'coa',
             'saldo',
@@ -226,12 +226,12 @@ class LaporanBukuBesar extends MyModel
             ->where('a.tglbukti', '<', $dari)
             ->whereRaw("(c.id >=" . $coadari_id)
             ->whereRaw(DB::raw("c.id <=" . $coasampai_id . ")"))
-            ->whereraw("(a.cabang_id=" . $cabang_id . " or ". $cabang_id . "=0)")
+            ->whereraw("(a.cabang_id=" . $cabang_id . " or " . $cabang_id . "=0)")
             ->groupBy('b.coa', 'c.keterangancoa');
 
+        // dd($cabang_id);
 
-
-        // dd($querysaldoawal->toSql());
+        // dd($querysaldoawal->get());
 
 
 
@@ -271,7 +271,8 @@ class LaporanBukuBesar extends MyModel
             ->whereRaw(DB::raw("a.id <=" . $coasampai_id . ")"))
             ->whereRaw("isnull(B.coa,'')=''");
 
-        // dd($querysaldoawal->toSql());
+
+        // dd($querysaldoawal->get());
         DB::table($tempsaldo2)->insertUsing([
             'urut',
             'coa',
@@ -365,7 +366,7 @@ class LaporanBukuBesar extends MyModel
             ->where('a.tglbukti', '<=', $sampai)
             ->where('c.id', '>=', $coadari_id)
             ->where('c.id', '<=', $coasampai_id)
-            ->where('a.cabang_id', $cabang_id)
+            ->whereraw("(a.cabang_id=" . $cabang_id . " or " . $cabang_id . "=0)")
             ->orderBy('a.tglbukti', 'asc')
             ->orderBy('a.nobukti', 'asc')
             ->orderBy('b.nominal', 'desc')
@@ -454,29 +455,35 @@ class LaporanBukuBesar extends MyModel
             'saldo',
         ], $queryRekap);
 
-
-        if ($cabang_id != $getcabangid) {
-            $getJudul=db::table('cabang')->from(db::raw("cabang a with (readuncommitted)"))
-            ->select (
-                'a.judullaporan as text'
-            )
-            ->where('a.id',$cabang_id)
-            ->first();
-        } else {
+        if ($cabang_id == 0) {
             $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-            ->select('text')
-            ->where('grp', 'JUDULAN LAPORAN')
-            ->where('subgrp', 'JUDULAN LAPORAN')
-            ->first();
-
+                ->select('text')
+                ->where('grp', 'JUDULAN LAPORAN')
+                ->where('subgrp', 'JUDULAN LAPORAN')
+                ->first();
+        } else {
+            if ($cabang_id != $getcabangid) {
+                $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                    ->select('text')
+                    ->where('grp', 'JUDULAN LAPORAN')
+                    ->where('subgrp', 'JUDULAN LAPORAN')
+                    ->first();
+            } else {
+                $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                    ->select('text')
+                    ->where('grp', 'JUDULAN LAPORAN')
+                    ->where('subgrp', 'JUDULAN LAPORAN')
+                    ->first();
+            }
         }
 
+
         $cabang = db::table("cabang")->from(db::raw("cabang a with (readuncommitted)"))
-        ->select(
-            'a.namacabang'
-        )
-        ->where('a.id', $cabang_id)
-        ->first()->namacabang ?? '';
+            ->select(
+                'a.namacabang'
+            )
+            ->where('a.id', $cabang_id)
+            ->first()->namacabang ?? '';
 
         if ($cabang_id == 0) {
             $cabang = 'SEMUA';
@@ -485,7 +492,7 @@ class LaporanBukuBesar extends MyModel
         if ($cabang_id == $getcabangid) {
             $cabang = '';
         }
-        
+
         $queryRekap = DB::table($temprekap)
             ->select(
                 'id',
