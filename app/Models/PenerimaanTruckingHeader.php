@@ -97,7 +97,7 @@ class PenerimaanTruckingHeader extends MyModel
                 $table->string('penerimaan_nobukti', 50)->nullable();
                 $table->longText('keteranganheader')->nullable();
                 $table->string('bank_id', 50)->nullable();
-                $table->string('supir_id', 200)->nullable();
+                $table->longtext('supir_id')->nullable();
                 $table->string('karyawan_id', 200)->nullable();
                 $table->dateTime('tglbukacetak')->nullable();
                 $table->longText('statuscetak')->nullable();
@@ -161,6 +161,29 @@ class PenerimaanTruckingHeader extends MyModel
 
             $datadetail = json_decode($query->get(), true);
             foreach ($datadetail as $item) {
+                $namasupir = $item['supir_id'] ?? '';
+                if ($item['penerimaantrucking_id'] == 'DEPOSITO SUPIR') {
+                    // dd('test');
+                    $querydetail1 = DB::table("penerimaantruckingdetail")->from(DB::raw("penerimaantruckingdetail  a with (readuncommitted)"))
+                        ->select(
+                            'b.namasupir',
+                        )
+                        ->join(db::raw("supir b with (readuncommitted)"), 'a.supir_id', 'b.id')
+                        ->where('a.nobukti', $item['nobukti'])
+                        ->groupby('b.namasupir');
+
+                        // dd($querydetail1 );
+                    $hit = 0;
+                    $datadetail1 = json_decode($querydetail1->get(), true);
+                    foreach ($datadetail1 as $itemdetail) {
+                        $hit = $hit + 1;
+                        if ($hit == 1) {
+                            $namasupir = $namasupir . $itemdetail['namasupir'];
+                        } else {
+                            $namasupir = $namasupir . ',' . $itemdetail['namasupir'];
+                        }
+                    }
+                }
 
                 DB::table($temtabel)->insert([
                     'id' => $item['id'],
@@ -170,7 +193,7 @@ class PenerimaanTruckingHeader extends MyModel
                     'penerimaan_nobukti' => $item['penerimaan_nobukti'],
                     'keteranganheader' => $item['keteranganheader'],
                     'bank_id' => $item['bank_id'],
-                    'supir_id' => $item['supir_id'],
+                    'supir_id' => $namasupir,
                     'karyawan_id' => $item['karyawan_id'],
                     'tglbukacetak' => $item['tglbukacetak'],
                     'statuscetak' => $item['statuscetak'],
@@ -430,7 +453,7 @@ class PenerimaanTruckingHeader extends MyModel
         }
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti','penerimaantruckingid', 'penerimaantrucking_id', 'penerimaan_nobukti', 'keteranganheader', 'bank_id', 'supir_id', 'karyawan_id', 'tglbukacetak', 'statuscetak', 'userbukacetak',  'jumlahcetak', 'coa', 'modifiedby', 'created_at', 'updated_at', 'tgldariheaderpenerimaanheader', 'tglsampaiheaderpenerimaanheader'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'penerimaantruckingid', 'penerimaantrucking_id', 'penerimaan_nobukti', 'keteranganheader', 'bank_id', 'supir_id', 'karyawan_id', 'tglbukacetak', 'statuscetak', 'userbukacetak',  'jumlahcetak', 'coa', 'modifiedby', 'created_at', 'updated_at', 'tgldariheaderpenerimaanheader', 'tglsampaiheaderpenerimaanheader'], $models);
 
 
         return  $temp;
