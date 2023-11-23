@@ -36,6 +36,8 @@ class CreateHutangextraheaderTable extends Migration
             $table->string('userapproval',50)->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();                        
+            $table->string('editing_by',50)->nullable();            
+            $table->dateTime('editing_at')->nullable();              
             $table->timestamps();
 
             $table->foreign('coa', 'hutangextraheader_akunpusat_coa_foreign')->references('coa')->on('akunpusat');    

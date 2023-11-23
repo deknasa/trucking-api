@@ -102,6 +102,9 @@ class CreateSuratpengantarTable extends Migration
             $table->date('tglapprovalbiayatitipanemkl')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
+            $table->string('editing_by',50)->nullable();            
+            $table->dateTime('editing_at')->nullable();            
+
             $table->timestamps();
 
             $table->foreign('jobtrucking', 'suratpengantar_orderantrucking_jobtrucking_foreign')->references('nobukti')->on('orderantrucking');

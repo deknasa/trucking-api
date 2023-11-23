@@ -22,6 +22,9 @@ class CreateSuratpengantarbiayatambahanTable extends Migration
             $table->longText('keteranganbiaya')->nullable();            
             $table->decimal('nominal',15,2)->nullable();
             $table->decimal('nominaltagih',15,2)->nullable();
+            $table->integer('statusapproval')->length(11)->nullable();
+            $table->string('userapproval', 50)->nullable();
+            $table->dateTime('tglapproval')->nullable();            
             $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();            
             $table->timestamps();

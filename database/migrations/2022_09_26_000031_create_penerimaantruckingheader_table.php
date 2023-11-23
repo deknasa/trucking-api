@@ -42,6 +42,8 @@ class CreatePenerimaantruckingheaderTable extends Migration
             $table->dateTime('tglbatasedit')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
+            $table->string('editing_by',50)->nullable();            
+            $table->dateTime('editing_at')->nullable();                      
             $table->timestamps();
 
             $table->foreign('penerimaantrucking_id', 'penerimaantruckingheader_penerimaantrucking_penerimaantrucking_id_foreign')->references('id')->on('penerimaantrucking');

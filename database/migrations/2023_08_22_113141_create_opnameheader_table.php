@@ -19,6 +19,7 @@ class CreateOpnameheaderTable extends Migration
             $table->date('tglbukti')->nullable();
             $table->longText('keterangan')->nullable();            
             $table->unsignedBigInteger('gudang_id')->nullable();
+            $table->unsignedBigInteger('kelompok_id')->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();                  
             $table->integer('statuscetak')->Length(11)->nullable();
             $table->string('userbukacetak',50)->nullable();
@@ -26,6 +27,8 @@ class CreateOpnameheaderTable extends Migration
             $table->integer('jumlahcetak')->Length(11)->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();            
+            $table->string('editing_by',50)->nullable();            
+            $table->dateTime('editing_at')->nullable();              
             $table->timestamps();
         });
     }

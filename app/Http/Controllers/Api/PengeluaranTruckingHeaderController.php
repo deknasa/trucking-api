@@ -753,4 +753,11 @@ class PengeluaranTruckingHeaderController extends Controller
     public function pengeluarantruckinglapanganuangjalan()
     {
     }
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingdepositokaryawan()
+    {
+    }
+
 }
