@@ -376,14 +376,14 @@ class JurnalUmumHeader extends MyModel
 
     public function processStore(array $data): JurnalUmumHeader
     {
-        
-        
+
+
         $sumNominal = 0;
-        for ($i=0; $i < count($data['nominal_detail']); $i++) { 
-            $sumNominal+= $data['nominal_detail'][$i];
+        for ($i = 0; $i < count($data['nominal_detail']); $i++) {
+            $sumNominal += $data['nominal_detail'][$i];
         }
         if (!$sumNominal) {
-            return ( new JurnalUmumHeader());
+            return (new JurnalUmumHeader());
             // dd($sumNominal);
         }
 
@@ -510,8 +510,8 @@ class JurnalUmumHeader extends MyModel
     public function processUpdate(JurnalUmumHeader $jurnalUmumHeader, array $data): JurnalUmumHeader
     {
         $sumNominal = 0;
-        for ($i=0; $i < count($data['nominal_detail']); $i++) { 
-            $sumNominal+= $data['nominal_detail'][$i];
+        for ($i = 0; $i < count($data['nominal_detail']); $i++) {
+            $sumNominal += $data['nominal_detail'][$i];
         }
         if (!$sumNominal) {
             return $jurnalUmumHeader;
@@ -631,6 +631,12 @@ class JurnalUmumHeader extends MyModel
             'modifiedby' => auth('api')->user()->name
         ]);
 
+        if ($jurnalUmumHeader->statusformat == 115) {
+            $getJurnal = JurnalUmumPusatHeader::from(DB::raw("jurnalumumpusatheader with (readuncommitted)"))->where('nobukti', $jurnalUmumHeader->nobukti)->first();
+            if ($getJurnal != '') {
+                $jurnalumumHeader = (new JurnalUmumPusatHeader())->processDestroy($getJurnal->id, strtoupper('DELETE JURNAL UMUM'));
+            }
+        }
         return $jurnalUmumHeader;
     }
 
