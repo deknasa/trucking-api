@@ -116,7 +116,7 @@ class MerkController extends Controller
     {
         return response([
             'status' => true,
-            'data' => $merk
+            'data' => (new Merk())->findAll($merk->id)
         ]);
     }
 

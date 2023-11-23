@@ -25,15 +25,23 @@ class SatuanController extends Controller
      */
     public function index()
     {
-        $satuan = new Satuan();
 
-        return response([
-            'data' => $satuan->get(),
-            'attributes' => [
-                'totalRows' => $satuan->totalRows,
-                'totalPages' => $satuan->totalPages
-            ]
-        ]);
+        DB::beginTransaction();
+
+        try {
+            $satuan = new Satuan();
+
+            return response([
+                'data' => $satuan->get(),
+                'attributes' => [
+                    'totalRows' => $satuan->totalRows,
+                    'totalPages' => $satuan->totalPages
+                ]
+            ]);
+         } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 
     public function default()
@@ -80,10 +88,16 @@ class SatuanController extends Controller
 
     public function show(Satuan $satuan)
     {
-        return response([
-            'status' => true,
-            'data' => $satuan
-        ]);
+        DB::beginTransaction();
+        try {
+            return response([
+                'status' => true,
+                'data' => (new Satuan())->findAll($satuan->id)
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 
     /**

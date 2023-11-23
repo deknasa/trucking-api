@@ -114,31 +114,51 @@ class Merk extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama')->nullable();
         });
 
         $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'memo',
+                'text',
                 'id'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
-        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id,"statusaktifnama" => $statusaktif->text]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
             ->select(
-                'statusaktif'
+                'statusaktif',
+                'statusaktifnama'
             );
 
         $data = $query->first();
         // dd($data);
         return $data;
+    }
+
+    public function findAll($id) {
+        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
+            ->select(
+                'merk.id',
+                'merk.kodemerk',
+                'merk.keterangan',
+                'parameter.id as statusaktif',
+                'parameter.text as statusaktifnama',
+                'merk.modifiedby',
+                'merk.created_at',
+                'merk.updated_at',
+            )
+            ->where('merk.id',$id)
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'merk.statusaktif', '=', 'parameter.id');
+            return $query->first();
+
     }
     public function selectColumns($query)
     {

@@ -64,9 +64,6 @@ use App\Http\Controllers\Api\PelangganController;
 use App\Http\Controllers\Api\ReportAllController;
 use App\Http\Controllers\Api\SpkHarianController;
 use App\Http\Controllers\Api\StokPusatController;
-use App\Http\Controllers\Api\SaldoAkunPusatDetailController;
-use App\Http\Controllers\Api\SaldoAwalBukuBesarController;
-use App\Http\Controllers\Api\AkunPusatDetailController;
 use App\Http\Controllers\Api\TutupBukuController;
 use App\Http\Controllers\Api\UpahSupirController;
 use App\Http\Controllers\Api\AbsenTradoController;
@@ -84,28 +81,28 @@ use App\Http\Controllers\Api\JobTruckingController;
 use App\Http\Controllers\Api\LaporanStokController;
 use App\Http\Controllers\Api\OrderanEmklController;
 use App\Http\Controllers\Api\ReminderOliController;
-
 use App\Http\Controllers\Api\ReminderSpkController;
 use App\Http\Controllers\Api\SubKelompokController;
-
 use App\Http\Controllers\Api\HutangDetailController;
+
 use App\Http\Controllers\Api\HutangHeaderController;
-
 use App\Http\Controllers\Api\OpnameDetailController;
+
 use App\Http\Controllers\Api\OpnameHeaderController;
-
 use App\Http\Controllers\Api\ReminderStokController;
+
 use App\Http\Controllers\Api\ReportNeracaController;
-
 use App\Http\Controllers\Api\SaldoUmurAkiController;
+
 use App\Http\Controllers\Api\TarifRincianController;
-
 use App\Http\Controllers\Api\UbahPasswordController;
-use App\Http\Controllers\CustomValidationController;
 
+use App\Http\Controllers\CustomValidationController;
 use App\Http\Controllers\LaporanKasHarianController;
+
 use App\Http\Controllers\Api\BankPelangganController;
 use App\Http\Controllers\Api\InvoiceDetailController;
+
 use App\Http\Controllers\Api\InvoiceHeaderController;
 use App\Http\Controllers\Api\LaporanNeracaController;
 use App\Http\Controllers\Api\MainAkunPusatController;
@@ -123,6 +120,7 @@ use App\Http\Controllers\Api\PenerimaanStokController;
 use App\Http\Controllers\Api\StatusOliTradoController;
 use App\Http\Controllers\Api\StokPersediaanController;
 use App\Http\Controllers\Api\SuratPengantarController;
+use App\Http\Controllers\Api\AkunPusatDetailController;
 use App\Http\Controllers\Api\ChargeGandenganController;
 use App\Http\Controllers\Api\GajiSupirDetailController;
 use App\Http\Controllers\Api\GajiSupirHeaderController;
@@ -160,6 +158,7 @@ use App\Http\Controllers\Api\HutangBayarDetailController;
 use App\Http\Controllers\Api\HutangBayarHeaderController;
 use App\Http\Controllers\Api\HutangExtraDetailController;
 use App\Http\Controllers\Api\HutangExtraHeaderController;
+use App\Http\Controllers\Api\LaporanDataJurnalController;
 use App\Http\Controllers\Api\LaporanHutangGiroController;
 use App\Http\Controllers\Api\LaporanJurnalUmumController;
 use App\Http\Controllers\Api\LaporanKasGantungController;
@@ -181,6 +180,7 @@ use App\Http\Controllers\Api\LaporanTitipanEmklController;
 use App\Http\Controllers\Api\MandorAbsensiSupirController;
 use App\Http\Controllers\Api\PenerimaanTruckingController;
 use App\Http\Controllers\Api\ProsesAbsensiSupirController;
+use App\Http\Controllers\Api\SaldoAwalBukuBesarController;
 use App\Http\Controllers\Api\ApprovalHutangBayarController;
 use App\Http\Controllers\Api\ApprovalSupirGambarController;
 use App\Http\Controllers\Api\ApprovalTradoGambarController;
@@ -199,6 +199,7 @@ use App\Http\Controllers\Api\PenerimaanGiroDetailController;
 use App\Http\Controllers\Api\PenerimaanGiroHeaderController;
 use App\Http\Controllers\Api\PenerimaanStokDetailController;
 use App\Http\Controllers\Api\PenerimaanStokHeaderController;
+use App\Http\Controllers\Api\SaldoAkunPusatDetailController;
 use App\Http\Controllers\Api\StatusGandenganTruckController;
 use App\Http\Controllers\Api\ApprovalInvoiceHeaderController;
 use App\Http\Controllers\Api\ExportPemakaianBarangController;
@@ -1366,6 +1367,13 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporanbukubesar/report', [LaporanBukuBesarController::class, 'report'])->name('laporanbukubesar.report');
     Route::get('laporanbukubesar/export', [LaporanBukuBesarController::class, 'export'])->name('laporanbukubesar.export');
     Route::resource('laporanbukubesar', LaporanBukuBesarController::class)->whereNumber('laporanbukubesar');
+    
+    Route::get('laporandatajurnal/report', [LaporanDataJurnalController::class, 'report'])->name('laporandatajurnal.report');
+    Route::get('laporandatajurnal/export', [LaporanDataJurnalController::class, 'export'])->name('laporandatajurnal.export');
+    Route::get('laporandatajurnal/index', [LaporanDataJurnalController::class, 'index'])->name('laporandatajurnal.index');
+    // Route::resource('laporandatajurnal', LaporanDataJurnalController::class)->whereNumber('laporandatajurnal');
+
+
 
     Route::post('prosesuangjalansupirheader/addrowtransfer', [ProsesUangJalanSupirDetailController::class, 'addrowtransfer']);
     Route::post('prosesuangjalansupirheader/{id}/approval', [ProsesUangJalanSupirHeaderController::class, 'approval'])->name('prosesuangjalansupirheader.approval')->whereNumber('id');
