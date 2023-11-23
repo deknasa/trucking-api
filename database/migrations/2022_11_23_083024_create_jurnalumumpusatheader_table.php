@@ -30,6 +30,8 @@ class CreateJurnalumumpusatheaderTable extends Migration
             $table->unsignedBigInteger('cabang_id')->nullable();              
             $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();            
+            $table->string('editing_by',50)->nullable();            
+            $table->dateTime('editing_at')->nullable();            
             $table->timestamps();
 
             $table->foreign('nobukti', 'jurnalumumpusatheader_jurnalumumheader_nobukti_foreign')->references('nobukti')->on('jurnalumumheader');            

@@ -33,6 +33,8 @@ class CreateRekappenerimaanheaderTable extends Migration
             $table->integer('jumlahcetak')->Length(11)->nullable();            
             $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();               
+            $table->string('editing_by',50)->nullable();            
+            $table->dateTime('editing_at')->nullable();            
             $table->timestamps();
 
             $table->foreign('bank_id', 'rekappenerimaanheader_bank_bank_id_foreign')->references('id')->on('bank');           
