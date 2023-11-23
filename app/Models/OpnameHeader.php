@@ -74,7 +74,7 @@ class OpnameHeader extends MyModel
     }
 
 
-    public function getInventory($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter, $prosesneraca){
+    public function getInventory($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter, $prosesneraca,$kelompok){
         $inventory = (new LaporanSaldoInventory())->getReport($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter, $prosesneraca);
         // dd($inventory->get());
         $tempinevtory = '##tempinevtory' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -127,13 +127,18 @@ class OpnameHeader extends MyModel
             'stok_id as id',
             'stok_id',
             'namabarang',
+            'stok.kelompok_id as kelompok',
             'tanggal',
             db::raw("sum(qty) as qty"),
             db::raw("0 as qtyfisik"),
             )
-            ->groupBy('stok_id','namabarang','tanggal')
-        ->get();
-        return $data;
+            ->leftJoin(DB::raw("stok with (readuncommitted)"), "$tempinevtory.stok_id", 'stok.id')
+            ->groupBy('stok_id','namabarang','tanggal','stok.kelompok_id');
+            if ($kelompok) {
+                $data = $data->where('stok.kelompok_id',$kelompok);
+            }
+        
+        return $data->get();
     }
 
     public function selectColumns($query)
@@ -199,9 +204,12 @@ class OpnameHeader extends MyModel
             'opnameheader.tglbukti',
             'opnameheader.keterangan',
             'opnameheader.gudang_id',
-            'gudang.gudang'
+            'gudang.gudang',
+            'opnameheader.kelompok_id',
+            'kelompok.kodekelompok as kelompok'
         )
         ->leftJoin(DB::raw("gudang with (readuncommitted)"), 'opnameheader.gudang_id', 'gudang.id')
+        ->leftJoin(DB::raw("kelompok with (readuncommitted)"), 'opnameheader.kelompok_id', 'kelompok.id')
         ->where('opnameheader.id', $id)
         ->first();
 
@@ -292,6 +300,7 @@ class OpnameHeader extends MyModel
         $opnameHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $opnameHeader->keterangan = $data['keterangan'] ?? '';
         $opnameHeader->gudang_id = $data['gudang_id'];
+        $opnameHeader->kelompok_id = $data['kelompok_id'];
         $opnameHeader->statusformat = $format->id;
         $opnameHeader->statuscetak = $statusCetak->id;
         $opnameHeader->userbukacetak = '';
@@ -322,6 +331,7 @@ class OpnameHeader extends MyModel
             $opnameDetail = (new OpnameDetail())->processStore($opnameHeader, [
                 'stok_id' => $data['stok_id'][$i],
                 'qty' => $data['qty'][$i],
+                'tglbuktimasuk' => $data['tglbuktimasuk'][$i],
                 'qtyfisik' => $data['qtyfisik'][$i]
             ]);
             $opnameDetails[] = $opnameDetail->toArray();
@@ -366,6 +376,7 @@ class OpnameHeader extends MyModel
         $opnameHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $opnameHeader->keterangan = $data['keterangan'] ?? '';
         $opnameHeader->gudang_id = $data['gudang_id'];
+        $opnameHeader->kelompok_id = $data['kelompok_id'];
         $opnameHeader->info = html_entity_decode(request()->info);
 
         if (!$opnameHeader->save()) {
@@ -391,6 +402,7 @@ class OpnameHeader extends MyModel
             $opnameDetail = (new OpnameDetail())->processStore($opnameHeader, [
                 'stok_id' => $data['stok_id'][$i],
                 'qty' => $data['qty'][$i],
+                'tglbuktimasuk' => $data['tglbuktimasuk'][$i],
                 'qtyfisik' => $data['qtyfisik'][$i]
             ]);
             $opnameDetails[] = $opnameDetail->toArray();

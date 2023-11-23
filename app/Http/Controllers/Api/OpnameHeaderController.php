@@ -49,8 +49,10 @@ class OpnameHeaderController extends Controller
                 'tglbukti' => $request->tglbukti,
                 'keterangan' => $request->keterangan,
                 'gudang_id' => $request->gudang_id,
+                'kelompok_id' => $request->kelompok_id,
                 'stok_id' => $requestData['stok_id'],
                 'qty' => $requestData['qty'],
+                'tglbuktimasuk' => $requestData['tglbuktimasuk'],
                 'qtyfisik' => $requestData['qtyfisik']
             ];
             $opnameHeader = (new OpnameHeader())->processStore($data);
@@ -95,8 +97,10 @@ class OpnameHeaderController extends Controller
                 'tglbukti' => $request->tglbukti,
                 'keterangan' => $request->keterangan,
                 'gudang_id' => $request->gudang_id,
+                'kelompok_id' => $request->kelompok_id,
                 'stok_id' => $requestData['stok_id'],
                 'qty' => $requestData['qty'],
+                'tglbuktimasuk' => $requestData['tglbuktimasuk'],
                 'qtyfisik' => $requestData['qtyfisik']
             ];
             $opnameHeader = (new OpnameHeader())->processUpdate($opnameheader, $data);
@@ -219,8 +223,8 @@ class OpnameHeaderController extends Controller
         $stokdari_id = 0;
         $stoksampai_id = 0;
         $dataFilter = $request->gudang_id;
-        // dd($request->all());
-        $report = (new OpnameHeader())->getInventory($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter,1);
+        $kelompok = $request->kelompok_id??0;
+        $report = (new OpnameHeader())->getInventory($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter,1,$kelompok);
 
         return response([
             'data' => $report

@@ -36,6 +36,7 @@ class OpnameDetail extends MyModel
                 $this->table . '.nobukti',
                 'stok.namastok as stok',
                 $this->table . '.qty',
+                $this->table . '.tglbuktimasuk as tanggal',
                 $this->table . '.qtyfisik',
             )
             ->leftJoin(DB::raw("stok with (readuncommitted)"), 'opnamedetail.stok_id', 'stok.id');
@@ -58,7 +59,7 @@ class OpnameDetail extends MyModel
         ->select(
             'opnamedetail.stok_id as id',
             'stok.namastok as namabarang',
-            'opnameheader.tglbukti as tanggal',
+            'opnamedetail.tglbuktimasuk as tanggal',
             'opnamedetail.qty',
             'opnamedetail.qtyfisik',
         )
@@ -133,6 +134,7 @@ class OpnameDetail extends MyModel
         $opnameDetail = new OpnameDetail();
         $opnameDetail->opname_id = $opnameHeader->id;
         $opnameDetail->nobukti = $opnameHeader->nobukti;
+        $opnameDetail->tglbuktimasuk = $data['tglbuktimasuk'];
         $opnameDetail->stok_id = $data['stok_id'];
         $opnameDetail->qty = $data['qty'];
         $opnameDetail->qtyfisik = $data['qtyfisik'];
