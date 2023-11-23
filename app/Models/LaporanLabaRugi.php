@@ -222,7 +222,7 @@ class LaporanLabaRugi extends MyModel
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
-                db::raw("(case when '" . $cabang . "'='' then '' else 'Cabang :" . $cabang . "'  end) as Cabang")
+                db::raw("(case when '" . $cabang . "'='' then '' else 'Cabang : " . $cabang . "'  end) as Cabang")
 
 
 
