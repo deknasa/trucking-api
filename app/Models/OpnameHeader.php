@@ -42,6 +42,7 @@ class OpnameHeader extends MyModel
                 'opnameheader.keterangan',
                 'gudang.gudang',
                 'parameter.memo as statuscetak',
+                'approval.memo as statusapproval',
                 'opnameheader.userbukacetak',
                 DB::raw('(case when (year(opnameheader.tglbukacetak) <= 2000) then null else opnameheader.tglbukacetak end ) as tglbukacetak'),
                 'opnameheader.modifiedby',
@@ -49,6 +50,7 @@ class OpnameHeader extends MyModel
                 'opnameheader.updated_at',
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'opnameheader.statuscetak', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as approval with (readuncommitted)"), 'opnameheader.statusapproval', 'approval.id')
             ->leftJoin(DB::raw("gudang with (readuncommitted)"), 'opnameheader.gudang_id', 'gudang.id');
         if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
@@ -204,6 +206,7 @@ class OpnameHeader extends MyModel
             'opnameheader.tglbukti',
             'opnameheader.keterangan',
             'opnameheader.gudang_id',
+            'opnameheader.statusapproval',
             'gudang.gudang',
             'opnameheader.kelompok_id',
             'kelompok.kodekelompok as kelompok'
@@ -450,6 +453,36 @@ class OpnameHeader extends MyModel
 
         return $opnameHeader;
     }
+
+    public function processApprove(OpnameHeader $opnameHeader)
+    {
+
+        $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusBelumApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+        if ($opnameHeader->statusapproval == $statusApproval->id) {
+            $opnameHeader->statusapproval = $statusBelumApproval->id;
+        } else {
+            $opnameHeader->statusapproval = $statusApproval->id;
+        }
+
+        $opnameHeader->tglapproval = date('Y-m-d', time());
+        $opnameHeader->userapproval = auth('api')->user()->name;
+        if (!$opnameHeader->save()) {
+            throw new \Exception('Error Approval.');
+        }
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($opnameHeader->getTable()),
+            'postingdari' => "opnameheader",
+            'idtrans' => $opnameHeader->id,
+            'nobuktitrans' => $opnameHeader->nobukti,
+            'aksi' => 'Un/Approve',
+            'datajson' => $opnameHeader->toArray(),
+            'modifiedby' => auth('api')->user()->name,
+        ]);
+        return $opnameHeader;
+    }
+
 
     public function getExport($id)
     {

@@ -273,4 +273,26 @@ class OpnameHeaderController extends Controller
             throw $th;
         }
     }
+
+    /**
+     * @ClassName
+     */
+    public function approval(OpnameHeader $id)
+    {
+        DB::beginTransaction();
+        try {
+            $opnameHeader =$id;
+            $opnameHeader = (new OpnameHeader())->processApprove($opnameHeader);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+
+    
 }

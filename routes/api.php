@@ -1710,6 +1710,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('opnameheader/{id}/getEdit', [OpnameHeaderController::class, 'getEdit'])->whereNumber('id');
     Route::get('opnameheader/{id}/export', [OpnameHeaderController::class, 'export'])->name('opnameheader.export')->whereNumber('id');
     Route::post('opnameheader/{id}/cekvalidasi', [OpnameHeaderController::class, 'cekvalidasi'])->name('opnameheader.cekvalidasi')->whereNumber('id');
+    Route::post('opnameheader/{id}/approval', [OpnameHeaderController::class, 'approval'])->name('opnameheader.approval')->whereNumber('id');
     Route::resource('opnameheader', OpnameHeaderController::class)->whereNumber('opnameheader');
     Route::resource('opnamedetail', OpnameDetailController::class)->whereNumber('opnamedetail');
 

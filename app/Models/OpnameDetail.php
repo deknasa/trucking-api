@@ -62,6 +62,7 @@ class OpnameDetail extends MyModel
             'opnamedetail.tglbuktimasuk as tanggal',
             'opnamedetail.qty',
             'opnamedetail.qtyfisik',
+            DB::raw('opnamedetail.qty - opnamedetail.qtyfisik as selisih')
         )
         ->leftJoin(DB::raw("opnameheader with (readuncommitted)"), 'opnamedetail.opname_id', 'opnameheader.id')
         ->leftJoin(DB::raw("stok with (readuncommitted)"), 'opnamedetail.stok_id', 'stok.id')
