@@ -35,6 +35,8 @@ class CreateabsensisupirheaderTable extends Migration
             $table->dateTime('tglbataseditabsensi')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
+            $table->string('editing_by',50)->nullable();            
+            $table->dateTime('editing_at')->nullable();            
             $table->timestamps();
 
             

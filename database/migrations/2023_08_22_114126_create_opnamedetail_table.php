@@ -17,6 +17,7 @@ class CreateOpnamedetailTable extends Migration
             $table->id();
             $table->unsignedBigInteger('opname_id')->nullable();
             $table->string('nobukti',50)->nullable();
+            $table->date('tglbuktimasuk')->nullable();
             $table->unsignedBigInteger('stok_id')->nullable();
             $table->double('qty',15,2)->nullable();
             $table->double('qtyfisik',15,2)->nullable();
