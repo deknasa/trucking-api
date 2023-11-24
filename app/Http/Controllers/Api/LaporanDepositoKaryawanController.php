@@ -34,7 +34,6 @@ class LaporanDepositoKaryawanController extends Controller
         $sampai = $request->sampai;
         $jenis = $request->jenis;
         $prosesneraca=0;
-
         $laporandepositokaryawan=new LaporanDepositoKaryawan();
         
         return response([
