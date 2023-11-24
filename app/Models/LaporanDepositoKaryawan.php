@@ -32,6 +32,8 @@ class LaporanDepositoKaryawan extends MyModel
         $sampai = date('Y-m-d', strtotime($sampai)) ?? '1900/1/1';
         $jenis = request()->jenis ?? '';
 
+    
+
         $temppenerimaantrucking = '##temppenerimaantrucking' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temppenerimaantrucking, function ($table) {
             $table->unsignedBigInteger('karyawan_id')->nullable();
@@ -50,6 +52,8 @@ class LaporanDepositoKaryawan extends MyModel
             ->where('a.tglbukti', '<', $sampai)
             ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
             ->groupBy('b.karyawan_id');
+
+            // dd($querypenerimaantrucking->get());
 
         DB::table($temppenerimaantrucking)->insertUsing([
             'karyawan_id',
@@ -268,7 +272,7 @@ class LaporanDepositoKaryawan extends MyModel
                 'a.cicil',
                 DB::raw("b.keterangan as keterangan"),
                 DB::raw("'DEPOSITO KARYAWAN A/N '+trim(a.namakaryawan) as keterangandeposito"),
-                DB::raw("'Laporan Deposito' as judulLaporan"),
+                DB::raw("'Laporan Deposito Karyawan' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
