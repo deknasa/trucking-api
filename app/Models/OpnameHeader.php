@@ -506,6 +506,9 @@ class OpnameHeader extends MyModel
             'opnameheader.keterangan',
             'gudang.gudang as gudang',
             'opnameheader.jumlahcetak',
+            'opnameheader.kelompok_id',
+            'kelompok.kodekelompok as kelompok',
+
             'statuscetak.memo as statuscetak',
             'statuscetak.id as  statuscetak_id',
             DB::raw("'Laporan Opname Header' as judulLaporan"),
@@ -515,6 +518,8 @@ class OpnameHeader extends MyModel
         )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'opnameheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("kelompok with (readuncommitted)"), 'opnameheader.kelompok_id', 'kelompok.id')
+
             ->leftJoin(DB::raw("gudang with (readuncommitted)"), 'opnameheader.gudang_id', 'gudang.id');
         if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
