@@ -217,6 +217,7 @@ class Supir extends MyModel
 
         $aktif = request()->aktif ?? '';
         $supir_id = request()->supir_id ?? '';
+        $tgltrip = request()->tgltrip ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -289,7 +290,7 @@ class Supir extends MyModel
             $query->where('supir.statusaktif', '=', $statusaktif->id);
         }
         if ($absen == true) {
-            $tglbukti = date('Y-m-d', strtotime('now'));
+            $tglbukti = date('Y-m-d', strtotime($tgltrip));
             $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti', $tglbukti)->first();
             $query->whereRaw("supir.id in (select supir_id from absensisupirdetail where absensi_id=$absensiSupirHeader->id)");
         }
