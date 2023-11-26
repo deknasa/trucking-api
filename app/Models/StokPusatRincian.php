@@ -88,7 +88,7 @@ class StokPusatRincian extends Model
     }
     public function findBtg($id)
     {
-        $getCabang = DB::table("cabang")->from(DB::raw("cabang with (readuncommitted)"))->where('kodecabang', 'BTG')->first();
+        $getCabang = DB::table("cabang")->from(DB::raw("cabang with (readuncommitted)"))->where('kodecabang', 'MND')->first();
         $query = DB::table("stokpusatrincian")->from(DB::raw("stokpusatrincian"))
             ->where('cabang_id', $getCabang->id)
             ->where('stokpusat_id', $id)

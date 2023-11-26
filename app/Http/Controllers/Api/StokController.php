@@ -111,7 +111,7 @@ class StokController extends Controller
             ];
             $stok = (new Stok())->processStore($data);
             $stok->position = $this->getPosition($stok, $stok->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $stok->page = ceil($stok->position / (10));
             } else {
                 $stok->page = ceil($stok->position / ($request->limit ?? 10));
@@ -191,7 +191,7 @@ class StokController extends Controller
 
             $stok = (new Stok())->processUpdate($stok, $data);
             $stok->position = $this->getPosition($stok, $stok->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $stok->page = ceil($stok->position / (10));
             } else {
                 $stok->page = ceil($stok->position / ($request->limit ?? 10));
@@ -222,7 +222,7 @@ class StokController extends Controller
             $selected = $this->getPosition($stok, $stok->getTable(), true);
             $stok->position = $selected->position;
             $stok->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $stok->page = ceil($stok->position / (10));
             } else {
                 $stok->page = ceil($stok->position / ($request->limit ?? 10));
@@ -240,11 +240,12 @@ class StokController extends Controller
             throw $th;
         }
     }
-    
+
     /**
      * @ClassName 
      */
-    public function approvalklaim(Stok $stok) {
+    public function approvalklaim(Stok $stok)
+    {
         DB::beginTransaction();
         try {
             $stok->processApprovalklaim($stok);
@@ -297,7 +298,7 @@ class StokController extends Controller
         } else {
             if (Storage::exists("stok/$filename")) {
                 return response()->file(storage_path("app/stok/$filename"));
-            }else {
+            } else {
                 return response()->file(storage_path("app/no-image.jpg"));
             }
         }
@@ -427,11 +428,11 @@ class StokController extends Controller
     public function getGambar()
     {
         $stok = (new stok())->getGambarName(request()->id);
-        if($stok->gambar != ''){
+        if ($stok->gambar != '') {
             $gambar = json_decode($stok->gambar);
             $filename = $gambar[0];
             if (Storage::exists("stok/ori" . '_' . "$filename")) {
-                
+
                 return response([
                     'gambar' => $filename
                 ]);
@@ -440,7 +441,7 @@ class StokController extends Controller
                     return response([
                         'gambar' => "$filename"
                     ]);
-                }else {
+                } else {
                     return response([
                         'gambar' => "no-image"
                     ]);
@@ -458,5 +459,54 @@ class StokController extends Controller
             'data' => $stok->getvulkanisir($stok->id),
         ]);
         // dd($stok->getvulkanisir($stok->id));
+    }
+    public function updatekonsolidasi(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'namaterpusat' => $request->namaterpusat,
+                'kelompok' => $request->kelompok,
+                'kelompok_id' => $request->kelompok_id,
+                'stok_idmdn' => $request->stok_idmdn,
+                'namastokmdn' => $request->namastokmdn,
+                'gambarmdn' => $request->gambarmdn,
+                'stok_idjkt' => $request->stok_idjkt,
+                'namastokjkt' => $request->namastokjkt,
+                'gambarjkt' => $request->gambarjkt,
+                'stok_idjkttnl' => $request->stok_idjkttnl,
+                'namastokjkttnl' => $request->namastokjkttnl,
+                'gambarjkttnl' => $request->gambarjkttnl,
+                'stok_idmks' => $request->stok_idmks,
+                'namastokmks' => $request->namastokmks,
+                'gambarmks' => $request->gambarmks,
+                'stok_idsby' => $request->stok_idsby,
+                'namastoksby' => $request->namastoksby,
+                'gambarsby' => $request->gambarsby,
+                'stok_idbtg' => $request->stok_idbtg,
+                'namastokbtg' => $request->namastokbtg,
+                'gambarbtg' => $request->gambarbtg,
+                'cekKoneksi' => $request->cekKoneksi,
+                'stok_idmdndel' => $request->stok_idmdndel,
+                'stok_idjktdel' => $request->stok_idjktdel,
+                'stok_idjkttnldel' => $request->stok_idjkttnldel,
+                'stok_idmksdel' => $request->stok_idmksdel,
+                'stok_idsbydel' => $request->stok_idsbydel,
+                'stok_idbtgdel' => $request->stok_idbtgdel, 
+            ];
+            $stokPusat = (new Stok())->processKonsolidasi($data);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $stokPusat
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 }

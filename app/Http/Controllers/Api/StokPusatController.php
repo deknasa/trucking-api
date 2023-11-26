@@ -38,7 +38,7 @@ class StokPusatController extends Controller
         DB::beginTransaction();
         try {
             $data = [
-                'namastok' => $request->namastok,
+                'namaterpusat' => strtoupper($request->namastok),
                 'kelompok' => $request->kelompok,
                 'kelompok_id' => $request->kelompok_id,
                 'stok_idmdn' => $request->stok_idmdn,
@@ -62,7 +62,7 @@ class StokPusatController extends Controller
             ];
             $stok = (new StokPusat())->processStore($data);
             $stok->position = $this->getPosition($stok, $stok->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $stok->page = ceil($stok->position / (10));
             } else {
                 $stok->page = ceil($stok->position / ($request->limit ?? 10));
@@ -87,10 +87,6 @@ class StokPusatController extends Controller
         $stokPusat = new StokPusat();
         return response([
             'data' => $stokPusat->dataJkt($request->kelompok_id),
-            'attributes' => [
-                'totalRows' => $stokPusat->totalRows,
-                'totalPages' => $stokPusat->totalPages
-            ]
         ]);
     }
     public function dataMdn(Request $request)
@@ -120,22 +116,22 @@ class StokPusatController extends Controller
         $stokPusat = new StokPusat();
         return response([
             'data' => $stokPusat->dataJktTnl($request->kelompok_id),
-            'attributes' => [
-                'totalRows' => $stokPusat->totalRows,
-                'totalPages' => $stokPusat->totalPages
-            ]
         ]);
     }
     public function dataMks(Request $request)
     {
-        $stokPusat = new StokPusat();
-        return response([
-            'data' => $stokPusat->dataMks($request->kelompok_id),
-            'attributes' => [
-                'totalRows' => $stokPusat->totalRows,
-                'totalPages' => $stokPusat->totalPages
-            ]
-        ]);
+        try {
+            $stokPusat = new StokPusat();
+            return response([
+                'data' => $stokPusat->dataMks($request->kelompok_id),
+                'attributes' => [
+                    'totalRows' => $stokPusat->totalRows,
+                    'totalPages' => $stokPusat->totalPages
+                ]
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
     public function dataMnd(Request $request)
     {
@@ -186,7 +182,7 @@ class StokPusatController extends Controller
         DB::beginTransaction();
         try {
             $data = [
-                'namastok' => $request->namastok,
+                'namaterpusat' => strtoupper($request->namastok),
                 'kelompok' => $request->kelompok,
                 'kelompok_id' => $request->kelompok_id,
                 'stok_idmdn' => $request->stok_idmdn,
@@ -210,7 +206,7 @@ class StokPusatController extends Controller
             ];
             $stokPusat = (new StokPusat())->processUpdate($stokpusat, $data);
             $stokPusat->position = $this->getPosition($stokPusat, $stokPusat->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $stokPusat->page = ceil($stokPusat->position / (10));
             } else {
                 $stokPusat->page = ceil($stokPusat->position / ($request->limit ?? 10));
@@ -241,7 +237,7 @@ class StokPusatController extends Controller
             $selected = $this->getPosition($stokPusat, $stokPusat->getTable(), true);
             $stokPusat->position = $selected->position;
             $stokPusat->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $stokPusat->page = ceil($stokPusat->position / (10));
             } else {
                 $stokPusat->page = ceil($stokPusat->position / ($request->limit ?? 10));
@@ -260,10 +256,10 @@ class StokPusatController extends Controller
         }
     }
 
-    public function getImage(string $filename, string $type)
+    public function getImage(string $cabang, string $filename, string $type)
     {
-        if (Storage::exists("stokpusat/$filename")) {
-            return response()->file(storage_path("app/stokpusat/$filename"));
+        if (Storage::exists("stokpusat/$cabang/$filename")) {
+            return response()->file(storage_path("app/stokpusat/$cabang/$filename"));
         } else {
             return response()->file(storage_path("app/no-image.jpg"));
         }
