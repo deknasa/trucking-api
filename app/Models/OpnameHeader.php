@@ -300,12 +300,17 @@ class OpnameHeader extends MyModel
             DB::raw("parameter with (readuncommitted)")
         )->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
+        $statusapproval = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();        
+
         $opnameHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $opnameHeader->keterangan = $data['keterangan'] ?? '';
         $opnameHeader->gudang_id = $data['gudang_id'];
         $opnameHeader->kelompok_id = $data['kelompok_id'];
         $opnameHeader->statusformat = $format->id;
         $opnameHeader->statuscetak = $statusCetak->id;
+        $opnameHeader->statusapproval = $statusapproval->id;
         $opnameHeader->userbukacetak = '';
         $opnameHeader->tglbukacetak = '';
         $opnameHeader->modifiedby = auth('api')->user()->name;
