@@ -89,10 +89,11 @@ class Stok extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
-        $aktif = request()->aktif ?? '';
+        $aktif = request()->aktif ?? '$spb->text == $penerimaanstok_id';
         $statusreuse = request()->statusreuse ?? '';
         $kelompok = request()->kelompok_id ?? '';
         $penerimaanstok_id = request()->penerimaanstok_id ?? '';
+        $pengeluaranstok_id = request()->pengeluaranstok_id ?? '';
         $penerimaanstokheader_nobukti = request()->penerimaanstokheader_nobukti ?? '';
         $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
         $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
@@ -216,52 +217,110 @@ class Stok extends MyModel
 
 
         // end update vulkanisir
+        $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
+            $retur = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
+            if ($penerimaanstokheader_nobukti && $retur->text == $pengeluaranstok_id) {
+                $query = DB::table($this->table)->select(
+                    'stok.id',
+                    'stok.namastok',
+                    'parameter.memo as statusaktif',
+                    'service.memo as statusservicerutin',
+                    'service.text as servicerutin_text',
+                    'stok.qtymin',
+                    'stok.qtymax',
+                    'stok.keterangan',
+                    'stok.gambar',
+                    'stok.namaterpusat',
+                    'statusban.text as statusban',
+                    'stok.statusban as statusban_id',
+                    'statusreuse.memo as statusreuse',
+                    'stok.modifiedby',
+                    'stok.totalvulkanisir',
+                    'stok.vulkanisirawal',
+                    'jenistrado.keterangan as jenistrado',
+                    'kelompok.kodekelompok as kelompok',
+                    'subkelompok.kodesubkelompok as subkelompok',
+                    'kategori.kodekategori as kategori',
+                    'merk.keterangan as merk',
+                    'stok.created_at',
+                    'stok.updated_at',
+                    DB::raw("'Laporan Stok' as judulLaporan"),
+                    DB::raw("'" . $getJudul->text . "' as judul"),
+                    DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                    DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                    DB::raw("isnull(c1.jumlahhari,0) as umuraki"),
+                    DB::raw("isnull(d1.vulkan,0) as vulkan"),
+                    DB::raw("penerimaanstokdetail.keterangan as penerimaanstokdetail_keterangan"),
+                    DB::raw("penerimaanstokdetail.qty as penerimaanstokdetail_qty"),
+                    DB::raw("penerimaanstokdetail.harga as penerimaanstokdetail_harga"),
+                    DB::raw("penerimaanstokdetail.total as penerimaanstokdetail_total"),
+                    
 
-        $query = DB::table($this->table)->select(
-            'stok.id',
-            'stok.namastok',
-            'parameter.memo as statusaktif',
-            'service.memo as statusservicerutin',
-            'service.text as servicerutin_text',
-            'stok.qtymin',
-            'stok.qtymax',
-            'stok.keterangan',
-            'stok.gambar',
-            'stok.namaterpusat',
-            'statusban.text as statusban',
-            'stok.statusban as statusban_id',
-            'statusreuse.memo as statusreuse',
-            'stok.modifiedby',
-            'stok.totalvulkanisir',
-            'stok.vulkanisirawal',
-            'jenistrado.keterangan as jenistrado',
-            'kelompok.kodekelompok as kelompok',
-            'subkelompok.kodesubkelompok as subkelompok',
-            'kategori.kodekategori as kategori',
-            'merk.keterangan as merk',
-            'stok.created_at',
-            'stok.updated_at',
-            DB::raw("'Laporan Stok' as judulLaporan"),
-            DB::raw("'" . $getJudul->text . "' as judul"),
-            DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-            DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
-            DB::raw("isnull(c1.jumlahhari,0) as umuraki"),
-            DB::raw("isnull(d1.vulkan,0) as vulkan"),
+        
+                )
+                    ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
+                    ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
+                    ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
+                    ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
+                    ->leftJoin('parameter', 'stok.statusaktif', 'parameter.id')
+                    ->leftJoin(DB::raw("parameter as service with (readuncommitted)"), 'stok.statusservicerutin', 'service.id')
+                    ->leftJoin(DB::raw("parameter as statusban with (readuncommitted)"), 'stok.statusban', 'statusban.id')
+                    ->leftJoin(DB::raw("parameter as statusreuse with (readuncommitted)"), 'stok.statusreuse', 'statusreuse.id')
+                    ->leftJoin('merk', 'stok.merk_id', 'merk.id')
+                    ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
+                    ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id");
+        
+            } else {
+                $query = DB::table($this->table)->select(
+                    'stok.id',
+                    'stok.namastok',
+                    'parameter.memo as statusaktif',
+                    'service.memo as statusservicerutin',
+                    'service.text as servicerutin_text',
+                    'stok.qtymin',
+                    'stok.qtymax',
+                    'stok.keterangan',
+                    'stok.gambar',
+                    'stok.namaterpusat',
+                    'statusban.text as statusban',
+                    'stok.statusban as statusban_id',
+                    'statusreuse.memo as statusreuse',
+                    'stok.modifiedby',
+                    'stok.totalvulkanisir',
+                    'stok.vulkanisirawal',
+                    'jenistrado.keterangan as jenistrado',
+                    'kelompok.kodekelompok as kelompok',
+                    'subkelompok.kodesubkelompok as subkelompok',
+                    'kategori.kodekategori as kategori',
+                    'merk.keterangan as merk',
+                    'stok.created_at',
+                    'stok.updated_at',
+                    DB::raw("'Laporan Stok' as judulLaporan"),
+                    DB::raw("'" . $getJudul->text . "' as judul"),
+                    DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                    DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                    DB::raw("isnull(c1.jumlahhari,0) as umuraki"),
+                    DB::raw("isnull(d1.vulkan,0) as vulkan"),
+                    DB::raw("'' as penerimaanstokdetail_keterangan"),
+                    DB::raw("'' as penerimaanstokdetail_qty"),
+                    DB::raw("'' as penerimaanstokdetail_harga"),
+                    DB::raw("'' as penerimaanstokdetail_total"),
+                )
+                    ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
+                    ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
+                    ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
+                    ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
+                    ->leftJoin('parameter', 'stok.statusaktif', 'parameter.id')
+                    ->leftJoin(DB::raw("parameter as service with (readuncommitted)"), 'stok.statusservicerutin', 'service.id')
+                    ->leftJoin(DB::raw("parameter as statusban with (readuncommitted)"), 'stok.statusban', 'statusban.id')
+                    ->leftJoin(DB::raw("parameter as statusreuse with (readuncommitted)"), 'stok.statusreuse', 'statusreuse.id')
+                    ->leftJoin('merk', 'stok.merk_id', 'merk.id')
+                    ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
+                    ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id");
+        
+            }
 
-
-        )
-            ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
-            ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
-            ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
-            ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
-            ->leftJoin('parameter', 'stok.statusaktif', 'parameter.id')
-            ->leftJoin(DB::raw("parameter as service with (readuncommitted)"), 'stok.statusservicerutin', 'service.id')
-            ->leftJoin(DB::raw("parameter as statusban with (readuncommitted)"), 'stok.statusban', 'statusban.id')
-            ->leftJoin(DB::raw("parameter as statusreuse with (readuncommitted)"), 'stok.statusreuse', 'statusreuse.id')
-            ->leftJoin('merk', 'stok.merk_id', 'merk.id')
-            ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
-            ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id");
-
+       
 
 
         $this->filter($query);
@@ -294,8 +353,8 @@ class Stok extends MyModel
             $query->where('stok.kelompok_id', '=', $kelompok);
         }
         if ($penerimaanstokheader_nobukti) {
-            $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
-            if ($spb->text == $penerimaanstok_id) {
+    
+            if ($spb->text == $penerimaanstok_id || $retur->text == $pengeluaranstok_id) {
                 $query->leftJoin('penerimaanstokdetail', 'stok.id', 'penerimaanstokdetail.stok_id')
                     ->where('penerimaanstokdetail.nobukti', $penerimaanstokheader_nobukti);
             }
