@@ -161,10 +161,33 @@ class OpnameHeaderController extends Controller
     {
         $opname = OpnameHeader::find($id);
         $statusdatacetak = $opname->statuscetak;
+        $statusdataApproval = $opname->statusapproval;
+
         $statusCetak = Parameter::from(
             DB::raw("parameter with (readuncommitted)")
         )->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+        ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
 
+        $aksi = request()->aksi ?? '';
+        if ($statusdataApproval == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
+            
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SAP')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'error' => true,
+
+                'message' => $keterangan,
+                'errors' => 'sudah approve',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } 
         if ($statusdatacetak == $statusCetak->id) {
             $query = DB::table('error')
                 ->select('keterangan')
