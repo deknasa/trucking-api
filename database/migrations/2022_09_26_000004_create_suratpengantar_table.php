@@ -42,6 +42,7 @@ class CreateSuratpengantarTable extends Migration
             $table->string('nojob', 50)->nullable();
             $table->string('nojob2', 50)->nullable();
             $table->integer('statuslongtrip')->length(11)->nullable();
+            $table->integer('statuslongtripfull')->length(11)->nullable();
             $table->integer('statuslangsir')->length(11)->nullable();
             $table->decimal('omset', 15, 2)->nullable();
             $table->decimal('discount', 15, 2)->nullable();
