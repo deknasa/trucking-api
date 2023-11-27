@@ -309,10 +309,11 @@ Route::get('supir/image/{field}/{filename}/{type}/{aksi}', [SupirController::cla
 Route::get('supir/pdf/{field}/{filename}', [SupirController::class, 'getPdf']);
 Route::get('trado/image/{field}/{filename}/{type}/{aksi}', [TradoController::class, 'getImage']);
 Route::get('stok/{filename}/{type}', [StokController::class, 'getImage']);
-Route::get('stokpusat/{filename}/{type}', [StokPusatController::class, 'getImage']);
+Route::get('stokpusat/{cabang}/{filename}/{type}', [StokPusatController::class, 'getImage']);
 Route::get('upahsupir/{filename}/{type}', [UpahSupirController::class, 'getImage']);
 Route::get('parameter/getparamrequest', [ParameterController::class, 'getparamrequest']);
 Route::get('importdatacabang/testkoneksi', [ImportDataCabangController::class, 'testkoneksi']);
+Route::get('stok/getGambar', [StokController::class, 'getGambar']);
 
 
 route::middleware(['auth:api'])->group(function () {
@@ -825,7 +826,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('supplier/approvalTNL', [SupplierController::class, 'approvalTNL']);
     Route::get('supplier/report', [SupplierController::class, 'report']);
 
-    Route::get('stok/getGambar', [StokController::class, 'getGambar']);
     Route::get('stok/default', [StokController::class, 'default']);
     Route::get('stok/field_length', [StokController::class, 'fieldLength']);
     Route::post('stok/{stok}/getvulkan', [StokController::class, 'getvulkan']);
@@ -833,6 +833,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('stok/{id}/cekValidasi', [StokController::class, 'cekValidasi'])->name('stok.cekValidasi')->whereNumber('id');
     Route::get('stok/export', [StokController::class, 'export']);
     Route::get('stok/report', [StokController::class, 'report']);
+    Route::post('stok/updatekonsolidasi', [StokController::class, 'updatekonsolidasi']);
 
 
     Route::get('penerima/export', [PenerimaController::class, 'export']);

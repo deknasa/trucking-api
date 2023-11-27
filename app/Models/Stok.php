@@ -118,13 +118,13 @@ class Stok extends MyModel
             $table->date('tglawal')->nullable();
         });
 
-        $queryaki=db::table($tempumuraki)->from(db::raw($tempumuraki . " a "))
-        ->select (
-            'a.stok_id',
-            db::raw("max(a.jumlahhari) as jumlahhari"),
-            db::raw("max(a.tglawal) as tglawal"),
-        )
-        ->groupby('a.stok_id');
+        $queryaki = db::table($tempumuraki)->from(db::raw($tempumuraki . " a "))
+            ->select(
+                'a.stok_id',
+                db::raw("max(a.jumlahhari) as jumlahhari"),
+                db::raw("max(a.tglawal) as tglawal"),
+            )
+            ->groupby('a.stok_id');
 
         DB::table($tempumuraki2)->insertUsing([
             'stok_id',
@@ -247,7 +247,7 @@ class Stok extends MyModel
             DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
             DB::raw("isnull(c1.jumlahhari,0) as umuraki"),
             DB::raw("isnull(d1.vulkan,0) as vulkan"),
-                        
+
 
         )
             ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
@@ -276,7 +276,7 @@ class Stok extends MyModel
 
             $query->where('stok.statusaktif', '=', $statusaktif->id);
         }
-        if (($statusreuse == 'REUSE')||($pg->text == $penerimaanstok_id)) {
+        if (($statusreuse == 'REUSE') || ($pg->text == $penerimaanstok_id)) {
 
             $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
@@ -285,7 +285,7 @@ class Stok extends MyModel
                 ->where('text', '=', 'REUSE')
                 ->first();
 
-       
+
 
             $query->where('stok.statusreuse', '=', $statusaktif->id);
         }
@@ -378,8 +378,8 @@ class Stok extends MyModel
             $table->string('statusaktif', 300)->nullable();
             $table->string('statusservicerutin', 300)->nullable();
             $table->string('servicerutin_text', 300)->nullable();
-            $table->double('qtymin',15,2)->nullable();
-            $table->double('qtymax',15,2)->nullable();
+            $table->double('qtymin', 15, 2)->nullable();
+            $table->double('qtymax', 15, 2)->nullable();
             $table->longText('keterangan')->nullable();
             $table->longText('gambar')->nullable();
             $table->longText('namaterpusat')->nullable();
@@ -387,8 +387,8 @@ class Stok extends MyModel
             $table->integer('statusban_id')->nullable();
             $table->string('statusreuse', 300)->nullable();
             $table->string('modifiedby', 300)->nullable();
-            $table->double('totalvulkanisir',15,2)->nullable();
-            $table->double('vulkanisirawal',15,2)->nullable();
+            $table->double('totalvulkanisir', 15, 2)->nullable();
+            $table->double('vulkanisirawal', 15, 2)->nullable();
             $table->string('jenistrado', 300)->nullable();
             $table->string('kelompok', 300)->nullable();
             $table->string('subkelompok', 300)->nullable();
@@ -546,13 +546,13 @@ class Stok extends MyModel
             $table->date('tglawal')->nullable();
         });
 
-        $queryaki=db::table($tempumuraki)->from(db::raw($tempumuraki . " a "))
-        ->select (
-            'a.stok_id',
-            db::raw("max(a.jumlahhari) as jumlahhari"),
-            db::raw("max(a.tglawal) as tglawal"),
-        )
-        ->groupby('a.stok_id');
+        $queryaki = db::table($tempumuraki)->from(db::raw($tempumuraki . " a "))
+            ->select(
+                'a.stok_id',
+                db::raw("max(a.jumlahhari) as jumlahhari"),
+                db::raw("max(a.tglawal) as tglawal"),
+            )
+            ->groupby('a.stok_id');
 
         DB::table($tempumuraki2)->insertUsing([
             'stok_id',
@@ -686,18 +686,18 @@ class Stok extends MyModel
             'stok.created_at',
             'stok.updated_at'
         )
-        ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
-        ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
-        ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
-        ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
-        ->leftJoin('parameter', 'stok.statusaktif', 'parameter.id')
-        ->leftJoin(DB::raw("parameter as service with (readuncommitted)"), 'stok.statusservicerutin', 'service.id')
-        ->leftJoin(DB::raw("parameter as statusban with (readuncommitted)"), 'stok.statusban', 'statusban.id')
-        ->leftJoin(DB::raw("parameter as statusreuse with (readuncommitted)"), 'stok.statusreuse', 'statusreuse.id')
-        ->leftJoin('merk', 'stok.merk_id', 'merk.id')
-        ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
-        ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id");
-        
+            ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
+            ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
+            ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
+            ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
+            ->leftJoin('parameter', 'stok.statusaktif', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as service with (readuncommitted)"), 'stok.statusservicerutin', 'service.id')
+            ->leftJoin(DB::raw("parameter as statusban with (readuncommitted)"), 'stok.statusban', 'statusban.id')
+            ->leftJoin(DB::raw("parameter as statusreuse with (readuncommitted)"), 'stok.statusreuse', 'statusreuse.id')
+            ->leftJoin('merk', 'stok.merk_id', 'merk.id')
+            ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
+            ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id");
+
         $query = $this->sort($query);
         $models = $this->filter($query);
         DB::table($temp)->insertUsing([
@@ -830,7 +830,7 @@ class Stok extends MyModel
                                 $query = $query->orwhereRaw('c1.jumlahhari LIKE' . "'%$filters[data]%'");
                             } else if ($filters['field'] == 'vulkan') {
                                 $query = $query->orwhereRaw('d1.vulkan LIKE' . "'%$filters[data]%'");
-                                } else {
+                            } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                             }
@@ -974,11 +974,11 @@ class Stok extends MyModel
         return $stok;
     }
 
-    public function processApprovalklaim(Stok $stok) : Stok
+    public function processApprovalklaim(Stok $stok): Stok
     {
         $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
         $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
-        
+
         if ($stok->statusapprovaltanpaklaim == $statusApproval->id) {
             $stok->statusapprovaltanpaklaim = $statusNonApproval->id;
         } else {
@@ -998,32 +998,31 @@ class Stok extends MyModel
                 'datajson' => $stok->toArray(),
                 'modifiedby' => $stok->modifiedby
             ]);
-           
+
             DB::commit();
         }
         return $stok;
-
     }
 
     public function getvulkanisir($id)
     {
 
         $queryvulkanawal =  Stok::from(db::raw("stok a with (readuncommitted)"))
-        ->select(db::raw("isnull(a.vulkanisirawal,0) as vulawal"))
-        ->where('a.id', $id)->first();
-        
+            ->select(db::raw("isnull(a.vulkanisirawal,0) as vulawal"))
+            ->where('a.id', $id)->first();
+
         $queryvulkan = Stok::from(db::raw("stok a with (readuncommitted)"))
-        ->select(
-            'a.statusban',
-            db::raw("sum(isnull(b.vulkanisirke,0)) as vulkanplus"),
-            db::raw("sum(isnull(c.vulkanisirke,0)) as vulkanminus")
-        )
-        ->leftjoin(db::raw("penerimaanstokdetail b with (readuncommitted)"), 'a.id', 'b.stok_id')
-        ->leftjoin(db::raw("pengeluaranstokdetail c with (readuncommitted)"), 'a.id', 'c.stok_id')
-        ->where('a.id', $id)
-        ->groupby('a.id','a.statusban')
-        ->first();
-        
+            ->select(
+                'a.statusban',
+                db::raw("sum(isnull(b.vulkanisirke,0)) as vulkanplus"),
+                db::raw("sum(isnull(c.vulkanisirke,0)) as vulkanminus")
+            )
+            ->leftjoin(db::raw("penerimaanstokdetail b with (readuncommitted)"), 'a.id', 'b.stok_id')
+            ->leftjoin(db::raw("pengeluaranstokdetail c with (readuncommitted)"), 'a.id', 'c.stok_id')
+            ->where('a.id', $id)
+            ->groupby('a.id', 'a.statusban')
+            ->first();
+
         $totalplus = $queryvulkan->vulkanplus ?? 0;
         $totalminus = $queryvulkan->vulkanminus ?? 0;
         $vulawal = $queryvulkanawal->vulawal ?? 0;
@@ -1033,8 +1032,8 @@ class Stok extends MyModel
         } else {
             $totalvulkan = 0;
         }
-       
-        return ['totalvulkan' =>$totalvulkan,'statusban'=>$queryvulkan->statusban];
+
+        return ['totalvulkan' => $totalvulkan, 'statusban' => $queryvulkan->statusban];
     }
 
 
@@ -1068,5 +1067,181 @@ class Stok extends MyModel
             }
             Storage::delete($relatedPhotoStok);
         }
+    }
+
+    public function processKonsolidasi($data)
+    {
+        if ($data['stok_id' . config('app.kode_cabang')] != '') {
+            $query = DB::table('stok')->where('id', $data['stok_id' . config('app.kode_cabang')])->update([
+                'namaterpusat' => strtoupper($data['namaterpusat']),
+            ]);
+        }
+        if ($data['stok_id' . config('app.kode_cabang') . 'del'] != '') {
+            $query = DB::table('stok')->where('id', $data['stok_id' . config('app.kode_cabang').'del'])->update([
+                'namaterpusat' => '',
+            ]);
+        }
+        $getCabang = DB::table("cabang")->from(DB::raw("cabang with (readuncommitted)"))->select('cabang.kodecabang')
+            ->join(db::raw("parameter with (readuncommitted)"), 'cabang.id', 'parameter.text')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
+
+        unset($data['cekKoneksi'][$getCabang->kodecabang]);
+
+        $this->saveToCabang($data);
+    }
+
+    public function saveToCabang($data)
+    {
+        $cekKoneksi = $data['cekKoneksi'];
+        if (array_key_exists('TNL', $cekKoneksi)) {
+
+            if ($data['stok_idjkttnl'] != '') {
+                $accessTokenJktTnlStok = session('access_token_jkttnl_stok');
+                $data['konsolidasi'] = true;
+                if (!$accessTokenJktTnlStok) {
+                    $postRequest = [
+                        'user' => config('app.user_api'),
+                        'password' => config('app.pass_api'),
+                        'ipclient' => '',
+                        'ipserver' => '',
+                        'latitude' => '',
+                        'longitude' => '',
+                        'browser' => '',
+                        'os' => '',
+                    ];
+                    $token = $this->getToken(config('app.url_token_jkttnl'), $postRequest);
+
+                    $token = json_decode($token, TRUE);
+                    if ($token != '') {
+
+                        if (array_key_exists('access_token', $token)) {
+                            $accessToken = $token['access_token'];
+                            session(['access_token_jkttnl_stok' => $token['access_token']]);
+
+                            $send = $this->postData(config('app.url_post_konsol_jkttnl'), 'POST', $accessToken, $data);
+                            $send = json_decode($send, TRUE);
+                            if (array_key_exists('status', $send)) {
+                                goto selesai;
+                            } else {
+                                throw new \Exception($send['message']);
+                            }
+                        } else {
+                            throw new \Exception("server Jakarta TNL tidak bisa diakses");
+                        }
+                    } else {
+                        throw new \Exception("server Jakarta TNL tidak bisa diakses");
+                    }
+                } else {
+                    $send = $this->postData(config('app.url_post_konsol_jkttnl'), 'POST', $accessTokenJktTnlStok, $data);
+
+                    $send = json_decode($send, TRUE);
+                    if (array_key_exists('status', $send)) {
+                        goto selesai;
+                    } else {
+                        throw new \Exception($send['message']);
+                    }
+                }
+            }
+            if ($data['stok_idjkttnldel'] != '') {
+                $accessTokenJktTnlStok = session('access_token_jkttnl_stok');
+                $data['konsolidasi'] = true;
+                if (!$accessTokenJktTnlStok) {
+                    $postRequest = [
+                        'user' => config('app.user_api'),
+                        'password' => config('app.pass_api'),
+                        'ipclient' => '',
+                        'ipserver' => '',
+                        'latitude' => '',
+                        'longitude' => '',
+                        'browser' => '',
+                        'os' => '',
+                    ];
+                    $token = $this->getToken(config('app.url_token_jkttnl'), $postRequest);
+
+                    $token = json_decode($token, TRUE);
+                    if ($token != '') {
+
+                        if (array_key_exists('access_token', $token)) {
+                            $accessToken = $token['access_token'];
+                            session(['access_token_jkttnl_stok' => $token['access_token']]);
+
+                            $send = $this->postData(config('app.url_post_konsol_jkttnl'), 'POST', $accessToken, $data);
+                            $send = json_decode($send, TRUE);
+                            if (array_key_exists('status', $send)) {
+                                goto selesai;
+                            } else {
+                                throw new \Exception($send['message']);
+                            }
+                        } else {
+                            throw new \Exception("server Jakarta TNL tidak bisa diakses");
+                        }
+                    } else {
+                        throw new \Exception("server Jakarta TNL tidak bisa diakses");
+                    }
+                } else {
+                    $send = $this->postData(config('app.url_post_konsol_jkttnl'), 'POST', $accessTokenJktTnlStok, $data);
+
+                    $send = json_decode($send, TRUE);
+                    if (array_key_exists('status', $send)) {
+                        goto selesai;
+                    } else {
+                        throw new \Exception($send['message']);
+                    }
+                }
+            }
+        }
+
+
+        selesai:
+        return true;
+    }
+
+
+    public function http_request(string $url, string $method = 'GET', array $headers = null, array $body = null): string
+    {
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        if (!empty($body)) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array_merge($headers, ['Content-Type: application/json']));
+        }
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+        $output = curl_exec($ch);
+        curl_close($ch);
+
+        return $output;
+    }
+    public function getToken($server, $postRequest)
+    {
+        $token = $this->http_request(
+            $server,
+            'POST',
+            [
+                'Accept: application/json'
+            ],
+            $postRequest
+        );
+
+        return $token;
+    }
+    public function postData($server, $method, $accessToken, $data)
+    {
+        $send = $this->http_request(
+            $server,
+            $method,
+            [
+                'Authorization: Bearer ' . $accessToken,
+                'Accept: application/json',
+                'Content-Type: application/json'
+            ],
+            $data
+        );
+        return $send;
     }
 }
