@@ -260,6 +260,7 @@ class InputTrip extends MyModel
         Schema::create($temtabel, function (Blueprint $table) {
             $table->id();
             $table->longText('nopol')->nullable();
+            $table->integer('trado_id')->nullable();
             $table->date('tanggal')->nullable();
             $table->string('status', 100)->nullable();
             $table->double('km', 15, 2)->nullable();
@@ -269,6 +270,7 @@ class InputTrip extends MyModel
 
         DB::table($temtabel)->insertUsing([
             'nopol',
+            'trado_id',
             'tanggal',
             'status',
             'km',

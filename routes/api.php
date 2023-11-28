@@ -598,6 +598,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('blacklistsupir', BlackListSupirController::class)->whereNumber('blacklistsupir');
 
     Route::get('tradosupirmilikmandor/default', [TradoSupirMilikMandorController::class, 'default']);
+
     Route::resource('tradosupirmilikmandor', TradoSupirMilikMandorController::class)->whereNumber('tradosupirmilikmandor');
 
     Route::get('suratpengantarapprovalinputtrip/default', [SuratPengantarApprovalInputTripController::class, 'default']);
@@ -666,6 +667,11 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('trado/{id}/cekValidasi', [TradoController::class, 'cekValidasi'])->name('trado.cekValidasi')->whereNumber('id');
     Route::get('trado/export', [TradoController::class, 'export']);
     Route::get('trado/report', [TradoController::class, 'report']);
+    Route::post('trado/approvalmesin', [TradoController::class, 'approvalmesin']);
+    Route::post('trado/approvalpersneling', [TradoController::class, 'approvalpersneling']);
+    Route::post('trado/approvalgardan', [TradoController::class, 'approvalgardan']);
+    Route::post('trado/approvalsaringanhawa', [TradoController::class, 'approvalsaringanhawa']);
+
 
     Route::get('absentrado/field_length', [AbsenTradoController::class, 'fieldLength']);
     Route::get('absentrado/rekapabsentrado', [AbsenTradoController::class, 'rekapabsentrado']);

@@ -65,6 +65,18 @@ class CreateTradoTable extends Migration
             $table->string('photostnk', 1500)->nullable();
             $table->string('photobpkb', 1500)->nullable();
             $table->string('phototrado', 1500)->nullable();
+            $table->string('userapprovalreminderolimesin', 50)->nullable();
+            $table->date('tglapprovalreminderolimesin')->nullable();
+            $table->dateTime('tglbatasreminderolimesin')->nullable();            
+            $table->string('userapprovalreminderolipersneling', 50)->nullable();
+            $table->date('tglapprovalreminderolipersneling')->nullable();
+            $table->dateTime('tglbatasreminderolipersneling')->nullable();            
+            $table->string('userapprovalreminderoligardan', 50)->nullable();
+            $table->date('tglapprovalreminderoligardan')->nullable();
+            $table->dateTime('tglbatasreminderoligardan')->nullable();            
+            $table->string('userapprovalremindersaringanhawa', 50)->nullable();
+            $table->date('tglapprovalremindersaringanhawa')->nullable();
+            $table->dateTime('tglbatasremindersaringanhawa')->nullable();            
             $table->longText('info')->nullable();
             $table->string('modifiedby', 30)->nullable();
             $table->timestamps();
