@@ -31,8 +31,10 @@ class LaporanKartuPiutangPerAgen extends MyModel
         $sampai = $dari;
         $tgl = '01-' . date('m', strtotime($dari)) . '-' . date('Y', strtotime($dari));
         $dari1 = date('Y-m-d', strtotime($tgl));
-
-    
+        $keteranganagen='';
+    if ($agenDari==0 || $agenSampai==0 )  {
+        $keteranganagen='SEMUA';
+    }
 
         if ($agenDari == 0) {
             $agenDari = db::table('agen')->from(db::raw("agen with (readuncommitted)"))
@@ -423,8 +425,8 @@ $queryurut=db::table($temprekaphasil)->from(db::raw($temprekaphasil . " a"))
                 'a.jenispiutang',
                 'a.urut',
                 DB::raw("'$getJudul->text' AS text"),
-                DB::raw("'$agendarinama' AS dari"),
-                DB::raw("'$agensampainama' AS sampai"),
+                DB::raw("(case when '$keteranganagen'='' then '$agendarinama' else '$keteranganagen' end)  AS dari"),
+                DB::raw("(case when '$keteranganagen'='' then '$agensampainama' else '$keteranganagen' end)   AS sampai"),
                 DB::raw("'Laporan Kartu Piutang Per Customer' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),

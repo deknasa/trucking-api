@@ -31,6 +31,11 @@ class LaporanKartuHutangPerSupplier extends MyModel
         $tgl = '01-' . date('m', strtotime($dari)) . '-' . date('Y', strtotime($dari));
         $dari1 = date('Y-m-d', strtotime($tgl));
 
+        $keterangansupplier='';
+        if ($supplierdari==0 || $suppliersampai==0 )  {
+            $keterangansupplier='SEMUA';
+        }
+
         if ($supplierdari == 0 || $suppliersampai == 0 ) {
             $supplierdari = db::table('supplier')->from(db::raw("supplier with (readuncommitted)"))
                 ->select('id')->orderby('id', 'asc')->first()->id ?? 0;
@@ -345,8 +350,9 @@ $queryurut=db::table($temprekaphasil)->from(db::raw($temprekaphasil . " a"))
                 'a.jenishutang',
                 'a.urut',
                 DB::raw("'$getJudul->text' AS text"),
-                DB::raw("'$supplierdarinama' AS dari"),
-                DB::raw("'$suppliersampainama' AS sampai"),
+                DB::raw("(case when '$keterangansupplier'='' then '$supplierdarinama' else '$keterangansupplier' end)  AS dari"),
+                DB::raw("(case when '$keterangansupplier'='' then '$suppliersampainama' else '$keterangansupplier' end)   AS sampai"),
+
                 DB::raw("'Laporan Kartu Hutang Per Supplier' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
