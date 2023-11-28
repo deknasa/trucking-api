@@ -249,39 +249,39 @@ class PenerimaanStokDetail extends MyModel
                 }
             }
 
-            if (request()->pengeluaranstok_id == $rtr->id) {
+            // if (request()->pengeluaranstok_id == $rtr->id) {
 
-                $query->select(
-                    DB::raw('SUM(pengeluaranstokdetail.qty) as qty'),
-                    "$this->table.nobukti",
-                    "$this->table.stok_id",
-                    'stok.namastok as stok',
-                    // "$this->table.qty"', 
-                    DB::raw("$this->table.qty - COALESCE(SUM(pengeluaranstokdetail.qty), 0) as qty"),
+            //     $query->select(
+            //         DB::raw('SUM(pengeluaranstokdetail.qty) as qty'),
+            //         "$this->table.nobukti",
+            //         "$this->table.stok_id",
+            //         'stok.namastok as stok',
+            //         // "$this->table.qty"', 
+            //         DB::raw("$this->table.qty - COALESCE(SUM(pengeluaranstokdetail.qty), 0) as qty"),
 
-                    "$this->table.harga",
-                    "$this->table.persentasediscount",
-                    "$this->table.penerimaanstok_nobukti",
-                    "$this->table.nominaldiscount",
-                    "$this->table.total",
-                    "$this->table.keterangan"
-                )
-                    ->leftJoin('pengeluaranstokdetail', 'PenerimaanStokDetail.stok_id', '=', 'pengeluaranstokdetail.stok_id')
-                    ->groupBy(
-                        "$this->table.nobukti",
-                        "$this->table.stok_id",
-                        'stok.namastok',
-                        "$this->table.qty",
-                        "$this->table.harga",
-                        "$this->table.persentasediscount",
-                        "$this->table.penerimaanstok_nobukti",
-                        "$this->table.nominaldiscount",
-                        "$this->table.total",
-                        "$this->table.keterangan"
-                    )
-                    ->havingRaw("$this->table.qty > COALESCE(SUM(pengeluaranstokdetail.qty), 0)");
-                return $query->get();
-            }
+            //         "$this->table.harga",
+            //         "$this->table.persentasediscount",
+            //         "$this->table.penerimaanstok_nobukti",
+            //         "$this->table.nominaldiscount",
+            //         "$this->table.total",
+            //         "$this->table.keterangan"
+            //     )
+            //         ->leftJoin('pengeluaranstokdetail', 'PenerimaanStokDetail.stok_id', '=', 'pengeluaranstokdetail.stok_id')
+            //         ->groupBy(
+            //             "$this->table.nobukti",
+            //             "$this->table.stok_id",
+            //             'stok.namastok',
+            //             "$this->table.qty",
+            //             "$this->table.harga",
+            //             "$this->table.persentasediscount",
+            //             "$this->table.penerimaanstok_nobukti",
+            //             "$this->table.nominaldiscount",
+            //             "$this->table.total",
+            //             "$this->table.keterangan"
+            //         )
+            //         ->havingRaw("$this->table.qty > COALESCE(SUM(pengeluaranstokdetail.qty), 0)");
+            //     return $query->get();
+            // }
 
             $this->totalNominal = $query->sum($this->table . '.total');
             $this->filter($query);
