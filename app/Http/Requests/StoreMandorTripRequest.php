@@ -69,6 +69,7 @@ class StoreMandorTripRequest extends FormRequest
             $statusUpahZona[] = $item['id'];
         }
 
+        $getGudangSama = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GUDANG SAMA')->where('text', 'GUDANG SAMA')->first();
         $getBukanUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'NON UPAH ZONA')->first();
         $getUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
         $getListTampilan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'UBAH TAMPILAN')->where('text', 'INPUTTRIP')->first();
@@ -413,7 +414,7 @@ class StoreMandorTripRequest extends FormRequest
                         'required', 'date_format:d-m-Y',
                         new DateApprovalQuota()
                     ],
-
+                    "nobukti_tripasal" => 'required_if:statusgudangsama,=,' . $getGudangSama->id,
                     "agen" => "required",
                     "container" => "required",
                     "dari" => ["required"],
@@ -447,7 +448,7 @@ class StoreMandorTripRequest extends FormRequest
                         'required', 'date_format:d-m-Y',
                         new DateApprovalQuota()
                     ],
-
+                    "nobukti_tripasal" => 'required_if:statusgudangsama,=,' . $getGudangSama->id,
                     "agen" => "required",
                     "container" => "required",
                     "dari" => ["required"],
@@ -488,7 +489,7 @@ class StoreMandorTripRequest extends FormRequest
                         'required', 'date_format:d-m-Y',
                         new DateApprovalQuota()
                     ],
-
+                    "nobukti_tripasal" => 'required_if:statusgudangsama,=,' . $getGudangSama->id,
                     "agen" => "required",
                     "tarifrincian" => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiExistOmsetTarif(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
                     "container" => "required",
@@ -523,7 +524,7 @@ class StoreMandorTripRequest extends FormRequest
                         'required', 'date_format:d-m-Y',
                         new DateApprovalQuota()
                     ],
-
+                    "nobukti_tripasal" => 'required_if:statusgudangsama,=,' . $getGudangSama->id,
                     "agen" => "required",
                     "tarifrincian" => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiExistOmsetTarif(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
                     "container" => "required",
@@ -606,6 +607,7 @@ class StoreMandorTripRequest extends FormRequest
             "statuslangsir" => "status langsir",
             "trado_id" => "trado",
             "trado" => "trado",
+            "nobukti_tripasal" => 'trip asal',
             'jenisritasi.*' => "jenis ritasi",
             'ritasidari.*' => 'ritasi dari',
             'ritasike.*' => 'ritasi ke',
@@ -619,6 +621,7 @@ class StoreMandorTripRequest extends FormRequest
         return [
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
             'tarifrincian.required_if' => 'TARIF ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            'nobukti_tripasal.required_if' => 'TRIP ASAL ' . app(ErrorController::class)->geterror('WI')->keterangan,
 
         ];
     }

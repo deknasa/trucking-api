@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DestroyPenerimaanGiroHeaderRequest;
+use App\Http\Requests\EditingAtRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreLogTrailRequest;
@@ -370,6 +371,14 @@ class PenerimaanGiroHeaderController extends Controller
         $penerimaanGiro = new PenerimaanGiroHeader();
         return response([
             'data' => $penerimaanGiro->getExport($id),
+        ]);
+    }
+
+    public function editingat(EditingAtRequest $request)
+    {
+        $penerimaanGiro = new PenerimaanGiroHeader();
+        return response([
+            'data' => $penerimaanGiro->editingAt($request->id, $request->btn),
         ]);
     }
 }

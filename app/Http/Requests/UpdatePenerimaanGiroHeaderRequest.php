@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Rules\CheckEditingAtValidation;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\DestroyPenerimaanGiro;
@@ -40,13 +41,14 @@ class UpdatePenerimaanGiroHeaderRequest extends FormRequest
         }
 
         $rules = [
+            'id' => new CheckEditingAtValidation(),
             "tglbukti" => [
-                "required",'date_format:d-m-Y',
+                "required", 'date_format:d-m-Y',
                 'before_or_equal:' . date('Y-m-d'),
                 new DateTutupBuku()
             ],
             'tgllunas' => 'required',
-            'agen' => 'required',
+            'agen' => ['required'],
         ];
         $relatedRequests = [
             UpdatePenerimaanGiroDetailRequest::class
@@ -54,14 +56,14 @@ class UpdatePenerimaanGiroHeaderRequest extends FormRequest
 
         foreach ($relatedRequests as $relatedRequest) {
             $rules = array_merge(
-                ['id'=> new DestroyPenerimaanGiro()],
+                ['id' => new DestroyPenerimaanGiro()],
                 $rules,
                 (new $relatedRequest)->rules(),
                 $rulesAgen_id
             );
         }
 
-        
+        // dd($rules);
         return $rules;
     }
 
