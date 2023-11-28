@@ -30,7 +30,7 @@ class LaporanKartuHutangPrediksi extends MyModel
     {
         $ptglawalprogram = '2023/5/1';
 
-
+        $dari = '01-' . date('m', strtotime($sampai)) . '-' . date('Y', strtotime($sampai));
         $templist = '##templist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         Schema::create($templist, function ($table) {
@@ -487,14 +487,14 @@ class LaporanKartuHutangPrediksi extends MyModel
         $query = DB::table($templist)
             ->from(DB::raw($templist . " as a with (readuncommitted)"))
             ->select(
-                'a.nobukti as noebs',
+                DB::raw("(case when isnull(a.nobuktitrans,'')='' then a.nobukti else a.nobuktitrans end) as noebs"),
                 'a.tglbukti as tanggal',
                 'a.nobuktitrans as nobukti',
                 'a.keterangan',
                 'a.debet as nominal',
                 'a.kredit as bayar',
                 DB::raw("sum ( (isnull(A.saldo,0)+isnull(a.debet,0))-isnull(a.kredit,0)) over (order by a.id asc) as saldo"),
-                DB::raw("'LAPORAN KARTU HUTANG PREDIKSI (EBS)' as judulLaporan"),
+                DB::raw("'LAPORAN KARTU HUTANG PREDIKSI' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
