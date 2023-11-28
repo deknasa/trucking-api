@@ -43,7 +43,7 @@ class PenerimaanGiroHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pelunasan Piutang '. $pelunasanPiutang->nobukti,
+                'keterangan' => 'Pelunasan Piutang ' . $pelunasanPiutang->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -62,7 +62,7 @@ class PenerimaanGiroHeader extends MyModel
         if (isset($penerimaan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Penerimaan Kas/Bank '. $penerimaan->nobukti,
+                'keterangan' => 'Penerimaan Kas/Bank ' . $penerimaan->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -589,6 +589,8 @@ class PenerimaanGiroHeader extends MyModel
         $penerimaanGiroHeader->diterimadari = $data['diterimadari'];
         $penerimaanGiroHeader->tgllunas = date('Y-m-d', strtotime($data['tgllunas']));
         $penerimaanGiroHeader->modifiedby = auth('api')->user()->name;
+        $penerimaanGiroHeader->editing_by = '';
+        $penerimaanGiroHeader->editing_at = null;
         $penerimaanGiroHeader->info = html_entity_decode(request()->info);
 
         if (!$penerimaanGiroHeader->save()) {
@@ -780,5 +782,25 @@ class PenerimaanGiroHeader extends MyModel
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaangiroheader.agen_id', 'agen.id');
         $data = $query->first();
         return $data;
+    }
+
+    public function editingAt($id, $btn)
+    {
+        $penerimaanGiro = PenerimaanGiroHeader::find($id);
+        if ($btn == 'EDIT') {
+            $penerimaanGiro->editing_by = auth('api')->user()->name;
+            $penerimaanGiro->editing_at = date('Y-m-d H:i:s');
+        } else {
+            if ($penerimaanGiro->editing_by == auth('api')->user()->name) {
+                $penerimaanGiro->editing_by = '';
+                $penerimaanGiro->editing_at = null;
+            }
+        }
+        if (!$penerimaanGiro->save()) {
+            throw new \Exception("Error Update penerimaan giro header.");
+        }
+
+
+        return $penerimaanGiro;
     }
 }

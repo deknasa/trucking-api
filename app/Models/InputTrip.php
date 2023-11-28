@@ -168,7 +168,8 @@ class InputTrip extends MyModel
             'inputtripmandor' => '1',
             'nominal' => '',
             'tglbataseditsuratpengantar' => $tglBatasEdit,
-            'approvalbukatanggal_id' => $approvalId
+            'approvalbukatanggal_id' => $approvalId,
+            'nobukti_tripasal' => $data['nobukti_tripasal']
         ];
         $suratPengantar = (new SuratPengantar())->processStore($dataSP);
 

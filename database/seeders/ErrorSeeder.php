@@ -97,6 +97,8 @@ class ErrorSeeder extends Seeder
         error::create(['kodeerror' => 'TBI', 'keterangan' => 'TIDAK BOLEH DIISI', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'TBS', 'keterangan' => 'TIDAK BOLEH SAMA', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'STB', 'keterangan' => 'SUDAH TUTUP BUKU', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'SMBE', 'keterangan' => 'SUDAH MELEWATI BATAS EDIT', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'SDE', 'keterangan' => 'SEDANG DIEDIT', 'modifiedby' => 'ADMIN',]);
 
     }
 }

@@ -495,7 +495,7 @@ class ReminderOli extends MyModel
         $Temptradotransakdi = '##Temptradotransakdi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($Temptradotransakdi, function ($table) {
             $table->integer('trado_id');
-            $table->double('jarak', 15, 2);
+            $table->double('jarak', 15, 2)->nullable();
             $table->date('tgl');
             $table->string('statusreminder', 100);
         });

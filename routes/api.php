@@ -1288,6 +1288,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pengeluarandetail/getPengeluaran', [PengeluaranDetailController::class, 'getPengeluaran']);
     Route::resource('pengeluarandetail', PengeluaranDetailController::class)->whereNumber('pengeluarandetail');
 
+    Route::post('penerimaangiroheader/editingat', [PenerimaanGiroHeaderController::class, 'editingat']);
     Route::post('penerimaangiroheader/addrow', [PenerimaanGiroDetailController::class, 'addrow']);
     Route::post('penerimaangiroheader/{id}/approval', [PenerimaanGiroHeaderController::class, 'approval'])->name('penerimaangiroheader.approval')->whereNumber('id');
     Route::post('penerimaangiroheader/{id}/cekvalidasi', [PenerimaanGiroHeaderController::class, 'cekvalidasi'])->name('penerimaangiroheader.cekvalidasi')->whereNumber('id');

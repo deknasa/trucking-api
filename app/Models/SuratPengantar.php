@@ -992,6 +992,7 @@ class SuratPengantar extends MyModel
                     'suratpengantar.gajikenek',
                     'suratpengantar.komisisupir',
                     'suratpengantar.upah_id',
+                    'suratpengantar.nobukti_tripasal',
                     'suratpengantar.statusapprovaleditsuratpengantar',
                     'suratpengantar.statusapprovalbiayatitipanemkl',
                     'kotaupah.kodekota as upah'
@@ -1071,6 +1072,7 @@ class SuratPengantar extends MyModel
                     'suratpengantar.gajikenek',
                     'suratpengantar.komisisupir',
                     'suratpengantar.upah_id',
+                    'suratpengantar.nobukti_tripasal',
                     'suratpengantar.statusapprovaleditsuratpengantar',
                     'suratpengantar.statusapprovalbiayatitipanemkl',
                     'zonaupah.zona as upah'
@@ -1919,6 +1921,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->info = html_entity_decode(request()->info);
             $suratPengantar->statusformat = $format->id;
             $suratPengantar->tglbataseditsuratpengantar = $data['tglbataseditsuratpengantar'];
+            $suratPengantar->nobukti_tripasal = $data['nobukti_tripasal'];
             $suratPengantar->statusapprovalbiayatitipanemkl = $statusNonApproval->id;
             $suratPengantar->nobukti = (new RunningNumberService)->get($group, $subGroup, $suratPengantar->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
         }
@@ -2077,6 +2080,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->statusbatalmuat = $data['statusbatalmuat'];
             $suratPengantar->gudang = $data['gudang'];
             $suratPengantar->lokasibongkarmuat = $data['lokasibongkarmuat'];
+            $suratPengantar->nobukti_tripasal = $data['nobukti_tripasal'];
             $suratPengantar->modifiedby = auth('api')->user()->name;
             $suratPengantar->info = html_entity_decode(request()->info);
             $suratPengantar->statusedittujuan = $statusTidakBolehEditTujuan->id;
