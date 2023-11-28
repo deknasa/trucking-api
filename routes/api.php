@@ -46,6 +46,7 @@ use App\Http\Controllers\Api\ListTripController;
 use App\Http\Controllers\Api\LogTrailController;
 use App\Http\Controllers\Api\PenerimaController;
 use App\Http\Controllers\Api\SupplierController;
+use App\Http\Controllers\Api\TripInapController;
 use App\Http\Controllers\Api\UserRoleController;
 use App\Http\Controllers\Api\AkunPusatController;
 use App\Http\Controllers\Api\AkuntansiController;
@@ -83,26 +84,26 @@ use App\Http\Controllers\Api\OrderanEmklController;
 use App\Http\Controllers\Api\ReminderOliController;
 use App\Http\Controllers\Api\ReminderSpkController;
 use App\Http\Controllers\Api\SubKelompokController;
+
 use App\Http\Controllers\Api\HutangDetailController;
-
 use App\Http\Controllers\Api\HutangHeaderController;
+
 use App\Http\Controllers\Api\OpnameDetailController;
-
 use App\Http\Controllers\Api\OpnameHeaderController;
+
 use App\Http\Controllers\Api\ReminderStokController;
-
 use App\Http\Controllers\Api\ReportNeracaController;
+
 use App\Http\Controllers\Api\SaldoUmurAkiController;
-
 use App\Http\Controllers\Api\TarifRincianController;
+
 use App\Http\Controllers\Api\UbahPasswordController;
-
 use App\Http\Controllers\CustomValidationController;
+
 use App\Http\Controllers\LaporanKasHarianController;
-
 use App\Http\Controllers\Api\BankPelangganController;
-use App\Http\Controllers\Api\InvoiceDetailController;
 
+use App\Http\Controllers\Api\InvoiceDetailController;
 use App\Http\Controllers\Api\InvoiceHeaderController;
 use App\Http\Controllers\Api\LaporanNeracaController;
 use App\Http\Controllers\Api\MainAkunPusatController;
@@ -188,7 +189,6 @@ use App\Http\Controllers\Api\BukaPengeluaranStokController;
 use App\Http\Controllers\Api\LaporanPemakaianBanController;
 use App\Http\Controllers\Api\PengeluaranTruckingController;
 use App\Http\Controllers\Api\LaporanDepositoSupirController;
-use App\Http\Controllers\Api\LaporanDepositoKaryawanController;
 use App\Http\Controllers\Api\LaporanKlaimPJTSupirController;
 use App\Http\Controllers\Api\LaporanMingguanSupirController;
 use App\Http\Controllers\Api\LaporanMutasiKasBankController;
@@ -241,6 +241,7 @@ use App\Http\Controllers\Api\ApprovalTradoKeteranganController;
 use App\Http\Controllers\Api\ApprovalTransaksiHeaderController;
 use App\Http\Controllers\Api\ExportLaporanKasGantungController;
 use App\Http\Controllers\Api\ExportPengeluaranBarangController;
+use App\Http\Controllers\Api\LaporanDepositoKaryawanController;
 use App\Http\Controllers\Api\LaporanRekapTitipanEmklController;
 use App\Http\Controllers\Api\LaporanPenyesuaianBarangController;
 use App\Http\Controllers\Api\PenerimaanTruckingDetailController;
@@ -1730,6 +1731,9 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pelunasanhutangheader/grid', [PelunasanHutangHeaderController::class, 'grid']);
     Route::resource('pelunasanhutangheader', PelunasanHutangHeaderController::class)->whereNumber('pelunasanhutangheader');
     Route::resource('pelunasanhutangdetail', PelunasanHutangDetailController::class)->whereNumber('pelunasanhutangdetail');
+    
+    Route::post('tripinap/{id}/approval', [TripInapController::class, 'approval'])->name('tripinap.approval')->whereNumber('tripinap');
+    Route::resource('tripinap', TripInapController::class)->whereNumber('tripinap');
     
     Route::get('exportric/export', [ExportRicController::class, 'export'])->name('exportric.export');
     Route::resource('exportric', ExportRicController::class);

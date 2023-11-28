@@ -2,87 +2,165 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-
 use App\Models\TripInap;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTripInapRequest;
 use App\Http\Requests\UpdateTripInapRequest;
 
 class TripInapController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+   /**
+     * @ClassName
      */
     public function index()
     {
-        //
+        $tripInap = new TripInap();
+        return response([
+            'data' => $tripInap->get(),
+            'attributes' => [
+                'totalRows' => $tripInap->totalRows,
+                'totalPages' => $tripInap->totalPages
+            ]
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreTripInapRequest  $request
-     * @return \Illuminate\Http\Response
+   /**
+     * @ClassName
      */
     public function store(StoreTripInapRequest $request)
     {
-        //
+        DB::beginTransaction();
+        try {
+            $data = [
+                "absensi_id" =>$request->absensi_id,
+                "tglabsensi" =>$request->tglabsensi,
+                "trado_id" =>$request->trado_id,
+                "trado" =>$request->trado,
+                "suratpengantar_nobukti" =>$request->suratpengantar_nobukti,
+                "jammasukinap" =>$request->jammasukinap,
+                "jamkeluarinap" =>$request->jamkeluarinap,
+            ];
+
+            $tripInap = (new TripInap())->processStore($data);
+            $tripInap->position = $this->getPosition($tripInap, $tripInap->getTable())->position;
+            if ($request->limit==0) {
+                $tripInap->page = ceil($tripInap->position / (10));
+            } else {
+                $tripInap->page = ceil($tripInap->position / ($request->limit ?? 10));
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil disimpan',
+                'data' => $tripInap
+            ], 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\TripInap  $tripInap
-     * @return \Illuminate\Http\Response
+     * @ClassName
      */
-    public function show(TripInap $tripInap)
+    public function show(TripInap $tripinap)
     {
-        //
+        return response([
+            'data' => (new TripInap())->findAll($tripinap),
+        ]);
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\TripInap  $tripInap
-     * @return \Illuminate\Http\Response
+     * @ClassName
      */
-    public function edit(TripInap $tripInap)
+    public function update(UpdateTripInapRequest $request, TripInap $tripinap)
     {
-        //
+        DB::beginTransaction();
+        try {
+            $data = [
+                "absensi_id" =>$request->absensi_id,
+                "tglabsensi" =>$request->tglabsensi,
+                "trado_id" =>$request->trado_id,
+                "trado" =>$request->trado,
+                "suratpengantar_nobukti" =>$request->suratpengantar_nobukti,
+                "jammasukinap" =>$request->jammasukinap,
+                "jamkeluarinap" =>$request->jamkeluarinap,
+            ];
+            $tripInap = (new TripInap())->processUpdate($tripinap,$data);
+            $tripInap->position = $this->getPosition($tripInap, $tripInap->getTable())->position;
+            if ($request->limit==0) {
+                $tripInap->page = ceil($tripInap->position / (10));
+            } else {
+                $tripInap->page = ceil($tripInap->position / ($request->limit ?? 10));
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil disimpan',
+                'data' => $tripInap
+            ], 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateTripInapRequest  $request
-     * @param  \App\Models\TripInap  $tripInap
-     * @return \Illuminate\Http\Response
+     * @ClassName
      */
-    public function update(UpdateTripInapRequest $request, TripInap $tripInap)
+    public function destroy(Request $request,TripInap $tripinap)
     {
-        //
+        DB::beginTransaction();
+
+        try {
+            $tripInap = (new TripInap())->processDestroy($tripinap->id, 'DELETE Trip Inap');
+            $selected = $this->getPosition($tripInap, $tripInap->getTable(), true);
+            $tripInap->position = $selected->position;
+            $tripInap->id = $selected->id;
+            if ($request->limit == 0) {
+                $tripInap->page = ceil($tripInap->position / (10));
+            } else {
+                $tripInap->page = ceil($tripInap->position / ($request->limit ?? 10));
+            }
+            $tripInap->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $tripInap->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Berhasil dihapus',
+                'data' => $tripInap
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
     }
 
+
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\TripInap  $tripInap
-     * @return \Illuminate\Http\Response
+     * @ClassName
      */
-    public function destroy(TripInap $tripInap)
+    public function approval(TripInap $id)
     {
-        //
+        DB::beginTransaction();
+        try {
+            $tripInap =$id;
+            $tripInap = (new TripInap())->processApprove($tripInap);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 }

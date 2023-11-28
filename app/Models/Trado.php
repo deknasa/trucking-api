@@ -161,6 +161,7 @@ class Trado extends MyModel
     {
         $this->setRequestParameters();
 
+        $absensiId = request()->absensiId ?? '';
         $aktif = request()->aktif ?? '';
         $trado_id = request()->trado_id ?? '';
         $cabang = request()->cabang ?? 'TAS';
@@ -252,6 +253,11 @@ class Trado extends MyModel
                 ->first();
 
             $query->where('trado.statusaktif', '=', $statusaktif->id);
+        }
+
+        if ($absensiId != '') {
+            $query->join('absensisupirdetail', 'trado.id', '=', 'absensisupirdetail.trado_id')
+            ->where('absensisupirdetail.absensi_id', '=', $absensiId);
         }
 
         $this->filter($query);

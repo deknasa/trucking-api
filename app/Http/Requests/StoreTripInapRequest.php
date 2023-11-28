@@ -13,7 +13,7 @@ class StoreTripInapRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,25 @@ class StoreTripInapRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            "absensi_id" => ["required"],
+            "tglabsensi" => ["required"],
+            "trado_id" => ["required"],
+            "trado" => ["required"],
+            "suratpengantar_nobukti" => ["required"],
+            "jammasukinap" => ["required"],
+            "jamkeluarinap" => ["required"],
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            "absensi_id" => "tgl absensi",
+            "tglabsensi" => "tgl absensi",
+            "trado_id" => "trado_id",
+            "suratpengantar_nobukti" => "surat pengantar no bukti",
+            "jammasukinap" => "jam masuk",
+            "jamkeluarinap" => "jam keluar",
         ];
     }
 }

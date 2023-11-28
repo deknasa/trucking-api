@@ -183,7 +183,9 @@ class SuratPengantar extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-
+        $tglabsensi = request()->tglabsensi ?? '';
+        $trado_id = request()->trado_id ?? '';
+        
         $tempsuratpengantar = '##tempsuratpengantar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsuratpengantar, function ($table) {
             $table->integer('id')->nullable();
@@ -717,6 +719,12 @@ class SuratPengantar extends MyModel
         // }
         if (request()->jenisorder_id != null) {
             $query->where('suratpengantar.jenisorder_id', request()->jenisorder_id);
+        }
+        if ($tglabsensi != '') {
+            $query->where('suratpengantar.tglbukti', date('Y-m-d', strtotime($tglabsensi)));
+        }
+        if ($trado_id != '') {
+            $query->where('suratpengantar.trado_id', $trado_id);
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
