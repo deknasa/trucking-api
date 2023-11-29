@@ -283,7 +283,7 @@ use App\Http\Controllers\Api\SuratPengantarApprovalInputTripController;
 use App\Http\Controllers\Api\ApprovalBukaTanggalSuratPengantarController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
-
+use App\Http\Controllers\Api\LaporanMingguanSupirBedaMandorController;
 
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
@@ -1744,6 +1744,9 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     
     Route::get('exportric/export', [ExportRicController::class, 'export'])->name('exportric.export');
     Route::resource('exportric', ExportRicController::class);
+
+    Route::get('laporanmingguansupirbedamandor/export', [LaporanMingguanSupirBedaMandorController::class, 'export'])->name('laporanmingguansupirbedamandor.export');
+    Route::resource('laporanmingguansupirbedamandor', LaporanMingguanSupirBedaMandorController::class);
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);
 

@@ -12,11 +12,10 @@ use App\Http\Requests\UpdateReminderEmailRequest;
 
 class ReminderEmailController extends Controller
 {
-    protected ReminderEmailService $service;
+    protected $service;    
     function __construct(ReminderEmailService $service) {
         $this->service = $service;
     }
-
     
     /**
      * @ClassName 
