@@ -56,7 +56,7 @@ class UpdateKategoriRequest extends FormRequest
         $rules = [
             'kodekategori' => ['required',Rule::unique('kategori')->whereNotIn('id', [$this->id])],
             'subkelompok' => 'required',
-            'kategori' => 'required',
+            // 'kategori' => 'required',
             'statusaktif' => ['required', Rule::in($status)]
         ];
 

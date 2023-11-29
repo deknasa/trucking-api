@@ -56,7 +56,7 @@ class StoreKategoriRequest extends FormRequest
         $rules = [
             'kodekategori' => ['required', 'unique:kategori'],
             'subkelompok' => 'required',
-            'kategori' => 'required',
+            // 'kategori' => 'required',
             'statusaktif' => ['required', Rule::in($status)]
         ];
 
