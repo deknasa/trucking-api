@@ -193,6 +193,8 @@ class LaporanMingguanSupirBedaMandor extends Model
             $table->string('nobukti', 50)->nullable();
             $table->double('omsettambahan', 15, 2)->nullable();
             $table->double('liter', 15, 2)->nullable();
+            $table->integer('mandorsupir_id')->nullable();
+            $table->integer('mandortrado_id')->nullable();
         });
 
         $querytemptrip = DB::table("suratpengantar")->from(
@@ -202,6 +204,8 @@ class LaporanMingguanSupirBedaMandor extends Model
                 'a.nobukti',
                 db::raw("sum(e.nominaltagih) as omsettambahan"),
                 db::raw("max(d.liter) as liter"),
+                db::raw("max(a.mandorsupir_id) as mandorsupir_id"),
+                db::raw("max(a.mandortrado_id) as mandortrado_id"),
             )
             ->join(DB::raw("upahsupir as b with(readuncommitted) "), 'a.upah_id', 'b.id')
             ->join(DB::raw("upahsupirrincian as d with(readuncommitted) "), function ($join) {
@@ -217,6 +221,8 @@ class LaporanMingguanSupirBedaMandor extends Model
             'nobukti',
             'omsettambahan',
             'liter',
+            'mandorsupir_id',
+            'mandortrado_id',
         ], $querytemptrip);
 
         // uang lain
@@ -621,8 +627,8 @@ class LaporanMingguanSupirBedaMandor extends Model
                 DB::raw("'' as panjar"),
                 DB::raw("'' as mandor"),
                 DB::raw("'' as supirex"),
-                DB::raw("'FIZI' as mandorsupir"),
-                DB::raw("'EHSAN' as mandortrado"),
+                DB::raw("isnull(i.namamandor,'') as mandorsupir"),
+                DB::raw("isnull(j.namamandor,'') as mandortrado"),
                 DB::raw("isnull(e.liter,0) as liter"),
                 db::raw($formatric . " as formatric")
             )
@@ -633,6 +639,10 @@ class LaporanMingguanSupirBedaMandor extends Model
             ->leftjoin(DB::raw($tempuanglain . " as f "), 'a.nobukti', 'f.nobukti')
             ->leftjoin(DB::raw($tempbuktikomisi . " as g "), 'a.nobukti', 'g.nobukti')
             ->leftjoin(DB::raw($temprekapketeranganlain . " as h "), 'a.nobukti', 'h.nobukti')
+            ->leftjoin(DB::raw("mandor as i with (readuncommitted) "), 'e.mandorsupir_id', 'i.id')
+            ->leftjoin(DB::raw("mandor as j with (readuncommitted) "), 'e.mandortrado_id', 'j.id')
+            ->whereraw("isnull(e.mandorsupir_id,0)<>isnull(e.mandortrado_id,0)")
+            
             ->orderBy('a.nopol')
             ->orderBy('a.tglbukti')
             ->orderBy('a.namasupir')
