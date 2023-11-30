@@ -41,7 +41,7 @@ class UpdateStokRequest extends FormRequest
         $kelompokBan = Kelompok::where("kodekelompok","BAN")->first();
 
         return [
-            "namastok"=>'required',
+            "namastok"=>['required', Rule::unique('stok')->whereNotIn('id', [$this->id])],
             "kelompok"=>'required',
             "subkelompok"=>'required',
             "kategori"=>'required',
