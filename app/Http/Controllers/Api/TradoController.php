@@ -136,7 +136,7 @@ class TradoController extends Controller
             $trado = (new Trado())->processStore($data);
             $selected = $this->getPosition($trado, $trado->getTable());
             $trado->position = $selected->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $trado->page = ceil($trado->position / (10));
             } else {
                 $trado->page = ceil($trado->position / ($request->limit ?? 10));
@@ -201,7 +201,7 @@ class TradoController extends Controller
 
             $trado = (new Trado())->processUpdate($trado, $data);
             $trado->position = $this->getPosition($trado, $trado->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $trado->page = ceil($trado->position / (10));
             } else {
                 $trado->page = ceil($trado->position / ($request->limit ?? 10));
@@ -240,7 +240,7 @@ class TradoController extends Controller
             $selected = $this->getPosition($trado, $trado->getTable(), true);
             $trado->position = $selected->position;
             $trado->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $trado->page = ceil($trado->position / (10));
             } else {
                 $trado->page = ceil($trado->position / ($request->limit ?? 10));
@@ -380,7 +380,7 @@ class TradoController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan
@@ -609,6 +609,90 @@ class TradoController extends Controller
             // }
 
             $this->toExcel($judulLaporan, $trados, $columns);
+        }
+    }
+
+    /**
+     * @ClassName
+     * 
+     */
+    public function approvalmesin(Request $request)
+    {
+        DB::beginTransaction();
+        // dd($request->all());
+        try {
+            $trado = (new Trado())->processApprovalMesin($request->all());
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $trado
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName
+     * 
+     */
+    public function approvalpersneling(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $trado = (new Trado())->processApprovalPersneling($request->all());
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $trado
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName
+     * 
+     */
+    public function approvalgardan(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $trado = (new Trado())->processApprovalGardan($request->all());
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $trado
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName
+     * 
+     */
+    public function approvalsaringanhawa(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $trado = (new Trado())->processApprovalSaringanHawa($request->all());
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $trado
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
         }
     }
 }

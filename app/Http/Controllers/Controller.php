@@ -376,6 +376,7 @@ class Controller extends BaseController
         $ipArray = [
 			env('LOCAL_IP_LIST_1'),
 			env('LOCAL_IP_LIST_2'),
+			env('LOCAL_IP_LIST_3'),
 		];
         return in_array($ipRequest, $ipArray);
     }

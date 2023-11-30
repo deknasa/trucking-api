@@ -78,6 +78,7 @@ class ReminderOli extends MyModel
             Schema::create($tempgorupby, function ($table) {
                 $table->id();
                 $table->longText('nopol')->nullable();
+                $table->integer('trado_id')->nullable();
                 $table->date('tanggal')->nullable();
                 $table->string('status', 100)->nullable();
                 $table->double('km', 15, 2)->nullable();
@@ -87,6 +88,7 @@ class ReminderOli extends MyModel
 
             DB::table($tempgorupby)->insertUsing([
                 'nopol',
+                'trado_id',
                 'tanggal',
                 'status',
                 'km',
@@ -493,7 +495,7 @@ class ReminderOli extends MyModel
         $Temptradotransakdi = '##Temptradotransakdi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($Temptradotransakdi, function ($table) {
             $table->integer('trado_id');
-            $table->double('jarak', 15, 2);
+            $table->double('jarak', 15, 2)->nullable();
             $table->date('tgl');
             $table->string('statusreminder', 100);
         });
@@ -633,6 +635,7 @@ class ReminderOli extends MyModel
         $Tempsaldoreminderolirekap = '##Tempsaldoreminderolirekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($Tempsaldoreminderolirekap, function ($table) {
             $table->string('nopol', 1000)->nullable();
+            $table->integer('trado_id')->nullable();
             $table->date('tanggal')->nullable();
             $table->string('status', 1000)->nullable();
             $table->double('km', 15, 2)->nullable();
@@ -644,6 +647,7 @@ class ReminderOli extends MyModel
         $query = DB::table($Tempsaldoreminderoli)->from(DB::raw($Tempsaldoreminderoli . " a "))
             ->select(
                 'a.nopol',
+                'a.trado_id',
                 db::raw("isnull(c.tgl,'2023/9/30') as tanggal"),
                 'a.statusreminder as status',
                 DB::raw("(case 
@@ -741,6 +745,7 @@ class ReminderOli extends MyModel
 
         DB::table($Tempsaldoreminderolirekap)->insertUsing([
             'nopol',
+            'trado_id',
             'tanggal',
             'status',
             'km',
@@ -752,6 +757,7 @@ class ReminderOli extends MyModel
         $query = db::table($Tempsaldoreminderolirekap)->from(db::raw($Tempsaldoreminderolirekap . " a"))
             ->select(
                 'a.nopol',
+                'a.trado_id',
                 'a.tanggal',
                 'a.status',
                 'a.km',

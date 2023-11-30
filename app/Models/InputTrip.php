@@ -168,7 +168,8 @@ class InputTrip extends MyModel
             'inputtripmandor' => '1',
             'nominal' => '',
             'tglbataseditsuratpengantar' => $tglBatasEdit,
-            'approvalbukatanggal_id' => $approvalId
+            'approvalbukatanggal_id' => $approvalId,
+            'nobukti_tripasal' => $data['nobukti_tripasal']
         ];
         $suratPengantar = (new SuratPengantar())->processStore($dataSP);
 
@@ -260,6 +261,7 @@ class InputTrip extends MyModel
         Schema::create($temtabel, function (Blueprint $table) {
             $table->id();
             $table->longText('nopol')->nullable();
+            $table->integer('trado_id')->nullable();
             $table->date('tanggal')->nullable();
             $table->string('status', 100)->nullable();
             $table->double('km', 15, 2)->nullable();
@@ -269,6 +271,7 @@ class InputTrip extends MyModel
 
         DB::table($temtabel)->insertUsing([
             'nopol',
+            'trado_id',
             'tanggal',
             'status',
             'km',

@@ -68,6 +68,7 @@ class InputTripController extends Controller
                 'jenisritasi_id' => $request->jenisritasi_id,
                 'ritasidari_id' => $request->ritasidari_id,
                 'ritasike_id' => $request->ritasike_id,
+                'nobukti_tripasal' => $request->nobukti_tripasal ?? '',
             ];
             $inputTrip = (new InputTrip())->processStore($data);
             $inputTrip->position = $this->getPosition($inputTrip, $inputTrip->getTable())->position;

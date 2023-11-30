@@ -27,6 +27,10 @@ use App\Rules\ExistStatusContainer;
 use App\Rules\ExistSupir;
 use App\Rules\ExistTarifRincianSuratPengantar;
 use App\Rules\ExistTrado;
+use App\Rules\VAlidasiReminderOli;
+use App\Rules\VAlidasiReminderOliPersneling;
+use App\Rules\VAlidasiReminderOliGardan;
+use App\Rules\VAlidasiReminderSaringanHawa;
 use App\Rules\ExistUpahSupirRincianSuratPengantar;
 use App\Rules\JenisRitasiInputTrip;
 use App\Rules\ValidasiExistOmsetTarif;
@@ -35,6 +39,8 @@ use App\Rules\ValidasiKotaZonaTrip;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Schema;
+use App\Models\ReminderOli;
 
 class StoreMandorTripRequest extends FormRequest
 {
@@ -63,6 +69,7 @@ class StoreMandorTripRequest extends FormRequest
             $statusUpahZona[] = $item['id'];
         }
 
+        $getGudangSama = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GUDANG SAMA')->where('text', 'GUDANG SAMA')->first();
         $getBukanUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'NON UPAH ZONA')->first();
         $getUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
         $getListTampilan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'UBAH TAMPILAN')->where('text', 'INPUTTRIP')->first();
@@ -220,10 +227,174 @@ class StoreMandorTripRequest extends FormRequest
             ];
         }
 
+        // 
+        $tempreminderoli = '##tempreminderoli' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempreminderoli, function ($table) {
+            $table->id();
+            $table->longText('nopol')->nullable();
+            $table->integer('trado_id')->nullable();
+            $table->date('tanggal')->nullable();
+            $table->string('status', 100)->nullable();
+            $table->double('km', 15, 2)->nullable();
+            $table->double('kmperjalanan', 15, 2)->nullable();
+            $table->integer('statusbatas')->nullable();
+        });
+
+        DB::table($tempreminderoli)->insertUsing([
+            'nopol',
+            'trado_id',
+            'tanggal',
+            'status',
+            'km',
+            'kmperjalanan',
+            'statusbatas',
+        ], (new ReminderOli())->getdata());
+
+        $trado_id = request()->trado_id ?? 0;
+        DB::delete(DB::raw("delete " . $tempreminderoli . " where trado_id not in(" . $trado_id . ")"));
+
+        // olimesin
+        $statusbatas = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.grp', 'STATUS PERGANTIAN')
+            ->where('a.subgrp', 'STATUS PERGANTIAN')
+            ->where('a.text', 'SUDAH MELEWATI BATAS')
+            ->first()->id ?? 0;
+
+        $statusapproval = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.grp', 'STATUS APPROVAL')
+            ->where('a.subgrp', 'STATUS APPROVAL')
+            ->where('a.text', 'APPROVAL')
+            ->first()->id ?? 0;
+
+
+
+// pergantian oli mesin
+            $query = db::table($tempreminderoli)->from(db::raw($tempreminderoli . " a"))
+            ->select(
+                'a.statusbatas'
+            )
+            ->where('a.status', 'Penggantian Oli Mesin')
+            ->where('a.statusbatas', $statusbatas)
+            ->first();
+
+            if (isset($query)) {
+                $trado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))
+                ->where('id', request()->trado_id)
+                ->where('statusapprovalreminderolimesin', $statusapproval)
+                ->whereraw("tglbatasreminderolimesin>=getdate()")
+                ->first();
+                if (!isset($trado))  {
+                    $validasireminderolimesin=true;
+                    $keteranganvalidasireminderolimesin="OLI MESIN SUDAH MELEWATI BATAS YANG DITENTUKAN";
+                }  else {
+                    $validasireminderolimesin=false;
+                    $keteranganvalidasireminderolimesin="";
+                }
+
+            }  else {
+                $validasireminderolimesin=false;
+                $keteranganvalidasireminderolimesin="";
+            }
+
+            // pergantian oli persneling
+            $query = db::table($tempreminderoli)->from(db::raw($tempreminderoli . " a"))
+            ->select(
+                'a.statusbatas'
+            )
+            ->where('a.status', 'Penggantian Oli Persneling')
+            ->where('a.statusbatas', $statusbatas)
+            ->first();
+
+            if (isset($query)) {
+                $trado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))
+                ->where('id', request()->trado_id)
+                ->where('statusapprovalreminderolipersneling', $statusapproval)
+                ->whereraw("tglbatasreminderolipersneling>=getdate()")
+                ->first();
+                if (!isset($trado))  {
+                    $validasireminderolipersneling=true;
+                    $keteranganvalidasireminderolipersneling="OLI PERSNELING SUDAH MELEWATI BATAS YANG DITENTUKAN";
+                }  else {
+                    $validasireminderolipersneling=false;
+                    $keteranganvalidasireminderolipersneling="";
+                }
+
+            }  else {
+                $validasireminderolipersneling=false;
+                $keteranganvalidasireminderolipersneling="";
+            }
+
+        // pergantian oli GARDAN
+        $query = db::table($tempreminderoli)->from(db::raw($tempreminderoli . " a"))
+        ->select(
+            'a.statusbatas'
+        )
+        ->where('a.status', 'Penggantian Oli Gardan')
+        ->where('a.statusbatas', $statusbatas)
+        ->first();
+
+        if (isset($query)) {
+            $trado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))
+            ->where('id', request()->trado_id)
+            ->where('statusapprovalreminderoligardan', $statusapproval)
+            ->whereraw("tglbatasreminderoligardan>=getdate()")
+            ->first();
+            if (!isset($trado))  {
+                $validasireminderoligardan=true;
+                $keteranganvalidasireminderoligardan="OLI GARDAN SUDAH MELEWATI BATAS YANG DITENTUKAN";
+            }  else {
+                $validasireminderoligardan=false;
+                $keteranganvalidasireminderoligardan="";
+            }
+
+        }  else {
+            $validasireminderoligardan=false;
+            $keteranganvalidasireminderoligardan="";
+        }        
+        
+   // pergantian SARINGAN HAWA
+   $query = db::table($tempreminderoli)->from(db::raw($tempreminderoli . " a"))
+   ->select(
+       'a.statusbatas'
+   )
+   ->where('a.status', 'Penggantian Saringan Hawa')
+   ->where('a.statusbatas', $statusbatas)
+   ->first();
+
+   if (isset($query)) {
+       $trado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))
+       ->where('id', request()->trado_id)
+       ->where('statusapprovalremindersaringanhawa', $statusapproval)
+       ->whereraw("tglbatasremindersaringanhawa>=getdate()")
+       ->first();
+       if (!isset($trado))  {
+           $validasiremindersaringanhawa=true;
+           $keteranganvalidasiremindersaringanhawa="SARINGAN HAWA SUDAH MELEWATI BATAS YANG DITENTUKAN";
+       }  else {
+           $validasiremindersaringanhawa=false;
+           $keteranganvalidasiremindersaringanhawa="";
+       }
+
+   }  else {
+       $validasiremindersaringanhawa=false;
+       $keteranganvalidasiremindersaringanhawa="";
+   }             
+
+        // 
         $rulesTrado_id = [];
         if ($this->trado != '') {
             $rulesTrado_id = [
-                'trado_id' => ['required', 'numeric', 'min:1', new ExistTrado()],
+                'trado_id' => ['required', 'numeric', 'min:1', new ExistTrado(),new ValidasiReminderOli($validasireminderolimesin,$keteranganvalidasireminderolimesin)
+                ,new ValidasiReminderOliPersneling($validasireminderolipersneling,$keteranganvalidasireminderolipersneling)
+                ,new ValidasiReminderOliGardan($validasireminderoligardan,$keteranganvalidasireminderoligardan)
+                ,new ValidasiReminderSaringanHawa($validasiremindersaringanhawa,$keteranganvalidasiremindersaringanhawa)
+            ],
                 'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()],
                 'absensidetail_id' => ['required', 'numeric', 'min:1', new ExistAbsensiSupirDetail()],
             ];
@@ -243,7 +414,7 @@ class StoreMandorTripRequest extends FormRequest
                         'required', 'date_format:d-m-Y',
                         new DateApprovalQuota()
                     ],
-
+                    "nobukti_tripasal" => 'required_if:statusgudangsama,=,' . $getGudangSama->id,
                     "agen" => "required",
                     "container" => "required",
                     "dari" => ["required"],
@@ -277,7 +448,7 @@ class StoreMandorTripRequest extends FormRequest
                         'required', 'date_format:d-m-Y',
                         new DateApprovalQuota()
                     ],
-
+                    "nobukti_tripasal" => 'required_if:statusgudangsama,=,' . $getGudangSama->id,
                     "agen" => "required",
                     "container" => "required",
                     "dari" => ["required"],
@@ -318,7 +489,7 @@ class StoreMandorTripRequest extends FormRequest
                         'required', 'date_format:d-m-Y',
                         new DateApprovalQuota()
                     ],
-
+                    "nobukti_tripasal" => 'required_if:statusgudangsama,=,' . $getGudangSama->id,
                     "agen" => "required",
                     "tarifrincian" => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiExistOmsetTarif(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
                     "container" => "required",
@@ -353,7 +524,7 @@ class StoreMandorTripRequest extends FormRequest
                         'required', 'date_format:d-m-Y',
                         new DateApprovalQuota()
                     ],
-
+                    "nobukti_tripasal" => 'required_if:statusgudangsama,=,' . $getGudangSama->id,
                     "agen" => "required",
                     "tarifrincian" => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiExistOmsetTarif(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
                     "container" => "required",
@@ -436,6 +607,7 @@ class StoreMandorTripRequest extends FormRequest
             "statuslangsir" => "status langsir",
             "trado_id" => "trado",
             "trado" => "trado",
+            "nobukti_tripasal" => 'trip asal',
             'jenisritasi.*' => "jenis ritasi",
             'ritasidari.*' => 'ritasi dari',
             'ritasike.*' => 'ritasi ke',
@@ -449,6 +621,7 @@ class StoreMandorTripRequest extends FormRequest
         return [
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
             'tarifrincian.required_if' => 'TARIF ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            'nobukti_tripasal.required_if' => 'TRIP ASAL ' . app(ErrorController::class)->geterror('WI')->keterangan,
 
         ];
     }

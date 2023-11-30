@@ -284,7 +284,7 @@ use App\Http\Controllers\Api\SuratPengantarApprovalInputTripController;
 use App\Http\Controllers\Api\ApprovalBukaTanggalSuratPengantarController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
-
+use App\Http\Controllers\Api\LaporanMingguanSupirBedaMandorController;
 
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
@@ -600,6 +600,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('blacklistsupir', BlackListSupirController::class)->whereNumber('blacklistsupir');
 
     Route::get('tradosupirmilikmandor/default', [TradoSupirMilikMandorController::class, 'default']);
+
     Route::resource('tradosupirmilikmandor', TradoSupirMilikMandorController::class)->whereNumber('tradosupirmilikmandor');
 
     Route::get('suratpengantarapprovalinputtrip/default', [SuratPengantarApprovalInputTripController::class, 'default']);
@@ -668,6 +669,11 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('trado/{id}/cekValidasi', [TradoController::class, 'cekValidasi'])->name('trado.cekValidasi')->whereNumber('id');
     Route::get('trado/export', [TradoController::class, 'export']);
     Route::get('trado/report', [TradoController::class, 'report']);
+    Route::post('trado/approvalmesin', [TradoController::class, 'approvalmesin']);
+    Route::post('trado/approvalpersneling', [TradoController::class, 'approvalpersneling']);
+    Route::post('trado/approvalgardan', [TradoController::class, 'approvalgardan']);
+    Route::post('trado/approvalsaringanhawa', [TradoController::class, 'approvalsaringanhawa']);
+
 
     Route::get('absentrado/field_length', [AbsenTradoController::class, 'fieldLength']);
     Route::get('absentrado/rekapabsentrado', [AbsenTradoController::class, 'rekapabsentrado']);
@@ -1284,6 +1290,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pengeluarandetail/getPengeluaran', [PengeluaranDetailController::class, 'getPengeluaran']);
     Route::resource('pengeluarandetail', PengeluaranDetailController::class)->whereNumber('pengeluarandetail');
 
+    Route::post('penerimaangiroheader/editingat', [PenerimaanGiroHeaderController::class, 'editingat']);
     Route::post('penerimaangiroheader/addrow', [PenerimaanGiroDetailController::class, 'addrow']);
     Route::post('penerimaangiroheader/{id}/approval', [PenerimaanGiroHeaderController::class, 'approval'])->name('penerimaangiroheader.approval')->whereNumber('id');
     Route::post('penerimaangiroheader/{id}/cekvalidasi', [PenerimaanGiroHeaderController::class, 'cekvalidasi'])->name('penerimaangiroheader.cekvalidasi')->whereNumber('id');
@@ -1741,6 +1748,9 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     
     Route::get('exportric/export', [ExportRicController::class, 'export'])->name('exportric.export');
     Route::resource('exportric', ExportRicController::class);
+
+    Route::get('laporanmingguansupirbedamandor/export', [LaporanMingguanSupirBedaMandorController::class, 'export'])->name('laporanmingguansupirbedamandor.export');
+    Route::resource('laporanmingguansupirbedamandor', LaporanMingguanSupirBedaMandorController::class);
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);
 
