@@ -41,7 +41,7 @@ class StoreStokRequest extends FormRequest
 
 
         return [
-            "namastok"=>'required',
+            "namastok" => ['required','unique:stok,namastok'],
             "kelompok"=>'required',
             "subkelompok"=>'required',
             "kategori"=>'required',

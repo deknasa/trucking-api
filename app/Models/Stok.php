@@ -91,12 +91,13 @@ class Stok extends MyModel
 
         $aktif = request()->aktif ?? '$spb->text == $penerimaanstok_id';
         $statusreuse = request()->statusreuse ?? '';
+        $dari = request()->dari ?? '';
         $kelompok = request()->kelompok_id ?? '';
         $penerimaanstok_id = request()->penerimaanstok_id ?? '';
         $pengeluaranstok_id = request()->pengeluaranstok_id ?? '';
         $penerimaanstokheader_nobukti = request()->penerimaanstokheader_nobukti ?? '';
         $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
-        $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
+        $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
         $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
 
         $tempumuraki = '##tempumuraki' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -347,6 +348,10 @@ class Stok extends MyModel
 
 
             $query->where('stok.statusreuse', '=', $statusaktif->id);
+        }
+
+        if (($dari != 'index') &&($po->text != $penerimaanstok_id)) {
+            $query->whereNotNull('stok.namaterpusat');
         }
 
         if ($kelompok != '') {

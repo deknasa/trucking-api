@@ -164,6 +164,7 @@ use App\Http\Controllers\Api\LaporanHutangGiroController;
 use App\Http\Controllers\Api\LaporanJurnalUmumController;
 use App\Http\Controllers\Api\LaporanKasGantungController;
 use App\Http\Controllers\Api\MainTypeAkuntansiController;
+use App\Http\Controllers\Api\PengajuanTripInapController;
 use App\Http\Controllers\Api\PengeluaranDetailController;
 use App\Http\Controllers\Api\PengeluaranHeaderController;
 use App\Http\Controllers\Api\ReminderSpkDetailController;
@@ -1741,6 +1742,9 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     
     Route::post('tripinap/{id}/approval', [TripInapController::class, 'approval'])->name('tripinap.approval')->whereNumber('tripinap');
     Route::resource('tripinap', TripInapController::class)->whereNumber('tripinap');
+    
+    Route::post('pengajuantripinap/{id}/approval', [PengajuanTripInapController::class, 'approval'])->name('pengajuantripinap.approval')->whereNumber('pengajuantripinap');
+    Route::resource('pengajuantripinap', PengajuanTripInapController::class)->whereNumber('pengajuantripinap');
     
     Route::get('exportric/export', [ExportRicController::class, 'export'])->name('exportric.export');
     Route::resource('exportric', ExportRicController::class);

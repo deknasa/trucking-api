@@ -13,7 +13,7 @@ class StorePengajuanTripInapRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,19 @@ class StorePengajuanTripInapRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            "absensi_id" => ["required"],
+            "tglabsensi" => ["required"],
+            "trado_id" => ["required"],
+            "trado" => ["required"],
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            "absensi_id" => "tgl absensi",
+            "tglabsensi" => "tgl absensi",
+            "trado_id" => "trado_id",
         ];
     }
 }
