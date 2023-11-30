@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\PengajuanTripInap;
+use Illuminate\Http\Request;
 
+use App\Models\PengajuanTripInap;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePengajuanTripInapRequest;

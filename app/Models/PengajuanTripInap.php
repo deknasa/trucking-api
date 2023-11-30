@@ -284,6 +284,26 @@ class PengajuanTripInap extends MyModel
         return $tripInap;
     }
 
+    public function processDestroy($id, $postingDari = ''): PengajuanTripInap
+    {
+
+        $pengajuanTripInap = new PengajuanTripInap();
+        $pengajuanTripInap = $pengajuanTripInap->lockAndDestroy($id);
+
+        $tripInapLogTrail = (new LogTrail())->processStore([
+            'namatabel' => $pengajuanTripInap->getTable(),
+            'postingdari' => $postingDari,
+            'idtrans' => $pengajuanTripInap->id,
+            'nobuktitrans' => $pengajuanTripInap->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $pengajuanTripInap->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $pengajuanTripInap;
+    }
+
+
     public function processApprove(PengajuanTripInap $tripInap)
     {
 
