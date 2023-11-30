@@ -256,10 +256,11 @@ class Supir extends MyModel
                 'statuspostingtnl.memo as statuspostingtnl',
                 DB::raw('(case when (year(supir.tglberhentisupir) <= 2000) then null else supir.tglberhentisupir end ) as tglberhentisupir'),
                 db::raw("cast((format(pemutihansupir.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpemutihansupir"),
-                db::raw("cast(cast(format((cast((format(pemutihansupir.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpemutihansupir"),  
+                db::raw("cast(cast(format((cast((format(pemutihansupir.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpemutihansupir"),
                 'supir.modifiedby',
                 'supir.created_at',
                 'supir.updated_at',
+                DB::raw("isnull(b.namamandor,'') as mandor_id"),
                 DB::raw("'Laporan Supir' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
@@ -273,7 +274,8 @@ class Supir extends MyModel
             ->leftJoin(DB::raw("parameter as statusblacklist with (readuncommitted)"), 'supir.statusblacklist', '=', 'statusblacklist.id')
             ->leftJoin(DB::raw("parameter as statuspostingtnl with (readuncommitted)"), 'supir.statuspostingtnl', '=', 'statuspostingtnl.id')
             ->leftJoin(DB::raw("pemutihansupirheader as pemutihansupir with (readuncommitted)"), 'supir.pemutihansupir_nobukti', '=', 'pemutihansupir.nobukti')
-            ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id');
+            ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id')
+            ->leftJoin(DB::raw("mandor as b with (readuncommitted)"), 'supir.mandor_id', '=', 'b.id');
 
 
 
@@ -653,6 +655,8 @@ class Supir extends MyModel
     {
         if ($this->params['sortIndex'] == 'supirold_id') {
             return $query->orderBy('supirlama.namasupir', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'mandor_id') {
+            return $query->orderBy('b.namamandor', $this->params['sortOrder']);
         } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
@@ -681,6 +685,8 @@ class Supir extends MyModel
                             $query = $query->where('zona.zona', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'supirold_id') {
                             $query = $query->where('supirlama.namasupir', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'mandor_id') {
+                            $query = $query->where('b.namamandor', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tgllahir' || $filters['field'] == 'tglterbitsim' || $filters['field'] == 'tglexpsim' || $filters['field'] == 'tglberhentisupir') {
@@ -711,6 +717,8 @@ class Supir extends MyModel
                                 $query = $query->orWhere('statuspostingtnl.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'zona_id') {
                                 $query = $query->orWhere('zona.zona', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'mandor_id') {
+                                $query = $query->orwhere('b.namamandor', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'supirold_id') {
                                 $query = $query->orWhere('supirlama.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tgllahir' || $filters['field'] == 'tglterbitsim' || $filters['field'] == 'tglexpsim' || $filters['field'] == 'tglberhentisupir') {
@@ -992,7 +1000,7 @@ class Supir extends MyModel
                 'modifiedby' => $supir->modifiedby
             ]);
 
-            
+
             return $supir;
         } catch (\Throwable $th) {
             $this->deleteFiles($supir);
