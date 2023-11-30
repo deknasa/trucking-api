@@ -34,8 +34,7 @@ class ForgotPasswordController extends Controller
                 'iat' => microtime(true),
                 'exp' => microtime(true) + ($expirationInMinutes * 60)
             ];
-
-
+            // 60 itu detik, jadi 30*60detik = 1800. karna microtime = microdetik
             $token = JWT::encode($payload, config('app.jwt_key'), config('app.jwt_alg'));
 
 
