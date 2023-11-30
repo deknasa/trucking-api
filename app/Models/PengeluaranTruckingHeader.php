@@ -251,8 +251,8 @@ class PengeluaranTruckingHeader extends MyModel
                 $table->date('tgldariheaderpenerimaantrucking')->nullable();
                 $table->date('tglsampaiheaderpenerimaantrucking')->nullable();
                 $table->longText('statusposting')->nullable();
-                $table->integer('qty')->nullable();
-                $table->integer('harga')->nullable();
+                $table->double('qty')->nullable();
+                $table->double('harga')->nullable();
             });
             // get namasupir pjt
             $tempSupir = '##tempsupir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -961,8 +961,8 @@ class PengeluaranTruckingHeader extends MyModel
             $table->date('tgldariheaderpenerimaantrucking')->nullable();
             $table->date('tglsampaiheaderpenerimaantrucking')->nullable();
             $table->longText('statusposting')->nullable();
-            $table->integer('qty')->nullable();
-            $table->integer('harga')->nullable();
+            $table->double('qty')->nullable();
+            $table->double('harga')->nullable();
         });
         $tempSupir = '##tempsupir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempSupir, function ($table) {
@@ -1139,8 +1139,8 @@ class PengeluaranTruckingHeader extends MyModel
                 $table->date('tgldariheaderpenerimaantrucking')->nullable();
                 $table->date('tglsampaiheaderpenerimaantrucking')->nullable();
                 $table->longText('statusposting')->nullable();
-                $table->integer('qty')->nullable();
-                $table->integer('harga')->nullable();
+                $table->double('qty')->nullable();
+                $table->double('harga')->nullable();
                 $table->string('modifiedby', 200)->nullable();
                 $table->dateTime('created_at')->nullable();
                 $table->dateTime('updated_at')->nullable();
