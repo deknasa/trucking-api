@@ -1711,7 +1711,11 @@ class PenerimaanTruckingHeader extends MyModel
                 $coakredit_detail = $coakreditPostingNon;
                 $keterangan_detail = $keteranganPostingNon;
                 $getNamaSupir = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))->select('namasupir')->where('id', $data['supirheader_id'])->first();
-                $diterimaDari = $getNamaSupir->namasupir;
+                if($getNamaSupir != ''){
+                    $diterimaDari = $getNamaSupir->namasupir;
+                } else {
+                    $diterimaDari = 'PENGEMBALIAN PINJAMAN KOMISI SUPIR';
+                }
             }
 
             if ($fetchFormat->kodepenerimaan == 'PBT') {

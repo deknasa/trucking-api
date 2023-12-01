@@ -1339,50 +1339,57 @@ class PendapatanSupirHeader extends MyModel
                 $table->bigInteger('supir_id')->nullable();
                 $table->float('nominal')->nullable();
                 $table->longText('keterangan')->nullable();
+                $table->float('jlhpinjaman')->nullable();
+                $table->float('totalbayar')->nullable();
                 $table->float('sisa')->nullable();
             });
 
             $fetch = DB::table("penerimaantruckingdetail")->from(DB::raw("penerimaantruckingdetail as a with (readuncommitted)"))
-                ->select(DB::raw("a.id as penerimaantruckingheader_id, c.nobukti,c.tglbukti,a.supir_id, a.nominal, a.keterangan,
+                ->select(DB::raw("a.id as penerimaantruckingheader_id, c.nobukti,c.tglbukti,a.supir_id, a.nominal, a.keterangan,d.nominal AS jlhpinjaman, 
+                (SELECT isnull(SUM(penerimaantruckingdetail.nominal),0) FROM penerimaantruckingdetail
+                WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= d.nobukti) AS totalbayar,
             (select d.nominal - sum(isnull(penerimaantruckingdetail.nominal,0)) from penerimaantruckingdetail where d.nobukti=penerimaantruckingdetail.pengeluarantruckingheader_nobukti) as sisa"))
                 ->leftJoin(DB::raw("penerimaantruckingheader as b"), 'b.id', 'a.penerimaantruckingheader_id')
                 ->leftJoin(DB::raw("pengeluarantruckingheader as c"), 'c.nobukti', 'a.pengeluarantruckingheader_nobukti')
                 ->leftJoin(DB::raw("pengeluarantruckingdetail as d"), 'c.nobukti', 'd.nobukti')
                 ->where('b.penerimaantrucking_id', "2")
                 ->where('b.pendapatansupir_bukti', $nobukti);
-            DB::table($temp)->insertUsing(['penerimaantruckingheader_id', 'nobukti', 'tglbukti', 'supir_id', 'nominal', 'keterangan', 'sisa'], $fetch);
+            DB::table($temp)->insertUsing(['penerimaantruckingheader_id', 'nobukti', 'tglbukti', 'supir_id', 'nominal', 'keterangan', 'jlhpinjaman', 'totalbayar', 'sisa'], $fetch);
 
             $fetch2 = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail as a with (readuncommitted)"))
-                ->select(DB::raw("b.nobukti,b.tglbukti, a.supir_id,a.keterangan,a.nominal as sisa"))
+                ->select(DB::raw("b.nobukti,b.tglbukti, a.supir_id,a.keterangan,a.nominal AS jlhpinjaman, 
+
+                (SELECT isnull(SUM(penerimaantruckingdetail.nominal),0) FROM penerimaantruckingdetail
+                     WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= a.nobukti) AS totalbayar,
+                (SELECT (a.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= a.nobukti) AS sisa"))
                 ->leftJoin(DB::raw("pengeluarantruckingheader as b"), 'b.nobukti', 'a.nobukti')
                 ->where("b.pengeluarantrucking_id", 1);
             if ($supir_id != 0) {
                 $fetch2->whereRaw("a.supir_id = $supir_id");
             }
             $fetch2->where("b.tglbukti", "<=", $tglBukti)
-                    ->whereRaw("b.nobukti not in (select a.pengeluarantruckingheader_nobukti from penerimaantruckingdetail as a 
+                ->whereRaw("b.nobukti not in (select a.pengeluarantruckingheader_nobukti from penerimaantruckingdetail as a 
                         left join penerimaantruckingheader as b on b.id = a.penerimaantruckingheader_id
                         where b.pendapatansupir_bukti='$nobukti' and b.penerimaantrucking_id=2)");
-
-            DB::table($temp)->insertUsing(['nobukti', 'tglbukti', 'supir_id', 'keterangan', 'sisa'], $fetch2);
+            DB::table($temp)->insertUsing(['nobukti', 'tglbukti', 'supir_id', 'keterangan', 'jlhpinjaman', 'totalbayar', 'sisa'], $fetch2);
 
             $query = DB::table($temp)->from(DB::raw("$temp as a with (readuncommitted)"))
                 ->select(DB::raw("row_number() Over(Order By a.tglbukti asc,a.nobukti) as id, a.penerimaantruckingheader_id,a.tglbukti as pinj_tglbukti,a.nobukti as pinj_nobukti,a.keterangan as pinj_keterangan,a.supir_id as pinj_supirid, supir.namasupir as pinj_supir,
-            
+                a.jlhpinjaman,a.totalbayar,
             (case when a.sisa IS NULL then 0 else a.sisa end) as pinj_sisa,
             (case when a.nominal IS NULL then 0 else a.nominal end) as pinj_nominal"))
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), 'a.supir_id', "supir.id")
-                // ->where(function ($query) {
-                //     $query->whereRaw("a.sisa != 0")
-                //         ->orWhereRaw("a.sisa is null");
-                // })
+                ->where(function ($query) {
+                    $query->whereRaw("a.sisa != 0")
+                        ->orWhereRaw("a.sisa is null");
+                })
                 ->orderBy('a.tglbukti', 'asc')
                 ->orderBy('a.nobukti', 'asc');
         } else {
 
             $tempPribadi = $this->createTempPinjPribadi($supir_id);
             $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
-                ->select(DB::raw("row_number() Over(Order By pengeluarantruckingheader.tglbukti asc,pengeluarantruckingdetail.nobukti) as id,pengeluarantruckingheader.tglbukti as pinj_tglbukti,pengeluarantruckingdetail.nobukti as pinj_nobukti,pengeluarantruckingdetail.keterangan as pinj_keterangan,pengeluarantruckingdetail.supir_id as pinj_supirid, supir.namasupir as pinj_supir," . $tempPribadi . ".sisa as pinj_sisa"))
+                ->select(DB::raw("row_number() Over(Order By pengeluarantruckingheader.tglbukti asc,pengeluarantruckingdetail.nobukti) as id,pengeluarantruckingheader.tglbukti as pinj_tglbukti,pengeluarantruckingdetail.nobukti as pinj_nobukti,pengeluarantruckingdetail.keterangan as pinj_keterangan,pengeluarantruckingdetail.supir_id as pinj_supirid, supir.namasupir as pinj_supir," . $tempPribadi . ".sisa as pinj_sisa,$tempPribadi.jlhpinjaman,$tempPribadi.totalbayar"))
                 ->leftJoin(DB::raw("$tempPribadi with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', $tempPribadi . ".nobukti")
                 ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', "pengeluarantruckingheader.nobukti")
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingdetail.supir_id', "supir.id")
@@ -1407,17 +1414,21 @@ class PendapatanSupirHeader extends MyModel
             ->from(
                 DB::raw("pengeluarantruckingdetail with (readuncommitted)")
             )
-            ->select(DB::raw("pengeluarantruckingdetail.nobukti, (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa"))
+            ->select(DB::raw("pengeluarantruckingdetail.nobukti,SUM(pengeluarantruckingdetail.nominal) AS jlhpinjaman,
+            (SELECT isnull(SUM(penerimaantruckingdetail.nominal),0) FROM penerimaantruckingdetail
+            WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS totalbayar, (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa"))
             ->whereRaw("(pengeluarantruckingdetail.supir_id=" . $supir_id . " or " . $supir_id . "=0)")
             ->where("pengeluarantruckingdetail.nobukti",  'LIKE', "%PJT%")
             ->groupBy('pengeluarantruckingdetail.nobukti', 'pengeluarantruckingdetail.nominal');
 
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
+            $table->bigInteger('jlhpinjaman')->nullable();
+            $table->bigInteger('totalbayar')->nullable();
             $table->bigInteger('sisa')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['nobukti', 'sisa'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'jlhpinjaman', 'totalbayar', 'sisa'], $fetch);
 
 
         return $temp;

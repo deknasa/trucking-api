@@ -3,9 +3,11 @@
 namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
 use App\Models\TarifRincian;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ExistTarifRincianSuratPengantar implements Rule
 {
@@ -33,6 +35,29 @@ class ExistTarifRincianSuratPengantar implements Rule
         if($dataTarif == null){
             return false;
         }else{
+            $statusjenis = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'UPAH SUPIR')
+                ->where('subgrp', '=', 'TARIF JENIS ORDER')
+                ->first();
+            
+                if ($statusjenis->text == 'YA') {
+                    $jenisorder = 'tarif'.strtolower(request()->jenisorder).'_id';
+                    if($value != $dataTarif->tarif_id) {
+                        if($value != $dataTarif->$jenisorder){
+                            return false;
+                        }  
+                    } else{
+                        return true;
+                    }
+                }else{
+                    if($value != $dataTarif->tarif_id) {
+                        return false;
+                    }else{
+                        return true;
+                    }
+                }
             return true;
         }
     }

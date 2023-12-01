@@ -83,7 +83,7 @@ class TarifRincian extends MyModel
                 'penyesuaian'
             );
 
-        DB::table($temptgl)->insertUsing(['tujuan','tglmulaiberlaku', 'penyesuaian'], $querytgl);
+        DB::table($temptgl)->insertUsing(['tujuan', 'tglmulaiberlaku', 'penyesuaian'], $querytgl);
 
 
         $query = DB::table($tempdata)
@@ -108,7 +108,7 @@ class TarifRincian extends MyModel
     public function updateharga($data)
     {
 
-      
+
         // dd($datadetail);
         foreach ($data as $item) {
 
@@ -181,9 +181,6 @@ class TarifRincian extends MyModel
         }
 
         return $data;
-     
-
-
     }
 
     public function listpivot($dari, $sampai)
@@ -274,7 +271,7 @@ class TarifRincian extends MyModel
         ";
 
         $data = DB::select(DB::raw($statement));
-        
+
         return $data;
     }
 
@@ -315,7 +312,7 @@ class TarifRincian extends MyModel
 
         $this->filter($query);
 
-        if (($aktif == 'AKTIF')&&(request()->filters == null)) {
+        if (($aktif == 'AKTIF') && (request()->filters == null)) {
             $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
             )
@@ -333,7 +330,7 @@ class TarifRincian extends MyModel
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         $this->paginate($query);
-        
+
         $data = $query->get();
 
 
@@ -379,24 +376,34 @@ class TarifRincian extends MyModel
 
 
         return $data;
-    } 
+    }
     public function getValidasiTarif($container_id, $id)
     {
-        $statusaktif = Parameter::from(
+
+        $statusjenis = Parameter::from(
             DB::raw("parameter with (readuncommitted)")
         )
-            ->where('grp', '=', 'STATUS AKTIF')
-            ->where('text', '=', 'AKTIF')
+            ->where('grp', '=', 'UPAH SUPIR')
+            ->where('subgrp', '=', 'TARIF JENIS ORDER')
             ->first();
+        if ($statusjenis->text == 'YA') {
+            $jenisorder = strtolower(request()->jenisorder);
+            $query = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
+                ->select(
+                    'tarif_id',
+                    'tarif' . $jenisorder . '_id'
+                )
+                ->where("id", $id);
+            $data = $query->first();
+        } else {
 
-        $query = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
-            ->select(
-                'tarif_id',
-            )
-            ->where("id", $id);
-            
-        $data = $query->first();
-
+            $query = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
+                ->select(
+                    'tarif_id',
+                )
+                ->where("id", $id);
+            $data = $query->first();
+        }
 
         return $data;
     }
@@ -409,7 +416,7 @@ class TarifRincian extends MyModel
             )
             ->where("tarif_id", $id)
             ->where('container_id', $container_id);
-            
+
         $data = $query->first();
 
 
@@ -463,7 +470,7 @@ class TarifRincian extends MyModel
                         } elseif ($filters['field'] == 'tglmulaiberlaku') {
                             $query = $query->WhereRaw("format(tarif.tglmulaiberlaku,'dd-MM-yyyy') like '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where('tarifrincian.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -477,7 +484,7 @@ class TarifRincian extends MyModel
                             if ($filters['field'] == 'statusaktif') {
                                 $query = $query->orWhere('parameter.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } elseif ($filters['field'] == 'container_id') {
                                 $query = $query->orWhere('container.keterangan', 'LIKE', "%$filters[data]%");
                             } elseif ($filters['field'] == 'kota_id') {
@@ -581,11 +588,11 @@ class TarifRincian extends MyModel
         $tarifRincian->nominal = $data['nominal'];
         $tarifRincian->modifiedby = auth('api')->user()->user;
         $tarifRincian->info = html_entity_decode(request()->info);
-        
+
         if (!$tarifRincian->save()) {
             throw new \Exception("Error storing tarif rincian.");
         }
-        
+
         return $tarifRincian;
     }
 
