@@ -15,6 +15,7 @@ class CreateStokpusatTable extends Migration
     {
         Schema::create('stokpusat', function (Blueprint $table) {
             $table->id();
+            $table->Integer('idpusatold')->nullable();
             $table->string('namastok',200)->nullable();
             $table->unsignedBigInteger('kelompok_id')->nullable();
             $table->longText('gambar')->nullable();
