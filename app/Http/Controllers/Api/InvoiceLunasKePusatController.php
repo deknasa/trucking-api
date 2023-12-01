@@ -20,6 +20,7 @@ class InvoiceLunasKePusatController extends Controller
      */
     public function index()
     {
+        
         $invoicelunaskepusat = new InvoiceLunasKePusat();
         return response([
             'data' => $invoicelunaskepusat->get(),
@@ -77,13 +78,13 @@ class InvoiceLunasKePusatController extends Controller
   /**
      * @ClassName
      */
-    public function show(invoicelunaskepusat $invoicelunaskepusat)
+    public function show($id)
     {
         $invoicelunaskepusat = new InvoiceLunasKePusat();
-  
+            $dataInvoice = $invoicelunaskepusat->getinvoicelunas($id);
         return response([
             'status' => true,
-            'data' => $invoicelunaskepusat
+            'data' => $dataInvoice
         ]);
     }
 
@@ -159,5 +160,69 @@ class InvoiceLunasKePusatController extends Controller
 
             throw $th;
         }
+    }
+
+    public function cekValidasi(Request $request,$invoiceheader_id)
+    {
+
+        return response([
+            'errors' => false
+        ]);
+        // $now = date('Y-m-d', strtotime($request->tanggal));
+        // $getinvoice = AbsensiSupirHeader::from(DB::raw("absensisupirheader with (readuncommitted)"))->where('tglbukti', $now)->first();
+
+        // if ($getAbsen != null) {
+        //     $cekAbsen = AbsensiSupirDetail::from(DB::raw("absensisupirdetail with (readuncommitted)"))->where('nobukti', $getAbsen->nobukti)->where('trado_id', $tradoId)->first();
+        //     if ($cekAbsen != null) {
+
+        //         return response([
+        //             'errors' => false
+        //         ]);
+        //     } else {
+        //         $getError = Error::from(DB::raw("error with (readuncommitted)"))
+        //             ->select('keterangan')
+        //             ->where('kodeerror', '=', 'TAB')
+        //             ->first();
+
+        //         return response([
+        //             'errors' => true,
+        //             'message' => $getError->keterangan
+        //         ]);
+        //     }
+        // }
+        // $getError = Error::from(DB::raw("error with (readuncommitted)"))
+        //             ->select('keterangan')
+        //             ->where('kodeerror', '=', 'TAB')
+        //             ->first();
+
+        //         return response([
+        //             'errors' => true,
+        //             'message' => $getError->keterangan
+        //         ]);
+    }
+    
+    public function cekValidasiAdd(Request $request,$invoiceheader_id)
+    {
+
+        // $now = date("Y-m-d");
+        $getinvoice = db::table("invoicelunaskepusat")->from(DB::raw("invoicelunaskepusat with (readuncommitted)"))->where('invoiceheader_id', $invoiceheader_id)->first();
+        
+        if ($getinvoice != null) {
+                $getError = Error::from(DB::raw("error with (readuncommitted)"))
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SPI')
+                ->first();
+
+                return response([
+                    'errors' => true,
+                    'message' => 'INVOICE LUNAS KE PUSAT '.$getError->keterangan
+                ]);
+            } else {
+                return response([
+                    'errors' => false,
+                ]);
+            }
+        
+        
     }
 }
