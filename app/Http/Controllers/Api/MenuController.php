@@ -291,6 +291,7 @@ class MenuController extends Controller
 
         $data = $query->get();
 
+        // dd($data);?
         return response([
             'data' => $data
         ]);
@@ -370,6 +371,7 @@ class MenuController extends Controller
                 }
             }
         }
+        
         return $data ?? '';
     }
 
@@ -487,18 +489,18 @@ class MenuController extends Controller
             ->whereRaw("class not in('NON CONTROLLER')")
             ->orderby('id', 'asc')
             ->get();
-
+     
                 // dd($dataquery );
         $datadetail = json_decode($dataquery, true);
         foreach ($datadetail as $item) {
         
             $cls=$this->listFolderFiles($item['class']);
             if ($cls=='') {
-                // dump($item['id']);
+                // dump($item['class']);
                 DB::table($temprekap)->where('id', $item['id'])->delete();
             }
         }
-
+        // dd('test');
         // ->get();
         // dd($data);
 
