@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DestroyPendapatanSupirHeaderRequest;
 use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\getPinjamanPendapatanSupirRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePendapatanSupirDetailRequest;
 use App\Models\PendapatanSupirHeader;
@@ -451,11 +452,11 @@ class PendapatanSupirHeaderController extends Controller
             'data' => $pendapatanSupir->getDataDeposito(),
         ]);
     }
-    public function getPinjaman(Request $request)
+    public function getPinjaman($supir_id)
     {
         $pendapatanSupir = new PendapatanSupirHeader();
         return response([
-            'data' => $pendapatanSupir->getPinjaman(),
+            'data' => $pendapatanSupir->getPinjaman($supir_id),
         ]);
     }
 }

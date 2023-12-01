@@ -1232,6 +1232,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('suratpengantar/titipanemkl', [SuratPengantarController::class, 'approvalTitipanEmkl']);
     Route::get('suratpengantar/{id}/getOrderanTrucking', [SuratPengantarController::class, 'getOrderanTrucking'])->whereNumber('id');
     Route::get('suratpengantar/getGaji/{dari}/{sampai}/{container}/{statuscontainer}', [SuratPengantarController::class, 'getGaji']);
+    Route::get('suratpengantarbiayatambahan/approval', [SuratPengantarBiayaTambahanController::class, 'approval']);
+    Route::post('suratpengantar/deleterow', [SuratPengantarBiayaTambahanController::class, 'deleteRow']);
     Route::resource('suratpengantarbiayatambahan', SuratPengantarBiayaTambahanController::class)->whereNumber('suratpengantarbiayatambahan');
 
     Route::get('penerimaanheader/{id}/printreport', [PenerimaanHeaderController::class, 'printReport'])->whereNumber('id');
@@ -1352,7 +1354,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('pendapatansupirheader/{id}/cekValidasiAksi', [PendapatanSupirHeaderController::class, 'cekValidasiAksi'])->name('pendapatansupirheader.cekValidasiAksi')->whereNumber('id');
     Route::post('pendapatansupirheader/approval', [PendapatanSupirHeaderController::class, 'approval']);
     Route::get('pendapatansupirheader/getDataDeposito', [PendapatanSupirHeaderController::class, 'getDataDeposito']);
-    Route::get('pendapatansupirheader/getPinjaman', [PendapatanSupirHeaderController::class, 'getPinjaman']);
+    Route::get('pendapatansupirheader/{supirId}/getPinjaman', [PendapatanSupirHeaderController::class, 'getPinjaman']);
     Route::get('pendapatansupirheader/gettrip', [PendapatanSupirHeaderController::class, 'gettrip']);
     Route::get('pendapatansupirheader/default', [PendapatanSupirHeaderController::class, 'default']);
     Route::resource('pendapatansupirheader', PendapatanSupirHeaderController::class)->parameters(['pendapatansupirheader' => 'pendapatanSupirHeader'])->whereNumber('pendapatanSupirHeader');
