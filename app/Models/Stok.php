@@ -470,8 +470,107 @@ class Stok extends MyModel
             unset($row['tglcetak']);
             unset($row['usercetak']);
             unset($row['statusreuse']);
+            unset($row['penerimaanstokdetail_keterangan']);
+            unset($row['penerimaanstokdetail_qty']);
+            unset($row['penerimaanstokdetail_harga']);
+            unset($row['penerimaanstokdetail_total']);
             DB::table($temtabel)->insert($row);
         }
+
+        return $temtabel;
+    }
+
+    public function showTNLForKlaim($id)
+    {
+        $server = config('app.url_tnl');
+        $getToken = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+        ])
+            ->post($server . 'token', [
+                'user' => 'ADMIN',
+                'password' => config('app.password_tnl'),
+                'ipclient' => '',
+                'ipserver' => '',
+                'latitude' => '',
+                'longitude' => '',
+                'browser' => '',
+                'os' => '',
+            ]);
+            // dd(json_decode($getToken, TRUE)['access_token']);
+        $access_token = json_decode($getToken, TRUE)['access_token'];
+
+        $getStok = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $access_token,
+            'Content-Type' => 'application/json',
+        ])
+        ->get($server . "stok/".$id);
+
+
+        $data = $getStok->json()['data'];
+
+        $proses = request()->proses ?? 'reload';
+        $user = auth('api')->user()->name;
+        $class = 'StokTruckingController';
+
+        $temtabel = 'tempstoktnlshow' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+
+        $querydata = DB::table('listtemporarytabel')->from(
+            DB::raw("listtemporarytabel a with (readuncommitted)")
+        )
+            ->select(
+                'id',
+                'class',
+                'namatabel',
+            )
+            ->where('class', '=', $class)
+            ->where('modifiedby', '=', $user)
+            ->first();
+
+        if (isset($querydata)) {
+            Schema::dropIfExists($querydata->namatabel);
+            DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+        }
+        DB::table('listtemporarytabel')->insert(
+            [
+                'class' => $class,
+                'namatabel' => $temtabel,
+                'modifiedby' => $user,
+                'created_at' => date('Y/m/d H:i:s'),
+                'updated_at' => date('Y/m/d H:i:s'),
+            ]
+        );
+        Schema::create($temtabel, function (Blueprint $table) {
+            $table->integer('id')->nullable();
+            $table->string('namastok', 300)->nullable();
+            $table->string('statusaktif', 300)->nullable();
+            $table->double('qtymin', 15, 2)->nullable();
+            $table->double('qtymax', 15, 2)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->longText('gambar')->nullable();
+            $table->string('namaterpusat', 300)->nullable();
+            $table->string('modifiedby', 300)->nullable();
+            $table->integer('jenistrado_id')->nullable();
+            $table->integer('kelompok_id')->nullable();
+            $table->double('totalvulkanisir', 15, 2)->nullable();
+            $table->integer('statusreuse')->nullable();
+            $table->integer('subkelompok_id')->nullable();
+            $table->integer('satuan_id')->nullable();
+            $table->integer('kategori_id')->nullable();
+            $table->integer('merk_id')->nullable();
+            $table->integer('statusban')->nullable();
+            $table->string('jenistrado', 300)->nullable();
+            $table->string('kelompok', 300)->nullable();
+            $table->string('subkelompok', 300)->nullable();
+            $table->string('satuan', 300)->nullable();
+            $table->string('kategori', 300)->nullable();
+            $table->string('merk', 300)->nullable();
+    
+        });
+
+            DB::table($temtabel)->insert($data);
+
 
         return $temtabel;
     }

@@ -30,10 +30,23 @@ class PengeluaranTruckingDetail extends MyModel
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
 
+        $getPengeluaranId = DB::table("pengeluarantruckingheader")->from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
+        ->where('id', request()->pengeluarantruckingheader_id)->first();
+        $pengeluaranId = $getPengeluaranId->pengeluarantrucking_id;
+        $tableStok = 'stok';
+
+        //klaim
+        if ($pengeluaranId == 7) {
+            $stokKlaim = $query->select($this->table . '.stok_id')
+            ->where($this->table . '.pengeluarantruckingheader_id', '=',  request()->pengeluarantruckingheader_id)->first();
+            if ($getPengeluaranId->statuscabang == 516) {
+                $tableStok = (new Stok())->showTNLForKlaim($stokKlaim->stok_id);
+            }
+        }
+
+
         if (isset(request()->forReport) && request()->forReport) {
-            $getPengeluaranId = DB::table("pengeluarantruckingheader")->from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
-                ->where('id', request()->pengeluarantruckingheader_id)->first();
-            $pengeluaranId = $getPengeluaranId->pengeluarantrucking_id;
+           
             if ($pengeluaranId == 9) {
                 $query->select(
                     $this->table . '.suratpengantar_nobukti',
@@ -74,7 +87,7 @@ class PengeluaranTruckingDetail extends MyModel
                     ->leftJoin(DB::raw("parameter with (readuncommitted)"), $this->table . '.statustitipanemkl', 'parameter.id');
             } else {
                 $query->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id')
-                    ->leftJoin(DB::raw("stok with (readuncommitted)"), $this->table . '.stok_id', 'stok.id')
+                    ->leftJoin(DB::raw("$tableStok as stok with (readuncommitted)"), $this->table . '.stok_id', 'stok.id')
                     ->leftJoin(DB::raw("karyawan with (readuncommitted)"), $this->table . '.karyawan_id', 'karyawan.id');
             }
             $query->where($this->table . '.pengeluarantruckingheader_id', '=', request()->pengeluarantruckingheader_id);
@@ -121,7 +134,7 @@ class PengeluaranTruckingDetail extends MyModel
                 ->leftJoin(DB::raw("karyawan with (readuncommitted)"), $this->table . '.karyawan_id', 'karyawan.id')
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id')
                 ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'pengeluarantruckingdetail.orderantrucking_nobukti', 'ot.nobukti')
-                ->leftJoin(DB::raw("stok with (readuncommitted)"), 'pengeluarantruckingdetail.stok_id', 'stok.id')
+                ->leftJoin(DB::raw("$tableStok as stok with (readuncommitted)"), 'pengeluarantruckingdetail.stok_id', 'stok.id')
                 ->leftJoin(DB::raw("parameter as statustitipanemkl with (readuncommitted)"), 'pengeluarantruckingdetail.statustitipanemkl', 'statustitipanemkl.id')
 
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id');
