@@ -180,6 +180,7 @@ use App\Http\Controllers\Api\LaporanPiutangGiroController;
 use App\Http\Controllers\Api\LaporanRitasiTradoController;
 use App\Http\Controllers\Api\LaporanTitipanEmklController;
 use App\Http\Controllers\Api\MandorAbsensiSupirController;
+use App\Http\Controllers\Api\InvoiceLunasKePusatController;
 use App\Http\Controllers\Api\PenerimaanTruckingController;
 use App\Http\Controllers\Api\ProsesAbsensiSupirController;
 use App\Http\Controllers\Api\SaldoAwalBukuBesarController;
@@ -373,6 +374,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('chargegandengan', ChargeGandenganController::class)->whereNumber('chargegandengan');
     Route::resource('prosesabsensisupir', ProsesAbsensiSupirController::class)->whereNumber('prosesabsensisupirs');
     Route::resource('mandorabsensisupir', MandorAbsensiSupirController::class)->whereNumber('mandorabsensisupir');
+    Route::resource('invoicelunaskepusat', InvoiceLunasKePusatController::class)->whereNumber('invoicelunaskepusat');
     Route::get('historytrip', [HistoryTripController::class, 'index']);
     Route::get('listtrip', [ListTripController::class, 'index']);
     Route::resource('mekanik', MekanikController::class)->whereNumber('mekanik');
@@ -535,6 +537,10 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('mandorabsensisupir/{tradoId}/getabsentrado', [MandorAbsensiSupirController::class, 'getabsentrado'])->whereNumber('tradoId');
     Route::patch('mandorabsensisupir/{id}/update', [MandorAbsensiSupirController::class, 'update'])->whereNumber('id');
     Route::delete('mandorabsensisupir/{id}/delete', [MandorAbsensiSupirController::class, 'destroy'])->whereNumber('id');
+
+    Route::patch('invoicelunaskepusat/{id}/update', [InvoiceLunasKePusatController::class, 'update'])->whereNumber('id');
+    Route::delete('invoicelunaskepusat/{id}/delete', [InvoiceLunasKePusatController::class, 'destroy'])->whereNumber('id');
+
 
     Route::post('inputtrip', [InputTripController::class, 'store']);
     Route::get('inputtrip/getinfo', [InputTripController::class, 'getInfoTrado']);
