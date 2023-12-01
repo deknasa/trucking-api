@@ -134,12 +134,12 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
                 'penerimaantrucking' => ['required', Rule::in($penerimaanName)],
                 'bank' => [$ruleBank, $bank, 'required'],
                 'bank_id' => [Rule::in($bankIds), 'required', 'min:1', 'numeric'],
-                'supir' => ['required', $supir, new ValidasiDetail($jumlahdetail),
-                // new ValidasiPenerimaanTrucking()
-            ],
-                'supirheader_id' => [
-                    'required', $supirId, 'numeric', 'min:1'
-                ],
+                // 'supir' => ['required', $supir, new ValidasiDetail($jumlahdetail),
+                // // new ValidasiPenerimaanTrucking()
+                // ],
+                // 'supirheader_id' => [
+                //     'required', $supirId, 'numeric', 'min:1'
+                // ],
                 // 'keterangancoa' => 'required'
             ];
         } elseif ($kodepenerimaan == 'DPO') {
