@@ -14,7 +14,7 @@ class ReminderSpkDetailController extends Controller
     {
         $reminderSpk = new ReminderSpkDetail();
         return response([
-            'data' => [],
+            'data' => $reminderSpk->get(),
             'attributes' => [
                 'totalRows' => $reminderSpk->totalRows,
                 'totalPages' => $reminderSpk->totalPages
