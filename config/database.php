@@ -127,7 +127,7 @@ return [
             'driver' => 'sqlsrv',
             'url' => env('DATABASE_URL'),
             'host' => env('DB_HOST_LAMA', 'localhost,1433'),
-            'port' => env('DB_PORT_LAMA', '1450'),
+            'port' => env('DB_PORT_LAMA', '1433'),
             'database' => env('DB_DATABASE_LAMA', 'TVPTTransporindoAgungSejahteraJkt0001'),
             'username' => env('DB_USERNAME_LAMA', 'sa'),
             'password' => env('DB_PASSWORD_LAMA', 'ryanita1402'),

@@ -16,7 +16,7 @@ class ReminderServiceController extends Controller
     {
         $limit=8;
         $limit = ($limit) ? ($limit !== 0 ? $limit : 10) : 10;
-        dd($limit);
+        // dd($limit);
         $reminder = new ReminderService();
         return response([
             'data' => $reminder->get(),
