@@ -497,7 +497,6 @@ class Stok extends MyModel
                 'browser' => '',
                 'os' => '',
             ]);
-            // dd(json_decode($getToken, TRUE)['access_token']);
         $access_token = json_decode($getToken, TRUE)['access_token'];
 
         $getStok = Http::withHeaders([
@@ -507,14 +506,13 @@ class Stok extends MyModel
         ])
         ->get($server . "stok/".$id);
 
-
         $data = $getStok->json()['data'];
 
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
-        $class = 'StokTruckingController';
+        $class = 'StokTruckingControllerShow';
 
-        $temtabel = 'tempstoktnlshow' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+        $temtabel = 'tempstokshow' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
 
         $querydata = DB::table('listtemporarytabel')->from(
             DB::raw("listtemporarytabel a with (readuncommitted)")
@@ -537,8 +535,8 @@ class Stok extends MyModel
                 'class' => $class,
                 'namatabel' => $temtabel,
                 'modifiedby' => $user,
-                'created_at' => date('Y/m/d H:i:s'),
-                'updated_at' => date('Y/m/d H:i:s'),
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
             ]
         );
         Schema::create($temtabel, function (Blueprint $table) {
