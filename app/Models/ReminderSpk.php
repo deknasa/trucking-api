@@ -12,7 +12,7 @@ class ReminderSpk extends MyModel
 {
     use HasFactory;
 
-    public function get()
+    public function get($getdetail)
     {
 
         $this->setRequestParameters();
@@ -369,17 +369,23 @@ class ReminderSpk extends MyModel
                 'a.total',
             );
 
-        $this->totalRows = $query->count();
 
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-        $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($getdetail == 0) {
+            $this->totalRows = $query->count();
 
-        // dd($query->toSql());
-        $this->filter($query);
-        // dd($query->get());
-        $this->paginate($query);
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+            $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
 
-        $data = $query->get();
+            // dd($query->toSql());
+            $this->filter($query);
+            // dd($query->get());
+            $this->paginate($query);
+
+            $data = $query->get();
+        } else {
+            $data = $query;
+        }
+
 
 
         // } else {

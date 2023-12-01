@@ -1710,6 +1710,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('statusolitrado', StatusOliTradoController::class)->whereNumber('statusolitrado');
     Route::resource('reminderspk', ReminderSpkController::class)->whereNumber('reminderspk');
     Route::resource('reminderspkdetail', ReminderSpkDetailController::class)->whereNumber('reminderspkdetail');
+    Route::get('reminderspkdetail/export', [ReminderSpkDetailController::class,'export']);
+
     Route::resource('spkharian', SpkHarianController::class)->whereNumber('spkharian');
     Route::resource('spkhariandetail', SpkHarianDetailController::class)->whereNumber('spkhariandetail');
     Route::resource('statusgandengantruck', StatusGandenganTruckController::class)->whereNumber('statusgandengantruck');
