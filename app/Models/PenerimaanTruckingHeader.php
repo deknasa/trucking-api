@@ -1262,7 +1262,7 @@ class PenerimaanTruckingHeader extends MyModel
                 'modifiedby' => $penerimaanTruckingHeader->modifiedby,
             ]);
             $nobuktipengeluarantrucking = $data['pengeluarantruckingheader_nobukti'][$i] ?? '';
-            $penerimaanDetails[] = $penerimaanTruckingDetail->toArray();
+            $penerimaanTruckingDetails[] = $penerimaanTruckingDetail->toArray();
             if ($fetchFormat->kodepenerimaan == 'PJP') {
                 $queryposting = db::table('pengeluarantruckingheader')->from(db::raw("pengeluarantruckingheader a with (readuncommitted)"))
                     ->select('statusposting', 'coa')->where('nobukti', $nobuktipengeluarantrucking)->first();
@@ -1646,7 +1646,7 @@ class PenerimaanTruckingHeader extends MyModel
                     'modifiedby' => $penerimaanTruckingHeader->modifiedby,
                 ]);
                 $nobuktipengeluarantrucking = $data['pengeluarantruckingheader_nobukti'][$i] ?? '';
-                $penerimaanDetails[] = $penerimaanTruckingDetail->toArray();
+                $penerimaanTruckingDetails[] = $penerimaanTruckingDetail->toArray();
                 if ($fetchFormat->kodepenerimaan == 'PJP') {
                     $queryposting = db::table('pengeluarantruckingheader')->from(db::raw("pengeluarantruckingheader a with (readuncommitted)"))
                         ->select('statusposting', 'coa')->where('nobukti', $nobuktipengeluarantrucking)->first();
