@@ -12,13 +12,9 @@ class ReminderSpkDetail extends MyModel
 {
     use HasFactory;
 
-    public function get()
+    public function get($getdetail,$stok_id,$trado_id,$gandengan_id,$gudang,$stok)
     {
-        $stok_id = request()->stok_id ?? 0;
-        $trado_id = request()->trado_id ?? 0;
-        $gandengan_id = request()->gandengan_id ?? 0;
-        $gudang = request()->gudang ?? '';
-        $stok = request()->stok ?? '';
+
 
         $saldo = Parameter::where('grp', 'SALDO')->where('subgrp', 'SALDO')->first();
 
@@ -99,9 +95,94 @@ class ReminderSpkDetail extends MyModel
         ], $querykeluar);
 
 
-     
 
-        $query = db::table($tempdata)->from(db::raw($tempdata ." a "))
+
+        $query = db::table($tempdata)->from(db::raw($tempdata . " a "))
+            ->select(
+                'a.nobukti',
+                'a.tglbukti',
+                'a.gudang',
+                'a.namastok',
+                'a.qty',
+                'a.hargasatuan',
+                'a.total',
+            )
+            ->orderby('a.tglbukti', 'desc');
+
+
+
+        if ($getdetail == 0) {
+            $data = $query->get();
+        } else {
+            $data = $query;
+        }
+        return $data;
+    }
+
+    public function getdetail()
+    {
+        $tempdata = '##tempdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdata, function ($table) {
+            $table->id();
+            $table->string('gudang', 1000)->nullable();
+            $table->integer('trado_id')->nullable();
+            $table->integer('gandengan_id')->nullable();
+            $table->integer('stok_id')->nullable();
+            $table->string('stok', 1000)->nullable();
+            $table->double('qty', 15, 2)->nullable();
+            $table->double('total', 15, 2)->nullable();
+        });
+
+        DB::table($tempdata)->insertUsing([
+            'gudang',
+            'trado_id',
+            'gandengan_id',
+            'stok_id',
+            'stok',
+            'qty',
+            'total',
+        ], (new ReminderSpk())->get(1) );
+
+        $queryloop = DB::table($tempdata)->from(db::raw($tempdata . " a "))
+        ->select(
+            'a.gudang',
+            'a.trado_id',
+            'a.gandengan_id',
+            'a.stok_id',
+            'a.stok',
+            'a.qty',
+            'a.total',
+            )
+        ->orderby('a.id', 'asc')
+        ->get();
+
+        $tempdatadetail = '##tempdatadetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdatadetail, function ($table) {
+            $table->id();
+            $table->string('nobukti', 1000)->nullable();
+            $table->dateTime('tglbukti')->nullable();
+            $table->string('gudang', 1000)->nullable();
+            $table->string('namastok', 500)->nullable();
+            $table->double('qty', 15, 2)->nullable();
+            $table->double('hargasatuan', 15, 2)->nullable();
+            $table->double('total', 15, 2)->nullable();
+        });
+
+        $queryloop = json_encode($queryloop, JSON_INVALID_UTF8_SUBSTITUTE);
+        $query = json_decode($queryloop, true);
+        foreach ($query as $item) {
+            DB::table($tempdatadetail)->insertUsing([
+                'nobukti',
+                'tglbukti',
+                'gudang',
+                'namastok',
+                'qty',
+                'hargasatuan',
+                'total',
+            ], $this->get(1,$item['stok_id'],$item['trado_id'],$item['gandengan_id'],$item['gudang'],$item['stok']) );
+        }
+
+        $query=db::table($tempdatadetail)->from(db::raw($tempdatadetail . " a"))
         ->select(
             'a.nobukti',
             'a.tglbukti',
@@ -111,12 +192,10 @@ class ReminderSpkDetail extends MyModel
             'a.hargasatuan',
             'a.total',
         )
-        ->orderby('a.tglbukti', 'desc');
+        ->orderby('a.id','asc');
 
 
-
-
-        $data = $query->get();
+        $data=$query->get();
         return $data;
     }
 }
