@@ -54,6 +54,9 @@ class ReminderSpk extends MyModel
             Schema::create($temtabel, function (Blueprint $table) {
                 $table->id();
                 $table->longText('gudang')->nullable();
+                $table->integer('trado_id')->nullable();
+                $table->integer('gandengan_id')->nullable();
+                $table->integer('stok_id')->nullable();
                 $table->string('stok', 1000)->nullable();
                 $table->double('qty', 15, 2)->nullable();
                 $table->double('total', 15, 2)->nullable();
@@ -273,8 +276,11 @@ class ReminderSpk extends MyModel
             Schema::create($tempdataheader, function ($table) {
                 $table->integer('id')->nullable();
                 $table->string('trado', 1000)->nullable();
+                $table->integer('trado_id')->nullable();
                 $table->string('gandengan', 1000)->nullable();
+                $table->integer('gandengan_id')->nullable();
                 $table->string('stok', 1000)->nullable();
+                $table->integer('stok_id')->nullable();
                 $table->double('qty', 15, 2)->nullable();
                 $table->double('total', 15, 2)->nullable();
             });
@@ -283,8 +289,11 @@ class ReminderSpk extends MyModel
                 ->select(
                     DB::raw("row_number() Over(Order By D.kodetrado) as id"),
                     db::raw("isnull(D.kodetrado,'') as trado"),
+                    db::raw("max(isnull(D.id,0)) as trado_id"),
                     db::raw("isnull(e.kodegandengan,'') as gandengan"),
+                    db::raw("max(isnull(e.id,0)) as gandengan_id"),
                     db::raw("isnull(c.namastok,'') as stok"),
+                    db::raw("max(isnull(c.id,0)) as stok_id"),
                     db::raw("sum(a.qty) as qty"),
                     db::raw("sum(a.total) as total")
                 )
@@ -299,8 +308,11 @@ class ReminderSpk extends MyModel
             DB::table($tempdataheader)->insertUsing([
                 'id',
                 'trado',
+                'trado_id',
+                'gandengan_id',
                 'gandengan',
                 'stok',
+                'stok_id',
                 'qty',
                 'total',
             ], $querydataheader);
@@ -310,7 +322,10 @@ class ReminderSpk extends MyModel
             $query = db::table($tempdataheader)->from(db::raw($tempdataheader . " a"))
                 ->select(
                     db::raw("(case when isnull(a.trado,'')='' then a.gandengan else a.trado end) as gudang"),
+                    'a.trado_id',
+                    'a.gandengan_id',
                     'a.stok',
+                    'a.stok_id',
                     'a.qty',
                     'a.total'
                 )
@@ -319,7 +334,10 @@ class ReminderSpk extends MyModel
 
             DB::table($temtabel)->insertUsing([
                 'gudang',
+                'trado_id',
+                'gandengan_id',
                 'stok',
+                'stok_id',
                 'qty',
                 'total',
             ], $query);
@@ -343,6 +361,9 @@ class ReminderSpk extends MyModel
         )
             ->select(
                 'a.gudang',
+                'a.trado_id',
+                'a.gandengan_id',
+                'a.stok_id',
                 'a.stok',
                 'a.qty',
                 'a.total',

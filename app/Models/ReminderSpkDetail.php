@@ -11,4 +11,11 @@ use Illuminate\Database\Schema\Blueprint;
 class ReminderSpkDetail extends MyModel
 {
     use HasFactory;
+
+    public function get($stok_id) {
+
+        
+    }
+    
+
 }
