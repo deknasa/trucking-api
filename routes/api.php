@@ -536,7 +536,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('mandorabsensisupir/{tradoId}/getabsentrado', [MandorAbsensiSupirController::class, 'getabsentrado'])->whereNumber('tradoId');
     Route::patch('mandorabsensisupir/{id}/update', [MandorAbsensiSupirController::class, 'update'])->whereNumber('id');
     Route::delete('mandorabsensisupir/{id}/delete', [MandorAbsensiSupirController::class, 'destroy'])->whereNumber('id');
-
+  
+    Route::get('invoicelunaskepusat/export', [InvoiceLunasKePusatController::class, 'export']);
     Route::get('invoicelunaskepusat/{invoiceheader_id}/cekvalidasiadd', [InvoiceLunasKePusatController::class, 'cekValidasiAdd'])->whereNumber('invoiceheader_id');
     Route::get('invoicelunaskepusat/{invoiceheader_id}/cekvalidasi', [InvoiceLunasKePusatController::class, 'cekValidasi'])->whereNumber('invoiceheader_id');
     Route::resource('invoicelunaskepusat', InvoiceLunasKePusatController::class)->whereNumber('invoicelunaskepusat');
