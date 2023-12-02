@@ -179,6 +179,7 @@ class InvoiceLunasKePusat extends MyModel
     {
         $query = db::table("invoiceheader")->from(db::raw("invoiceheader a with (readuncommitted)"))
         ->select(
+            'c.id',
             'a.id as invoiceheader_id',
             'a.nobukti',
             'a.tglbukti',
@@ -202,10 +203,10 @@ class InvoiceLunasKePusat extends MyModel
         $InvoiceLunaskePusat = new InvoiceLunasKePusat();
         $InvoiceLunaskePusat->invoiceheader_id = $data['invoiceheader_id'];
         $InvoiceLunaskePusat->nobukti = $data['nobukti'] ?? '';
-        $InvoiceLunaskePusat->tglbukti =$data['tglbukti'];
+        $InvoiceLunaskePusat->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $InvoiceLunaskePusat->agen_id =$data['agen_id'];
         $InvoiceLunaskePusat->nominal =$data['nominal'];
-        $InvoiceLunaskePusat->tglbayar =$data['tglbayar'];
+        $InvoiceLunaskePusat->tglbayar = date('Y-m-d', strtotime($data['tglbayar']));
         $InvoiceLunaskePusat->bayar =$data['bayar'];
         $InvoiceLunaskePusat->sisa =$data['sisa'];
         $InvoiceLunaskePusat->modifiedby = auth('api')->user()->name;
@@ -213,13 +214,13 @@ class InvoiceLunasKePusat extends MyModel
         // $request->sortname = $request->sortname ?? 'id';
         // $request->sortorder = $request->sortorder ?? 'asc';
 
-        if (!$jenisorder->save()) {
+        if (!$InvoiceLunaskePusat->save()) {
             throw new \Exception("Error Simpan Invoice Lunas ke Pusat");
         }
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($InvoiceLunaskePusat->getTable()),
-            'postingdari' => 'ENTRY Invoice Lunas ke Pusat',
+            'postingdari' => 'ENTRY INVOICE LUNAS KE PUSAT',
             'idtrans' => $InvoiceLunaskePusat->id,
             'nobuktitrans' => $InvoiceLunaskePusat->id,
             'aksi' => 'ENTRY',
@@ -234,22 +235,22 @@ class InvoiceLunasKePusat extends MyModel
 
         $InvoiceLunaskePusat->invoiceheader_id = $data['invoiceheader_id'];
         $InvoiceLunaskePusat->nobukti = $data['nobukti'] ?? '';
-        $InvoiceLunaskePusat->tglbukti =$data['tglbukti'];
+        $InvoiceLunaskePusat->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $InvoiceLunaskePusat->agen_id =$data['agen_id'];
         $InvoiceLunaskePusat->nominal =$data['nominal'];
-        $InvoiceLunaskePusat->tglbayar =$data['tglbayar'];
+        $InvoiceLunaskePusat->tglbayar = date('Y-m-d', strtotime($data['tglbayar']));
         $InvoiceLunaskePusat->bayar =$data['bayar'];
         $InvoiceLunaskePusat->sisa =$data['sisa'];
         $InvoiceLunaskePusat->modifiedby = auth('api')->user()->name;
         $InvoiceLunaskePusat->info = html_entity_decode(request()->info);
 
 
-        if (!$jenisorder->save()) {
+        if (!$InvoiceLunaskePusat->save()) {
             throw new \Exception("Error update Invoice Lunas ke Pusat.");
         }
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($InvoiceLunaskePusat->getTable()),
-            'postingdari' => 'EDIT Invoice Lunas ke Pusat',
+            'postingdari' => 'EDIT INVOICE LUNAS KE PUSAT',
             'idtrans' => $InvoiceLunaskePusat->id,
             'nobuktitrans' => $InvoiceLunaskePusat->id,
             'aksi' => 'EDIT',
@@ -257,15 +258,25 @@ class InvoiceLunasKePusat extends MyModel
             'modifiedby' => $InvoiceLunaskePusat->modifiedby
         ]);
 
-        return $jenisorder;
+        return $InvoiceLunaskePusat;
     }
 
 
     public function processDestroy($id)
     {
         // $AbsensiSupirHeader = AbsensiSupirHeader::where('id', $AbsensiSupirDetail->absensi_id)->first();
-        $InvoiceLunaskePusat = InvoiceLunasKePusat::where('id', $id)->lockForUpdate()->first();
-        $InvoiceLunaskePusat->delete();
+        $InvoiceLunaskePusat = new InvoiceLunasKePusat();
+        $InvoiceLunaskePusat = $InvoiceLunaskePusat->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($InvoiceLunaskePusat->getTable()),
+            'postingdari' => 'DELETE INVOICE LUNAS KE PUSAT',
+            'idtrans' => $InvoiceLunaskePusat->id,
+            'nobuktitrans' => $InvoiceLunaskePusat->id,
+            'aksi' => 'DELETE',
+            'datajson' => $InvoiceLunaskePusat->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
         return $InvoiceLunaskePusat;
     }
 
