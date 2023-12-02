@@ -13,7 +13,7 @@ class UpdateinvoicelunaskepusatRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,7 @@ class UpdateinvoicelunaskepusatRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'bayar' => 'required|gt:0|numeric',
         ];
     }
 }

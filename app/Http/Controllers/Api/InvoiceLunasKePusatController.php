@@ -31,15 +31,6 @@ class InvoiceLunasKePusatController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
      * @ClassName 
@@ -51,6 +42,7 @@ class InvoiceLunasKePusatController extends Controller
   
 
             $data = [
+                "invoiceheader_id" =>$request->invoiceheader_id,
                 "nobukti" =>$request->nobukti,
                 "tglbukti" =>$request->tglbukti,
                 "agen_id" =>$request->agen_id,
@@ -60,8 +52,9 @@ class InvoiceLunasKePusatController extends Controller
                 "sisa" => $request->sisa,
             ];
             $InvoiceLunasKePusat = (new InvoiceLunasKePusat())->processStore($data);
-            $InvoiceLunasKePusat->position = $this->getPositionInvoiceLunas($InvoiceLunasKePusat->id)->position;
-            $InvoiceLunasKePusat->page = ceil($InvoiceLunasKePusat->position / ($request->limit ?? 10));
+            $InvoiceLunasKePusat->position = $request->indexRow;
+            // $InvoiceLunasKePusat->position = $this->getPositionInvoiceLunas($InvoiceLunasKePusat->id)->position;
+            // $InvoiceLunasKePusat->page = ceil($InvoiceLunasKePusat->position / ($request->limit ?? 10));
 
             DB::commit();
             return response([
@@ -102,12 +95,12 @@ class InvoiceLunasKePusatController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateinvoicelunaskepusatRequest $request,  $id)
+    public function update(UpdateinvoicelunaskepusatRequest $request, InvoiceLunasKePusat $invoicelunaskepusat)
     {
         DB::beginTransaction();
         try {
-            $statusaktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
-            $data = [
+            $data = [ 
+                "invoiceheader_id" =>$request->invoiceheader_id,
                 "nobukti" =>$request->nobukti,
                 "tglbukti" =>$request->tglbukti,
                 "agen_id" =>$request->agen_id,
@@ -116,17 +109,17 @@ class InvoiceLunasKePusatController extends Controller
                 "bayar" => $request->bayar,
                 "sisa" => $request->sisa,
             ];
-            $InvoiceLunasKePusat = InvoiceLunasKePusat::findOrFail($id);
-            $InvoiceLunasKePusat = (new InvoiceLunasKePusat())->processUpdate($InvoiceLunasKePusat,$data);
-            $InvoiceLunasKePusat->position = $this->getPositionInvoiceLunas($InvoiceLunasKePusat->trado_id)->position;
+            $InvoiceLunasKePusat = (new InvoiceLunasKePusat())->processUpdate($invoicelunaskepusat,$data);
+            $InvoiceLunasKePusat->position = $request->indexRow;
+            // $InvoiceLunasKePusat->position = $this->getPositionInvoiceLunas($InvoiceLunasKePusat->trado_id)->position;
          
-            $InvoiceLunasKePusat->page = ceil($InvoiceLunasKePusat->position / ($request->limit ?? 10));
+            // $InvoiceLunasKePusat->page = ceil($InvoiceLunasKePusat->position / ($request->limit ?? 10));
 
             DB::commit();
             return response([
                 'message' => 'Berhasil disimpan',
                 'data' => $InvoiceLunasKePusat
-            ], 201);
+            ], 200);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -141,20 +134,17 @@ class InvoiceLunasKePusatController extends Controller
     {
         DB::beginTransaction();
         try {
-            $InvoiceLunasKePusat = InvoiceLunasKePusat::findOrFail($id);
-            $statusaktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
-
-            
-            $InvoiceLunasKePusat = (new InvoiceLunasKePusat())->processDestroy($InvoiceLunasKePusat->id);
-            $InvoiceLunasKePusat->position = $this->getPositionInvoiceLunas(0,true)->position;
+            $InvoiceLunasKePusat = (new InvoiceLunasKePusat())->processDestroy($id);
+            $InvoiceLunasKePusat->position = $request->indexRow;
+            // $InvoiceLunasKePusat->position = $this->getPositionInvoiceLunas(0,true)->position;
         
-            $InvoiceLunasKePusat->page = ceil($InvoiceLunasKePusat->position / ($request->limit ?? 10));
+            // $InvoiceLunasKePusat->page = ceil($InvoiceLunasKePusat->position / ($request->limit ?? 10));
  
             DB::commit();
             return response([
-                'message' => 'Berhasil disimpan',
+                'message' => 'Berhasil dihapus',
                 'data' => $InvoiceLunasKePusat
-            ], 201);
+            ], 200);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -164,41 +154,22 @@ class InvoiceLunasKePusatController extends Controller
 
     public function cekValidasi(Request $request,$invoiceheader_id)
     {
-
-        return response([
-            'errors' => false
-        ]);
-        // $now = date('Y-m-d', strtotime($request->tanggal));
-        // $getinvoice = AbsensiSupirHeader::from(DB::raw("absensisupirheader with (readuncommitted)"))->where('tglbukti', $now)->first();
-
-        // if ($getAbsen != null) {
-        //     $cekAbsen = AbsensiSupirDetail::from(DB::raw("absensisupirdetail with (readuncommitted)"))->where('nobukti', $getAbsen->nobukti)->where('trado_id', $tradoId)->first();
-        //     if ($cekAbsen != null) {
-
-        //         return response([
-        //             'errors' => false
-        //         ]);
-        //     } else {
-        //         $getError = Error::from(DB::raw("error with (readuncommitted)"))
-        //             ->select('keterangan')
-        //             ->where('kodeerror', '=', 'TAB')
-        //             ->first();
-
-        //         return response([
-        //             'errors' => true,
-        //             'message' => $getError->keterangan
-        //         ]);
-        //     }
-        // }
-        // $getError = Error::from(DB::raw("error with (readuncommitted)"))
-        //             ->select('keterangan')
-        //             ->where('kodeerror', '=', 'TAB')
-        //             ->first();
-
-        //         return response([
-        //             'errors' => true,
-        //             'message' => $getError->keterangan
-        //         ]);
+        $cekInvoicePusat = DB::table("invoicelunaskepusat")->from(DB::raw("invoicelunaskepusat with (readuncommitted)"))
+        ->where('invoiceheader_id', $invoiceheader_id)->first();
+        if($cekInvoicePusat != ''){
+            return response([
+                'errors' => false
+            ]);
+        } else{
+            $getError = Error::from(DB::raw("error with (readuncommitted)"))
+            ->select('keterangan')
+            ->where('kodeerror', '=', 'BPI')
+            ->first();
+            return response([
+                'errors' => true,
+                'message' => 'INVOICE LUNAS KE PUSAT '.$getError->keterangan
+            ]);
+        }
     }
     
     public function cekValidasiAdd(Request $request,$invoiceheader_id)
