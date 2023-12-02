@@ -629,7 +629,7 @@ class LogAbsensi extends MyModel
                 db::raw("max(a.cepatpulang) as cepatpulang"),
                 db::raw("max(a.terlambatmasuk) as terlambatmasuk"),
                 db::raw("max(a.terlambatpulang) as terlambatpulang"),
-                db::raw("max(i.logwaktu) as logwaktu"),
+                db::raw("min(i.logwaktu) as logwaktu"),
             )
             ->leftjoin(DB::raw($tempwaktu . " as i"), function ($join) {
                 $join->on('a.idabsen', '=', 'i.idabsen');
@@ -637,7 +637,7 @@ class LogAbsensi extends MyModel
             })
             // ->whereraw("(a.tanggal>=)")
             // $tgldari, $tglsampai
-            ->where('a.idabsen', 288)
+            // ->where('a.idabsen', 288)
             ->groupby('a.karyawan')
             ->groupby('a.tanggal');
 

@@ -12,7 +12,7 @@ class ReminderSpkDetail extends MyModel
 {
     use HasFactory;
 
-    public function get($getdetail,$stok_id,$trado_id,$gandengan_id,$gudang,$stok)
+    public function get($getdetail,$stok_id,$trado_id,$gandengan_id,$gudang,$stok,$qty,$total)
     {
 
 
@@ -96,7 +96,6 @@ class ReminderSpkDetail extends MyModel
 
 
 
-
         $query = db::table($tempdata)->from(db::raw($tempdata . " a "))
             ->select(
                 'a.nobukti',
@@ -106,6 +105,13 @@ class ReminderSpkDetail extends MyModel
                 'a.qty',
                 'a.hargasatuan',
                 'a.total',
+                db::raw($gudang ." as gudang_header"),
+                db::raw($trado_id ." as trado_id_header"),
+                db::raw($gandengan_id ." as gandengan_id_header"),
+                db::raw($stok_id ." as stok_id_header"),
+                db::raw($stok ." as stok_header"),
+                db::raw($qty ." as qty_header"),
+                db::raw($total ." as total_header"),
             )
             ->orderby('a.tglbukti', 'desc');
 
@@ -166,6 +172,14 @@ class ReminderSpkDetail extends MyModel
             $table->double('qty', 15, 2)->nullable();
             $table->double('hargasatuan', 15, 2)->nullable();
             $table->double('total', 15, 2)->nullable();
+
+            $table->string('gudang_header', 1000)->nullable();
+            $table->integer('trado_id_header')->nullable();
+            $table->integer('gandengan_id_header')->nullable();
+            $table->integer('stok_id_header')->nullable();
+            $table->string('stok_header', 1000)->nullable();
+            $table->double('qty_header', 15, 2)->nullable();
+            $table->double('total_header', 15, 2)->nullable();            
         });
 
         $queryloop = json_encode($queryloop, JSON_INVALID_UTF8_SUBSTITUTE);
@@ -179,7 +193,7 @@ class ReminderSpkDetail extends MyModel
                 'qty',
                 'hargasatuan',
                 'total',
-            ], $this->get(1,$item['stok_id'],$item['trado_id'],$item['gandengan_id'],$item['gudang'],$item['stok']) );
+            ], $this->get(1,$item['stok_id'],$item['trado_id'],$item['gandengan_id'],$item['gudang'],$item['stok'],$item['qty'],$item['total']) );
         }
 
         $query=db::table($tempdatadetail)->from(db::raw($tempdatadetail . " a"))

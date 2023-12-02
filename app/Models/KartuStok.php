@@ -54,7 +54,7 @@ class KartuStok extends MyModel
         $class = 'KartuStokController';
 
 
-        // dd('test');
+     
         if ($proses == 'reload') {
             $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
 
@@ -984,6 +984,7 @@ class KartuStok extends MyModel
         // dump($gandengan_id);
         // dd( $filter);
 
+
         $temprekap = '##temprekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         Schema::create($temprekap, function ($table) {
@@ -1185,6 +1186,7 @@ class KartuStok extends MyModel
                     ->groupBy(db::raw("isnull(a.gandengan_id,0)"));
             }
         } else if ($filter == 'TRADO') {
+      
             if ($trado_id == 0) {
                 $queryrekap = db::table('stok')->from(
                     DB::raw("stok as a1 with (readuncommitted)")
@@ -1253,7 +1255,7 @@ class KartuStok extends MyModel
                         db::raw("0 as nilaimasuk"),
                         db::raw("0 as qtykeluar"),
                         db::raw("0 as nilaikeluar"),
-                        // DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
+                        DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
                         // DB::raw("sum(
                         //     (case when isnull(a1.statuspembulatanlebih2decimal,0)=1 then
                         //     isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0)
@@ -1440,7 +1442,7 @@ class KartuStok extends MyModel
 
 
 
-
+        // dd('test');
         DB::table($temprekap)->insertUsing([
             'stok_id',
             'gudang_id',
@@ -1465,7 +1467,7 @@ class KartuStok extends MyModel
         // dd('test');
 
         // dd(db::table($temprekap)->get());
-
+        
         $temprekapinput = '##temprekapinput' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         Schema::create($temprekapinput, function ($table) {
