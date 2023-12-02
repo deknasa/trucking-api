@@ -21,6 +21,7 @@ class LogAbsensi extends MyModel
 
     public function getdata($tgldari, $tglsampai)
     {
+
         $tempwaktu = '##tempwaktu' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempwaktu, function ($table) {
             $table->integer('id')->nullable();
@@ -332,7 +333,8 @@ class LogAbsensi extends MyModel
                 'a.idabsen'
             )
             ->whereRaw("(a.idabsen>=" . $pid . " and a.idabsen<=" . $pidakhir . ")")
-            ->orderBy('idabsen', 'asc');
+            ->groupby('a.idabsen')
+            ->orderBy('a.idabsen', 'asc');
 
         $datadetail = json_decode($querydatatempkaryawan->get(), true);
 
@@ -455,6 +457,7 @@ class LogAbsensi extends MyModel
         ], $querytemprekap);
 
 
+        // dd(db::table($temptgl)->get());
 
         $querytemphasil = DB::table($temptgl)->from(
             db::raw($temptgl . " a")
@@ -526,8 +529,45 @@ class LogAbsensi extends MyModel
                 $join->on('a.tgl', '=', 'i.tgl');
             })
             ->join(db::raw($tempkaryawan . " h "), 'a.idabsen', 'h.idabsen')
+            // ->where('a.idabsen',288)
             ->orderBy('h.karyawan', 'asc')
             ->orderBy('a.tgl', 'asc');
+
+        // dd(db::table($tempwakturekap)->where('id',288)->get());
+        // dd($querytemphasil->get());
+
+
+        $tempwaktu = '##tempwaktu' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempwaktu, function ($table) {
+            $table->integer('idabsen')->nullable();
+            $table->date('tgl')->nullable();
+            $table->string('logwaktu', 1000)->nullable();
+        });
+        $querywaktu = DB::table($temptgl)->from(
+            db::raw($temptgl . " a")
+        )
+            ->select(
+                'a.idabsen',
+                DB::raw("a.tgl"),
+                db::raw("isnull(i.waktu,'') as logwaktu ")
+            )
+
+            ->leftjoin(DB::raw($tempwakturekap . " as i"), function ($join) {
+                $join->on('a.idabsen', '=', 'i.id');
+                $join->on('a.tgl', '=', 'i.tgl');
+            })
+            ->join(db::raw($tempkaryawan . " h "), 'a.idabsen', 'h.idabsen')
+            // ->where('a.idabsen',288)
+            ->orderBy('a.idabsen', 'asc')
+            ->orderBy('a.tgl', 'asc');
+
+        DB::table($tempwaktu)->insertUsing([
+            'idabsen',
+            'tgl',
+            'logwaktu',
+
+        ], $querywaktu);
+
 
 
 
@@ -561,7 +601,7 @@ class LogAbsensi extends MyModel
 
         ], $querytemphasil);
 
-                // ->leftjoin(DB::raw("karyawanlogabsensi as j"), function ($join) {
+        // ->leftjoin(DB::raw("karyawanlogabsensi as j"), function ($join) {
         //     $join->on('a.idabsen', '=', 'j.idabsen');
         //     $join->on(DB::raw("(a.tgl<=(case when year(isnull(j.tglresign,'1900/1/1'))=1900 then '1900/1/1' else j.tglresign end) or j.statusaktif=2)"));
         //     // 'a.tgl', '>=', db::raw("(case when year(isnull(j.tglresign,'1900/1/1'))=1900 then '1900/1/1' else j.tglresign end)")
@@ -569,7 +609,7 @@ class LogAbsensi extends MyModel
         // })
         // ->whereraw("isnull(j.idabsen,0)=0")
 
-        DB::table($temphasil,'a')
+        DB::table($temphasil, 'a')
             ->Join(db::raw("karyawanlogabsensi b with (readuncommitted)"), 'a.idabsen', '=', 'b.idabsen')
             ->whereRaw("a.tanggal<=isnull(b.tglresign,'1900/1/1')")
             ->OrwhereRaw("isnull(b.statusaktif,2)=2")
@@ -589,12 +629,24 @@ class LogAbsensi extends MyModel
                 db::raw("max(a.cepatpulang) as cepatpulang"),
                 db::raw("max(a.terlambatmasuk) as terlambatmasuk"),
                 db::raw("max(a.terlambatpulang) as terlambatpulang"),
-                db::raw("max(a.logwaktu) as logwaktu"),
+                db::raw("min(i.logwaktu) as logwaktu"),
             )
+            ->leftjoin(DB::raw($tempwaktu . " as i"), function ($join) {
+                $join->on('a.idabsen', '=', 'i.idabsen');
+                $join->on('a.tanggal', '=', 'i.tgl');
+            })
+            // ->whereraw("(a.tanggal>=)")
+            // $tgldari, $tglsampai
+            // ->where('a.idabsen', 288)
             ->groupby('a.karyawan')
             ->groupby('a.tanggal');
 
 
+
+
+        // dd($query->get());
+        // dd(db::table($temphasil)->where('idabsen',288)->get());
+        // dd(db::table($tempwakturekap)->where('id',288)->get());
         // dd('test');
         // dd(db::table($tempshiftkaryawan)->get());
         // dd(db::table($temptgl)->get());
@@ -763,7 +815,7 @@ class LogAbsensi extends MyModel
                         // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         if ($filters['field'] == 'tanggal') {
                             $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                        } else{
+                        } else {
                             $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                         }
                     }
