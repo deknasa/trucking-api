@@ -115,6 +115,49 @@ class LaporanStok extends MyModel
             'tglinput',       
         ], (new KartuStok())->getlaporan($tgldari, $tglsampai, $stokdari_id, $stoksampai_id, $idgudangkantor, $trado_id, $gandengan_id, $filtergudang));
 
+        $temphistory = '##temphistory' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temphistory, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('stok_id')->nullable();
+            $table->unsignedBigInteger('gudang_id')->nullable();
+            $table->unsignedBigInteger('trado_id')->nullable();
+            $table->unsignedBigInteger('gandengan_id')->nullable();
+        });  
+
+        $queryhistory=db::table($temprekapall)->from(db::raw($temprekapall ." a "))
+        ->select (
+            'a.stok_id',
+            'a.gudang_id',
+            'a.trado_id',
+            'a.gandengan_id',            
+        //     'a.qtykeluar',            
+        //     'a.qtymasuk',            
+        )
+        ->whereraw("(a.qtykeluar>0 or a.qtymasuk>0 or a.qtysaldo>0)")
+        // ->where('a.stok_id',6965);
+        ->groupby('a.stok_id')
+        ->groupby('a.gudang_id')
+        ->groupby('a.trado_id')
+        ->groupby('a.gandengan_id');
+        // dd(db::table($queryhistory)->where('stok_id',6965)->get());
+        // dd($queryhistory->get());
+
+        DB::table($temphistory)->insertUsing([
+            'stok_id',
+            'gudang_id',
+            'trado_id',
+            'gandengan_id',
+        ], $queryhistory);
+
+        // dd(db::table($temphistory)->where('stok_id',6965)->get());
+
+        DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a left outer join " . $temphistory . " b on isnull(a.stok_id,0)=isnull(b.stok_id,0) and isnull(a.gudang_id,0)=isnull(b.gudang_id,0)
+        and isnull(a.trado_id,0)=isnull(b.trado_id,0) and isnull(a.gandengan_id,0)=isnull(b.gandengan_id,0) 
+        where isnull(b.stok_id,0)=0
+        "));
+
+
+
         $tempstok = '##tempstok' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempstok, function ($table) {
             $table->id();
@@ -143,6 +186,9 @@ class LaporanStok extends MyModel
             'gandengan_id',
         ], $querystok);
 
+        // dump(db::table($tempstok)->where('stok_id',6944)->get());
+        // dd(db::table($temprekapall)->where('stok_id',6944)->get());
+
         DB::delete(DB::raw("delete " . $tempstok . " from " . $tempstok . " as a inner join " . $temprekapall . " b on isnull(a.stok_id,0)=isnull(b.stok_id,0) and isnull(a.gudang_id,0)=isnull(b.gudang_id,0)
         and isnull(a.trado_id,0)=isnull(b.trado_id,0) and isnull(a.gandengan_id,0)=isnull(b.gandengan_id,0) and isnull(b.nobukti,'')='SALDO AWAL'
         "));
@@ -169,6 +215,7 @@ class LaporanStok extends MyModel
         )
         ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id');
 
+
         DB::table($temprekapall)->insertUsing([
             'stok_id',
             'gudang_id',
@@ -189,6 +236,7 @@ class LaporanStok extends MyModel
             'modifiedby',
         ], $querysaldoawal);
 
+        // dd(db::table($temprekapall)->where('stok_id',6944)->get());
 
 
 
