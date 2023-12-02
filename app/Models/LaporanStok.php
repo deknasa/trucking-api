@@ -133,7 +133,7 @@ class LaporanStok extends MyModel
         //     'a.qtykeluar',            
         //     'a.qtymasuk',            
         )
-        ->whereraw("(a.qtykeluar>0 or a.qtymasuk>0)")
+        ->whereraw("(a.qtykeluar>0 or a.qtymasuk>0 or a.qtysaldo>0)")
         // ->where('a.stok_id',6965);
         ->groupby('a.stok_id')
         ->groupby('a.gudang_id')
