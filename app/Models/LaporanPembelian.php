@@ -77,7 +77,7 @@ class LaporanPembelian extends MyModel
                     ->where('a.tglbukti', '<=', $sampai)
                     ->where('a.supplier_id', '>=', $supplierdari_id)
                     ->where('a.supplier_id', '<=', $suppliersampai_id)
-                    ->where('a.penerimaanstok_id', '=', $penerimaanstok_id)
+                    ->whereRaw("a.penerimaanstok_id in (3,4)")
                     ->orderBy('a.id')
                     ->orderBy('b.id');
                     // dd($result2->get());
