@@ -74,6 +74,7 @@ class ExportLaporanKasGantung extends MyModel
             $table->longtext('keterangan')->nullable();
             $table->double('debet', 15, 2)->nullable();
             $table->double('kredit', 15, 2)->nullable();
+            $table->dateTime('tglinput')->nullable();
         });
 
 
@@ -125,7 +126,8 @@ class ExportLaporanKasGantung extends MyModel
                         'd.keterangancoa',
                         'a.keterangan',
                         db::raw("(isnull(A.nominal,0)-isnull(c.nominal,0)) as debet"),
-                        db::raw("0 as kredit")
+                        db::raw("0 as kredit"),
+                        'b.created_at as tglinput'
                     )
                     ->join(db::raw("kasgantungheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
                     ->leftjoin(db::raw($Temppengembalian . " c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
@@ -141,13 +143,14 @@ class ExportLaporanKasGantung extends MyModel
                         'd.keterangancoa',
                         'a.keterangan',
                         db::raw("(isnull(A.nominal,0)-isnull(c.nominal,0)) as debet"),
-                        db::raw("0 as kredit")
-                    )
+                        db::raw("0 as kredit"),
+                        'b.created_at as tglinput'
+                        )
                     ->join(db::raw("kasgantungheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
                     ->leftjoin(db::raw($Temppengembalian . " c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
                     ->leftjoin(db::raw("akunpusat d with (readuncommitted)"), 'a.coa', 'd.coa')
                     ->whereRaw("(isnull(A.nominal,0)-isnull(c.nominal,0))<>0")
-                    ->whereRaw("b.tglbukti<'" . $tgl1 . "'");
+                    ->whereRaw("b.tglbukti<='" . $tgl1 . "'");
             }
 
 
@@ -159,6 +162,7 @@ class ExportLaporanKasGantung extends MyModel
                 'keterangan',
                 'debet',
                 'kredit',
+                'tglinput',
             ], $querytemprekap);
 
             $querytemprekap = db::table("pengembaliankasgantungdetail")->from(db::raw("pengembaliankasgantungdetail a with (readuncommitted)"))
@@ -169,7 +173,9 @@ class ExportLaporanKasGantung extends MyModel
                     'd.keterangancoa',
                     'a.keterangan',
                     db::raw("0 as debet"),
-                    db::raw("a.nominal as kredit")
+                    db::raw("a.nominal as kredit"),
+                    'b.created_at as tglinput'
+
                 )
                 ->join(db::raw("pengembaliankasgantungheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
                 ->leftjoin(db::raw("akunpusat d with (readuncommitted)"), db::raw("'" . $gantungcoa . "'"), 'd.coa')
@@ -184,6 +190,7 @@ class ExportLaporanKasGantung extends MyModel
                 'keterangan',
                 'debet',
                 'kredit',
+                'tglinput',
             ], $querytemprekap);
 
             $tgl1 = date('Y-m-d', strtotime($tgl1 . ' +1 day'));
@@ -217,6 +224,7 @@ class ExportLaporanKasGantung extends MyModel
             )
             ->orderBy('a.tgl', 'asc')
             ->orderBy('a.tglbukti', 'asc')
+            ->orderBy('a.tglinput', 'asc')
             ->orderBy('a.nobukti', 'asc')
             ->get();
 
