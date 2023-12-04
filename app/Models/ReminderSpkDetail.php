@@ -12,7 +12,7 @@ class ReminderSpkDetail extends MyModel
 {
     use HasFactory;
 
-    public function get($getdetail,$stok_id,$trado_id,$gandengan_id,$gudang,$stok,$qty,$total)
+    public function get($getdetail, $stok_id, $trado_id, $gandengan_id, $gudang, $stok, $qty, $total)
     {
 
 
@@ -105,13 +105,13 @@ class ReminderSpkDetail extends MyModel
                 'a.qty',
                 'a.hargasatuan',
                 'a.total',
-                db::raw($gudang ." as gudang_header"),
-                db::raw($trado_id ." as trado_id_header"),
-                db::raw($gandengan_id ." as gandengan_id_header"),
-                db::raw($stok_id ." as stok_id_header"),
-                db::raw($stok ." as stok_header"),
-                db::raw($qty ." as qty_header"),
-                db::raw($total ." as total_header"),
+                db::raw("'$gudang' as gudang_header"),
+                db::raw("'$trado_id' as trado_id_header"),
+                db::raw("'$gandengan_id' as gandengan_id_header"),
+                db::raw("'$stok_id' as stok_id_header"),
+                db::raw("'$stok' as stok_header"),
+                db::raw($qty . " as qty_header"),
+                db::raw($total . " as total_header"),
             )
             ->orderby('a.tglbukti', 'desc');
 
@@ -147,20 +147,20 @@ class ReminderSpkDetail extends MyModel
             'stok',
             'qty',
             'total',
-        ], (new ReminderSpk())->get(1) );
+        ], (new ReminderSpk())->get(1));
 
         $queryloop = DB::table($tempdata)->from(db::raw($tempdata . " a "))
-        ->select(
-            'a.gudang',
-            'a.trado_id',
-            'a.gandengan_id',
-            'a.stok_id',
-            'a.stok',
-            'a.qty',
-            'a.total',
+            ->select(
+                'a.gudang',
+                'a.trado_id',
+                'a.gandengan_id',
+                'a.stok_id',
+                'a.stok',
+                'a.qty',
+                'a.total',
             )
-        ->orderby('a.id', 'asc')
-        ->get();
+            ->orderby('a.id', 'asc')
+            ->get();
 
         $tempdatadetail = '##tempdatadetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdatadetail, function ($table) {
@@ -179,7 +179,7 @@ class ReminderSpkDetail extends MyModel
             $table->integer('stok_id_header')->nullable();
             $table->string('stok_header', 1000)->nullable();
             $table->double('qty_header', 15, 2)->nullable();
-            $table->double('total_header', 15, 2)->nullable();            
+            $table->double('total_header', 15, 2)->nullable();
         });
 
         $queryloop = json_encode($queryloop, JSON_INVALID_UTF8_SUBSTITUTE);
@@ -193,23 +193,44 @@ class ReminderSpkDetail extends MyModel
                 'qty',
                 'hargasatuan',
                 'total',
-            ], $this->get(1,$item['stok_id'],$item['trado_id'],$item['gandengan_id'],$item['gudang'],$item['stok'],$item['qty'],$item['total']) );
+                'gudang_header',
+                'trado_id_header',
+                'gandengan_id_header',
+                'stok_id_header',
+                'stok_header',
+                'qty_header',
+                'total_header',
+            ], $this->get(1, $item['stok_id'], $item['trado_id'], $item['gandengan_id'], $item['gudang'], $item['stok'], $item['qty'], $item['total']));
         }
+        
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
-        $query=db::table($tempdatadetail)->from(db::raw($tempdatadetail . " a"))
-        ->select(
-            'a.nobukti',
-            'a.tglbukti',
-            'a.gudang',
-            'a.namastok',
-            'a.qty',
-            'a.hargasatuan',
-            'a.total',
-        )
-        ->orderby('a.id','asc');
+        $query = db::table($tempdatadetail)->from(db::raw($tempdatadetail . " a"))
+            ->select(
+                'a.nobukti',
+                'a.tglbukti',
+                'a.gudang',
+                'a.namastok',
+                'a.qty',
+                'a.hargasatuan',
+                'a.total',
+                'a.gudang_header',
+                'a.trado_id_header',
+                'a.gandengan_id_header',
+                'a.stok_id_header',
+                'a.stok_header',
+                'a.qty_header',
+                'a.total_header',
+                DB::raw("'" . $getJudul->text . "' as judul"),
+            )
+            ->orderby('a.id', 'asc');
 
 
-        $data=$query->get();
+        $data = $query->get();
         return $data;
     }
 }
