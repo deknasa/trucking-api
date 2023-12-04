@@ -64,7 +64,7 @@ class LaporanPembelianBarang extends MyModel
              ->select(
                 'a.nobukti'
              )
-             ->whereRaw("a.penerimaanstok_id in (3,6)")
+             ->whereRaw("a.penerimaanstok_id in (3,6,4)")
              ->whereRaw("MONTH(a.tglbukti) = " . $bulan . " AND YEAR(a.tglbukti) = " . $tahun);
 
              DB::table($tempbukti)->insertUsing([
