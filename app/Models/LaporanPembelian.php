@@ -75,8 +75,7 @@ class LaporanPembelian extends MyModel
                     ->leftJoin('satuan AS e', 'd.satuan_id', '=', 'e.id')
                     ->where('a.tglbukti', '>=', $dari)
                     ->where('a.tglbukti', '<=', $sampai)
-                    ->where('a.supplier_id', '>=', $supplierdari_id)
-                    ->where('a.supplier_id', '<=', $suppliersampai_id)
+                    ->whereRaw("(a.supplier_id>=". $supplierdari_id ."and a.supplier_id<= ". $suppliersampai_id.")")
                     ->whereRaw("a.penerimaanstok_id in (3,4)")
                     ->orderBy('a.id')
                     ->orderBy('b.id');
@@ -117,9 +116,8 @@ class LaporanPembelian extends MyModel
                 ->leftJoin('satuan AS e', 'd.satuan_id', '=', 'e.id')
                 ->where('a.tglbukti', '>=', $dari)
                 ->where('a.tglbukti', '<=', $sampai)
-                ->where('a.supplier_id', '>=', $supplierdari_id)
-                ->where('a.supplier_id', '<=', $suppliersampai_id)
-                ->where('a.penerimaanstok_id', '=', $penerimaanstok_id)
+                ->whereRaw("(a.supplier_id>=". $supplierdari_id ."and a.supplier_id<= ". $suppliersampai_id.")")
+                ->whereRaw("a.penerimaanstok_id in(3,4)")
                 ->orderBy('a.id')
                 ->orderBy('b.id');
                 // dd($result2->get());
@@ -158,9 +156,8 @@ class LaporanPembelian extends MyModel
                 ->leftJoin('satuan AS e', 'd.satuan_id', '=', 'e.id')
                 ->where('a.tglbukti', '>=', $dari)
                 ->where('a.tglbukti', '<=', $sampai)
-                ->where('a.supplier_id', '>=', $supplierdari_id)
-                ->where('a.supplier_id', '<=', $suppliersampai_id)
-                ->where('a.penerimaanstok_id', '=', $penerimaanstok_id)
+                ->whereRaw("(a.supplier_id>=". $supplierdari_id ."and a.supplier_id<= ". $suppliersampai_id.")")
+                ->whereRaw("a.penerimaanstok_id in(3,4)")
                 ->orderBy('a.id')
                 ->orderBy('b.id');
                 // dd($result2->get());
@@ -194,9 +191,8 @@ class LaporanPembelian extends MyModel
                 ->join('hutangdetail AS c', 'a.hutang_nobukti', '=', 'c.nobukti')
                 ->where('a.tglbukti', '>=', $dari)
                 ->where('a.tglbukti', '<=', $sampai)
-                ->where('a.supplier_id', '>=', $supplierdari_id)
-                ->where('a.supplier_id', '<=', $suppliersampai_id)
-                ->where('a.penerimaanstok_id', '=', $penerimaanstok_id)
+                ->whereRaw("(a.supplier_id>=". $supplierdari_id ."and a.supplier_id<= ". $suppliersampai_id.")")
+                ->whereRaw("a.penerimaanstok_id in(3,4)")
                 ->groupBy('b.nobukti');
 
                 DB::table($Tempbeli)->insertUsing([
@@ -237,9 +233,8 @@ class LaporanPembelian extends MyModel
                 ->leftJoin(DB::raw($Tempbeli . ' AS g'), 'f.nobukti', '=', 'g.nobuktihutang')
                 ->where('a.tglbukti', '>=', $dari)
                 ->where('a.tglbukti', '<=', $sampai)
-                ->where('a.supplier_id', '>=', $supplierdari_id)
-                ->where('a.supplier_id', '<=', $suppliersampai_id)
-                ->where('a.penerimaanstok_id', '=', $penerimaanstok_id)
+                ->whereRaw("(a.supplier_id>=". $supplierdari_id ."and a.supplier_id<= ". $suppliersampai_id.")")
+                ->whereRaw("a.penerimaanstok_id in(3,4)")
                 ->orderBy('a.id', 'asc')
                 ->orderBy('b.id', 'asc');
 
