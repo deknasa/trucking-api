@@ -64,12 +64,24 @@ class LaporanPembelianBarang extends MyModel
              ->select(
                 'a.nobukti'
              )
-             ->whereRaw("a.penerimaanstok_id in (3,6,4)")
+             ->whereRaw("a.penerimaanstok_id in (3,6)")
              ->whereRaw("MONTH(a.tglbukti) = " . $bulan . " AND YEAR(a.tglbukti) = " . $tahun);
 
              DB::table($tempbukti)->insertUsing([
                 'nobukti',
-            ], $querybukti);            
+            ], $querybukti);     
+            
+            $querybukti=db::table("penerimaanstokheader")->from(db::raw("penerimaanstokheader as a with (readuncommitted)"))
+            ->select(
+               'a.nobukti'
+            )
+            ->whereRaw("a.penerimaanstok_id in (4)")
+            ->whereRaw("a.gudang_id in (1)")
+            ->whereRaw("MONTH(a.tglbukti) = " . $bulan . " AND YEAR(a.tglbukti) = " . $tahun);
+
+            DB::table($tempbukti)->insertUsing([
+               'nobukti',
+           ], $querybukti);   
 
             $querybukti=db::table("penerimaanstokheader")->from(db::raw("penerimaanstokheader as a with (readuncommitted)"))
              ->select(
