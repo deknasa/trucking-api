@@ -22,6 +22,19 @@ class LogAbsensi extends MyModel
     public function getdata($tgldari, $tglsampai)
     {
 
+        $datacabang = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'CABANG')
+        ->where('subgrp', 'CABANG')
+        ->first() ->text ?? '';
+
+        if ($datacabang=='MEDAN') {
+            DB::update(DB::raw("UPDATE logabsensi SET id=288 from logabsensi where id=280"));
+        }
+
+        
+
+
         $tempwaktu = '##tempwaktu' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempwaktu, function ($table) {
             $table->integer('id')->nullable();
