@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalSuratPengantarBiayaTambahanRequest;
 use App\Models\SuratPengantarBiayaTambahan;
 use App\Http\Requests\StoreSuratPengantarBiayaTambahanRequest;
 use App\Http\Requests\UpdateSuratPengantarBiayaTambahanRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request;
 
 class SuratPengantarBiayaTambahanController extends Controller
 {
@@ -27,70 +30,49 @@ class SuratPengantarBiayaTambahanController extends Controller
             ]
         ]);
     }
-
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @ClassName
      */
-    public function create()
+    public function approval(ApprovalSuratPengantarBiayaTambahanRequest $request)
     {
-        //
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'id' => $request->id
+            ];
+            $suratpengantar = (new SuratPengantarBiayaTambahan())->processApproval($data);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Berhasil diubah',
+                'data' => $suratpengantar
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreSuratPengantarBiayaTambahanRequest  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(StoreSuratPengantarBiayaTambahanRequest $request)
+    public function deleteRow()
     {
-        //
-    }
+        DB::beginTransaction();
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\SuratPengantarBiayaTambahan  $suratPengantarBiayaTambahan
-     * @return \Illuminate\Http\Response
-     */
-    public function show(SuratPengantarBiayaTambahan $suratPengantarBiayaTambahan)
-    {
-        //
-    }
+        try {
+            $data = [
+                'id' => request()->id
+            ];
+            $suratpengantar = (new SuratPengantarBiayaTambahan())->deleteRow($data);
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\SuratPengantarBiayaTambahan  $suratPengantarBiayaTambahan
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(SuratPengantarBiayaTambahan $suratPengantarBiayaTambahan)
-    {
-        //
-    }
+            DB::commit();
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateSuratPengantarBiayaTambahanRequest  $request
-     * @param  \App\Models\SuratPengantarBiayaTambahan  $suratPengantarBiayaTambahan
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdateSuratPengantarBiayaTambahanRequest $request, SuratPengantarBiayaTambahan $suratPengantarBiayaTambahan)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\SuratPengantarBiayaTambahan  $suratPengantarBiayaTambahan
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(SuratPengantarBiayaTambahan $suratPengantarBiayaTambahan)
-    {
-        //
+            return response()->json([
+                'data' => $suratpengantar
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 }

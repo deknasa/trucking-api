@@ -203,6 +203,7 @@ class SuratPengantarController extends Controller
                 'nominalTagih' => $request->nominalTagih,
                 'komisisupir' => $request->komisisupir,
                 'gajikenek' => $request->gajikenek,
+                'tambahan_id' => $request->tambahan_id,
                 'nobukti_tripasal' => $request->nobukti_tripasal ?? '',
             ];
             $suratPengantar = (new SuratPengantar())->processUpdate($suratpengantar, $data);

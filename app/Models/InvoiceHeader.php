@@ -506,6 +506,8 @@ class InvoiceHeader extends MyModel
 
         $tempomsettambahan = '##tempomsettambahan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
+        $cekStatus = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'SURAT PENGANTAR BIAYA TAMBAHAN')->first();
+
         $fetch = DB::table("suratpengantar")->from(DB::raw("suratpengantar"))
             ->select(
                 'c.jobtrucking',
@@ -514,8 +516,10 @@ class InvoiceHeader extends MyModel
             ->join(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"), 'suratpengantar.id', 'suratpengantarbiayatambahan.suratpengantar_id')
             ->join(DB::raw($temphasil . " c"), 'suratpengantar.jobtrucking', 'c.jobtrucking')
             ->groupby('c.jobtrucking');
-
-
+        if ($cekStatus->text == 'YA') {
+            $fetch->where('suratpengantarbiayatambahan.statusapproval', 3);
+        }
+        // dd($fetch->get());
         Schema::create($tempomsettambahan, function ($table) {
             $table->string('jobtrucking');
             $table->double('nominal')->nullable();
@@ -834,6 +838,8 @@ class InvoiceHeader extends MyModel
 
     public function createBiayaTambahan($request)
     {
+        $cekStatus = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'SURAT PENGANTAR BIAYA TAMBAHAN')->first();
+
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         $fetch = SuratPengantar::from(DB::raw("suratpengantar"))
@@ -843,7 +849,9 @@ class InvoiceHeader extends MyModel
             ->where('suratpengantar.jenisorder_id', $request->jenisorder_id)
             ->where('suratpengantar.tglbukti', '>=', date('Y-m-d', strtotime($request->tgldari)))
             ->where('suratpengantar.tglbukti', '<=', date('Y-m-d', strtotime($request->tglsampai)));
-
+        if ($cekStatus->text == 'YA') {
+            $fetch->where('suratpengantarbiayatambahan.statusapproval', 3);
+        }
 
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
@@ -908,12 +916,11 @@ class InvoiceHeader extends MyModel
 
             if (isset($querydata)) {
                 Schema::dropIfExists($querydata->namatabel);
-                $queryid=db::table('listtemporarytabel')->from(db::raw("listtemporarytabel a with (readuncommitted)"))
-                ->select('id')->where('id', $querydata->id)->first();
+                $queryid = db::table('listtemporarytabel')->from(db::raw("listtemporarytabel a with (readuncommitted)"))
+                    ->select('id')->where('id', $querydata->id)->first();
                 if (isset($queryid)) {
-                    DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();    
+                    DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
                 }
-                
             }
 
             DB::table('listtemporarytabel')->insert(
@@ -932,39 +939,39 @@ class InvoiceHeader extends MyModel
                 $table->unsignedBigInteger('id_detail')->nullable();
                 $table->string('noinvoice_detail', 50)->nullable();
                 $table->string('nojobtrucking_detail', 50)->nullable();
-                $table->string('container_detail',1000)->nullable();
+                $table->string('container_detail', 1000)->nullable();
                 $table->date('tglbukti')->nullable();
-                $table->double('nominal_detail',15,2)->nullable();
+                $table->double('nominal_detail', 15, 2)->nullable();
             });
 
             $queryget = db::table("saldosumbangansosial")->from(db::raw("saldosumbangansosial a with (readuncommitted)"))
-            ->select(
-                'a.id_detail',
-                'a.noinvoice_detail',
-                'a.nojobtrucking_detail',
-                'container.keterangan as container_detail',
-                'a.tgl_bukti as tglbukti',
-                db::raw("(case when container.nominalsumbangan IS NULL then 0 else container.nominalsumbangan end) as nominal_detail")
-            )
-            ->leftJoin(DB::raw("container with (readuncommitted)"), 'a.container_id', 'container.id')
-            ->whereRaw("a.nojobtrucking_detail not in (select orderantrucking_nobukti from pengeluarantruckingdetail where orderantrucking_nobukti != '')")
-            ->whereBetween('a.tgl_bukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
-            ->orderby('a.id', 'asc');
+                ->select(
+                    'a.id_detail',
+                    'a.noinvoice_detail',
+                    'a.nojobtrucking_detail',
+                    'container.keterangan as container_detail',
+                    'a.tgl_bukti as tglbukti',
+                    db::raw("(case when container.nominalsumbangan IS NULL then 0 else container.nominalsumbangan end) as nominal_detail")
+                )
+                ->leftJoin(DB::raw("container with (readuncommitted)"), 'a.container_id', 'container.id')
+                ->whereRaw("a.nojobtrucking_detail not in (select orderantrucking_nobukti from pengeluarantruckingdetail where orderantrucking_nobukti != '')")
+                ->whereBetween('a.tgl_bukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
+                ->orderby('a.id', 'asc');
 
-        DB::table($temtabel)->insertUsing([
-            'id_detail',
-            'noinvoice_detail',
-            'nojobtrucking_detail',
-            'container_detail',
-            'tglbukti',
-            'nominal_detail',
-        ], $queryget);
-
-    
+            DB::table($temtabel)->insertUsing([
+                'id_detail',
+                'noinvoice_detail',
+                'nojobtrucking_detail',
+                'container_detail',
+                'tglbukti',
+                'nominal_detail',
+            ], $queryget);
 
 
-        $query1 = InvoiceDetail::from(DB::raw("invoicedetail with (readuncommitted)"))
-            ->select(DB::raw("
+
+
+            $query1 = InvoiceDetail::from(DB::raw("invoicedetail with (readuncommitted)"))
+                ->select(DB::raw("
             invoicedetail.id as id_detail,
             invoicedetail.nobukti as noinvoice_detail,
             invoicedetail.orderantrucking_nobukti as nojobtrucking_detail,
@@ -974,22 +981,22 @@ class InvoiceHeader extends MyModel
 
             "))
 
-            ->leftJoin(DB::raw("invoiceheader with (readuncommitted)"), 'invoicedetail.invoice_id', 'invoiceheader.id')
-            ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', 'ot.nobukti')
-            ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id')
-            ->whereRaw("invoicedetail.orderantrucking_nobukti not in (select orderantrucking_nobukti from pengeluarantruckingdetail where orderantrucking_nobukti != '')")
-            ->whereBetween('invoiceheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
-            ->whereRaw("isnull(invoicedetail.orderantrucking_nobukti, '') != ''");
+                ->leftJoin(DB::raw("invoiceheader with (readuncommitted)"), 'invoicedetail.invoice_id', 'invoiceheader.id')
+                ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', 'ot.nobukti')
+                ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id')
+                ->whereRaw("invoicedetail.orderantrucking_nobukti not in (select orderantrucking_nobukti from pengeluarantruckingdetail where orderantrucking_nobukti != '')")
+                ->whereBetween('invoiceheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
+                ->whereRaw("isnull(invoicedetail.orderantrucking_nobukti, '') != ''");
 
 
-        DB::table($temtabel)->insertUsing([
-            'id_detail',
-            'noinvoice_detail',
-            'nojobtrucking_detail',
-            'container_detail',
-            'tglbukti',
-            'nominal_detail',
-        ], $query1);
+            DB::table($temtabel)->insertUsing([
+                'id_detail',
+                'noinvoice_detail',
+                'nojobtrucking_detail',
+                'container_detail',
+                'tglbukti',
+                'nominal_detail',
+            ], $query1);
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
                 DB::raw("listtemporarytabel with (readuncommitted)")
@@ -1008,19 +1015,19 @@ class InvoiceHeader extends MyModel
         // 
 
 
-       
+
         // ->where('invoiceheader.tsglbukti', '<=', date('Y-m-d', strtotime($tglsampai)));
 
         // dd('test');
-        $query=db::table($temtabel)->from(db::raw($temtabel ))
-        ->select(
-            'id as id_detail',
-            'noinvoice_detail',
-            'nojobtrucking_detail',
-            'container_detail',
-            'tglbukti',
-            'nominal_detail',
-        )->orderBY('id');
+        $query = db::table($temtabel)->from(db::raw($temtabel))
+            ->select(
+                'id as id_detail',
+                'noinvoice_detail',
+                'nojobtrucking_detail',
+                'container_detail',
+                'tglbukti',
+                'nominal_detail',
+            )->orderBY('id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
