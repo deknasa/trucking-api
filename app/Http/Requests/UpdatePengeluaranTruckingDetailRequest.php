@@ -37,7 +37,7 @@ class UpdatePengeluaranTruckingDetailRequest extends FormRequest
                 $fetchFormat =  DB::table('pengeluarantrucking')
                     ->where('id', $idpengeluaran)
                     ->first();
-                if ($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'BST' || $fetchFormat->kodepengeluaran == 'KBBM' || $fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT') {
+                if ($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'TDEK' || $fetchFormat->kodepengeluaran == 'BST' || $fetchFormat->kodepengeluaran == 'KBBM' || $fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT') {
                     return false;
                 } else {
                     return true;

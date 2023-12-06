@@ -12,6 +12,7 @@ use App\Rules\ValidasiDetail;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use App\Rules\DestroyPengeluaranTruckingHeader;
+use App\Rules\ExistKaryawanForPengeluaranTrucking;
 use App\Rules\validasiJenisOrderanPengeluaranTrucking;
 use App\Rules\ValidasiKlaimPosting;
 
@@ -206,6 +207,30 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
                 'statusposting' => 'required',
                 'bank' => [$ruleBank],
                 'supirheader' => ['required',  new ValidasiDetail($jumlahdetail)],
+                // 'keterangancoa' => 'required',
+            ];
+        }else if($kodepengeluaran == 'TDEK'){
+            $karyawanheader_id = $this->karyawanheader_id;
+            if ($karyawanheader_id != null) {
+                $rulesSupir_id = [
+                    'karyawanheader_id' => ['required', 'numeric', 'min:1', new ExistKaryawanForPengeluaranTrucking()]
+                ];
+            } else if ($karyawanheader_id == null && $this->supirheader != '') {
+                $rulesSupir_id = [
+                    'karyawanheader_id' => ['required', 'numeric', 'min:1', new ExistKaryawanForPengeluaranTrucking()]
+                ];
+            }
+            $jumlahdetail = $this->jumlahdetail ?? 0;
+            $rules = [
+                "tglbukti" => [
+                    "required", 'date_format:d-m-Y',
+                    'before_or_equal:'.date('d-m-Y'),
+                    new DateTutupBuku()
+                ],
+                'pengeluarantrucking' => 'required','numeric', 'min:1',
+                'statusposting' => 'required',
+                'bank' => [$ruleBank],
+                'karyawanheader' => ['required',  new ValidasiDetail($jumlahdetail)],
                 // 'keterangancoa' => 'required',
             ];
         }elseif($kodepengeluaran == 'BBT'){

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
 use App\Rules\SisaNotMinus;
+use App\Rules\ValidasiKaryawanDeposito;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -27,6 +28,15 @@ class StorePenerimaanTruckingDetailRequest extends FormRequest
      */
     public function rules()
     {
+        $requiredDPOK = Rule::requiredIf(function () {
+            $idpenerimaan = request()->penerimaantrucking_id;
+            if ($idpenerimaan != '') {
+                if ($idpenerimaan == 6) {
+                    return true;
+                }
+            }
+            return false;
+        });
 
         $requiredKeterangan = Rule::requiredIf(function () {
             $idpenerimaan = request()->penerimaantrucking_id;
@@ -87,7 +97,7 @@ class StorePenerimaanTruckingDetailRequest extends FormRequest
                 ->first();
             if ($fetchFormat->kodepenerimaan == 'PBT') {
                 $min = Rule::when((($fetchFormat->kodepenerimaan == 'PBT')), 'numeric|min:0');
-            }else{
+            } else {
                 $min = Rule::when((($fetchFormat->kodepenerimaan == 'PBT')), 'numeric|gt:0');
             }
         }
@@ -98,7 +108,8 @@ class StorePenerimaanTruckingDetailRequest extends FormRequest
         return [
             'sisa.*' => [$requiredPJP, $sisaNominus],
             'nominal' => [$requiredNominal, 'array'],
-            'nominal.*' => ['required','gt:0', 'numeric', $min],
+            'nominal.*' => ['required', 'gt:0', 'numeric', $min],
+            'karyawandetail.*' => [$requiredDPOK, new ValidasiKaryawanDeposito()],
             'keterangan' => [$requiredKeterangan, 'array'],
             'keterangan.*' => $requiredKeterangan
         ];
@@ -108,6 +119,7 @@ class StorePenerimaanTruckingDetailRequest extends FormRequest
     {
         return [
             'nominal.*' => 'nominal',
+            'karyawandetail.*' => 'karyawan',
             'keterangan.*' => 'keterangan',
         ];
     }
