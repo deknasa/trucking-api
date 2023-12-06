@@ -69,17 +69,17 @@ class LaporanKasBank extends MyModel
         $bulan1 = date('m-Y', strtotime($awalcek));
         $bulan2 = date('m-Y', strtotime('1900-01-01'));
         // dd($bulan1);
-        while ($awalcek <= $akhircek) {
-            $bulan1 = date('m-Y', strtotime($awalcek));
-            if ($bulan1 != $bulan2) {
-                DB::delete(DB::raw("delete saldoawalbank from saldoawalbank as a WHERE isnull(a.bulan,'')='" . $bulan1 . "'"));
-            }
+        // while ($awalcek <= $akhircek) {
+        //     $bulan1 = date('m-Y', strtotime($awalcek));
+        //     if ($bulan1 != $bulan2) {
+        //         DB::delete(DB::raw("delete saldoawalbank from saldoawalbank as a WHERE isnull(a.bulan,'')='" . $bulan1 . "'"));
+        //     }
 
-            $awalcek = date('Y-m-d', strtotime($awalcek . ' +1 day'));
-            $awalcek2 = date('Y-m-d', strtotime($awalcek . ' +1 day'));
-            $bulan2 = date('m-Y', strtotime($awalcek2));
-        }
-        DB::delete(DB::raw("delete saldoawalbank WHERE isnull(bulan,'')='" . $bulan2 . "'"));
+        //     $awalcek = date('Y-m-d', strtotime($awalcek . ' +1 day'));
+        //     $awalcek2 = date('Y-m-d', strtotime($awalcek . ' +1 day'));
+        //     $bulan2 = date('m-Y', strtotime($awalcek2));
+        // }
+        // DB::delete(DB::raw("delete saldoawalbank WHERE isnull(bulan,'')='" . $bulan2 . "'"));
 
 
         $tempsaldoawal = '##tempsaldoawal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -247,7 +247,7 @@ class LaporanKasBank extends MyModel
         DB::delete(DB::raw("delete " . $tempsaldoawal . " from " . $tempsaldoawal . " a 
                     inner join " . $temppengembaliankepusat . " b on a.bank_id=b.bankpengembalian_id"));
 
-      
+
 
         // dd(db::table($tempsaldoawal)->where('bank_id',2)->get());
 
@@ -266,7 +266,30 @@ class LaporanKasBank extends MyModel
             ->groupby('a.bulan')
             ->groupby('a.bank_id');
 
+        $tempsaldoawalrekap = '##tempsaldoawalrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsaldoawalrekap, function ($table) {
+            $table->string('bulan', 1000)->nullable();
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->double('nominaldebet', 15, 2)->nullable();
+            $table->double('nominalkredit', 15, 2)->nullable();
+            $table->longtext('info')->nullable();
+            $table->datetime('created_at')->nullable();
+            $table->datetime('updated_at')->nullable();
+        });
 
+        DB::table($tempsaldoawalrekap)->insertUsing([
+            'bulan',
+            'bank_id',
+            'nominaldebet',
+            'nominalkredit',
+            'info',
+            'created_at',
+            'updated_at',
+        ], $queryrekap);
+
+
+        DB::delete(DB::raw("delete saldoawalbank from saldoawalbank as a 
+            inner join " . $tempsaldoawalrekap . " b on a.bulan=b.bulan and a.bank_id=b.bank_id"));
 
         DB::table("saldoawalbank")->insertUsing([
             'bulan',
