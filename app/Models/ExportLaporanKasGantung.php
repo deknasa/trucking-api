@@ -118,6 +118,8 @@ class ExportLaporanKasGantung extends MyModel
             ], $querytemppengembalian);
 
             if ($tgl1 == $tgl2) {
+
+                
                 $querytemprekap = db::table($Tempkasgantung)->from(db::raw($Tempkasgantung . " a "))
                     ->select(
                         db::raw("'" . $tgl1 . "' as tgl"),
@@ -133,8 +135,11 @@ class ExportLaporanKasGantung extends MyModel
                     ->leftjoin(db::raw($Temppengembalian . " c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
                     ->leftjoin(db::raw("akunpusat d with (readuncommitted)"), 'a.coa', 'd.coa')
                     ->whereRaw("(isnull(A.nominal,0)-isnull(c.nominal,0))<>0")
-                    ->whereRaw("b.tglbukti<='" . $tgl1 . "'");
+                    ->whereRaw("b.tglbukti<'" . $tgl1 . "'");
             } else {
+
+              
+
                 $querytemprekap = db::table($Tempkasgantung)->from(db::raw($Tempkasgantung . " a "))
                     ->select(
                         db::raw("'" . $tgl1 . "' as tgl"),
