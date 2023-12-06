@@ -49,6 +49,7 @@ class ExportLaporanKasHarian extends MyModel
         // rekap saldo
 
         // rekap ke saldo awal bank
+        // dd($tgl2 );
         $tglsaldo = '2023-10-01';
         $awalsaldo = date('Y-m-d', strtotime($tglsaldo));
 
@@ -72,21 +73,26 @@ class ExportLaporanKasHarian extends MyModel
 
         $tglawalcek = $awalcek;
         $tglakhircek = $akhircek;
+        // dump($tglawalcek);
+        // dump($tglakhircek);
         $bulan1 = date('m-Y', strtotime($awalcek));
         $bulan2 = date('m-Y', strtotime('1900-01-01'));
         // dd($bulan1);
         while ($awalcek <= $akhircek) {
             $bulan1 = date('m-Y', strtotime($awalcek));
             if ($bulan1 != $bulan2) {
-                DB::delete(DB::raw("delete saldoawalbank from saldoawalbank as a WHERE isnull(a.bulan,'')='" . $bulan1 . "'"));
+                // dump($bulan1);
+                // dump($bulan1);
+                DB::delete(DB::raw("delete saldoawalbank WHERE isnull(bulan,'')='" . $bulan1 . "'"));
             }
 
             $awalcek = date('Y-m-d', strtotime($awalcek . ' +1 day'));
             $awalcek2 = date('Y-m-d', strtotime($awalcek . ' +1 day'));
             $bulan2 = date('m-Y', strtotime($awalcek2));
         }
+        DB::delete(DB::raw("delete saldoawalbank WHERE isnull(bulan,'')='" . $bulan2 . "'"));
 
-
+        // dd('test1');
         $tempsaldoawal = '##tempsaldoawal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsaldoawal, function ($table) {
             $table->string('bulan', 1000)->nullable();
@@ -108,7 +114,7 @@ class ExportLaporanKasHarian extends MyModel
                 DB::raw("0 as nominalkredit")
             )
             ->join(DB::raw("penerimaandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
             ->groupby('a.bank_id')
             ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
 
@@ -130,7 +136,7 @@ class ExportLaporanKasHarian extends MyModel
                 DB::raw("sum(a.nominal) as nominaldebet"),
                 DB::raw("0 as nominalkredit")
             )
-            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
             ->groupby('a.bankke_id')
             ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
 
@@ -154,7 +160,7 @@ class ExportLaporanKasHarian extends MyModel
                 DB::raw("sum(b.nominal) as nominalkredit")
             )
             ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
             ->groupby('a.bank_id')
             ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
 
@@ -175,7 +181,7 @@ class ExportLaporanKasHarian extends MyModel
                 DB::raw("0 as nominaldebet"),
                 DB::raw("sum(a.nominal) as nominalkredit")
             )
-            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
             ->groupby('a.bankdari_id')
             ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
 
@@ -236,7 +242,7 @@ class ExportLaporanKasHarian extends MyModel
             )
             ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw($temppengembaliankepusat . " as c with (readuncommitted)"), 'a.bank_id', 'c.bankpengembalian_id')
-            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
             ->groupby('c.bank_id')
             ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
 
