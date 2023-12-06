@@ -636,6 +636,7 @@ class LaporanKasBank extends MyModel
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftjoin(DB::raw("akunpusat as b with (readuncommitted)"), 'a.coa', 'b.coa')
+            ->orderBy('a.tglbukti', 'Asc')
             ->orderBy('a.id', 'Asc');
 
         if ($prosesneraca == 1) {
