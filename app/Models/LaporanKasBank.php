@@ -383,7 +383,7 @@ class LaporanKasBank extends MyModel
         // dd($querysaldoawal->to);
         $saldoawal =  ($querysaldoawal->nominal + $querysaldoawalpenerimaan->nominal + $querysaldoawalpenerimaanpindahbuku->nominal) - ($querysaldoawalpengeluaran->nominal + $querysaldoawalpengeluaranpindahbuku->nominal + $saldoawalpengembaliankepusat);
 
-        dd($saldoawal);
+        // dd($saldoawal);
 
         // dd($saldoawal);
         // data coba coba
