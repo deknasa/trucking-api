@@ -52,7 +52,13 @@ class LaporanKasBank extends MyModel
         $awalcek = date('Y-m-d', strtotime($tutupbuku . ' +1 day'));
         $akhircek = date('Y-m-d', strtotime($awaldari . ' -1 day'));
 
+        $tgl3 = date('Y-m-d', strtotime($dari . ' +33 days'));
 
+        $tahun2 = date('Y', strtotime($tgl3));
+        $bulan2 = date('m', strtotime($tgl3));
+
+        $tgl2 = $tahun2 . '-' . $bulan2 . '-1';
+        $tgl2 = date('Y-m-d', strtotime($tgl2 . ' -1 day'));
 
         if ($awalcek <= $awalsaldo) {
             $awalcek = $awalsaldo;
@@ -73,6 +79,7 @@ class LaporanKasBank extends MyModel
             $awalcek2 = date('Y-m-d', strtotime($awalcek . ' +1 day'));
             $bulan2 = date('m-Y', strtotime($awalcek2));
         }
+        DB::delete(DB::raw("delete saldoawalbank WHERE isnull(bulan,'')='" . $bulan2 . "'"));
 
 
         $tempsaldoawal = '##tempsaldoawal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -96,7 +103,7 @@ class LaporanKasBank extends MyModel
                 DB::raw("0 as nominalkredit")
             )
             ->join(DB::raw("penerimaandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
             ->groupby('a.bank_id')
             ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
 
@@ -118,7 +125,7 @@ class LaporanKasBank extends MyModel
                 DB::raw("sum(a.nominal) as nominaldebet"),
                 DB::raw("0 as nominalkredit")
             )
-            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
             ->groupby('a.bankke_id')
             ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
 
@@ -142,7 +149,7 @@ class LaporanKasBank extends MyModel
                 DB::raw("sum(b.nominal) as nominalkredit")
             )
             ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
             ->groupby('a.bank_id')
             ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
 
@@ -163,7 +170,7 @@ class LaporanKasBank extends MyModel
                 DB::raw("0 as nominaldebet"),
                 DB::raw("sum(a.nominal) as nominalkredit")
             )
-            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
             ->groupby('a.bankdari_id')
             ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
 
@@ -224,7 +231,7 @@ class LaporanKasBank extends MyModel
             )
             ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw($temppengembaliankepusat . " as c with (readuncommitted)"), 'a.bank_id', 'c.bankpengembalian_id')
-            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
             ->groupby('c.bank_id')
             ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
 
