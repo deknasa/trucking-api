@@ -487,6 +487,63 @@ class ExportLaporanKasHarian extends MyModel
             'saldo'
         ], $queryTempPindahBukuDua);
 
+        // pengembalian kepusat
+       
+        $coabank = db::table("bank")->from(db::raw("bank a with (readuncommitted)"))
+        ->select(
+            'a.coa'
+        )->where('a.id', $jenis)
+        ->first()->coa ?? '';
+
+
+        $bankpengembaliankepusat = db::table('bank')->from(db::raw("bank a with (readuncommitted)"))
+        ->select('a.id')
+        ->where('a.coa', $coabank)
+        ->whereRaw("a.id<>" . $jenis)
+        ->first();
+
+        if (isset($bankpengembaliankepusat)) {
+            $queryTempPengeluaran = DB::table('pengeluarandetail')->from(
+                DB::raw('pengeluarandetail as a')
+            )
+                ->select(
+                    'a.coadebet as coa',
+                    DB::raw("6 as jenis"),
+                    'a.tgljatuhtempo',
+                    'a.nobukti',
+                    DB::raw("isnull(C.keterangancoa,'') as perkiraan"),
+                    'a.keterangan',
+                    DB::raw("0 as debet"),
+                    DB::raw("nominal as kredit"),
+                    DB::raw("0 as saldo"),
+                )
+                ->join(DB::raw("pengeluaranheader as b "), 'a.nobukti', 'b.nobukti')
+                ->leftjoin(DB::raw("akunpusat as c "), 'a.coadebet', 'c.coa')
+                ->whereRaw("month(A.tgljatuhtempo)= cast(left($bulan,2) as integer)")
+                ->whereRaw("year(A.tgljatuhtempo)= cast(right($tahun,4) as integer)")
+                ->where('b.bank_id', '=', $bankpengembaliankepusat->id);
+    
+            DB::table($tempList)->insertUsing([
+                'coa',
+                'jenis',
+                'tgl',
+                'nobukti',
+                'perkiraan',
+                'keterangan',
+                'debet',
+                'kredit',
+                'saldo'
+            ], $queryTempPengeluaran);
+        }
+
+
+
+       
+
+        // 
+
+
+
         $queryTempList2 = DB::table($tempList)->from(
             DB::raw($tempList)
         )
