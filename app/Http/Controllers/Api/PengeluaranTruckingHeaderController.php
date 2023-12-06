@@ -87,6 +87,7 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processStore([
                 'pengeluarantrucking_id' => $request->pengeluarantrucking_id,
                 "supirheader_id" => $request->supirheader_id,
+                "karyawanheader_id" => $request->karyawanheader_id,
                 "tradoheader_id" => $request->tradoheader_id,
                 "gandenganheader_id" => $request->gandenganheader_id,
                 "statuscabang" => $request->statuscabang,
@@ -247,6 +248,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 'pengeluarantrucking_id' => $request->pengeluarantrucking_id,
                 "supirheader_id" => $request->supirheader_id,
                 "tradoheader_id" => $request->tradoheader_id,
+                "karyawanheader_id" => $request->karyawanheader_id,
                 "gandenganheader_id" => $request->gandenganheader_id,
                 "statuscabang" => $request->statuscabang,
                 "bank_id" => $request->bank_id,
@@ -532,6 +534,16 @@ class PengeluaranTruckingHeaderController extends Controller
         ]);
     }
 
+    public function getDepositoKaryawan(Request $request)
+    {
+        $penerimaanTrucking = new PenerimaanTruckingHeader();
+        $data = $penerimaanTrucking->getDepositoKaryawan($request->karyawan_id);
+        return response([
+            'status' => true,
+            'data' => $data
+        ]);
+    }
+
     public function getpelunasan(Request $request)
     {
         $penerimaanTrucking = new PenerimaanTruckingHeader();
@@ -567,6 +579,22 @@ class PengeluaranTruckingHeaderController extends Controller
             $data = $pengeluaranTrucking->getTarikDeposito($id, $getSupir->supir_id);
         } else {
             $data = $pengeluaranTrucking->getDeleteTarikDeposito($id, $getSupir->supir_id);
+        }
+        return response([
+            'status' => true,
+            'data' => $data
+        ]);
+        // return $pengeluaranTrucking->getTarikDeposito($id);
+    }
+
+    public function getTarikDepositoKaryawan($id, $aksi)
+    {
+        $pengeluaranTrucking = new PengeluaranTruckingHeader();
+        $getKaryawan = $pengeluaranTrucking->find($id);
+        if ($aksi == 'edit') {
+            $data = $pengeluaranTrucking->getTarikDepositoKaryawan($id, $getKaryawan->karyawan_id);
+        } else {
+            $data = $pengeluaranTrucking->getDeleteTarikDepositoKaryawan($id, $getKaryawan->karyawan_id);
         }
         return response([
             'status' => true,

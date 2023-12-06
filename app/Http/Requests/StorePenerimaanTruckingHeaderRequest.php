@@ -12,7 +12,7 @@ use App\Rules\ValidasiDetail;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use App\Rules\ValidasiPenerimaanTrucking;
-
+use App\Rules\ValidasiSupirDeposito;
 
 class StorePenerimaanTruckingHeaderRequest extends FormRequest
 {
@@ -153,7 +153,7 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
                 'penerimaantrucking' => ['required', Rule::in($penerimaanName)],
                 'bank' => [$ruleBank, $bank, 'required'],
                 'bank_id' => [Rule::in($bankIds), 'required', 'min:1'],
-                'supir.*' => ['required', $supir],
+                'supir.*' => ['required', $supir, new ValidasiSupirDeposito()],
                 'supir_id.*' => [new SupirDPOPenerimaanTrucking, new ExistSupirDPOPenerimaanTrucking()],
                 // 'keterangancoa' => 'required'
             ];
