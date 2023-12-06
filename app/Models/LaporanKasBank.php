@@ -101,6 +101,7 @@ class LaporanKasBank extends MyModel
             ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
 
 
+
         DB::table($tempsaldoawal)->insertUsing([
             'bulan',
             'bank_id',
@@ -159,7 +160,7 @@ class LaporanKasBank extends MyModel
             ->select(
                 db::raw("format(a.tglbukti,'MM-yyyy') as bulan"),
                 DB::raw("a.bankdari_id as bank_id"),
-                DB::raw("sum(a.nominal) as nominaldebet"),
+                DB::raw("0 as nominaldebet"),
                 DB::raw("sum(a.nominal) as nominalkredit")
             )
             ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
@@ -239,8 +240,11 @@ class LaporanKasBank extends MyModel
         DB::delete(DB::raw("delete " . $tempsaldoawal . " from " . $tempsaldoawal . " a 
                     inner join " . $temppengembaliankepusat . " b on a.bank_id=b.bankpengembalian_id"));
 
-        // 
+      
 
+        // dd(db::table($tempsaldoawal)->where('bank_id',2)->get());
+
+        // 
 
         $queryrekap = db::table($tempsaldoawal)->from(db::raw($tempsaldoawal . " a"))
             ->select(
@@ -255,17 +259,17 @@ class LaporanKasBank extends MyModel
             ->groupby('a.bulan')
             ->groupby('a.bank_id');
 
-            
 
-            DB::table("saldoawalbank")->insertUsing([
-                'bulan',
-                'bank_id',
-                'nominaldebet',
-                'nominalkredit',
-                'info',
-                'created_at',
-                'updated_at',
-            ], $queryrekap);
+
+        DB::table("saldoawalbank")->insertUsing([
+            'bulan',
+            'bank_id',
+            'nominaldebet',
+            'nominalkredit',
+            'info',
+            'created_at',
+            'updated_at',
+        ], $queryrekap);
 
 
         // akhir rekap
@@ -376,8 +380,10 @@ class LaporanKasBank extends MyModel
             ->where('a.bank_id', '=', $bank_id)
             ->first();
 
-
+        // dd($querysaldoawal->to);
         $saldoawal =  ($querysaldoawal->nominal + $querysaldoawalpenerimaan->nominal + $querysaldoawalpenerimaanpindahbuku->nominal) - ($querysaldoawalpengeluaran->nominal + $querysaldoawalpengeluaranpindahbuku->nominal + $saldoawalpengembaliankepusat);
+
+        dd($saldoawal);
 
         // dd($saldoawal);
         // data coba coba
