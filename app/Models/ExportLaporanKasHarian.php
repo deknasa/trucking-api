@@ -78,19 +78,19 @@ class ExportLaporanKasHarian extends MyModel
         $bulan1 = date('m-Y', strtotime($awalcek));
         $bulan2 = date('m-Y', strtotime('1900-01-01'));
         // dd($bulan1);
-        while ($awalcek <= $akhircek) {
-            $bulan1 = date('m-Y', strtotime($awalcek));
-            if ($bulan1 != $bulan2) {
-                // dump($bulan1);
-                // dump($bulan1);
-                DB::delete(DB::raw("delete saldoawalbank WHERE isnull(bulan,'')='" . $bulan1 . "'"));
-            }
+        // while ($awalcek <= $akhircek) {
+        //     $bulan1 = date('m-Y', strtotime($awalcek));
+        //     if ($bulan1 != $bulan2) {
+        //         // dump($bulan1);
+        //         // dump($bulan1);
+        //         DB::delete(DB::raw("delete saldoawalbank WHERE isnull(bulan,'')='" . $bulan1 . "'"));
+        //     }
 
-            $awalcek = date('Y-m-d', strtotime($awalcek . ' +1 day'));
-            $awalcek2 = date('Y-m-d', strtotime($awalcek . ' +1 day'));
-            $bulan2 = date('m-Y', strtotime($awalcek2));
-        }
-        DB::delete(DB::raw("delete saldoawalbank WHERE isnull(bulan,'')='" . $bulan2 . "'"));
+        //     $awalcek = date('Y-m-d', strtotime($awalcek . ' +1 day'));
+        //     $awalcek2 = date('Y-m-d', strtotime($awalcek . ' +1 day'));
+        //     $bulan2 = date('m-Y', strtotime($awalcek2));
+        // }
+        // DB::delete(DB::raw("delete saldoawalbank WHERE isnull(bulan,'')='" . $bulan2 . "'"));
 
         // dd('test1');
         $tempsaldoawal = '##tempsaldoawal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -278,6 +278,30 @@ class ExportLaporanKasHarian extends MyModel
             ->groupby('a.bank_id');
 
 
+        $tempsaldoawalrekap = '##tempsaldoawalrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsaldoawalrekap, function ($table) {
+            $table->string('bulan', 1000)->nullable();
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->double('nominaldebet', 15, 2)->nullable();
+            $table->double('nominalkredit', 15, 2)->nullable();
+            $table->longtext('info')->nullable();
+            $table->datetime('created_at')->nullable();
+            $table->datetime('updated_at')->nullable();
+        });
+
+        DB::table($tempsaldoawalrekap)->insertUsing([
+            'bulan',
+            'bank_id',
+            'nominaldebet',
+            'nominalkredit',
+            'info',
+            'created_at',
+            'updated_at',
+        ], $queryrekap);
+
+
+        DB::delete(DB::raw("delete saldoawalbank from saldoawalbank as a 
+                inner join " . $tempsaldoawalrekap . " b on a.bulan=b.bulan and a.bank_id=b.bank_id"));
 
         DB::table("saldoawalbank")->insertUsing([
             'bulan',
@@ -494,19 +518,19 @@ class ExportLaporanKasHarian extends MyModel
         ], $queryTempPindahBukuDua);
 
         // pengembalian kepusat
-       
+
         $coabank = db::table("bank")->from(db::raw("bank a with (readuncommitted)"))
-        ->select(
-            'a.coa'
-        )->where('a.id', $jenis)
-        ->first()->coa ?? '';
+            ->select(
+                'a.coa'
+            )->where('a.id', $jenis)
+            ->first()->coa ?? '';
 
 
         $bankpengembaliankepusat = db::table('bank')->from(db::raw("bank a with (readuncommitted)"))
-        ->select('a.id')
-        ->where('a.coa', $coabank)
-        ->whereRaw("a.id<>" . $jenis)
-        ->first();
+            ->select('a.id')
+            ->where('a.coa', $coabank)
+            ->whereRaw("a.id<>" . $jenis)
+            ->first();
 
         if (isset($bankpengembaliankepusat)) {
             $queryTempPengeluaran = DB::table('pengeluarandetail')->from(
@@ -528,7 +552,7 @@ class ExportLaporanKasHarian extends MyModel
                 ->whereRaw("month(A.tgljatuhtempo)= cast(left($bulan,2) as integer)")
                 ->whereRaw("year(A.tgljatuhtempo)= cast(right($tahun,4) as integer)")
                 ->where('b.bank_id', '=', $bankpengembaliankepusat->id);
-    
+
             DB::table($tempList)->insertUsing([
                 'coa',
                 'jenis',
@@ -544,7 +568,7 @@ class ExportLaporanKasHarian extends MyModel
 
 
 
-       
+
 
         // 
 
