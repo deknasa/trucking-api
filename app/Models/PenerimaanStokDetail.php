@@ -235,7 +235,7 @@ class PenerimaanStokDetail extends MyModel
                 "$this->table.nominaldiscount",
                 "$this->table.total",
                 "$this->table.keterangan",
-                "$this->table.vulkanisirke",
+                "statusban.text as statusban",
                 DB::raw("isnull(d1.vulkan,0) as vulkanisirke"),
                 "$this->table.modifiedby",
                 DB::raw("'Laporan Purchase Order (PO)' as judulLaporan"),
@@ -243,9 +243,11 @@ class PenerimaanStokDetail extends MyModel
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
+            
                 ->leftJoin(db::raw($tempvulkan . " d1"), "$this->table.stok_id", "d1.stok_id")
                 ->leftJoin("penerimaanstokheader", "$this->table.penerimaanstokheader_id", "penerimaanstokheader.id")
-                ->leftJoin("stok", "$this->table.stok_id", "stok.id");
+                ->leftJoin("stok", "$this->table.stok_id", "stok.id")
+                ->leftJoin('parameter as statusban', 'stok.statusban', 'statusban.id');
 
             if (request()->penerimaanstok_id == $spbp->id) {
                 if (request()->stok_id) {
