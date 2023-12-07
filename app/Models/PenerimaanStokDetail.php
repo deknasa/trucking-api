@@ -30,6 +30,21 @@ class PenerimaanStokDetail extends MyModel
     {
         $this->setRequestParameters();
 
+        $query = DB::table("PenerimaanStokHeader");
+        $header = $query->where("id", request()->penerimaanstokheader_id)->first();
+
+
+        $tempvulkan = '##tempvulkan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempvulkan, function ($table) {
+            $table->integer('stok_id')->nullable();
+            $table->integer('vulkan')->nullable();
+        });
+        
+        DB::table($tempvulkan)->insertUsing([
+            'stok_id',
+            'vulkan',
+        ], (new Stok())->getVulkan($header->tglbukti));
+
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
         $spbp = DB::table('penerimaanstok')->where('kodepenerimaan', 'SPBP')->first();
         $rtr = DB::table('pengeluaranstok')->where('kodepengeluaran', 'RTR')->first();
@@ -221,12 +236,14 @@ class PenerimaanStokDetail extends MyModel
                 "$this->table.total",
                 "$this->table.keterangan",
                 "$this->table.vulkanisirke",
+                DB::raw("isnull(d1.vulkan,0) as vulkanisirke"),
                 "$this->table.modifiedby",
                 DB::raw("'Laporan Purchase Order (PO)' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
+                ->leftJoin(db::raw($tempvulkan . " d1"), "$this->table.stok_id", "d1.stok_id")
                 ->leftJoin("penerimaanstokheader", "$this->table.penerimaanstokheader_id", "penerimaanstokheader.id")
                 ->leftJoin("stok", "$this->table.stok_id", "stok.id");
 

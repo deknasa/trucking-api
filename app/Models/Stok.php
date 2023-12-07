@@ -135,84 +135,18 @@ class Stok extends MyModel
         ],  $queryaki);
 
         //update total vulkanisir
-
-        $querytgl = date('Y/m/d');
-
-        $reuse = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
-            ->select('a.id')
-            ->where('grp', 'STATUS REUSE')
-            ->where('subgrp', 'STATUS REUSE')
-            ->where('text', 'REUSE')
-            ->first()->id ?? 0;
-
-
         $tempvulkan = '##tempvulkan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempvulkan, function ($table) {
             $table->integer('stok_id')->nullable();
             $table->integer('vulkan')->nullable();
         });
-
-        $tempvulkanplus = '##tempvulkanplus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($tempvulkanplus, function ($table) {
-            $table->integer('stok_id')->nullable();
-            $table->integer('vulkan')->nullable();
-        });
-
-
-        $tempvulkanminus = '##tempvulkanminus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($tempvulkanminus, function ($table) {
-            $table->integer('stok_id')->nullable();
-            $table->integer('vulkan')->nullable();
-        });
-
-
-        $queryvulkanplus = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
-            ->select(
-                db::raw("a.id as stok_id"),
-                db::raw("sum(b.vulkanisirke) as vulkan"),
-            )
-            ->join(db::raw("penerimaanstokdetail b with (readuncommitted)"), 'a.id', 'b.stok_id')
-            ->join(db::raw("penerimaanstokheader c with (readuncommitted)"), 'b.nobukti', 'c.nobukti')
-            ->where('a.statusreuse', $reuse)
-            ->whereraw("c.tglbukti<='" . $querytgl . "'")
-            ->groupby('a.id');
-
-        DB::table($tempvulkanplus)->insertUsing([
-            'stok_id',
-            'vulkan',
-        ],  $queryvulkanplus);
-
-        $queryvulkanminus = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
-            ->select(
-                db::raw("a.id as stok_id"),
-                db::raw("sum(b.vulkanisirke) as vulkan"),
-            )
-            ->join(db::raw("pengeluaranstokdetail b with (readuncommitted)"), 'a.id', 'b.stok_id')
-            ->join(db::raw("pengeluaranstokheader c with (readuncommitted)"), 'b.nobukti', 'c.nobukti')
-            ->where('a.statusreuse', $reuse)
-            ->whereraw("c.tglbukti<='" . $querytgl . "'")
-            ->groupby('a.id');
-
-        DB::table($tempvulkanminus)->insertUsing([
-            'stok_id',
-            'vulkan',
-        ],  $queryvulkanminus);
-
-
-        $queryvulkan = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
-            ->select(
-                db::raw("a.id  as stok_id"),
-                db::raw("((isnull(a.vulkanisirawal,0)+isnull(b.vulkan,0))-isnull(c.vulkan,0)) as vulkan"),
-            )
-            ->leftjoin(db::raw($tempvulkanplus . " b "), 'a.id', 'b.stok_id')
-            ->leftjoin(db::raw($tempvulkanminus . " c "), 'a.id', 'c.stok_id')
-            ->where('a.statusreuse', $reuse);
-
+        
         DB::table($tempvulkan)->insertUsing([
             'stok_id',
             'vulkan',
-        ],  $queryvulkan);
-
+        ], $this->getVulkan());
+    
+        
 
 
 
@@ -1404,5 +1338,75 @@ class Stok extends MyModel
             $data
         );
         return $send;
+    }
+
+    function getVulkan($tanggal = null ){
+        $querytgl = ($tanggal)??date('Y/m/d');
+
+        $reuse = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select('a.id')
+            ->where('grp', 'STATUS REUSE')
+            ->where('subgrp', 'STATUS REUSE')
+            ->where('text', 'REUSE')
+            ->first()->id ?? 0;
+
+        $tempvulkanplus = '##tempvulkanplus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempvulkanplus, function ($table) {
+            $table->integer('stok_id')->nullable();
+            $table->integer('vulkan')->nullable();
+        });
+
+
+        $tempvulkanminus = '##tempvulkanminus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempvulkanminus, function ($table) {
+            $table->integer('stok_id')->nullable();
+            $table->integer('vulkan')->nullable();
+        });
+
+
+        $queryvulkanplus = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+            ->select(
+                db::raw("a.id as stok_id"),
+                db::raw("sum(b.vulkanisirke) as vulkan"),
+            )
+            ->join(db::raw("penerimaanstokdetail b with (readuncommitted)"), 'a.id', 'b.stok_id')
+            ->join(db::raw("penerimaanstokheader c with (readuncommitted)"), 'b.nobukti', 'c.nobukti')
+            ->where('a.statusreuse', $reuse)
+            ->whereraw("c.tglbukti<='" . $querytgl . "'")
+            ->groupby('a.id');
+
+        DB::table($tempvulkanplus)->insertUsing([
+            'stok_id',
+            'vulkan',
+        ],  $queryvulkanplus);
+
+        $queryvulkanminus = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+            ->select(
+                db::raw("a.id as stok_id"),
+                db::raw("sum(b.vulkanisirke) as vulkan"),
+            )
+            ->join(db::raw("pengeluaranstokdetail b with (readuncommitted)"), 'a.id', 'b.stok_id')
+            ->join(db::raw("pengeluaranstokheader c with (readuncommitted)"), 'b.nobukti', 'c.nobukti')
+            ->where('a.statusreuse', $reuse)
+            ->whereraw("c.tglbukti<='" . $querytgl . "'")
+            ->groupby('a.id');
+
+        DB::table($tempvulkanminus)->insertUsing([
+            'stok_id',
+            'vulkan',
+        ],  $queryvulkanminus);
+
+
+        $queryvulkan = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+            ->select(
+                db::raw("a.id  as stok_id"),
+                db::raw("((isnull(a.vulkanisirawal,0)+isnull(b.vulkan,0))-isnull(c.vulkan,0)) as vulkan"),
+            )
+            ->leftjoin(db::raw($tempvulkanplus . " b "), 'a.id', 'b.stok_id')
+            ->leftjoin(db::raw($tempvulkanminus . " c "), 'a.id', 'c.stok_id')
+            ->where('a.statusreuse', $reuse);
+        
+        return $queryvulkan;
+       
     }
 }
