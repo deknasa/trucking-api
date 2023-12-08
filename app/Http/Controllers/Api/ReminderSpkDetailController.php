@@ -21,7 +21,7 @@ class ReminderSpkDetailController extends Controller
         $stok = request()->stok ?? '';
 
         return response([
-            'data' => $reminderSpk->get($getdetail,$stok_id,$trado_id,$gandengan_id,$gudang,$stok,0,0),
+            'data' => $reminderSpk->get($getdetail,$stok_id,$trado_id,$gandengan_id,$gudang,$stok,0,0,'','','', 0, '', 0, 0),
             'attributes' => [
                 'totalRows' => $reminderSpk->totalRows,
                 'totalPages' => $reminderSpk->totalPages
