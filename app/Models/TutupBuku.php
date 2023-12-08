@@ -37,9 +37,14 @@ class TutupBuku extends Model
      ->first()->text ?? '1900-01-01';
 
  $awaldari = date('Y-m-', strtotime( $tgltutupbuku)) . '01';
+ $akhirdaria = date('Y-m-d', strtotime($awaldari . ' +33 day'));
+ $awaldarib = date('Y-m-', strtotime(  $akhirdaria)) . '01';
 //  $awalcek = date('Y-m-d', strtotime($tutupbuku . ' +1 day'));
  $awalcek =  $awaldari;
- $akhircek = date('Y-m-d', strtotime($awaldari . ' -1 day'));
+//  $akhircek = date('Y-m-d', strtotime($awaldari . ' -1 day'));
+ $akhircek = date('Y-m-d', strtotime($awaldarib . ' -1 day'));
+
+//  dd($akhircek);
 
  $getcabangid = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
  ->select(
@@ -48,7 +53,8 @@ class TutupBuku extends Model
  ->where('a.grp', 'ID CABANG')
  ->where('a.subgrp', 'ID CABANG')
  ->first()->text ?? 0;
-
+ 
+// dd($getcabangid);
 
  if ($awalcek <= $awalsaldo) {
      $awalcek = $awalsaldo;
@@ -82,7 +88,10 @@ class TutupBuku extends Model
      ->groupby('b.coa')
      ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
 
- // dd($querydetailsaldo->get());
+    //  dump($tglawalcek);
+    //  dd($tglakhircek);
+//  dd($querydetailsaldo->get());
+
 
  DB::table($tempsaldobukubesar)->insertUsing([
      'bulan',
@@ -100,10 +109,12 @@ class TutupBuku extends Model
          db::raw("getdate() as created_at"),
          db::raw("getdate() as updated_at"),
          db::raw($getcabangid . " as cabang_id"),
-         db::raw("'" . $tglawalcek . "' as tglbukti"),
+         db::raw("'" . $tgltutupbuku . "' as tglbukti"),
      )
      ->groupby('a.bulan')
      ->groupby('a.coa');
+
+    //  dd($queryrekap->get());
 
  $tempsaldobukubesarrekap = '##tempsaldobukubesarrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
  Schema::create($tempsaldobukubesarrekap, function ($table) {
