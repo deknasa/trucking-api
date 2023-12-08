@@ -203,7 +203,7 @@ class LaporanBukuBesar extends MyModel
             ->whereRaw("cast(right(a.bulan,4)+'/'+left(a.bulan,2)+'/1' as date)<'" . $dariformat . "'")
             ->whereRaw("a.bulan<>format(cast('" . $dariformat . "' as date),'MM-yyyy')")
             ->whereraw("(a.cabang_id=" . $cabang_id . " or " . $cabang_id . "=0)")
-            ->whereraw("b.id=106")
+            // ->whereraw("b.id=106")
 
             ->groupBy('a.coa');
 
@@ -276,6 +276,8 @@ class LaporanBukuBesar extends MyModel
             'kredit',
             'saldo',
         ], $querysaldoawal);
+
+        // dd(db::table($tempsaldo2)->get());
 
 
 
