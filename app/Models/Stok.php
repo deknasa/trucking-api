@@ -952,6 +952,9 @@ class Stok extends MyModel
 
     public function processStore(array $data): Stok
     {
+        $kelompokBan = Kelompok::where("kodekelompok","BAN")->first();
+        $kelompokAki = Kelompok::where("kodekelompok","AKI")->first();
+
         $stok = new stok();
         $stok->keterangan = $data['keterangan'];
         $stok->namastok = $data['namastok'];
@@ -982,6 +985,11 @@ class Stok extends MyModel
 
         if (!$stok->save()) {
             throw new \Exception("Error storing stok.");
+        }
+
+        if( ($data['kelompok_id'] == $kelompokBan->id) || ($data['kelompok_id'] == $kelompokAki->id) ){
+            $stok->namaterpusat = $stok->namastok;
+            $stok->save();
         }
 
         (new LogTrail())->processStore([
@@ -1035,6 +1043,10 @@ class Stok extends MyModel
         }
         if (!$stok->save()) {
             throw new \Exception("Error updating stok.");
+        }
+        if( ($data['kelompok_id'] == $kelompokBan->id) || ($data['kelompok_id'] == $kelompokAki->id) ){
+            $stok->namaterpusat = $stok->namastok;
+            $stok->save();
         }
 
 
