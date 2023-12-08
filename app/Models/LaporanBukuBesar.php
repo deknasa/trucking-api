@@ -207,8 +207,8 @@ class LaporanBukuBesar extends MyModel
 
             ->groupBy('a.coa');
 
-            dd( $querysaldoawal->tosql());
-            dd( $querysaldoawal->get());
+            // dd( $querysaldoawal->tosql());
+            // dd( $querysaldoawal->get());
 
 
         DB::table($tempsaldorekap)->insertUsing([
@@ -347,7 +347,7 @@ class LaporanBukuBesar extends MyModel
             ->leftjoin(DB::raw($tempsaldorekap) . " as b", 'a.coa', 'b.coa')
             ->whereRaw("(isnull(a.saldo,0)+isnull(b.saldo,0))<>0");
 
-            dd($querysaldoawal->get());
+            // dd($querysaldoawal->get());
         DB::table($tempsaldo)->insertUsing([
             'urut',
             'coa',
