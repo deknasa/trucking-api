@@ -1640,6 +1640,9 @@ class PengeluaranTruckingHeader extends MyModel
                 $totalNominal = $data['nominal'][$i] + $tambahan;
                 $data['nominal'][$i] = $totalNominal;
             }
+            if($data['pengeluarantrucking_id'] == 9){
+                $data['nominaltagih'][$i] = $data['nominal'][$i];
+            }
             $pengeluaranstok_nobukti = $data['pengeluaranstok_nobukti'][$i] ?? '';
             $stok = $data['stok_id'][$i] ?? null;
             $penerimaanstok_nobukti =  $data['penerimaanstok_nobukti'][$i] ?? '';
@@ -1942,7 +1945,9 @@ class PengeluaranTruckingHeader extends MyModel
                 $totalNominal = $data['nominal'][$i] + $tambahan;
                 $data['nominal'][$i] = $totalNominal;
             }
-
+            if($data['pengeluarantrucking_id'] == 9){
+                $data['nominaltagih'][$i] = $data['nominal'][$i];
+            }
             $pengeluaranstok_nobukti = $data['pengeluaranstok_nobukti'][$i] ?? '';
             $stok = $data['stok_id'][$i] ?? null;
             $penerimaanstok_nobukti =  $data['penerimaanstok_nobukti'][$i] ?? '';
