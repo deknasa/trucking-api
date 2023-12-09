@@ -275,6 +275,29 @@ class SaldoUmurAki extends MyModel
             'tglbukti',
         ], $querytrip);
 
+        // absensi supir
+
+        
+        $queryabsensi = db::table('absensisupirheader')->from(db::raw("absensisupirheader a with (readuncommitted)"))
+            ->select(
+                'b.stok_id',
+                'c.trado_id',
+                'a.tglbukti',
+            )
+            ->join(db::raw("absensisupirdetail c"), "a.nobukti", "c.nobukti")
+            ->join(db::raw($tempSaldoAki . " b"), "c.trado_id", "b.trado_id")
+            ->leftjoin(db::raw("absentrado d"), "c.absen_id", "d.id")
+            ->whereraw("isnull(d.kodeabsen,'')='I'")
+            ->groupBy('b.stok_id')
+            ->groupBy('c.trado_id')
+            ->groupBy('a.tglbukti');
+
+        DB::table($tempumurakiberjalan)->insertUsing([
+            'stok_id',
+            'trado_id',
+            'tglbukti',
+        ], $queryabsensi);        
+
 
         $tempumurakiberjalanrekap = '##tempumurakiberjalanrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempumurakiberjalanrekap, function ($table) {
