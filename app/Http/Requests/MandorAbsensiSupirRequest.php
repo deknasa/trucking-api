@@ -63,7 +63,7 @@ class MandorAbsensiSupirRequest extends FormRequest
                 }), Rule::when(empty($this->input('absen')), 'date_format:H:i')]
             ];
             $rulesBeda = [];
-        } else if($supirAbsen->id == request()->absen_id){
+        } else if ($supirAbsen->id == request()->absen_id) {
             $rules = [
                 'trado' => 'required',
                 'trado_id' => 'required',
@@ -75,10 +75,22 @@ class MandorAbsensiSupirRequest extends FormRequest
                 }), Rule::when(empty($this->input('absen')), 'date_format:H:i')]
             ];
             $rulesBeda = [];
-        }else {
+        } else {
+            $requiredSupir = Rule::requiredIf(function () {
+            
+                $cekSupir = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp',"ABSENSI SUPIR")
+                    ->where('subgrp',"TRADO MILIK SUPIR")
+                    ->first();
+                    
+                if ($cekSupir->text != 'YA') {
+                    return false;
+                }
+                return true;
+            });
             $rules = [
                 'trado_id' => 'required',
-                'supir' => 'required',
+                'supir' => $requiredSupir,
                 'absen' => 'nullable',
                 'jam' => [Rule::requiredIf(function () {
                     return empty($this->input('absen'));

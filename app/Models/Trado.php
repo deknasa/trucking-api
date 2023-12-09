@@ -164,6 +164,7 @@ class Trado extends MyModel
         $absensiId = request()->absensiId ?? '';
         $aktif = request()->aktif ?? '';
         $trado_id = request()->trado_id ?? '';
+        $supirserap = request()->supirserap ?? false;
         $cabang = request()->cabang ?? 'TAS';
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
@@ -224,6 +225,7 @@ class Trado extends MyModel
                 'parameter_statuslewatvalidasi.memo as statuslewatvalidasi',
                 'parameter_statusabsensisupir.memo as statusabsensisupir',
                 'mandor.namamandor as mandor_id',
+                'supir.id as supirid',
                 'supir.namasupir as supir_id',
                 'trado.updated_at',
                 DB::raw("'Laporan Trado' as judulLaporan"),
@@ -258,6 +260,9 @@ class Trado extends MyModel
         if ($absensiId != '') {
             $query->join('absensisupirdetail', 'trado.id', '=', 'absensisupirdetail.trado_id')
             ->where('absensisupirdetail.absensi_id', '=', $absensiId);
+        }
+        if($supirserap) {
+            $query->where('trado.supir_id', '!=', 0);
         }
 
         $this->filter($query);
