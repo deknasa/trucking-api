@@ -285,7 +285,9 @@ use App\Http\Controllers\Api\SuratPengantarApprovalInputTripController;
 use App\Http\Controllers\Api\ApprovalBukaTanggalSuratPengantarController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
+use App\Http\Controllers\Api\LaporanBiayaSupirController;
 use App\Http\Controllers\Api\LaporanMingguanSupirBedaMandorController;
+use App\Http\Controllers\Api\SupirSerapController;
 
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
@@ -537,6 +539,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::patch('mandorabsensisupir/{id}/update', [MandorAbsensiSupirController::class, 'update'])->whereNumber('id');
     Route::delete('mandorabsensisupir/{id}/delete', [MandorAbsensiSupirController::class, 'destroy'])->whereNumber('id');
   
+    Route::get('invoicelunaskepusat/report', [InvoiceLunasKePusatController::class, 'report']);
     Route::get('invoicelunaskepusat/export', [InvoiceLunasKePusatController::class, 'export']);
     Route::get('invoicelunaskepusat/{invoiceheader_id}/cekvalidasiadd', [InvoiceLunasKePusatController::class, 'cekValidasiAdd'])->whereNumber('invoiceheader_id');
     Route::get('invoicelunaskepusat/{invoiceheader_id}/cekvalidasi', [InvoiceLunasKePusatController::class, 'cekValidasi'])->whereNumber('invoiceheader_id');
@@ -1763,6 +1766,15 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('laporanmingguansupirbedamandor/export', [LaporanMingguanSupirBedaMandorController::class, 'export'])->name('laporanmingguansupirbedamandor.export');
     Route::resource('laporanmingguansupirbedamandor', LaporanMingguanSupirBedaMandorController::class);
+    
+    Route::post('supirserap/{id}/cekvalidasi', [SupirSerapController::class, 'cekvalidasi'])->whereNumber('id');
+    Route::get('supirserap/export', [SupirSerapController::class, 'export'])->whereNumber('id');
+    Route::post('supirserap/approval', [SupirSerapController::class, 'approval']);
+    Route::get('supirserap/field_length', [SupirSerapController::class, 'fieldLength']);
+    Route::resource('supirserap', SupirSerapController::class)->whereNumber('supirserap');
+
+    Route::get('laporanbiayasupir/export', [LaporanBiayaSupirController::class, 'export'])->name('laporanbiayasupir.export');
+    Route::resource('laporanbiayasupir', LaporanBiayaSupirController::class)->whereNumber('laporanbiayasupir');
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);
 

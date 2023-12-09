@@ -84,9 +84,10 @@ class MandorAbsensiSupirController extends Controller
 
         $mandorabsensisupir = new MandorAbsensiSupir();
         $tglbukaabsensi = request()->tanggal??'now' ;
-        $isTradoAbsen = $mandorabsensisupir->isAbsen($id,$tglbukaabsensi);
+        $supir_id = request()->supir_id?? 0 ;
+        $isTradoAbsen = $mandorabsensisupir->isAbsen($id,$tglbukaabsensi, $supir_id);
         if (!$isTradoAbsen) {
-            $isTradoAbsen = $mandorabsensisupir->getTrado($id);
+            $isTradoAbsen = $mandorabsensisupir->getTrado($id, $supir_id);
         }
         return response([
             'status' => true,
@@ -207,10 +208,11 @@ class MandorAbsensiSupirController extends Controller
     public function cekValidasi(Request $request,$tradoId)
     {
         $now = date('Y-m-d', strtotime($request->tanggal));
+        $supir_id = $request->supir_id;
         $getAbsen = AbsensiSupirHeader::from(DB::raw("absensisupirheader with (readuncommitted)"))->where('tglbukti', $now)->first();
 
         if ($getAbsen != null) {
-            $cekAbsen = AbsensiSupirDetail::from(DB::raw("absensisupirdetail with (readuncommitted)"))->where('nobukti', $getAbsen->nobukti)->where('trado_id', $tradoId)->first();
+            $cekAbsen = AbsensiSupirDetail::from(DB::raw("absensisupirdetail with (readuncommitted)"))->where('nobukti', $getAbsen->nobukti)->where('trado_id', $tradoId)->where('supir_id', $supir_id)->first();
             if ($cekAbsen != null) {
 
                 return response([
@@ -242,12 +244,13 @@ class MandorAbsensiSupirController extends Controller
     public function cekValidasiAdd(Request $request,$tradoId)
     {
         $now = date('Y-m-d', strtotime($request->tanggal));
+        $supir_id = $request->supir_id;
 
         // $now = date("Y-m-d");
         $getAbsen = AbsensiSupirHeader::from(DB::raw("absensisupirheader with (readuncommitted)"))->where('tglbukti', $now)->first();
         
         if ($getAbsen != null) {
-            $cekAbsen = AbsensiSupirDetail::from(DB::raw("absensisupirdetail with (readuncommitted)"))->where('nobukti', $getAbsen->nobukti)->where('trado_id', $tradoId)->first();
+            $cekAbsen = AbsensiSupirDetail::from(DB::raw("absensisupirdetail with (readuncommitted)"))->where('nobukti', $getAbsen->nobukti)->where('trado_id', $tradoId)->where('supir_id', $supir_id)->first();
             if ($cekAbsen != null) {
                 $getError = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')

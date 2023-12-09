@@ -18,7 +18,7 @@ class InvoiceLunasKePusatController extends Controller
     /**
      * @ClassName 
      */
-    public function index()
+    public function index(Request $request)
     {
 
         $invoicelunaskepusat = new InvoiceLunasKePusat();
@@ -209,6 +209,16 @@ class InvoiceLunasKePusatController extends Controller
         return response([
             'data' => $invoicelunaskepusat->get(),
             'judul' => $getJudul->text
+        ]);
+    }
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+        $invoicelunaskepusat = new InvoiceLunasKePusat();
+        return response([
+            'data' => $invoicelunaskepusat->report(),
         ]);
     }
 }

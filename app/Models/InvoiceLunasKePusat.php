@@ -81,7 +81,7 @@ class InvoiceLunasKePusat extends MyModel
             ->whereRaw("isnull(b.nobukti,'')=''")
             ->whereRaw("format(a.tglbukti,'MM-yyyy')='" . $periode . "'");
 
-            // dd($querytemp->tosql());
+        // dd($querytemp->tosql());
 
         DB::table($tempinvoice)->insertUsing([
             'invoiceheader_id',
@@ -105,11 +105,10 @@ class InvoiceLunasKePusat extends MyModel
                 'a.bayar',
                 'a.sisa',
             )
-            ->leftjoin(db::raw("agen  b with (readuncommitted)"),'a.agen_id','b.id')
+            ->leftjoin(db::raw("agen  b with (readuncommitted)"), 'a.agen_id', 'b.id')
             ->orderBy('a.nobukti', 'asc');
 
-
-            // dd($query->get());
+        // dd($query->get());
         $this->filter($query);
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -149,10 +148,9 @@ class InvoiceLunasKePusat extends MyModel
                                 if ($filters['field'] == 'agen_id') {
                                     $query = $query->orWhere('b.kodeagen', '=', $filters['data']);
                                 } else {
-                                    $query = $query->orWhereRaw( "a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                    $query = $query->orWhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                                 }
                             }
-
                         }
                     });
 
@@ -171,28 +169,28 @@ class InvoiceLunasKePusat extends MyModel
 
     public function sort($query)
     {
-       
-        return $query->orderBy('a.'.$this->params['sortIndex'], $this->params['sortOrder']);
+
+        return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 
     public function getinvoicelunas($id)
     {
         $query = db::table("invoiceheader")->from(db::raw("invoiceheader a with (readuncommitted)"))
-        ->select(
-            'c.id',
-            'a.id as invoiceheader_id',
-            'a.nobukti',
-            'a.tglbukti',
-            db::raw("isnull(b.kodeagen,'') as agen"),
-            db::raw("isnull(b.id,0) as agen_id"),
-            'a.nominal',
-            db::raw("isnull(c.tglbayar,format(getdate(),'yyyy/MM/dd')) as tglbayar"),
-            db::raw("isnull(c.bayar,0) as bayar"),
-            db::raw("(isnull(a.nominal,0)-isnull(c.nominal,0)) as sisa"),
-        )
-        ->leftjoin(db::raw("agen b with (readuncommitted)"),'a.agen_id','b.id')
-        ->leftjoin(db::raw("invoicelunaskepusat c with (readuncommitted)"),'a.nobukti','c.nobukti')
-        ->where('a.id',$id);
+            ->select(
+                'c.id',
+                'a.id as invoiceheader_id',
+                'a.nobukti',
+                'a.tglbukti',
+                db::raw("isnull(b.kodeagen,'') as agen"),
+                db::raw("isnull(b.id,0) as agen_id"),
+                'a.nominal',
+                db::raw("isnull(c.tglbayar,format(getdate(),'yyyy/MM/dd')) as tglbayar"),
+                db::raw("isnull(c.bayar,0) as bayar"),
+                db::raw("(isnull(a.nominal,0)-isnull(c.nominal,0)) as sisa"),
+            )
+            ->leftjoin(db::raw("agen b with (readuncommitted)"), 'a.agen_id', 'b.id')
+            ->leftjoin(db::raw("invoicelunaskepusat c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+            ->where('a.id', $id);
 
 
         return $query->first();
@@ -204,11 +202,11 @@ class InvoiceLunasKePusat extends MyModel
         $InvoiceLunaskePusat->invoiceheader_id = $data['invoiceheader_id'];
         $InvoiceLunaskePusat->nobukti = $data['nobukti'] ?? '';
         $InvoiceLunaskePusat->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
-        $InvoiceLunaskePusat->agen_id =$data['agen_id'];
-        $InvoiceLunaskePusat->nominal =$data['nominal'];
+        $InvoiceLunaskePusat->agen_id = $data['agen_id'];
+        $InvoiceLunaskePusat->nominal = $data['nominal'];
         $InvoiceLunaskePusat->tglbayar = date('Y-m-d', strtotime($data['tglbayar']));
-        $InvoiceLunaskePusat->bayar =$data['bayar'];
-        $InvoiceLunaskePusat->sisa =$data['sisa'];
+        $InvoiceLunaskePusat->bayar = $data['bayar'];
+        $InvoiceLunaskePusat->sisa = $data['sisa'];
         $InvoiceLunaskePusat->modifiedby = auth('api')->user()->name;
         $InvoiceLunaskePusat->info = html_entity_decode(request()->info);
         // $request->sortname = $request->sortname ?? 'id';
@@ -236,11 +234,11 @@ class InvoiceLunasKePusat extends MyModel
         $InvoiceLunaskePusat->invoiceheader_id = $data['invoiceheader_id'];
         $InvoiceLunaskePusat->nobukti = $data['nobukti'] ?? '';
         $InvoiceLunaskePusat->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
-        $InvoiceLunaskePusat->agen_id =$data['agen_id'];
-        $InvoiceLunaskePusat->nominal =$data['nominal'];
+        $InvoiceLunaskePusat->agen_id = $data['agen_id'];
+        $InvoiceLunaskePusat->nominal = $data['nominal'];
         $InvoiceLunaskePusat->tglbayar = date('Y-m-d', strtotime($data['tglbayar']));
-        $InvoiceLunaskePusat->bayar =$data['bayar'];
-        $InvoiceLunaskePusat->sisa =$data['sisa'];
+        $InvoiceLunaskePusat->bayar = $data['bayar'];
+        $InvoiceLunaskePusat->sisa = $data['sisa'];
         $InvoiceLunaskePusat->modifiedby = auth('api')->user()->name;
         $InvoiceLunaskePusat->info = html_entity_decode(request()->info);
 
@@ -280,4 +278,87 @@ class InvoiceLunasKePusat extends MyModel
         return $InvoiceLunaskePusat;
     }
 
+    public function report()
+    {
+
+        $periode = request()->periode ?? '01-1900';
+        $forReport = request()->forReport ?? false;
+        $invId = request()->invId ?? '';
+        $tempinvoice = '##tempinvoice' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempinvoice, function ($table) {
+            $table->id();
+            $table->string('nobukti', 50)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->string('piutang_nobukti', 50)->nullable();
+            $table->string('agen', 100)->nullable();
+            $table->string('invbulan', 50)->nullable();
+            $table->date('tglpiutang')->nullable();
+            $table->string('cabang', 50)->nullable();
+            $table->string('bagian', 50)->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+        $cabang = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('cabang.kodecabang')
+        ->join(DB::raw("cabang with (readuncommitted)"), 'cabang.id', 'parameter.text')
+        ->where('parameter.grp', 'ID CABANG')->first();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+        $querytemp = db::table("invoiceheader")->from(db::raw("invoiceheader a with (readuncommitted)"))
+            ->select(
+                'a.nobukti',
+                'a.tglbukti',
+                'a.piutang_nobukti',
+                'agen.namaagen as agen',
+                DB::raw("'$periode' as invbulan"),
+                'piutangheader.tglbukti as tglpiutang',
+                DB::raw("'$cabang->kodecabang' as cabang"),
+                'jenisorder.keterangan as bagian',
+                'a.nominal',
+            )
+            ->leftJoin(DB::raw("piutangheader with (readuncommitted)"), 'piutangheader.nobukti', 'a.piutang_nobukti')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'agen.id', 'a.agen_id')
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'jenisorder.id', 'a.jenisorder_id')
+            ->whereRaw("format(a.tglbukti,'MM-yyyy')='" . $periode . "'")
+            ->whereRaw("a.id in ($invId)");
+
+        // dd($querytemp->tosql());
+
+        DB::table($tempinvoice)->insertUsing([
+            'nobukti',
+            'tglbukti',
+            'piutang_nobukti',
+            'agen',
+            'invbulan',
+            'tglpiutang',
+            'cabang',
+            'bagian',
+            'nominal'
+        ], $querytemp);
+
+        $query = db::table($tempinvoice)->from(db::raw($tempinvoice . " a"))
+            ->select(
+                'a.nobukti',
+                'a.tglbukti',
+                'a.piutang_nobukti',
+                'a.agen',
+                'a.invbulan',
+                'a.tglpiutang',
+                'a.cabang',
+                'a.bagian',
+                'a.nominal',
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'LAMPIRAN (INVOICE TRUCKING)' as judulLaporan"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            )
+            ->orderBy('a.nobukti', 'asc');
+
+
+        $data = $query->get();
+        return $data;
+    }
 }
