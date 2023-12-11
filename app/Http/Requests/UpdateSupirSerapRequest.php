@@ -2,6 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\DateTutupBuku;
+use App\Rules\ExistSupir;
+use App\Rules\ExistSupirSerap;
+use App\Rules\ExistTrado;
+use App\Rules\ValidasiSupirSerap;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateSupirSerapRequest extends FormRequest
@@ -13,7 +18,7 @@ class UpdateSupirSerapRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,8 +28,66 @@ class UpdateSupirSerapRequest extends FormRequest
      */
     public function rules()
     {
+        $rules = [
+            'tglabsensi' => [
+                'required', 'date_format:d-m-Y',
+                new DateTutupBuku(),
+            ],
+            'trado' => 'required',
+            'supir' => 'required',
+            'supirserap' => ['required', new ValidasiSupirSerap()],
+        ];
+
+        $trado_id = $this->trado_id;
+        $rulesTrado_id = [];
+        if ($trado_id != null) {
+            $rulesTrado_id = [
+                'trado_id' => ['required', 'numeric', 'min:1', new ExistTrado()]
+            ];
+        } else if ($trado_id == null && $this->trado != '') {
+            $rulesTrado_id = [
+                'trado_id' => ['required', 'numeric', 'min:1', new ExistTrado()]
+            ];
+        }
+
+        $supir_id = $this->supir_id;
+        $rulesSupir_id = [];
+        if ($supir_id != null) {
+            $rulesSupir_id = [
+                'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
+            ];
+        } else if ($supir_id == null && $this->supir != '') {
+            $rulesSupir_id = [
+                'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
+            ];
+        }
+
+        $supirserap_id = $this->supirserap_id;
+        $rulesSerap_id = [];
+        if ($supirserap_id != null) {
+            $rulesSerap_id = [
+                'supirserap_id' => ['required', 'numeric', 'min:1', new ExistSupirSerap()]
+            ];
+        } else if ($supirserap_id == null && $this->supirserap != '') {
+            $rulesSerap_id = [
+                'supirserap_id' => ['required', 'numeric', 'min:1', new ExistSupirSerap()]
+            ];
+        }
+
+        $rules = array_merge(
+            $rules,
+            $rulesTrado_id,
+            $rulesSupir_id,
+            $rulesSerap_id
+        );
+
+        return $rules;
+    }
+
+    public function attributes()
+    {
         return [
-            //
+            'supirserap' => 'supir serap'
         ];
     }
 }

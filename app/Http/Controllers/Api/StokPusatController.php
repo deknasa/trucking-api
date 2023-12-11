@@ -59,6 +59,12 @@ class StokPusatController extends Controller
                 'stok_idbtg' => $request->stok_idbtg,
                 'namastokbtg' => $request->namastokbtg,
                 'gambarbtg' => $request->gambarbtg,
+                'stok_idmdndel' => $request->stok_idmdndel,
+                'stok_idjktdel' => $request->stok_idjktdel,
+                'stok_idjkttnldel' => $request->stok_idjkttnldel,
+                'stok_idmksdel' => $request->stok_idmksdel,
+                'stok_idsbydel' => $request->stok_idsbydel,
+                'stok_idbtgdel' => $request->stok_idbtgdel, 
             ];
             $stok = (new StokPusat())->processStore($data);
             $stok->position = $this->getPosition($stok, $stok->getTable())->position;
@@ -203,6 +209,12 @@ class StokPusatController extends Controller
                 'stok_idbtg' => $request->stok_idbtg,
                 'namastokbtg' => $request->namastokbtg,
                 'gambarbtg' => $request->gambarbtg,
+                'stok_idmdndel' => $request->stok_idmdndel,
+                'stok_idjktdel' => $request->stok_idjktdel,
+                'stok_idjkttnldel' => $request->stok_idjkttnldel,
+                'stok_idmksdel' => $request->stok_idmksdel,
+                'stok_idsbydel' => $request->stok_idsbydel,
+                'stok_idbtgdel' => $request->stok_idbtgdel, 
             ];
             $stokPusat = (new StokPusat())->processUpdate($stokpusat, $data);
             $stokPusat->position = $this->getPosition($stokPusat, $stokPusat->getTable())->position;

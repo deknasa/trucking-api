@@ -52,7 +52,13 @@ class LaporanKasBank extends MyModel
         $awalcek = date('Y-m-d', strtotime($tutupbuku . ' +1 day'));
         $akhircek = date('Y-m-d', strtotime($awaldari . ' -1 day'));
 
+        $tgl3 = date('Y-m-d', strtotime($dari . ' +33 days'));
 
+        $tahun2 = date('Y', strtotime($tgl3));
+        $bulan2 = date('m', strtotime($tgl3));
+
+        $tgl2 = $tahun2 . '-' . $bulan2 . '-1';
+        $tgl2 = date('Y-m-d', strtotime($tgl2 . ' -1 day'));
 
         if ($awalcek <= $awalsaldo) {
             $awalcek = $awalsaldo;
@@ -63,16 +69,17 @@ class LaporanKasBank extends MyModel
         $bulan1 = date('m-Y', strtotime($awalcek));
         $bulan2 = date('m-Y', strtotime('1900-01-01'));
         // dd($bulan1);
-        while ($awalcek <= $akhircek) {
-            $bulan1 = date('m-Y', strtotime($awalcek));
-            if ($bulan1 != $bulan2) {
-                DB::delete(DB::raw("delete saldoawalbank from saldoawalbank as a WHERE isnull(a.bulan,'')='" . $bulan1 . "'"));
-            }
+        // while ($awalcek <= $akhircek) {
+        //     $bulan1 = date('m-Y', strtotime($awalcek));
+        //     if ($bulan1 != $bulan2) {
+        //         DB::delete(DB::raw("delete saldoawalbank from saldoawalbank as a WHERE isnull(a.bulan,'')='" . $bulan1 . "'"));
+        //     }
 
-            $awalcek = date('Y-m-d', strtotime($awalcek . ' +1 day'));
-            $awalcek2 = date('Y-m-d', strtotime($awalcek . ' +1 day'));
-            $bulan2 = date('m-Y', strtotime($awalcek2));
-        }
+        //     $awalcek = date('Y-m-d', strtotime($awalcek . ' +1 day'));
+        //     $awalcek2 = date('Y-m-d', strtotime($awalcek . ' +1 day'));
+        //     $bulan2 = date('m-Y', strtotime($awalcek2));
+        // }
+        // DB::delete(DB::raw("delete saldoawalbank WHERE isnull(bulan,'')='" . $bulan2 . "'"));
 
 
         $tempsaldoawal = '##tempsaldoawal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -96,9 +103,10 @@ class LaporanKasBank extends MyModel
                 DB::raw("0 as nominalkredit")
             )
             ->join(DB::raw("penerimaandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
             ->groupby('a.bank_id')
             ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
+
 
 
         DB::table($tempsaldoawal)->insertUsing([
@@ -117,7 +125,7 @@ class LaporanKasBank extends MyModel
                 DB::raw("sum(a.nominal) as nominaldebet"),
                 DB::raw("0 as nominalkredit")
             )
-            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
             ->groupby('a.bankke_id')
             ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
 
@@ -141,7 +149,7 @@ class LaporanKasBank extends MyModel
                 DB::raw("sum(b.nominal) as nominalkredit")
             )
             ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
             ->groupby('a.bank_id')
             ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
 
@@ -159,10 +167,10 @@ class LaporanKasBank extends MyModel
             ->select(
                 db::raw("format(a.tglbukti,'MM-yyyy') as bulan"),
                 DB::raw("a.bankdari_id as bank_id"),
-                DB::raw("sum(a.nominal) as nominaldebet"),
+                DB::raw("0 as nominaldebet"),
                 DB::raw("sum(a.nominal) as nominalkredit")
             )
-            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
             ->groupby('a.bankdari_id')
             ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
 
@@ -223,7 +231,7 @@ class LaporanKasBank extends MyModel
             )
             ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw($temppengembaliankepusat . " as c with (readuncommitted)"), 'a.bank_id', 'c.bankpengembalian_id')
-            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
             ->groupby('c.bank_id')
             ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
 
@@ -239,8 +247,11 @@ class LaporanKasBank extends MyModel
         DB::delete(DB::raw("delete " . $tempsaldoawal . " from " . $tempsaldoawal . " a 
                     inner join " . $temppengembaliankepusat . " b on a.bank_id=b.bankpengembalian_id"));
 
-        // 
 
+
+        // dd(db::table($tempsaldoawal)->where('bank_id',2)->get());
+
+        // 
 
         $queryrekap = db::table($tempsaldoawal)->from(db::raw($tempsaldoawal . " a"))
             ->select(
@@ -255,17 +266,40 @@ class LaporanKasBank extends MyModel
             ->groupby('a.bulan')
             ->groupby('a.bank_id');
 
-            
+        $tempsaldoawalrekap = '##tempsaldoawalrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsaldoawalrekap, function ($table) {
+            $table->string('bulan', 1000)->nullable();
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->double('nominaldebet', 15, 2)->nullable();
+            $table->double('nominalkredit', 15, 2)->nullable();
+            $table->longtext('info')->nullable();
+            $table->datetime('created_at')->nullable();
+            $table->datetime('updated_at')->nullable();
+        });
 
-            DB::table("saldoawalbank")->insertUsing([
-                'bulan',
-                'bank_id',
-                'nominaldebet',
-                'nominalkredit',
-                'info',
-                'created_at',
-                'updated_at',
-            ], $queryrekap);
+        DB::table($tempsaldoawalrekap)->insertUsing([
+            'bulan',
+            'bank_id',
+            'nominaldebet',
+            'nominalkredit',
+            'info',
+            'created_at',
+            'updated_at',
+        ], $queryrekap);
+
+
+        DB::delete(DB::raw("delete saldoawalbank from saldoawalbank as a 
+            inner join " . $tempsaldoawalrekap . " b on a.bulan=b.bulan and a.bank_id=b.bank_id"));
+
+        DB::table("saldoawalbank")->insertUsing([
+            'bulan',
+            'bank_id',
+            'nominaldebet',
+            'nominalkredit',
+            'info',
+            'created_at',
+            'updated_at',
+        ], $queryrekap);
 
 
         // akhir rekap
@@ -376,8 +410,10 @@ class LaporanKasBank extends MyModel
             ->where('a.bank_id', '=', $bank_id)
             ->first();
 
-
+        // dd($querysaldoawal->to);
         $saldoawal =  ($querysaldoawal->nominal + $querysaldoawalpenerimaan->nominal + $querysaldoawalpenerimaanpindahbuku->nominal) - ($querysaldoawalpengeluaran->nominal + $querysaldoawalpengeluaranpindahbuku->nominal + $saldoawalpengembaliankepusat);
+
+        // dd($saldoawal);
 
         // dd($saldoawal);
         // data coba coba
@@ -630,6 +666,7 @@ class LaporanKasBank extends MyModel
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftjoin(DB::raw("akunpusat as b with (readuncommitted)"), 'a.coa', 'b.coa')
+            ->orderBy('a.tglbukti', 'Asc')
             ->orderBy('a.id', 'Asc');
 
         if ($prosesneraca == 1) {

@@ -26,29 +26,33 @@ class MandorAbsensiSupirEditSupirValidasiTrado implements Rule
      */
     public function passes($attribute, $value)
     {
-         // dd(request()->trado);
-         $query = DB::table('absensisupirheader')
-         ->from(
-             DB::raw("absensisupirheader as a with (readuncommitted)")
-         )
-         ->select(
-             'b.trado_id'
-         )
-         ->join(db::Raw("absensisupirdetail as b with (readuncommitted)"),'a.id','b.absensi_id')
-         ->whereRaw("a.tglbukti='".date('Y-m-d')."'")
-         ->where('b.supir_id','=',$value)
-         ->where('b.trado_id','<>',request()->trado_id)
-         ->first();
- 
-  
-         if (isset($query)) {
-             $nilai=false;
-         } else {
-             $nilai=true;
-         }
- 
- 
-         return $nilai;
+        // dd(request()->trado);
+        $tradoMilikSupir = DB::table('parameter')->where('grp', 'ABSENSI SUPIR')->where('subgrp', 'TRADO MILIK SUPIR')->first();
+        if ($tradoMilikSupir->text == 'YA') {
+            $nilai = true;
+        } else {
+            $query = DB::table('absensisupirheader')
+                ->from(
+                    DB::raw("absensisupirheader as a with (readuncommitted)")
+                )
+                ->select(
+                    'b.trado_id'
+                )
+                ->join(db::Raw("absensisupirdetail as b with (readuncommitted)"), 'a.id', 'b.absensi_id')
+                ->whereRaw("a.tglbukti='" . date('Y-m-d') . "'")
+                ->where('b.supir_id', '=', $value)
+                ->where('b.trado_id', '<>', request()->trado_id)
+                ->first();
+
+
+            if (isset($query)) {
+                $nilai = false;
+            } else {
+                $nilai = true;
+            }
+        }
+
+        return $nilai;
     }
 
     /**
@@ -59,19 +63,19 @@ class MandorAbsensiSupirEditSupirValidasiTrado implements Rule
     public function message()
     {
         $query = DB::table('absensisupirheader')
-        ->from(
-            DB::raw("absensisupirheader as a with (readuncommitted)")
-        )
-        ->select(
-            'c.kodetrado'
-        )
-        ->join(db::Raw("absensisupirdetail as b with (readuncommitted)"),'a.id','b.absensi_id')
-        ->join(db::Raw("trado as c with (readuncommitted)"),'b.trado_id','c.id')
-        ->whereRaw("a.tglbukti='".date('Y-m-d')."'")
-        ->where('b.supir_id','=',request()->supir_id)
-        ->where('b.trado_id','<>',request()->trado_id)        
-        ->first();
+            ->from(
+                DB::raw("absensisupirheader as a with (readuncommitted)")
+            )
+            ->select(
+                'c.kodetrado'
+            )
+            ->join(db::Raw("absensisupirdetail as b with (readuncommitted)"), 'a.id', 'b.absensi_id')
+            ->join(db::Raw("trado as c with (readuncommitted)"), 'b.trado_id', 'c.id')
+            ->whereRaw("a.tglbukti='" . date('Y-m-d') . "'")
+            ->where('b.supir_id', '=', request()->supir_id)
+            ->where('b.trado_id', '<>', request()->trado_id)
+            ->first();
 
-        return ':attribute Sudah Pernah Di Input Di Trado '. $query->kodetrado;
+        return ':attribute Sudah Pernah Di Input Di Trado ' . $query->kodetrado;
     }
 }

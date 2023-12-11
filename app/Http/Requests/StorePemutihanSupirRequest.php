@@ -8,6 +8,7 @@ use App\Rules\ExistBank;
 use App\Rules\ExistSupir;
 use App\Rules\ValidasiHutangList;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StorePemutihanSupirRequest extends FormRequest
 {
@@ -43,15 +44,24 @@ class StorePemutihanSupirRequest extends FormRequest
 
         $bank_id = $this->bank_id;
         $ruleBank_id = [];
-        if ($bank_id != null) {
-            $ruleBank_id = [
-                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
-            ];
-        } else if ($bank_id == null && $this->bank != '') {
-            $ruleBank_id = [
-                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
-            ];
+        if (request()->jumlahposting > 0) {
+            if ($bank_id != null) {
+                $ruleBank_id = [
+                    'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+                ];
+            } else if ($bank_id == null && $this->bank != '') {
+                $ruleBank_id = [
+                    'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+                ];
+            }
         }
+        $requiredBank = Rule::requiredIf(function () {
+            $jumlahposting = request()->jumlahposting;
+            if ($jumlahposting > 0) {
+                return true;
+            }
+            return false;
+        });
 
         $rules = [
             'tglbukti' => [
@@ -62,7 +72,7 @@ class StorePemutihanSupirRequest extends FormRequest
             'supir' => [
                 'required', new ValidasiHutangList($jumlahdetail)
             ],
-            'bank' => 'required',
+            'bank' => $requiredBank,
         ];
         $rules = array_merge(
             $rules,

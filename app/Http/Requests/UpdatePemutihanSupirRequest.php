@@ -48,27 +48,37 @@ class UpdatePemutihanSupirRequest extends FormRequest
 
         $bank_id = $this->bank_id;
         $ruleBank_id = [];
-        if ($bank_id != null) {
-            $ruleBank_id = [
-                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
-            ];
-        } else if ($bank_id == null && $this->bank != '') {
-            $ruleBank_id = [
-                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
-            ];
-        }
+        if (request()->jumlahposting > 0) {
 
+            if ($bank_id != null) {
+                $ruleBank_id = [
+                    'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+                ];
+            } else if ($bank_id == null && $this->bank != '') {
+                $ruleBank_id = [
+                    'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+                ];
+            }
+        }
+        
+        $requiredBank = Rule::requiredIf(function () {
+            $jumlahposting = request()->jumlahposting;
+            if ($jumlahposting > 0) {
+                return true;
+            }
+            return false;
+        });
         $rules = [
             'nobukti' => [Rule::in($getData->nobukti)],
             'tglbukti' => [
-                'required','date_format:d-m-Y',
+                'required', 'date_format:d-m-Y',
                 'before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
             'supir' => [
                 'required', Rule::in($getData->supir), new ValidasiHutangList($jumlahdetail)
             ],
-            'bank' => ['required', Rule::in($getData->bank)],
+            'bank' => $requiredBank,
         ];
         $rules = array_merge(
             $rules,
@@ -78,7 +88,7 @@ class UpdatePemutihanSupirRequest extends FormRequest
 
         return $rules;
     }
-    public function messages() 
+    public function messages()
     {
         return [
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,

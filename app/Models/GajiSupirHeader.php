@@ -519,6 +519,7 @@ class GajiSupirHeader extends MyModel
     }
     public function createTempBiayaTambahan($supirId, $tglDari, $tglSampai)
     {
+        $cekStatus = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'SURAT PENGANTAR BIAYA TAMBAHAN')->first();
 
         $tempTambahan = '##tempTambahan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $biayaTambahan = DB::table("suratpengantarbiayatambahan")->from(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"))
@@ -529,7 +530,9 @@ class GajiSupirHeader extends MyModel
             ->where('suratpengantar.tglbukti', '<=', $tglSampai)
             ->whereRaw("suratpengantar.nobukti not in(select suratpengantar_nobukti from gajisupirdetail)")
             ->groupBy('suratpengantar_id');
-
+        if ($cekStatus->text == 'YA') {
+            $biayaTambahan->where('suratpengantarbiayatambahan.statusapproval', 3);
+        }
         Schema::create($tempTambahan, function ($table) {
             $table->bigInteger('suratpengantar_id')->nullable();
             $table->string('keteranganbiaya')->nullable();
@@ -540,6 +543,31 @@ class GajiSupirHeader extends MyModel
         return $tempTambahan;
     }
 
+    public function createTempBiayaTambahanEdit($gajiId, $supirId, $tglDari, $tglSampai)
+    {
+        $cekStatus = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'SURAT PENGANTAR BIAYA TAMBAHAN')->first();
+
+        $tempTambahan = '##tempTambahanedit' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $biayaTambahan = DB::table("suratpengantarbiayatambahan")->from(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"))
+            ->select(DB::raw("suratpengantar_id, STRING_AGG(keteranganbiaya, ', ') AS keteranganbiaya, SUM(isnull(nominal, 0)) as biayaextra"))
+            ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'suratpengantar.id', 'suratpengantarbiayatambahan.suratpengantar_id')
+            ->where('suratpengantar.supir_id', $supirId)
+            ->where('suratpengantar.tglbukti', '>=', $tglDari)
+            ->where('suratpengantar.tglbukti', '<=', $tglSampai)
+            ->whereRaw("suratpengantar.nobukti in(select suratpengantar_nobukti from gajisupirdetail where gajisupir_id=$gajiId)")
+            ->groupBy('suratpengantar_id');
+        if ($cekStatus->text == 'YA') {
+            $biayaTambahan->where('suratpengantarbiayatambahan.statusapproval', 3);
+        }
+        Schema::create($tempTambahan, function ($table) {
+            $table->bigInteger('suratpengantar_id')->nullable();
+            $table->string('keteranganbiaya')->nullable();
+            $table->bigInteger('biayaextra')->nullable();
+        });
+
+        DB::table($tempTambahan)->insertUsing(['suratpengantar_id', 'keteranganbiaya', 'biayaextra'], $biayaTambahan);
+        return $tempTambahan;
+    }
     public function createTempGetTrip($supirId, $tglDari, $tglSampai)
     {
         $getBiaya = $this->createTempBiayaTambahan($supirId, $tglDari, $tglSampai);
@@ -1156,6 +1184,7 @@ class GajiSupirHeader extends MyModel
         $temp = '##tempRIC' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
 
+        $getBiaya = $this->createTempBiayaTambahanEdit($gajiId, $supir_id, $dari, $sampai);
         $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
             ->select(
                 'gajisupirdetail.suratpengantar_nobukti as nobuktitrip',
@@ -1173,14 +1202,17 @@ class GajiSupirHeader extends MyModel
                 'gajisupirdetail.gajiritasi as upahritasi',
                 'gajisupirdetail.ritasi_nobukti',
                 'ritasi.statusritasi',
-                'gajisupirdetail.biayatambahan as biayaextra',
-                'gajisupirdetail.keteranganbiayatambahan as keteranganbiaya'
+                DB::raw("(case when ritasi.suratpengantar_urutke > 1 then 0 else biayatambahan.biayaextra end) as biayaextra"),
+                DB::raw("(case when ritasi.suratpengantar_urutke > 1 then '-' else biayatambahan.keteranganbiaya end) as keteranganbiaya"),
+                // 'gajisupirdetail.biayatambahan as biayaextra',
+                // 'gajisupirdetail.keteranganbiayatambahan as keteranganbiaya'
             )
             ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'suratpengantar.nobukti')
             ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
             ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
             ->leftJoin(DB::raw("ritasi with (readuncommitted)"), 'gajisupirdetail.ritasi_nobukti', 'ritasi.nobukti')
+            ->leftJoin(DB::raw("$getBiaya as biayatambahan with (readuncommitted)"), 'suratpengantar.id', 'biayatambahan.suratpengantar_id')
             ->where('gajisupirdetail.suratpengantar_nobukti', '!=', '-')
             ->where('gajisupirdetail.gajisupir_id', $gajiId);
 
@@ -1336,27 +1368,40 @@ class GajiSupirHeader extends MyModel
     public function getAbsensi($supir_id, $tglDari, $tglSampai)
     {
         $this->setRequestParameters();
-        $query = DB::table("absensisupirdetail")->from(DB::raw("absensisupirdetail with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By absensisupirheader.nobukti) as absensi_id"), 'absensisupirheader.nobukti as absensi_nobukti', 'absensisupirheader.tglbukti as absensi_tglbukti', 'absensisupirdetail.uangjalan as absensi_uangjalan')
+
+        $temp = '##tempAbsen' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        // LEPAS ROW NUMBER DULU, BARU INPUT CREATE TEMP, BARU KASIH ROW NUMBER
+        Schema::create($temp, function ($table) {
+            $table->string('absensi_nobukti');
+            $table->date('absensi_tglbukti')->nullable();
+            $table->float('absensi_uangjalan')->nullable();
+        });
+
+        $fetch = DB::table("absensisupirdetail")->from(DB::raw("absensisupirdetail with (readuncommitted)"))
+            ->select(DB::raw("max(absensisupirheader.nobukti) as absensi_nobukti"), DB::raw("max(absensisupirheader.tglbukti) as absensi_tglbukti"), DB::raw("sum(absensisupirdetail.uangjalan) as absensi_uangjalan"))
             ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirheader.nobukti', 'absensisupirdetail.nobukti')
             ->whereBetween('absensisupirheader.tglbukti', [$tglDari, $tglSampai])
             ->where('absensisupirdetail.supir_id', $supir_id)
-            ->whereRaw("absensisupirheader.nobukti not in (select absensisupir_nobukti from gajisupiruangjalan where supir_id=$supir_id)");
+            ->whereRaw("absensisupirheader.nobukti not in (select absensisupir_nobukti from gajisupiruangjalan where supir_id=$supir_id)")
+            ->groupBy('absensisupirdetail.supir_id');
 
+        DB::table($temp)->insertUsing(['absensi_nobukti', 'absensi_tglbukti', 'absensi_uangjalan'], $fetch);
+
+        $query = DB::table($temp)->from(DB::raw("$temp as a with (readuncommitted)"))
+            ->select(
+                DB::raw("row_number() Over(Order By a.absensi_nobukti) as absensi_id"),
+                'a.absensi_nobukti',
+                'a.absensi_tglbukti',
+                'a.absensi_uangjalan',
+            );
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        if ($this->params['sortIndex'] == 'absensi_uangjalan') {
-            $query->orderBy('absensisupirdetail.uangjalan', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'absensi_nobukti') {
-            $query->orderBy('absensisupirdetail.nobukti', $this->params['sortOrder']);
-        } else {
-            $query->orderBy('absensisupirheader.tglbukti', $this->params['sortOrder']);
-        }
-        $this->filterAbsensi($query, 'absensisupirdetail', 'absensisupirheader');
+        $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        $this->filterAbsensi($query, 'a', 'absensisupirheader');
         $this->paginate($query);
         $data = $query->get();
-        $this->totalUangJalan = $query->sum('uangjalan');
+        $this->totalUangJalan = $query->sum('a.absensi_uangjalan');
         return $data;
     }
 
@@ -1364,7 +1409,16 @@ class GajiSupirHeader extends MyModel
     public function getEditAbsensi($id)
     {
         $this->setRequestParameters();
-        $query = DB::table("gajisupiruangjalan")->from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
+        $temp = '##tempAbsen' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        // LEPAS ROW NUMBER DULU, BARU INPUT CREATE TEMP, BARU KASIH ROW NUMBER
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('absensi_id');
+            $table->bigInteger('gajisupir_id');
+            $table->string('absensi_nobukti');
+            $table->date('absensi_tglbukti')->nullable();
+            $table->float('absensi_uangjalan')->nullable();
+        });
+        $fetch = DB::table("gajisupiruangjalan")->from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
             ->select(
                 DB::raw("row_number() Over(Order By gajisupiruangjalan.absensisupir_nobukti) as absensi_id"),
                 'gajisupiruangjalan.gajisupir_id as gajisupir_id',
@@ -1375,20 +1429,20 @@ class GajiSupirHeader extends MyModel
             ->join(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirheader.nobukti', 'gajisupiruangjalan.absensisupir_nobukti')
             ->where('gajisupiruangjalan.gajisupir_id', $id);
 
+        DB::table($temp)->insertUsing(['absensi_id', 'gajisupir_id', 'absensi_nobukti', 'absensi_tglbukti', 'absensi_uangjalan'], $fetch);
+        $query = DB::table($temp)->from(DB::raw("$temp as a"));
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
-        if ($this->params['sortIndex'] == 'absensi_uangjalan') {
-            $query->orderBy('gajisupiruangjalan.nominal', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'absensi_nobukti') {
-            $query->orderBy('gajisupiruangjalan.absensisupir_nobukti', $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'id') {
+            $query->orderBy('a.absensi_id', $this->params['sortOrder']);
         } else {
-            $query->orderBy('absensisupirheader.tglbukti', $this->params['sortOrder']);
+            $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
+
         $this->filterAbsensi($query, 'gajisupiruangjalan');
         $this->paginate($query);
         $data = $query->get();
-        $this->totalUangJalan = $query->sum('gajisupiruangjalan.nominal');
+        $this->totalUangJalan = $query->sum('a.absensi_uangjalan');
         return $data;
     }
 
@@ -1399,53 +1453,47 @@ class GajiSupirHeader extends MyModel
         $getUangjalan = DB::table("gajisupiruangjalan")->from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
             ->select(
                 'gajisupiruangjalan.gajisupir_id as gajisupir_id',
-                'gajisupiruangjalan.absensisupir_nobukti',
-                'absensisupirheader.tglbukti',
-                'gajisupiruangjalan.nominal'
+                'gajisupiruangjalan.absensisupir_nobukti as absensi_nobukti',
+                'absensisupirheader.tglbukti as absensi_tglbukti',
+                'gajisupiruangjalan.nominal as absensi_uangjalan'
             )
             ->join(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirheader.nobukti', 'gajisupiruangjalan.absensisupir_nobukti')
             ->where('gajisupiruangjalan.gajisupir_id', $id);
         Schema::create($temp, function ($table) {
-            $table->bigInteger('gajisupir_id')->nullable();
-            $table->string('absensisupir_nobukti')->nullable();
-            $table->date('tglbukti')->nullable();
-            $table->bigInteger('nominal')->nullable();
+            $table->bigInteger('gajisupir_id');
+            $table->string('absensi_nobukti');
+            $table->date('absensi_tglbukti')->nullable();
+            $table->float('absensi_uangjalan')->nullable();
         });
 
-        DB::table($temp)->insertUsing(['gajisupir_id', 'absensisupir_nobukti', 'tglbukti', 'nominal'], $getUangjalan);
+        DB::table($temp)->insertUsing(['gajisupir_id', 'absensi_nobukti', 'absensi_tglbukti', 'absensi_uangjalan'], $getUangjalan);
 
         $fetch = DB::table("absensisupirdetail")->from(DB::raw("absensisupirdetail with (readuncommitted)"))
-            ->select('absensisupirheader.nobukti as absensisupir_nobukti', 'absensisupirheader.tglbukti', 'absensisupirdetail.uangjalan as nominal')
+            ->select('absensisupirheader.nobukti as absensi_nobukti', 'absensisupirheader.tglbukti as absensi_tglbukti', 'absensisupirdetail.uangjalan as absensi_uangjalan')
             ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirheader.nobukti', 'absensisupirdetail.nobukti')
             ->whereBetween('absensisupirheader.tglbukti', [$dari, $sampai])
             ->where('absensisupirdetail.supir_id', $supir_id)
             ->whereRaw("absensisupirheader.nobukti not in (select absensisupir_nobukti from gajisupiruangjalan where supir_id=$supir_id)");
 
-        DB::table($temp)->insertUsing(['absensisupir_nobukti', 'tglbukti', 'nominal'], $fetch);
+        DB::table($temp)->insertUsing(['absensi_nobukti', 'absensi_tglbukti', 'absensi_uangjalan'], $fetch);
 
-        $query = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))
+        $query = DB::table($temp)->from(DB::raw("$temp as a with (readuncommitted)"))
             ->select(
-                DB::raw("row_number() Over(Order By $temp.absensisupir_nobukti) as absensi_id"),
-                "$temp.gajisupir_id",
-                "$temp.absensisupir_nobukti as absensi_nobukti",
-                "$temp.tglbukti as absensi_tglbukti",
-                "$temp.nominal as absensi_uangjalan"
+                DB::raw("row_number() Over(Order By a.absensi_nobukti) as absensi_id"),
+                "a.gajisupir_id",
+                "a.absensi_nobukti",
+                "a.absensi_tglbukti",
+                "a.absensi_uangjalan"
             );
 
-        if ($this->params['sortIndex'] == 'absensi_uangjalan') {
-            $query->orderBy($temp . '.nominal', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'absensi_nobukti') {
-            $query->orderBy($temp . '.absensisupir_nobukti', $this->params['sortOrder']);
-        } else {
-            $query->orderBy($temp . '.tglbukti', $this->params['sortOrder']);
-        }
+        $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
         $this->filterAbsensi($query, $temp);
         $this->paginate($query);
         $data = $query->get();
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-        $this->totalUangJalan = $query->sum($temp . '.nominal');
+        $this->totalUangJalan = $query->sum('a.absensi_uangjalan');
         return $data;
     }
 
@@ -1637,23 +1685,23 @@ class GajiSupirHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] != '') {
                             if ($filters['field'] == 'absensi_uangjalan') {
-                                if ($table1 == 'absensisupirdetail') {
-                                    $query = $query->whereRaw("format(absensisupirdetail.uangjalan, '#,#0.00') LIKE '%$filters[data]%'");
-                                } else {
-                                    $query = $query->whereRaw("format($table1.nominal, '#,#0.00') LIKE '%$filters[data]%'");
-                                }
+                                // if ($table1 == 'absensisupirdetail') {
+                                $query = $query->whereRaw("format(a.absensi_uangjalan, '#,#0.00') LIKE '%$filters[data]%'");
+                                // } else {
+                                //     $query = $query->whereRaw("format($table1.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                                // }
                             } else if ($filters['field'] == 'absensi_nobukti') {
-                                if ($table2 != null) {
-                                    $query = $query->where('absensisupirheader.nobukti', 'LIKE', "%$filters[data]%");
-                                } else {
-                                    $query = $query->where($table1 . '.absensisupir_nobukti', 'LIKE', "%$filters[data]%");
-                                }
+                                // if ($table2 != null) {
+                                $query = $query->where('a.absensi_nobukti', 'LIKE', "%$filters[data]%");
+                                // } else {
+                                //     $query = $query->where($table1 . '.absensisupir_nobukti', 'LIKE', "%$filters[data]%");
+                                // }
                             } else {
-                                if ($table1 == 'absensisupirdetail' || $table1 == 'gajisupiruangjalan') {
-                                    $query = $query->whereRaw("format(absensisupirheader.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                                } else {
-                                    $query = $query->whereRaw("format($table1.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                                }
+                                // if ($table1 == 'absensisupirdetail' || $table1 == 'gajisupiruangjalan') {
+                                $query = $query->whereRaw("format(a.absensi_tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                // } else {
+                                //     $query = $query->whereRaw("format($table1.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                // }
                             }
                         }
                     }
@@ -1663,23 +1711,23 @@ class GajiSupirHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] != '') {
                             if ($filters['field'] == 'absensi_uangjalan') {
-                                if ($table1 == 'absensisupirdetail') {
-                                    $query = $query->orWhereRaw("format(absensisupirdetail.uangjalan, '#,#0.00') LIKE '%$filters[data]%'");
-                                } else {
-                                    $query = $query->orWhereRaw("format($table1.nominal, '#,#0.00') LIKE '%$filters[data]%'");
-                                }
+                                // if ($table1 == 'absensisupirdetail') {
+                                $query = $query->orWhereRaw("format(a.absensi_uangjalan, '#,#0.00') LIKE '%$filters[data]%'");
+                                // } else {
+                                //     $query = $query->orWhereRaw("format($table1.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                                // }
                             } else if ($filters['field'] == 'absensi_nobukti') {
-                                if ($table2 != null) {
-                                    $query = $query->orWhere('absensisupirheader.nobukti', 'LIKE', "%$filters[data]%");
-                                } else {
-                                    $query = $query->orWhere($table1 . '.absensisupir_nobukti', 'LIKE', "%$filters[data]%");
-                                }
+                                // if ($table2 != null) {
+                                $query = $query->orWhere('a.absensi_nobukti', 'LIKE', "%$filters[data]%");
+                                // } else {
+                                //     $query = $query->orWhere($table1 . '.absensisupir_nobukti', 'LIKE', "%$filters[data]%");
+                                // }
                             } else {
-                                if ($table1 == 'absensisupirdetail' || $table1 == 'gajisupiruangjalan') {
-                                    $query = $query->orWhereRaw("format(absensisupirheader.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                                } else {
-                                    $query = $query->orWhereRaw("format($table1.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                                }
+                                // if ($table1 == 'absensisupirdetail' || $table1 == 'gajisupiruangjalan') {
+                                $query = $query->orWhereRaw("format(a.absensi_tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                // } else {
+                                //     $query = $query->orWhereRaw("format($table1.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                // }
                             }
                         }
                     }

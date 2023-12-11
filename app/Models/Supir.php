@@ -292,9 +292,15 @@ class Supir extends MyModel
             $query->where('supir.statusaktif', '=', $statusaktif->id);
         }
         if ($absen == true) {
+            $trado_id = request()->trado_id ?? '';
             $tglbukti = date('Y-m-d', strtotime($tgltrip));
+            $tradoMilikSupir = DB::table('parameter')->where('grp', 'ABSENSI SUPIR')->where('subgrp', 'TRADO MILIK SUPIR')->first();
             $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti', $tglbukti)->first();
-            $query->whereRaw("supir.id in (select supir_id from absensisupirdetail where absensi_id=$absensiSupirHeader->id)");
+            if ($tradoMilikSupir->text == 'YA') {
+                $query->whereRaw("supir.id in (select supir_id from absensisupirdetail where absensi_id=$absensiSupirHeader->id and trado_id=$trado_id)");
+            } else {
+                $query->whereRaw("supir.id in (select supir_id from absensisupirdetail where absensi_id=$absensiSupirHeader->id)");
+            }
         }
         if ($supir_id != '') {
             $query->where('supir.id', $supir_id);

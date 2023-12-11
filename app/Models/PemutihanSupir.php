@@ -828,17 +828,17 @@ class PemutihanSupir extends MyModel
         $pemutihanSupir->penerimaan_nobukti = (new RunningNumberService)->get($group, $subgroup, $pemutihanSupir->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         // GET NO BUKTI PENERIMAAN
-        $querysubgrppenerimaan = Bank::from(DB::raw("bank with (readuncommitted)"))
-            ->select(
-                'parameter.grp',
-                'parameter.subgrp',
-                'bank.formatpenerimaan',
-                'bank.coa',
-                'bank.tipe'
-            )
-            ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')
-            ->whereRaw("bank.id = $pemutihanSupir->bank_id")
-            ->first();
+        // $querysubgrppenerimaan = Bank::from(DB::raw("bank with (readuncommitted)"))
+        //     ->select(
+        //         'parameter.grp',
+        //         'parameter.subgrp',
+        //         'bank.formatpenerimaan',
+        //         'bank.coa',
+        //         'bank.tipe'
+        //     )
+        //     ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')
+        //     ->whereRaw("bank.id = $pemutihanSupir->bank_id")
+        //     ->first();
 
         if (!$pemutihanSupir->save()) {
             throw new \Exception("Error storing pemutihan supir.");
@@ -924,7 +924,7 @@ class PemutihanSupir extends MyModel
             $dataPinjaman = [
                 'tanpaprosesnobukti' => 2,
                 'penerimaantrucking_id' => $fetchFormat->id,
-                'bank_id' => $data['bank_id'],
+                'bank_id' => '',
                 'supirheader_id' => $data['supir_id'],
                 'tglbukti' => $data['tglbukti'],
                 // 'supirheader_id' => 0,
@@ -990,17 +990,17 @@ class PemutihanSupir extends MyModel
         $pemutihanSupir->info = html_entity_decode(request()->info);
 
         // GET NO BUKTI PENERIMAAN
-        $querysubgrppenerimaan = Bank::from(DB::raw("bank with (readuncommitted)"))
-            ->select(
-                'parameter.grp',
-                'parameter.subgrp',
-                'bank.formatpenerimaan',
-                'bank.coa',
-                'bank.tipe'
-            )
-            ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')
-            ->whereRaw("bank.id =" . $data['bank_id'])
-            ->first();
+        // $querysubgrppenerimaan = Bank::from(DB::raw("bank with (readuncommitted)"))
+        //     ->select(
+        //         'parameter.grp',
+        //         'parameter.subgrp',
+        //         'bank.formatpenerimaan',
+        //         'bank.coa',
+        //         'bank.tipe'
+        //     )
+        //     ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')
+        //     ->whereRaw("bank.id =" . $data['bank_id'])
+        //     ->first();
 
 
         if (!$pemutihanSupir->save()) {
@@ -1085,7 +1085,7 @@ class PemutihanSupir extends MyModel
             $penerimaanRequest = [
                 'tanpaprosesnobukti' => 2,
                 'penerimaantrucking_id' => $fetchFormat->id,
-                'bank_id' => $data['bank_id'],
+                'bank_id' => '',
                 'supirheader_id' => $data['supir_id'],
                 'tglbukti' => $data['tglbukti'],
                 // 'supirheader_id' => 0,

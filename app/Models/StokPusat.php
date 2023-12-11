@@ -922,7 +922,7 @@ class StokPusat extends MyModel
             } else {
 
                 if ($memo['TARIK_STOK'] == 'YA' && $memo['WEB'] == 'TIDAK') {
-                    $query = DB::connection('sqlsrv' . $cabang)->table('Stck')->from(DB::raw("Stck with (readuncommitted)"))->select('FID as id', 'FKStck as namastok', 'FPic1 as gambar', 'FSubKelompok as subkelompok')->where('FKelompok', $kelompok->kodekelompok);
+                    $query = DB::connection('sqlsrv' . $cabang)->table('Stck')->from(DB::raw("Stck with (readuncommitted)"))->select('FID as id', 'FNstck as namastok', 'FPic1 as gambar', 'FSubKelompok as subkelompok')->where('FKelompok', $kelompok->kodekelompok);
                     $data[$cabang] = $query->get();
                 }
 
@@ -974,7 +974,7 @@ class StokPusat extends MyModel
         if ($cabang->statuskoneksi != $cekParam->id) {
             $kelompok = DB::table("kelompok")->from(DB::raw("kelompok with (readuncommitted)"))->where('id', $kelompok_id)->first();
             $query = DB::connection('sqlsrvmnd')->table('Stck')->from(DB::raw("Stck as a with (readuncommitted)"))
-                ->select('FID as id', 'FKStck as namastok', DB::raw("isnull(FPic1, '') as gambar"), 'FSubKelompok as subkelompok')
+                ->select('FID as id', 'FNstck as namastok', DB::raw("isnull(FPic1, '') as gambar"), 'FSubKelompok as subkelompok')
                 ->where('FKelompok', $kelompok->kodekelompok);
 
             $this->totalRows = $query->count();
@@ -1000,7 +1000,7 @@ class StokPusat extends MyModel
 
             $kelompok = DB::table("kelompok")->from(DB::raw("kelompok with (readuncommitted)"))->where('id', $kelompok_id)->first();
             $query = DB::connection('sqlsrvmdn')->table('Stck')->from(DB::raw("Stck as a with (readuncommitted)"))
-                ->select('FID as id', 'FKStck as namastok', DB::raw("isnull(FPic1, '') as gambar"), 'FSubKelompok as subkelompok')
+                ->select('FID as id', 'FNstck as namastok', DB::raw("isnull(FPic1, '') as gambar"), 'FSubKelompok as subkelompok')
                 ->where('FKelompok', $kelompok->kodekelompok);
 
             $this->totalRows = $query->count();
@@ -1025,7 +1025,7 @@ class StokPusat extends MyModel
 
             $kelompok = DB::table("kelompok")->from(DB::raw("kelompok with (readuncommitted)"))->where('id', $kelompok_id)->first();
             $query = DB::connection('sqlsrvsby')->table('Stck')->from(DB::raw("Stck as a with (readuncommitted)"))
-                ->select('FID as id', 'FKStck as namastok', DB::raw("isnull(FPic1, '') as gambar"), 'FSubKelompok as subkelompok')
+                ->select('FID as id', 'FNstck as namastok', DB::raw("isnull(FPic1, '') as gambar"), 'FSubKelompok as subkelompok')
                 ->where('FKelompok', $kelompok->kodekelompok);
 
             $this->totalRows = $query->count();
@@ -1051,7 +1051,7 @@ class StokPusat extends MyModel
 
             $kelompok = DB::table("kelompok")->from(DB::raw("kelompok with (readuncommitted)"))->where('id', $kelompok_id)->first();
             $query = DB::connection('sqlsrvmks')->table('Stck')->from(DB::raw("Stck as a with (readuncommitted)"))
-                ->select('FID as id', 'FKStck as namastok', DB::raw("isnull(FPic1, '') as gambar"), 'FSubKelompok as subkelompok')
+                ->select('FID as id', 'FNstck as namastok', DB::raw("isnull(FPic1, '') as gambar"), 'FSubKelompok as subkelompok')
                 ->where('FKelompok', $kelompok->kodekelompok);
 
             $this->totalRows = $query->count();
@@ -1152,7 +1152,7 @@ class StokPusat extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'namastok') {
-                            $query = $query->where('a.FKStck', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('a.FNstck', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'subkelompok') {
                             $query = $query->where('a.FSubKelompok', 'LIKE', "%$filters[data]%");
                         } else {
@@ -1166,7 +1166,7 @@ class StokPusat extends MyModel
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'namastok') {
-                                $query = $query->orWhere('a.FKStck', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('a.FNstck', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'subkelompok') {
                                 $query = $query->orWhere('a.FSubKelompok', 'LIKE', "%$filters[data]%");
                             } else {
@@ -1766,6 +1766,8 @@ class StokPusat extends MyModel
         }
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);     
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2); 
 
         $output = curl_exec($ch);
         curl_close($ch);

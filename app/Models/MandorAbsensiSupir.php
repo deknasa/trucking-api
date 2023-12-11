@@ -14,11 +14,12 @@ class MandorAbsensiSupir extends MyModel
 
     protected $table = 'trado';
 
-    
+
     public function tableTemp($date = 'now')
     {
         $statusaktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
         $statusabsensisupir = DB::table('parameter')->where('grp', 'STATUS ABSENSI SUPIR')->where('subgrp', 'STATUS ABSENSI SUPIR')->where('text', 'ABSENSI SUPIR')->first();
+        $tradoMilikSupir = DB::table('parameter')->where('grp', 'ABSENSI SUPIR')->where('subgrp', 'TRADO MILIK SUPIR')->first();
 
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
@@ -31,50 +32,109 @@ class MandorAbsensiSupir extends MyModel
             $table->date('tglbukti')->default();
         });
 
+
+
+        $tempMandor = '##tempmandor' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempMandor, function ($table) {
+            $table->integer('trado_id')->nullable();
+            $table->string('kodetrado')->nullable();
+            $table->string('namasupir')->nullable();
+            $table->string('keterangan')->nullable();
+            $table->string('absentrado')->nullable();
+            $table->integer('absen_id')->nullable();
+            $table->time('jam')->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->integer('supir_id')->nullable();
+        });
+
         $absensisupirdetail = DB::table('absensisupirdetail')
             ->select(
-                'trado.id as id',
                 'trado.id as trado_id',
-                'supir.id as supir_id',
-                'absentrado.id as absen_id',
+                'trado.kodetrado',
+                'supir.namasupir',
                 'absensisupirdetail.keterangan',
+                'absentrado.keterangan as absentrado',
+                'absentrado.id as absen_id',
                 'absensisupirdetail.jam',
-                'absensisupirheader.tglbukti'
+                'absensisupirheader.tglbukti',
+                'supir.id as supir_id'
             )
             ->where('absensisupirheader.tglbukti', date('Y-m-d', strtotime($date)))
             ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirdetail.absensi_id', 'absensisupirheader.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'absensisupirdetail.trado_id', 'trado.id')
             ->leftJoin(DB::raw("absentrado with (readuncommitted)"), 'absensisupirdetail.absen_id', 'absentrado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'absensisupirdetail.supir_id', 'supir.id');
-        DB::table($temp)->insertUsing(['id','trado_id', 'supir_id', 'absen_id', 'keterangan', 'jam', 'tglbukti'], $absensisupirdetail);
+        DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id'], $absensisupirdetail);
 
         $trado = DB::table('trado as a')
             ->select(
                 // DB::raw('isnull(b.id,null) as id'),
-                'a.id as id',
                 'a.id as trado_id',
                 'a.kodetrado as kodetrado',
-                DB::raw('isnull(b.supir_id,null) as supir_id'),
                 'c.namasupir as namasupir',
-                DB::raw('isnull(b.keterangan,null) as keterangan'),
-                'd.keterangan as absentrado',
-                DB::raw('isnull(b.absen_id,null) as absen_id'),
-                DB::raw("isnull(b.jam,null) as jam"),
-                DB::raw("isnull(b.tglbukti,null) as tglbukti")
+                DB::raw('null as keterangan'),
+                DB::raw('null as absentrado'),
+                DB::raw('null as absen_id'),
+                DB::raw("null as jam"),
+                DB::raw("null as tglbukti"),
+                DB::raw("(case when (select text from parameter where grp='ABSENSI SUPIR' and subgrp='TRADO MILIK SUPIR')= 'YA' then a.supir_id else null end) as supir_id"),
+
+            )
+            ->leftJoin('supir as c', 'a.supir_id', 'c.id')
+            ->where('a.statusaktif', $statusaktif->id)
+            ->where('a.statusabsensisupir', $statusabsensisupir->id)
+            ->whereRaw("a.id not in (select trado_id from $tempMandor)");
+
+        if ($tradoMilikSupir->text == 'YA') {
+            $trado->where('a.supir_id', '!=', 0);
+        }
+
+        DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id'], $trado);
+
+        $tgl = date('Y-m-d', strtotime($date));
+        $trado = DB::table('trado as a')
+            ->select(
+                // DB::raw('isnull(b.id,null) as id'),
+                'a.id as trado_id',
+                'a.kodetrado as kodetrado',
+                'c.namasupir as namasupir',
+                DB::raw('null as keterangan'),
+                DB::raw('null as absentrado'),
+                DB::raw('null as absen_id'),
+                DB::raw("null as jam"),
+                DB::raw("null as tglbukti"),
+                'c.id as supir_id'
             )
             ->where('a.statusaktif', $statusaktif->id)
             ->where('a.statusabsensisupir', $statusabsensisupir->id)
-            ->leftJoin($temp .' as b', 'a.id', 'b.trado_id')
-            ->leftJoin('supir as c', 'b.supir_id', 'c.id')
-            ->leftJoin('absentrado as d', 'b.absen_id', 'd.id');
-        
-        return $trado;
+            ->leftJoin('supirserap as e', 'e.trado_id', 'a.id')
+            ->leftJoin('supir as c', 'e.supirserap_id', 'c.id')
+            ->where('e.tglabsensi', date('Y-m-d', strtotime($date)))
+            ->where('e.statusapproval', 3)
+            ->whereRaw("e.supirserap_id not in (select supir_id from absensisupirdetail join absensisupirheader on absensisupirheader.nobukti = absensisupirdetail.nobukti where absensisupirheader.tglbukti='$tgl')");
+
+        DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id'], $trado);
+
+        $query = DB::table($tempMandor)->from(DB::raw("$tempMandor as a"))
+            ->select(
+                DB::raw("row_number() Over(Order By a.trado_id) as id"),
+                'a.trado_id',
+                'a.kodetrado',
+                'a.namasupir',
+                'a.keterangan',
+                'a.absentrado',
+                'a.absen_id',
+                'a.jam',
+                'a.tglbukti',
+                'a.supir_id',
+            );
+        return $query;
     }
 
     public function get()
     {
         $this->setRequestParameters();
-        $tglbukaabsensi = request()->tglbukaabsensi??'now' ;
+        $tglbukaabsensi = request()->tglbukaabsensi ?? 'now';
         $query = $this->tableTemp($tglbukaabsensi);
         $this->filter($query);
         $this->totalRows = $query->count();
@@ -98,36 +158,38 @@ class MandorAbsensiSupir extends MyModel
             $table->bigInteger('id')->nullable();
             $table->integer('trado_id')->nullable();
             $table->string('kodetrado')->nullable();
-            $table->integer('supir_id')->nullable();
             $table->string('namasupir')->nullable();
             $table->string('keterangan')->nullable();
             $table->string('absentrado')->nullable();
             $table->integer('absen_id')->nullable();
             $table->time('jam')->nullable();
             $table->date('tglbukti')->nullable();
+            $table->integer('supir_id')->nullable();
             $table->increments('position');
         });
         $this->setRequestParameters();
-        
+
         $query = $this->tableTemp();
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id',
-        'trado_id',
-        'kodetrado',
-        'supir_id',
-        'namasupir',
-        'keterangan',
-        'absentrado',
-        'absen_id',
-        'jam',
-        'tglbukti',], $models);
-        
+        DB::table($temp)->insertUsing([
+            'id',
+            'trado_id',
+            'kodetrado',
+            'namasupir',
+            'keterangan',
+            'absentrado',
+            'absen_id',
+            'jam',
+            'tglbukti',
+            'supir_id',
+        ], $models);
+
         return  $temp;
     }
 
 
-    public function cekvalidasihapus($trado_id,$supir_id,$tglbukti)
+    public function cekvalidasihapus($trado_id, $supir_id, $tglbukti)
     {
         $suratpengantar = DB::table('suratpengantar')
             ->from(
@@ -149,7 +211,7 @@ class MandorAbsensiSupir extends MyModel
             goto selesai;
         }
 
-      
+
 
         $data = [
             'kondisi' => false,
@@ -163,17 +225,17 @@ class MandorAbsensiSupir extends MyModel
     {
 
         $queryabsen = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select(
-            'text',
-        )
-        ->where('grp', 'TIDAK ADA SUPIR')
-        ->where('subgrp', 'TIDAK ADA SUPIR')
-        ->first();
+            ->select(
+                'text',
+            )
+            ->where('grp', 'TIDAK ADA SUPIR')
+            ->where('subgrp', 'TIDAK ADA SUPIR')
+            ->first();
 
         $data = DB::table('absentrado')
             ->from(DB::raw("absentrado with (readuncommitted)"))
             ->select(
-                DB::raw("(case when id=". $queryabsen->text ." then 1 else 0 end)  as kodeabsen")
+                DB::raw("(case when id=" . $queryabsen->text . " then 1 else 0 end)  as kodeabsen")
             )
             ->where('absentrado.id', $id)
             ->first();
@@ -183,8 +245,9 @@ class MandorAbsensiSupir extends MyModel
     }
 
 
-    public function isAbsen($id,$tanggal)
+    public function isAbsen($id, $tanggal, $supir_id)
     {
+
         $absensisupirdetail = DB::table('absensisupirdetail')
             ->select(
                 'absensisupirdetail.id as id',
@@ -199,6 +262,7 @@ class MandorAbsensiSupir extends MyModel
                 'absensisupirheader.tglbukti'
             )
             ->where('absensisupirdetail.trado_id', $id)
+            ->where('absensisupirdetail.supir_id', $supir_id)
             ->where('absensisupirheader.tglbukti', date('Y-m-d', strtotime($tanggal)))
             ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirdetail.absensi_id', 'absensisupirheader.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'absensisupirdetail.trado_id', 'trado.id')
@@ -217,60 +281,89 @@ class MandorAbsensiSupir extends MyModel
         return false;
     }
 
-    public function getTrado($id)
+    public function getTrado($id, $supir_id)
     {
-        $absensisupirdetail = DB::table('trado')
-            ->select(
-                DB::raw('null as id'),
-                'trado.id as trado_id',
-                'trado.kodetrado as trado',
-                DB::raw('null as supir_id'),
-                DB::raw('null as absen_id'),
-                DB::raw('null as keterangan'),
-                DB::raw('null as jam'),
-                DB::raw('null as tglbukti')
-            )->where('trado.id', $id);
+        $tradoMilikSupir = DB::table('parameter')->where('grp', 'ABSENSI SUPIR')->where('subgrp', 'TRADO MILIK SUPIR')->first();
+        $cekSupirTrado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))->where('id', $id)->where('supir_id', $supir_id)->first();
+
+        if ($cekSupirTrado == '') {
+            $tgl = request()->tanggal ?? 'now';
+            $absensisupirdetail = DB::table('trado')
+                ->select(
+                    DB::raw('null as id'),
+                    'trado.id as trado_id',
+                    'trado.kodetrado as trado',
+                    DB::raw('null as absen_id'),
+                    DB::raw('null as keterangan'),
+                    DB::raw('null as jam'),
+                    DB::raw('null as tglbukti'),
+                    DB::raw('supirserap.supirserap_id as supir_id'),
+                    'supir.namasupir as supir'
+                )->where('trado.id', $id)
+                ->leftJoin(DB::raw("supirserap with (readuncommitted)"), 'supirserap.trado_id', 'trado.id')
+                ->leftJoin(DB::raw("supir with (readuncommitted)"), 'supirserap.supirserap_id', 'supir.id')
+                ->where('supirserap.tglabsensi', date('Y-m-d', strtotime($tgl)))
+                ->where('supirserap.trado_id', $id)
+                ->where('supirserap.supirserap_id', $supir_id);
+        } else {
+
+            $absensisupirdetail = DB::table('trado')
+                ->select(
+                    DB::raw('null as id'),
+                    'trado.id as trado_id',
+                    'trado.kodetrado as trado',
+                    DB::raw('null as absen_id'),
+                    DB::raw('null as keterangan'),
+                    DB::raw('null as jam'),
+                    DB::raw('null as tglbukti')
+                )->where('trado.id', $id);
+
+            if ($tradoMilikSupir->text == 'YA') {
+                $absensisupirdetail->addSelect(DB::raw('trado.supir_id'), 'supir.namasupir as supir')
+                    ->leftJoin('supir', 'trado.supir_id', 'supir.id');
+            } else {
+                $absensisupirdetail->addSelect(DB::raw('null as supir_id'));
+            }
+        }
         return $absensisupirdetail->first();
     }
 
 
     public function sort($query)
     {
-        switch ($this->params['sortIndex']) {
-            case "trado_id" :
-               return $query->orderBy('a.id', $this->params['sortOrder']);
-               break;
-            case "kodetrado" :
-               return $query->orderBy('a.kodetrado', $this->params['sortOrder']);
-               break;
-            case "supir_id" :
-               return $query->orderBy('b.supir_id', $this->params['sortOrder']);
-               break;
-            case "namasupir" :
-               return $query->orderBy('c.namasupir', $this->params['sortOrder']);
-               break;
-            case "keterangan" :
-               return $query->orderBy('b.keterangan', $this->params['sortOrder']);
-               break;
-            case "absentrado" :
-               return $query->orderBy('d.keterangan', $this->params['sortOrder']);
-               break;
-            case "absen_id" :
-               return $query->orderBy('b.absen_id', $this->params['sortOrder']);
-               break;
-            case "jam" :
-               return $query->orderBy('b.jam', $this->params['sortOrder']);
-               break;
-            case "tglbukti" :
-               return $query->orderBy('b.tglbukti', $this->params['sortOrder']);
-               break;
-           default:
-               return $query->orderBy('a.'.$this->params['sortIndex'], $this->params['sortOrder']);
-               break;
-            
-
-        }
-        return $query->orderBy('a.'.$this->params['sortIndex'], $this->params['sortOrder']);
+        // switch ($this->params['sortIndex']) {
+        //     case "trado_id":
+        //         return $query->orderBy('a.id', $this->params['sortOrder']);
+        //         break;
+        //     case "kodetrado":
+        //         return $query->orderBy('a.kodetrado', $this->params['sortOrder']);
+        //         break;
+        //     case "supir_id":
+        //         return $query->orderBy('b.supir_id', $this->params['sortOrder']);
+        //         break;
+        //     case "namasupir":
+        //         return $query->orderBy('c.namasupir', $this->params['sortOrder']);
+        //         break;
+        //     case "keterangan":
+        //         return $query->orderBy('b.keterangan', $this->params['sortOrder']);
+        //         break;
+        //     case "absentrado":
+        //         return $query->orderBy('d.keterangan', $this->params['sortOrder']);
+        //         break;
+        //     case "absen_id":
+        //         return $query->orderBy('b.absen_id', $this->params['sortOrder']);
+        //         break;
+        //     case "jam":
+        //         return $query->orderBy('b.jam', $this->params['sortOrder']);
+        //         break;
+        //     case "tglbukti":
+        //         return $query->orderBy('b.tglbukti', $this->params['sortOrder']);
+        //         break;
+        //     default:
+        //         return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        //         break;
+        // }
+        return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
     public function paginate($query)
     {
@@ -285,41 +378,42 @@ class MandorAbsensiSupir extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        switch ($filters['field']) {
-                            case "trado_id":
-                                $query = $query->where('a.id', 'LIKE', "%$filters[data]%");
-                                break;
-                            case "kodetrado":
-                                $query = $query->where('a.kodetrado', 'LIKE', "%$filters[data]%");
-                                break;
-                            case "supir_id":
-                                $query = $query->where('b.supir_id', 'LIKE', "%$filters[data]%");
-                                break;
-                            case "namasupir":
-                                $query = $query->where('c.namasupir', 'LIKE', "%$filters[data]%");
-                                break;
-                            case "keterangan":
-                                $query = $query->where('b.keterangan', 'LIKE', "%$filters[data]%");
-                                break;
-                            case "absentrado":
-                                $query = $query->where('d.keterangan', 'LIKE', "%$filters[data]%");
-                                break;
-                            case "absen_id":
-                                $query = $query->where('b.absen_id', 'LIKE', "%$filters[data]%");
-                                break;
-                            case "jam":
-                                $query = $query->where('b.jam', 'LIKE', "%$filters[data]%");
-                                break;
-                            case "tglbukti":
-                                $query = $query->where('b.tglbukti', 'LIKE', "%$filters[data]%");
-                                break;
+                        // switch ($filters['field']) {
+                        //     case "trado_id":
+                        //         $query = $query->where('a.id', 'LIKE', "%$filters[data]%");
+                        //         break;
+                        //     case "kodetrado":
+                        //         $query = $query->where('a.kodetrado', 'LIKE', "%$filters[data]%");
+                        //         break;
+                        //     case "supir_id":
+                        //         $query = $query->where('b.supir_id', 'LIKE', "%$filters[data]%");
+                        //         break;
+                        //     case "namasupir":
+                        //         $query = $query->where('c.namasupir', 'LIKE', "%$filters[data]%");
+                        //         break;
+                        //     case "keterangan":
+                        //         $query = $query->where('b.keterangan', 'LIKE', "%$filters[data]%");
+                        //         break;
+                        //     case "absentrado":
+                        //         $query = $query->where('d.keterangan', 'LIKE', "%$filters[data]%");
+                        //         break;
+                        //     case "absen_id":
+                        //         $query = $query->where('b.absen_id', 'LIKE', "%$filters[data]%");
+                        //         break;
+                        //     case "jam":
+                        //         $query = $query->where('b.jam', 'LIKE', "%$filters[data]%");
+                        //         break;
+                        //     case "tglbukti":
+                        //         $query = $query->where('b.tglbukti', 'LIKE', "%$filters[data]%");
+                        //         break;
 
-                            default:
-                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        //     default:
+                        //         // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        //         $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
 
-                                break;
-                        }
+                        //         break;
+                        // }
+                        $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                     }
 
                     break;
@@ -327,41 +421,42 @@ class MandorAbsensiSupir extends MyModel
                     $query = $query->where(function ($query) {
 
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            switch ($filters['field']) {
-                                case "trado_id":
-                                    $query = $query->orWhere('a.id', 'LIKE', "%$filters[data]%");
-                                    break;
-                                case "kodetrado":
-                                    $query = $query->orWhere('a.kodetrado', 'LIKE', "%$filters[data]%");
-                                    break;
-                                case "supir_id":
-                                    $query = $query->orWhere('b.supir_id', 'LIKE', "%$filters[data]%");
-                                    break;
-                                case "namasupir":
-                                    $query = $query->orWhere('c.namasupir', 'LIKE', "%$filters[data]%");
-                                    break;
-                                case "keterangan":
-                                    $query = $query->orWhere('b.keterangan', 'LIKE', "%$filters[data]%");
-                                    break;
-                                case "absentrado":
-                                    $query = $query->orWhere('d.keterangan', 'LIKE', "%$filters[data]%");
-                                    break;
-                                case "absen_id":
-                                    $query = $query->orWhere('b.absen_id', 'LIKE', "%$filters[data]%");
-                                    break;
-                                case "jam":
-                                    $query = $query->orWhere('b.jam', 'LIKE', "%$filters[data]%");
-                                    break;
-                                case "tglbukti":
-                                    $query = $query->orWhere('b.tglbukti', 'LIKE', "%$filters[data]%");
-                                    break;
-                             
-                                default:
-                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                    $query = $query->orWhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            // switch ($filters['field']) {
+                            //     case "trado_id":
+                            //         $query = $query->orWhere('a.id', 'LIKE', "%$filters[data]%");
+                            //         break;
+                            //     case "kodetrado":
+                            //         $query = $query->orWhere('a.kodetrado', 'LIKE', "%$filters[data]%");
+                            //         break;
+                            //     case "supir_id":
+                            //         $query = $query->orWhere('b.supir_id', 'LIKE', "%$filters[data]%");
+                            //         break;
+                            //     case "namasupir":
+                            //         $query = $query->orWhere('c.namasupir', 'LIKE', "%$filters[data]%");
+                            //         break;
+                            //     case "keterangan":
+                            //         $query = $query->orWhere('b.keterangan', 'LIKE', "%$filters[data]%");
+                            //         break;
+                            //     case "absentrado":
+                            //         $query = $query->orWhere('d.keterangan', 'LIKE', "%$filters[data]%");
+                            //         break;
+                            //     case "absen_id":
+                            //         $query = $query->orWhere('b.absen_id', 'LIKE', "%$filters[data]%");
+                            //         break;
+                            //     case "jam":
+                            //         $query = $query->orWhere('b.jam', 'LIKE', "%$filters[data]%");
+                            //         break;
+                            //     case "tglbukti":
+                            //         $query = $query->orWhere('b.tglbukti', 'LIKE', "%$filters[data]%");
+                            //         break;
 
-                                    break;
-                            }
+                            //     default:
+                            //         // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            //         $query = $query->orWhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
+                            //         break;
+                            // }
+                            $query = $query->orWhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                         }
                     });
 
@@ -382,10 +477,10 @@ class MandorAbsensiSupir extends MyModel
     {
         $AbsensiSupirHeader = AbsensiSupirHeader::where('tglbukti', date('Y-m-d', strtotime($data['tglbukti'])))->first();
         $tidakadasupir = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'TIDAK ADA SUPIR')->where('subgrp', 'TIDAK ADA SUPIR')->first();
-        if ($tidakadasupir->text == $data['absen_id'] ) {
+        if ($tidakadasupir->text == $data['absen_id']) {
             $data['supir_id'] = "";
         }
-        
+
         $tglbataseditabsensi = null;
         $tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
@@ -393,7 +488,7 @@ class MandorAbsensiSupir extends MyModel
         $bukaabsensi = DB::table('bukaabsensi')
             ->select('tglbatas')
             ->from(DB::raw("bukaabsensi with (readuncommitted)"))
-            ->where('tglabsensi',$tglbukti)
+            ->where('tglabsensi', $tglbukti)
             ->first();
         if ($isDateAllowedMandor && isset($bukaabsensi->tglbatas)) {
             $tglbataseditabsensi = $bukaabsensi->tglbatas;
@@ -402,34 +497,34 @@ class MandorAbsensiSupir extends MyModel
             $query_jam = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'BATAS JAM EDIT ABSENSI')->where('subgrp', 'BATAS JAM EDIT ABSENSI')->first();
             $jam = substr($query_jam->text, 0, 2);
             $menit = substr($query_jam->text, 3, 2);
-            $query_jam = strtotime($tglbukti.' '.$jam.':'.$menit.':00' );
-            $tglbataseditabsensi = date('Y-m-d H:i:s',$query_jam);
+            $query_jam = strtotime($tglbukti . ' ' . $jam . ':' . $menit . ':00');
+            $tglbataseditabsensi = date('Y-m-d H:i:s', $query_jam);
         }
-            # code...
+        # code...
 
         if (!$AbsensiSupirHeader) {
             $absensiSupirRequest = [
-                "tglbukti" =>$data['tglbukti'],
-                "kasgantung_nobukti" =>$data['kasgantung_nobukti'],
-                "tglbataseditabsensi" =>$tglbataseditabsensi,
-                "uangjalan" =>[0],
-                "trado_id" =>[$data['trado_id']],
-                "supir_id" =>[$data['supir_id']],
-                "keterangan_detail" =>[$data['keterangan']],
-                "absen_id" =>[$data['absen_id']],
-                "jam" =>[$data['jam']],
+                "tglbukti" => $data['tglbukti'],
+                "kasgantung_nobukti" => $data['kasgantung_nobukti'],
+                "tglbataseditabsensi" => $tglbataseditabsensi,
+                "uangjalan" => [0],
+                "trado_id" => [$data['trado_id']],
+                "supir_id" => [$data['supir_id']],
+                "keterangan_detail" => [$data['keterangan']],
+                "absen_id" => [$data['absen_id']],
+                "jam" => [$data['jam']],
             ];
             $AbsensiSupirHeader = (new AbsensiSupirHeader())->processStore($absensiSupirRequest);
         }
 
         // $AbsensiSupirDetail = (new AbsensiSupirDetail())->processStore($absensiSupirRequest);
-        $absensiSupirDetail = AbsensiSupirDetail::where('absensi_id', $AbsensiSupirHeader->id)->where('trado_id', $data['trado_id'])->lockForUpdate()->first();
+        $absensiSupirDetail = AbsensiSupirDetail::where('absensi_id', $AbsensiSupirHeader->id)->where('trado_id', $data['trado_id'])->where('supir_id', $data['supir_id'])->lockForUpdate()->first();
         if ($absensiSupirDetail) {
             $absensiSupirDetail->delete();
         }
 
 
-        $absensiSupirDetail = AbsensiSupirDetail::processStore($AbsensiSupirHeader,[
+        $absensiSupirDetail = AbsensiSupirDetail::processStore($AbsensiSupirHeader, [
             'absensi_id' => $AbsensiSupirHeader->id,
             'nobukti' => $AbsensiSupirHeader->nobukti,
             'trado_id' => $data['trado_id'],
@@ -467,12 +562,12 @@ class MandorAbsensiSupir extends MyModel
         $AbsensiSupirDetail = AbsensiSupirDetail::where('id', $AbsensiSupirDetail->id)->lockForUpdate()->first();
         $AbsensiSupirDetail->delete();
         $tidakadasupir = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'TIDAK ADA SUPIR')->where('subgrp', 'TIDAK ADA SUPIR')->first();
-        if ($tidakadasupir->text == $data['absen_id'] ) {
+        if ($tidakadasupir->text == $data['absen_id']) {
             $data['supir_id'] = "";
         }
         // dd($AbsensiSupirDetail);
 
-        $absensiSupirDetail = AbsensiSupirDetail::processStore($AbsensiSupirHeader,[
+        $absensiSupirDetail = AbsensiSupirDetail::processStore($AbsensiSupirHeader, [
             'absensi_id' => $AbsensiSupirHeader->id,
             'nobukti' => $AbsensiSupirHeader->nobukti,
             'trado_id' => $data['trado_id'],
@@ -513,7 +608,4 @@ class MandorAbsensiSupir extends MyModel
         $AbsensiSupirDetail->delete();
         return $AbsensiSupirDetail;
     }
-        
-       
-        
 }

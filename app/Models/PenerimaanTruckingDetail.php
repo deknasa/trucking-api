@@ -85,9 +85,12 @@ class PenerimaanTruckingDetail extends MyModel
                 "penerimaantruckingdetail.pengeluarantruckingheader_nobukti",
 
                 "supir.namasupir as supir",
-                "supir.id as supir_id"
+                "supir.id as supir_id",
+                "karyawan.namakaryawan as karyawandetail",
+                "karyawan.id as karyawan_id"
             )
             ->leftJoin("supir", "penerimaantruckingdetail.supir_id", "supir.id")
+            ->leftJoin("karyawan", "penerimaantruckingdetail.karyawan_id", "karyawan.id")
             ->where("penerimaantruckingdetail.penerimaantruckingheader_id", "=", $id);
 
 
@@ -249,6 +252,8 @@ class PenerimaanTruckingDetail extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'supir_id') {
                                 $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'karyawan_id') {
+                                $query = $query->where('karyawan.namakaryawan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
                                 $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
@@ -263,6 +268,8 @@ class PenerimaanTruckingDetail extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'supir_id') {
                                 $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'karyawan_id') {
+                                $query = $query->orWhere('karyawan.namakaryawan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
                                 $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
