@@ -1007,6 +1007,8 @@ class Stok extends MyModel
     }
     public function processUpdate(Stok $stok, array $data): Stok
     {
+        $kelompokBan = Kelompok::where("kodekelompok","BAN")->first();
+        $kelompokAki = Kelompok::where("kodekelompok","AKI")->first();
 
         $stok->keterangan = $data['keterangan'];
         $stok->namastok = $data['namastok'];
