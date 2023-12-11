@@ -1433,8 +1433,11 @@ class GajiSupirHeader extends MyModel
         $query = DB::table($temp)->from(DB::raw("$temp as a"));
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
-        $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'id') {
+            $query->orderBy('a.absensi_id', $this->params['sortOrder']);
+        } else {
+            $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
 
         $this->filterAbsensi($query, 'gajisupiruangjalan');
         $this->paginate($query);
