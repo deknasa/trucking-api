@@ -137,6 +137,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 "noinvoice_detail" => $noinvoice_detail,
                 "nojobtrucking_detail" => $nojobtrucking_detail,
                 "bank_detail" => $request->bank_detail,
+                "pemutihansupir_nobukti" => $request->pemutihansupir_nobukti,
             ]);
             /* Set position and page */
             $pengeluaranTruckingHeader->position = $this->getPosition($pengeluaranTruckingHeader, $pengeluaranTruckingHeader->getTable())->position;

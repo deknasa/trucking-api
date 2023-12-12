@@ -916,15 +916,6 @@ class Supir extends MyModel
             $statusBlackList = DB::table('parameter')->where('grp', 'BLACKLIST SUPIR')->where('default', 'YA')->first();
 
             $supir = new Supir();
-            $status = $supir->cekPemutihan($data['noktp']);
-
-            if ($status == true) {
-                $data['validate']([
-                    'pemutihansupir_nobukti' => 'required'
-                ], [
-                    'pemutihansupir_nobukti.required' => 'nobukti pemutihan supir ' . app(ErrorController::class)->geterror('WI')->keterangan,
-                ]);
-            }
 
 
             $depositke = str_replace(',', '', $data['depositke'] ?? '');
@@ -957,7 +948,6 @@ class Supir extends MyModel
             $supir->statusluarkota = $statusLuarKota->id;
             $supir->statuszonatertentu = $statusZonaTertentu->id;
             $supir->statusblacklist = $statusBlackList->id;
-
             if ($data['from'] != '') {
                 $supir->photosupir = $this->storeFilesBase64($data['photosupir'], 'supir');
                 $supir->photoktp = $this->storeFilesBase64($data['photoktp'], 'ktp');
@@ -977,7 +967,6 @@ class Supir extends MyModel
                 $supir->photovaksin = (count($data['photovaksin']) > 0) ? $this->storeFiles($data['photovaksin'], 'vaksin') : '';
                 $supir->pdfsuratperjanjian = (count($data['pdfsuratperjanjian']) > 0) ? $this->storePdfFiles($data['pdfsuratperjanjian'], 'suratperjanjian') : '';
             }
-
             if (!$supir->save()) {
                 throw new \Exception("Error storing supir.");
             }
@@ -1006,7 +995,53 @@ class Supir extends MyModel
                 'modifiedby' => $supir->modifiedby
             ]);
 
+            if ($data['from'] == '') {
+                if ($data['pemutihansupir_nobukti'] != '') {
+                    $supir_id[] = $supir->id;
+                    $getPosting = DB::table("pemutihansupirdetail")->from(DB::raw("pemutihansupirdetail with (readuncommitted)"))
+                        ->select(DB::raw("sum(nominal) as nominal"))
+                        ->where('nobukti', $data['pemutihansupir_nobukti'])
+                        ->where('statusposting', 83)
+                        ->first();
+                    if ($getPosting != '') {
 
+                        $nominalposting[] = $getPosting->nominal;
+                        $keterangan[] = 'PINJAMAN DARI PEMUTIHAN ' . $data['pemutihansupir_nobukti'] . ' (POSTING)';
+
+                        $pengeluaranRequest = [
+                            'tglbukti' => date('Y-m-d'),
+                            'pengeluarantrucking_id' => 1,
+                            'statusposting' => 84,
+                            'supir_id' => $supir_id,
+                            'pemutihansupir_nobukti' => $data['pemutihansupir_nobukti'],
+                            'nominal' => $nominalposting,
+                            'keterangan' => $keterangan
+                        ];
+                        (new PengeluaranTruckingHeader())->processStore($pengeluaranRequest);
+                    }
+                    $getNonPosting = DB::table("pemutihansupirdetail")->from(DB::raw("pemutihansupirdetail with (readuncommitted)"))
+                        ->select(DB::raw("sum(nominal) as nominal"))
+                        ->where('nobukti', $data['pemutihansupir_nobukti'])
+                        ->where('statusposting', 84)
+                        ->first();
+                    if ($getNonPosting != '') {
+
+                        $nominalnonposting[] = $getNonPosting->nominal;
+                        $keteranganNon[] = 'PINJAMAN DARI PEMUTIHAN ' . $data['pemutihansupir_nobukti'] . ' (NON POSTING)';
+
+                        $pengeluaranRequestNon = [
+                            'tglbukti' => date('Y-m-d'),
+                            'pengeluarantrucking_id' => 1,
+                            'statusposting' => 84,
+                            'supir_id' => $supir_id,
+                            'pemutihansupir_nobukti' => $data['pemutihansupir_nobukti'],
+                            'nominal' => $nominalnonposting,
+                            'keterangan' => $keteranganNon
+                        ];
+                        (new PengeluaranTruckingHeader())->processStore($pengeluaranRequestNon);
+                    }
+                }
+            }
             return $supir;
         } catch (\Throwable $th) {
             $this->deleteFiles($supir);
@@ -1017,17 +1052,6 @@ class Supir extends MyModel
     public function processUpdate(Supir $supir, array $data): Supir
     {
         try {
-            $supirNew = new Supir();
-            $status = $supirNew->cekPemutihan($data['noktp']);
-
-            if ($status == true) {
-                $data['validate']([
-                    'pemutihansupir_nobukti' => 'required'
-                ], [
-                    'pemutihansupir_nobukti.required' => 'nobukti pemutihan supir ' . app(ErrorController::class)->geterror('WI')->keterangan,
-                ]);
-            }
-
             $depositke = str_replace(',', '', $data['depositke'] ?? '');
             $supir->namasupir = $data['namasupir'];
             $supir->namaalias = $data['namaalias'];
@@ -1268,6 +1292,17 @@ class Supir extends MyModel
 
     public function getSupirResignModel($noktp)
     {
+        $getPemutihan = DB::table("pemutihansupirheader")->from(DB::raw("pemutihansupirheader with (readuncommitted)"))
+            ->select('pemutihansupirheader.nobukti')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pemutihansupirheader.supir_id', 'supir.id')
+            ->where('supir.noktp', $noktp)
+            ->orderBy('pemutihansupirheader.id', 'desc')
+            ->first();
+        $nobuktiPemutihan = '';
+        if ($getPemutihan != '') {
+            $nobuktiPemutihan = $getPemutihan->nobukti;
+        }
+
         $query = Supir::from(DB::raw("supir with (readuncommitted)"))
             ->select(
                 'supir.id',
@@ -1291,8 +1326,6 @@ class Supir extends MyModel
                 'supir.statusadaupdategambar',
                 'supir.statusluarkota',
                 'supir.statuszonatertentu',
-                'supir.zona_id',
-                'zona.keterangan as zona',
                 'supir.angsuranpinjaman',
                 'supir.plafondeposito',
                 'supir.photosupir',
@@ -1308,10 +1341,10 @@ class Supir extends MyModel
                 'supir.statusblacklist',
                 'supir.tglberhentisupir',
                 'supir.tgllahir',
-                'supir.tglterbitsim'
+                'supir.tglterbitsim',
+                DB::raw("'$nobuktiPemutihan' as pemutihansupir_nobukti")
             )
             ->where('supir.noktp', $noktp)
-            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'supir.zona_id', 'zona.id')
             ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id')
             ->first();
 

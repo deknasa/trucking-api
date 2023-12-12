@@ -33,104 +33,123 @@ class UpdateSupirRequest extends FormRequest
      */
     public function rules()
     {
-        if (request()->statusaktif == 2) {
-            $rules = [];
-        } else {
-            $ruleGambar = Rule::requiredIf(function () {
-                $noktp = request()->noktp;
-                $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-                    ->whereRaw("grp like '%STATUS APPROVAL%'")
-                    ->whereRaw("text like '%NON APPROVAL%'")
-                    ->first();
-                $cekValidasi = DB::table('approvalsupirgambar')->from(DB::raw("approvalsupirgambar with (readuncommitted)"))
-                    ->select('noktp', 'tglbatas', 'statusapproval')
-                    ->whereRaw("noktp in ('$noktp')")
-                    ->first();
-                if ($cekValidasi != '') {
-                    if ($cekValidasi->statusapproval == $nonApp->id) {
-                        return false;
-                    } else {
-                        if (date('Y-m-d') < $cekValidasi->tglbatas) {
-                            return false;
-                        }
-                    }
-                }
-                return true;
-            });
-
-            $ruleKeterangan = Rule::requiredIf(function () {
-                $noktp = request()->noktp;
-                $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-                    ->whereRaw("grp like '%STATUS APPROVAL%'")
-                    ->whereRaw("text like '%NON APPROVAL%'")
-                    ->first();
-                $cekValidasi = DB::table('approvalsupirketerangan')->from(DB::raw("approvalsupirketerangan with (readuncommitted)"))
-                    ->select('noktp', 'tglbatas', 'statusapproval')
-                    ->whereRaw("noktp in ('$noktp')")
-                    ->first();
-                if ($cekValidasi != '') {
-                    if ($cekValidasi->statusapproval == $nonApp->id) {
-                        return false;
-                    } else {
-                        if (date('Y-m-d') < $cekValidasi->tglbatas) {
-                            return false;
-                        }
-                    }
-                }
-                return true;
-            });
-
-            $tglbatasakhir = date('Y-m-d', strtotime('-' . (new ParameterController)->getparamid('MINIMAL USIA SUPIR', 'MINIMAL USIA SUPIR')->text . ' years', strtotime(date('Y-m-d'))));
-            $tglbatasawal = date('Y-m-d', strtotime('-' . (new ParameterController)->getparamid('MAXIMAL USIA SUPIR', 'MAXIMAL USIA SUPIR')->text . ' years', strtotime(date('Y-m-d'))));
-
-            //validasi supir resign
+        $ruleGambar = Rule::requiredIf(function () {
             $noktp = request()->noktp;
-            $id = request()->id;
-            $dataSupir = (new Supir())->validationSupirResign($noktp, $id);
-            if ($dataSupir == true) {
-                $cekSupir = true;
-            } else {
-                $cekSupir = false;
+            $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->whereRaw("grp like '%STATUS APPROVAL%'")
+                ->whereRaw("text like '%NON APPROVAL%'")
+                ->first();
+            $cekValidasi = DB::table('approvalsupirgambar')->from(DB::raw("approvalsupirgambar with (readuncommitted)"))
+                ->select('noktp', 'tglbatas', 'statusapproval')
+                ->whereRaw("noktp in ('$noktp')")
+                ->first();
+            if ($cekValidasi != '') {
+                if ($cekValidasi->statusapproval == $nonApp->id) {
+                    return false;
+                } else {
+                    if (date('Y-m-d') < $cekValidasi->tglbatas) {
+                        return false;
+                    }
+                }
             }
+            return true;
+        });
 
-            $rules = [
-                'namasupir' => [$ruleKeterangan],
-                'alamat' => [$ruleKeterangan],
-                'namaalias' => $ruleKeterangan,
-                'kota' => [$ruleKeterangan],
-                'telp' => [$ruleKeterangan, 'min:8', 'max:50', new SupirResign($cekSupir),],
-                'statusaktif' => [$ruleKeterangan, 'int', 'exists:parameter,id'],
-                'tglmasuk' => [$ruleKeterangan],
-                'tglexpsim' => [$ruleKeterangan],
-                'nosim' => [$ruleKeterangan, 'min:12', 'max:15', new SupirResign($cekSupir), new SupirBlackListSim()], //.',nosim',
-                'noktp' => ['required', 'min:16', 'max:16', new SupirResign($cekSupir), new SupirBlackListKtp()], //.',noktp',
-                'nokk' => [$ruleKeterangan, 'min:16', 'max:16', 'nullable'],
-                'tgllahir' => [
-                    $ruleKeterangan, 'date_format:d-m-Y',
-                    'after_or_equal:' . $tglbatasawal,
-                    'before_or_equal:' . $tglbatasakhir, 'nullable'
-                ],
-                'tglterbitsim' => [$ruleKeterangan],
-                'photosupir' => [$ruleGambar, 'array'],
-                'photosupir.*' => [$ruleGambar, 'image'],
-                'photoktp' => [$ruleGambar, 'array'],
-                'photoktp.*' => [$ruleGambar, 'image'],
-                'photosim' => [$ruleGambar, 'array'],
-                'photosim.*' => [$ruleGambar, 'image'],
-                'photokk' => [$ruleGambar, 'array'],
-                'photokk.*' => [$ruleGambar, 'image'],
-                'photoskck' => [$ruleGambar, 'array'],
-                'photoskck.*' => [$ruleGambar, 'image'],
-                'photodomisili' => [$ruleGambar, 'array'],
-                'photodomisili.*' => [$ruleGambar, 'image'],
-                'photovaksin' => [$ruleGambar, 'array'],
-                'photovaksin.*' => [$ruleGambar, 'image'],
-                'pdfsuratperjanjian' => [$ruleGambar, 'array'],
-                'pdfsuratperjanjian.*' => [$ruleGambar, 'mimes:pdf']
+        $ruleKeterangan = Rule::requiredIf(function () {
+            $noktp = request()->noktp;
+            $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->whereRaw("grp like '%STATUS APPROVAL%'")
+                ->whereRaw("text like '%NON APPROVAL%'")
+                ->first();
+            $cekValidasi = DB::table('approvalsupirketerangan')->from(DB::raw("approvalsupirketerangan with (readuncommitted)"))
+                ->select('noktp', 'tglbatas', 'statusapproval')
+                ->whereRaw("noktp in ('$noktp')")
+                ->first();
+            if ($cekValidasi != '') {
+                if ($cekValidasi->statusapproval == $nonApp->id) {
+                    return false;
+                } else {
+                    if (date('Y-m-d') < $cekValidasi->tglbatas) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        });
 
+        $tglbatasakhir = date('Y-m-d', strtotime('-' . (new ParameterController)->getparamid('MINIMAL USIA SUPIR', 'MINIMAL USIA SUPIR')->text . ' years', strtotime(date('Y-m-d'))));
+        $tglbatasawal = date('Y-m-d', strtotime('-' . (new ParameterController)->getparamid('MAXIMAL USIA SUPIR', 'MAXIMAL USIA SUPIR')->text . ' years', strtotime(date('Y-m-d'))));
 
-            ];
+        //validasi supir resign
+        $noktp = request()->noktp;
+        $id = request()->id;
+        $dataSupir = (new Supir())->validationSupirResign($noktp, $id);
+        if ($dataSupir == true) {
+            $cekSupir = true;
+        } else {
+            $cekSupir = false;
         }
+
+        $rulePemutihan = Rule::requiredIf(function () {
+            $noktp = request()->noktp;
+            $pemutihan = DB::table("pemutihansupirheader")->from(DB::raw("pemutihansupirheader with (readuncommitted)"))
+                ->select(DB::raw("supir.noktp"))
+                ->join(DB::raw("supir with (readuncommitted)"), 'pemutihansupirheader.supir_id', 'supir.id')
+                ->where('supir.noktp', $noktp)
+                ->first();
+            if ($pemutihan != '') {
+                return true;
+            }
+            return false;
+        });
+
+        $rules = [
+            'namasupir' => [$ruleKeterangan],
+            'alamat' => [$ruleKeterangan],
+            'namaalias' => $ruleKeterangan,
+            'kota' => [$ruleKeterangan],
+            'telp' => [$ruleKeterangan, 'min:8', 'max:50', new SupirResign($cekSupir),],
+            'statusaktif' => [$ruleKeterangan, 'int', 'exists:parameter,id'],
+            'tglmasuk' => [$ruleKeterangan],
+            'tglexpsim' => [$ruleKeterangan],
+            'nosim' => [$ruleKeterangan, 'min:12', 'max:15', new SupirResign($cekSupir), new SupirBlackListSim()], //.',nosim',
+            'noktp' => ['required', 'min:16', 'max:16', new SupirResign($cekSupir), new SupirBlackListKtp()], //.',noktp',
+            'nokk' => [$ruleKeterangan, 'min:16', 'max:16', 'nullable'],
+            'tgllahir' => [
+                $ruleKeterangan, 'date_format:d-m-Y',
+                'after_or_equal:' . $tglbatasawal,
+                'before_or_equal:' . $tglbatasakhir, 'nullable'
+            ],
+            'pemutihansupir' => $rulePemutihan,
+            'tglterbitsim' => [$ruleKeterangan],
+
+
+        ];
+        $rulesGambar = [
+            'photosupir' => [$ruleGambar, 'array'],
+            'photosupir.*' => [$ruleGambar, 'image'],
+            'photoktp' => [$ruleGambar, 'array'],
+            'photoktp.*' => [$ruleGambar, 'image'],
+            'photosim' => [$ruleGambar, 'array'],
+            'photosim.*' => [$ruleGambar, 'image'],
+            'photokk' => [$ruleGambar, 'array'],
+            'photokk.*' => [$ruleGambar, 'image'],
+            'photoskck' => [$ruleGambar, 'array'],
+            'photoskck.*' => [$ruleGambar, 'image'],
+            'photodomisili' => [$ruleGambar, 'array'],
+            'photodomisili.*' => [$ruleGambar, 'image'],
+            'photovaksin' => [$ruleGambar, 'array'],
+            'photovaksin.*' => [$ruleGambar, 'image'],
+            'pdfsuratperjanjian' => [$ruleGambar, 'array'],
+            'pdfsuratperjanjian.*' => [$ruleGambar, 'mimes:pdf']
+        ];
+        if (request()->statusaktif == 2) {
+            $rulesGambar = [];
+        }
+        $rules = array_merge(
+            $rules,
+            $rulesGambar
+        );
         return  $rules;
     }
 
@@ -184,6 +203,7 @@ class UpdateSupirRequest extends FormRequest
             'nosim.min' => 'Min. 12 karakter',
             'nosim.unique' => ':attribute Sudah digunakan',
             'noktp.unique' => ':attribute Sudah digunakan',
+            'pemutihansupir.required' => $controller->geterror('SPM')->keterangan,
             'tgllahir.after_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan . ' ' . date('d-m-Y', strtotime($tglbatasawal)) . ' dan ' . $controller->geterror('NTLB')->keterangan . ' ' . date('d-m-Y', strtotime($tglbatasakhir)),
             'tgllahir.before_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan . ' ' . date('d-m-Y', strtotime($tglbatasawal)) . ' dan ' . $controller->geterror('NTLB')->keterangan . ' ' . date('d-m-Y', strtotime($tglbatasakhir)),
             'pdfsuratperjanjian.*.mimes' => 'TYPE FILE :attribute  HARUS PDF'

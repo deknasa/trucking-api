@@ -100,6 +100,7 @@ class ErrorSeeder extends Seeder
         error::create(['kodeerror' => 'SMBE', 'keterangan' => 'SUDAH MELEWATI BATAS EDIT', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'SDE', 'keterangan' => 'SEDANG DIEDIT', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'BPI', 'keterangan' => 'BELUM PERNAH INPUT', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'SPM', 'keterangan' => 'SUDAH PEMUTIHAN. SILAHKAN BUAT SUPIR BARU', 'modifiedby' => 'ADMIN',]);
 
     }
 }

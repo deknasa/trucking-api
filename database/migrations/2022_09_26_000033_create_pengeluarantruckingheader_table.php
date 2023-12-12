@@ -38,6 +38,7 @@ class CreatePengeluarantruckingheaderTable extends Migration
             $table->string('coa',50)->nullable();
             $table->string('pengeluaran_nobukti',50)->nullable();
             $table->string('pengeluarantrucking_nobukti',50)->nullable();
+            $table->string('pemutihansupir_nobukti',50)->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();            
             $table->integer('statuscetak')->Length(11)->nullable();
             $table->string('userbukacetak',50)->nullable();
