@@ -555,9 +555,10 @@ class Supir extends MyModel
                 statusblacklist.memo as statusblacklist,
                 $this->table.pemutihansupir_nobukti,
                 statuspostingtnl.memo as statuspostingtnl,
-            $this->table.modifiedby,
-            $this->table.created_at,
-            $this->table.updated_at"
+                isnull(b.namamandor,'') as mandor_id,
+                $this->table.modifiedby,
+                $this->table.created_at,
+                $this->table.updated_at"
             )
 
         )
@@ -565,7 +566,8 @@ class Supir extends MyModel
             ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'supir.statusluarkota', '=', 'statusluarkota.id')
             ->leftJoin(DB::raw("parameter as statusblacklist with (readuncommitted)"), 'supir.statusblacklist', '=', 'statusblacklist.id')
             ->leftJoin(DB::raw("parameter as statuspostingtnl with (readuncommitted)"), 'supir.statuspostingtnl', '=', 'statuspostingtnl.id')
-            ->leftJoin('supir as supirlama', 'supir.supirold_id', '=', 'supirlama.id');
+            ->leftJoin('supir as supirlama', 'supir.supirold_id', '=', 'supirlama.id')
+            ->leftJoin(DB::raw("mandor as b with (readuncommitted)"), 'supir.mandor_id', '=', 'b.id');
     }
 
     public function createTemp(string $modelTable)
@@ -604,6 +606,7 @@ class Supir extends MyModel
             $table->longText('statusblacklist',)->nullable();
             $table->string('pemutihansupir_nobukti')->nullable();
             $table->longText('statuspostingtnl')->nullable();
+            $table->string('mandor_id', 100)->nullable();
 
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
@@ -648,6 +651,7 @@ class Supir extends MyModel
             'statusblacklist',
             'pemutihansupir_nobukti',
             'statuspostingtnl',
+            'mandor_id',
             'modifiedby',
             'created_at',
             'updated_at'
