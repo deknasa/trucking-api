@@ -1611,6 +1611,7 @@ class PengeluaranTruckingHeader extends MyModel
         $pengeluaranTruckingHeader->periodesampai = $tglsampai;
         $pengeluaranTruckingHeader->periode = $periode;
         $pengeluaranTruckingHeader->supir_id = $data['supirheader_id'] ?? '';
+        $pengeluaranTruckingHeader->pemutihansupir_nobukti = $data['pemutihansupir_nobukti'] ?? '';
         $pengeluaranTruckingHeader->karyawan_id = $data['karyawanheader_id'] ?? '';
         $pengeluaranTruckingHeader->trado_id = $tradoHeader;
         $pengeluaranTruckingHeader->tradotnl_id = $tradoTNL;
