@@ -91,14 +91,16 @@ class UpdateSupirRequest extends FormRequest
         }
 
         $rulePemutihan = Rule::requiredIf(function () {
-            $noktp = request()->noktp;
-            $pemutihan = DB::table("pemutihansupirheader")->from(DB::raw("pemutihansupirheader with (readuncommitted)"))
-                ->select(DB::raw("supir.noktp"))
-                ->join(DB::raw("supir with (readuncommitted)"), 'pemutihansupirheader.supir_id', 'supir.id')
-                ->where('supir.noktp', $noktp)
-                ->first();
-            if ($pemutihan != '') {
-                return true;
+            if (request()->statusaktif != 2) {
+                $noktp = request()->noktp;
+                $pemutihan = DB::table("pemutihansupirheader")->from(DB::raw("pemutihansupirheader with (readuncommitted)"))
+                    ->select(DB::raw("supir.noktp"))
+                    ->join(DB::raw("supir with (readuncommitted)"), 'pemutihansupirheader.supir_id', 'supir.id')
+                    ->where('supir.noktp', $noktp)
+                    ->first();
+                if ($pemutihan != '') {
+                    return true;
+                }
             }
             return false;
         });
