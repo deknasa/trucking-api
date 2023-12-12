@@ -152,6 +152,7 @@ use App\Http\Controllers\Api\PenerimaanDetailController;
 use App\Http\Controllers\Api\PenerimaanHeaderController;
 use App\Http\Controllers\Api\ServiceOutDetailController;
 use App\Http\Controllers\Api\ServiceOutHeaderController;
+use App\Http\Controllers\Api\TarikDataAbsensiController;
 use App\Http\Controllers\Api\UpahSupirRincianController;
 use App\Http\Controllers\Api\ApprovalBukaCetakController;
 use App\Http\Controllers\Api\ExportLaporanStokController;
@@ -180,7 +181,6 @@ use App\Http\Controllers\Api\LaporanPiutangGiroController;
 use App\Http\Controllers\Api\LaporanRitasiTradoController;
 use App\Http\Controllers\Api\LaporanTitipanEmklController;
 use App\Http\Controllers\Api\MandorAbsensiSupirController;
-use App\Http\Controllers\Api\InvoiceLunasKePusatController;
 use App\Http\Controllers\Api\PenerimaanTruckingController;
 use App\Http\Controllers\Api\ProsesAbsensiSupirController;
 use App\Http\Controllers\Api\SaldoAwalBukuBesarController;
@@ -188,6 +188,7 @@ use App\Http\Controllers\Api\ApprovalHutangBayarController;
 use App\Http\Controllers\Api\ApprovalSupirGambarController;
 use App\Http\Controllers\Api\ApprovalTradoGambarController;
 use App\Http\Controllers\Api\BukaPengeluaranStokController;
+use App\Http\Controllers\Api\InvoiceLunasKePusatController;
 use App\Http\Controllers\Api\LaporanPemakaianBanController;
 use App\Http\Controllers\Api\PengeluaranTruckingController;
 use App\Http\Controllers\Api\LaporanDepositoSupirController;
@@ -276,6 +277,7 @@ use App\Http\Controllers\Api\LapKartuHutangPerVendorDetailController;
 use App\Http\Controllers\Api\LaporanKartuHutangPerSupplierController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepoController;
 use App\Http\Controllers\Api\LaporanKeteranganPinjamanSupirController;
+use App\Http\Controllers\Api\LaporanMingguanSupirBedaMandorController;
 use App\Http\Controllers\Api\PencairanGiroPengeluaranDetailController;
 use App\Http\Controllers\Api\PencairanGiroPengeluaranHeaderController;
 use App\Http\Controllers\Api\LaporanKartuPiutangPerPelangganController;
@@ -286,7 +288,6 @@ use App\Http\Controllers\Api\ApprovalBukaTanggalSuratPengantarController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
 use App\Http\Controllers\Api\LaporanBiayaSupirController;
-use App\Http\Controllers\Api\LaporanMingguanSupirBedaMandorController;
 use App\Http\Controllers\Api\SupirSerapController;
 
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
@@ -1396,6 +1397,10 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporandatajurnal/export', [LaporanDataJurnalController::class, 'export'])->name('laporandatajurnal.export');
     Route::get('laporandatajurnal/index', [LaporanDataJurnalController::class, 'index'])->name('laporandatajurnal.index');
     // Route::resource('laporandatajurnal', LaporanDataJurnalController::class)->whereNumber('laporandatajurnal');
+    
+    Route::get('tarikdataabsensi/report', [TarikDataAbsensiController::class, 'report'])->name('tarikdataabsensi.report');
+    Route::get('tarikdataabsensi/export', [TarikDataAbsensiController::class, 'export'])->name('tarikdataabsensi.export');
+    Route::get('tarikdataabsensi/index', [TarikDataAbsensiController::class, 'index'])->name('tarikdataabsensi.index');
 
 
 
