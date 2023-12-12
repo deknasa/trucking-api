@@ -329,7 +329,7 @@ class StokPusat extends MyModel
     public function processStore(array $data): StokPusat
     {
         $stokPusat = new StokPusat();
-        $stokPusat->namastok = $data['namaterpusat'];
+        $stokPusat->namastok = str_replace("''", '"',  strtoupper($data['namaterpusat']));
         $stokPusat->kelompok_id = $data['kelompok_id'];
         $stokPusat->modifiedby = auth('api')->user()->name;
         $stokPusat->info = html_entity_decode(request()->info);
@@ -348,6 +348,7 @@ class StokPusat extends MyModel
             'modifiedby' => $stokPusat->modifiedby
         ]);
 
+        $data['namaterpusat'] = $stokPusat->namastok;
         $detaillog = [];
 
         if ($data['stok_idmdn'] != null) {
@@ -357,7 +358,7 @@ class StokPusat extends MyModel
                 $gambarmdn = $this->saveFiles('stokpusat/mdn/', config('app.pic_url_mdn'), $data['gambarmdn'], str_replace(' ', '_', $data['namastokmdn']));
             }
             $datadetails = (new StokPusatRincian())->processStore($stokPusat, [
-                'namastok' => $data['namastokmdn'],
+                'namastok' => str_replace("''", '"',  strtoupper($data['namastokmdn'])),
                 'kelompok_id' => $data['kelompok_id'],
                 'stok_id' => $data['stok_idmdn'],
                 'cabang_id' => $getCabang->id,
@@ -370,7 +371,7 @@ class StokPusat extends MyModel
             $getCabang = DB::table("cabang")->from(DB::raw("cabang with (readuncommitted)"))->where('kodecabang', 'JKT')->first();
 
             $datadetails = (new StokPusatRincian())->processStore($stokPusat, [
-                'namastok' => $data['namastokjkt'],
+                'namastok' => str_replace("''", '"',  strtoupper($data['namastokjkt'])),
                 'kelompok_id' => $data['kelompok_id'],
                 'stok_id' => $data['stok_idjkt'],
                 'cabang_id' => $getCabang->id,
@@ -390,7 +391,7 @@ class StokPusat extends MyModel
             $getCabang = DB::table("cabang")->from(DB::raw("cabang with (readuncommitted)"))->where('kodecabang', 'TNL')->first();
 
             $datadetails = (new StokPusatRincian())->processStore($stokPusat, [
-                'namastok' => $data['namastokjkttnl'],
+                'namastok' => str_replace("''", '"',  strtoupper($data['namastokjkttnl'])),
                 'kelompok_id' => $data['kelompok_id'],
                 'stok_id' => $data['stok_idjkttnl'],
                 'cabang_id' => $getCabang->id,
@@ -414,7 +415,7 @@ class StokPusat extends MyModel
                 $gambarmks = $this->saveFiles('stokpusat/mks/', config('app.pic_url_mks'), $data['gambarmks'], str_replace(' ', '_', $data['namastokmks']));
             }
             $datadetails = (new StokPusatRincian())->processStore($stokPusat, [
-                'namastok' => $data['namastokmks'],
+                'namastok' => str_replace("''", '"',  strtoupper($data['namastokmks'])),
                 'kelompok_id' => $data['kelompok_id'],
                 'stok_id' => $data['stok_idmks'],
                 'cabang_id' => $getCabang->id,
@@ -430,7 +431,7 @@ class StokPusat extends MyModel
                 $gambarsby = $this->saveFiles('stokpusat/sby/', config('app.pic_url_sby'), $data['gambarsby'], str_replace(' ', '_', $data['namastoksby']));
             }
             $datadetails = (new StokPusatRincian())->processStore($stokPusat, [
-                'namastok' => $data['namastoksby'],
+                'namastok' => str_replace("''", '"',  strtoupper($data['namastoksby'])),
                 'kelompok_id' => $data['kelompok_id'],
                 'stok_id' => $data['stok_idsby'],
                 'cabang_id' => $getCabang->id,
@@ -446,7 +447,7 @@ class StokPusat extends MyModel
                 $gambarbtg = $this->saveFiles('stokpusat/btg/', config('app.pic_url_btg'), $data['gambarbtg'], str_replace(' ', '_', $data['namastokbtg']));
             }
             $datadetails = (new StokPusatRincian())->processStore($stokPusat, [
-                'namastok' => $data['namastokbtg'],
+                'namastok' => str_replace("''", '"',  strtoupper($data['namastokbtg'])),
                 'kelompok_id' => $data['kelompok_id'],
                 'stok_id' => $data['stok_idbtg'],
                 'cabang_id' => $getCabang->id,
@@ -472,7 +473,7 @@ class StokPusat extends MyModel
 
     public function processUpdate(StokPusat $stokPusat, array $data): StokPusat
     {
-        $stokPusat->namastok = $data['namaterpusat'];
+        $stokPusat->namastok = str_replace("''", '"',  strtoupper($data['namaterpusat']));
         $stokPusat->kelompok_id = $data['kelompok_id'];
         $stokPusat->modifiedby = auth('api')->user()->name;
         $stokPusat->info = html_entity_decode(request()->info);
@@ -492,6 +493,8 @@ class StokPusat extends MyModel
         ]);
 
         $detaillog = [];
+
+        $data['namaterpusat'] = $stokPusat->namastok;
 
         if ($data['stok_idmdn'] != null) {
             $getCabang = DB::table("cabang")->from(DB::raw("cabang with (readuncommitted)"))->where('kodecabang', 'MDN')->first();
@@ -523,7 +526,7 @@ class StokPusat extends MyModel
 
             StokPusatRincian::where('stokpusat_id', $stokPusat->id)->where('cabang_id', $getCabang->id)->delete();
             $datadetails = (new StokPusatRincian())->processStore($stokPusat, [
-                'namastok' => $data['namastokmdn'],
+                'namastok' => str_replace("''", '"',  strtoupper($data['namastokmdn'])),
                 'kelompok_id' => $data['kelompok_id'],
                 'stok_id' => $data['stok_idmdn'],
                 'cabang_id' => $getCabang->id,
@@ -573,7 +576,7 @@ class StokPusat extends MyModel
 
             StokPusatRincian::where('stokpusat_id', $stokPusat->id)->where('cabang_id', $getCabang->id)->delete();
             $datadetails = (new StokPusatRincian())->processStore($stokPusat, [
-                'namastok' => $data['namastokjkt'],
+                'namastok' => str_replace("''", '"',  strtoupper($data['namastokjkt'])),
                 'kelompok_id' => $data['kelompok_id'],
                 'stok_id' => $data['stok_idjkt'],
                 'cabang_id' => $getCabang->id,
@@ -623,7 +626,7 @@ class StokPusat extends MyModel
 
             StokPusatRincian::where('stokpusat_id', $stokPusat->id)->where('cabang_id', $getCabang->id)->delete();
             $datadetails = (new StokPusatRincian())->processStore($stokPusat, [
-                'namastok' => $data['namastokjkttnl'],
+                'namastok' => str_replace("''", '"',  strtoupper($data['namastokjkttnl'])),
                 'kelompok_id' => $data['kelompok_id'],
                 'stok_id' => $data['stok_idjkttnl'],
                 'cabang_id' => $getCabang->id,
@@ -675,7 +678,7 @@ class StokPusat extends MyModel
 
             StokPusatRincian::where('stokpusat_id', $stokPusat->id)->where('cabang_id', $getCabang->id)->delete();
             $datadetails = (new StokPusatRincian())->processStore($stokPusat, [
-                'namastok' => $data['namastokmks'],
+                'namastok' => str_replace("''", '"',  strtoupper($data['namastokmks'])),
                 'kelompok_id' => $data['kelompok_id'],
                 'stok_id' => $data['stok_idmks'],
                 'cabang_id' => $getCabang->id,
@@ -726,7 +729,7 @@ class StokPusat extends MyModel
 
             StokPusatRincian::where('stokpusat_id', $stokPusat->id)->where('cabang_id', $getCabang->id)->delete();
             $datadetails = (new StokPusatRincian())->processStore($stokPusat, [
-                'namastok' => $data['namastoksby'],
+                'namastok' => str_replace("''", '"',  strtoupper($data['namastoksby'])),
                 'kelompok_id' => $data['kelompok_id'],
                 'stok_id' => $data['stok_idsby'],
                 'cabang_id' => $getCabang->id,
@@ -777,7 +780,7 @@ class StokPusat extends MyModel
 
             StokPusatRincian::where('stokpusat_id', $stokPusat->id)->where('cabang_id', $getCabang->id)->delete();
             $datadetails = (new StokPusatRincian())->processStore($stokPusat, [
-                'namastok' => $data['namastokbtg'],
+                'namastok' => str_replace("''", '"',  strtoupper($data['namastokbtg'])),
                 'kelompok_id' => $data['kelompok_id'],
                 'stok_id' => $data['stok_idbtg'],
                 'cabang_id' => $getCabang->id,
@@ -818,13 +821,13 @@ class StokPusat extends MyModel
     {
         $stokPusatRincian = StokPusatRincian::lockForUpdate()->where('stokpusat_id', $id)->get();
         $data = [
-            
+
             'stok_idmdn' => '',
             'stok_idjkt' => '',
             'stok_idjkttnl' => '',
             'stok_idmks' => '',
             'stok_idsby' => '',
-            'stok_idbtg' => '' 
+            'stok_idbtg' => ''
         ];
         // MDN
         $mdn = (new StokPusatRincian())->findMdn($id);
@@ -1229,7 +1232,7 @@ class StokPusat extends MyModel
         }
         $data['cekKoneksi'] = $cabangTerkoneksi;
         if (array_key_exists('MDN', $cabangTerkoneksi)) {
-            
+
             if ($data['stok_idmdn'] != '') {
                 $accessTokenMdnStok = session('access_token_mdn_stok');
                 if (!$accessTokenMdnStok) {
@@ -1279,7 +1282,7 @@ class StokPusat extends MyModel
                         'client_secret' =>  config('app.client_secret_mdn')
                     ];
                     $token = $this->getToken(config('app.url_token_mdn'), $postRequest);
-                    
+
                     $token = json_decode($token, TRUE);
                     if ($token != '') {
                         if (array_key_exists('access_token', $token)) {
@@ -1321,7 +1324,7 @@ class StokPusat extends MyModel
                         'client_secret' =>  config('app.client_secret_mks')
                     ];
                     $token = $this->getToken(config('app.url_token_mks'), $postRequest);
-                    
+
                     $token = json_decode($token, TRUE);
                     if ($token != '') {
 
@@ -1361,7 +1364,7 @@ class StokPusat extends MyModel
                         'client_secret' =>  config('app.client_secret_mks')
                     ];
                     $token = $this->getToken(config('app.url_token_mks'), $postRequest);
-                    
+
                     $token = json_decode($token, TRUE);
                     if ($token != '') {
 
@@ -1404,7 +1407,7 @@ class StokPusat extends MyModel
                         'client_secret' =>  config('app.client_secret_btg')
                     ];
                     $token = $this->getToken(config('app.url_token_btg'), $postRequest);
-                    
+
                     $token = json_decode($token, TRUE);
                     if ($token != '') {
 
@@ -1444,7 +1447,7 @@ class StokPusat extends MyModel
                         'client_secret' =>  config('app.client_secret_btg')
                     ];
                     $token = $this->getToken(config('app.url_token_btg'), $postRequest);
-                    
+
                     $token = json_decode($token, TRUE);
                     if ($token != '') {
 
@@ -1487,7 +1490,7 @@ class StokPusat extends MyModel
                         'client_secret' =>  config('app.client_secret_sby')
                     ];
                     $token = $this->getToken(config('app.url_token_sby'), $postRequest);
-                    
+
                     $token = json_decode($token, TRUE);
                     if ($token != '') {
                         if (array_key_exists('access_token', $token)) {
@@ -1575,7 +1578,7 @@ class StokPusat extends MyModel
                         'os' => '',
                     ];
                     $token = $this->getToken(config('app.url_token_jkt'), $postRequest);
-                    
+
                     $token = json_decode($token, TRUE);
                     if ($token != '') {
                         if (array_key_exists('access_token', $token)) {
@@ -1670,7 +1673,7 @@ class StokPusat extends MyModel
                         'os' => '',
                     ];
                     $token = $this->getToken(config('app.url_token_jkttnl'), $postRequest);
-                    
+
                     $token = json_decode($token, TRUE);
                     if ($token != '') {
                         if (array_key_exists('access_token', $token)) {
@@ -1716,7 +1719,7 @@ class StokPusat extends MyModel
                         'os' => '',
                     ];
                     $token = $this->getToken(config('app.url_token_jkttnl'), $postRequest);
-                    
+
                     $token = json_decode($token, TRUE);
                     if ($token != '') {
                         if (array_key_exists('access_token', $token)) {
@@ -1766,8 +1769,8 @@ class StokPusat extends MyModel
         }
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);     
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2); 
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 
         $output = curl_exec($ch);
         curl_close($ch);
