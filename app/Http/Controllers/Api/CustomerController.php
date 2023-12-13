@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 
-class AgenController extends Controller
+class CustomerController extends Controller
 {
     /**
      * @ClassName 

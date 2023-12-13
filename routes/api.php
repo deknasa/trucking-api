@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\AclController;
 use App\Http\Controllers\Api\AcosController;
-use App\Http\Controllers\Api\AgenController;
+use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\AuthController;
 
 use App\Http\Controllers\Api\BankController;
@@ -355,7 +355,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('saldoumuraki/getUmurAkiAll', [SaldoUmurAkiController::class, 'getUmurAkiAll']);
     Route::resource('saldoumuraki', SaldoUmurAkiController::class)->whereNumber('saldoumuraki');
 
-    Route::resource('agen', AgenController::class)->whereNumber('agen');
+    Route::resource('customer', CustomerController::class)->whereNumber('customer');
     Route::resource('jenisorder', JenisOrderController::class)->whereNumber('jenisorder');
     Route::resource('statuscontainer', StatusContainerController::class)->parameters(['statuscontainer' => 'statusContainer'])->whereNumber('statusContainer');
     Route::resource('container', ContainerController::class)->whereNumber('container');
@@ -642,13 +642,13 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::apiResource('absensisupirapprovalheader', AbsensiSupirApprovalHeaderController::class)->whereNumber('absensisupirapprovalheader');
     Route::apiResource('absensisupirapprovaldetail', AbsensiSupirApprovalDetailController::class)->whereNumber('absensisupirapprovaldetail');
 
-    Route::get('agen/field_length', [AgenController::class, 'fieldLength']);
-    Route::get('agen/export', [AgenController::class, 'export'])->name('export');
-    Route::get('agen/default', [AgenController::class, 'default']);
-    Route::post('agen/{agen}/approval', [AgenController::class, 'approval'])->name('agen.approval')->whereNumber('agen');
-    Route::post('agen/{id}/cekValidasi', [AgenController::class, 'cekValidasi'])->name('agen.cekValidasi')->whereNumber('id');
-    Route::get('agen/export', [AgenController::class, 'export']);
-    Route::get('agen/report', [AgenController::class, 'report']);
+    Route::get('customer/field_length', [CustomerController::class, 'fieldLength']);
+    Route::get('customer/export', [CustomerController::class, 'export'])->name('export');
+    Route::get('customer/default', [CustomerController::class, 'default']);
+    Route::post('customer/{customer}/approval', [CustomerController::class, 'approval'])->name('customer.approval')->whereNumber('customer');
+    Route::post('customer/{id}/cekValidasi', [CustomerController::class, 'cekValidasi'])->name('customer.cekValidasi')->whereNumber('id');
+    Route::get('customer/export', [CustomerController::class, 'export']);
+    Route::get('customer/report', [CustomerController::class, 'report']);
 
     Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
     Route::get('cabang/default', [CabangController::class, 'default']);

@@ -194,7 +194,7 @@ class Agen extends MyModel
                 'agen.created_at',
                 'agen.modifiedby',
                 'agen.updated_at',
-                DB::raw("'Laporan Agen' as judulLaporan"),
+                DB::raw("'Laporan Customer' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
