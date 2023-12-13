@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\StoreAclRequest;
+use App\Models\Aco;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 
@@ -74,9 +75,13 @@ class RoleController extends Controller
      */
     public function show(Role $role)
     {
+       request()->role_id = $role->id;
+        request()->limit = 0;
+        $detail = (new Aco())->get();
         return response([
             'status' => true,
-            'data' => $role
+            'data' => $role,
+            'detail' => $detail
         ]);
     }
 
@@ -88,8 +93,11 @@ class RoleController extends Controller
         DB::beginTransaction();
 
         try {
+            
+            $acos = json_decode($request->aco_ids, true);
             $data = [
-                'rolename' => $request->rolename
+                'rolename' => $request->rolename,
+                'aco_ids' => $acos,
             ];
 
             $role = (new Role())->processUpdate($role, $data);
