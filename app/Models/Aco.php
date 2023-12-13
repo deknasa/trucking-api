@@ -17,7 +17,7 @@ class Aco extends MyModel
     {
 
         $this->setRequestParameters();
-        $role_id = request()->role_id ?? '';
+        $role_id = request()->role_id ?? 0;
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
         $class = 'AcoController';
@@ -74,7 +74,7 @@ class Aco extends MyModel
                 'updated_at',
                 'menukode',
                 'status'
-            ], $this->getdata());
+            ], $this->getdata($role_id ));
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
                 DB::raw("listtemporarytabel with (readuncommitted)")
@@ -104,6 +104,7 @@ class Aco extends MyModel
                 'a.status',
             );
 
+            // dd($query ->get());
 
         // $query = DB::table($this->table);
 
@@ -120,7 +121,7 @@ class Aco extends MyModel
         return $data;
     }
 
-    public function getdata()
+    public function getdata($role_id )
     {
 
         $tempmenu = '##tempmenu' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -256,12 +257,33 @@ class Aco extends MyModel
                     ], $queryacos2);
                     
                  
+      
+
+        $tempacl = '##tempacl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempacl, function ($table) {
+            $table->id();        
+            $table->integer('aco_id')->nullable();
+        });  
+
+        $queryacl=db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
+            ->select(
+                'a.aco_id'
+            )
+            ->where('a.role_id',$role_id)
+            ->groupby('a.aco_id');
+
+            DB::table($tempacl)->insertUsing([
+                'aco_id',
+            ], $queryacl);            
+
             
+            // DD(db::table($tempacl)->get());
+
         $query = DB::table($tempacos2)->from(
             db::raw($tempacos2 . " a")
         )
             ->select(
-                'a.id',
+                'a.idacos as id',
                 'a.class',
                 DB::raw("isnull(b.keterangan,a.method) as method"),
 	            'a.nama',
@@ -269,12 +291,17 @@ class Aco extends MyModel
                 'a.created_at',
                 'a.updated_at',
                 'a.menukode',
-                DB::raw("'AKTIF' as status"),
+                DB::raw("(case when isnull(c.aco_id,0)<>0 then 'AKTIF' else 'TIDAK AKTIF'  end) as status"),
+                // 'c.aco_id'
+                //  DB::raw("'AKTIF'   as status"),
 
             )
             ->leftjoin(db::raw("method b with (readuncommitted)"), 'a.method', 'b.method')
+            ->leftjoin(db::raw($tempacl ." c "), 'a.idacos', 'c.aco_id')
+
             ->orderby('a.id','asc');
                 
+            // dd($query->get());
             return $query;
     }
 
