@@ -349,6 +349,7 @@ class Acl extends MyModel
                 $table->string('modifiedby', 100)->nullable();
                 $table->dateTime('created_at')->nullable();
                 $table->dateTime('updated_at')->nullable();
+                $table->string('menukode', 100)->nullable();
             });
 
             DB::table($temtabel)->insertUsing([
@@ -359,6 +360,7 @@ class Acl extends MyModel
                 'modifiedby',
                 'created_at',
                 'updated_at',
+                'menukode',
             ], $this->getdataaclrole($roleid));
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
@@ -386,6 +388,7 @@ class Acl extends MyModel
                 'acl.modifiedby',
                 'acl.created_at',
                 'acl.updated_at',
+                'acl.menukode',
             );
 
 
@@ -422,6 +425,7 @@ class Acl extends MyModel
         Schema::create($tempmenu, function ($table) {
             $table->integer('aco_id')->nullable();
             $table->string('menu', 1000)->nullable();
+            $table->string('menukode', 1000)->nullable();
         });
 
 
@@ -431,6 +435,7 @@ class Acl extends MyModel
         )
             ->select(
                 'a.aco_id',
+     
                 DB::raw("isnull(b.menuname,'')+
                 (case when isnull(c.menuname,'')='' then '' else '->'+  isnull(c.menuname,'') end)+
                 (case when isnull(d.menuname,'')='' then '' else '->'+  isnull(d.menuname,'') end)+
@@ -440,6 +445,7 @@ class Acl extends MyModel
                  (case when isnull(a.menuname,'')='' then '' else '->'+  isnull(a.menuname,'')	 end)
                  as menu
                 "),
+                'a.menukode',                
 
             )
             ->leftjoin(db::raw("menu b with (readuncommitted)"), function ($join) use ($param1) {
@@ -468,10 +474,12 @@ class Acl extends MyModel
             })
             ->whereRaw("a.aco_id<>0");
 
+            // dd($querymenu->get());
 
         DB::table($tempmenu)->insertUsing([
             'aco_id',
             'menu',
+            'menukode',
         ], $querymenu);
 
         $tempacos = '##tempacos' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -504,23 +512,26 @@ class Acl extends MyModel
 
         $tempacos2 = '##tempacos2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempacos2, function ($table) {
-            $table->integer('id')->nullable();
+            $table->id();        
+            $table->integer('idacos')->nullable();
             $table->string('class', 1000)->nullable();
             $table->string('method', 1000)->nullable();
             $table->string('nama', 1000)->nullable();
+            $table->string('menukode', 1000)->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
         });
-
+        // dd('test');
         $queryacos2 = DB::table("acos")->from(
             DB::raw("acos a with (readuncommitted)")
         )
             ->select(
-                'a.id',
-                DB::raw("isnull(c.menu,isnull(c1.menu,'')) as class"),
+                'a.id as idacos',
+                DB::raw("replace(isnull(c.menu,isnull(c1.menu,'')),'agen','CUSTOMER') as class"),
                 'a.method',
                 'a.nama',
+                db::raw("isnull(c.menukode,isnull(c1.menukode,'')) as menukode"),
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at'
@@ -529,19 +540,24 @@ class Acl extends MyModel
             ->leftjoin(DB::raw($tempmenu . " c"), 'b.idindex', 'c.aco_id')
             ->leftjoin(DB::raw($tempacos . " b1"), 'a.idheader', 'b1.id')
             ->leftjoin(DB::raw($tempmenu . " c1"), 'b1.idindex', 'c1.aco_id')
-            ->whereRaw("isnull(c.menu,isnull(c1.menu,''))<>''");
+            ->whereRaw("isnull(c.menu,isnull(c1.menu,''))<>''")
+            ->OrderBy(db::raw("isnull(c.menukode,isnull(c1.menukode,''))"),'asc');
+            // ->OrderBy('a.id','asc');
+
+            // DD($queryacos2->get());
 
         DB::table($tempacos2)->insertUsing([
-            'id',
+            'idacos',
             'class',
             'method',
             'nama',
+            'menukode',
             'modifiedby',
             'created_at',
             'updated_at'
         ], $queryacos2);
 
-
+// dd(db::table($tempacos2)->orderby('id','asc')->get());
 
         $query = DB::table($tempacos2)->from(
             db::raw($tempacos2 . " a")
@@ -551,9 +567,10 @@ class Acl extends MyModel
                 'a.class',
                 DB::raw("isnull(b.keterangan,a.method) as method"),
                 'a.nama',
-                'a.modifiedby',
-                'a.created_at',
-                'a.updated_at'
+                'c.modifiedby',
+                'c.created_at',
+                'c.updated_at',
+                'a.menukode',
             )
             ->leftjoin(db::raw("method b with (readuncommitted)"), 'a.method', 'b.method')
             ->join(db::raw("acl c with (readuncommitted)"), 'a.id', 'c.aco_id')

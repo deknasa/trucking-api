@@ -59,6 +59,8 @@ class Aco extends MyModel
                 $table->string('modifiedby', 100)->nullable();
                 $table->dateTime('created_at')->nullable();
                 $table->dateTime('updated_at')->nullable();
+                $table->string('menukode', 100)->nullable();
+                $table->string('status', 100)->nullable();
             });
 
             DB::table($temtabel)->insertUsing([
@@ -69,6 +71,8 @@ class Aco extends MyModel
                 'modifiedby',
                 'created_at',
                 'updated_at',
+                'menukode',
+                'status'
             ], $this->getdata());
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
@@ -96,6 +100,7 @@ class Aco extends MyModel
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at',
+                'a.status',
             );
 
 
@@ -121,6 +126,7 @@ class Aco extends MyModel
         Schema::create($tempmenu, function ($table) {
             $table->integer('aco_id')->nullable();
             $table->string('menu', 1000)->nullable();
+            $table->string('menukode', 1000)->nullable();
         });
 
 
@@ -139,6 +145,8 @@ class Aco extends MyModel
                  (case when isnull(a.menuname,'')='' then '' else '->'+  isnull(a.menuname,'')	 end)
                  as menu
                 "),
+                'a.menukode',                
+
 
             )
             ->leftjoin(db::raw("menu b with (readuncommitted)"), function ($join) use ($param1) {
@@ -171,6 +179,7 @@ class Aco extends MyModel
             DB::table($tempmenu)->insertUsing([
                 'aco_id',
                 'menu',
+                'menukode',
             ], $querymenu);
 
             $tempacos = '##tempacos' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -203,10 +212,12 @@ class Aco extends MyModel
 
                 $tempacos2 = '##tempacos2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                 Schema::create($tempacos2, function ($table) {
-                    $table->integer('id')->nullable();
+                    $table->id();        
+                    $table->integer('idacos')->nullable();
                     $table->string('class',1000)->nullable();
                     $table->string('method',1000)->nullable();
                     $table->string('nama',1000)->nullable();
+                    $table->string('menukode', 1000)->nullable();
                     $table->string('modifiedby',50)->nullable();
                     $table->dateTime('created_at')->nullable();
                     $table->dateTime('updated_at')->nullable();
@@ -216,10 +227,11 @@ class Aco extends MyModel
                     DB::raw("acos a with (readuncommitted)")
                 )
                     ->select(
-                        'a.id',
-                        DB::raw("isnull(c.menu,isnull(c1.menu,'')) as class"),
+                        'a.id as idacos',
+                        DB::raw("replace(isnull(c.menu,isnull(c1.menu,'')),'agen','CUSTOMER') as class"),
                         'a.method',
                         'a.nama',
+                        db::raw("isnull(c.menukode,isnull(c1.menukode,'')) as menukode"),
                         'a.modifiedby',
                         'a.created_at',
                         'a.updated_at'
@@ -228,13 +240,15 @@ class Aco extends MyModel
                     ->leftjoin(DB::raw($tempmenu . " c"), 'b.idindex', 'c.aco_id')
                     ->leftjoin(DB::raw($tempacos . " b1"), 'a.idheader', 'b1.id')
                     ->leftjoin(DB::raw($tempmenu . " c1"), 'b1.idindex', 'c1.aco_id')
-                    ->whereRaw("isnull(c.menu,isnull(c1.menu,''))<>''");
+                    ->whereRaw("isnull(c.menu,isnull(c1.menu,''))<>''")
+                    ->OrderBy(db::raw("isnull(c.menukode,isnull(c1.menukode,''))"),'asc');
                 
                     DB::table($tempacos2)->insertUsing([
-                        'id',
+                        'idacos',
                         'class',
                         'method',
                         'nama',
+                        'menukode',
                         'modifiedby',
                         'created_at',
                         'updated_at'
@@ -252,7 +266,10 @@ class Aco extends MyModel
 	            'a.nama',
                 'a.modifiedby',
                 'a.created_at',
-                'a.updated_at'
+                'a.updated_at',
+                'a.menukode',
+                DB::raw("'AKTIF' as status"),
+
             )
             ->leftjoin(db::raw("method b with (readuncommitted)"), 'a.method', 'b.method')
             ->orderby('a.id','asc');
