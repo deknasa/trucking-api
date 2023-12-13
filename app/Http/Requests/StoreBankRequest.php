@@ -38,7 +38,7 @@ class StoreBankRequest extends FormRequest
         $rules =  [
             'kodebank' => ['required', 'unique:bank'],
             'namabank' => ['required', 'unique:bank'],
-            'coa' => ['required', 'unique:bank'],
+            'coa' => ['required', ],
             'tipe' => 'required',
             'statusaktif' => ['required', Rule::in($status),'numeric', 'min:1'],
             'formatpenerimaan' => 'required','numeric', 'min:1',
