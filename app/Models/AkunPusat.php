@@ -95,6 +95,7 @@ class AkunPusat extends MyModel
         $supplier = request()->supplier ?? '';
 
         $aktif = request()->aktif ?? '';
+        $KeteranganCoa = request()->keterangancoa ?? '';
 
 
 
@@ -147,6 +148,11 @@ class AkunPusat extends MyModel
             $temp = implode(',', $this->TempParameter());
 
             $query->whereRaw("akunpusat.coa in ($temp)");
+        }
+
+        if ($KeteranganCoa != '') {
+
+            $query->whereRaw("akunpusat.keterangancoa like'%" . $KeteranganCoa . "%'");
         }
 
         if ($supplier != '') {
