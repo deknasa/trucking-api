@@ -28,8 +28,8 @@ class LaporanHistoryPinjamanController extends Controller
      */
     public function report(Request $request)
     {
-        $supirdari_id = $request->supirdari_id ?? '';
-        $supirsampai_id = $request->supirsampai_id ?? '';
+        $supirdari_id = $request->supirdari_id ?? 0;
+        $supirsampai_id = $request->supirsampai_id ?? 0;
         $supirdari = ($supirdari_id != '') ? Supir::find($supirdari_id) : '';
         $supirsampai = ($supirsampai_id != '') ? Supir::find($supirsampai_id) : '';
 
