@@ -209,12 +209,28 @@ class Role extends MyModel
             'datajson' => $role->toArray(),
             'modifiedby' => $role->modifiedby
         ]);
-
+        $role->acls()->detach();
+        foreach ($data['aco_ids'] as $aco_id) {
+            $role->acls()->attach($aco_id, [
+                'modifiedby' => auth('api')->user()->name
+            ]);
+        }
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($role->getTable()),
+            'postingdari' => 'ENTRY ROLE ACL',
+            'idtrans' => $role->id,
+            'nobuktitrans' => $role->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $role->toArray(),
+            'modifiedby' => $role->modifiedby
+        ]);
         return $role;
     }
 
     public function processDestroy($id): Role
     {
+        $acl = Acl::where('role_id', $id)->get();
+        Acl::where('role_id', $id)->delete();
         $role = new Role();
         $role = $role->lockAndDestroy($id);
 
@@ -225,6 +241,15 @@ class Role extends MyModel
             'nobuktitrans' => $role->id,
             'aksi' => 'DELETE',
             'datajson' => $role->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper('acl'),
+            'postingdari' => 'DELETE ACL',
+            'idtrans' => $role->id,
+            'nobuktitrans' => $role->id,
+            'aksi' => 'DELETE',
+            'datajson' => $acl->toArray(),
             'modifiedby' => auth('api')->user()->name
         ]);
 
