@@ -343,6 +343,7 @@ class Acl extends MyModel
 
             Schema::create($temtabel, function (Blueprint $table) {
                 $table->integer('id')->nullable();
+                $table->integer('acosid')->nullable();
                 $table->string('class', 1000)->nullable();
                 $table->string('method', 1000)->nullable();
                 $table->string('nama', 1000)->nullable();
@@ -354,6 +355,7 @@ class Acl extends MyModel
 
             DB::table($temtabel)->insertUsing([
                 'id',
+                'acosid',
                 'class',
                 'method',
                 'nama',
@@ -382,6 +384,7 @@ class Acl extends MyModel
         )
             ->select(
                 'acl.id',
+                'acl.acosid',
                 'acl.class',
                 'acl.method',
                 'acl.nama',
@@ -557,6 +560,7 @@ class Acl extends MyModel
             'updated_at'
         ], $queryacos2);
 
+        
 // dd(db::table($tempacos2)->orderby('id','asc')->get());
 
 $tempacl = '##tempacl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -590,7 +594,8 @@ $queryacl=db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
             db::raw($tempacos2 . " a")
         )
             ->select(
-                'a.idacos as id',
+                'a.id as id',
+                'a.idacos as idacos',
                 'a.class',
                 DB::raw("isnull(b.keterangan,a.method) as method"),
                 'a.nama',
