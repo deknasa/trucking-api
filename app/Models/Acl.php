@@ -559,11 +559,38 @@ class Acl extends MyModel
 
 // dd(db::table($tempacos2)->orderby('id','asc')->get());
 
+$tempacl = '##tempacl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+Schema::create($tempacl, function ($table) {
+    $table->id();        
+    $table->integer('aco_id')->nullable();
+    $table->string('modifiedby', 50)->nullable();
+    $table->dateTime('created_at')->nullable();
+    $table->dateTime('updated_at')->nullable();    
+});  
+
+$queryacl=db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
+    ->select(
+        'a.aco_id',
+        db::raw("max(a.modifiedby) as modifiedby"),
+        db::raw("max(a.created_at) as created_at"),
+        db::raw("max(a.updated_at) as updated_at"),
+    )
+    ->where('a.role_id',$roleid)
+    ->groupby('a.aco_id');
+
+    DB::table($tempacl)->insertUsing([
+        'aco_id',
+        'modifiedby',
+        'created_at',
+        'updated_at',
+    ], $queryacl);       
+
+
         $query = DB::table($tempacos2)->from(
             db::raw($tempacos2 . " a")
         )
             ->select(
-                'a.id',
+                'a.idacos as id',
                 'a.class',
                 DB::raw("isnull(b.keterangan,a.method) as method"),
                 'a.nama',
@@ -573,8 +600,7 @@ class Acl extends MyModel
                 'a.menukode',
             )
             ->leftjoin(db::raw("method b with (readuncommitted)"), 'a.method', 'b.method')
-            ->join(db::raw("acl c with (readuncommitted)"), 'a.id', 'c.aco_id')
-            ->where('c.role_id', '=', $roleid)
+            ->join(db::raw($tempacl ." c "), 'a.id', 'c.aco_id')
             ->orderby('a.id', 'asc');
 
         // dd( $query->get());
