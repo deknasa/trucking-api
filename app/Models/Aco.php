@@ -17,6 +17,7 @@ class Aco extends MyModel
     {
 
         $this->setRequestParameters();
+        $role_id = request()->role_id ?? '';
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
         $class = 'AcoController';
