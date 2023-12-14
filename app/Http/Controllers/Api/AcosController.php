@@ -44,6 +44,19 @@ class AcosController extends Controller
         ]);
     }
 
+    public function getUserAcl()
+    {
+        $aco = new Aco();
+        
+        return response()->json([
+            'data' => $aco->getUserAcl(),
+            'attributes' => [
+                'totalRows' => $aco->totalRows,
+                'totalPages' => $aco->totalPages
+            ]
+        ]);
+    }
+
     /**
      * Show the form for creating a new resource.
      *

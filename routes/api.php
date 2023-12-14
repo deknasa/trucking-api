@@ -665,6 +665,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('gandengan/{id}/cekValidasi', [GandenganController::class, 'cekValidasi'])->name('gandengan.cekValidasi')->whereNumber('id');
 
 
+    Route::get('acos/getuseracl', [AcosController::class, 'getUserAcl']);
     Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
     Route::resource('acos', AcosController::class)->whereNumber('acos');
 

@@ -105,4 +105,18 @@ class UserRole extends MyModel
 
         return $userRole;
     }
+    public function processStore($data)
+    {
+        $userRole = new UserRole();
+        $userRole->role_id = $data['role_id'];
+        $userRole->user_id = $data['user_id'];
+        $userRole->modifiedby = auth('api')->user()->name;
+        $userRole->info = html_entity_decode(request()->info);
+
+        if (!$userRole->save()) {
+            throw new \Exception("Error storing user role.");
+        }
+
+        return $userRole;
+    }
 }
