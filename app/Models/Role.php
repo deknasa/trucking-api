@@ -209,19 +209,22 @@ class Role extends MyModel
             'datajson' => $role->toArray(),
             'modifiedby' => $role->modifiedby
         ]);
-        $role->acls()->detach();
-        foreach ($data['aco_ids'] as $aco_id) {
-            $role->acls()->attach($aco_id, [
-                'modifiedby' => auth('api')->user()->name
+        Acl::where('role_id', $role->id)->delete();
+        $acos = [];
+        for($i=0; $i < count($data['aco_ids']); $i++) {
+            $aco = (new Acl())->processStore([
+                'aco_id' => $data['aco_ids'][$i],
+                'role_id' => $role->id,
             ]);
+            $acos[] = $aco->toArray();
         }
         (new LogTrail())->processStore([
-            'namatabel' => strtoupper($role->getTable()),
-            'postingdari' => 'ENTRY ROLE ACL',
+            'namatabel' => strtoupper('acl'),
+            'postingdari' => 'ENTRY ACL',
             'idtrans' => $role->id,
             'nobuktitrans' => $role->id,
             'aksi' => 'ENTRY',
-            'datajson' => $role->toArray(),
+            'datajson' => $acos,
             'modifiedby' => $role->modifiedby
         ]);
         return $role;

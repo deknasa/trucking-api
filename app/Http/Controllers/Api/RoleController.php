@@ -97,7 +97,7 @@ class RoleController extends Controller
             $acos = json_decode($request->aco_ids, true);
             $data = [
                 'rolename' => $request->rolename,
-                'aco_ids' => $acos,
+                'aco_ids' => $acos['aco_ids'],
             ];
 
             $role = (new Role())->processUpdate($role, $data);
