@@ -133,7 +133,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
                         "gandenganheader_id" =>$salahSatuDari,
                         "trado" =>$salahSatuDari,
                         "gandengan" =>$salahSatuDari,
-                        "postingpinjaman" => ["required", new ValidasiKlaimPosting()],
+                        // "postingpinjaman" => ["required", new ValidasiKlaimPosting()],
                         "statuscabang" =>"required",
                     ];    
                 }

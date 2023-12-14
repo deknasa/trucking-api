@@ -83,6 +83,10 @@ class PengeluaranTruckingHeaderController extends Controller
                 $noinvoice_detail = $detail->noinvoice_detail;
                 $nominal = $detail->nominal;
             }
+            if ($fetchFormat->kodepengeluaran == "KLAIM") {
+                $statusPosting = DB::table(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'POSTING')->first();
+                $request->postingpinjaman =$statusPosting->id;
+            }
 
             $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processStore([
                 'pengeluarantrucking_id' => $request->pengeluarantrucking_id,
@@ -241,6 +245,10 @@ class PengeluaranTruckingHeaderController extends Controller
                 $nojobtrucking_detail = $detail->nojobtrucking_detail;
                 $noinvoice_detail = $detail->noinvoice_detail;
                 $nominal = $detail->nominal;
+            }
+            if ($fetchFormat->kodepengeluaran == "KLAIM") {
+                $statusPosting = DB::table(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'POSTING')->first();
+                $request->postingpinjaman =$statusPosting->id;
             }
 
             $pengeluaranTruckingHeader = PengeluaranTruckingHeader::findOrfail($id);
