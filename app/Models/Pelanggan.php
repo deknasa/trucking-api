@@ -166,7 +166,7 @@ class Pelanggan extends MyModel
             'parameter.memo as statusaktif',
             'pelanggan.created_at',
             'pelanggan.updated_at',
-            DB::raw("'Laporan Pelanggan' as judulLaporan"),
+            DB::raw("'Laporan Shipper' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
             DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")

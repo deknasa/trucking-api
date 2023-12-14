@@ -16,7 +16,7 @@ use Illuminate\Database\QueryException;
 use App\Models\Parameter;
 use Illuminate\Http\JsonResponse;
 
-class PelangganController extends Controller
+class ShipperController extends Controller
 {
     /**
      * @ClassName 
