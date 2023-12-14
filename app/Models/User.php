@@ -96,37 +96,37 @@ class User extends Authenticatable
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)
-        ->select(
-            "$this->table.id",
-            "$this->table.user",
-            "$this->table.name",
-            "$this->table.email",
-            "cabang.namacabang as cabang_id",
-            "$this->table.karyawan_id",
-            "$this->table.dashboard",
-            "parameter.memo as statusaktif",
-            "statusakses.memo as statusakses",
-            "$this->table.modifiedby",
-            "$this->table.created_at",
-            "$this->table.updated_at",
-            DB::raw("'Laporan User' as judulLaporan "),
-            DB::raw("'".$getJudul->text ."' as judul "),
-            DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
-        )
+            ->select(
+                "$this->table.id",
+                "$this->table.user",
+                "$this->table.name",
+                "$this->table.email",
+                "cabang.namacabang as cabang_id",
+                "$this->table.karyawan_id",
+                "$this->table.dashboard",
+                "parameter.memo as statusaktif",
+                "statusakses.memo as statusakses",
+                "$this->table.modifiedby",
+                "$this->table.created_at",
+                "$this->table.updated_at",
+                DB::raw("'Laporan User' as judulLaporan "),
+                DB::raw("'" . $getJudul->text . "' as judul "),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            )
             ->leftJoin('parameter', 'user.statusaktif', '=', 'parameter.id')
             ->leftJoin('parameter as statusakses', 'user.statusakses', '=', 'statusakses.id')
             ->leftJoin('cabang', 'user.cabang_id', '=', 'cabang.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-        
+
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
@@ -135,7 +135,7 @@ class User extends Authenticatable
 
         return $data;
     }
-    
+
     public function default()
     {
 
@@ -158,7 +158,7 @@ class User extends Authenticatable
             ->first();
 
         $iddefaultstatuskaryawan = $status->id ?? 0;
-        
+
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
@@ -171,7 +171,7 @@ class User extends Authenticatable
             ->first();
 
         $iddefaultstatusaktif = $status->id ?? 0;
-         
+
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
@@ -184,10 +184,10 @@ class User extends Authenticatable
             ->first();
 
         $iddefaultstatusakses = $status->id ?? 0;
-        
+
 
         DB::table($tempdefault)->insert(
-            ["karyawan_id" => $iddefaultstatuskaryawan,"statusaktif" => $iddefaultstatusaktif,"statusakses" => $iddefaultstatusakses]
+            ["karyawan_id" => $iddefaultstatuskaryawan, "statusaktif" => $iddefaultstatusaktif, "statusakses" => $iddefaultstatusakses]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -200,7 +200,7 @@ class User extends Authenticatable
             );
 
         $data = $query->first();
-        
+
         return $data;
     }
 
@@ -288,14 +288,13 @@ class User extends Authenticatable
                             $query = $query->where('menu2.menuname', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'cabang_id') {
                             $query = $query->where('cabang.namacabang', '=', $filters['data']);
-                        }else if ($filters['field'] == 'aco_id') {
+                        } else if ($filters['field'] == 'aco_id') {
                             $query = $query->where('acos.nama', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format([user].".$filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format([user]." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw('['.$this->table . "].[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
+                            $query = $query->whereRaw('[' . $this->table . "].[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                         }
                     }
 
@@ -310,14 +309,13 @@ class User extends Authenticatable
                             $query = $query->orWhere('menu2.menuname', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'cabang.namacabang') {
                             $query = $query->orWhere('cabang_id', 'LIKE', "%$filters[data]%");
-                        }else if ($filters['field'] == 'aco_id') {
+                        } else if ($filters['field'] == 'aco_id') {
                             $query = $query->orWhere('acos.nama', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format([user].".$filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->orWhereRaw("format([user]." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->OrwhereRaw('['.$this->table . "].[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
+                            $query = $query->OrwhereRaw('[' . $this->table . "].[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                         }
                     }
 
@@ -347,31 +345,31 @@ class User extends Authenticatable
     public function acls()
     {
         return $this->belongsToMany(Aco::class, 'useracl')
-        ->withTimestamps()
-        ->select(
-            'acos.id',
-            'acos.class',
-            'acos.method',
-            'acos.nama',
-            'acos.modifiedby',
-            'useracl.created_at',
-            'useracl.updated_at'
-        );
+            ->withTimestamps()
+            ->select(
+                'acos.id',
+                'acos.class',
+                'acos.method',
+                'acos.nama',
+                'acos.modifiedby',
+                'useracl.created_at',
+                'useracl.updated_at'
+            );
     }
 
     public function processStore(array $data): User
     {
         $user = new User();
-            $user->user = strtoupper($data['user']);
-            $user->name = strtoupper($data['name']);
-            $user->email = strtoupper($data['email']);
-            $user->password = Hash::make($data['password']);
-            $user->cabang_id = $data['cabang_id'] ?? '';
-            $user->karyawan_id = $data['karyawan_id'] ?? '';
-            $user->dashboard = strtoupper($data['dashboard']);
-            $user->statusaktif = $data['statusaktif'];
-            $user->statusakses = $data['statusakses'];
-            $user->modifiedby = auth('api')->user()->name;
+        $user->user = strtoupper($data['user']);
+        $user->name = strtoupper($data['name']);
+        $user->email = strtoupper($data['email']);
+        $user->password = Hash::make($data['password']);
+        $user->cabang_id = $data['cabang_id'] ?? '';
+        $user->karyawan_id = $data['karyawan_id'] ?? '';
+        $user->dashboard = strtoupper($data['dashboard']);
+        $user->statusaktif = $data['statusaktif'];
+        $user->statusakses = $data['statusakses'];
+        $user->modifiedby = auth('api')->user()->name;
 
         if (!$user->save()) {
             throw new \Exception('Error storing user.');
@@ -417,6 +415,49 @@ class User extends Authenticatable
             'modifiedby' => $user->modifiedby
         ]);
 
+        // USER ROLE
+        UserRole::where('user_id', $user->id)->delete();
+        if ($data['role_ids'] != '') {
+
+            $roles = [];
+            for ($i = 0; $i < count($data['role_ids']); $i++) {
+                $aco = (new UserRole())->processStore([
+                    'role_id' => $data['role_ids'][$i],
+                    'user_id' => $user->id,
+                ]);
+                $roles[] = $aco->toArray();
+            }
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper('userrole'),
+                'postingdari' => 'ENTRY USER ROLE',
+                'idtrans' => $user->id,
+                'nobuktitrans' => $user->id,
+                'aksi' => 'ENTRY',
+                'datajson' => $roles,
+                'modifiedby' => $user->modifiedby
+            ]);
+        }
+
+        // USER ACL
+        UserAcl::where('user_id', $user->id)->delete();
+        $acos = [];
+        for ($i = 0; $i < count($data['aco_ids']); $i++) {
+            $aco = (new UserAcl())->processStore([
+                'aco_id' => $data['aco_ids'][$i],
+                'user_id' => $user->id,
+            ]);
+            $acos[] = $aco->toArray();
+        }
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper('useracl'),
+            'postingdari' => 'ENTRY USER ACL',
+            'idtrans' => $user->id,
+            'nobuktitrans' => $user->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $acos,
+            'modifiedby' => $user->modifiedby
+        ]);
+
         return $user;
     }
 
@@ -434,7 +475,6 @@ class User extends Authenticatable
 
         foreach ($datadetail as $item) {
             $userrole = (new UserRole())->processDestroy($item['id']);
-
         }
 
 
@@ -446,7 +486,6 @@ class User extends Authenticatable
         $datadetail = json_decode($getuseracl, true);
         foreach ($datadetail as $item) {
             $useracl = (new UserAcl())->processDestroy($item['id']);
-
         }
 
 
