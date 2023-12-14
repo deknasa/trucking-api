@@ -734,7 +734,7 @@ class SupirController extends Controller
                     'index' => 'statusaktif',
                 ],
                 [
-                    'label' => 'Supir Rold',
+                    'label' => 'Supir Lama',
                     'index' => 'supirold_id',
                 ],
                 [
