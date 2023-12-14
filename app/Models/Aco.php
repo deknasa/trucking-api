@@ -97,7 +97,7 @@ class Aco extends MyModel
             db::raw($temtabel . " a")
         )
             ->select(
-                'a.id',
+                'a.acosid as id',
                 'a.acosid',
                 'a.class',
                 'a.method',

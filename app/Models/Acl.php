@@ -897,4 +897,19 @@ $queryacl=db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore($data)
+    {
+        $acl = new Acl();
+        $acl->aco_id = $data['aco_id'];
+        $acl->role_id = $data['role_id'];
+        $acl->modifiedby = auth('api')->user()->name;
+        $acl->info = html_entity_decode(request()->info);
+
+        if (!$acl->save()) {
+            throw new \Exception("Error storing acl.");
+        }
+
+        return $acl;
+    }
 }
