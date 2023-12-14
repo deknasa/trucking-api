@@ -55,6 +55,7 @@ class Aco extends MyModel
 
             Schema::create($temtabel, function (Blueprint $table) {
                 $table->integer('id')->nullable();
+                $table->integer('acosid')->nullable();
                 $table->string('class', 1000)->nullable();
                 $table->string('method', 1000)->nullable();
                 $table->string('nama', 1000)->nullable();
@@ -67,6 +68,7 @@ class Aco extends MyModel
 
             DB::table($temtabel)->insertUsing([
                 'id',
+                'acosid',
                 'class',
                 'method',
                 'nama',
@@ -96,6 +98,7 @@ class Aco extends MyModel
         )
             ->select(
                 'a.id',
+                'a.acosid',
                 'a.class',
                 'a.method',
                 'a.nama',
@@ -284,7 +287,8 @@ class Aco extends MyModel
             db::raw($tempacos2 . " a")
         )
             ->select(
-                'a.idacos as id',
+                'a.id',
+                'a.idacos as acosid',
                 'a.class',
                 DB::raw("isnull(b.keterangan,a.method) as method"),
                 'a.nama',
