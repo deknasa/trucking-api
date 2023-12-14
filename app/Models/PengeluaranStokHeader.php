@@ -1350,7 +1350,6 @@ class PengeluaranStokHeader extends MyModel
         for ($i = 0; $i < count($data['detail_stok_id']); $i++) {
             $pengeluarantrucking_nobukti = $data['pengeluarantrucking_nobukti'] ?? '';
             if ($afkir->id == $data['pengeluaranstok_id']) {
-                if ($pengeluarantrucking_nobukti == '') {
                     // $kartustok = KartuStok::getlaporan(date('Y-m-d',strtotime(request()->tgldariheader)), date('Y-m-d',strtotime(request()->tglsampaiheader)),$data['detail_stok_id'][$i], $data['detail_stok_id'][$i], $data['gudang_id'], 0,0, 'GUDANG');
                     // $ks = KartuStok::select('stok_id', DB::raw('SUM(qtymasuk) - SUM(qtykeluar) AS qty'))
                     // ->where('stok_id',$data['detail_stok_id'][$i])
@@ -1361,7 +1360,6 @@ class PengeluaranStokHeader extends MyModel
                     $stok->statusban = $statusafkir->id;
                     $stok->save();
                     $data['detail_qty'][$i] = 0;
-                }
             }
             if ($afkir->id == $data['pengeluaranstok_id']) {
                 $vulkanisirke = 0;
@@ -2049,7 +2047,6 @@ class PengeluaranStokHeader extends MyModel
 
             $pengeluarantrucking_nobukti = $data['pengeluarantrucking_nobukti'] ?? '';
             if ($afkir->id == $data['pengeluaranstok_id']) {
-                if ($pengeluarantrucking_nobukti == '') {
                     // $kartustok = KartuStok::getlaporan(date('Y-m-d',strtotime(request()->tgldariheader)), date('Y-m-d',strtotime(request()->tglsampaiheader)),$data['detail_stok_id'][$i], $data['detail_stok_id'][$i], $data['gudang_id'], 0,0, 'GUDANG');
                     // $ks = KartuStok::select('stok_id', DB::raw('SUM(qtymasuk) - SUM(qtykeluar) AS qty'))
                     // ->where('stok_id',$data['detail_stok_id'][$i])
@@ -2060,7 +2057,6 @@ class PengeluaranStokHeader extends MyModel
                     $stok->statusban = $statusafkir->id;
                     $stok->save();
                     $data['detail_qty'][$i] = 0;
-                }
             }
 
             if ($afkir->id ==  $pengeluaranstok_id) {
