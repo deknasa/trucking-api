@@ -312,6 +312,13 @@ class RekapPengeluaranHeaderController extends Controller
     public function report()
     {}
 
+        /**
+     * @ClassName 
+     */
+    public function approvalbukacetak()
+    {
+    }
+
     /**
      * @ClassName 
      */

@@ -321,6 +321,13 @@ class RekapPenerimaanHeaderController extends Controller
     {
     }
 
+        /**
+     * @ClassName 
+     */
+    public function approvalbukacetak()
+    {
+    }
+
     /**
      * @ClassName 
      */

@@ -403,6 +403,13 @@ class PendapatanSupirHeaderController extends Controller
     {
     }
 
+        /**
+     * @ClassName 
+     */
+    public function approvalbukacetak()
+    {
+    }
+    
     /**
      * @ClassName 
      */

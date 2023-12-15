@@ -354,6 +354,13 @@ class KasGantungHeaderController extends Controller
     /**
      * @ClassName 
      */
+    public function approvalbukacetak()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
     public function export($id)
     {
         $kasgantung = new KasGantungHeader();

@@ -749,4 +749,11 @@ class PengeluaranStokHeaderController extends Controller
     public function pengeluaranstoksetstatusafkir()
     {
     }
+
+        /**
+     * @ClassName 
+     */
+    public function approvalbukacetak()
+    {
+    }
 }
