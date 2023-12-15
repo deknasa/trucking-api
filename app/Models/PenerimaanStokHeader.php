@@ -1614,6 +1614,17 @@ class PenerimaanStokHeader extends MyModel
             (new PenerimaanStokDetail())->returnVulkanisir($penerimaanStokHeader->id);
         }
 
+        if (($data['penerimaanstok_id'] === $spb->text)) {
+            for ($i = 0; $i < count($data['detail_harga']); $i++) {
+                (new PenerimaanStokDetail())->validasiSPBMinus(
+                    $penerimaanStokHeader->id,
+                    $data['detail_stok_id'][$i],
+                    $data['detail_qty'][$i]
+                );
+                    
+            }
+        }
+
 
         /*DELETE EXISTING DETAIL*/
         $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
@@ -2032,10 +2043,23 @@ class PenerimaanStokHeader extends MyModel
         }
         $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
         $spbs = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
+        $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
 
         if (($penerimaanStokHeader->penerimaanstok_id == $korv->id) || ($penerimaanStokHeader->penerimaanstok_id == $spbs->text)) {
             (new PenerimaanStokDetail())->returnVulkanisir($penerimaanStokHeader->id);
         }
+
+        if (($penerimaanStokHeader->penerimaanstok_id === $spb->text)) {
+            foreach ($penerimaanStokDetail as $stokDetail) {
+                (new PenerimaanStokDetail())->validasiSPBMinus(
+                    $penerimaanStokHeader->id,
+                    $stokDetail->stok_id,
+                    0
+                );
+            }
+        }
+             
+                    
 
         $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $penerimaanStokHeader->nobukti)->lockForUpdate()->first();
         if ($jurnalUmumHeader) {

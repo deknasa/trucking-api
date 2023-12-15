@@ -771,7 +771,28 @@ class PenerimaanStokDetail extends MyModel
         }
     }
 
+    public function validasiSPBMinus($penerimaanStokHeader_id,$stok_id,$qtyInput) {
+        $penerimaanStokDetail = PenerimaanStokDetail::select('penerimaanstokdetail.qty as qty', 'stok.namastok as stok','penerimaanstokdetail.nobukti as nobukti')
+        ->where('penerimaanstokheader_id', $penerimaanStokHeader_id)
+        ->where('penerimaanstokdetail.stok_id',$stok_id)
+        ->leftJoin("stok", "penerimaanstokdetail.stok_id", "stok.id")
+        ->first();
+        $penerimaanStokHeader = PenerimaanStokHeader::findOrFail($penerimaanStokHeader_id);
 
+        $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
+
+        if (($penerimaanStokHeader->penerimaanstok_id == $spb->text)) {
+            $ks = KartuStok::select('stok_id', DB::raw('SUM(qtymasuk) - SUM(qtykeluar) AS qty'))
+            ->where('stok_id',$stok_id)
+            ->where('nobukti','<>',$penerimaanStokDetail->nobukti)
+            ->groupBy('stok_id')->first();
+            $hasilAkhir = $ks->qty + $qtyInput;
+            if ($hasilAkhir < 0 ) {
+                throw ValidationException::withMessages(["qty" => "$penerimaanStokDetail->stok Sudah terpakai"]);
+            }
+
+        }
+    }
     public function returnVulkanisir($id)
     {
         $penerimaanStokHeader = PenerimaanStokHeader::findOrFail($id);
