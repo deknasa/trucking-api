@@ -458,7 +458,7 @@ class PenerimaanStokHeaderController extends Controller
                 // return response($data);
             }
 
-            if (($todayValidation || (($isEditAble || $isKeteranganEditAble) && !$printValidation)) && !$isOutUsed) {
+            if (($todayValidation || (($isEditAble || $isKeteranganEditAble) && !$printValidation))) {
                 //check apaka spb
                 $data = [
                     'message' => '',
@@ -472,7 +472,10 @@ class PenerimaanStokHeaderController extends Controller
                         return response($data);
                     }
                 }
-                return response($data);
+                if (!$isOutUsed) {
+                    return response($data);
+                }
+                
             }
         }
         return response($data);

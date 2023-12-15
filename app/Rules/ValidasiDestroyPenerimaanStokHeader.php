@@ -2,8 +2,9 @@
 
 namespace App\Rules;
 
-use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 use App\Models\PenerimaanStokHeader;
+use Illuminate\Contracts\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
 
 class ValidasiDestroyPenerimaanStokHeader implements Rule
@@ -29,7 +30,9 @@ class ValidasiDestroyPenerimaanStokHeader implements Rule
     {
       $id =  $value;
       $penerimaanStokHeader = new PenerimaanStokHeader();
-      if ($penerimaanStokHeader->isOutUsed($id)) {
+      $data = $penerimaanStokHeader->find($id);
+      $spb = DB::table('parameter')->where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
+      if ($penerimaanStokHeader->isOutUsed($id) && ($data->penerimaanstok_id != $spb->text)) {
         $this->message = 'SATL';
         return false;
       }
