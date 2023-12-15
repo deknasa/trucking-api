@@ -466,7 +466,8 @@ class PengeluaranStokHeaderController extends Controller
 
             } 
             $isEditAble = $pengeluaran->isEditAble($id);
-            if (!$isEditAble) {
+            $isKeteranganEditAble = $pengeluaran->isKeteranganEditAble($id);
+            if ((!$isEditAble)||(!$isKeteranganEditAble)) {
                 $query = Error::from(DB::raw("error with (readuncommitted)"))
                     ->select('keterangan')
                     ->whereRaw("kodeerror = 'SDC'")
@@ -483,7 +484,7 @@ class PengeluaranStokHeaderController extends Controller
             
         //    dd($pengeluaran->tglbukti,$isEditAble,$printValidation);
 
-            if ($todayValidation || ($isEditAble && !$printValidation)) {
+            if ($todayValidation || (($isEditAble || $isKeteranganEditAble) && !$printValidation)) {
                 $data = [
                     'message' => '',
                     'errors' => 'bisa',
@@ -631,7 +632,59 @@ class PengeluaranStokHeaderController extends Controller
             if ($pengeluaranStokHeader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($pengeluaranStokHeader->getTable()),
-                    'postingdari' => 'APPROVED SUPIR RESIGN',
+                    'postingdari' => 'UN/APPROVED EDIT',
+                    'idtrans' => $pengeluaranStokHeader->id,
+                    'nobuktitrans' => $pengeluaranStokHeader->id,
+                    'aksi' => $aksi,
+                    'datajson' => $pengeluaranStokHeader->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+            }
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function approvalEditKeterangan($id)
+    {
+        DB::beginTransaction();
+        try {
+            $pengeluaranStokHeader = PengeluaranStokheader::lockForUpdate()->findOrFail($id);
+
+            $statusBolehEdit = DB::table('pengeluaranstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+            $statusTidakBolehEdit = DB::table('pengeluaranstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+            // statusapprovaleditabsensi,tglapprovaleditabsensi,userapprovaleditabsensi 
+            if ($pengeluaranStokHeader->statusapprovaleditketerangan == $statusBolehEdit->id) {
+                $pengeluaranStokHeader->statusapprovaleditketerangan = $statusTidakBolehEdit->id;
+                $pengeluaranStokHeader->tglbataseditketerangan = null;
+                $aksi = $statusTidakBolehEdit->text;
+            } else {
+                $tglbatasedit = date("Y-m-d", strtotime('today'));
+                $tglbatasedit = date("Y-m-d H:i:s", strtotime($tglbatasedit . ' 23:59:00'));
+                $pengeluaranStokHeader->tglbataseditketerangan = $tglbatasedit;
+                $pengeluaranStokHeader->statusapprovaleditketerangan = $statusBolehEdit->id;
+                $aksi = $statusBolehEdit->text;
+            }
+            $pengeluaranStokHeader->tglapprovaleditketerangan = date("Y-m-d", strtotime('today'));
+            $pengeluaranStokHeader->userapprovaleditketerangan = auth('api')->user()->name;
+
+            if ($pengeluaranStokHeader->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($pengeluaranStokHeader->getTable()),
+                    'postingdari' => 'UN/APPROVED EDIT KETERANGAN',
                     'idtrans' => $pengeluaranStokHeader->id,
                     'nobuktitrans' => $pengeluaranStokHeader->id,
                     'aksi' => $aksi,

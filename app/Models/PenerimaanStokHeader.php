@@ -113,6 +113,7 @@ class PenerimaanStokHeader extends MyModel
                 $table->date('parrenttglbukti')->nullable();
                 $table->integer('statuscetak_id')->nullable();
                 $table->integer('statusedit_id')->nullable();
+                $table->integer('statuseditketerangan_id')->nullable();
                 $table->date('tgldariheaderhutangheader')->nullable();
                 $table->date('tglsampaiheaderhutangheader')->nullable();
                 $table->date('tgldariheaderpengeluaranstok')->nullable();
@@ -161,6 +162,7 @@ class PenerimaanStokHeader extends MyModel
                 ->leftJoin('gudang as ke', 'penerimaanstokheader.gudangke_id', 'ke.id')
                 ->leftJoin('parameter as statuscetak', 'penerimaanstokheader.statuscetak', 'statuscetak.id')
                 ->leftJoin('parameter as statusedit', 'penerimaanstokheader.statusapprovaledit', 'statusedit.id')
+                ->leftJoin('parameter as statuseditketerangan', 'penerimaanstokheader.statusapprovaleditketerangan', 'statuseditketerangan.id')
                 ->leftJoin('penerimaanstok', 'penerimaanstokheader.penerimaanstok_id', 'penerimaanstok.id')
                 ->leftJoin('akunpusat', 'penerimaanstokheader.coa', 'akunpusat.coa')
                 ->leftJoin('trado', 'penerimaanstokheader.trado_id', 'trado.id')
@@ -298,6 +300,7 @@ class PenerimaanStokHeader extends MyModel
                     'parrenttglbukti' => $item['parrenttglbukti'],
                     'statuscetak_id' => $item['statuscetak_id'],
                     'statusedit_id' => $item['statusedit_id'],
+                    'statuseditketerangan_id' => $item['statuseditketerangan_id'],
                     'tgldariheaderhutangheader' => $item['tgldariheaderhutangheader'],
                     'tglsampaiheaderhutangheader' => $item['tglsampaiheaderhutangheader'],
                     'tgldariheaderpengeluaranstok' => $item['tgldariheaderpengeluaranstok'],
@@ -416,6 +419,7 @@ class PenerimaanStokHeader extends MyModel
                 'a.parrenttglbukti',
                 'a.statuscetak_id',
                 'a.statusedit_id',
+                'a.statuseditketerangan_id',
                 'a.tgldariheaderhutangheader',
                 'a.tglsampaiheaderhutangheader',
                 'a.tgldariheaderpengeluaranstok',
@@ -543,6 +547,7 @@ class PenerimaanStokHeader extends MyModel
             unset($row['parrenttglbukti']);
             unset($row['statuscetak_id']);
             unset($row['statusedit_id']);
+            unset($row['statuseditketerangan_id']);
             unset($row['tgldariheaderhutangheader']);
             unset($row['tglsampaiheaderhutangheader']);
             unset($row['tgldariheaderpengeluaranstok']);
@@ -617,6 +622,7 @@ class PenerimaanStokHeader extends MyModel
             "nobuktipenerimaanstok.tglbukti as parrenttglbukti",
             "statuscetak.id as  statuscetak_id",
             "statusedit.id as  statusedit_id",
+            "statuseditketerangan.id as  statuseditketerangan_id",
             db::raw("cast((format(hutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderhutangheader"),
             db::raw("cast(cast(format((cast((format(hutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderhutangheader"),
             db::raw("cast((format(pengeluaranstok.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranstok"),
@@ -920,6 +926,7 @@ class PenerimaanStokHeader extends MyModel
             ->leftJoin('gudang as ke', 'penerimaanstokheader.gudangke_id', 'ke.id')
             ->leftJoin('parameter as statuscetak', 'penerimaanstokheader.statuscetak', 'statuscetak.id')
             ->leftJoin('parameter as statusedit', 'penerimaanstokheader.statusapprovaledit', 'statusedit.id')
+            ->leftJoin('parameter as statuseditketerangan', 'penerimaanstokheader.statusapprovaleditketerangan', 'statuseditketerangan.id')
             ->leftJoin('trado as tradodari ', 'penerimaanstokheader.tradodari_id', 'tradodari.id')
             ->leftJoin('trado as tradoke ', 'penerimaanstokheader.tradoke_id', 'tradoke.id')
             ->leftJoin('akunpusat', 'penerimaanstokheader.coa', 'akunpusat.coa')
@@ -2212,6 +2219,25 @@ class PenerimaanStokHeader extends MyModel
         }
         return false;
     }
+    
+    public function isKeteranganEditAble($id)
+    {
+        $tidakBolehEdit = DB::table('penerimaanstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+
+        $query = DB::table('penerimaanstokheader')->from(DB::raw("penerimaanstokheader with (readuncommitted)"))
+            ->select('statusapprovaleditketerangan as statusedit', 'tglbataseditketerangan')
+            ->where('id', $id)
+            ->first();
+
+        if ($query->statusedit != $tidakBolehEdit->id) {
+            $limit = strtotime($query->tglbataseditketerangan);
+            $now = strtotime('now');
+            if ($now < $limit) return true;
+        }
+        return false;
+    }
+
+    
 
 
     // public function checkTempat($stokId,$persediaan,$persediaanId)
