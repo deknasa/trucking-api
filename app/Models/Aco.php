@@ -225,6 +225,7 @@ class Aco extends MyModel
             $table->string('nama', 1000)->nullable();
             $table->string('menukode', 1000)->nullable();
             $table->string('modifiedby', 50)->nullable();
+            $table->integer('idheader')->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
         });
@@ -237,6 +238,7 @@ class Aco extends MyModel
                 DB::raw("replace(isnull(c.menu,isnull(c1.menu,'')),'agen','CUSTOMER') as class"),
                 'a.method',
                 'a.nama',
+                db::raw("isnull(a.idheader,0) as idheader"),
                 db::raw("isnull(c.menukode,isnull(c1.menukode,'')) as menukode"),
                 'a.modifiedby',
                 'a.created_at',
@@ -254,6 +256,7 @@ class Aco extends MyModel
             'class',
             'method',
             'nama',
+            'idheader',
             'menukode',
             'modifiedby',
             'created_at',
@@ -290,7 +293,7 @@ class Aco extends MyModel
                 'a.id',
                 'a.idacos as acosid',
                 'a.class',
-                DB::raw("isnull(b.keterangan,a.method) as method"),
+                DB::raw("isnull(b.keterangan,a.method)+(case when isnull(a.idheader,0)=0 then '' else ' Detail' end) as method"),
                 'a.nama',
                 'a.modifiedby',
                 'a.created_at',
@@ -301,7 +304,7 @@ class Aco extends MyModel
                 //  DB::raw("'AKTIF'   as status"),
 
             )
-            ->leftjoin(db::raw("method b with (readuncommitted)"), 'a.method', 'b.method')
+            ->join(db::raw("method b with (readuncommitted)"), 'a.method', 'b.method')
             ->leftjoin(db::raw($tempacl . " c "), 'a.idacos', 'c.aco_id')
 
             ->orderby('a.id', 'asc');
