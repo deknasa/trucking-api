@@ -797,4 +797,11 @@ class PengeluaranTruckingHeaderController extends Controller
     {
     }
 
+        /**
+     * @ClassName 
+     */
+    public function approvalbukacetak()
+    {
+    }
+
 }

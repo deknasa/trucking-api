@@ -450,7 +450,7 @@ class PengeluaranHeaderController extends Controller
                 ->where('kodeerror', '=', $cekdata['kodeerror'])
                 ->get();
             $keterangan = $query['0'];
-                    
+
             $data = [
                 'status' => false,
                 'message' => $keterangan,
@@ -481,6 +481,14 @@ class PengeluaranHeaderController extends Controller
     public function report()
     {
     }
+
+    /**
+     * @ClassName 
+     */
+    public function approvalbukacetak()
+    {
+    }
+
 
     /**
      * @ClassName

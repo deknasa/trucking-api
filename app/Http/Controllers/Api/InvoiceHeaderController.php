@@ -506,6 +506,14 @@ class InvoiceHeaderController extends Controller
     {
     }
 
+    
+    /**
+     * @ClassName 
+     */
+    public function approvalbukacetak()
+    {
+    }
+
     /**
      * @ClassName
      */

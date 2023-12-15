@@ -716,4 +716,11 @@ class PenerimaanStokHeaderController extends Controller
     public function penerimaanstokpenambahannilai()
     {
     }
+        /**
+     * @ClassName 
+     */
+    public function approvalbukacetak()
+    {
+    }
+    
 }
