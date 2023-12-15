@@ -105,6 +105,7 @@ class PengeluaranStokHeader extends MyModel
                 $table->string('supplier', 200)->nullable();
                 $table->longText('statusedit')->nullable();
                 $table->integer('statusedit_id')->nullable();
+                $table->integer('statuseditketerangan_id')->nullable();
                 $table->string('judul', 200)->nullable();
                 $table->string('tglcetak', 200)->nullable();
                 $table->string('usercetak', 100)->nullable();
@@ -345,6 +346,7 @@ class PengeluaranStokHeader extends MyModel
                 ->leftJoin('kerusakan', 'pengeluaranstokheader.kerusakan_id', 'kerusakan.id')
                 ->leftJoin('bank', 'pengeluaranstokheader.bank_id', 'bank.id')
                 ->leftJoin('parameter as statusedit', 'pengeluaranstokheader.statusapprovaledit', 'statusedit.id')
+                ->leftJoin('parameter as statuseditketerangan', 'pengeluaranstokheader.statusapprovaleditketerangan', 'statuseditketerangan.id')
                 ->leftJoin('parameter as statuscetak', 'pengeluaranstokheader.statuscetak', 'statuscetak.id')
                 ->leftJoin(db::raw($temppenerimaanstokheader . " as penerimaan"), 'pengeluaranstokheader.penerimaanstok_nobukti', 'penerimaan.nobukti')
                 ->leftJoin(db::raw($temppenerimaanstokheader . " as penerimaanheader"), 'pengeluaranstokheader.penerimaan_nobukti', 'penerimaanheader.nobukti')
@@ -439,6 +441,7 @@ class PengeluaranStokHeader extends MyModel
                     'supplier' => $item['supplier'],
                     'statusedit' => $item['statusedit'],
                     'statusedit_id' => $item['statusedit_id'],
+                    'statuseditketerangan_id' => $item['statuseditketerangan_id'],
                     'judul' => $item['judul'],
                     'tglcetak' => $item['tglcetak'],
                     'usercetak' => $item['usercetak'],
@@ -565,6 +568,7 @@ class PengeluaranStokHeader extends MyModel
                 'a.supplier',
                 'a.statusedit',
                 'a.statusedit_id',
+                'a.statuseditketerangan_id',
                 'a.judul',
                 'a.tglcetak',
                 'a.usercetak',
@@ -686,6 +690,7 @@ class PengeluaranStokHeader extends MyModel
             $table->string('supplier', 1500)->nullable();
             $table->string('statusedit', 1500)->nullable();
             $table->integer('statusedit_id')->length(11)->nullable();
+            $table->integer('statuseditketerangan_id')->length(11)->nullable();
         });
 
         foreach ($data as $row) {
@@ -1047,6 +1052,7 @@ class PengeluaranStokHeader extends MyModel
             "supplier.namasupplier as supplier",
             "statusedit.memo as  statusedit",
             "statusedit.id as  statusedit_id",
+            "statuseditketerangan.id as  statuseditketerangan_id",
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
             DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
@@ -1080,6 +1086,7 @@ class PengeluaranStokHeader extends MyModel
             ->leftJoin('kerusakan', 'pengeluaranstokheader.kerusakan_id', 'kerusakan.id')
             ->leftJoin('bank', 'pengeluaranstokheader.bank_id', 'bank.id')
             ->leftJoin('parameter as statusedit', 'pengeluaranstokheader.statusapprovaledit', 'statusedit.id')
+            ->leftJoin('parameter as statuseditketerangan', 'pengeluaranstokheader.statusapprovaleditketerangan', 'statuseditketerangan.id')
             ->leftJoin('parameter as statuscetak', 'pengeluaranstokheader.statuscetak', 'statuscetak.id')
             ->leftJoin('penerimaanstokheader as penerimaan', 'pengeluaranstokheader.penerimaanstok_nobukti', 'penerimaan.nobukti')
             ->leftJoin('penerimaanheader', 'pengeluaranstokheader.penerimaan_nobukti', 'penerimaanheader.nobukti')
@@ -1237,6 +1244,29 @@ class PengeluaranStokHeader extends MyModel
         }
         return false;
     }
+    
+    public function isKeteranganEditAble($id)
+    {
+        $tidakBolehEdit = DB::table('pengeluaranstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+
+        $query = DB::table('pengeluaranstokheader')->from(DB::raw("pengeluaranstokheader with (readuncommitted)"))
+            ->select(
+                db::raw("isnull(statusapprovaleditketerangan,4) as statusedit "),
+                'tglbataseditketerangan'
+            )
+            ->where('id', $id)
+            ->first();
+        if (isset($query)) {
+            if ($query->statusedit != $tidakBolehEdit->id) {
+                $limit = strtotime($query->tglbataseditketerangan);
+                $now = strtotime('now');
+                if ($now < $limit) return true;
+            }
+        }
+        return false;
+    }
+
+
 
     public function processStore(array $data): PengeluaranStokHeader
     {
