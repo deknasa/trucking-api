@@ -16,7 +16,8 @@ class Authorized
             'supplier',
             'hutangheader',
             'penerimaanstokheader',
-            'hutangbayarheader'
+            'hutangbayarheader',
+            'approvalbukacetak'
         ],
         'method' => []
     ];
