@@ -48,7 +48,7 @@ class ExpSim extends MyModel
             DB::raw("parameter with (readuncommitted)")
         )
             ->where('grp', '=', 'STATUS EXPIRED')
-            ->where('text', '=', '90 HARI SEBELUM EXPIRED')
+            ->where('text', '=', 'RENTANG HARI SEBELUM EXP')
             ->first();
 
         $class = 'ExpSimController';
@@ -90,6 +90,7 @@ class ExpSim extends MyModel
                 $table->string('namasupir', 1000)->nullable();
                 $table->date('tglexpsim', 1000)->nullable();
                 $table->integer('status')->nullable();
+                $table->integer('rentang')->nullable();
             });
             $getQuery = DB::table('supir')->from(DB::raw("supir with (readuncommitted)"))
                 ->select(
@@ -102,12 +103,13 @@ class ExpSim extends MyModel
                     when tglexpsim <= getdate() then $sudahExp->id
                     else $hampirExp->id end) 
                     
-                    as status")
+                    as status"),
+                    DB::raw("DATEDIFF(dd,getdate(),tglexpsim)  as rentang")
                 )
                 ->where('statusaktif', $statusaktif->id)
                 ->where('tglexpsim', '<=', date('Y/m/d', strtotime("+$rentang->text days")));
 
-            DB::table($temtabel)->insertUsing(['id', 'namasupir', 'tglexpsim', 'status'], $getQuery);
+            DB::table($temtabel)->insertUsing(['id', 'namasupir', 'tglexpsim', 'status', 'rentang'], $getQuery);
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
                 DB::raw("listtemporarytabel with (readuncommitted)")
@@ -130,7 +132,15 @@ class ExpSim extends MyModel
                 'supir.id',
                 'supir.namasupir',
                 'supir.tglexpsim',
-                'parameter.memo as status',
+                DB::raw(
+                    '
+                    CASE 
+                        WHEN parameter.id = 391 THEN 
+                            CONCAT(\'{"MEMO":"\', supir.rentang, \' HARI SEBELUM EXPIRED","SINGKATAN":"\', supir.rentang, \'","WARNA":"#E16000","WARNATULISAN":"#FFF"}\')
+                        ELSE parameter.memo 
+                    END
+                 AS status'
+                )
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'supir.status', 'parameter.id');
 

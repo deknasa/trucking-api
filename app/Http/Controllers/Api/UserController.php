@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\StoreAclRequest;
 use App\Http\Requests\StoreUserRoleRequest;
+use App\Models\Aco;
 use App\Models\User;
 use App\Models\Parameter;
 use App\Models\Cabang;
@@ -140,9 +141,13 @@ class UserController extends Controller
 
     public function show(User $user)
     {
+        request()->user_id = $user->id;
+        request()->limit = 0;
+        $detail = (new Aco())->getUserAcl();
         return response([
             'status' => true,
-            'data' => $user->load('roles')
+            'data' => $user->load('roles'),
+            'detail' => $detail
         ]);
     }
 
@@ -154,6 +159,7 @@ class UserController extends Controller
         DB::beginTransaction();
 
         try {
+            $acos = json_decode($request->aco_ids, true);
             $data = [
                 'user' => strtoupper($request->user),
                 'name' => strtoupper($request->name),
@@ -164,8 +170,9 @@ class UserController extends Controller
                 'dashboard' => strtoupper($request->dashboard),
                 'statusaktif' => $request->statusaktif,
                 'statusakses' => $request->statusakses,
+                'role_ids' => $request->role_ids,
+                'aco_ids' => $acos['aco_ids']
             ];
-
             $user = (new User())->processUpdate($user, $data);
             $user->position = $this->getPosition($user, $user->getTable())->position;
             if ($request->limit==0) {

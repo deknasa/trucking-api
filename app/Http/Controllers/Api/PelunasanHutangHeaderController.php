@@ -496,6 +496,14 @@ class PelunasanHutangHeaderController extends Controller
     {
     }
 
+
+        /**
+     * @ClassName 
+     */
+    public function approvalbukacetak()
+    {
+    }
+    
     /**
      * @ClassName 
      */

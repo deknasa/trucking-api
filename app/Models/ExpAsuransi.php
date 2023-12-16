@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use DateTime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
@@ -55,7 +56,7 @@ class ExpAsuransi extends MyModel
             DB::raw("parameter with (readuncommitted)")
         )
             ->where('grp', '=', 'STATUS EXPIRED')
-            ->where('text', '=', '90 HARI SEBELUM EXPIRED')
+            ->where('text', '=', 'RENTANG HARI SEBELUM EXP')
             ->first();
 
         $class = 'ExpStnkController';
@@ -97,6 +98,7 @@ class ExpAsuransi extends MyModel
                 $table->string('kodetrado', 1000)->nullable();
                 $table->date('tglasuransimati', 1000)->nullable();
                 $table->integer('status')->nullable();
+                $table->integer('rentang')->nullable();
             });
             $getQuery = DB::table('trado')->from(DB::raw("trado with (readuncommitted)"))
                 ->select(
@@ -109,13 +111,14 @@ class ExpAsuransi extends MyModel
                     when tglasuransimati <= getdate() then $sudahExp->id
                     else $hampirExp->id end) 
                     
-                    as status")
+                    as status"),
+                    DB::raw("DATEDIFF(dd,getdate(),tglasuransimati)  as rentang")
                 )
                 ->where('statusaktif', $statusaktif->id)
                 ->where('statusabsensisupir', $statusabsensisupir->id)
                 ->where('tglasuransimati', '<=', date('Y/m/d', strtotime("+$rentang->text days")));
 
-            DB::table($temtabel)->insertUsing(['id', 'kodetrado', 'tglasuransimati', 'status'], $getQuery);
+            DB::table($temtabel)->insertUsing(['id', 'kodetrado', 'tglasuransimati', 'status', 'rentang'], $getQuery);
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
                 DB::raw("listtemporarytabel with (readuncommitted)")
@@ -138,7 +141,15 @@ class ExpAsuransi extends MyModel
                 'trado.id',
                 'trado.kodetrado',
                 'trado.tglasuransimati',
-                'parameter.memo as status',
+                DB::raw(
+                    '
+                    CASE 
+                        WHEN parameter.id = 391 THEN 
+                            CONCAT(\'{"MEMO":"\', trado.rentang, \' HARI SEBELUM EXPIRED","SINGKATAN":"\', trado.rentang, \'","WARNA":"#E16000","WARNATULISAN":"#FFF"}\')
+                        ELSE parameter.memo 
+                    END
+                 AS status'
+                )
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'trado.status', 'parameter.id');
 

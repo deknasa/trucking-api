@@ -402,6 +402,7 @@ class Acl extends MyModel
                     $table->string('nama',1000)->nullable();
                     $table->string('menukode', 1000)->nullable();
                     $table->string('modifiedby',50)->nullable();
+                    $table->integer('idheader')->nullable();                    
                     $table->dateTime('created_at')->nullable();
                     $table->dateTime('updated_at')->nullable();
                 });  
@@ -414,6 +415,7 @@ class Acl extends MyModel
                         DB::raw("replace(isnull(c.menu,isnull(c1.menu,'')),'agen','CUSTOMER') as class"),
                         'a.method',
                         'a.nama',
+                        db::raw("isnull(a.idheader,0) as idheader"),                        
                         db::raw("isnull(c.menukode,isnull(c1.menukode,'')) as menukode"),
                         'a.modifiedby',
                         'a.created_at',
@@ -431,6 +433,7 @@ class Acl extends MyModel
                         'class',
                         'method',
                         'nama',
+                        'idheader',                        
                         'menukode',
                         'modifiedby',
                         'created_at',
@@ -478,7 +481,7 @@ class Acl extends MyModel
                 'a.id',
                 'a.idacos as acosid',
                 'a.class',
-                DB::raw("isnull(b.keterangan,a.method) as method"),
+          DB::raw("isnull(b.keterangan,a.method)+(case when isnull(a.idheader,0)=0 then '' else ' Detail' end) as method"),
 	            'a.nama',
                 'c.modifiedby',
                 'c.created_at',

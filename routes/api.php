@@ -61,7 +61,7 @@ use App\Http\Controllers\Api\JenisEmklController;
 use App\Http\Controllers\Api\KartuStokController;
 use App\Http\Controllers\Api\KerusakanController;
 use App\Http\Controllers\Api\ParameterController;
-use App\Http\Controllers\Api\PelangganController;
+use App\Http\Controllers\Api\ShipperController;
 use App\Http\Controllers\Api\ReportAllController;
 use App\Http\Controllers\Api\SpkHarianController;
 use App\Http\Controllers\Api\StokPusatController;
@@ -359,7 +359,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('jenisorder', JenisOrderController::class)->whereNumber('jenisorder');
     Route::resource('statuscontainer', StatusContainerController::class)->parameters(['statuscontainer' => 'statusContainer'])->whereNumber('statusContainer');
     Route::resource('container', ContainerController::class)->whereNumber('container');
-    Route::resource('pelanggan', PelangganController::class)->whereNumber('pelanggan');
+    Route::resource('shipper', ShipperController::class)->whereNumber('shipper');
     Route::get('upahsupirrincian/get', [UpahSupirRincianController::class, 'get']);
     Route::get('absensisupirdetail/get', [AbsensiSupirDetailController::class, 'getDetailAbsensi']);
     Route::resource('kota', KotaController::class)->whereNumber('kotum');
@@ -665,6 +665,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('gandengan/{id}/cekValidasi', [GandenganController::class, 'cekValidasi'])->name('gandengan.cekValidasi')->whereNumber('id');
 
 
+    Route::get('acos/getuseracl', [AcosController::class, 'getUserAcl']);
     Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
     Route::resource('acos', AcosController::class)->whereNumber('acos');
 
@@ -859,11 +860,11 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('penerima/default', [PenerimaController::class, 'default']);
     Route::post('penerima/{id}/cekValidasi', [PenerimaController::class, 'cekValidasi'])->name('penerima.cekValidasi')->whereNumber('id');
 
-    Route::get('pelanggan/export', [PelangganController::class, 'export']);
-    Route::get('pelanggan/field_length', [PelangganController::class, 'fieldLength']);
-    Route::get('pelanggan/default', [PelangganController::class, 'default']);
-    Route::post('pelanggan/{id}/cekValidasi', [PelangganController::class, 'cekValidasi'])->name('pelanggan.cekValidasi')->whereNumber('id');
-    Route::get('pelanggan/combostatus', [PelangganController::class, 'combostatus']);
+    Route::get('shipper/export', [ShipperController::class, 'export']);
+    Route::get('shipper/field_length', [ShipperController::class, 'fieldLength']);
+    Route::get('shipper/default', [ShipperController::class, 'default']);
+    Route::post('shipper/{id}/cekValidasi', [ShipperController::class, 'cekValidasi'])->name('shipper.cekValidasi')->whereNumber('id');
+    Route::get('shipper/combostatus', [ShipperController::class, 'combostatus']);
 
     Route::get('statuscontainer/export', [StatusContainerController::class, 'export']);
     Route::get('statuscontainer/field_length', [StatusContainerController::class, 'fieldLength']);

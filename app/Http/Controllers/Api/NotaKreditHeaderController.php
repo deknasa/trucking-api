@@ -385,6 +385,13 @@ class NotaKreditHeaderController extends Controller
     {
     }
 
+        /**
+     * @ClassName 
+     */
+    public function approvalbukacetak()
+    {
+    }
+
     /**
      * @ClassName 
      */

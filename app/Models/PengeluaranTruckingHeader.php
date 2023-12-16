@@ -1548,7 +1548,7 @@ class PengeluaranTruckingHeader extends MyModel
         $fetchGrp = Parameter::where('id', $statusformat)->first();
         $format = DB::table('parameter')->where('grp', $fetchGrp->grp)->where('subgrp', $fetchGrp->subgrp)->first();
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
-        $statusPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
+        $statusPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('id', '84')->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
         $pinjamansupir = db::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->SELECT('text', 'memo')->where('grp', 'PINJAMAN SUPIR')->where('subgrp', 'PINJAMAN SUPIR NON POSTING')->first() ?? '';
@@ -1821,7 +1821,7 @@ class PengeluaranTruckingHeader extends MyModel
             ->first();
         $tanpaprosesnobukti = $data['tanpaprosesnobukti'] ?? 0;
         $from = $data['from'] ?? 'not';
-        $statusPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
+        $statusPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('id', '84')->first();
         $pinjamansupir = db::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->SELECT('text', 'memo')->where('grp', 'PINJAMAN SUPIR')->where('subgrp', 'PINJAMAN SUPIR NON POSTING')->first() ?? '';
         $statuspinjamanposting = $pengeluaranTruckingHeader['statusposting'] ?? $statusPosting->id;
 
@@ -1848,7 +1848,7 @@ class PengeluaranTruckingHeader extends MyModel
         $fetchGrp = Parameter::where('id', $statusformat)->first();
         $format = DB::table('parameter')->where('grp', $fetchGrp->grp)->where('subgrp', $fetchGrp->subgrp)->first();
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
-        $statusPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
+        $statusPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('id', '84')->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
         $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'PENGELUARAN TRUCKING')->first();
 
@@ -2127,7 +2127,7 @@ class PengeluaranTruckingHeader extends MyModel
 
     public function processDestroy($id, $postingDari = ''): PengeluaranTruckingHeader
     {
-        $statusPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
+        $statusPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('id', '84')->first();
         $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))->where('kodepengeluaran', "KLAIM")->first();
 
         $pengeluaranTruckingHeader = PengeluaranTruckingHeader::findOrFail($id);

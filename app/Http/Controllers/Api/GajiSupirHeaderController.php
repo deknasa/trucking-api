@@ -641,6 +641,14 @@ class GajiSupirHeaderController extends Controller
     }
 
 
+    
+    /**
+     * @ClassName 
+     */
+    public function approvalbukacetak()
+    {
+    }
+    
     /**
      * @ClassName 
      */

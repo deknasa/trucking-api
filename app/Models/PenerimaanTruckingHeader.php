@@ -1322,7 +1322,7 @@ class PenerimaanTruckingHeader extends MyModel
                     ->select('id')
                     ->where('grp', 'STATUS POSTING')
                     ->where('subgrp', 'STATUS POSTING')
-                    ->where('text', 'BUKAN POSTING')
+                    ->where('id', '84')
                     ->first()->id ?? 0;
                 if ($bukanposting == $queryposting->statusposting) {
                     $coa =  $queryposting->coa ?? $data['coa'];
@@ -1402,7 +1402,7 @@ class PenerimaanTruckingHeader extends MyModel
                         ->select('id')
                         ->where('grp', 'STATUS POSTING')
                         ->where('subgrp', 'STATUS POSTING')
-                        ->where('text', 'BUKAN POSTING')
+                        ->where('id', '84')
                         ->first()->id ?? 0;
                     if ($bukanposting == $queryposting->statusposting) {
 
@@ -1715,7 +1715,7 @@ class PenerimaanTruckingHeader extends MyModel
                         ->select('id')
                         ->where('grp', 'STATUS POSTING')
                         ->where('subgrp', 'STATUS POSTING')
-                        ->where('text', 'BUKAN POSTING')
+                        ->where('id', '84')
                         ->first()->id ?? 0;
                     if ($bukanposting == $queryposting->statusposting) {
                         $coa =  $queryposting->coa ?? $data['coa'];
@@ -1788,7 +1788,7 @@ class PenerimaanTruckingHeader extends MyModel
                             ->select('id')
                             ->where('grp', 'STATUS POSTING')
                             ->where('subgrp', 'STATUS POSTING')
-                            ->where('text', 'BUKAN POSTING')
+                            ->where('id', '84')
                             ->first()->id ?? 0;
                         if ($bukanposting == $queryposting->statusposting) {
                             if ($firstBuktiNonPosting == '') {

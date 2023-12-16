@@ -344,7 +344,6 @@ class PenerimaanHeaderController extends Controller
 
             throw $th;
         }
-        
     }
 
 
@@ -488,6 +487,13 @@ class PenerimaanHeaderController extends Controller
      * @ClassName 
      */
     public function report()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function approvalbukacetak()
     {
     }
 

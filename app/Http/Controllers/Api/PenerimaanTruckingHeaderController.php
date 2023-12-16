@@ -479,4 +479,11 @@ class PenerimaanTruckingHeaderController extends Controller
     public function penerimaantruckingpengembaliandepositokaryawan()
     {
     }
+
+        /**
+     * @ClassName 
+     */
+    public function approvalbukacetak()
+    {
+    }
 }

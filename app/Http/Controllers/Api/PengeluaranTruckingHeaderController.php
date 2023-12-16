@@ -174,7 +174,6 @@ class PengeluaranTruckingHeaderController extends Controller
 
         $data = PengeluaranTruckingHeader::findAll($id);
         // $posting = DB::table('parameter')->where('grp', "STATUS POSTING")->where('text', "POSTING")->first();
-        // $bukanPosting = DB::table('parameter')->where('grp', "STATUS POSTING")->where('text', "BUKAN POSTING")->first();
         $data['postingpinjaman'] = $data->statusposting;
         // dd($data);
         if ($data->kodepengeluaran == 'BST') {
@@ -794,6 +793,13 @@ class PengeluaranTruckingHeaderController extends Controller
      * @ClassName 
      */
     public function pengeluarantruckingdepositokaryawan()
+    {
+    }
+
+        /**
+     * @ClassName 
+     */
+    public function approvalbukacetak()
     {
     }
 

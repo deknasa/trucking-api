@@ -31,7 +31,7 @@ class ValidasiKlaimPosting implements Rule
         $getStatus = DB::table("pengeluarantruckingheader")->from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))->where('id', request()->id)->first();
         if ($value != $getStatus->statusposting) {
             
-            $statusPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
+            $statusPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('id', '84')->first();
             if($value == $statusPosting->id){
                 return false;
             }

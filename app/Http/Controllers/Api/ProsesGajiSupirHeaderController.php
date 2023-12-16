@@ -502,6 +502,13 @@ class ProsesGajiSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
+    public function approvalbukacetak()
+    {
+    }
+    
+    /**
+     * @ClassName 
+     */
     public function export($id)
     {
         $prosesGajiSupirHeader = new ProsesGajiSupirHeader();
