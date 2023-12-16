@@ -2,37 +2,38 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Models\PenerimaanStok;
-use App\Models\PenerimaanStokHeader;
-use App\Models\PenerimaanStokDetail;
-use App\Models\HutangHeader;
+use App\Models\Error;
+use App\Models\Gudang;
+use App\Models\Parameter;
 use App\Models\HutangDetail;
+use App\Models\HutangHeader;
+use Illuminate\Http\Request;
+use App\Models\PenerimaanStok;
+
+
+use App\Models\StokPersediaan;
+use Illuminate\Validation\Rule;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Models\PenerimaanStokDetail;
+use App\Models\PenerimaanStokHeader;
 use App\Models\PengeluaranStokDetail;
+use Illuminate\Support\Facades\Schema;
 
-
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\StoreLogTrailRequest;
+use Illuminate\Validation\ValidationException;
+use App\Http\Requests\StoreHutangDetailRequest;
+
+use App\Http\Requests\StoreHutangHeaderRequest;
+
+use App\Http\Requests\UpdateHutangHeaderRequest;
+use App\Http\Requests\DestroyHutangHeaderRequest;
+use App\Http\Requests\StorePenerimaanStokDetailRequest;
 use App\Http\Requests\StorePenerimaanStokHeaderRequest;
 use App\Http\Requests\UpdatePenerimaanStokHeaderRequest;
 use App\Http\Requests\DestroyPenerimaanStokHeaderRequest;
-use App\Http\Requests\StoreHutangHeaderRequest;
-use App\Http\Requests\DestroyHutangHeaderRequest;
-use App\Http\Requests\UpdateHutangHeaderRequest;
-use App\Http\Requests\StoreHutangDetailRequest;
-use App\Http\Requests\GetIndexRangeRequest;
-
-use App\Models\Parameter;
-use App\Models\Error;
-use App\Models\Gudang;
-use App\Models\StokPersediaan;
-
-use App\Http\Requests\StorePenerimaanStokDetailRequest;
-
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Validation\Rule;
-use Illuminate\Http\JsonResponse;
 
 
 class PenerimaanStokHeaderController extends Controller
@@ -484,12 +485,22 @@ class PenerimaanStokHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function approvalEdit($id)
+    public function approvalEdit(Request $request,$id)
     {
         DB::beginTransaction();
         try {
             $penerimaanStokHeader = PenerimaanStokHeader::lockForUpdate()->findOrFail($id);
-
+            $opnameheader = DB::table('penerimaanstokheader')->from(DB::raw("opnameheader with (readuncommitted)"))->orderBy('id','desc')->first();
+            if ($request->to == 'show') {
+                return response([
+                    'status' => true,
+                    'is_before_opname' => (strtotime($opnameheader->tglbukti) > strtotime($penerimaanStokHeader->tglbukti)),
+                    'last_opname' => $opnameheader->tglbukti,
+                    'data' => $penerimaanStokHeader->find($id),
+                    'detail' => PenerimaanStokDetail::getAll($id),
+                ]);
+            }
+            
             $statusBolehEdit = DB::table('penerimaanstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
             $statusTidakBolehEdit = DB::table('penerimaanstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
             // statusapprovaleditabsensi,tglapprovaleditabsensi,userapprovaleditabsensi 
