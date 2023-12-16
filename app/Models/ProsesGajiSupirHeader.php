@@ -2073,7 +2073,7 @@ class ProsesGajiSupirHeader extends MyModel
                             ->select('id')
                             ->where('grp', 'STATUS POSTING')
                             ->where('subgrp', 'STATUS POSTING')
-                            ->where('text', 'BUKAN POSTING')
+                            ->where('id', '84')
                             ->first()->id ?? 0;
                         if ($bukanposting == $queryposting->statusposting) {
                             if ($firstBuktiNonPostingPS == '') {
@@ -2190,7 +2190,7 @@ class ProsesGajiSupirHeader extends MyModel
                             ->select('id')
                             ->where('grp', 'STATUS POSTING')
                             ->where('subgrp', 'STATUS POSTING')
-                            ->where('text', 'BUKAN POSTING')
+                            ->where('id', '84')
                             ->first()->id ?? 0;
                         if ($bukanposting == $queryposting->statusposting) {
                             if ($firstBuktiNonPosting == '') {
@@ -2716,7 +2716,7 @@ class ProsesGajiSupirHeader extends MyModel
                             ->select('id')
                             ->where('grp', 'STATUS POSTING')
                             ->where('subgrp', 'STATUS POSTING')
-                            ->where('text', 'BUKAN POSTING')
+                            ->where('id', '84')
                             ->first()->id ?? 0;
                         if ($bukanposting == $queryposting->statusposting) {
                             if ($firstBuktiNonPostingPS == '') {
@@ -2762,7 +2762,7 @@ class ProsesGajiSupirHeader extends MyModel
                             ->select('id')
                             ->where('grp', 'STATUS POSTING')
                             ->where('subgrp', 'STATUS POSTING')
-                            ->where('text', 'BUKAN POSTING')
+                            ->where('id', '84')
                             ->first()->id ?? 0;
                         if ($bukanposting == $queryposting->statusposting) {
                             if ($firstBuktiNonPosting == '') {

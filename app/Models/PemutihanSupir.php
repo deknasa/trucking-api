@@ -908,7 +908,7 @@ class PemutihanSupir extends MyModel
             $pemutihanSupir->penerimaantruckingposting_nobukti = $penerimaanHeader->nobukti;
         }
         if ($data['nonpostingId']) {
-            $nonPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
+            $nonPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('id', '84')->first();
             for ($i = 0; $i < count($data['nonpostingId']); $i++) {
                 $pemutihanSupirDetail = (new PemutihanSupirDetail())->processStore($pemutihanSupir, [
                     'pemutihansupir_id' => $pemutihanSupir->id,
@@ -1069,7 +1069,7 @@ class PemutihanSupir extends MyModel
 
         if ($data['nonpostingId']) {
 
-            $nonPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
+            $nonPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('id', '84')->first();
             for ($i = 0; $i < count($data['nonpostingId']); $i++) {
                 $pemutihanSupirDetail = (new PemutihanSupirDetail())->processStore($pemutihanSupir, [
                     'pemutihansupir_id' => $pemutihanSupir->id,
