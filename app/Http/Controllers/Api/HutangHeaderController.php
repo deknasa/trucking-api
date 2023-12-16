@@ -32,11 +32,11 @@ use Illuminate\Database\QueryException;
 
 class HutangHeaderController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * HutangHeader
      * @Detail1 HutangDetailController
-    */
+     */
     public function index(GetIndexRangeRequest $request)
     {
         $hutang = new HutangHeader();
@@ -50,7 +50,7 @@ class HutangHeaderController extends Controller
         ]);
     }
 
-    
+
 
     /**
      * @ClassName
@@ -77,27 +77,29 @@ class HutangHeaderController extends Controller
             $hutangHeader = (new HutangHeader())->processStore($data);
             /* Set position and page */
             $hutangHeader->position = $this->getPosition($hutangHeader, $hutangHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $hutangHeader->page = ceil($hutangHeader->position / (10));
             } else {
                 $hutangHeader->page = ceil($hutangHeader->position / ($request->limit ?? 10));
             }
             $hutangHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $hutangHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
 
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $hutangHeader
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 
             throw $th;
         }
     }
-
+    /**
+     * @ClassName
+     */
     public function approval(ApprovalHutangHeaderRequest $request)
     {
         DB::beginTransaction();
@@ -158,7 +160,7 @@ class HutangHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function update(UpdateHutangHeaderRequest $request, HutangHeader $hutangHeader,$id)
+    public function update(UpdateHutangHeaderRequest $request, HutangHeader $hutangHeader, $id)
     {
         DB::beginTransaction();
         try {
@@ -177,28 +179,27 @@ class HutangHeaderController extends Controller
             ];
             /* Store header */
             $hutangHeader = HutangHeader::findOrFail($id);
-            $hutangHeader = (new HutangHeader())->processUpdate($hutangHeader,$data);
+            $hutangHeader = (new HutangHeader())->processUpdate($hutangHeader, $data);
             /* Set position and page */
             $hutangHeader->position = $this->getPosition($hutangHeader, $hutangHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $hutangHeader->page = ceil($hutangHeader->position / (10));
             } else {
                 $hutangHeader->page = ceil($hutangHeader->position / ($request->limit ?? 10));
             }
             $hutangHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $hutangHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $hutangHeader
-            ]);    
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
- 
+
             throw $th;
         }
-        
     }
 
     /**
@@ -213,14 +214,14 @@ class HutangHeaderController extends Controller
             $selected = $this->getPosition($hutangHeader, $hutangHeader->getTable(), true);
             $hutangHeader->position = $selected->position;
             $hutangHeader->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $hutangHeader->page = ceil($hutangHeader->position / (10));
             } else {
                 $hutangHeader->page = ceil($hutangHeader->position / ($request->limit ?? 10));
             }
             $hutangHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $hutangHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -398,19 +399,20 @@ class HutangHeaderController extends Controller
         ]);
     }
 
-     /**
+    /**
      * @ClassName 
      */
     public function report()
-    {}
+    {
+    }
 
-        /**
+    /**
      * @ClassName 
      */
     public function approvalbukacetak()
     {
     }
-    
+
     /**
      * @ClassName 
      */
