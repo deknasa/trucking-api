@@ -1066,7 +1066,9 @@ class PenerimaanHeader extends MyModel
 
         /*DELETE EXISTING JURNAL*/
         $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $penerimaanHeader->nobukti)->first();
-        (new JurnalUmumHeader())->processDestroy($jurnalUmumHeader->id, ($postingdari == "") ? $postingdari : strtoupper('DELETE penerimaan  detail'));
+        if ($jurnalUmumHeader) {
+            (new JurnalUmumHeader())->processDestroy($jurnalUmumHeader->id, ($postingdari == "") ? $postingdari : strtoupper('DELETE penerimaan  detail'));
+        }
         return $penerimaanHeader;
     }
 
