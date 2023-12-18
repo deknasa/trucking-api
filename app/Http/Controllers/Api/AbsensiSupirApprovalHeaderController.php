@@ -75,14 +75,14 @@ class AbsensiSupirApprovalHeaderController extends Controller
             $absensiSupirApprovalHeader = (new AbsensiSupirApprovalHeader())->processStore($data);
             /* Set position and page */
             $absensiSupirApprovalHeader->position = $this->getPosition($absensiSupirApprovalHeader, $absensiSupirApprovalHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / (10));
             } else {
                 $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
             }
             $absensiSupirApprovalHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $absensiSupirApprovalHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
@@ -135,14 +135,14 @@ class AbsensiSupirApprovalHeaderController extends Controller
             $absensiSupirApprovalHeader = (new AbsensiSupirApprovalHeader())->processStore($data);
             /* Set position and page */
             $absensiSupirApprovalHeader->position = $this->getPosition($absensiSupirApprovalHeader, $absensiSupirApprovalHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / (10));
             } else {
                 $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
             }
             $absensiSupirApprovalHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $absensiSupirApprovalHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
@@ -171,14 +171,14 @@ class AbsensiSupirApprovalHeaderController extends Controller
             $selected = $this->getPosition($absensiSupirApprovalHeader, $absensiSupirApprovalHeader->getTable(), true);
             $absensiSupirApprovalHeader->position = $selected->position;
             $absensiSupirApprovalHeader->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / (10));
             } else {
                 $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
             }
             $absensiSupirApprovalHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $absensiSupirApprovalHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
@@ -397,6 +397,12 @@ class AbsensiSupirApprovalHeaderController extends Controller
      * @ClassName 
      */
     public function report()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function approvalbukacetak()
     {
     }
 }
