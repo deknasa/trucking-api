@@ -246,6 +246,7 @@ class Bank extends MyModel
 
         $aktif = request()->aktif ?? '';
         $tipe = request()->tipe ?? '';
+        $format = request()->format ?? '';
         $bankId = request()->bankId ?? 0;
         $bankExclude = request()->bankExclude ?? 0;
         $alatBayar = request()->alatbayar ?? 0;
@@ -301,6 +302,9 @@ class Bank extends MyModel
         }
         if ($tipe == 'KAS') {
             $query->where('bank.tipe', '=', 'KAS');
+        }
+        if ($format != '') {
+            $query->where('bank.format'.$format, '!=', '0');
         }
         if ($tipe == 'BANK') {
             $query->where('bank.tipe', '=', 'BANK');
