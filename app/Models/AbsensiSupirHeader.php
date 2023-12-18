@@ -73,8 +73,10 @@ class AbsensiSupirHeader extends MyModel
                 'absensisupirheader.kasgantung_nobukti',
                 DB::raw("(case when absensisupirheader.nominal IS NULL then 0 else absensisupirheader.nominal end) as nominal"),
                 DB::raw('(case when (year(absensisupirheader.tglbukacetak) <= 2000) then null else absensisupirheader.tglbukacetak end ) as tglbukacetak'),
+                DB::raw('(case when (year(absensisupirheader.tglapprovaleditabsensi) <= 2000) then null else absensisupirheader.tglapprovaleditabsensi end ) as tglapprovaleditabsensi'),
                 'statuscetak.memo as statuscetak',
                 'statusapprovaleditabsensi.memo as statusapprovaleditabsensi',
+                'absensisupirheader.userapprovaleditabsensi',
                 'absensisupirheader.userbukacetak',
                 'absensisupirheader.jumlahcetak',
                 'absensisupirheader.modifiedby',
@@ -139,13 +141,17 @@ class AbsensiSupirHeader extends MyModel
             'statuscetak.text as statuscetak',
             $this->table.userbukacetak,
             $this->table.tglbukacetak,
+            'statusapprovaleditabsensi.text as statusapprovaleditabsensi',
+            $this->table.userapprovaleditabsensi,
+            $this->table.tglapprovaleditabsensi,
             $this->table.jumlahcetak,
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
             )
         )
-            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirheader.statuscetak', 'statuscetak.id');
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statusapprovaleditabsensi with (readuncommitted)"), 'absensisupirheader.statusapprovaleditabsensi', 'statusapprovaleditabsensi.id');
     }
 
     public function createTemp(string $modelTable)
@@ -163,6 +169,9 @@ class AbsensiSupirHeader extends MyModel
             $table->string('statuscetak', 1000)->nullable();
             $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
+            $table->string('statusapprovaleditabsensi', 1000)->nullable();
+            $table->string('userapprovaleditabsensi', 50)->nullable();
+            $table->date('tglapprovaleditabsensi')->nullable();
             $table->integer('jumlahcetak')->Length(11)->nullable();
             $table->string('modifiedby', 1000)->nullable();
             $table->dateTime('created_at')->nullable();
@@ -180,6 +189,9 @@ class AbsensiSupirHeader extends MyModel
                 'statuscetak.memo as statuscetak',
                 'absensisupirheader.userbukacetak',
                 DB::raw('(case when (year(absensisupirheader.tglbukacetak) <= 2000) then null else absensisupirheader.tglbukacetak end ) as tglbukacetak'),
+                'statusapprovaleditabsensi.memo as statusapprovaleditabsensi',
+                'absensisupirheader.userapprovaleditabsensi',
+                DB::raw('(case when (year(absensisupirheader.tglapprovaleditabsensi) <= 2000) then null else absensisupirheader.tglapprovaleditabsensi end ) as tglapprovaleditabsensi'),
                 'absensisupirheader.jumlahcetak',
                 'absensisupirheader.modifiedby',
                 'absensisupirheader.created_at',
@@ -205,6 +217,9 @@ class AbsensiSupirHeader extends MyModel
             'statuscetak',
             'userbukacetak',
             'tglbukacetak',
+            'statusapprovaleditabsensi',
+            'userapprovaleditabsensi',
+            'tglapprovaleditabsensi',
             'jumlahcetak',
             'modifiedby',
             'created_at',
@@ -283,9 +298,11 @@ class AbsensiSupirHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statuscetak') {
                             $query = $query->where('statuscetak.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'statusapprovaleditabsensi') {
+                            $query = $query->where('statusapprovaleditabsensi.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'nominal') {
                             $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak') {
+                        } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapprovaleditabsensi') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
@@ -300,9 +317,11 @@ class AbsensiSupirHeader extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statuscetak') {
                                 $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusapprovaleditabsensi') {
+                                $query = $query->orWhere('statusapprovaleditabsensi.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'nominal') {
                                 $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak') {
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapprovaleditabsensi') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");

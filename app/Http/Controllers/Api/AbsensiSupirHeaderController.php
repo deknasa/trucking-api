@@ -61,6 +61,8 @@ class AbsensiSupirHeaderController extends Controller
             // statusapprovaleditabsensi,tglapprovaleditabsensi,userapprovaleditabsensi 
             if ($absensiSupirHeader->statusapprovaleditabsensi == $statusBolehEdit->id) {
                 $absensiSupirHeader->statusapprovaleditabsensi = $statusTidakBolehEdit->id;
+                $absensiSupirHeader->tglapprovaleditabsensi = date('Y-m-d', strtotime("1900-01-01"));
+                $absensiSupirHeader->userapprovaleditabsensi = '';
                 $absensiSupirHeader->tglbataseditabsensi = null;
                 $aksi = $statusTidakBolehEdit->text;
             } else {
@@ -69,10 +71,10 @@ class AbsensiSupirHeaderController extends Controller
                 $absensiSupirHeader->tglbataseditabsensi = $tglbtas;
                 $absensiSupirHeader->statusapprovaleditabsensi = $statusBolehEdit->id;
                 $aksi = $statusBolehEdit->text;
+                $absensiSupirHeader->tglapprovaleditabsensi = date("Y-m-d", strtotime('today'));
+                $absensiSupirHeader->userapprovaleditabsensi = auth('api')->user()->name;
             }
 
-            $absensiSupirHeader->tglapprovaleditabsensi = date("Y-m-d", strtotime('today'));
-            $absensiSupirHeader->userapprovaleditabsensi = auth('api')->user()->name;
 
             if ($absensiSupirHeader->save()) {
                 $logTrail = [
@@ -532,6 +534,13 @@ class AbsensiSupirHeaderController extends Controller
      * @ClassName 
      */
     public function report()
+    {
+    }
+
+     /**
+     * @ClassName 
+     */
+    public function approvalbukacetak()
     {
     }
 
