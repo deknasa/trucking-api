@@ -105,14 +105,14 @@ class StoreTradoRequest extends FormRequest
         }
 
         return [
-            'kodetrado' => ['required', 'unique:trado'],
+            'kodetrado' => ['required', 'nullable','sometimes','unique:trado'],
             'statusaktif' => [$ruleKeterangan, Rule::in($status)],
             'tahun' => [$ruleKeterangan, 'min:4', 'max:4', 'nullable'],
             'merek' => $ruleKeterangan,
-            'norangka' => [$ruleKeterangan, 'max:20', 'unique:trado'],
-            'nomesin' =>  [$ruleKeterangan, 'max:20', 'unique:trado'],
+            'norangka' => [$ruleKeterangan, 'max:20', 'nullable','sometimes','unique:trado'],
+            'nomesin' =>  [$ruleKeterangan, 'max:20', 'nullable','sometimes','unique:trado'],
             'nama' => [$ruleKeterangan],
-            'nostnk' =>  [$ruleKeterangan, 'max:50', 'unique:trado'],
+            'nostnk' =>  [$ruleKeterangan, 'max:50', 'nullable','sometimes','unique:trado'],
             'alamatstnk' => [$ruleKeterangan],
             'statusjenisplat' => [$ruleKeterangan],
             'tglpajakstnk' => [$ruleKeterangan],
@@ -127,7 +127,7 @@ class StoreTradoRequest extends FormRequest
             'jumlahsumbu' => [$ruleKeterangan, 'numeric', 'min:1', 'digits_between:1,2', 'nullable'],
             'jumlahroda' => [$ruleKeterangan, 'numeric', 'min:1', 'digits_between:1,2', 'nullable'],
             'model' => [$ruleKeterangan],
-            'nobpkb' => [$ruleKeterangan, 'max:15', 'unique:trado'],
+            'nobpkb' => [$ruleKeterangan, 'max:15', 'nullable','sometimes','unique:trado'],
             'jumlahbanserap' => [$ruleKeterangan, 'numeric', 'min:1', 'digits_between:1,2', 'nullable'],
             'statusgerobak' => [$ruleKeterangan],
             'statusabsensisupir' => [$ruleKeterangan],
