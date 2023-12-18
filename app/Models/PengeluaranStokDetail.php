@@ -39,13 +39,60 @@ class PengeluaranStokDetail extends MyModel
         if (isset(request()->pengeluaranstokheader_id)) {
             $query->where("$this->table.pengeluaranstokheader_id", request()->pengeluaranstokheader_id);
         }
+
+        $tempumuraki = '##tempumuraki' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempumuraki, function ($table) {
+                $table->Integer('stok_id')->nullable();
+                $table->integer('jumlahhari')->nullable();
+                $table->date('tglawal')->nullable();
+            });
+    
+            DB::table($tempumuraki)->insertUsing([
+                'stok_id',
+                'jumlahhari',
+                'tglawal',
+            ], (new SaldoUmurAki())->getallstok());
+    
+            $tempumuraki2 = '##tempumuraki2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempumuraki2, function ($table) {
+                $table->Integer('stok_id')->nullable();
+                $table->integer('jumlahhari')->nullable();
+                $table->date('tglawal')->nullable();
+            });
+    
+            $queryaki = db::table($tempumuraki)->from(db::raw($tempumuraki . " a "))
+                ->select(
+                    'a.stok_id',
+                    db::raw("max(a.jumlahhari) as jumlahhari"),
+                    db::raw("max(a.tglawal) as tglawal"),
+                )
+                ->groupby('a.stok_id');
+    
+            DB::table($tempumuraki2)->insertUsing([
+                'stok_id',
+                'jumlahhari',
+                'tglawal',
+            ],  $queryaki);
+    
+            //update total vulkanisir
+            $tempvulkan = '##tempvulkan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempvulkan, function ($table) {
+                $table->integer('stok_id')->nullable();
+                $table->integer('vulkan')->nullable();
+            });
+            
+            DB::table($tempvulkan)->insertUsing([
+                'stok_id',
+                'vulkan',
+            ],(new Stok())->getVulkan());
+
         if (isset(request()->forReport) && request()->forReport) {
             $query->select(
                 "$this->table.pengeluaranstokheader_id",
                 "$this->table.nobukti",
                 db::raw("trim(stok.namastok)+
                 (case
-                      when isnull(stok.kelompok_id,0)=1 then ' ( VULKANISIR KE-'+format(isnull(stok.totalvulkanisir,0),'#,#0')+', STATUS BAN :'+isnull(parameter.text,'') +' )' 
+                      when isnull(stok.kelompok_id,0)=1 then ' ( VULKANISIR KE-'+format(isnull(d1.vulkan,0),'#,#0')+', STATUS BAN :'+isnull(parameter.text,'') +' )' 
                 else '' end)
                 as stok"),
                 "$this->table.stok_id",
@@ -59,6 +106,8 @@ class PengeluaranStokDetail extends MyModel
                 "$this->table.modifiedby",
             )
             ->leftJoin("stok", "$this->table.stok_id", "stok.id")
+            ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
+            ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id")
             ->leftJoin("parameter", "stok.statusban", "parameter.id");
 
             $this->totalRows = $query->count();
@@ -75,7 +124,7 @@ class PengeluaranStokDetail extends MyModel
                 "$this->table.nobukti",
                 "$this->table.stok_id",
                 db::raw("trim(stok.namastok)+
-                (case when isnull(stok.kelompok_id,0)=1 then ' ( VULKANISIR KE-'+format(isnull(stok.totalvulkanisir,0),'#,#0')+', STATUS BAN :'+isnull(statusban.text,'') +' )' 
+                (case when isnull(stok.kelompok_id,0)=1 then ' ( VULKANISIR KE-'+format(isnull(d1.vulkan,0),'#,#0')+', STATUS BAN :'+isnull(statusban.text,'') +' )' 
                 else '' end)
                 as stok"),
                 'statusreuse.memo as statusreuse',    
@@ -97,6 +146,8 @@ class PengeluaranStokDetail extends MyModel
                 ->leftJoin("stok", "$this->table.stok_id", "stok.id")
                 ->leftJoin(DB::raw("parameter as statusreuse with (readuncommitted)"), 'stok.statusreuse', 'statusreuse.id')
                 ->leftJoin("parameter", "$this->table.statusoli", "parameter.id")
+                ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
+                ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id")
                 ->leftJoin("parameter as statusban", "stok.statusban", "statusban.id");
     
 
