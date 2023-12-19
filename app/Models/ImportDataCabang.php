@@ -35,25 +35,23 @@ class ImportDataCabang extends Model
         $encode = $cabangMemo['ENCODE'] ?? 'UTF-8';
         $singkatan = $cabangMemo['SINGKATAN'] ?? '';
 
-        $periode1=date('Y-m-d', strtotime('01-'.$data['periode']));
-        
+        $periode1 = date('Y-m-d', strtotime('01-' . $data['periode']));
+
 
         if ($data['import'] == $statusImportTimpa->id) {
-            
+
             // DB::delete(DB::raw("delete  JurnalUmumPusatdetail from JurnalUmumPusatdetail as a inner join JurnalUmumPusatHeader b on a.nobukti=b.nobukti 
             // WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and format(b.tglbukti,'MM-yyyy')='" . $data['periode'] . "'"));
 
             // DB::delete(DB::raw("delete  JurnalUmumPusatheader from JurnalUmumPusatheader as b 
             // WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and format(b.tglbukti,'MM-yyyy')='" . $data['periode'] . "'"));
 
-                    
+
             DB::delete(DB::raw("delete  JurnalUmumPusatdetail from JurnalUmumPusatdetail as a inner join JurnalUmumPusatHeader b on a.nobukti=b.nobukti 
-            WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and b.tglbukti>='" . $periode1. "'"));
+            WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and b.tglbukti>='" . $periode1 . "'"));
 
             DB::delete(DB::raw("delete  JurnalUmumPusatheader from JurnalUmumPusatheader as b 
             WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and b.tglbukti>='" . $periode1 . "'"));
-            
-            
         }
 
 
@@ -331,7 +329,8 @@ class ImportDataCabang extends Model
                 ->select(
                     db::raw("0 as header_id"),
                     'a.fntrans as header_nobukti',
-                    'b.ftgl as header_tglbukti',
+                    'a.ftgl as header_tglbukti',
+                    db::raw("format(a.ftgl,'MM-yyyy') as header_tglbuktiformat"),
                     'a.fket as header_keterangan',
                     'a.fpostfrom as header_postingdari',
                     db::raw("(case when isnull(a.fisapp,0)=1 then 3 else 4 end) as header_statusapproval"),
@@ -348,6 +347,7 @@ class ImportDataCabang extends Model
                     db::raw("0 as detail_jurnalumumpusat_id"),
                     'b.fntrans as detail_nobukti',
                     'b.ftgl as detail_tglbukti',
+                    db::raw("format(b.ftgl,'MM-yyyy') as detail_tglbuktiformat"),
                     'b.fcoa as detail_coa',
                     'b.fcoamain as detail_coamain',
                     'b.fnominal as detail_nominal',
@@ -368,7 +368,7 @@ class ImportDataCabang extends Model
                 ->orderby('b.fpostid', 'asc')
                 ->get();
 
-
+                // dd($queryloop->toSql());
 
             $queryloop = json_encode($queryloop, JSON_INVALID_UTF8_SUBSTITUTE);
             $konsolidasi = json_decode($queryloop, true);
@@ -438,43 +438,64 @@ class ImportDataCabang extends Model
                     }
                 } else {
                     if (!array_key_exists(mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8'), $jurnalRequest)) {
-                        $jurnalUmumPusat = new JurnalUmumPusatHeader();
-                        $jurnalUmumPusat->nobukti = mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8');
-                        $jurnalUmumPusat->tglbukti = mb_convert_encoding($item['header_tglbukti'],  $encode, 'UTF-8');
-                        $jurnalUmumPusat->keterangan = mb_convert_encoding($item['header_keterangan'],  $encode, 'UTF-8');
-                        $jurnalUmumPusat->postingdari = mb_convert_encoding($item['header_postingdari'],  $encode, 'UTF-8');
-                        $jurnalUmumPusat->statusapproval = mb_convert_encoding($item['header_statusapproval'],  $encode, 'UTF-8');
-                        $jurnalUmumPusat->userapproval = mb_convert_encoding($item['header_userapproval'],  $encode, 'UTF-8');
-                        $jurnalUmumPusat->tglapproval = mb_convert_encoding($item['header_tglapproval'],  $encode, 'UTF-8');
-                        $jurnalUmumPusat->statusformat = mb_convert_encoding($item['header_statusformat'],  $encode, 'UTF-8');
-                        $jurnalUmumPusat->info = mb_convert_encoding($item['header_info'],  $encode, 'UTF-8');
-                        $jurnalUmumPusat->modifiedby = mb_convert_encoding($item['header_modifiedby'],  $encode, 'UTF-8');
-                        $jurnalUmumPusat->created_at = mb_convert_encoding($item['header_created_at'],  $encode, 'UTF-8');
-                        $jurnalUmumPusat->updated_at = mb_convert_encoding($item['header_updated_at'],  $encode, 'UTF-8');
-                        $jurnalUmumPusat->cabang_id = $data['cabang'];
-                        $jurnalUmumPusat->cabang = $cabang->namacabang ?? '';
+                        // $tgl2=date('Y-m-d', $item['header_tglbukti']);
+                        // if ($tgl2 >=$periode1) {
+                        $querycek =Jurnalumumpusatheader::
+                            select('id')
+                            ->whereraw("nobukti='".$item['header_nobukti']."'")
+                            ->first();
+                            // dd($querycek);
+                            $idheader= $querycek->id ?? 0;
+                            
+                        if (!isset($querycek)) {
+                            $jurnalUmumPusat = new JurnalUmumPusatHeader();
+
+                            $jurnalUmumPusat->nobukti = mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->tglbukti = mb_convert_encoding($item['header_tglbukti'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->keterangan = mb_convert_encoding($item['header_keterangan'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->postingdari = mb_convert_encoding($item['header_postingdari'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->statusapproval = mb_convert_encoding($item['header_statusapproval'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->userapproval = mb_convert_encoding($item['header_userapproval'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->tglapproval = mb_convert_encoding($item['header_tglapproval'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->statusformat = mb_convert_encoding($item['header_statusformat'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->info = mb_convert_encoding($item['header_info'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->modifiedby = mb_convert_encoding($item['header_modifiedby'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->created_at = mb_convert_encoding($item['header_created_at'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->updated_at = mb_convert_encoding($item['header_updated_at'],  $encode, 'UTF-8');
+                            $jurnalUmumPusat->cabang_id = $data['cabang'];
+                            $jurnalUmumPusat->cabang = $cabang->namacabang ?? '';
 
 
-                        if (!$jurnalUmumPusat->save()) {
-                            throw new \Exception("Error storing jurnal umum pusat header.");
+                            if (!$jurnalUmumPusat->save()) {
+                                throw new \Exception("Error storing jurnal umum pusat header.");
+                            }
+                            $jurnalRequest[mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8')] = $jurnalUmumPusat;
+                            $jurnalUmumPusatHeaderLogTrail = (new LogTrail())->processStore([
+                                'namatabel' => strtoupper($jurnalUmumPusat->getTable()),
+                                'postingdari' => 'ENTRY JURNAL UMUM PUSAT HEADER',
+                                'idtrans' => $jurnalUmumPusat->id,
+                                'nobuktitrans' => $jurnalUmumPusat->nobukti,
+                                'aksi' => 'ENTRY',
+                                'datajson' => $jurnalUmumPusat->toArray(),
+                                'modifiedby' => auth('api')->user()->user
+                            ]);
+                            $idheader= $jurnalRequest[mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8')]->id;
+
                         }
-                        $jurnalRequest[mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8')] = $jurnalUmumPusat;
-                        $jurnalUmumPusatHeaderLogTrail = (new LogTrail())->processStore([
-                            'namatabel' => strtoupper($jurnalUmumPusat->getTable()),
-                            'postingdari' => 'ENTRY JURNAL UMUM PUSAT HEADER',
-                            'idtrans' => $jurnalUmumPusat->id,
-                            'nobuktitrans' => $jurnalUmumPusat->nobukti,
-                            'aksi' => 'ENTRY',
-                            'datajson' => $jurnalUmumPusat->toArray(),
-                            'modifiedby' => auth('api')->user()->user
-                        ]);
                     }
-                    // Menambahkan detail ke dalam entri header yang sesuai
 
+                    // }
+                    // Menambahkan detail ke dalam entri header yang sesuai
+                    // $tgl2=date('Y-m-d', $item['detail_tglbukti']);
+
+                    // if ( $tgl2 >= $periode1) {
+                  
                     $jurnalUmumPusatDetail = new JurnalUmumPusatDetail();
-                    $jurnalUmumPusatDetail->jurnalumumpusat_id = $jurnalRequest[mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8')]->id;
-                    $jurnalUmumPusatDetail->nobukti = $jurnalRequest[mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8')]->nobukti;
-                    $jurnalUmumPusatDetail->tglbukti = $jurnalRequest[mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8')]->tglbukti;
+                    // $jurnalUmumPusatDetail->jurnalumumpusat_id = $jurnalRequest[mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8')]->id;
+                    // $jurnalUmumPusatDetail->nobukti = $jurnalRequest[mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8')]->nobukti;
+                    $jurnalUmumPusatDetail->jurnalumumpusat_id = $idheader;
+                    $jurnalUmumPusatDetail->nobukti = mb_convert_encoding($item['detail_nobukti'],  $encode, 'UTF-8');
+                    $jurnalUmumPusatDetail->tglbukti = mb_convert_encoding($item['detail_tglbukti'],  $encode, 'UTF-8');
                     $jurnalUmumPusatDetail->coa = mb_convert_encoding($item['detail_coa'],  $encode, 'UTF-8');
                     $jurnalUmumPusatDetail->coamain = mb_convert_encoding($item['detail_coamain'],  $encode, 'UTF-8');
                     $jurnalUmumPusatDetail->nominal = mb_convert_encoding($item['detail_nominal'],  $encode, 'UTF-8');
@@ -487,6 +508,12 @@ class ImportDataCabang extends Model
                     if (!$jurnalUmumPusatDetail->save()) {
                         throw new \Exception("Error storing jurnal umum pusat detail.");
                     }
+                //     if ($item['header_nobukti']=='KGT 0061/X/2023-MDN')
+                //     {
+                //   dd('test');
+
+                //     }
+                    // }
                 }
             }
 
@@ -554,18 +581,18 @@ class ImportDataCabang extends Model
             //     ->groupBy('FCOA', 'FThn', 'FBln', 'cabang_id')
             //     ->select('FCOA', 'FThn', 'FBln', 'cabang_id', DB::raw('round(SUM(FNominal),2) as FNominal'));
 
-            $RecalKdPerkiraan=DB::connection('sqlsrv2')->table("coa_r")->from(db::raw("coa_r a with (readuncommitted)"))     
-            ->select(
-                'a.fcoa as coa',
-                'a.fthn as tahun',
-                'a.fbln as bulan',
-                db::raw($cabang_id . " as cabang_id"),
-                'a.fnominal as nominal',
-            )   
-            ->whereRaw("a.fbln = " . $bulan)
-            ->whereRaw("a.fthn = " . $tahun)
-            ->whereRaw("a.FKcabang='" . $singkatan . "'") 
-            ->get() ;
+            $RecalKdPerkiraan = DB::connection('sqlsrv2')->table("coa_r")->from(db::raw("coa_r a with (readuncommitted)"))
+                ->select(
+                    'a.fcoa as coa',
+                    'a.fthn as tahun',
+                    'a.fbln as bulan',
+                    db::raw($cabang_id . " as cabang_id"),
+                    'a.fnominal as nominal',
+                )
+                ->whereRaw("a.fbln = " . $bulan)
+                ->whereRaw("a.fthn = " . $tahun)
+                ->whereRaw("a.FKcabang='" . $singkatan . "'")
+                ->get();
 
 
             $RecalKdPerkiraan = json_encode($RecalKdPerkiraan, JSON_INVALID_UTF8_SUBSTITUTE);
