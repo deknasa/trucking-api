@@ -34,9 +34,15 @@ class StoreTradoRequest extends FormRequest
     {
         $ruleGambar = Rule::requiredIf(function () {
             $kodeTrado = request()->kodetrado;
+            $requiredDefault  = true;
             $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->whereRaw("grp like '%STATUS APPROVAL%'")
                 ->whereRaw("text like '%NON APPROVAL%'")
+                ->first();
+            $nonAktif = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->select('id')
+                ->where("grp","STATUS AKTIF")
+                ->where("text","NON AKTIF")
                 ->first();
             $cekValidasi = DB::table('approvaltradogambar')->from(DB::raw("approvaltradogambar with (readuncommitted)"))
                 ->select('kodetrado', 'tglbatas', 'statusapproval')
@@ -48,7 +54,9 @@ class StoreTradoRequest extends FormRequest
                 ->where('text', 'NON ABSENSI SUPIR')
                 ->first()->id ?? 0;
 
-
+            if ($nonAktif->id == request()->statusaktif) {
+                $requiredDefault = false;
+            }
             if ($cekValidasi != '') {
                 if ($cekValidasi->statusapproval == $nonApp->id) {
                     return true;
@@ -61,14 +69,20 @@ class StoreTradoRequest extends FormRequest
             } else if ($tradononabsensi == request()->statusabsensisupir) {
                 return false;
             }
-            return true;
+            return $requiredDefault;
         });
 
         $ruleKeterangan = Rule::requiredIf(function () {
             $kodetrado = request()->kodetrado;
+            $requiredDefault  = true;
             $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->whereRaw("grp like '%STATUS APPROVAL%'")
                 ->whereRaw("text like '%NON APPROVAL%'")
+                ->first();
+            $nonAktif = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->select('id')
+                ->where("grp","STATUS AKTIF")
+                ->where("text","NON AKTIF")
                 ->first();
             $cekValidasi = DB::table('approvaltradoketerangan')->from(DB::raw("approvaltradoketerangan with (readuncommitted)"))
                 ->select('kodetrado', 'tglbatas', 'statusapproval')
@@ -80,7 +94,10 @@ class StoreTradoRequest extends FormRequest
                 ->where('text', 'NON ABSENSI SUPIR')
                 ->first()->id ?? 0;
 
-                
+            if ($nonAktif->id == request()->statusaktif) {
+                $requiredDefault = false;
+            }
+
             if ($cekValidasi != '') {
                 if ($cekValidasi->statusapproval == $nonApp->id) {
                     return false;
@@ -94,7 +111,7 @@ class StoreTradoRequest extends FormRequest
                 return false;
             }
             
-            return true;
+            return $requiredDefault;
         });
 
         $parameter = new Parameter();

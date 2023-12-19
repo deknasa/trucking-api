@@ -43,6 +43,36 @@ class ApprovalTradoGambar extends MyModel
 
         return $data;
     }
+    
+    public function firstOrFind($trado_id){
+        $trado = Trado::find(request()->trado_id);
+        $data = DB::table($this->table)
+        ->select(
+            'approvaltradogambar.id',
+            'approvaltradogambar.kodetrado',
+            'approvaltradogambar.statusapproval',
+            'approvaltradogambar.tglbatas',
+            'approvaltradogambar.created_at',
+            'approvaltradogambar.updated_at',
+            'approvaltradogambar.modifiedby'
+        )
+        ->where('kodetrado',$trado->kodetrado)->first();
+        
+
+        if (!$data) {
+            $data = [
+                "id" => null,
+                "info" => null,
+                "kodetrado" => $trado->kodetrado,
+                "modifiedby" => null,
+                "statusapproval" => null,
+                "tglbatas" => null,
+                "updated_at" => null,
+                "created_at" => null,
+            ];
+        }
+        return $data;
+    }
 
     
     public function selectColumns($query)
