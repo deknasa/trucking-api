@@ -257,6 +257,13 @@ class Controller extends BaseController
 
                 ) {
                     $sheet->setCellValueExplicit($alphabets[$columnsIndex] . $startRow, isset($column['index']) ? $row[$column['index']] : $dataIndex + 1, DataType::TYPE_STRING);
+                } elseif (
+                    isset($column['index']) && $column['index'] == 'nominalsumbangan' ||
+                    isset($column['index']) && $column['index'] == 'nominal'
+                ) {
+                    $sheet->setCellValue($alphabets[$columnsIndex] . $startRow, isset($column['index']) ? $row[$column['index']] : $dataIndex + 1);
+                    $sheet->getStyle($alphabets[$columnsIndex] . $startRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+                    $sheet->getStyle($alphabets[$columnsIndex] . $startRow)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
                 } else {
                     // $sheet->setCellValue($alphabets[$columnsIndex] . $tableHeaderRow, $column['label'] ?? $columnsIndex + 1);
                     $sheet->setCellValue($alphabets[$columnsIndex] . $startRow, isset($column['index']) ? $row[$column['index']] : $dataIndex + 1);
