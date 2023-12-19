@@ -37,13 +37,6 @@ class StoreMainAkunPusatRequest extends FormRequest
         }
 
         $parameter = new Parameter();
-        $dataCoa = $parameter->getcombodata('STATUS COA', 'STATUS COA');
-        $dataCoa = json_decode($dataCoa, true);
-        foreach ($dataCoa as $item) {
-            $statusCoa[] = $item['id'];
-        }
-
-        $parameter = new Parameter();
         $dataParent = $parameter->getcombodata('STATUS PARENT', 'STATUS PARENT');
         $dataParent = json_decode($dataParent, true);
         foreach ($dataParent as $item) {
@@ -94,7 +87,6 @@ class StoreMainAkunPusatRequest extends FormRequest
             'keterangancoa' => ['required','unique:mainakunpusat'],
             'type' => ['required'],
             'akuntansi' => ['required'],
-            'statuscoa' => ['required', Rule::in($statusCoa)],
             'statusparent' => ['required', Rule::in($statusAccount)],
             'statusneraca' => ['required', Rule::in($statusNeraca)],
             'statuslabarugi' => ['required', Rule::in($statusLabaRugi)],
@@ -117,7 +109,6 @@ class StoreMainAkunPusatRequest extends FormRequest
             'coa' => 'kode coa',
             'keterangancoa' => 'keterangan coa',
             'type' => 'type',
-            'statuscoa' => 'status coa',
             'statusparent' => 'status parent',
             'statusneraca' => 'status neraca',
             'statuslabarugi' => 'status laba rugi',
@@ -134,7 +125,6 @@ class StoreMainAkunPusatRequest extends FormRequest
             'coa.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'keterangancoa.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'type.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'statuscoa.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusparent.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusneraca.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statuslabarugi.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,

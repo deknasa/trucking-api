@@ -59,7 +59,6 @@ class AkunPusatController extends Controller
                 'type_id' => $request->type_id,
                 'akuntansi_id' => $request->akuntansi_id,
                 'parent' => $request->parent,
-                'statuscoa' => $request->statuscoa,
                 'level' => $request->level,
                 'statusparent' => $request->statusparent,
                 'statusneraca' => $request->statusneraca,
@@ -113,7 +112,6 @@ class AkunPusatController extends Controller
                 'type_id' => $request->type_id,
                 'akuntansi_id' => $request->akuntansi_id,
                 'parent' => $request->parent,
-                'statuscoa' => $request->statuscoa,
                 'statusparent' => $request->statusparent,
                 'statusneraca' => $request->statusneraca,
                 'statuslabarugi' => $request->statuslabarugi,
@@ -273,26 +271,22 @@ class AkunPusatController extends Controller
             foreach ($akunpusats as $index => $params) {
 
                 $statusaktif = $params['statusaktif'];
-                $statuscoa = $params['statuscoa'];
                 $statusParent = $params['statusparent'];
                 $statusNeraca = $params['statusneraca'];
                 $statusLabaRugi = $params['statuslabarugi'];
 
                 $result = json_decode($statusaktif, true);
-                $resultStatuscoa = json_decode($statuscoa, true);
                 $resultAkunPayable = json_decode($statusParent, true);
                 $resultNeraca = json_decode($statusNeraca, true);
                 $resultLabaRugi = json_decode($statusLabaRugi, true);
 
                 $format = $result['MEMO'];
-                $statusStatuscoa = $resultStatuscoa['MEMO'];
                 $statusParent = $resultAkunPayable['MEMO'];
                 $statusNeraca = $resultNeraca['MEMO'];
                 $statusLabaRugi = $resultLabaRugi['MEMO'];
 
 
                 $akunpusats[$i]['statusaktif'] = $format;
-                $akunpusats[$i]['statuscoa'] = $statusStatuscoa;
                 $akunpusats[$i]['statusparent'] = $statusParent;
                 $akunpusats[$i]['statusneraca'] = $statusNeraca;
                 $akunpusats[$i]['statuslabarugi'] = $statusLabaRugi;
@@ -305,11 +299,11 @@ class AkunPusatController extends Controller
                     'label' => 'No',
                 ],
                 [
-                    'label' => 'COA',
+                    'label' => 'Kode Perkiraan',
                     'index' => 'coa',
                 ],
                 [
-                    'label' => 'Keterangan COA',
+                    'label' => 'Nama Perkiraan',
                     'index' => 'keterangancoa',
                 ],
                 [
@@ -321,12 +315,8 @@ class AkunPusatController extends Controller
                     'index' => 'parent',
                 ],
                 [
-                    'label' => 'COA Main',
+                    'label' => 'Kode Perkiraan Pusat',
                     'index' => 'coamain',
-                ],
-                [
-                    'label' => 'Status COA',
-                    'index' => 'statuscoa',
                 ],
                 [
                     'label' => 'Status Parent',
