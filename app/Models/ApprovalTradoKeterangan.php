@@ -44,6 +44,36 @@ class ApprovalTradoKeterangan extends MyModel
         return $data;
     }
 
+    public function firstOrFind($trado_id){
+        $trado = Trado::find(request()->trado_id);
+        $data = DB::table($this->table)
+        ->select(
+            'approvaltradoketerangan.id',
+            'approvaltradoketerangan.kodetrado',
+            'approvaltradoketerangan.statusapproval',
+            'approvaltradoketerangan.tglbatas',
+            'approvaltradoketerangan.created_at',
+            'approvaltradoketerangan.updated_at',
+            'approvaltradoketerangan.modifiedby'
+        )
+        ->where('kodetrado',$trado->kodetrado)->first();
+        
+
+        if (!$data) {
+            $data = [
+                "id" => null,
+                "info" => null,
+                "kodetrado" => $trado->kodetrado,
+                "modifiedby" => null,
+                "statusapproval" => null,
+                "tglbatas" => null,
+                "updated_at" => null,
+                "created_at" => null,
+            ];
+        }
+        return $data;
+    }
+
     
     public function selectColumns($query)
     {

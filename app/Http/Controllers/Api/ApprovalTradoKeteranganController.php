@@ -20,8 +20,13 @@ class ApprovalTradoKeteranganController extends Controller
     public function index()
     {
         $approvalTradoKeterangan = new ApprovalTradoKeterangan();
+
+        $data = $approvalTradoKeterangan->get();
+        if (isset(request()->trado_id)) {
+            $data = $approvalTradoKeterangan->firstOrFind(request()->trado_id);
+        }
         return response([
-            'data' => $approvalTradoKeterangan->get(),
+            'data' =>  $data,
             'attributes' => [
                 'totalRows' => $approvalTradoKeterangan->totalRows,
                 'totalPages' => $approvalTradoKeterangan->totalPages
@@ -57,7 +62,7 @@ class ApprovalTradoKeteranganController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
             }
 
-            DB::commit();
+            
             $selected = $this->getPosition($approvalTradoKeterangan, $approvalTradoKeterangan->getTable());
             $approvalTradoKeterangan->position = $selected->position;
            if ($request->limit==0) {
@@ -65,7 +70,7 @@ class ApprovalTradoKeteranganController extends Controller
             } else {
                 $approvalTradoKeterangan->page = ceil($approvalTradoKeterangan->position / ($request->limit ?? 10));
             }
-
+            DB::commit();
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -157,7 +162,6 @@ class ApprovalTradoKeteranganController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
             }
 
-            DB::commit();
             $selected = $this->getPosition($approvaltradoketerangan, $approvaltradoketerangan->getTable());
             $approvaltradoketerangan->position = $selected->position;
            if ($request->limit==0) {
@@ -165,6 +169,7 @@ class ApprovalTradoKeteranganController extends Controller
             } else {
                 $approvaltradoketerangan->page = ceil($approvaltradoketerangan->position / ($request->limit ?? 10));
             }
+            DB::commit();
 
             return response([
                 'status' => true,
