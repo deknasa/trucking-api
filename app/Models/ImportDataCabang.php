@@ -57,10 +57,12 @@ class ImportDataCabang extends Model
 
         // dump($cabang->id);
         // dd($data['periode']);
-        DB::delete(DB::raw("delete AkunPusatDetail 
-        WHERE isnull(cabang_id,0)=" . $cabang->id . " and bulan=cast(left('" . $data['periode'] . "',2) as integer) and tahun=cast(right('" . $data['periode'] . "',4) as integer)"));
 
         if ($web == "YA") {
+
+            DB::delete(DB::raw("delete AkunPusatDetail 
+            WHERE isnull(cabang_id,0)=" . $cabang->id . " and bulan<>0 and bulan=cast(left('" . $data['periode'] . "',2) as integer) and tahun=cast(right('" . $data['periode'] . "',4) as integer)"));
+    
 
             if (!$cabangMemo) {
                 throw ValidationException::withMessages(["message" => "Cabang Tidak Compatible Unutk di impor"]);
@@ -526,11 +528,24 @@ class ImportDataCabang extends Model
             $tahun = substr($data['periode'], -4);
             $cabang_id = $cabang->id ?? 0;
             $ptgl = $tahun . '-' . $bulan . '-01';
+
+            // $querytest=DB::table('akunpusatdetail')
+            //     ->where('bulan', '<>', 0)
+            //     ->whereRaw("bulan = " . $bulan)
+            //     ->whereRaw("tahun = " . $tahun)
+            //     ->whereRaw("cabang_id=" . $cabang_id)
+            //     ->whereRaw("cast(trim(str(" . $tahun . "))+'/'+trim(str(" . $bulan . "))+'/1' as datetime)>='" . $ptgl . "'");
+
+            //     dd($querytest->toSql());
+                
             DB::table('akunpusatdetail')
                 ->where('bulan', '<>', 0)
+                ->whereRaw("bulan = " . $bulan)
+                ->whereRaw("tahun = " . $tahun)
                 ->whereRaw("cabang_id=" . $cabang_id)
                 ->whereRaw("cast(trim(str(" . $tahun . "))+'/'+trim(str(" . $bulan . "))+'/1' as datetime)>='" . $ptgl . "'")
                 ->delete();
+
 
 
             // $subquery1 = DB::table('jurnalumumpusatheader as J')
