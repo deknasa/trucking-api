@@ -287,7 +287,9 @@ use App\Http\Controllers\Api\SuratPengantarApprovalInputTripController;
 use App\Http\Controllers\Api\ApprovalBukaTanggalSuratPengantarController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
+use App\Http\Controllers\Api\LapanganController;
 use App\Http\Controllers\Api\LaporanBiayaSupirController;
+use App\Http\Controllers\Api\OtobonController;
 use App\Http\Controllers\Api\SupirSerapController;
 
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
@@ -1783,6 +1785,14 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('laporanbiayasupir/export', [LaporanBiayaSupirController::class, 'export'])->name('laporanbiayasupir.export');
     Route::resource('laporanbiayasupir', LaporanBiayaSupirController::class)->whereNumber('laporanbiayasupir');
+    
+    Route::get('otobon/field_length', [OtobonController::class, 'fieldLength']);
+    Route::get('otobon/export', [OtobonController::class, 'export']);
+    Route::resource('otobon', OtobonController::class)->whereNumber('otobon');
+
+    Route::get('lapangan/field_length', [LapanganController::class, 'fieldLength']);
+    Route::get('lapangan/export', [LapanganController::class, 'export']);
+    Route::resource('lapangan', LapanganController::class)->whereNumber('lapangan');
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);
 
