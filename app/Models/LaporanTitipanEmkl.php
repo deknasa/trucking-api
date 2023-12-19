@@ -225,6 +225,8 @@ class LaporanTitipanEmkl  extends MyModel
                 'b.furut as uruttrado',
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
 
             )
             ->join(DB::raw($temprekapnopollist . " as b with (readuncommitted) "), 'a.fnopol', 'b.fnopol')

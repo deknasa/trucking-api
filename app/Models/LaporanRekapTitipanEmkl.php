@@ -219,6 +219,10 @@ class LaporanRekapTitipanEmkl  extends MyModel
         if ($prosesneraca == 1) {
             $data = $query;
         } else {
+            $query->addSelect(
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            );
             $data = $query->get();
         }
 
