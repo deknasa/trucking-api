@@ -919,6 +919,11 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('penerimaantruckingheader/field_length', [PenerimaanTruckingHeaderController::class, 'fieldLength']);
     Route::resource('penerimaantruckingdetail', PenerimaanTruckingDetailController::class)->whereNumber('penerimaantruckingdetail');
 
+
+    Route::get('pengeluarantruckingheader/{id}/geteditotol', [PengeluaranTruckingHeaderController::class, 'getEditOtol'])->whereNumber('id');
+    Route::get('pengeluarantruckingheader/getotol', [PengeluaranTruckingHeaderController::class, 'getOtol']);
+    Route::get('pengeluarantruckingheader/{id}/geteditotok', [PengeluaranTruckingHeaderController::class, 'getEditOtok'])->whereNumber('id');
+    Route::get('pengeluarantruckingheader/getotok', [PengeluaranTruckingHeaderController::class, 'getOtok']);
     Route::get('pengeluarantruckingheader/getinvoice', [PengeluaranTruckingHeaderController::class, 'getInvoice']);
     Route::get('pengeluarantruckingheader/{id}/geteditinvoice', [PengeluaranTruckingHeaderController::class, 'getEditInvoice'])->whereNumber('id');
     Route::get('pengeluarantruckingheader/{id}/printreport', [PengeluaranTruckingHeaderController::class, 'printReport'])->whereNumber('id');

@@ -1120,6 +1120,216 @@ class InvoiceHeader extends MyModel
         return $temp;
     }
 
+    public function getInvoiceOtok($tgldari, $tglsampai, $agen_id, $container_id)
+    {
+        $proses = request()->proses ?? 'reload';
+        $user = auth('api')->user()->name;
+        $class = 'OtobonKantorController';
+        if ($proses == 'reload') {
+            $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel a with (readuncommitted)")
+            )
+                ->select(
+                    'id',
+                    'class',
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            if (isset($querydata)) {
+                Schema::dropIfExists($querydata->namatabel);
+                $queryid = db::table('listtemporarytabel')->from(db::raw("listtemporarytabel a with (readuncommitted)"))
+                    ->select('id')->where('id', $querydata->id)->first();
+                if (isset($queryid)) {
+                    DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+                }
+            }
+
+            DB::table('listtemporarytabel')->insert(
+                [
+                    'class' => $class,
+                    'namatabel' => $temtabel,
+                    'modifiedby' => $user,
+                    'created_at' => date('Y/m/d H:i:s'),
+                    'updated_at' => date('Y/m/d H:i:s'),
+                ]
+            );
+
+
+            Schema::create($temtabel, function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('id_detail')->nullable();
+                $table->string('noinvoice_detail', 50)->nullable();
+                $table->string('nojobtrucking_detail', 50)->nullable();
+                $table->date('tglbukti')->nullable();
+                $table->double('nominal_detail', 15, 2)->nullable();
+            });
+
+            $query1 = InvoiceDetail::from(DB::raw("invoicedetail with (readuncommitted)"))
+                ->select(DB::raw("
+            invoicedetail.id as id_detail,
+            invoicedetail.nobukti as noinvoice_detail,
+            invoicedetail.orderantrucking_nobukti as nojobtrucking_detail,
+            invoiceheader.tglbukti,
+            (case when otobon.nominal IS NULL then 0 else otobon.nominal end) as nominal_detail
+
+            "))
+
+                ->leftJoin(DB::raw("invoiceheader with (readuncommitted)"), 'invoicedetail.invoice_id', 'invoiceheader.id')
+                ->leftJoin(DB::raw("otobon with (readuncommitted)"), 'invoiceheader.agen_id', 'otobon.agen_id')
+                ->whereBetween('invoiceheader.tglbukti', [$tgldari, $tglsampai])
+                ->where('otobon.agen_id', $agen_id)
+                ->where('otobon.container_id', $container_id)
+                ->whereRaw("isnull(invoicedetail.orderantrucking_nobukti, '') != ''");
+
+
+            DB::table($temtabel)->insertUsing([
+                'id_detail',
+                'noinvoice_detail',
+                'nojobtrucking_detail',
+                'tglbukti',
+                'nominal_detail',
+            ], $query1);
+        } else {
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel with (readuncommitted)")
+            )
+                ->select(
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            // dd($querydata);
+            $temtabel = $querydata->namatabel;
+        }
+        $query = db::table($temtabel)->from(db::raw($temtabel))
+            ->select(
+                'id as id_detail',
+                'noinvoice_detail',
+                'nojobtrucking_detail',
+                'tglbukti',
+                'nominal_detail',
+            )->orderBY('id');
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        $this->totalNominal = $query->sum('nominal_detail');
+        $data = $query->get();
+
+
+        return $data;
+    }
+    public function getInvoiceOtol($tgldari, $tglsampai, $agen_id, $container_id)
+    {
+        $proses = request()->proses ?? 'reload';
+        $user = auth('api')->user()->name;
+        $class = 'OtobonLapanganController';
+        if ($proses == 'reload') {
+            $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel a with (readuncommitted)")
+            )
+                ->select(
+                    'id',
+                    'class',
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            if (isset($querydata)) {
+                Schema::dropIfExists($querydata->namatabel);
+                $queryid = db::table('listtemporarytabel')->from(db::raw("listtemporarytabel a with (readuncommitted)"))
+                    ->select('id')->where('id', $querydata->id)->first();
+                if (isset($queryid)) {
+                    DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+                }
+            }
+
+            DB::table('listtemporarytabel')->insert(
+                [
+                    'class' => $class,
+                    'namatabel' => $temtabel,
+                    'modifiedby' => $user,
+                    'created_at' => date('Y/m/d H:i:s'),
+                    'updated_at' => date('Y/m/d H:i:s'),
+                ]
+            );
+
+
+            Schema::create($temtabel, function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('id_detail')->nullable();
+                $table->string('noinvoice_detail', 50)->nullable();
+                $table->string('nojobtrucking_detail', 50)->nullable();
+                $table->date('tglbukti')->nullable();
+                $table->double('nominal_detail', 15, 2)->nullable();
+            });
+
+            $query1 = InvoiceDetail::from(DB::raw("invoicedetail with (readuncommitted)"))
+                ->select(DB::raw("
+            invoicedetail.id as id_detail,
+            invoicedetail.nobukti as noinvoice_detail,
+            invoicedetail.orderantrucking_nobukti as nojobtrucking_detail,
+            invoiceheader.tglbukti,
+            (case when lapangan.nominal IS NULL then 0 else lapangan.nominal end) as nominal_detail
+
+            "))
+
+                ->leftJoin(DB::raw("invoiceheader with (readuncommitted)"), 'invoicedetail.invoice_id', 'invoiceheader.id')
+                ->leftJoin(DB::raw("lapangan with (readuncommitted)"), 'invoiceheader.agen_id', 'lapangan.agen_id')
+                ->whereBetween('invoiceheader.tglbukti', [$tgldari, $tglsampai])
+                ->where('lapangan.agen_id', $agen_id)
+                ->where('lapangan.container_id', $container_id)
+                ->whereRaw("isnull(invoicedetail.orderantrucking_nobukti, '') != ''");
+
+
+            DB::table($temtabel)->insertUsing([
+                'id_detail',
+                'noinvoice_detail',
+                'nojobtrucking_detail',
+                'tglbukti',
+                'nominal_detail',
+            ], $query1);
+        } else {
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel with (readuncommitted)")
+            )
+                ->select(
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            // dd($querydata);
+            $temtabel = $querydata->namatabel;
+        }
+        $query = db::table($temtabel)->from(db::raw($temtabel))
+            ->select(
+                'id as id_detail',
+                'noinvoice_detail',
+                'nojobtrucking_detail',
+                'tglbukti',
+                'nominal_detail',
+            )->orderBY('id');
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        $this->totalNominal = $query->sum('nominal_detail');
+        $data = $query->get();
+
+
+        return $data;
+    }
 
     public function sort($query)
     {
