@@ -223,6 +223,28 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                 ],
                 // 'keterangancoa' => 'required',
             ];
+        }elseif($kodepengeluaran == 'OTOL' || $kodepengeluaran == 'OTOK'){
+            $jumlahdetail = $this->jumlahdetail ?? 0;
+            $rules = [
+                "tglbukti" => [
+                    "required", 'date_format:d-m-Y',
+                    'before_or_equal:'.date('d-m-Y'),
+                    new DateTutupBuku()
+                ],
+                'pengeluarantrucking' => 'required','numeric', 'min:1',
+                'statusposting' => 'required',
+                'agen' => ['required', new ValidasiDetail($jumlahdetail)],
+                'containerheader' => 'required',
+                'bank' => [$ruleBank],
+                'tgldari' => [
+                    'required', 'date_format:d-m-Y',
+                ],
+                'tglsampai' => [
+                    'required', 'date_format:d-m-Y',
+                    'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
+                ],
+                // 'keterangancoa' => 'required',
+            ];
         }elseif($kodepengeluaran == 'TDE'){
             $supirheader_id = $this->supirheader_id;
             if ($supirheader_id != null) {

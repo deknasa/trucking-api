@@ -75,7 +75,7 @@ class PengeluaranTruckingHeaderController extends Controller
             $noinvoice_detail = $request->noinvoice_detail;
             $nominal = $request->nominal;
 
-            if ($fetchFormat->kodepengeluaran == "BST") {
+            if ($fetchFormat->kodepengeluaran == "BST" || $fetchFormat->kodepengeluaran == "OTOK" || $fetchFormat->kodepengeluaran == "OTOL") {
                 $detail = json_decode($request->detail);
 
                 $keterangan = $detail->keterangan;
@@ -85,7 +85,7 @@ class PengeluaranTruckingHeaderController extends Controller
             }
             if ($fetchFormat->kodepengeluaran == "KLAIM") {
                 $statusPosting = DB::table(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'POSTING')->first();
-                $request->postingpinjaman =$statusPosting->id;
+                $request->postingpinjaman = $statusPosting->id;
             }
 
             $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processStore([
@@ -96,6 +96,8 @@ class PengeluaranTruckingHeaderController extends Controller
                 "gandenganheader_id" => $request->gandenganheader_id,
                 "statuscabang" => $request->statuscabang,
                 "bank_id" => $request->bank_id,
+                "agen_id" => $request->agen_id,
+                "containerheader_id" => $request->containerheader_id,
                 "tglbukti" => $request->tglbukti,
                 "pelanggan_id" => $request->pelanggan_id,
                 "statusapproval" => $request->statusapproval,
@@ -179,6 +181,12 @@ class PengeluaranTruckingHeaderController extends Controller
         if ($data->kodepengeluaran == 'BST') {
             $pengeluaranTrucking = new PengeluaranTruckingHeader();
             $detail = $pengeluaranTrucking->getShowInvoice($id, $data->periodedari, $data->periodesampai);
+        } else if ($data->kodepengeluaran == 'OTOK') {
+            $pengeluaranTrucking = new PengeluaranTruckingHeader();
+            $detail = $pengeluaranTrucking->getEditOtok('show', $id, $data->periodedari, $data->periodesampai, $data->agen_id, $data->containerheader_id);
+        } else if ($data->kodepengeluaran == 'OTOL') {
+            $pengeluaranTrucking = new PengeluaranTruckingHeader();
+            $detail = $pengeluaranTrucking->getEditOtol('show', $id, $data->periodedari, $data->periodesampai, $data->agen_id, $data->containerheader_id);
         } else {
             $detail = PengeluaranTruckingDetail::getAll($id, $data->kodepengeluaran);
         }
@@ -237,7 +245,7 @@ class PengeluaranTruckingHeaderController extends Controller
             $noinvoice_detail = $request->noinvoice_detail;
             $nominal = $request->nominal;
 
-            if ($fetchFormat->kodepengeluaran == "BST") {
+            if ($fetchFormat->kodepengeluaran == "BST" || $fetchFormat->kodepengeluaran == "OTOK" || $fetchFormat->kodepengeluaran == "OTOL") {
                 $detail = json_decode($request->detail);
 
                 $keterangan = $detail->keterangan;
@@ -247,7 +255,7 @@ class PengeluaranTruckingHeaderController extends Controller
             }
             if ($fetchFormat->kodepengeluaran == "KLAIM") {
                 $statusPosting = DB::table(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'POSTING')->first();
-                $request->postingpinjaman =$statusPosting->id;
+                $request->postingpinjaman = $statusPosting->id;
             }
 
             $pengeluaranTruckingHeader = PengeluaranTruckingHeader::findOrfail($id);
@@ -260,6 +268,8 @@ class PengeluaranTruckingHeaderController extends Controller
                 "gandenganheader_id" => $request->gandenganheader_id,
                 "statuscabang" => $request->statuscabang,
                 "bank_id" => $request->bank_id,
+                "agen_id" => $request->agen_id,
+                "containerheader_id" => $request->containerheader_id,
                 "tglbukti" => $request->tglbukti,
                 "pelanggan_id" => $request->pelanggan_id,
                 "statusapproval" => $request->statusapproval,
@@ -657,6 +667,84 @@ class PengeluaranTruckingHeaderController extends Controller
         ]);
     }
 
+    public function getOtok(Request $request)
+    {
+        $tgldari = date('Y-m-d', strtotime($request->tgldari));
+        $tglsampai = date('Y-m-d', strtotime($request->tglsampai));
+        $agen_id = $request->agen_id;
+        $container_id = $request->container_id;
+        $invoiceHeader = new InvoiceHeader();
+        $data = $invoiceHeader->getInvoiceOtok($tgldari, $tglsampai, $agen_id, $container_id);
+        // $data = $pengeluaranTrucking->getTarikDeposito($pengeluaranTrucking->pengeluarantruckingdetail[0]->supir_id);
+        return response([
+            'status' => true,
+            'data' => $data,
+            'attributes' => [
+                'totalRows' => $invoiceHeader->totalRows,
+                'totalPages' => $invoiceHeader->totalPages,
+                'totalNominal' => $invoiceHeader->totalNominal,
+            ]
+        ]);
+    }
+    public function getEditOtok($id)
+    {
+        $pengeluaranTrucking = new PengeluaranTruckingHeader();
+        if (request()->aksi == 'show') {
+            $data = $pengeluaranTrucking->getEditOtok(request()->aksi, $id, request()->tgldari, request()->tglsampai, request()->agen_id, request()->container_id);
+        } else {
+            $data = $pengeluaranTrucking->getEditOtok(request()->aksi, $id, request()->tgldari, request()->tglsampai, request()->agen_id, request()->container_id);
+        }
+
+        return response([
+            'status' => true,
+            'data' => $data,
+            'attributes' => [
+                'totalRows' => $pengeluaranTrucking->totalRows,
+                'totalPages' => $pengeluaranTrucking->totalPages,
+                'totalNominal' => $pengeluaranTrucking->totalNominal,
+            ]
+        ]);
+    }
+
+    
+    public function getOtol(Request $request)
+    {
+        $tgldari = date('Y-m-d', strtotime($request->tgldari));
+        $tglsampai = date('Y-m-d', strtotime($request->tglsampai));
+        $agen_id = $request->agen_id;
+        $container_id = $request->container_id;
+        $invoiceHeader = new InvoiceHeader();
+        $data = $invoiceHeader->getInvoiceOtol($tgldari, $tglsampai, $agen_id, $container_id);
+        // $data = $pengeluaranTrucking->getTarikDeposito($pengeluaranTrucking->pengeluarantruckingdetail[0]->supir_id);
+        return response([
+            'status' => true,
+            'data' => $data,
+            'attributes' => [
+                'totalRows' => $invoiceHeader->totalRows,
+                'totalPages' => $invoiceHeader->totalPages,
+                'totalNominal' => $invoiceHeader->totalNominal,
+            ]
+        ]);
+    }
+    public function getEditOtol($id)
+    {
+        $pengeluaranTrucking = new PengeluaranTruckingHeader();
+        if (request()->aksi == 'show') {
+            $data = $pengeluaranTrucking->getEditOtol(request()->aksi, $id, request()->tgldari, request()->tglsampai, request()->agen_id, request()->container_id);
+        } else {
+            $data = $pengeluaranTrucking->getEditOtol(request()->aksi, $id, request()->tgldari, request()->tglsampai, request()->agen_id, request()->container_id);
+        }
+
+        return response([
+            'status' => true,
+            'data' => $data,
+            'attributes' => [
+                'totalRows' => $pengeluaranTrucking->totalRows,
+                'totalPages' => $pengeluaranTrucking->totalPages,
+                'totalNominal' => $pengeluaranTrucking->totalNominal,
+            ]
+        ]);
+    }
 
     public function fieldLength()
     {
@@ -795,12 +883,23 @@ class PengeluaranTruckingHeaderController extends Controller
     public function pengeluarantruckingdepositokaryawan()
     {
     }
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingotobon()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingbiayalapangan()
+    {
+    }
 
-        /**
+    /**
      * @ClassName 
      */
     public function approvalbukacetak()
     {
     }
-
 }
