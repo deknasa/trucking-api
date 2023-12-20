@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Models\ApprovalTradoGambar;
-use App\Http\Requests\StoreApprovalTradoGambarRequest;
-use App\Http\Requests\StoreLogTrailRequest;
-use App\Http\Requests\UpdateApprovalTradoGambarRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\ApprovalTradoGambar;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\StoreApprovalTradoGambarRequest;
+use App\Http\Requests\UpdateApprovalTradoGambarRequest;
 
 class ApprovalTradoGambarController extends Controller
 {
@@ -19,8 +19,12 @@ class ApprovalTradoGambarController extends Controller
     public function index()
     {
         $approvalTradoGambar = new ApprovalTradoGambar();
+        $data = $approvalTradoGambar->get();
+        if (isset(request()->trado_id)) {
+            $data = $approvalTradoGambar->firstOrFind(request()->trado_id);
+        }
         return response([
-            'data' => $approvalTradoGambar->get(),
+            'data' => $data,
             'attributes' => [
                 'totalRows' => $approvalTradoGambar->totalRows,
                 'totalPages' => $approvalTradoGambar->totalPages
@@ -56,7 +60,6 @@ class ApprovalTradoGambarController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
             }
 
-            DB::commit();
             $selected = $this->getPosition($approvalTradoGambar, $approvalTradoGambar->getTable());
             $approvalTradoGambar->position = $selected->position;
             if ($request->limit==0) {
@@ -64,7 +67,7 @@ class ApprovalTradoGambarController extends Controller
             } else {
                 $approvalTradoGambar->page = ceil($approvalTradoGambar->position / ($request->limit ?? 10));
             }
-
+            DB::commit();
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -161,7 +164,6 @@ class ApprovalTradoGambarController extends Controller
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
             }
 
-            DB::commit();
             $selected = $this->getPosition($approvaltradogambar, $approvaltradogambar->getTable());
             $approvaltradogambar->position = $selected->position;
             if ($request->limit==0) {
@@ -169,7 +171,8 @@ class ApprovalTradoGambarController extends Controller
             } else {
                 $approvaltradogambar->page = ceil($approvaltradogambar->position / ($request->limit ?? 10));
             }
-
+            
+            DB::commit();
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',

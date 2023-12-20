@@ -35,6 +35,12 @@ class UpdateTradoRequest extends FormRequest
     {
         $ruleGambar = Rule::requiredIf(function () {
             $kodeTrado = request()->kodetrado;
+            $requiredDefault  = true;
+            $nonAktif = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->select('id')
+                ->where("grp","STATUS AKTIF")
+                ->where("text","NON AKTIF")
+                ->first();
             $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->whereRaw("grp like '%STATUS APPROVAL%'")
                 ->whereRaw("text like '%NON APPROVAL%'")
@@ -48,23 +54,31 @@ class UpdateTradoRequest extends FormRequest
                 ->where('subgrp', 'STATUS ABSENSI SUPIR')
                 ->where('text', 'NON ABSENSI SUPIR')
                 ->first()->id ?? 0;
+            if ($nonAktif->id == request()->statusaktif) {
+                $requiredDefault = false;
+            }
             if ($cekValidasi != '') {
                 if ($cekValidasi->statusapproval == $nonApp->id) {
                     return true;
                 } else {
-                    if (date('Y-m-d') > $cekValidasi->tglbatas) {
-                        return true;
+                    if (date('Y-m-d') < $cekValidasi->tglbatas) {
+                        return false;
                     }
-                    return false;
                 }
             } else if ($tradononabsensi == request()->statusabsensisupir) {
                 return false;
             }
-            return true;
+            return $requiredDefault;
         });
 
         $ruleKeterangan = Rule::requiredIf(function () {
             $kodetrado = request()->kodetrado;
+            $requiredDefault  = true;
+            $nonAktif = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->select('id')
+                ->where("grp","STATUS AKTIF")
+                ->where("text","NON AKTIF")
+                ->first();
             $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->whereRaw("grp like '%STATUS APPROVAL%'")
                 ->whereRaw("text like '%NON APPROVAL%'")
@@ -80,6 +94,9 @@ class UpdateTradoRequest extends FormRequest
                 ->where('text', 'NON ABSENSI SUPIR')
                 ->first()->id ?? 0;
 
+            if ($nonAktif->id == request()->statusaktif) {
+                $requiredDefault = false;
+            }
             if ($cekValidasi != '') {
                 if ($cekValidasi->statusapproval == $nonApp->id) {
                     return false;
@@ -91,7 +108,7 @@ class UpdateTradoRequest extends FormRequest
             } else if ($tradononabsensi == request()->statusabsensisupir) {
                 return false;
             }
-            return true;
+            return $requiredDefault;
         });
 
         $parameter = new Parameter();
