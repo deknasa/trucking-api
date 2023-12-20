@@ -938,6 +938,8 @@ class PenerimaanStokHeader extends MyModel
             ->leftJoin('hutangheader', 'penerimaanstokheader.hutang_nobukti', 'hutangheader.nobukti')
             ->leftJoin('pengeluaranstokheader as pengeluaranstok', 'penerimaanstokheader.pengeluaranstok_nobukti', 'pengeluaranstok.nobukti')
             ->leftJoin('penerimaanstokheader as nobuktipenerimaanstok', 'nobuktipenerimaanstok.nobukti', 'penerimaanstokheader.penerimaanstok_nobukti')
+            ->leftJoin('penerimaanstokheader as nobuktispb', 'penerimaanstokheader.nobukti', 'nobuktispb.penerimaanstok_nobukti')
+
             ->leftJoin('supplier', 'penerimaanstokheader.supplier_id', 'supplier.id');
         $data = $query->where("$this->table.id", $id)->first();
 
