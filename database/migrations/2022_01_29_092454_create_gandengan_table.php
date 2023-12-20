@@ -18,6 +18,7 @@ class CreateGandenganTable extends Migration
             $table->string('kodegandengan', 300)->nullable();
             $table->string('keterangan', 300)->nullable();
             $table->unsignedBigInteger('trado_id')->nullable();
+            $table->unsignedBigInteger('container_id')->nullable();
             $table->integer('jumlahroda')->length(11)->nullable();
             $table->integer('jumlahbanserap')->length(11)->nullable();
             $table->integer('statusaktif')->length(11)->nullable();

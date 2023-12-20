@@ -85,7 +85,7 @@ class LaporanNeraca extends MyModel
 
         if ($eksport == 1) {
 
-            if ($cabang_id == $getcabangid) {
+            if ($cabang_id == $getcabangid && $getcabangid != 1) {
                 DB::table('akunpusatdetail')
                     ->where('bulan', '<>', 0)
                     ->whereRaw("cabang_id=" . $cabang_id)
