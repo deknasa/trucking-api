@@ -46,12 +46,21 @@ class ImportDataCabang extends Model
             // DB::delete(DB::raw("delete  JurnalUmumPusatheader from JurnalUmumPusatheader as b 
             // WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and format(b.tglbukti,'MM-yyyy')='" . $data['periode'] . "'"));
 
-
-            DB::delete(DB::raw("delete  JurnalUmumPusatdetail from JurnalUmumPusatdetail as a inner join JurnalUmumPusatHeader b on a.nobukti=b.nobukti 
-            WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and b.tglbukti>='" . $periode1 . "'"));
-
-            DB::delete(DB::raw("delete  JurnalUmumPusatheader from JurnalUmumPusatheader as b 
-            WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and b.tglbukti>='" . $periode1 . "'"));
+            if ($singkatan='PST') {
+                DB::delete(DB::raw("delete  JurnalUmumPusatdetail from JurnalUmumPusatdetail as a inner join JurnalUmumPusatHeader b on a.nobukti=b.nobukti 
+                WHERE (isnull(b.cabang_id,0)=" . $cabang->id . " or isnull(b.cabang_id,0)=0) and b.tglbukti>='" . $periode1 . "'"));
+    
+                DB::delete(DB::raw("delete  JurnalUmumPusatheader from JurnalUmumPusatheader as b 
+                WHERE (isnull(b.cabang_id,0)=" . $cabang->id . " or isnull(b.cabang_id,0)=0)  and b.tglbukti>='" . $periode1 . "'"));
+    
+            } else {
+                DB::delete(DB::raw("delete  JurnalUmumPusatdetail from JurnalUmumPusatdetail as a inner join JurnalUmumPusatHeader b on a.nobukti=b.nobukti 
+                WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and b.tglbukti>='" . $periode1 . "'"));
+    
+                DB::delete(DB::raw("delete  JurnalUmumPusatheader from JurnalUmumPusatheader as b 
+                WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and b.tglbukti>='" . $periode1 . "'"));
+    
+            }
         }
 
 
@@ -327,7 +336,51 @@ class ImportDataCabang extends Model
             $year = substr($data['periode'], -4);
             $aptgl = '2023-10-01';
 
-            $queryloop = DB::connection('sqlsrv2')->table("j_happ")->from(db::raw("j_happ a with (readuncommitted)"))
+            if ($singkatan='PST') {
+                $queryloop = DB::connection('sqlsrv2')->table("j_happ")->from(db::raw("j_happ a with (readuncommitted)"))
+                ->select(
+                    db::raw("0 as header_id"),
+                    'a.fntrans as header_nobukti',
+                    'a.ftgl as header_tglbukti',
+                    db::raw("format(a.ftgl,'MM-yyyy') as header_tglbuktiformat"),
+                    'a.fket as header_keterangan',
+                    'a.fpostfrom as header_postingdari',
+                    db::raw("(case when isnull(a.fisapp,0)=1 then 3 else 4 end) as header_statusapproval"),
+                    'a.appuserid as header_userapproval',
+                    'a.appdate as header_tglapproval',
+                    db::raw("0 as header_statusformat"),
+                    db::raw("'' as header_info"),
+                    'a.fuserid as header_modifiedby',
+                    'a.ftglinput as header_created_at',
+                    'a.ftglinput as header_updated_at',
+                    db::raw("'" . $cabang->namacabang . "' as header_cabang"),
+                    db::raw("(case when isnull(a.fkcabang,'')='' then 0 else " .$cabang->id . " end) as header_cabang_id"),
+                    db::raw("0 as detail_id"),
+                    db::raw("0 as detail_jurnalumumpusat_id"),
+                    'b.fntrans as detail_nobukti',
+                    'b.ftgl as detail_tglbukti',
+                    db::raw("format(b.ftgl,'MM-yyyy') as detail_tglbuktiformat"),
+                    'b.fcoa as detail_coa',
+                    'b.fcoamain as detail_coamain',
+                    'b.fnominal as detail_nominal',
+                    'b.fket as detail_keterangan',
+                    db::raw("0 as detail_baris"),
+                    db::raw("'' as detail_info"),
+                    'b.fuserid as detail_modifiedby',
+                    'b.ftglinput as detail_created_at',
+                    'b.ftglinput as detail_updated_at',
+                )
+                ->join(db::raw("j_rapp b with (readuncommitted)"), 'a.fntrans', 'b.fntrans')
+                ->whereRaw("MONTH(b.ftgl) = " . $month)
+                ->whereRaw("YEAR(b.ftgl) = " . $year)
+                ->whereRaw("a.ftgl >='" . $aptgl . "'")
+                ->whereRaw("(a.FKcabang='" . $singkatan . "' or isnull(A.fkcabang,'')='')")
+
+                ->orderby('a.fntrans', 'asc')
+                ->orderby('b.fpostid', 'asc')
+                ->get();
+            } else {
+                $queryloop = DB::connection('sqlsrv2')->table("j_happ")->from(db::raw("j_happ a with (readuncommitted)"))
                 ->select(
                     db::raw("0 as header_id"),
                     'a.fntrans as header_nobukti',
@@ -369,6 +422,9 @@ class ImportDataCabang extends Model
                 ->orderby('a.fntrans', 'asc')
                 ->orderby('b.fpostid', 'asc')
                 ->get();
+            }
+
+           
 
                 // dd($queryloop->toSql());
 
