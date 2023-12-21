@@ -316,6 +316,12 @@ class ImportDataCabang extends Model
             foreach ($konsolidasiakunpusatdetail as $item3) {
                 $Akunpusatdetail = new AkunPusatDetail();
                 $Akunpusatdetail->coa = $item3['coa'];
+                if ($item3['coa']=='05.03.01.02' || $item3['coa']=='05.03.01.07' || $item3['coa']=='05.03.01.01' || $item3['coa']=='05.03.01.03' || $item3['coa']=='05.03.01.04' || $item3['coa']=='05.03.01.05') {
+                    $Akunpusatdetail->coagroup ='05.03.01.01';
+                } else {
+                    $Akunpusatdetail->coagroup ='';
+                }
+
                 $Akunpusatdetail->bulan = $item3['bulan'];
                 $Akunpusatdetail->tahun = $item3['tahun'];
                 $Akunpusatdetail->nominal = $item3['nominal'];
@@ -673,6 +679,13 @@ class ImportDataCabang extends Model
             foreach ($konsolidasicoar as $item2) {
                 $akunPusatDetail = new AkunPusatDetail();
                 $akunPusatDetail->coa = mb_convert_encoding($item2['coa'],  $encode, 'UTF-8');
+ 
+                if ($item2['coa']=='05.03.01.02' || $item2['coa']=='05.03.01.07' || $item2['coa']=='05.03.01.01' || $item2['coa']=='05.03.01.03' || $item2['coa']=='05.03.01.04' || $item2['coa']=='05.03.01.05') {
+                    $akunPusatDetail->coagroup ='05.03.01.01';
+                } else {
+                    $akunPusatDetail->coagroup ='';
+                }
+                
                 $akunPusatDetail->tahun = mb_convert_encoding($item2['tahun'],  $encode, 'UTF-8');
                 $akunPusatDetail->bulan = mb_convert_encoding($item2['bulan'],  $encode, 'UTF-8');
                 $akunPusatDetail->cabang_id = $data['cabang'];

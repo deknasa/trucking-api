@@ -160,6 +160,7 @@ class LaporanNeraca extends MyModel
             Schema::create($tempAkunPusatDetail, function ($table) {
                 $table->bigIncrements('id');
                 $table->string('coa', 50)->nullable();
+                $table->string('coagroup', 50)->nullable();
                 $table->integer('bulan')->nullable();
                 $table->integer('tahun')->nullable();
                 $table->double('nominal')->nullable();
@@ -173,6 +174,7 @@ class LaporanNeraca extends MyModel
             )
                 ->select(
                     'coa',
+                    db::raw("null as coagroup"),
                     'bulan',
                     'tahun',
                     'nominal',
@@ -187,6 +189,7 @@ class LaporanNeraca extends MyModel
 
             DB::table($tempAkunPusatDetail)->insertUsing([
                 'coa',
+                'coagroup',
                 'bulan',
                 'tahun',
                 'nominal',
@@ -196,25 +199,53 @@ class LaporanNeraca extends MyModel
 
             ], $queryTempSaldoAkunPusatDetail);
 
-            $queryTempAkunPusatDetail = DB::table('akunpusatdetail')->from(
-                DB::raw('akunpusatdetail')
-            )
-                ->select(
-                    'coa',
-                    'bulan',
-                    'tahun',
-                    'nominal',
-                    'modifiedby',
-                    'created_at',
-                    'updated_at'
-
+            if ($cabang='SEMUA') {
+                $queryTempAkunPusatDetail = DB::table('akunpusatdetail')->from(
+                    DB::raw('akunpusatdetail')
                 )
-                ->whereRaw("(cabang_id=" .  $cabang_id . " or " . $cabang_id . "=0)")
-                ->whereRaw("(cabang_id=" .  $cabang_id . " or " . $cabang_id . "=0)")
-                ->orderBy('id', 'asc');
+                    ->select(
+                        db::raw("(case when isnull(coagroup,'')<>'' and '".$cabang. "' = 'SEMUA' then isnull(coagroup,'') else coa end) as coa"),
+                        // 'coa',
+                        'coagroup',
+                        'bulan',
+                        'tahun',
+                        'nominal',
+                        'modifiedby',
+                        'created_at',
+                        'updated_at'
+    
+                    )
+                    ->whereRaw("(cabang_id=" .  $cabang_id . " or " . $cabang_id . "=0)")
+                    ->whereRaw("(cabang_id=" .  $cabang_id . " or " . $cabang_id . "=0)")
+                    ->orderBy('id', 'asc');
+    
+            } else {
+                $queryTempAkunPusatDetail = DB::table('akunpusatdetail')->from(
+                    DB::raw('akunpusatdetail')
+                )
+                    ->select(
+                        // db::raw("(case when isnull(coagroup,'')<>'' and '".$cabang. "' = 'SEMUA' then isnull(coagroup,'') else coa end) as coa"),
+                        'coa',
+                        'coagroup',
+                        'bulan',
+                        'tahun',
+                        'nominal',
+                        'modifiedby',
+                        'created_at',
+                        'updated_at'
+    
+                    )
+                    ->whereRaw("(cabang_id=" .  $cabang_id . " or " . $cabang_id . "=0)")
+                    ->whereRaw("(cabang_id=" .  $cabang_id . " or " . $cabang_id . "=0)")
+                    ->orderBy('id', 'asc');
+    
+            }
+
+            
 
             DB::table($tempAkunPusatDetail)->insertUsing([
                 'coa',
+                'coagroup',
                 'bulan',
                 'tahun',
                 'nominal',
@@ -224,11 +255,14 @@ class LaporanNeraca extends MyModel
 
             ], $queryTempAkunPusatDetail);
 
+            // dd(db::table($tempAkunPusatDetail)->where('coa','05.03.01.01')->get());
+
             $tempquery1 = '##tempquery1' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempquery1, function ($table) {
                 $table->bigIncrements('id');
                 $table->string('type', 500)->nullable();
                 $table->string('coa', 500)->nullable();
+                $table->string('coagroup', 500)->nullable();
                 $table->string('keterangancoa', 500)->nullable();
                 $table->string('parent', 500)->nullable();
                 $table->integer('statusaktif')->nullable();
@@ -248,7 +282,9 @@ class LaporanNeraca extends MyModel
             $query1 = db::table('mainakunpusat')->from(db::raw("mainakunpusat c with (readuncommitted)"))
                 ->select(
                     'c.type',
+                    // db::raw("(case when isnull(coagroup,'')<>'' and '".$cabang. "' = 'SEMUA' then isnull(coagroup,'') else coa end) as coa"),
                     'c.coa',
+                    'cd.coagroup',
                     'c.keterangancoa',
                     'c.parent',
                     'c.statusaktif',
@@ -268,6 +304,7 @@ class LaporanNeraca extends MyModel
             DB::table($tempquery1)->insertUsing([
                 'type',
                 'coa',
+                'coagroup',
                 'keterangancoa',
                 'parent',
                 'statusaktif',
@@ -312,6 +349,7 @@ class LaporanNeraca extends MyModel
                     db::raw("max(d.type) as type"),
                     db::raw("max(d.keterangantype) as keterangantype"),
                     'd.coa',
+                    // db::raw("(case when isnull(d.coagroup,'')='' then d.coa else isnull(d.coagroup,'') end) as coa"),
                     db::raw("max(d.parent) as parent"),
                     'd.keterangancoa',
                     db::raw("( CASE d.akuntansi_id WHEN 1 THEN round(SUM(d.Nominal),2) ELSE round(SUM(d.Nominal * -1),2) END)  AS nominal"),
@@ -329,6 +367,7 @@ class LaporanNeraca extends MyModel
                 ->where('d.order', '<', 4000)
                 ->groupBy('d.akuntansi_id')
                 ->groupBy('d.order')
+                // ->groupBy(db::raw("(case when isnull(d.coagroup,'')='' then d.coa else isnull(d.coagroup,'') end)"))
                 ->groupBy('d.coa')
                 ->groupBy('d.keterangancoa');
             // ->having(DB::raw('sum(d.nominal)'), '<>', 0);
@@ -359,6 +398,7 @@ class LaporanNeraca extends MyModel
                 ->where('subgrp', 'JUDULAN LAPORAN')
                 ->first();
 
+               
             $data = db::table($tempquery2)->from(db::raw($tempquery2 . " xx"))
                 ->select(
                     'xx.TipeMaster',

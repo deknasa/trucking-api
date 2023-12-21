@@ -16,6 +16,7 @@ class CreateAkunpusatdetailTable extends Migration
         Schema::create('akunpusatdetail', function (Blueprint $table) {
             $table->id();
             $table->string('coa', 50)->nullable();
+            $table->string('coagroup', 50)->nullable();
             $table->integer('bulan')->length(11)->nullable();
             $table->integer('tahun')->length(11)->nullable();
             $table->unsignedBigInteger('cabang_id')->nullable();
