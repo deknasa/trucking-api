@@ -786,9 +786,11 @@ class PenerimaanStokDetail extends MyModel
             ->where('stok_id',$stok_id)
             ->where('nobukti','<>',$penerimaanStokDetail->nobukti)
             ->groupBy('stok_id')->first();
-            $hasilAkhir = $ks->qty + $qtyInput;
-            if ($hasilAkhir < 0 ) {
-                throw ValidationException::withMessages(["qty" => "$penerimaanStokDetail->stok Sudah terpakai"]);
+            if ($ks) {
+                $hasilAkhir = $ks->qty + $qtyInput;
+                if ($hasilAkhir < 0 ) {
+                    throw ValidationException::withMessages(["qty" => "$penerimaanStokDetail->stok Sudah terpakai"]);
+                }
             }
 
         }
