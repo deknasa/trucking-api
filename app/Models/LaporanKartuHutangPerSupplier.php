@@ -83,6 +83,9 @@ class LaporanKartuHutangPerSupplier extends MyModel
         Schema::create($temphutangsaldo, function ($table) {
             $table->string('nobukti', 100)->nullable();
             $table->double('nominal')->nullable();
+
+            $table->index('nobukti', 'temphutangsaldo_nobukti_index');
+
         });
 
         $queryhutangsaldo = db::table('hutangheader')->from(db::raw("hutangheader a with (readuncommitted)"))
@@ -99,6 +102,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             'nobukti',
             'nominal',
         ], $queryhutangsaldo);
+      
 
         $querypelunasansaldo = db::table('pelunasanhutangheader')->from(db::raw("pelunasanhutangheader a with (readuncommitted)"))
             ->select(
@@ -147,10 +151,14 @@ class LaporanKartuHutangPerSupplier extends MyModel
             ->whereRaw("(a.supplier_id>=" . $supplierdari . " and a.supplier_id<=" . $suppliersampai . ")")
             ->groupby('a.nobukti');
 
+           
+
         DB::table($temprekaphutang)->insertUsing([
             'nobukti',
             'nominal',
         ], $queryrekaphutang);
+
+     
 
         // dd('test');
         $temprekapdata = '##temprekapdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -166,6 +174,9 @@ class LaporanKartuHutangPerSupplier extends MyModel
             $table->dateTime('tglberjalan');
             $table->string('jenishutang', 50);
             $table->integer('urut')->nullable();
+
+            $table->index('nobukti', 'temprekapdata_nobukti_index');
+            $table->index('nobukti', 'temprekapdata_supplier_id_index');
         });
 
 
@@ -184,7 +195,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
                 )
             ->join(db::raw("hutangheader b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
             ->leftjoin(db::raw("penerimaanstokheader c with (readuncommitted) "), 'b.nobukti', 'c.hutang_nobukti');
-
+           
         DB::table($temprekapdata)->insertUsing([
             'supplier_id',
             'nobukti',
@@ -198,7 +209,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             'urut',
         ], $queryrekapdata);
 
-
+       
         $queryrekapdata = db::table($temprekaphutang)->from(db::raw($temprekaphutang . " a  "))
             ->select(
                 'b.supplier_id',
@@ -216,6 +227,8 @@ class LaporanKartuHutangPerSupplier extends MyModel
             ->join(db::raw("pelunasanhutangdetail c with (readuncommitted) "), 'a.nobukti', 'c.hutang_nobukti')
             ->join(db::raw("pelunasanhutangheader d with (readuncommitted) "), 'c.nobukti', 'd.nobukti')
             ->whereRaw("(d.tglbukti>='" . $dari1 . "' and d.tglbukti<='" . $sampai . "')");
+
+          
 
         DB::table($temprekapdata)->insertUsing([
             'supplier_id',
@@ -248,7 +261,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             $table->string('jenishutang', 50)->nullable();
             $table->integer('urut')->nullable();
         });
-
+    
         $queryrekaphasil = db::table($temprekapdata)->from(db::raw($temprekapdata . " a  "))
             ->select(
                 'b.namasupplier as supplier_id',
@@ -287,7 +300,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             'jenishutang',
             'urut',
         ], $queryrekaphasil);
-
+        // dd('test4');
         $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
             ->select('text')
             ->where('grp', 'DISETUJUI')
@@ -297,6 +310,25 @@ class LaporanKartuHutangPerSupplier extends MyModel
             ->select('text')
             ->where('grp', 'DIPERIKSA')
             ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
+    $temprekapuji = '##temprekapuji' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+    Schema::create($temprekapuji, function ($table) {
+        $table->id();
+        $table->string('supplier_id_jenishutang',500)->nullable();
+        $table->string('nobukti', 50);
+        $table->dateTime('tglbukti');
+        $table->double('nominalhutang')->nullable();
+        $table->dateTime('tglbayar');
+        $table->double('nominalbayar')->nullable();
+        $table->string('nobuktihutang', 50);
+        $table->dateTime('tglberjalan');
+        $table->string('jenishutang', 50);
+        $table->integer('urut')->nullable();
+
+        $table->index('nobukti', 'temprekapdata_nobukti_index');
+        $table->index('nobukti', 'temprekapdata_supplier_id_index');
+    });
+    
 
 $queryurut=db::table($temprekaphasil)->from(db::raw($temprekaphasil . " a"))
 ->select(
@@ -312,6 +344,8 @@ $queryurut=db::table($temprekaphasil)->from(db::raw($temprekaphasil . " a"))
     $xuji='';
     $xnobukti='';
     $xnobuktihutang='';
+
+    
 
     DB::update(DB::raw("UPDATE " . $temprekaphasil . " SET urut=0"));
     $urut=0;
