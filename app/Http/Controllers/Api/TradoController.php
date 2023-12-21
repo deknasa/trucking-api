@@ -695,4 +695,18 @@ class TradoController extends Controller
             throw $th;
         }
     }
+     
+    /**
+     * @ClassName 
+     */
+    public function historyMandor()
+    {
+    }
+     
+    /**
+     * @ClassName 
+     */
+    public function historySupir()
+    {
+    }
 }

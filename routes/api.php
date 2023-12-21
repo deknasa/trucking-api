@@ -820,6 +820,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
 
+    Route::post('supir/historymandor', [SupirController::class, 'historyMandor']);
+    Route::get('supir/{id}/gethistorymandor', [SupirController::class, 'getHistoryMandor']);
     Route::get('supir/combo', [SupirController::class, 'combo']);
     Route::get('supir/field_length', [SupirController::class, 'fieldLength']);
     Route::get('supir/getsupirresign', [SupirController::class, 'getSupirResign']);
@@ -1314,6 +1316,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pengeluarandetail/getPengeluaran', [PengeluaranDetailController::class, 'getPengeluaran']);
     Route::resource('pengeluarandetail', PengeluaranDetailController::class)->whereNumber('pengeluarandetail');
 
+    Route::post('penerimaangiroheader/approvalkacab', [PenerimaanGiroHeaderController::class, 'approvalKacab']);
     Route::post('penerimaangiroheader/editingat', [PenerimaanGiroHeaderController::class, 'editingat']);
     Route::post('penerimaangiroheader/addrow', [PenerimaanGiroDetailController::class, 'addrow']);
     Route::post('penerimaangiroheader/{id}/approval', [PenerimaanGiroHeaderController::class, 'approval'])->name('penerimaangiroheader.approval')->whereNumber('id');

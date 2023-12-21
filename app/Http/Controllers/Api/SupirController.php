@@ -7,6 +7,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StoreSupirRequest;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\HistorySupirMilikMandorRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\UpdateSupirRequest;
 use App\Models\Supir;
@@ -400,7 +401,7 @@ class SupirController extends Controller
             ];
 
             $supir = (new Supir())->processUpdate($supir, $data);
-            
+
             $supir->position = $this->getPosition($supir, $supir->getTable())->position;
             if ($request->limit == 0) {
                 $supir->page = ceil($supir->position / (10));
@@ -798,6 +799,43 @@ class SupirController extends Controller
         $noktp = $request->noktp;
         return response([
             'data' => $supir->getSupirResignModel($noktp)
+        ]);
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function historyMandor(HistorySupirMilikMandorRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+          
+            $data = [
+                'id' => $request->id,
+                'mandorbaru_id' => $request->mandorbaru_id,
+                'tglberlaku' => $request->tglberlaku,
+            ];
+
+            $supir = (new Supir())->processHistorySupirMilikMandor($data);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $supir
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+    
+    public function getHistoryMandor($id)
+    {        
+        return response([
+            'data' => (new Supir())->getHistoryMandor($id)
         ]);
     }
 }
