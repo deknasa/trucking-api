@@ -16,6 +16,7 @@ class CreateSaldoakunpusatdetailTable extends Migration
         Schema::create('saldoakunpusatdetail', function (Blueprint $table) {
             $table->id();
             $table->string('coa', 50)->nullable();
+            $table->string('coagroup', 50)->nullable();
             $table->integer('bulan')->length(11)->nullable();
             $table->integer('tahun')->length(11)->nullable();
             $table->double('nominal',15,2)->nullable();      
