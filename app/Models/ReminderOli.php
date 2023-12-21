@@ -782,6 +782,7 @@ class ReminderOli extends MyModel
         Schema::create($tempolimesin, function ($table) {
             $table->id();
             $table->longText('nopol')->nullable();
+            $table->integer('trado_id')->nullable();
             $table->date('tanggal')->nullable();
             $table->string('status', 100)->nullable();
             $table->double('km', 15, 2)->nullable();
@@ -793,6 +794,7 @@ class ReminderOli extends MyModel
             Schema::create($tempgorupby, function ($table) {
                 $table->id();
                 $table->longText('nopol')->nullable();
+                $table->integer('trado_id')->nullable();
                 $table->date('tanggal')->nullable();
                 $table->string('status', 100)->nullable();
                 $table->double('km', 15, 2)->nullable();
@@ -802,6 +804,7 @@ class ReminderOli extends MyModel
 
             DB::table($tempgorupby)->insertUsing([
                 'nopol',
+                'trado_id',
                 'tanggal',
                 'status',
                 'km',
@@ -943,6 +946,7 @@ class ReminderOli extends MyModel
         Schema::create($tempolipersneling, function ($table) {
             $table->id();
             $table->longText('nopol')->nullable();
+            $table->integer('trado_id')->nullable();
             $table->date('tanggal')->nullable();
             $table->string('status', 100)->nullable();
             $table->double('km', 15, 2)->nullable();
@@ -954,6 +958,7 @@ class ReminderOli extends MyModel
             Schema::create($tempgorupby, function ($table) {
                 $table->id();
                 $table->longText('nopol')->nullable();
+                $table->integer('trado_id')->nullable();
                 $table->date('tanggal')->nullable();
                 $table->string('status', 100)->nullable();
                 $table->double('km', 15, 2)->nullable();
@@ -963,6 +968,7 @@ class ReminderOli extends MyModel
 
             DB::table($tempgorupby)->insertUsing([
                 'nopol',
+                'trado_id',
                 'tanggal',
                 'status',
                 'km',
@@ -1104,6 +1110,7 @@ class ReminderOli extends MyModel
         Schema::create($tempoligardan, function ($table) {
             $table->id();
             $table->longText('nopol')->nullable();
+            $table->integer('trado_id')->nullable();
             $table->date('tanggal')->nullable();
             $table->string('status', 100)->nullable();
             $table->double('km', 15, 2)->nullable();
@@ -1115,6 +1122,7 @@ class ReminderOli extends MyModel
             Schema::create($tempgorupby, function ($table) {
                 $table->id();
                 $table->longText('nopol')->nullable();
+                $table->integer('trado_id')->nullable();
                 $table->date('tanggal')->nullable();
                 $table->string('status', 100)->nullable();
                 $table->double('km', 15, 2)->nullable();
@@ -1124,6 +1132,7 @@ class ReminderOli extends MyModel
 
             DB::table($tempgorupby)->insertUsing([
                 'nopol',
+                'trado_id',
                 'tanggal',
                 'status',
                 'km',
@@ -1265,6 +1274,7 @@ class ReminderOli extends MyModel
         Schema::create($tempsaringanhawa, function ($table) {
             $table->id();
             $table->longText('nopol')->nullable();
+            $table->integer('trado_id')->nullable();
             $table->date('tanggal')->nullable();
             $table->string('status', 100)->nullable();
             $table->double('km', 15, 2)->nullable();
@@ -1276,6 +1286,7 @@ class ReminderOli extends MyModel
             Schema::create($tempgorupby, function ($table) {
                 $table->id();
                 $table->longText('nopol')->nullable();
+                $table->integer('trado_id')->nullable();
                 $table->date('tanggal')->nullable();
                 $table->string('status', 100)->nullable();
                 $table->double('km', 15, 2)->nullable();
@@ -1285,6 +1296,7 @@ class ReminderOli extends MyModel
 
             DB::table($tempgorupby)->insertUsing([
                 'nopol',
+                'trado_id',
                 'tanggal',
                 'status',
                 'km',
