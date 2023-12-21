@@ -81,6 +81,8 @@ class CreateTradoTable extends Migration
             $table->string('userapprovalremindersaringanhawa', 50)->nullable();
             $table->date('tglapprovalremindersaringanhawa')->nullable();
             $table->dateTime('tglbatasremindersaringanhawa')->nullable();            
+            $table->dateTime('tglberlakumilikmandor')->nullable();            
+            $table->dateTime('tglberlakumiliksupir')->nullable();            
             $table->longText('info')->nullable();
             $table->string('modifiedby', 30)->nullable();
             $table->timestamps();
