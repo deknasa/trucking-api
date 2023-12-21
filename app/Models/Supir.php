@@ -1370,4 +1370,49 @@ class Supir extends MyModel
             return true;
         }
     }
+
+    public function getHistoryMandor($id)
+    {
+        $query = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))
+            ->select(
+                'supir.id',
+                'supir.namasupir as supir',
+                'supir.mandor_id',
+                'mandor.namamandor as mandor',
+                DB::raw('ISNULL(supir.tglberlakumilikmandor, getdate()) as tglberlaku'),
+            )
+            ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'supir.mandor_id', 'mandor.id')
+            ->where('supir.id', $id)
+            ->first();
+
+        return $query;
+    }
+
+    public function processHistorySupirMilikMandor($data)
+    {
+        $supir = Supir::findOrFail($data['id']);
+        $supir->mandor_id = $data['mandorbaru_id'];
+        $supir->tglberlakumilikmandor = date('Y-m-d', strtotime($data['tglberlaku']));
+        
+        if (!$supir->save()) {
+            throw new \Exception("Error updating supir milik mandor.");
+        }
+        $dataLogtrail = [
+            'id' => $supir->id,
+            'namasupir' => $supir->namasupir,
+            'mandor_id' => $supir->mandor_id,
+            'tglberlakumilikmandor' => $supir->tglberlakumilikmandor,
+
+        ];
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($supir->getTable()),
+            'postingdari' => 'HISTORY SUPIR MILIK MANDOR',
+            'idtrans' => $supir->id,
+            'nobuktitrans' => $supir->id,
+            'aksi' => 'HISTORY SUPIR MILIK MANDOR',
+            'datajson' => $dataLogtrail,
+            'modifiedby' => auth('api')->user()->name
+        ]);
+        return $supir;
+    }
 }
