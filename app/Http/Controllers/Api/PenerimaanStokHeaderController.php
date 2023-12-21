@@ -491,11 +491,17 @@ class PenerimaanStokHeaderController extends Controller
         try {
             $penerimaanStokHeader = PenerimaanStokHeader::lockForUpdate()->findOrFail($id);
             $opnameheader = DB::table('penerimaanstokheader')->from(DB::raw("opnameheader with (readuncommitted)"))->orderBy('id','desc')->first();
+            $isBeforeOpname = false;
+            $opnameTglBukti = null;
+            if ($opnameheader) {
+                $is_before_opname = (strtotime($opnameheader->tglbukti) > strtotime($penerimaanStokHeader->tglbukti));
+                $opnameTglBukti = $opnameheader->tglbukti;
+            }
             if ($request->to == 'show') {
                 return response([
                     'status' => true,
-                    'is_before_opname' => (strtotime($opnameheader->tglbukti) > strtotime($penerimaanStokHeader->tglbukti)),
-                    'last_opname' => $opnameheader->tglbukti,
+                    'is_before_opname' => $isBeforeOpname,
+                    'last_opname' => $opnameTglBukti,
                     'data' => $penerimaanStokHeader->find($id),
                     'detail' => PenerimaanStokDetail::getAll($id),
                 ]);
