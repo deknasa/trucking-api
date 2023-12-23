@@ -378,42 +378,18 @@ class MandorAbsensiSupir extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        // switch ($filters['field']) {
-                        //     case "trado_id":
-                        //         $query = $query->where('a.id', 'LIKE', "%$filters[data]%");
-                        //         break;
-                        //     case "kodetrado":
-                        //         $query = $query->where('a.kodetrado', 'LIKE', "%$filters[data]%");
-                        //         break;
-                        //     case "supir_id":
-                        //         $query = $query->where('b.supir_id', 'LIKE', "%$filters[data]%");
-                        //         break;
-                        //     case "namasupir":
-                        //         $query = $query->where('c.namasupir', 'LIKE', "%$filters[data]%");
-                        //         break;
-                        //     case "keterangan":
-                        //         $query = $query->where('b.keterangan', 'LIKE', "%$filters[data]%");
-                        //         break;
-                        //     case "absentrado":
-                        //         $query = $query->where('d.keterangan', 'LIKE', "%$filters[data]%");
-                        //         break;
-                        //     case "absen_id":
-                        //         $query = $query->where('b.absen_id', 'LIKE', "%$filters[data]%");
-                        //         break;
-                        //     case "jam":
-                        //         $query = $query->where('b.jam', 'LIKE', "%$filters[data]%");
-                        //         break;
-                        //     case "tglbukti":
-                        //         $query = $query->where('b.tglbukti', 'LIKE', "%$filters[data]%");
-                        //         break;
+                        switch ($filters['field']) {
+                            case "tglbukti":
+                                // $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                break;
 
-                        //     default:
-                        //         // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        //         $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            default:
+                                $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
 
-                        //         break;
-                        // }
-                        $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                break;
+                        }
+                        
                     }
 
                     break;
@@ -421,42 +397,17 @@ class MandorAbsensiSupir extends MyModel
                     $query = $query->where(function ($query) {
 
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            // switch ($filters['field']) {
-                            //     case "trado_id":
-                            //         $query = $query->orWhere('a.id', 'LIKE', "%$filters[data]%");
-                            //         break;
-                            //     case "kodetrado":
-                            //         $query = $query->orWhere('a.kodetrado', 'LIKE', "%$filters[data]%");
-                            //         break;
-                            //     case "supir_id":
-                            //         $query = $query->orWhere('b.supir_id', 'LIKE', "%$filters[data]%");
-                            //         break;
-                            //     case "namasupir":
-                            //         $query = $query->orWhere('c.namasupir', 'LIKE', "%$filters[data]%");
-                            //         break;
-                            //     case "keterangan":
-                            //         $query = $query->orWhere('b.keterangan', 'LIKE', "%$filters[data]%");
-                            //         break;
-                            //     case "absentrado":
-                            //         $query = $query->orWhere('d.keterangan', 'LIKE', "%$filters[data]%");
-                            //         break;
-                            //     case "absen_id":
-                            //         $query = $query->orWhere('b.absen_id', 'LIKE', "%$filters[data]%");
-                            //         break;
-                            //     case "jam":
-                            //         $query = $query->orWhere('b.jam', 'LIKE', "%$filters[data]%");
-                            //         break;
-                            //     case "tglbukti":
-                            //         $query = $query->orWhere('b.tglbukti', 'LIKE', "%$filters[data]%");
-                            //         break;
-
-                            //     default:
-                            //         // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            //         $query = $query->orWhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
-                            //         break;
-                            // }
-                            $query = $query->orWhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            switch ($filters['field']) {
+                                case "tglbukti":
+                                    // $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                    $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                    break;
+    
+                                default:
+                                    $query = $query->orWhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+    
+                                    break;
+                            }
                         }
                     });
 

@@ -36,7 +36,7 @@ class StoreHariLiburRequest extends FormRequest
             $status[] = $item['id'];
         }
 
-        $tglbatasakhir=(date('Y')+1).'-01-01';
+        $tglbatasakhir=(date('Y')+1).'-12-31';
         $tglbatasawal=(date('Y')-1).'-01-01';
         // $tglbatasakhir = date('Y-m-d', strtotime('-' . (new ParameterController)->getparamid('MINIMAL USIA SUPIR', 'MINIMAL USIA SUPIR')->text . ' years', strtotime( date('Y-m-d'))));
 
@@ -68,7 +68,7 @@ class StoreHariLiburRequest extends FormRequest
     public function messages()
     {
         $controller = new ErrorController;
-        $tglbatasakhir=(date('Y')+1).'-01-01';
+        $tglbatasakhir=(date('Y')+1).'-12-31';
         $tglbatasawal=(date('Y')-1).'-01-01';
         return [
             'tgl.after_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan.' '. date('d-m-Y', strtotime($tglbatasawal)). ' dan '. $controller->geterror('NTLB')->keterangan.' '. date('d-m-Y', strtotime($tglbatasakhir)),            
