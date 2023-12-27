@@ -43,6 +43,14 @@ class UpdateSupirRequest extends FormRequest
                 ->select('noktp', 'tglbatas', 'statusapproval')
                 ->whereRaw("noktp in ('$noktp')")
                 ->first();
+            $nonAktif = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->select('id')
+                ->where("grp","STATUS AKTIF")
+                ->where("text","NON AKTIF")
+                ->first();
+            if ($nonAktif->id == request()->statusaktif) {
+                return false;
+            }
             if ($cekValidasi != '') {
                 if ($cekValidasi->statusapproval == $nonApp->id) {
                     return false;
@@ -65,6 +73,14 @@ class UpdateSupirRequest extends FormRequest
                 ->select('noktp', 'tglbatas', 'statusapproval')
                 ->whereRaw("noktp in ('$noktp')")
                 ->first();
+            $nonAktif = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->select('id')
+                ->where("grp","STATUS AKTIF")
+                ->where("text","NON AKTIF")
+                ->first();
+            if ($nonAktif->id == request()->statusaktif) {
+                return false;
+            }
             if ($cekValidasi != '') {
                 if ($cekValidasi->statusapproval == $nonApp->id) {
                     return false;
@@ -110,11 +126,11 @@ class UpdateSupirRequest extends FormRequest
             'alamat' => [$ruleKeterangan],
             'namaalias' => $ruleKeterangan,
             'kota' => [$ruleKeterangan],
-            'telp' => [$ruleKeterangan, 'min:8', 'max:50', new SupirResign($cekSupir),],
+            'telp' => [$ruleKeterangan, 'min:8', 'max:50', new SupirResign($cekSupir),'nullable'],
             'statusaktif' => [$ruleKeterangan, 'int', 'exists:parameter,id'],
             'tglmasuk' => [$ruleKeterangan],
             'tglexpsim' => [$ruleKeterangan],
-            'nosim' => [$ruleKeterangan, 'min:12', 'max:15', new SupirResign($cekSupir), new SupirBlackListSim()], //.',nosim',
+            'nosim' => [$ruleKeterangan, 'min:12', 'max:15', new SupirResign($cekSupir), new SupirBlackListSim(),'nullable'], //.',nosim',
             'noktp' => ['required', 'min:16', 'max:16', new SupirResign($cekSupir), new SupirBlackListKtp()], //.',noktp',
             'nokk' => [$ruleKeterangan, 'min:16', 'max:16', 'nullable'],
             'tgllahir' => [
