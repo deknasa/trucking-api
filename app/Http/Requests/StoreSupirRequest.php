@@ -45,10 +45,18 @@ class StoreSupirRequest extends FormRequest
                     ->whereRaw("grp like '%STATUS APPROVAL%'")
                     ->whereRaw("text like '%NON APPROVAL%'")
                     ->first();
+                $nonAktif = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                    ->select('id')
+                    ->where("grp","STATUS AKTIF")
+                    ->where("text","NON AKTIF")
+                    ->first();
                 $cekValidasi = DB::table('approvalsupirgambar')->from(DB::raw("approvalsupirgambar with (readuncommitted)"))
                     ->select('noktp', 'tglbatas', 'statusapproval')
                     ->whereRaw("noktp in ('$noktp')")
                     ->first();
+                if ($nonAktif->id == request()->statusaktif) {
+                    return false;
+                }
                 if ($cekValidasi != '') {
                     if ($cekValidasi->statusapproval == $nonApp->id) {
                         return false;
@@ -74,10 +82,18 @@ class StoreSupirRequest extends FormRequest
                     ->whereRaw("grp like '%STATUS APPROVAL%'")
                     ->whereRaw("text like '%NON APPROVAL%'")
                     ->first();
+                $nonAktif = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                    ->select('id')
+                    ->where("grp","STATUS AKTIF")
+                    ->where("text","NON AKTIF")
+                    ->first();
                 $cekValidasi = DB::table('approvalsupirketerangan')->from(DB::raw("approvalsupirketerangan with (readuncommitted)"))
                     ->select('noktp', 'tglbatas', 'statusapproval')
                     ->whereRaw("noktp in ('$noktp')")
                     ->first();
+                if ($nonAktif->id == request()->statusaktif) {
+                    return false;
+                }
                 if ($cekValidasi != '') {
                     if ($cekValidasi->statusapproval == $nonApp->id) {
                         return false;
