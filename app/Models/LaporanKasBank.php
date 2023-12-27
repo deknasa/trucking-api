@@ -614,6 +614,7 @@ class LaporanKasBank extends MyModel
                 'a.kredit',
                 'a.saldo',
             )
+            ->orderBy('a.tglbukti', 'Asc')
             ->orderBy('a.urut', 'Asc')
             ->orderBy('a.id', 'Asc');
 
@@ -647,6 +648,8 @@ class LaporanKasBank extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
+            // dd(db::table($temprekap)->orderby('id','asc')->get());
+
         $queryhasil = DB::table($temprekap)->from(
             $tempsaldo . " as a"
         )
@@ -659,7 +662,7 @@ class LaporanKasBank extends MyModel
                 'a.keterangan',
                 'a.debet',
                 'a.kredit',
-                DB::raw("sum ((isnull(a.saldo,0)+a.debet)-a.Kredit) over (order by a.id asc) as saldo"),
+                DB::raw("sum ((isnull(a.saldo,0)+isnull(a.debet,0))-isnull(a.Kredit,0)) over (order by a.tglbukti,a.id) as saldo"),
                 DB::raw("'Laporan Buku Kas Bank' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
@@ -675,7 +678,7 @@ class LaporanKasBank extends MyModel
             $data = $queryhasil->get();
         }
 
-
+        // dd($data);
         return $data;
     }
 }

@@ -357,8 +357,62 @@ class LaporanSaldoInventory extends MyModel
         ],  $queryvulkan);
 
 
+        $tempurut = '##tempurut' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempurut, function ($table) {
+            $table->Integer('stok_id')->nullable();
+            $table->integer('kelompok_id')->nullable();
+            $table->integer('urut')->nullable();
+        });
+
+        $tempurutfilter = '##tempurutfilter' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempurutfilter, function ($table) {
+            $table->Integer('stok_id')->nullable();
+            $table->integer('kelompok_id')->nullable();
+            $table->string('lokasi',1000)->nullable();
+            $table->string('kodebarang',1000)->nullable();
+        });
+
+        $queryurutfilter=DB::table($temprekapall)->from(
+            DB::raw($temprekapall . " a")
+        )->select(
+            'a.stok_id',
+            'c.id as kelompok_id',
+            'a.lokasi',
+            'a.kodebarang',
+        )
+        ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
+        ->leftjoin(db::raw("kelompok c with (readuncommitted)"), 'b.kelompok_id', 'c.id')
+        ->whereraw("(a.qtysaldo<>0 or a.nilaisaldo<>0)");
+   
+        DB::table($tempurutfilter)->insertUsing([
+            'stok_id',
+            'kelompok_id',
+            'lokasi',
+            'kodebarang',
+        ],  $queryurutfilter);
 
 
+        $queryurut=DB::table($tempurutfilter)->from(
+            DB::raw($tempurutfilter . " a")
+        )->select(
+            'a.stok_id',
+            'c.id as kelompok_id',
+            DB::raw('ROW_NUMBER() OVER (PARTITION BY a.lokasi,c.kodekelompok ORDER BY a.lokasi,c.kodekelompok,a.kodebarang) as urut')
+        )
+        ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
+        ->leftjoin(db::raw("kelompok c with (readuncommitted)"), 'b.kelompok_id', 'c.id')
+        ->OrderBY('a.lokasi', 'asc')
+        ->OrderBY('c.kodekelompok', 'asc')
+        ->OrderBY('a.kodebarang', 'asc');
+
+        DB::table($tempurut)->insertUsing([
+            'stok_id',
+            'kelompok_id',
+            'urut',
+        ],  $queryurut);
+
+
+        // dd(db::table($tempurut)->where('kelompok_id',2)->get());
 
         // end update vulkanisir
         $stokdari = db::table('stok')->from(db::raw('stok with (readuncommitted)'))->select('namastok')->where('id',$stokdari_id)->first();
@@ -387,7 +441,7 @@ class LaporanSaldoInventory extends MyModel
                     (case when " . $bytgl . "=1 then 'TGL PAKAI '+format(c1.tglawal,'dd-MM-yyyy')+',' else '' end)+
                     'UMUR AKI : '+format(isnull(c1.jumlahhari,0),'#,#0')+' HARI )' 
                       when isnull(b.kelompok_id,0)=1 then '( VULKE:'+format(isnull(d1.vulkan,0),'#,#0')+' )' 
-                else '' end)
+                else replicate(' ',14-len(trim(str(isnull(d2.urut,0)))))+ trim(str(isnull(d2.urut,0))) end)
                 as vulkanisirke"),
 
                 // DB::raw("'VulKe :'+trim(str(isnull(b.totalvulkanisir,0))) as vulkanisirke"),
@@ -421,6 +475,8 @@ class LaporanSaldoInventory extends MyModel
             ->leftJoin(db::raw($tempumuraki . " c1"), "b.id", "c1.stok_id")
             ->leftJoin(db::raw($tempvulkan . " d1"), "b.id", "d1.stok_id")
             ->leftJoin("parameter", "b.statusban", "parameter.id")
+            ->leftJoin(db::raw($tempurut . " d2"), "b.id", "d2.stok_id")
+
             ->whereraw("(a.qtysaldo<>0 or a.nilaisaldo<>0)");
 
 
