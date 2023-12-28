@@ -15,8 +15,9 @@ class CreateHistorytradomiliksupirTable extends Migration
     {
         Schema::create('historytradomiliksupir', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('supir_id')->nullable();
             $table->unsignedBigInteger('trado_id')->nullable();
+            $table->unsignedBigInteger('supir_id')->nullable();
+            $table->unsignedBigInteger('supirlama_id')->nullable();
             $table->date('tglberlaku')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();

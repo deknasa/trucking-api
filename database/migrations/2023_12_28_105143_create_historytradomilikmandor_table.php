@@ -17,6 +17,7 @@ class CreateHistorytradomilikmandorTable extends Migration
             $table->id();
             $table->unsignedBigInteger('trado_id')->nullable();
             $table->unsignedBigInteger('mandor_id')->nullable();
+            $table->unsignedBigInteger('mandorlama_id')->nullable();
             $table->date('tglberlaku')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();            
