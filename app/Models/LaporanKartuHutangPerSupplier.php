@@ -275,7 +275,8 @@ class LaporanKartuHutangPerSupplier extends MyModel
                 db::raw("SUM(a.nominalhutang-a.nominalbayar) OVER (PARTITION BY a.jenishutang,b.namasupplier ORDER BY a.tglberjalan,a.nobuktihutang,a.urut ASC) as saldo"),
                 db::raw("a.nominalhutang-a.nominalbayar  as saldobayar"),
                 'a.jenishutang',
-                'a.urut'
+                db::raw("0 as urut")
+                // 'a.urut'
             )
             ->leftjoin(db::raw("supplier b with (readuncommitted) "), 'a.supplier_id', 'b.id')
      
@@ -330,42 +331,96 @@ class LaporanKartuHutangPerSupplier extends MyModel
     });
     
 
-$queryurut=db::table($temprekaphasil)->from(db::raw($temprekaphasil . " a"))
+// $queryurut=db::table($temprekaphasil)->from(db::raw($temprekaphasil . " a"))
+// ->select(
+//     'a.id',
+//     'a.supplier_id',
+//     'a.jenishutang',
+//     'a.nobukti',
+//     'a.nobuktihutang',
+//     )
+//     ->orderby('a.id')
+//     ->get();
+//     $datadetail = json_decode($queryurut, true);
+//     $xuji='';
+//     $xnobukti='';
+//     $xnobuktihutang='';
+
+    $temprekaphasil1 = '##temprekaphasil1' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+    Schema::create($temprekaphasil1, function ($table) {
+        $table->id();
+        $table->string('supplier_id_jenishutang',1000)->nullable();
+        $table->string('nobukti', 50)->nullable();       
+        $table->string('nobuktihutang', 50)->nullable();
+        $table->dateTime('tglbukti')->nullable();
+
+    });
+
+    $temprekaphasil2 = '##temprekaphasil2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+    Schema::create($temprekaphasil2, function ($table) {
+        $table->id();
+        $table->string('supplier_id_jenishutang',1000)->nullable();
+        $table->string('nobukti', 50)->nullable();
+        $table->string('nobuktihutang', 50)->nullable();
+        $table->dateTime('tglbukti')->nullable();
+        $table->BigInteger('urut')->nullable();
+    });
+
+    $queryrekaphasil1=db::table($temprekaphasil)->from(db::raw($temprekaphasil . " a"))
 ->select(
-    'a.id',
-    'a.supplier_id',
-    'a.jenishutang',
+    db::raw("trim(a.supplier_id)+'_'+trim(a.jenishutang) as supplier_id_jenishutang"),
     'a.nobukti',
     'a.nobuktihutang',
+    'a.tglbukti',
     )
-    ->orderby('a.id')
-    ->get();
-    $datadetail = json_decode($queryurut, true);
-    $xuji='';
-    $xnobukti='';
-    $xnobuktihutang='';
-
+    ->whereRaw("isnull(a.nobukti,'')=isnull(a.nobuktihutang,'')")
+    ->orderby(db::raw("trim(a.supplier_id)+'_'+trim(a.jenishutang)"));
+   
+   
+    DB::table($temprekaphasil1)->insertUsing([
+        'supplier_id_jenishutang',
+        'nobukti',
+        'nobuktihutang',
+        'tglbukti',
+    ], $queryrekaphasil1);
     
+    $query=db::table($temprekaphasil1)
+    ->select(
+        'supplier_id_jenishutang',
+        'nobukti',
+        'nobuktihutang',
+        'tglbukti',
+        DB::raw('ROW_NUMBER() OVER (PARTITION BY supplier_id_jenishutang ORDER BY tglbukti) as urut')
+    )
+    ->orderby('tglbukti');
 
-    DB::update(DB::raw("UPDATE " . $temprekaphasil . " SET urut=0"));
-    $urut=0;
-    foreach ($datadetail as $item) {
-        $xuji2=$item['supplier_id'].$item['jenishutang'];
+    DB::table($temprekaphasil2)->insertUsing([
+        'supplier_id_jenishutang',
+        'nobukti',
+        'nobuktihutang',
+        'tglbukti',
+        'urut'
+    ], $query);
 
-        if ($xuji2!=$xuji) {
-            $urut=0;
-        }
-            if ($item['nobukti']==$item['nobuktihutang']) {
-                $urut=$urut+1;
-                DB::update(DB::raw("UPDATE " . $temprekaphasil . " SET urut=".$urut." where id=". $item['id']));
-            }
+    // DB::update(DB::raw("UPDATE " . $temprekaphasil . " SET urut=0"));
+    // $urut=0;
+    // foreach ($datadetail as $item) {
+    //     $xuji2=$item['supplier_id'].$item['jenishutang'];
+
+    //     if ($xuji2!=$xuji) {
+    //         $urut=0;
+    //     }
+    //         if ($item['nobukti']==$item['nobuktihutang']) {
+    //             $urut=$urut+1;
+    //             DB::update(DB::raw("UPDATE " . $temprekaphasil . " SET urut=".$urut." where id=". $item['id']));
+    //         }
             
         
-        $xuji=$item['supplier_id'].$item['jenishutang'];
-        $xnobukti=$item['nobukti'];
-        $xnobuktihutang=$item['nobuktihutang'];
+    //     $xuji=$item['supplier_id'].$item['jenishutang'];
+    //     $xnobukti=$item['nobukti'];
+    //     $xnobuktihutang=$item['nobuktihutang'];
     
-    }
+    // }
 
 
         $select_data = DB::table($temprekaphasil . ' AS A')
@@ -373,16 +428,16 @@ $queryurut=db::table($temprekaphasil)->from(db::raw($temprekaphasil . " a"))
                 'a.id',
                 'a.supplier_id',
                 'a.nobukti',
-                'a.tglbukti',
+                db::raw("cast(a.tglbukti as date) as tglbukti"),
                 'a.nominalhutang',
-                'a.tglbayar',
+                db::raw("cast(a.tglbayar as date) as tglbayar"),
                 'a.nominalbayar',
                 'a.nobuktihutang',
-                'a.tglberjalan',
+                db::raw("cast(a.tglberjalan as date) as tglberjalan"),
                 'a.saldo',
                 'a.saldobayar',
                 'a.jenishutang',
-                'a.urut',
+                db::raw("isnull(b.urut,0) as urut"),
                 DB::raw("'$getJudul->text' AS text"),
                 DB::raw("(case when '$keterangansupplier'='' then '$supplierdarinama' else '$keterangansupplier' end)  AS dari"),
                 DB::raw("(case when '$keterangansupplier'='' then '$suppliersampainama' else '$keterangansupplier' end)   AS sampai"),
@@ -395,6 +450,7 @@ $queryurut=db::table($temprekaphasil)->from(db::raw($temprekaphasil . " a"))
                 db::raw("'" . $diperiksa . "' as diperiksa"),
 
             ])
+            ->leftjoin(db::raw($temprekaphasil2 ." b"),'a.nobukti','b.nobukti')
 
             ->orderBy('a.id', 'asc');
 
@@ -405,6 +461,8 @@ $queryurut=db::table($temprekaphasil)->from(db::raw($temprekaphasil . " a"))
         } else {
             $data = $select_data->get();
         }
+
+        // $data=$query->get();
 
         return $data;
 
