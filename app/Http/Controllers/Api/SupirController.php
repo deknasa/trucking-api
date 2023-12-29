@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\HistorySupirMilikMandorRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\UpdateSupirRequest;
+use App\Models\HistorySupirMilikMandor;
 use App\Models\Supir;
 use App\Models\LogTrail;
 use App\Models\Parameter;
@@ -805,7 +806,7 @@ class SupirController extends Controller
     /**
      * @ClassName 
      */
-    public function historyMandor(HistorySupirMilikMandorRequest $request)
+    public function historySupirMandor(HistorySupirMilikMandorRequest $request)
     {
         DB::beginTransaction();
 
@@ -814,6 +815,7 @@ class SupirController extends Controller
             $data = [
                 'id' => $request->id,
                 'mandorbaru_id' => $request->mandorbaru_id,
+                'mandor_id' => $request->mandor_id,
                 'tglberlaku' => $request->tglberlaku,
             ];
 
@@ -835,7 +837,14 @@ class SupirController extends Controller
     public function getHistoryMandor($id)
     {        
         return response([
-            'data' => (new Supir())->getHistoryMandor($id)
+            'data' => (new Supir())->getHistoryMandor($id),
+        ]);
+    }
+    
+    public function getListHistoryMandor($id)
+    {        
+        return response([
+            'data' => (new HistorySupirMilikMandor())->get($id)
         ]);
     }
 }

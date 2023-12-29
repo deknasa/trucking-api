@@ -295,6 +295,7 @@ class Cabang extends MyModel
             'nobuktitrans' => $cabang->id,
             'aksi' => 'ENTRY',
             'datajson' => $cabang->toArray(),
+            'modifiedby' => auth('api')->user()->name
         ]);
 
         return $cabang;
@@ -327,6 +328,7 @@ class Cabang extends MyModel
             'nobuktitrans' => $cabang->id,
             'aksi' => 'EDIT',
             'datajson' => $cabang->toArray(),
+            'modifiedby' => auth('api')->user()->name
         ]);
 
         return $cabang;
@@ -344,6 +346,7 @@ class Cabang extends MyModel
             'nobuktitrans' => $cabang->id,
             'aksi' => 'DELETE',
             'datajson' => $cabang->toArray(),
+            'modifiedby' => auth('api')->user()->name
         ]);
 
         return $cabang;

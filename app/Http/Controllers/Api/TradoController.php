@@ -8,9 +8,13 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTradoRequest;
 use App\Http\Requests\DestroyTradoRequest;
+use App\Http\Requests\HistoryTradoMilikMandorRequest;
+use App\Http\Requests\HistoryTradoMilikSupirRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\TradoRequest;
 use App\Http\Requests\UpdateTradoRequest;
+use App\Models\HistoryTradoMilikMandor;
+use App\Models\HistoryTradoMilikSupir;
 use App\Models\Trado;
 use App\Models\LogTrail;
 use App\Models\Parameter;
@@ -695,18 +699,94 @@ class TradoController extends Controller
             throw $th;
         }
     }
-     
+
     /**
      * @ClassName 
      */
-    public function historyMandor()
+    public function historyTradoMandor(HistoryTradoMilikMandorRequest $request)
     {
+        DB::beginTransaction();
+
+        try {
+
+            $data = [
+                'id' => $request->id,
+                'mandorbaru_id' => $request->mandorbaru_id,
+                'mandor_id' => $request->mandor_id,
+                'tglberlaku' => $request->tglberlaku,
+            ];
+
+            $trado = (new Trado())->processHistoryTradoMilikMandor($data);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $trado
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
-     
+
+    public function getHistoryMandor($id)
+    {
+        return response([
+            'data' => (new Trado())->getHistoryMandor($id),
+        ]);
+    }
+
+    public function getListHistoryMandor($id)
+    {
+        return response([
+            'data' => (new HistoryTradoMilikMandor())->get($id)
+        ]);
+    }
     /**
      * @ClassName 
      */
-    public function historySupir()
+    public function historyTradoSupir(HistoryTradoMilikSupirRequest $request)
     {
+        DB::beginTransaction();
+
+        try {
+
+            $data = [
+                'id' => $request->id,
+                'supirbaru_id' => $request->supirbaru_id,
+                'supir_id' => $request->supir_id,
+                'tglberlaku' => $request->tglberlaku,
+            ];
+
+            $trado = (new Trado())->processHistoryTradoMilikSupir($data);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $trado
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+
+    public function getHistorySupir($id)
+    {
+        return response([
+            'data' => (new Trado())->getHistorySupir($id),
+        ]);
+    }
+
+    public function getListHistorySupir($id)
+    {
+        return response([
+            'data' => (new HistoryTradoMilikSupir())->get($id)
+        ]);
     }
 }
