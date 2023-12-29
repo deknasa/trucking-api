@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Rules\HistoryTradoMilikSupirValidation;
+use App\Rules\UniqueHistoryTradoMilikSupirValidation;
 use Illuminate\Foundation\Http\FormRequest;
 
 class HistoryTradoMilikSupirRequest extends FormRequest
@@ -25,7 +26,7 @@ class HistoryTradoMilikSupirRequest extends FormRequest
     public function rules()
     {
         return [
-            'supirbaru' => ['required', new HistoryTradoMilikSupirValidation]
+            'supirbaru' => ['required', new HistoryTradoMilikSupirValidation(), new UniqueHistoryTradoMilikSupirValidation()]
         ];
     }
     public function attributes()
