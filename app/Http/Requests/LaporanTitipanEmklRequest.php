@@ -35,12 +35,12 @@ class LaporanTitipanEmklRequest extends FormRequest
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
                 'before:'.$tglbatasakhir,
-                'after_or_equal:'.$tglbatasawal,
+                // 'after_or_equal:'.$tglbatasawal,
             ],
             'tglsampai' => [
                 'required', 'date_format:d-m-Y',
                 'before:'.$tglbatasakhir,
-                'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
+                // 'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
             ],
             
         ];

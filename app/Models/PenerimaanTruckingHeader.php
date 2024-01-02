@@ -599,7 +599,7 @@ class PenerimaanTruckingHeader extends MyModel
         return $temp;
     }
 
-    
+
     public function getDepositoKaryawan($karyawan_id)
     {
         $tempPribadi = $this->createTempDepositoKaryawan($karyawan_id);
@@ -1380,6 +1380,25 @@ class PenerimaanTruckingHeader extends MyModel
         $keteranganPostingNon = ['nonposting' => '', 'posting' => ''];
         $nobuktiPosting = '';
         $nobuktiNonPosting = '';
+        $namasupirdata = '';
+        $hit = 0;
+        for ($i = 0; $i < count($data['nominal']); $i++) {
+            $hit = $hit + 1;
+            $supir_id = $data['supir_id'][$i] ?? 0;
+            $querysupir = db::table('supir')->from(db::raw("supir a with (readuncommitted)"))
+                ->select('a.namasupir')
+                ->where('a.id', $supir_id)
+                ->first();
+            if (isset($querysupir)) {
+                if ($hit = 1) {
+                    $namasupirdata = $namasupirdata . $querysupir->namasupir ?? '';
+                } else {
+                    $namasupirdata = $namasupirdata . ',' . $querysupir->namasupir ?? '';
+                }
+            }
+        }
+
+
 
         for ($i = 0; $i < count($data['nominal']); $i++) {
             $penerimaanTruckingDetail = (new PenerimaanTruckingDetail())->processStore($penerimaanTruckingHeader, [
@@ -1536,6 +1555,7 @@ class PenerimaanTruckingHeader extends MyModel
                     $keterangan_detail[] = 'DEPOSITO DARI PENDAPATAN SUPIR ' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'];
                 } else {
                     $keterangan_detail[] = $data['keterangan'][0];
+                    // $keterangan_detail[] = 'DEPOSITO SUPIR A/N ' . $namasupirdata . ' ' . $data['keterangan'][0];
                 }
             } else if ($fetchFormat->kodepenerimaan == 'BBM' || $fetchFormat->kodepenerimaan == 'PJPK' || $fetchFormat->kodepenerimaan == 'DPOK') {
                 $coakredit_detail = [];
@@ -1767,6 +1787,26 @@ class PenerimaanTruckingHeader extends MyModel
             $nobuktiPosting = '';
             $nobuktiNonPosting = '';
 
+            $namasupirdata = '';
+            $hit = 0;
+            for ($i = 0; $i < count($data['nominal']); $i++) {
+                $hit = $hit + 1;
+                $supir_id = $data['supir_id'][$i] ?? 0;
+                $querysupir = db::table('supir')->from(db::raw("supir a with (readuncommitted)"))
+                    ->select('a.namasupir')
+                    ->where('a.id', $supir_id)
+                    ->first();
+                if (isset($querysupir)) {
+                    if ($hit == 1) {
+                        $namasupirdata = $namasupirdata . $querysupir->namasupir ?? '';
+                    } else {
+                        $namasupirdata = $namasupirdata . ',' . $querysupir->namasupir ?? '';
+                    }
+                }
+            }
+            // dd($namasupir);
+
+
             for ($i = 0; $i < count($data['nominal']); $i++) {
                 $penerimaanTruckingDetail = (new PenerimaanTruckingDetail())->processStore($penerimaanTruckingHeader, [
                     'penerimaantruckingheader_id' => $penerimaanTruckingHeader->id,
@@ -1905,6 +1945,7 @@ class PenerimaanTruckingHeader extends MyModel
                         $keterangan_detail[] = 'DEPOSITO DARI PENDAPATAN SUPIR ' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'];
                     } else {
                         $keterangan_detail[] = $data['keterangan'][0];
+                        // $keterangan_detail[] = 'DEPOSITO SUPIR A/N ' . $namasupirdata . ' ' . $data['keterangan'][0];
                     }
                 } else if ($fetchFormat->kodepenerimaan == 'BBM' || $fetchFormat->kodepenerimaan == 'PJPK' || $fetchFormat->kodepenerimaan == 'DPOK') {
                     $coakredit_detail = [];
