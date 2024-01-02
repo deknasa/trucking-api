@@ -27,15 +27,14 @@ class ApprovalBukaCetak implements Rule
      */
     public function passes($attribute, $value)
     {
-        
-        $periode = request()->periode;
-        $today = Carbon::now(); 
-        $currentMonthYear = $today->format('m-Y'); 
-    
-        if ($periode > $currentMonthYear) {
-            return false;
+
+        $tutupBuku = Parameter::where('grp','TUTUP BUKU')->where('subgrp','TUTUP BUKU')->first();
+        $tutupBukuDate = date('m-Y', strtotime($tutupBuku->text));
+        $allowed = false;
+        if($value > $tutupBukuDate){
+            $allowed = true;
         }
-        return true; 
+        return $allowed;
     }
 
     /**
@@ -45,6 +44,6 @@ class ApprovalBukaCetak implements Rule
      */
     public function message()
     {
-        return 'format tanggal tidak valid';
+        return 'Tanggal tidak bisa diproses sebelum tanggal tutup buku';
     }
 }
