@@ -42,7 +42,8 @@ class RunningNumberService
                 ->where(DB::raw('month(tglbukti)'), '=', $bulan)
                 ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                 ->where(DB::raw('statusformat'), '=', $statusformat)
-                ->lockForUpdate()->count();
+                 ->lockForUpdate()->count();
+              
         }
 
         if ($type == 'RESET TAHUN') {
@@ -56,23 +57,26 @@ class RunningNumberService
                 ->where(DB::raw('statusformat'), '=', $statusformat)
                 ->lockForUpdate()->count();
         }
+        // $sqlcek=db::table($table)->from($table . " a with (readuncommitted)")
+        // ->select ('a.nobukti')
+        // ->where('a.nobukti')
 
-
-        $runningNumber = (new App)->runningNumber($text, $lastRow, $bulan);
+        // dd($tgl);
+        $runningNumber = (new App)->runningNumber($text, $lastRow, $bulan,$tgl,$table);
         // dd($runningNumber);
-        $nilai = 0;
-        $nomor = $lastRow;
-        while ($nilai < 1) {
-            $cekbukti = DB::table($table)
-                ->where(DB::raw('nobukti'), '=', $runningNumber)
-                ->first();
-            if (!isset($cekbukti)) {
-                $nilai++;
-                break;
-            }
-            $nomor++;
-            $runningNumber = (new App)->runningNumber($text, $nomor, $bulan);
-        }
+        // $nilai = 0;
+        // $nomor = $lastRow;
+        // while ($nilai < 1) {
+        //     $cekbukti = DB::table($table)
+        //         ->where(DB::raw('nobukti'), '=', $runningNumber,$tgl)
+        //         ->first();
+        //     if (!isset($cekbukti)) {
+        //         $nilai++;
+        //         break;
+        //     }
+        //     $nomor++;
+        //     $runningNumber = (new App)->runningNumber($text, $nomor, $bulan,$tgl,$table);
+        // }
 
         return $runningNumber;
     }
