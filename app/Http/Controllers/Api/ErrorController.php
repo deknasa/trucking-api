@@ -18,6 +18,7 @@ class ErrorController extends Controller
 {
     /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -34,6 +35,7 @@ class ErrorController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreErrorRequest $request)
     {
@@ -75,6 +77,7 @@ class ErrorController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateErrorRequest $request, Error $error)
     {
@@ -107,6 +110,7 @@ class ErrorController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request, $id)
     {
@@ -139,6 +143,7 @@ class ErrorController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -146,6 +151,7 @@ class ErrorController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {

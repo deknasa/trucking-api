@@ -218,7 +218,8 @@ class Menu extends MyModel
                 $methods[] = $arr;
             }
         }
-        // dd($methods);
+
+
         return $methods;
     }
 
@@ -245,9 +246,12 @@ class Menu extends MyModel
         if (count($ffs) < 1)
             return;
         $i = 0;
+        $data = [];
+
         foreach ($ffs as $ff) {
             if (is_dir($dir . '/' . $ff))
-                $this->listFolderFiles($dir . '/' . $ff);
+                // $this->listFolderFiles($dir . '/' . $ff);
+                $data = array_merge($data, $this->listFolderFiles($controller, $dir . '/' . $ff));
             elseif (is_file($dir . '/' . $ff) && strpos($ff, '.php') !== false) {
                 $classes = $this->get_php_classes(file_get_contents($dir . '/' . $ff));
                 foreach ($classes as $class) {
@@ -259,33 +263,54 @@ class Menu extends MyModel
                         }
 
                         $methods = $this->get_class_methods($class, true);
-                        // dd($methods);
+
                         foreach ($methods as $method) {
                             if (isset($method['docComment']['ClassName'])) {
-                                if (isset($method['docComment']['Detail1'])) {
-                                    $detail1 = $method['docComment']['Detail1'];
+                                if (isset($method['docComment']['Detail'])) {
+                                    $detail = $method['docComment']['Detail'];
                                 } else {
-                                    $detail1 = '';
+                                    $detail = [''];
                                 }
-                                if (isset($method['docComment']['Detail2'])) {
-                                    $detail2 = $method['docComment']['Detail2'];
+                                if (isset($method['docComment']['Keterangan'])) {
+                                    $keterangan = $method['docComment']['Keterangan'][0];
                                 } else {
-                                    $detail2 = '';
+                                    $keterangan = '';
                                 }
-                                if (isset($method['docComment']['Detail3'])) {
-                                    $detail3 = $method['docComment']['Detail3'];
-                                } else {
-                                    $detail3 = '';
-                                }
+                                // dd($detail);
                                 $data[] = [
                                     'class' => $class,
                                     'method' => $method['name'],
                                     'name' => $method['name'] . ' ' . $class,
-                                    'detail1' => trim($detail1),
-                                    'detail2' => trim($detail2),
-                                    'detail3' => trim($detail3)
+                                    'detail' => $detail,
+                                    'keterangan' => $keterangan,
+
                                 ];
                             }
+                            // if (isset($method['docComment']['ClassName'])) {
+                            //     if (isset($method['docComment']['Detail1'])) {
+                            //         $detail1 = $method['docComment']['Detail1'];
+                            //     } else {
+                            //         $detail1 = '';
+                            //     }
+                            //     if (isset($method['docComment']['Detail2'])) {
+                            //         $detail2 = $method['docComment']['Detail2'];
+                            //     } else {
+                            //         $detail2 = '';
+                            //     }
+                            //     if (isset($method['docComment']['Detail3'])) {
+                            //         $detail3 = $method['docComment']['Detail3'];
+                            //     } else {
+                            //         $detail3 = '';
+                            //     }
+                            //     $data[] = [
+                            //         'class' => $class,
+                            //         'method' => $method['name'],
+                            //         'name' => $method['name'] . ' ' . $class,
+                            //         'detail1' => trim($detail1),
+                            //         'detail2' => trim($detail2),
+                            //         'detail3' => trim($detail3)
+                            //     ];
+                            // }
                         }
                     }
                 }
@@ -298,14 +323,27 @@ class Menu extends MyModel
     {
         $comment = $obj->getMethod($method)->getDocComment();
         //define the regular expression pattern to use for string matching
-        $pattern = "#(@[a-zA-Z]+\s*[a-zA-Z0-9, ()_].*)#";
+        // $pattern = "#(@[a-zA-Z]+\s*[a-zA-Z0-9, ()_].*)#";
+        $pattern = "/@([a-zA-Z0-9_]+)([^\n@]*)/";
         //perform the regular expression on the string provided
-        preg_match_all($pattern, $comment, $matches, PREG_PATTERN_ORDER);
-        // dd($matches[0]);
+        // preg_match_all($pattern, $comment, $matches, PREG_PATTERN_ORDER);
+        preg_match_all($pattern, $comment, $matches, PREG_SET_ORDER);
         $comments = [];
-        foreach ($matches[0] as $match) {
-            $comment = preg_split('/[\s]/', $match, 2);
-            $comments[trim($comment[0], '@')] = $comment[1];
+        // foreach ($matches[0] as $match) {
+        //     $comment = preg_split('/[\s]/', $match, 2);
+        //     $comments[trim($comment[0], '@')] = $comment[1];
+        // }
+        foreach ($matches as $match) {
+            $tag = $match[1];
+            $value = trim($match[2]);
+
+            if (!isset($comments[$tag])) {
+                $comments[$tag] = [];
+            }
+
+            if (!empty($value)) {
+                $comments[$tag][] = $value;
+            }
         }
 
         return $comments;
@@ -315,7 +353,7 @@ class Menu extends MyModel
     {
 
         $class = $this->listFolderFiles($data['controller']);
-        if ($class <> '') {
+        if ($class <> []) {
             foreach ($class as $value) {
 
                 $namaclass = str_replace('controller', '', strtolower($value['class']));
@@ -325,67 +363,94 @@ class Menu extends MyModel
                     'class' => $namaclass,
                     'method' => $value['method'],
                     'nama' => $value['name'],
+                    'keterangan' => $value['keterangan'],
                     'modifiedby' => auth('api')->user()->user,
                     'idheader' => 0,
                 ]);
 
-                if ($value['detail1'] != '') {
-                    $classdetail1 = $this->listFolderFiles($value['detail1']);
-                    foreach ($classdetail1 as $valuedetail1) {
-                        $namaclass = str_replace('controller', '', strtolower($valuedetail1['class']));
-                        $idheader=DB::table('acos')->from(db::raw("acos a with (readuncommitted)"))
-                        ->select('id')
-                        ->where('class',$namaclassheader)
-                        ->where('method','index')
-                        ->first()->id ?? 0;
+                foreach ($value['detail'] as $detail) {
 
-                        $dataaco = (new Acos())->processStore([
-                            'class' => $namaclass,
-                            'method' => $value['method'],
-                            'nama' => $value['name'],
-                            'modifiedby' => auth('api')->user()->user,
-                            'idheader' => $idheader,
-                        ]);
+                    if ($detail != '') {
+                        $classdetail1 = $this->listFolderFiles($detail);
+                        foreach ($classdetail1 as $valuedetail1) {
+                            $namaclass = str_replace('controller', '', strtolower($valuedetail1['class']));
+
+
+                            $idheader = DB::table('acos')
+                                ->select('id')
+                                ->where('class', $namaclassheader)
+                                ->where('method', 'index')
+                                ->first()->id ?? 0;
+
+
+                            $dataaco = (new Acos())->processStore([
+                                'class' => $namaclass,
+                                'method' => $valuedetail1['method'],
+                                'nama' => $valuedetail1['name'],
+                                'idheader' => $idheader,
+                                'keterangan' => $value['keterangan'],
+                                'modifiedby' => auth('api')->user()->user,
+                            ]);
+                        }
                     }
                 }
+                // if ($value['detail1'] != '') {
+                //     $classdetail1 = $this->listFolderFiles($value['detail1']);
+                //     foreach ($classdetail1 as $valuedetail1) {
+                //         $namaclass = str_replace('controller', '', strtolower($valuedetail1['class']));
+                //         $idheader = DB::table('acos')->from(db::raw("acos a with (readuncommitted)"))
+                //             ->select('id')
+                //             ->where('class', $namaclassheader)
+                //             ->where('method', 'index')
+                //             ->first()->id ?? 0;
 
-                if ($value['detail2'] != '') {
-                    $classdetail2 = $this->listFolderFiles($value['detail2']);
-                    foreach ($classdetail2 as $valuedetail2) {
-                        $namaclass = str_replace('controller', '', strtolower($valuedetail2['class']));
-                        $idheader=DB::table('acos')->from(db::raw("acos a with (readuncommitted)"))
-                        ->select('id')
-                        ->where('class',$namaclassheader)
-                        ->where('method','index')
-                        ->first()->id ?? 0;
-                        $dataaco = (new Acos())->processStore([
-                            'class' => $namaclass,
-                            'method' => $value['method'],
-                            'nama' => $value['name'],
-                            'modifiedby' => auth('api')->user()->user,
-                            'idheader' => $idheader,
-                        ]);
-                    }
-                }
+                //         $dataaco = (new Acos())->processStore([
+                //             'class' => $namaclass,
+                //             'method' => $value['method'],
+                //             'nama' => $value['name'],
+                //             'modifiedby' => auth('api')->user()->user,
+                //             'idheader' => $idheader,
+                //         ]);
+                //     }
+                // }
 
-                if ($value['detail3'] != '') {
-                    $classdetail3 = $this->listFolderFiles($value['detail3']);
-                    foreach ($classdetail3 as $valuedetail3) {
-                        $namaclass = str_replace('controller', '', strtolower($valuedetail3['class']));
-                        $idheader=DB::table('acos')->from(db::raw("acos a with (readuncommitted)"))
-                        ->select('id')
-                        ->where('class',$namaclassheader)
-                        ->where('method','index')
-                        ->first()->id ?? 0;
-                        $dataaco = (new Acos())->processStore([
-                            'class' => $namaclass,
-                            'method' => $value['method'],
-                            'nama' => $value['name'],
-                            'modifiedby' => auth('api')->user()->user,
-                            'idheader' => $idheader,
-                        ]);
-                    }
-                }
+                // if ($value['detail2'] != '') {
+                //     $classdetail2 = $this->listFolderFiles($value['detail2']);
+                //     foreach ($classdetail2 as $valuedetail2) {
+                //         $namaclass = str_replace('controller', '', strtolower($valuedetail2['class']));
+                //         $idheader = DB::table('acos')->from(db::raw("acos a with (readuncommitted)"))
+                //             ->select('id')
+                //             ->where('class', $namaclassheader)
+                //             ->where('method', 'index')
+                //             ->first()->id ?? 0;
+                //         $dataaco = (new Acos())->processStore([
+                //             'class' => $namaclass,
+                //             'method' => $value['method'],
+                //             'nama' => $value['name'],
+                //             'modifiedby' => auth('api')->user()->user,
+                //             'idheader' => $idheader,
+                //         ]);
+                //     }
+                // }
+
+                // if ($value['detail3'] != '') {
+                //     $classdetail3 = $this->listFolderFiles($value['detail3']);
+                //     foreach ($classdetail3 as $valuedetail3) {
+                //         $namaclass = str_replace('controller', '', strtolower($valuedetail3['class']));
+                //         $idheader = DB::table('acos')->from(db::raw("acos a with (readuncommitted)"))
+                //             ->select('id')
+                //             ->where('class', $namaclassheader)
+                //             ->where('method', 'index')
+                //             ->first()->id ?? 0;
+                //         $dataaco = (new Acos())->processStore([
+                //             'class' => $namaclass,
+                //             'method' => $value['method'],
+                //             'nama' => $value['name'],
+                //             'modifiedby' => auth('api')->user()->user,
+                //             'idheader' => $idheader,
+                //         ]);
+                //     }
+                // }
             }
 
 
@@ -557,7 +622,6 @@ class Menu extends MyModel
         if ($query != null) {
 
             $class = $this->listFolderFiles($controller);
-            // dd($class);
             // dd($controller);
             if ($class <> '') {
 
@@ -574,7 +638,6 @@ class Menu extends MyModel
                         ->where('a.method', '=', $value['method'])
                         ->where('a.nama', '=', $value['name'])
                         ->first();
-
                     if (!isset($queryacos)) {
                         if (Acos::select('id')
                             ->where('class', '=', $namaclass)
@@ -584,118 +647,166 @@ class Menu extends MyModel
                                 'class' => $namaclass,
                                 'method' => $value['method'],
                                 'nama' => $value['name'],
+                                'keterangan' => $value['keterangan'],
                                 'modifiedby' => auth('api')->user()->user,
                             ]);
+                        }
+                    } else {
+                        $dataaco = (new Acos())->processUpdate($queryacos->id, [
+                            'keterangan' => $value['keterangan'],
+                            'modifiedby' => auth('api')->user()->user,
+                        ]);
+                    }
+
+                    foreach ($value['detail'] as $detail) {
+                        if ($detail != '') {
+                            $classdetail1 = $this->listFolderFiles($detail);
+                            foreach ($classdetail1 as $valuedetail1) {
+                                $namaclass = str_replace('controller', '', strtolower($valuedetail1['class']));
+
+                                $queryacos = DB::table('acos')
+                                    ->from(
+                                        db::raw("acos a")
+                                    )
+                                    ->select(
+                                        'a.id'
+                                    )
+                                    ->where('a.class', '=', $namaclass)
+                                    ->where('a.method', '=', $valuedetail1['method'])
+                                    ->where('a.nama', '=', $valuedetail1['name'])
+                                    ->first();
+                                if (!isset($queryacos)) {
+                                    // if (Acos::select('id')
+                                    //     ->where('class', '=', $namaclass)
+                                    //     ->exists()
+                                    // ) {
+
+                                    $dataaco = (new Acos())->processStore([
+                                        'class' => $namaclass,
+                                        'method' => $valuedetail1['method'],
+                                        'nama' => $valuedetail1['name'],
+                                        'keterangan' => $value['keterangan'],
+                                        'idheader' => 0,
+                                        'modifiedby' => auth('api')->user()->user,
+                                    ]);
+                                    // }
+                                } else {
+                                    $dataaco = (new Acos())->processUpdate($queryacos->id, [
+                                        'keterangan' => $value['keterangan'],
+                                        'modifiedby' => auth('api')->user()->user,
+                                    ]);
+                                }
+                            }
                         }
                     }
                     // cek detail1
 
-                    if ($value['detail1'] != '') {
-                        $classdetail1 = $this->listFolderFiles($value['detail1']);
-                        // dd($classdetail1);
-                        foreach ($classdetail1 as $valuedetail1) {
-                            $namaclass = str_replace('controller', '', strtolower($valuedetail1['class']));
+                    // if ($value['detail1'] != '') {
+                    //     $classdetail1 = $this->listFolderFiles($value['detail1']);
+                    //     // dd($classdetail1);
+                    //     foreach ($classdetail1 as $valuedetail1) {
+                    //         $namaclass = str_replace('controller', '', strtolower($valuedetail1['class']));
 
-                            $queryacos = DB::table('acos')
-                                ->from(
-                                    db::raw("acos a with(readuncommitted)")
-                                )
-                                ->select(
-                                    'a.id'
-                                )
-                                ->where('a.class', '=', $namaclass)
-                                ->where('a.method', '=', $valuedetail1['method'])
-                                ->where('a.nama', '=', $valuedetail1['name'])
-                                ->first();
+                    //         $queryacos = DB::table('acos')
+                    //             ->from(
+                    //                 db::raw("acos a with(readuncommitted)")
+                    //             )
+                    //             ->select(
+                    //                 'a.id'
+                    //             )
+                    //             ->where('a.class', '=', $namaclass)
+                    //             ->where('a.method', '=', $valuedetail1['method'])
+                    //             ->where('a.nama', '=', $valuedetail1['name'])
+                    //             ->first();
 
-                            if (!isset($queryacos)) {
-                                // if (Acos::select('id')
-                                //     ->where('class', '=', $namaclass)
-                                //     ->exists()
-                                // ) {
+                    //         if (!isset($queryacos)) {
+                    //             // if (Acos::select('id')
+                    //             //     ->where('class', '=', $namaclass)
+                    //             //     ->exists()
+                    //             // ) {
 
-                                $dataaco = (new Acos())->processStore([
-                                    'class' => $namaclass,
-                                    'method' => $valuedetail1['method'],
-                                    'nama' => $valuedetail1['name'],
-                                    'modifiedby' => auth('api')->user()->user,
-                                ]);
-                                // }
-                            }
-                        }
-                    }
+                    //             $dataaco = (new Acos())->processStore([
+                    //                 'class' => $namaclass,
+                    //                 'method' => $valuedetail1['method'],
+                    //                 'nama' => $valuedetail1['name'],
+                    //                 'modifiedby' => auth('api')->user()->user,
+                    //             ]);
+                    //             // }
+                    //         }
+                    //     }
+                    // }
 
                     // 
                     // cek detail2
-                    if ($value['detail2'] != '') {
-                        $classdetail2 = $this->listFolderFiles($value['detail2']);
-                        foreach ($classdetail2 as $valuedetail2) {
-                            $namaclass = str_replace('controller', '', strtolower($valuedetail2['class']));
+                    // if ($value['detail2'] != '') {
+                    //     $classdetail2 = $this->listFolderFiles($value['detail2']);
+                    //     foreach ($classdetail2 as $valuedetail2) {
+                    //         $namaclass = str_replace('controller', '', strtolower($valuedetail2['class']));
 
-                            $queryacos = DB::table('acos')
-                                ->from(
-                                    db::raw("acos a with(readuncommitted)")
-                                )
-                                ->select(
-                                    'a.id'
-                                )
-                                ->where('a.class', '=', $namaclass)
-                                ->where('a.method', '=', $valuedetail2['method'])
-                                ->where('a.nama', '=', $valuedetail2['name'])
-                                ->first();
+                    //         $queryacos = DB::table('acos')
+                    //             ->from(
+                    //                 db::raw("acos a with(readuncommitted)")
+                    //             )
+                    //             ->select(
+                    //                 'a.id'
+                    //             )
+                    //             ->where('a.class', '=', $namaclass)
+                    //             ->where('a.method', '=', $valuedetail2['method'])
+                    //             ->where('a.nama', '=', $valuedetail2['name'])
+                    //             ->first();
 
-                            if (!isset($queryacos)) {
-                                // if (Acos::select('id')
-                                //     ->where('class', '=', $namaclass)
-                                //     ->exists()
-                                // ) {
+                    //         if (!isset($queryacos)) {
+                    //             // if (Acos::select('id')
+                    //             //     ->where('class', '=', $namaclass)
+                    //             //     ->exists()
+                    //             // ) {
 
-                                $dataaco = (new Acos())->processStore([
-                                    'class' => $namaclass,
-                                    'method' => $valuedetail2['method'],
-                                    'nama' => $valuedetail2['name'],
-                                    'modifiedby' => auth('api')->user()->user,
-                                ]);
-                                // }
-                            }
-                        }
-                    }
+                    //             $dataaco = (new Acos())->processStore([
+                    //                 'class' => $namaclass,
+                    //                 'method' => $valuedetail2['method'],
+                    //                 'nama' => $valuedetail2['name'],
+                    //                 'modifiedby' => auth('api')->user()->user,
+                    //             ]);
+                    //             // }
+                    //         }
+                    //     }
+                    // }
 
                     //  
                     // cek detail3
-                    if ($value['detail3'] != '') {
-                        $classdetail3 = $this->listFolderFiles($value['detail3']);
-                        foreach ($classdetail3 as $valuedetail3) {
-                            $namaclass = str_replace('controller', '', strtolower($valuedetail3['class']));
+                    // if ($value['detail3'] != '') {
+                    //     $classdetail3 = $this->listFolderFiles($value['detail3']);
+                    //     foreach ($classdetail3 as $valuedetail3) {
+                    //         $namaclass = str_replace('controller', '', strtolower($valuedetail3['class']));
 
-                            $queryacos = DB::table('acos')
-                                ->from(
-                                    db::raw("acos a with(readuncommitted)")
-                                )
-                                ->select(
-                                    'a.id'
-                                )
-                                ->where('a.class', '=', $namaclass)
-                                ->where('a.method', '=', $valuedetail3['method'])
-                                ->where('a.nama', '=', $valuedetail3['name'])
-                                ->first();
+                    //         $queryacos = DB::table('acos')
+                    //             ->from(
+                    //                 db::raw("acos a with(readuncommitted)")
+                    //             )
+                    //             ->select(
+                    //                 'a.id'
+                    //             )
+                    //             ->where('a.class', '=', $namaclass)
+                    //             ->where('a.method', '=', $valuedetail3['method'])
+                    //             ->where('a.nama', '=', $valuedetail3['name'])
+                    //             ->first();
 
-                            if (!isset($queryacos)) {
-                                // if (Acos::select('id')
-                                //     ->where('class', '=', $namaclass)
-                                //     ->exists()
-                                // ) {
+                    //         if (!isset($queryacos)) {
+                    //             // if (Acos::select('id')
+                    //             //     ->where('class', '=', $namaclass)
+                    //             //     ->exists()
+                    //             // ) {
 
-                                $dataaco = (new Acos())->processStore([
-                                    'class' => $namaclass,
-                                    'method' => $valuedetail3['method'],
-                                    'nama' => $valuedetail3['name'],
-                                    'modifiedby' => auth('api')->user()->user,
-                                ]);
-                                // }
-                            }
-                        }
-                    }
+                    //             $dataaco = (new Acos())->processStore([
+                    //                 'class' => $namaclass,
+                    //                 'method' => $valuedetail3['method'],
+                    //                 'nama' => $valuedetail3['name'],
+                    //                 'modifiedby' => auth('api')->user()->user,
+                    //             ]);
+                    //             // }
+                    //         }
+                    //     }
+                    // }
 
                     //                                         
 
