@@ -1393,17 +1393,20 @@ class Supir extends MyModel
         $supir = Supir::findOrFail($data['id']);
         $supir->mandor_id = $data['mandorbaru_id'];
         $supir->tglberlakumilikmandor = date('Y-m-d', strtotime($data['tglberlaku']));
-        
+
         if (!$supir->save()) {
             throw new \Exception("Error updating supir milik mandor.");
         }
         $dataLogtrail = [
             'id' => $supir->id,
             'namasupir' => $supir->namasupir,
-            'mandor_id' => $supir->mandor_id,
+            'mandorbaru_id' => $supir->mandor_id,
+            'mandorlama_id' => $data['mandor_id'],
             'tglberlakumilikmandor' => $supir->tglberlakumilikmandor,
 
         ];
+        
+        (new HistorySupirMilikMandor())->processStore($dataLogtrail);
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($supir->getTable()),
             'postingdari' => 'HISTORY SUPIR MILIK MANDOR',
@@ -1414,5 +1417,117 @@ class Supir extends MyModel
             'modifiedby' => auth('api')->user()->name
         ]);
         return $supir;
+    }
+
+    public function getListHistoryMandor($id)
+    {
+        $query = DB::table('logtrail')->from(DB::raw("logtrail with (readuncommitted)"))
+            ->select('datajson')
+            ->where('namatabel', 'SUPIR')
+            ->where('idtrans', $id)
+            ->where('aksi', 'HISTORY SUPIR MILIK MANDOR')
+            ->get();
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temp, function ($table) {
+            $table->id();
+            $table->integer('supir_id')->nullable();
+            $table->integer('mandorbaru_id')->nullable();
+            $table->integer('mandorlama_id')->nullable();
+            $table->date('tanggalberlakugrid')->nullable();
+        });
+        foreach ($query as $row) {
+            $data = json_decode($row->datajson, true);
+            DB::table($temp)->insert(
+                [
+                    'supir_id' => $data['id'],
+                    'mandorbaru_id' => $data['mandorbaru_id'],
+                    'mandorlama_id' => $data['mandorlama_id'],
+                    'tanggalberlakugrid' => $data['tglberlakumilikmandor'],
+                ]
+            );
+        }
+        $this->setRequestParameters();
+        $query = DB::table($temp)->from(DB::raw("$temp as a with (readuncommitted)"))
+            ->select('a.id as idgrid', 'supir.namasupir as namasupirgrid', 'mandorbaru.namamandor as mandorbarugrid', 'mandorlama.namamandor as mandorlamagrid', 'a.tanggalberlakugrid')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'a.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("mandor as mandorbaru with (readuncommitted)"), 'a.mandorbaru_id', 'mandorbaru.id')
+            ->leftJoin(DB::raw("mandor as mandorlama with (readuncommitted)"), 'a.mandorlama_id', 'mandorlama.id');
+            
+
+        $this->sortHistory($query);
+        $this->filterHistory($query);
+        $this->paginateHistory($query);
+        return $query->get();
+    }
+
+    public function sortHistory($query)
+    {
+        if ($this->params['sortIndex'] == 'namasupirgrid') {
+            return $query->orderBy('supir.namasupir', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'mandorbarugrid') {
+            return $query->orderBy('mandorbaru.namamandor', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'mandorlamagrid') {
+            return $query->orderBy('mandorlama.namamandor', $this->params['sortOrder']);
+        } else {
+            return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
+    }
+
+
+    public function filterHistory($query, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'namasupirgrid') {
+                            $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'mandorlamagrid') {
+                            $query = $query->where('mandorlama.namamandor', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'mandorbarugrid') {
+                            $query = $query->where('mandorbaru.namamandor', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'tanggalberlakugrid') {
+                            $query = $query->whereRaw("format((case when year(isnull(a." . $filters['field'] . ",'1900/1/1'))<2000 then null else a." . $filters['field'] . " end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else {
+                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        }
+                    }
+
+                    break;
+                case "OR":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'mandorlamagrid') {
+                                $query = $query->orwhere('mandorlama.namamandor', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'mandorbarugrid') {
+                                $query = $query->orwhere('mandorbaru.namamandor', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'namasupirgrid') {
+                                $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tanggalberlakugrid') {
+                                $query = $query->orWhereRaw("format((case when year(isnull(a." . $filters['field'] . ",'1900/1/1'))<2000 then null else a." . $filters['field'] . " end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->OrwhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
+                        }
+                    });
+
+                    break;
+                default:
+
+                    break;
+            }
+
+            $this->totalRows = $query->count();
+            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+        }
+
+        return $query;
+    }
+
+    public function paginateHistory($query)
+    {
+        return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 }

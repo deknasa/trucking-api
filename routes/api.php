@@ -675,6 +675,12 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('logtrail/header', [LogTrailController::class, 'header']);
     Route::resource('logtrail', LogTrailController::class)->whereNumber('logtrail');
 
+    Route::post('trado/historymandor', [TradoController::class, 'historyTradoMandor']);
+    Route::get('trado/{id}/gethistorymandor', [TradoController::class, 'getHistoryMandor']);
+    Route::get('trado/{id}/getlisthistorymandor', [TradoController::class, 'getListHistoryMandor']);
+    Route::post('trado/historysupir', [TradoController::class, 'historyTradoSupir']);
+    Route::get('trado/{id}/gethistorysupir', [TradoController::class, 'getHistorySupir']);
+    Route::get('trado/{id}/getlisthistorysupir', [TradoController::class, 'getListHistorySupir']);
     Route::get('trado/combo', [TradoController::class, 'combo']);
     Route::get('trado/field_length', [TradoController::class, 'fieldLength']);
     Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage'])->whereNumber('id');
@@ -820,8 +826,9 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
 
-    Route::post('supir/historymandor', [SupirController::class, 'historyMandor']);
+    Route::post('supir/historymandor', [SupirController::class, 'historySupirMandor']);
     Route::get('supir/{id}/gethistorymandor', [SupirController::class, 'getHistoryMandor']);
+    Route::get('supir/{id}/getlisthistorymandor', [SupirController::class, 'getListHistoryMandor']);
     Route::get('supir/combo', [SupirController::class, 'combo']);
     Route::get('supir/field_length', [SupirController::class, 'fieldLength']);
     Route::get('supir/getsupirresign', [SupirController::class, 'getSupirResign']);

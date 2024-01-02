@@ -1297,4 +1297,102 @@ class Trado extends MyModel
 
         return $result;
     }
+
+    public function getHistoryMandor($id)
+    {
+        $query = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))
+            ->select(
+                'trado.id',
+                'trado.kodetrado as trado',
+                'trado.mandor_id',
+                'mandor.namamandor as mandor',
+                DB::raw('ISNULL(trado.tglberlakumilikmandor, getdate()) as tglberlaku'),
+            )
+            ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'trado.mandor_id', 'mandor.id')
+            ->where('trado.id', $id)
+            ->first();
+
+        return $query;
+    }
+
+    public function processHistoryTradoMilikMandor($data)
+    {
+        $trado = Trado::findOrFail($data['id']);
+        $trado->mandor_id = $data['mandorbaru_id'];
+        $trado->tglberlakumilikmandor = date('Y-m-d', strtotime($data['tglberlaku']));
+
+        if (!$trado->save()) {
+            throw new \Exception("Error updating trado milik mandor.");
+        }
+        $dataLogtrail = [
+            'id' => $trado->id,
+            'kodetrado' => $trado->kodetrado,
+            'mandorbaru_id' => $trado->mandor_id,
+            'mandorlama_id' => $data['mandor_id'],
+            'tglberlakumilikmandor' => $trado->tglberlakumilikmandor,
+
+        ];
+        
+        (new HistorytradoMilikMandor())->processStore($dataLogtrail);
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($trado->getTable()),
+            'postingdari' => 'HISTORY TRADO MILIK MANDOR',
+            'idtrans' => $trado->id,
+            'nobuktitrans' => $trado->id,
+            'aksi' => 'HISTORY TRADO MILIK MANDOR',
+            'datajson' => $dataLogtrail,
+            'modifiedby' => auth('api')->user()->name
+        ]);
+        return $trado;
+    }
+
+    
+    public function getHistorySupir($id)
+    {
+        $query = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))
+            ->select(
+                'trado.id',
+                'trado.kodetrado as trado',
+                'trado.supir_id',
+                'supir.namasupir as supir',
+                DB::raw('ISNULL(trado.tglberlakumiliksupir, getdate()) as tglberlaku'),
+            )
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'trado.supir_id', 'supir.id')
+            ->where('trado.id', $id)
+            ->first();
+
+        return $query;
+    }
+
+    public function processHistoryTradoMilikSupir($data)
+    {
+        $trado = Trado::findOrFail($data['id']);
+        $trado->supir_id = $data['supirbaru_id'];
+        $trado->tglberlakumiliksupir = date('Y-m-d', strtotime($data['tglberlaku']));
+
+        if (!$trado->save()) {
+            throw new \Exception("Error updating trado milik supir.");
+        }
+        $dataLogtrail = [
+            'id' => $trado->id,
+            'kodetrado' => $trado->kodetrado,
+            'supirbaru_id' => $trado->supir_id,
+            'supirlama_id' => $data['supir_id'],
+            'tglberlakumiliksupir' => $trado->tglberlakumiliksupir,
+
+        ];
+        
+        (new HistoryTradoMilikSupir())->processStore($dataLogtrail);
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($trado->getTable()),
+            'postingdari' => 'HISTORY TRADO MILIK SUPIR',
+            'idtrans' => $trado->id,
+            'nobuktitrans' => $trado->id,
+            'aksi' => 'HISTORY TRADO MILIK SUPIR',
+            'datajson' => $dataLogtrail,
+            'modifiedby' => auth('api')->user()->name
+        ]);
+        return $trado;
+    }
+
 }
