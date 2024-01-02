@@ -206,12 +206,17 @@ class LaporanTitipanEmkl  extends MyModel
         ->where('subgrp', 'JUDULAN LAPORAN')
         ->first();
 
+        $namajenisorder=db::table("jenisorder")->from(db::raw("jenisorder a with (readuncommitted)"))
+        ->select('a.keterangan')
+        ->where('a.id',$jenisorder)
+        ->first()->keterangan ?? '';
+
         $query = DB::table($temphasil)->from(
             DB::raw($temphasil . " a with (readuncommitted) ")
         )
             ->select(
                 DB::raw("'" . $getJudul->text . "' as judul"),
-                db::raw("'Rekap Biaya Titipan Emkl Belum Lunas' as judullaporan"),
+                db::raw("upper('Rekap Biaya Titipan Emkl Belum Lunas') as judullaporan"),
                 'a.fnopol as trado',
                 'a.ftgl as tglbukti',
                 'a.fday as day',
@@ -226,8 +231,11 @@ class LaporanTitipanEmkl  extends MyModel
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
-
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                db::raw("'" . $tanggal . "' as periode"),
+                db::raw("'" . $tgldari . "' as tgldari"),
+                db::raw("'" . $tglsampai . "' as tglsampai"),
+                db::raw("'" . $namajenisorder . "' as jenisorder"),
             )
             ->join(DB::raw($temprekapnopollist . " as b with (readuncommitted) "), 'a.fnopol', 'b.fnopol')
             ->OrderBy('b.furut', 'asc')
