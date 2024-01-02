@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\forceEditNotification;
+use App\Events\NewNotification;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalKacabEditingRequest;
 use App\Http\Requests\DestroyPenerimaanGiroHeaderRequest;
 use App\Http\Requests\EditingAtRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
@@ -19,18 +22,21 @@ use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
 use App\Models\Parameter;
 use App\Models\PenerimaanGiroDetail;
+use DateTime;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class PenerimaanGiroHeaderController extends Controller
 {
     /**
      * @ClassName 
      * PenerimaanGiroHeader
-     * @Detail1 PenerimaanGiroDetailController
+     * @Detail PenerimaanGiroDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -65,6 +71,7 @@ class PenerimaanGiroHeaderController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan TAMBAH DATA
      */
     public function store(StorePenerimaanGiroHeaderRequest $request): JsonResponse
     {
@@ -120,6 +127,7 @@ class PenerimaanGiroHeaderController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan EDIT DATA
      */
     public function update(UpdatePenerimaanGiroHeaderRequest $request, PenerimaanGiroHeader $penerimaangiroheader): JsonResponse
     {
@@ -165,6 +173,7 @@ class PenerimaanGiroHeaderController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyPenerimaanGiroHeaderRequest $request, $id): JsonResponse
     {
@@ -197,6 +206,7 @@ class PenerimaanGiroHeaderController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan APPROVAL DATA
      */
     public function approval(ValidasiApprovalPenerimaanGiroRequest $request)
     {
@@ -358,13 +368,15 @@ class PenerimaanGiroHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
     }
 
-        /**
+    /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {
@@ -372,6 +384,15 @@ class PenerimaanGiroHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan APPROVAL EDITING BY
+     */
+    public function approvaleditingby()
+    {
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {
@@ -383,9 +404,92 @@ class PenerimaanGiroHeaderController extends Controller
 
     public function editingat(EditingAtRequest $request)
     {
-        $penerimaanGiro = new PenerimaanGiroHeader();
+        $penerimaanGiro = PenerimaanGiroHeader::find($request->id);
+        $btn = $request->btn;
+
+        if ($btn == 'EDIT') {
+            $param = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENERIMAAN GIRO BUKTI')->first();
+            $memo = json_decode($param->memo, true);
+            $waktu = $memo['BATASWAKTUEDIT'];
+
+            $user = auth('api')->user()->name;
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($penerimaanGiro->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            // cek user
+            // if ($penerimaanGiro->editing_by != '' && $penerimaanGiro->editing_by != $user) {
+            //     // check apakah waktu sebelumnya sudah melewati batas edit
+            //     if ($diffNow->i < $waktu) {
+            //         return response([
+            //             'isEdited' => true
+            //         ]);
+            //     }
+            // }
+        }
+
         return response([
-            'data' => $penerimaanGiro->editingAt($request->id, $request->btn),
+            'data' => (new PenerimaanGiroHeader())->editingAt($request->id, $request->btn),
+            // 'isEdited' => false
         ]);
+    }
+
+    public function approvalKacab(ApprovalKacabEditingRequest $request)
+    {
+        $query = DB::table("user")->from(DB::raw("[user] with (readuncommitted)"))
+            ->select('userrole.role_id', DB::raw("[user].id"))
+            ->join(DB::raw("userrole with (readuncommitted)"), DB::raw("[user].id"), 'userrole.user_id')
+            ->where('user.user', request()->username)->first();
+
+        $cekAcl = DB::table("acos")->from(DB::raw("acos with (readuncommitted)"))
+            ->select(DB::raw("acos.id,acos.class,acos.method"))
+            ->join(DB::raw("acl with (readuncommitted)"), 'acos.id', 'acl.aco_id')
+            ->where("acos.class", 'penerimaangiroheader')
+            ->where("acos.method", 'approvaleditingby')
+            ->where('acl.role_id', $query->role_id)
+            ->first();
+        $edit = '';
+        if ($cekAcl != '') {
+            $status = true;
+            $edit = (new PenerimaanGiroHeader())->editingAt($request->id, 'EDIT');
+        } else {
+            $cekUserAcl = DB::table("acos")->from(DB::raw("acos with (readuncommitted)"))
+                ->select(DB::raw("acos.id,acos.class,acos.method"))
+                ->join(DB::raw("useracl with (readuncommitted)"), 'acos.id', 'useracl.aco_id')
+                ->where("acos.class", 'penerimaangiroheader')
+                ->where("acos.method", 'approvaleditingby')
+                ->where('useracl.user_id', $query->id)
+                ->first();
+            if ($cekUserAcl != '') {
+                $status = true;
+
+                $edit = (new PenerimaanGiroHeader())->editingAt($request->id, 'EDIT');
+            } else {
+                $status = false;
+            }
+        }
+        if ($status) {
+
+
+            event(new NewNotification(json_encode([
+                'message' => "FORM INI SUDAH TIDAK BISA DIEDIT. SEDANG DIEDIT OLEH ".$edit->editing_by,
+                'olduser' => $edit->oldeditingby,
+                'user' => $edit->editing_by,
+                'id' => $request->id
+
+            ])));
+        }
+
+        return response([
+            'status' => $status,
+            'data' => $edit
+        ]);
+    }
+
+    
+    /**
+     * @ClassName 
+     * @Keterangan TEST
+     */
+    public function cobamethod()
+    {
     }
 }
