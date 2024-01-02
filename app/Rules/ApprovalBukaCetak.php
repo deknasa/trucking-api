@@ -5,6 +5,8 @@ namespace App\Rules;
 use Illuminate\Contracts\Validation\Rule;
 use App\Models\Parameter;
 use Carbon\Carbon;
+use DateTime;
+use Illuminate\Support\Facades\DB;
 
 class ApprovalBukaCetak implements Rule
 {
@@ -27,13 +29,20 @@ class ApprovalBukaCetak implements Rule
      */
     public function passes($attribute, $value)
     {
-
-        $tutupBuku = Parameter::where('grp','TUTUP BUKU')->where('subgrp','TUTUP BUKU')->first();
-        $tutupBukuDate = date('m-Y', strtotime($tutupBuku->text));
+        $table = request()->table;
         $allowed = false;
-        if($value > $tutupBukuDate){
-            $allowed = true;
+        $tutupBuku = Parameter::where('grp', 'TUTUP BUKU')->where('subgrp', 'TUTUP BUKU')->first();
+        $tutupBukuDate = date('Y-m-d', strtotime($tutupBuku->text));
+
+        foreach ($value as $val) {
+            $getTgl = DB::table($table)->from(DB::raw("$table with (readuncommitted)"))->select('tglbukti')->where('id', $val)->first();
+            $date = date('Y-m-d', strtotime($getTgl->tglbukti));
+
+            if ($date > $tutupBukuDate) {
+                $allowed = true;
+            }
         }
+        
         return $allowed;
     }
 

@@ -42,8 +42,8 @@ class StoreApprovalBukuCetakHeaderRequest extends FormRequest
 
         
         $rules = [
-            'tableId' => ['required','min:1'],
-            'periode' => ['required',new ApprovalBukaCetak()],
+            'tableId' => ['required','min:1',new ApprovalBukaCetak()],
+            'periode' => ['required'],
             'table' => ['required', Rule::in($statusCetakUlang)],
         ];
         
