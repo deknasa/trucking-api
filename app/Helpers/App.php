@@ -12,8 +12,9 @@ use Intervention\Image\ImageManagerStatic as Image;
 
 class App
 {
-    public function runningNumber(string $format, int $lastRow, int $bulan): string
+    public function runningNumber(string $format, int $lastRow, int $bulan, string  $tglbukti, string $table): string
     {
+
         $totalSeparator = 0;
         $staticSeparator = '#';
         $staticSeparatorformat = '|';
@@ -73,13 +74,14 @@ class App
         /**
          * Change dynamic text format
          */
+        // dd($tglbukti);
         foreach ($dynamicTexts as $index => $dynamicText) {
             switch (str_replace(' ', '', $dynamicText)) {
                 case 'R':
                     $dynamicTexts[$index] = $this->numberToRoman($bulan);
                     break;
                 case $this->isDateFormat($dynamicText):
-                    $dynamicTexts[$index] = date($dynamicText);
+                    $dynamicTexts[$index] = date($dynamicText, strtotime($tglbukti));
                     break;
                 case is_numeric($dynamicText):
                     $dynamicText = str_replace(' ', '', $dynamicText);
@@ -95,6 +97,7 @@ class App
          * Change back the symbol
          * into formated text
          */
+        // dd($separatedResults);
         foreach ($separatedResults as $index => $separatedResult) {
             if ($separatedResult == $staticSeparator) {
                 $separatedResults[$index] = $staticTexts[$staticIterator];
@@ -109,6 +112,19 @@ class App
 
         $result = join($separatedResults);
 
+        $sqlcek = db::table($table)->from(db::raw("$table  a with (readuncommitted)"))
+            ->select('a.nobukti')
+            ->where('a.nobukti', $result)
+            ->first();
+
+        if (isset($sqlcek)) {
+            $lasRownext = $lastRow + 1;
+            $result = $this->runningNumber($format, $lasRownext, $bulan, $tglbukti, $table);
+            // dd($result);
+        }
+
+
+        // dd($result);
         return $result;
     }
 
@@ -195,7 +211,7 @@ class App
             "", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh",
             "delapan", "sembilan", "sepuluh", "sebelas"
         );
-        
+
         if ($satuan < 12)
             return " " . $huruf[$satuan];
         elseif ($satuan < 20)
