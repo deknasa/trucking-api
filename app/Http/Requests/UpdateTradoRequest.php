@@ -38,8 +38,8 @@ class UpdateTradoRequest extends FormRequest
             $requiredDefault  = true;
             $nonAktif = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->select('id')
-                ->where("grp","STATUS AKTIF")
-                ->where("text","NON AKTIF")
+                ->where("grp", "STATUS AKTIF")
+                ->where("text", "NON AKTIF")
                 ->first();
             $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->whereRaw("grp like '%STATUS APPROVAL%'")
@@ -76,8 +76,8 @@ class UpdateTradoRequest extends FormRequest
             $requiredDefault  = true;
             $nonAktif = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->select('id')
-                ->where("grp","STATUS AKTIF")
-                ->where("text","NON AKTIF")
+                ->where("grp", "STATUS AKTIF")
+                ->where("text", "NON AKTIF")
                 ->first();
             $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->whereRaw("grp like '%STATUS APPROVAL%'")
@@ -122,10 +122,10 @@ class UpdateTradoRequest extends FormRequest
             'statusaktif' => [$ruleKeterangan, Rule::in($status)],
             'tahun' => [$ruleKeterangan, 'min:4', 'max:4', 'nullable'],
             'merek' => $ruleKeterangan,
-            'norangka' => [$ruleKeterangan, 'max:20', 'nullable','sometimes', Rule::unique('trado')->whereNotIn('id', [$this->id])],
-            'nomesin' =>  [$ruleKeterangan, 'max:20', 'nullable','sometimes', Rule::unique('trado')->whereNotIn('id', [$this->id])],
+            'norangka' => [$ruleKeterangan, 'max:20', 'nullable', 'sometimes', Rule::unique('trado')->whereNotIn('id', [$this->id])],
+            'nomesin' =>  [$ruleKeterangan, 'max:20', 'nullable', 'sometimes', Rule::unique('trado')->whereNotIn('id', [$this->id])],
             'nama' => [$ruleKeterangan],
-            'nostnk' =>  [$ruleKeterangan, 'max:50', 'nullable','sometimes', Rule::unique('trado')->whereNotIn('id', [$this->id])],
+            'nostnk' =>  [$ruleKeterangan, 'max:50', 'nullable', 'sometimes', Rule::unique('trado')->whereNotIn('id', [$this->id])],
             'alamatstnk' => [$ruleKeterangan],
             'statusjenisplat' => [$ruleKeterangan],
             'tglpajakstnk' => [$ruleKeterangan],
@@ -140,17 +140,17 @@ class UpdateTradoRequest extends FormRequest
             'jumlahsumbu' => [$ruleKeterangan, 'numeric', 'min:1', 'digits_between:1,2', 'nullable'],
             'jumlahroda' => [$ruleKeterangan, 'numeric', 'min:1', 'digits_between:1,2', 'nullable'],
             'model' => [$ruleKeterangan],
-            'nobpkb' => [$ruleKeterangan, 'max:15', 'nullable','sometimes', Rule::unique('trado')->whereNotIn('id', [$this->id])],
+            'nobpkb' => [$ruleKeterangan, 'max:15', 'nullable', 'sometimes', Rule::unique('trado')->whereNotIn('id', [$this->id])],
             'jumlahbanserap' => [$ruleKeterangan, 'numeric', 'min:1', 'digits_between:1,2', 'nullable'],
             'statusgerobak' => [$ruleKeterangan],
             'statusabsensisupir' => [$ruleKeterangan],
             'nominalplusborongan' => [new NotDecimal()],
             'phototrado' => [$ruleGambar, 'array'],
-            'phototrado.*' => [$ruleGambar, 'image'],
+            'phototrado.*' => [$ruleGambar, 'image', 'min:200'],
             'photobpkb' => [$ruleGambar, 'array'],
-            'photobpkb.*' => [$ruleGambar, 'image'],
+            'photobpkb.*' => [$ruleGambar, 'image', 'min:200'],
             'photostnk' => [$ruleGambar, 'array'],
-            'photostnk.*' => [$ruleGambar, 'image'],
+            'photostnk.*' => [$ruleGambar, 'image', 'min:200'],
         ];
     }
 
@@ -179,7 +179,10 @@ class UpdateTradoRequest extends FormRequest
             'nobpkb' => 'No BPKB',
             'jumlahbanserap' => 'Jumlah Ban Serap',
             'statusgerobak' => 'Status Gerobak',
-            'statusabsensisupir' => 'Status Absensi Supir'
+            'statusabsensisupir' => 'Status Absensi Supir',
+            'phototrado.*' => 'foto trado',
+            'photobpkb.*' => 'foto bpkb',
+            'photostnk.*' => 'foto stnk',
         ];
     }
 

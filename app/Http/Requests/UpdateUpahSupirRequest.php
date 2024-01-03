@@ -180,7 +180,7 @@ class UpdateUpahSupirRequest extends FormRequest
             'kotasampai' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id), ($check['kondisi']) ? Rule::in($dataUpahSupir->kotasampai) : ''],
             'tarif' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id), ($check['kondisi']) ? Rule::in($dataUpahSupir->tarif) : ''],
             'penyesuaian' => [new UniqueUpahSupirSampaiEdit(), new ValidasiPenyesuaianUpahSupir(), new ValidasiKotaUpahZona($getBukanUpahZona->id), ($check['kondisi']) ? Rule::in($dataUpahSupir->penyesuaian) : ''],
-            'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],            
+            'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
             'jarakfullempty' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'statussimpankandang' => [new SimpanKandangUpahSupir()],
@@ -192,7 +192,7 @@ class UpdateUpahSupirRequest extends FormRequest
                 'before:' . $tglBatasAkhir,
                 'after_or_equal:' . date('d-m-Y', strtotime($dataUpahSupir->tglmulaiberlaku))
             ],
-            'gambar.*' => 'image'
+            'gambar.*' => ['image', 'min:200']
         ];
         $relatedRequests = [
             UpdateUpahSupirRincianRequest::class
@@ -212,7 +212,7 @@ class UpdateUpahSupirRequest extends FormRequest
             );
         }
 
-        if((request()->tarifmuatan_id != 0 || request()->tarifmuatan_id != '') && (request()->tarifbongkaran_id != 0 || request()->tarifbongkaran_id != '')){
+        if ((request()->tarifmuatan_id != 0 || request()->tarifmuatan_id != '') && (request()->tarifbongkaran_id != 0 || request()->tarifbongkaran_id != '')) {
             unset($rules['tarif']);
         }
         $getListTampilan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'UBAH TAMPILAN')->where('text', 'UPAHSUPIR')->first();
@@ -240,6 +240,7 @@ class UpdateUpahSupirRequest extends FormRequest
             'container.*' => 'container',
             'statuscontainer.*' => 'container',
             'nominalsupir.*' => 'nominal supir',
+            'gambar.*' => 'gambar'
         ];
     }
 
