@@ -289,6 +289,9 @@ use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
 use App\Http\Controllers\Api\LapanganController;
 use App\Http\Controllers\Api\LaporanBiayaSupirController;
+use App\Http\Controllers\Api\LaporanHistorySupirMilikMandorController;
+use App\Http\Controllers\Api\LaporanHistoryTradoMilikMandorController;
+use App\Http\Controllers\Api\LaporanHistoryTradoMilikSupirController;
 use App\Http\Controllers\Api\OtobonController;
 use App\Http\Controllers\Api\SupirSerapController;
 
@@ -1808,6 +1811,18 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('lapangan/field_length', [LapanganController::class, 'fieldLength']);
     Route::get('lapangan/export', [LapanganController::class, 'export']);
     Route::resource('lapangan', LapanganController::class)->whereNumber('lapangan');
+    
+    Route::get('laporanhistorysupirmilikmandor/report', [LaporanHistorySupirMilikMandorController::class, 'report'])->name('laporanhistorysupirmilikmandor.report');
+    Route::get('laporanhistorysupirmilikmandor/export', [LaporanHistorySupirMilikMandorController::class, 'export'])->name('laporanhistorysupirmilikmandor.export');
+    Route::resource('laporanhistorysupirmilikmandor', LaporanHistorySupirMilikMandorController::class)->whereNumber('laporanhistorysupirmilikmandor');
+    
+    Route::get('laporanhistorytradomilikmandor/report', [LaporanHistoryTradoMilikMandorController::class, 'report'])->name('laporanhistorytradomilikmandor.report');
+    Route::get('laporanhistorytradomilikmandor/export', [LaporanHistoryTradoMilikMandorController::class, 'export'])->name('laporanhistorytradomilikmandor.export');
+    Route::resource('laporanhistorytradomilikmandor', LaporanHistoryTradoMilikMandorController::class)->whereNumber('laporanhistorytradomilikmandor');
+
+    Route::get('laporanhistorytradomiliksupir/report', [LaporanHistoryTradoMilikSupirController::class, 'report'])->name('laporanhistorytradomiliksupir.report');
+    Route::get('laporanhistorytradomiliksupir/export', [LaporanHistoryTradoMilikSupirController::class, 'export'])->name('laporanhistorytradomiliksupir.export');
+    Route::resource('laporanhistorytradomiliksupir', LaporanHistoryTradoMilikSupirController::class)->whereNumber('laporanhistorytradomiliksupir');
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);
 
