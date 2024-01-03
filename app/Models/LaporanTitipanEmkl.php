@@ -232,8 +232,8 @@ class LaporanTitipanEmkl  extends MyModel
                 db::raw("'" . $diperiksa . "' as diperiksa"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
-                db::raw("'" . $tanggal . "' as periode"),
-                db::raw("'" . $tgldari . "' as tgldari"),
+                db::raw("cast('" . $tanggal . "' as date) as periode"),
+                db::raw("format(cast('" . $tgldari . "' as date),'dd-MM-yyyy') +' S/D '+ format(cast('" . $tglsampai . "' as date),'dd-MM-yyyy')  as tgldari"),
                 db::raw("'" . $tglsampai . "' as tglsampai"),
                 db::raw("'" . $namajenisorder . "' as jenisorder"),
             )

@@ -200,7 +200,7 @@ class LaporanRekapTitipanEmkl  extends MyModel
         )
             ->select(
                 DB::raw("'" . $getJudul->text . "' as judul"),
-                db::raw("'Biaya Titipan Emkl Yang Belum Lunas/Piutang Lain' as judullaporan"),
+                db::raw("upper('Biaya Titipan Emkl Yang Belum Lunas/Piutang Lain') as judullaporan"),
                 db::raw("ROW_NUMBER() OVER(ORDER BY a.tglbukti,a.nobukti) as urut"),
                 'a.nobukti',
                 'a.tglbukti',
