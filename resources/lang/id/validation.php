@@ -94,7 +94,7 @@ return [
     'mimetypes' => 'The :attribute must be a file of type: :values.',
     'min' => [
         'numeric' => ':attribute ' . (new ErrorController)->geterror('NTLK')->keterangan . ' :min.',
-        'file' => 'The :attribute must be at least :min kilobytes.',
+        'file' => 'ukuran file :attribute minimal :min kilobytes.',
         'string' => 'The :attribute must be at least :min characters.',
         'array' => 'The :attribute must have at least :min items.',
     ],

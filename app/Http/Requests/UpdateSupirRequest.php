@@ -145,19 +145,19 @@ class UpdateSupirRequest extends FormRequest
         ];
         $rulesGambar = [
             'photosupir' => [$ruleGambar, 'array'],
-            'photosupir.*' => [$ruleGambar, 'image'],
+            'photosupir.*' => [$ruleGambar, 'image','min:200'],
             'photoktp' => [$ruleGambar, 'array'],
-            'photoktp.*' => [$ruleGambar, 'image'],
+            'photoktp.*' => [$ruleGambar, 'image','min:200'],
             'photosim' => [$ruleGambar, 'array'],
-            'photosim.*' => [$ruleGambar, 'image'],
+            'photosim.*' => [$ruleGambar, 'image','min:200'],
             'photokk' => [$ruleGambar, 'array'],
-            'photokk.*' => [$ruleGambar, 'image'],
+            'photokk.*' => [$ruleGambar, 'image','min:200'],
             'photoskck' => [$ruleGambar, 'array'],
-            'photoskck.*' => [$ruleGambar, 'image'],
+            'photoskck.*' => [$ruleGambar, 'image','min:200'],
             'photodomisili' => [$ruleGambar, 'array'],
-            'photodomisili.*' => [$ruleGambar, 'image'],
+            'photodomisili.*' => [$ruleGambar, 'image','min:200'],
             'photovaksin' => [$ruleGambar, 'array'],
-            'photovaksin.*' => [$ruleGambar, 'image'],
+            'photovaksin.*' => [$ruleGambar, 'image','min:200'],
             'pdfsuratperjanjian' => [$ruleGambar, 'array'],
             'pdfsuratperjanjian.*' => [$ruleGambar, 'mimes:pdf']
         ];
