@@ -29,7 +29,7 @@ class InputTripController extends Controller
     /**
      * @ClassName 
      * inputtripcontroller
-     * @Detail1 SuratPengantarApprovalInputTripController
+     * @Detail SuratPengantarApprovalInputTripController
      * @Keterangan TAMBAH DATA
      */
     public function store(StoreMandorTripRequest $request)

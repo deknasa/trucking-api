@@ -50,7 +50,7 @@ class PengeluaranStokHeaderController extends Controller
     /**
      * @ClassName 
      * PengeluaranStokHeader
-     * @Detail1 PengeluaranStokDetailController
+     * @Detail PengeluaranStokDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)

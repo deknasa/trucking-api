@@ -53,7 +53,7 @@ class GajiSupirHeaderController extends Controller
     /**
      * @ClassName 
      * GajiSupirHeader
-     * @Detail1 GajiSupirDetailController
+     * @Detail GajiSupirDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)

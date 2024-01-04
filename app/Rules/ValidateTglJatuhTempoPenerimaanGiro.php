@@ -30,9 +30,8 @@ class ValidateTglJatuhTempoPenerimaanGiro implements Rule
         $agen = Agen::find(request()->agen_id);
         if ($agen != null) {
             $top = intval($agen->top);
-            $dateNow = date('Y-m-d');
+            $dateNow = date('Y-m-d', strtotime(request()->tglbukti));
             $nextDay = date('d-m-Y', strtotime($dateNow . " +$top day"));
-
             if ($value > $nextDay) {
                 return false;
             } else {

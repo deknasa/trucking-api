@@ -38,7 +38,7 @@ class KasGantungHeaderController extends Controller
     /**
      * @ClassName 
      * KasGantungHeader
-     * @Detail1 KasGantungDetailController
+     * @Detail KasGantungDetailController
      * @Keterangan TAMPILKAN DATA
      */
 

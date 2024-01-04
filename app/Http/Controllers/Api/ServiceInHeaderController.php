@@ -23,7 +23,7 @@ class ServiceInHeaderController extends Controller
     /**
      * @ClassName 
      * ServiceInHeaderHeader
-     * @Detail1 ServiceInDetailController
+     * @Detail ServiceInDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index()

@@ -44,7 +44,7 @@ class PengeluaranTruckingHeaderController extends Controller
     /**
      * @ClassName 
      * PengeluaranTruckingHeader
-     * @Detail1 PengeluaranTruckingDetailController
+     * @Detail PengeluaranTruckingDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetPengeluaranRangeRequest $request)

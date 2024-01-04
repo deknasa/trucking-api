@@ -22,7 +22,7 @@ class PendapatanSupirHeaderController extends Controller
     /**
      * @ClassName 
      * PendapatanSupirHeader
-     * @Detail1 PendapatanSupirDetailController
+     * @Detail PendapatanSupirDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)

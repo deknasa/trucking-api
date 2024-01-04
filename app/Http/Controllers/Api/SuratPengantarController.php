@@ -41,7 +41,7 @@ class SuratPengantarController extends Controller
     /**
      * @ClassName 
      * SuratPengantar
-     * @Detail1 SuratPengantarBiayaTambahanController
+     * @Detail SuratPengantarBiayaTambahanController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)

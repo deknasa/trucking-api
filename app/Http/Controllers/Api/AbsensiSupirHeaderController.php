@@ -32,7 +32,7 @@ class AbsensiSupirHeaderController extends Controller
     /**
      * @ClassName 
      * AbsensiSupirHeader
-     * @Detail1 AbsensiSupirDetailController
+     * @Detail AbsensiSupirDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)

@@ -33,7 +33,7 @@ class PengembalianKasBankHeaderController extends Controller
     /**
      * @ClassName 
      * PengembalianKasBankHeader
-     * @Detail1 PengembalianKasBankDetailController
+     * @Detail PengembalianKasBankDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index()

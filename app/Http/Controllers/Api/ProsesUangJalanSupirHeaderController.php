@@ -47,7 +47,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
     /**
      * @ClassName 
      * ProsesUangJalanSupirHeader
-     * @Detail1 ProsesUangJalanSupirDetailController
+     * @Detail ProsesUangJalanSupirDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)

@@ -34,7 +34,7 @@ class JurnalUmumHeaderController extends Controller
     /**
      * @ClassName 
      * JurnalUmumHeader
-     * @Detail1 JurnalUmumDetailController
+     * @Detail JurnalUmumDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)

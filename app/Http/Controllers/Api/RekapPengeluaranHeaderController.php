@@ -26,7 +26,7 @@ class RekapPengeluaranHeaderController extends Controller
     /**
      * @ClassName 
      * RekapPengeluaranHeader
-     * @Detail1 RekapPengeluaranDetailController
+     * @Detail RekapPengeluaranDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)

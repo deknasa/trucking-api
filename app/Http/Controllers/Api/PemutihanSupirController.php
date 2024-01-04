@@ -29,7 +29,7 @@ class PemutihanSupirController extends Controller
     /**
      * @ClassName 
      * PemutihanSupir
-     * @Detail1 PemutihanSupirDetailController
+     * @Detail PemutihanSupirDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)

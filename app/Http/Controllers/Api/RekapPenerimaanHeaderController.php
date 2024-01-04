@@ -27,7 +27,7 @@ class RekapPenerimaanHeaderController extends Controller
     /**
      * @ClassName 
      * RekapPenerimaanHeader
-     * @Detail1 RekapPenerimaanDetailController
+     * @Detail RekapPenerimaanDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)

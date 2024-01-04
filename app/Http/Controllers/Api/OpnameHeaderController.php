@@ -22,7 +22,7 @@ class OpnameHeaderController extends Controller
     /**
      * @ClassName 
      * OpnameHeaderController
-     * @Detail1 OpnameDetailController
+     * @Detail OpnameDetailController
      */
     public function index()
     {

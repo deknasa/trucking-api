@@ -42,7 +42,7 @@ class PelunasanHutangHeaderController extends Controller
     /**
      * @ClassName 
      * PelunasanHutangHeader
-     * @Detail1 PelunasanHutangDetailController
+     * @Detail PelunasanHutangDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)

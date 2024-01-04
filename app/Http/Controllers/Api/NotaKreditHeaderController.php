@@ -24,7 +24,7 @@ class NotaKreditHeaderController extends Controller
     /**
      * @ClassName 
      * NotaKreditHeader
-     * @Detail1 NotaKreditDetailController
+     * @Detail NotaKreditDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)

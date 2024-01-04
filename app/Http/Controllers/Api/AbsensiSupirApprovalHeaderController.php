@@ -35,7 +35,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
     /**
      * @ClassName 
      * AbsensiSupirApprovalHeader
-     * @Detail1 AbsensiSupirApprovalDetailController
+     * @Detail AbsensiSupirApprovalDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)

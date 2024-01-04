@@ -33,7 +33,7 @@ class OrderanTruckingController extends Controller
     /**
      * @ClassName 
      * orderantruckingcontroller
-     * @Detail1 JobTruckingController
+     * @Detail JobTruckingController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)

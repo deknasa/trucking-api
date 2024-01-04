@@ -40,7 +40,7 @@ class PengeluaranHeaderController extends Controller
     /**
      * @ClassName 
      * pengeluaranheadercontainer
-     * @Detail1 PengeluaranDetailController
+     * @Detail PengeluaranDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)

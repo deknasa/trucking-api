@@ -63,7 +63,7 @@ class ProsesGajiSupirHeaderController extends Controller
     /**
      * @ClassName 
      * ProsesGajiSupirHeader
-     * @Detail1 ProsesGajiSupirDetailController
+     * @Detail ProsesGajiSupirDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
