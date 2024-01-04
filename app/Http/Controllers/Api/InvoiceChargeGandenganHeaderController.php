@@ -23,7 +23,7 @@ class InvoiceChargeGandenganHeaderController extends Controller
     /**
      * @ClassName 
      * InvoiceChargeGandenganHeader
-     * @Detail1 InvoiceChargeGandenganDetailController
+     * @Detail InvoiceChargeGandenganDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {

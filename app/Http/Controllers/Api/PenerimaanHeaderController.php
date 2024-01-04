@@ -38,7 +38,7 @@ class PenerimaanHeaderController extends Controller
     /**
      * @ClassName 
      * PenerimaanHeaderController
-     * @Detail1 PenerimaanDetailController
+     * @Detail PenerimaanDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)

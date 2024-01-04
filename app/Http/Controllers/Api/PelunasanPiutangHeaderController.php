@@ -52,7 +52,7 @@ class PelunasanPiutangHeaderController extends Controller
     /**
      * @ClassName 
      * PelunasanPiutangHeader
-     * @Detail1 PelunasanPiutangDetailController
+     * @Detail PelunasanPiutangDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {

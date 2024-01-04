@@ -29,7 +29,7 @@ class UpahRitasiController extends Controller
     /**
      * @ClassName 
      * UpahRitasi
-     * @Detail1 UpahRitasiRincianController
+     * @Detail UpahRitasiRincianController
      * @Keterangan TAMPILKAN DATA
      */
     public function index()

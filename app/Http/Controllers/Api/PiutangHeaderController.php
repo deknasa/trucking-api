@@ -38,7 +38,7 @@ class PiutangHeaderController extends Controller
     /**
      * @ClassName 
      * PiutangHeaderHeader
-     * @Detail1 PiutangDetailController
+     * @Detail PiutangDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {

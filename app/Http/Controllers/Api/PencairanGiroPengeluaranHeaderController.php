@@ -28,7 +28,7 @@ class PencairanGiroPengeluaranHeaderController extends Controller
       /**
      * @ClassName 
      * PencairanGiroPengeluaranHeader
-     * @Detail1 PencairanGiroPengeluaranDetailController
+     * @Detail PencairanGiroPengeluaranDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)

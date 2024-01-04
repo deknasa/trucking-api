@@ -26,7 +26,7 @@ class UserController extends Controller
     /**
      * @ClassName 
      * user
-     * @Detail1 AcosController
+     * @Detail AcosController
      * @Keterangan TAMPILKAN DATA
      */
     public function index()

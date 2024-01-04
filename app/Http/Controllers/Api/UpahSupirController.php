@@ -34,7 +34,7 @@ class UpahSupirController extends Controller
     /**
      * @ClassName 
      * UpahSupir
-     * @Detail1 UpahSupirRincianController
+     * @Detail UpahSupirRincianController
      * @Keterangan TAMPILKAN DATA
      */
     public function index()

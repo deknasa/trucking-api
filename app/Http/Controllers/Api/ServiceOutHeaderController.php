@@ -28,7 +28,7 @@ class ServiceOutHeaderController extends Controller
     /**
      * @ClassName 
      * ServiceOutHeader
-     * @Detail1 ServiceOutDetailController
+     * @Detail ServiceOutDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)

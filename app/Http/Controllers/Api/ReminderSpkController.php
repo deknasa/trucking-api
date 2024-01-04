@@ -14,7 +14,7 @@ class ReminderSpkController extends Controller
     /**
      * @ClassName 
      * ReminderSpkController
-     * @Detail1 ReminderSpkDetailController
+     * @Detail ReminderSpkDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index()

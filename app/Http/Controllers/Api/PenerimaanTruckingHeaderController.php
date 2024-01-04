@@ -39,7 +39,7 @@ class PenerimaanTruckingHeaderController extends Controller
     /**
      * @ClassName 
      * PenerimaanTruckingHeader
-     * @Detail1 PenerimaanTruckingDetailController
+     * @Detail PenerimaanTruckingDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetPenerimaanTruckingHeaderRequest $request)

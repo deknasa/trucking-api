@@ -31,7 +31,7 @@ class TarifController extends Controller
     /**
      * @ClassName 
      * Tarif
-     * @Detail1 TarifRincianController
+     * @Detail TarifRincianController
      * @Keterangan TAMPILKAN DATA
      */
     public function index()

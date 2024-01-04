@@ -21,7 +21,7 @@ class JurnalUmumPusatHeaderController extends Controller
     /**
      * @ClassName 
      * JurnalUmumPusatHeader
-     * @Detail1 JurnalUmumPusatDetailController
+     * @Detail JurnalUmumPusatDetailController
      * @Keterangan TAMPILKAN DATA
      */
 

@@ -24,7 +24,7 @@ use Illuminate\Database\QueryException;
 
 class MenuController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -63,7 +63,7 @@ class MenuController extends Controller
 
             $menu = (new Menu())->processStore($data);
             $menu->position = $this->getPosition($menu, $menu->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $menu->page = ceil($menu->position / (10));
             } else {
                 $menu->page = ceil($menu->position / ($request->limit ?? 10));
@@ -110,7 +110,7 @@ class MenuController extends Controller
 
             $menu = (new Menu())->processUpdate($menu, $data);
             $menu->position = $this->getPosition($menu, $menu->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $menu->page = ceil($menu->position / (10));
             } else {
                 $menu->page = ceil($menu->position / ($request->limit ?? 10));
@@ -142,7 +142,7 @@ class MenuController extends Controller
             $selected = $this->getPosition($menu, $menu->getTable(), true);
             $menu->position = $selected->position;
             $menu->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $menu->page = ceil($menu->position / (10));
             } else {
                 $menu->page = ceil($menu->position / ($request->limit ?? 10));
@@ -347,36 +347,57 @@ class MenuController extends Controller
 
                         foreach ($methods as $method) {
                             if (isset($method['docComment']['ClassName'])) {
-                                if (isset($method['docComment']['Detail1'])) {
-                                    $detail1 = $method['docComment']['Detail1'];
+                                if (isset($method['docComment']['Detail'])) {
+                                    $detail = $method['docComment']['Detail'];
                                 } else {
-                                    $detail1 = '';
+                                    $detail = [''];
                                 }
-                                if (isset($method['docComment']['Detail2'])) {
-                                    $detail2 = $method['docComment']['Detail2'];
+                                if (isset($method['docComment']['Keterangan'])) {
+                                    $keterangan = $method['docComment']['Keterangan'][0];
                                 } else {
-                                    $detail2 = '';
+                                    $keterangan = '';
                                 }
-                                if (isset($method['docComment']['Detail3'])) {
-                                    $detail3 = $method['docComment']['Detail3'];
-                                } else {
-                                    $detail3 = '';
-                                }
+                                // dd($detail);
                                 $data[] = [
                                     'class' => $class,
                                     'method' => $method['name'],
                                     'name' => $method['name'] . ' ' . $class,
-                                    'detail1' => trim($detail1),
-                                    'detail2' => trim($detail2),
-                                    'detail3' => trim($detail3)
+                                    'detail' => $detail,
+                                    'keterangan' => $keterangan,
+
                                 ];
                             }
+                            // if (isset($method['docComment']['ClassName'])) {
+                            //     if (isset($method['docComment']['Detail1'])) {
+                            //         $detail1 = $method['docComment']['Detail1'];
+                            //     } else {
+                            //         $detail1 = '';
+                            //     }
+                            //     if (isset($method['docComment']['Detail2'])) {
+                            //         $detail2 = $method['docComment']['Detail2'];
+                            //     } else {
+                            //         $detail2 = '';
+                            //     }
+                            //     if (isset($method['docComment']['Detail3'])) {
+                            //         $detail3 = $method['docComment']['Detail3'];
+                            //     } else {
+                            //         $detail3 = '';
+                            //     }
+                            //     $data[] = [
+                            //         'class' => $class,
+                            //         'method' => $method['name'],
+                            //         'name' => $method['name'] . ' ' . $class,
+                            //         'detail1' => trim($detail1),
+                            //         'detail2' => trim($detail2),
+                            //         'detail3' => trim($detail3)
+                            //     ];
+                            // }
                         }
                     }
                 }
             }
         }
-        
+        // dd($data);
         return $data ?? '';
     }
 
@@ -404,9 +425,10 @@ class MenuController extends Controller
         );
         $cdetail = '';
         foreach ($ffs as $ff) {
-            if (is_dir($dir . '/' . $ff))
+            if (is_dir($dir . '/' . $ff)){
                 $this->listFolderFiles($dir . '/' . $ff);
-            elseif (is_file($dir . '/' . $ff) && strpos($ff, '.php') !== false) {
+            
+            }elseif (is_file($dir . '/' . $ff) && strpos($ff, '.php') !== false) {
                 $classes = $this->get_php_classes(file_get_contents($dir . '/' . $ff));
                 foreach ($classes as $class) {
 
@@ -562,13 +584,27 @@ class MenuController extends Controller
     {
         $comment = $obj->getMethod($method)->getDocComment();
         //define the regular expression pattern to use for string matching
-        $pattern = "#(@[a-zA-Z]+\s*[a-zA-Z0-9, ()_].*)#";
+        // $pattern = "#(@[a-zA-Z]+\s*[a-zA-Z0-9, ()_].*)#";
+        $pattern = "/@([a-zA-Z0-9_]+)([^\n@]*)/";
         //perform the regular expression on the string provided
-        preg_match_all($pattern, $comment, $matches, PREG_PATTERN_ORDER);
+        // preg_match_all($pattern, $comment, $matches, PREG_PATTERN_ORDER);
+        preg_match_all($pattern, $comment, $matches, PREG_SET_ORDER);
         $comments = [];
-        foreach ($matches[0] as $match) {
-            $comment = preg_split('/[\s]/', $match, 2);
-            $comments[trim($comment[0], '@')] = $comment[1];
+        // foreach ($matches[0] as $match) {
+        //     $comment = preg_split('/[\s]/', $match, 2);
+        //     $comments[trim($comment[0], '@')] = $comment[1];
+        // }
+        foreach ($matches as $match) {
+            $tag = $match[1];
+            $value = trim($match[2]);
+
+            if (!isset($comments[$tag])) {
+                $comments[$tag] = [];
+            }
+
+            if (!empty($value)) {
+                $comments[$tag][] = $value;
+            }
         }
 
         return $comments;

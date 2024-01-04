@@ -24,7 +24,7 @@ class NotaDebetHeaderController extends Controller
     /**
      * @ClassName 
      * NotaDebetHeader
-     * @Detail1 NotaDebetDetailController
+     * @Detail NotaDebetDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)

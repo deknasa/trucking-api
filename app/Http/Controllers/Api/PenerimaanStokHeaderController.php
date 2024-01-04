@@ -41,7 +41,7 @@ class PenerimaanStokHeaderController extends Controller
     /**
      * @ClassName 
      * PenerimaanStokHeader
-     * @Detail1 PenerimaanStokDetailController
+     * @Detail PenerimaanStokDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)

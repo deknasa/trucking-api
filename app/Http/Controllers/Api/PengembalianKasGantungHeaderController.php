@@ -39,7 +39,7 @@ class PengembalianKasGantungHeaderController extends Controller
       /**
      * @ClassName 
      * PengembalianKasGantungHeader
-     * @Detail1 PengembalianKasGantungDetailController
+     * @Detail PengembalianKasGantungDetailController
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)

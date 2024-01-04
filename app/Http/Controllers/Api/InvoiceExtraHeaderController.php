@@ -32,7 +32,7 @@ class InvoiceExtraHeaderController extends Controller
     /**
      * @ClassName 
      * InvoiceExtraHeader
-     * @Detail1 InvoiceExtraDetailController
+     * @Detail InvoiceExtraDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {

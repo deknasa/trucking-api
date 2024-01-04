@@ -35,7 +35,7 @@ class HutangHeaderController extends Controller
     /**
      * @ClassName 
      * HutangHeader
-     * @Detail1 HutangDetailController
+     * @Detail HutangDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
