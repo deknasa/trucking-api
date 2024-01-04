@@ -64,6 +64,7 @@ class Aco extends MyModel
                 $table->dateTime('updated_at')->nullable();
                 $table->string('menukode', 100)->nullable();
                 $table->string('status', 100)->nullable();
+                $table->longtext('keterangan')->nullable();
             });
 
             DB::table($temtabel)->insertUsing([
@@ -76,7 +77,8 @@ class Aco extends MyModel
                 'created_at',
                 'updated_at',
                 'menukode',
-                'status'
+                'status',
+                'keterangan'
             ], $this->getdata($role_id));
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
@@ -106,6 +108,7 @@ class Aco extends MyModel
                 'a.created_at',
                 'a.updated_at',
                 'a.status',
+                'a.keterangan',
             );
 
         // dd($query ->get());
@@ -228,6 +231,7 @@ class Aco extends MyModel
             $table->integer('idheader')->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
+            $table->longtext('keterangan')->nullable();
         });
 
         $queryacos2 = DB::table("acos")->from(
@@ -242,7 +246,8 @@ class Aco extends MyModel
                 db::raw("isnull(c.menukode,isnull(c1.menukode,'')) as menukode"),
                 'a.modifiedby',
                 'a.created_at',
-                'a.updated_at'
+                'a.updated_at',
+                'a.keterangan',
             )
             ->leftjoin(DB::raw($tempacos . " b"), 'a.id', 'b.id')
             ->leftjoin(DB::raw($tempmenu . " c"), 'b.idindex', 'c.aco_id')
@@ -260,7 +265,8 @@ class Aco extends MyModel
             'menukode',
             'modifiedby',
             'created_at',
-            'updated_at'
+            'updated_at',
+            'keterangan'
         ], $queryacos2);
 
 
@@ -293,18 +299,19 @@ class Aco extends MyModel
                 'a.id',
                 'a.idacos as acosid',
                 'a.class',
-                DB::raw("isnull(b.keterangan,a.method)+(case when isnull(a.idheader,0)=0 then '' else ' Detail' end) as method"),
+                DB::raw("isnull(a.method,'') as method"),
                 'a.nama',
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at',
                 'a.menukode',
                 DB::raw("(case when isnull(c.aco_id,0)<>0 then 'AKTIF' else 'TIDAK AKTIF'  end) as status"),
+                DB::raw("isnull(a.keterangan,'')+(case when isnull(a.idheader,0)=0 then '' else ' Detail' end) as keterangan"),
+
                 // 'c.aco_id'
                 //  DB::raw("'AKTIF'   as status"),
 
             )
-            ->join(db::raw("method b with (readuncommitted)"), 'a.method', 'b.method')
             ->leftjoin(db::raw($tempacl . " c "), 'a.idacos', 'c.aco_id')
 
             ->orderby('a.id', 'asc');
@@ -363,6 +370,7 @@ class Aco extends MyModel
                 $table->dateTime('updated_at')->nullable();
                 $table->string('menukode', 100)->nullable();
                 $table->string('status', 100)->nullable();
+                $table->longtext('keterangan')->nullable();
             });
 
             DB::table($temtabel)->insertUsing([
@@ -375,7 +383,8 @@ class Aco extends MyModel
                 'created_at',
                 'updated_at',
                 'menukode',
-                'status'
+                'status',
+                'keterangan'
             ], $this->getdataUserAcl($user_id));
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
@@ -405,6 +414,7 @@ class Aco extends MyModel
                 'a.created_at',
                 'a.updated_at',
                 'a.status',
+                'a.keterangan',
             );
 
         // dd($query ->get());
@@ -526,6 +536,8 @@ class Aco extends MyModel
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
+            $table->longText('keterangan')->nullable();
+
         });
 
         $queryacos2 = DB::table("acos")->from(
@@ -539,7 +551,8 @@ class Aco extends MyModel
                 db::raw("isnull(c.menukode,isnull(c1.menukode,'')) as menukode"),
                 'a.modifiedby',
                 'a.created_at',
-                'a.updated_at'
+                'a.updated_at',
+                db::raw("isnull(a.keterangan,'') as keterangan")
             )
             ->leftjoin(DB::raw($tempacos . " b"), 'a.id', 'b.id')
             ->leftjoin(DB::raw($tempmenu . " c"), 'b.idindex', 'c.aco_id')
@@ -556,7 +569,8 @@ class Aco extends MyModel
             'menukode',
             'modifiedby',
             'created_at',
-            'updated_at'
+            'updated_at',
+            'keterangan',
         ], $queryacos2);
 
 
@@ -589,18 +603,19 @@ class Aco extends MyModel
                 'a.id',
                 'a.idacos as acosid',
                 'a.class',
-                DB::raw("isnull(b.keterangan,a.method) as method"),
+                DB::raw("isnull(a.method,'') as method"),
                 'a.nama',
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at',
                 'a.menukode',
                 DB::raw("(case when isnull(c.aco_id,0)<>0 then 'AKTIF' else 'TIDAK AKTIF'  end) as status"),
+                DB::raw("isnull(a.keterangan,'') as keterangan"),
+
                 // 'c.aco_id'
                 //  DB::raw("'AKTIF'   as status"),
 
             )
-            ->leftjoin(db::raw("method b with (readuncommitted)"), 'a.method', 'b.method')
             ->leftjoin(db::raw($tempuseracl . " c "), 'a.idacos', 'c.aco_id')
 
             ->orderby('a.id', 'asc');
