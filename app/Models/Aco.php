@@ -313,6 +313,7 @@ class Aco extends MyModel
 
             )
             ->leftjoin(db::raw($tempacl . " c "), 'a.idacos', 'c.aco_id')
+            ->whereRaw("a.keterangan is not null")
 
             ->orderby('a.id', 'asc');
 
@@ -618,6 +619,7 @@ class Aco extends MyModel
             )
             ->leftjoin(db::raw($tempuseracl . " c "), 'a.idacos', 'c.aco_id')
 
+            ->whereRaw("a.keterangan is not null")
             ->orderby('a.id', 'asc');
 
         // dd($query->get());
