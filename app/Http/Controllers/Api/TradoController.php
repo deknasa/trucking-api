@@ -624,7 +624,7 @@ class TradoController extends Controller
 
     /**
      * @ClassName
-     * 
+     * @Keterangan APPROVAL REMINDER OLI MESIN
      */
     public function approvalmesin(Request $request)
     {
@@ -645,7 +645,7 @@ class TradoController extends Controller
 
     /**
      * @ClassName
-     * 
+     * @Keterangan APPROVAL REMINDER OLI PESNELING
      */
     public function approvalpersneling(Request $request)
     {
@@ -666,7 +666,7 @@ class TradoController extends Controller
 
     /**
      * @ClassName
-     * 
+     * @Keterangan APPROVAL REMINDER OLI GARDAN
      */
     public function approvalgardan(Request $request)
     {
@@ -687,7 +687,7 @@ class TradoController extends Controller
 
     /**
      * @ClassName
-     * 
+     * @Keterangan APPROVAL REMINDER SARINGAN HAWA
      */
     public function approvalsaringanhawa(Request $request)
     {
@@ -708,6 +708,7 @@ class TradoController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HISTORY TRADO MILIK MANDOR
      */
     public function historyTradoMandor(HistoryTradoMilikMandorRequest $request)
     {
@@ -752,6 +753,7 @@ class TradoController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan HISTORY TRADO MILIK SUPIR
      */
     public function historyTradoSupir(HistoryTradoMilikSupirRequest $request)
     {

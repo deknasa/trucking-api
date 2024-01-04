@@ -814,7 +814,7 @@ class SupirController extends Controller
 
     /**
      * @ClassName 
-     * @Keterangan HISTORY SUPIR MANDOR
+     * @Keterangan HISTORY SUPIR MILIK MANDOR
      */
     public function historySupirMandor(HistorySupirMilikMandorRequest $request)
     {
