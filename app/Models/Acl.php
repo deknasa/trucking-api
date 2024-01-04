@@ -250,6 +250,7 @@ class Acl extends MyModel
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
+            $table->longText('keterangan')->nullable();
         });
 
         $queryacos2 = DB::table("acos")->from(
@@ -262,7 +263,8 @@ class Acl extends MyModel
                 'a.nama',
                 'a.modifiedby',
                 'a.created_at',
-                'a.updated_at'
+                'a.updated_at',
+                db::raw("isnull(a.keterangan,'') as keterangan"),
             )
             ->leftjoin(DB::raw($tempacos . " b"), 'a.id', 'b.id')
             ->leftjoin(DB::raw($tempmenu . " c"), 'b.idindex', 'c.aco_id')
@@ -277,7 +279,8 @@ class Acl extends MyModel
             'nama',
             'modifiedby',
             'created_at',
-            'updated_at'
+            'updated_at',
+            'keterangan',
         ], $queryacos2);
 
 
@@ -288,13 +291,12 @@ class Acl extends MyModel
             ->select(
                 'a.id',
                 'a.class',
-                DB::raw("isnull(b.keterangan,a.method) as method"),
+                'a.keterangan',
                 'a.nama',
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at'
             )
-            ->leftjoin(db::raw("method b with (readuncommitted)"), 'a.method', 'b.method')
             ->join(db::raw("useracl c with (readuncommitted)"), 'a.id', 'c.aco_id')
             ->where('c.user_id', '=', $userid)
             ->orderby('a.id', 'asc');
@@ -405,6 +407,8 @@ class Acl extends MyModel
                     $table->integer('idheader')->nullable();                    
                     $table->dateTime('created_at')->nullable();
                     $table->dateTime('updated_at')->nullable();
+                    $table->longtext('keterangan')->nullable();
+
                 });  
 
                 $queryacos2 = DB::table("acos")->from(
@@ -419,7 +423,9 @@ class Acl extends MyModel
                         db::raw("isnull(c.menukode,isnull(c1.menukode,'')) as menukode"),
                         'a.modifiedby',
                         'a.created_at',
-                        'a.updated_at'
+                        'a.updated_at',
+                        db::raw("isnull(a.keterangan,'') as keterangan")
+
                     )
                     ->leftjoin(DB::raw($tempacos . " b"), 'a.id', 'b.id')
                     ->leftjoin(DB::raw($tempmenu . " c"), 'b.idindex', 'c.aco_id')
@@ -437,7 +443,8 @@ class Acl extends MyModel
                         'menukode',
                         'modifiedby',
                         'created_at',
-                        'updated_at'
+                        'updated_at',
+                        'keterangan',
                     ], $queryacos2);
                     
                  
@@ -481,18 +488,19 @@ class Acl extends MyModel
                 'a.id',
                 'a.idacos as acosid',
                 'a.class',
-          DB::raw("isnull(b.keterangan,a.method)+(case when isnull(a.idheader,0)=0 then '' else ' Detail' end) as method"),
+          DB::raw("isnull(a.method,'') as method"),
 	            'a.nama',
                 'c.modifiedby',
                 'c.created_at',
                 'c.updated_at',
                 'a.menukode',
                 DB::raw("(case when isnull(c.aco_id,0)<>0 then 'AKTIF' else 'TIDAK AKTIF'  end) as status"),
+                DB::raw("isnull(a.keterangan,'')+(case when isnull(a.idheader,0)=0 then '' else ' Detail' end) as keterangan"),
+
                 // 'c.aco_id'
                 //  DB::raw("'AKTIF'   as status"),
 
             )
-            ->leftjoin(db::raw("method b with (readuncommitted)"), 'a.method', 'b.method')
             ->join(db::raw($tempacl ." c "), 'a.idacos', 'c.aco_id')
 
             ->orderby('a.id','asc');
@@ -550,6 +558,8 @@ class Acl extends MyModel
                 $table->dateTime('updated_at')->nullable();
                 $table->string('menukode', 100)->nullable();
                 $table->string('status', 100)->nullable();
+                $table->longtext('keterangan')->nullable();
+
             });
          
             DB::table($temtabel)->insertUsing([
@@ -563,6 +573,7 @@ class Acl extends MyModel
                 'updated_at',
                 'menukode',
                 'status',
+                'keterangan',
             ], $this->getdataedit($roleid));
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
@@ -592,6 +603,7 @@ class Acl extends MyModel
                 'acl.created_at',
                 'acl.updated_at',
                 'acl.menukode',
+                'acl.keterangan',
             );
 
 
@@ -724,6 +736,8 @@ class Acl extends MyModel
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
+            $table->longText('keterangan')->nullable();
+
         });
         // dd('test');
         $queryacos2 = DB::table("acos")->from(
@@ -737,7 +751,8 @@ class Acl extends MyModel
                 db::raw("isnull(c.menukode,isnull(c1.menukode,'')) as menukode"),
                 'a.modifiedby',
                 'a.created_at',
-                'a.updated_at'
+                'a.updated_at',
+                db::raw("isnull(a.keterangan,'') as keterangan")
             )
             ->leftjoin(DB::raw($tempacos . " b"), 'a.id', 'b.id')
             ->leftjoin(DB::raw($tempmenu . " c"), 'b.idindex', 'c.aco_id')
@@ -757,7 +772,8 @@ class Acl extends MyModel
             'menukode',
             'modifiedby',
             'created_at',
-            'updated_at'
+            'updated_at',
+            'keterangan',
         ], $queryacos2);
 
         
@@ -797,14 +813,14 @@ $queryacl=db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
                 'a.id as id',
                 'a.idacos as idacos',
                 'a.class',
-                DB::raw("isnull(b.keterangan,a.method) as method"),
+                DB::raw("isnull(a.method,'') as method"),
                 'a.nama',
                 'c.modifiedby',
                 'c.created_at',
                 'c.updated_at',
                 'a.menukode',
+                DB::raw("isnull(a.keterangan,'') as keterangan"),
             )
-            ->leftjoin(db::raw("method b with (readuncommitted)"), 'a.method', 'b.method')
             ->join(db::raw($tempacl ." c "), 'a.id', 'c.aco_id')
             ->orderby('a.id', 'asc');
 
