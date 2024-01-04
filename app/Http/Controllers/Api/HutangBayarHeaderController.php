@@ -60,7 +60,7 @@ class HutangBayarHeaderController extends Controller
      * @ClassName
      * @Keterangan TAMBAH DATA
      */
-    public function report(StoreHutangBayarHeaderRequest $request)
+    public function store(StoreHutangBayarHeaderRequest $request)
     {
         DB::beginTransaction();
         try {
