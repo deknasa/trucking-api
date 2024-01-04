@@ -22,8 +22,9 @@ use Illuminate\Http\JsonResponse;
 
 class GudangController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -83,6 +84,7 @@ class GudangController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreGudangRequest $request): JsonResponse
     {
@@ -125,6 +127,7 @@ class GudangController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateGudangRequest $request, Gudang $gudang): JsonResponse
     {
@@ -156,6 +159,7 @@ class GudangController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyGudangRequest $request, $id)
     {
@@ -214,6 +218,7 @@ class GudangController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -221,6 +226,7 @@ class GudangController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {

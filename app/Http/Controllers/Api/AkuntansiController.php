@@ -22,6 +22,7 @@ class AkuntansiController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -38,6 +39,7 @@ class AkuntansiController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -56,6 +58,7 @@ class AkuntansiController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreAkuntansiRequest $request): JsonResponse
     {
@@ -70,7 +73,7 @@ class AkuntansiController extends Controller
         try {
             $akuntansi = (new Akuntansi())->processStore($data);
             $akuntansi->position = $this->getPosition($akuntansi, $akuntansi->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $akuntansi->page = ceil($akuntansi->position / (10));
             } else {
                 $akuntansi->page = ceil($akuntansi->position / ($request->limit ?? 10));
@@ -99,6 +102,7 @@ class AkuntansiController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateAkuntansiRequest $request, Akuntansi $akuntansi): JsonResponse
     {
@@ -114,7 +118,7 @@ class AkuntansiController extends Controller
         try {
             $akuntansi = (new Akuntansi())->processUpdate($akuntansi, $data);
             $akuntansi->position = $this->getPosition($akuntansi, $akuntansi->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $akuntansi->page = ceil($akuntansi->position / (10));
             } else {
                 $akuntansi->page = ceil($akuntansi->position / ($request->limit ?? 10));
@@ -136,6 +140,7 @@ class AkuntansiController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request, $id)
     {
@@ -146,7 +151,7 @@ class AkuntansiController extends Controller
             $selected = $this->getPosition($akuntansi, $akuntansi->getTable(), true);
             $akuntansi->position = $selected->position;
             $akuntansi->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $akuntansi->page = ceil($akuntansi->position / (10));
             } else {
                 $akuntansi->page = ceil($akuntansi->position / ($request->limit ?? 10));
@@ -169,6 +174,7 @@ class AkuntansiController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
 
     public function export(RangeExportReportRequest $request)

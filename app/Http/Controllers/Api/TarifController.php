@@ -32,6 +32,7 @@ class TarifController extends Controller
      * @ClassName 
      * Tarif
      * @Detail1 TarifRincianController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -125,6 +126,7 @@ class TarifController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreTarifRequest $request): JsonResponse
     {
@@ -207,6 +209,7 @@ class TarifController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateTarifRequest $request, Tarif $tarif): JsonResponse
     {
@@ -252,7 +255,8 @@ class TarifController extends Controller
 
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyTarifRequest $request, $id)
     {
@@ -313,7 +317,8 @@ class TarifController extends Controller
     }
 
     /**
-     * @ClassName 
+     * @ClassName
+     * @Keterangan IMPORT DATA DARI KE EXCEL  KE SYSTEM 
      */
     public function import(Request $request)
     {
@@ -400,6 +405,7 @@ class TarifController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -407,6 +413,7 @@ class TarifController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export()
     {

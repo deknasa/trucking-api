@@ -15,8 +15,9 @@ use Illuminate\Support\Facades\Storage;
 
 class StokPusatController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -32,6 +33,7 @@ class StokPusatController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreStokPusatRequest $request): JsonResponse
     {
@@ -182,6 +184,7 @@ class StokPusatController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateStokPusatRequest $request, StokPusat $stokpusat): JsonResponse
     {
@@ -239,6 +242,7 @@ class StokPusatController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request, $id): JsonResponse
     {

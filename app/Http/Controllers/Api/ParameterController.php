@@ -25,8 +25,9 @@ use Illuminate\Support\Facades\Validator;
 
 class ParameterController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -52,7 +53,8 @@ class ParameterController extends Controller
 
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(ParameterRequest $request)
     {
@@ -133,7 +135,8 @@ class ParameterController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateParameterRequest $request, $id)
     {
@@ -177,7 +180,8 @@ class ParameterController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request, $id)
     {
@@ -324,6 +328,7 @@ class ParameterController extends Controller
 
      /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -331,6 +336,7 @@ class ParameterController extends Controller
     
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {

@@ -10,8 +10,9 @@ use App\Http\Requests\UpdateOpnameDetailRequest;
 
 class OpnameDetailController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {

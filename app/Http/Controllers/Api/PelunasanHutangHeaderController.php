@@ -43,6 +43,7 @@ class PelunasanHutangHeaderController extends Controller
      * @ClassName 
      * PelunasanHutangHeader
      * @Detail1 PelunasanHutangDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -256,6 +257,7 @@ class PelunasanHutangHeaderController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan APPROVAL DATA
      */
     public function approval(Request $request)
     {
@@ -491,6 +493,7 @@ class PelunasanHutangHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -499,6 +502,7 @@ class PelunasanHutangHeaderController extends Controller
 
         /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {
@@ -506,6 +510,7 @@ class PelunasanHutangHeaderController extends Controller
     
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {

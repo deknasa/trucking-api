@@ -42,6 +42,7 @@ class PenerimaanStokHeaderController extends Controller
      * @ClassName 
      * PenerimaanStokHeader
      * @Detail1 PenerimaanStokDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -69,6 +70,7 @@ class PenerimaanStokHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StorePenerimaanStokHeaderRequest $request)
     {
@@ -143,6 +145,7 @@ class PenerimaanStokHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdatePenerimaanStokHeaderRequest $request, PenerimaanStokHeader $penerimaanStokHeader, $id): JsonResponse
     {
@@ -206,6 +209,7 @@ class PenerimaanStokHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyPenerimaanStokHeaderRequest $request, PenerimaanStokHeader $penerimaanStokHeader, $id): JsonResponse
     {
@@ -484,6 +488,7 @@ class PenerimaanStokHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan APPROVAL EDIT DATA
      */
     public function approvalEdit(Request $request,$id)
     {
@@ -552,6 +557,7 @@ class PenerimaanStokHeaderController extends Controller
 
      /**
      * @ClassName 
+     * @Keterangan APPROVAL EDIT KETERANGAN
      */
     public function approvalEditKeterangan($id)
     {
@@ -658,6 +664,7 @@ class PenerimaanStokHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -665,6 +672,7 @@ class PenerimaanStokHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export()
     {
@@ -672,72 +680,84 @@ class PenerimaanStokHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan PG DO
      */
     public function penerimaanstokpgdo()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan PO
      */
     public function penerimaanstokpostok()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan PEMBELIAN
      */
     public function penerimaanstokbelistok()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan KOREKSI STOK PLUS
      */
     public function penerimaanstokkoreksistok()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan PINDAH GUDANG
      */
     public function penerimaanstokpindahgudang()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan PERBAIKAN STOK
      */
     public function penerimaanstokperbaikanstok()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan SALDO STOCK
      */
     public function penerimaanstoksaldostoktrucking()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan PENGEMBALIAN SPAREPART GANTUNG
      */
     public function penerimaanstokpengembaliansparepartgantungtrucking()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan PENGEMBALIAN SPK
      */
     public function penerimaanstokpengembalianspk()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan KOREKSI VULKAN PLUS
      */
     public function penerimaanstokkoreksivulkan()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan PENAMBAHAN NILAI
      */
     public function penerimaanstokpenambahannilai()
     {
     }
         /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {

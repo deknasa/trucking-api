@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\DB;
 class ReportNeracaController extends Controller
 {
    /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {

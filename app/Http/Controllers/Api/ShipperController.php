@@ -18,8 +18,9 @@ use Illuminate\Http\JsonResponse;
 
 class ShipperController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -79,6 +80,7 @@ class ShipperController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StorePelangganRequest $request): JsonResponse
     {
@@ -130,6 +132,7 @@ class ShipperController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdatePelangganRequest $request, Pelanggan $pelanggan): JsonResponse
     {
@@ -173,6 +176,7 @@ class ShipperController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyPelangganRequest $request, $id)
     {
@@ -219,6 +223,7 @@ class ShipperController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -226,6 +231,7 @@ class ShipperController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {

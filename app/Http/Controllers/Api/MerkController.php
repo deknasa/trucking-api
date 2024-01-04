@@ -21,8 +21,9 @@ use Illuminate\Http\JsonResponse;
 
 class MerkController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -80,6 +81,7 @@ class MerkController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreMerkRequest $request): JsonResponse
     {
@@ -123,6 +125,7 @@ class MerkController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateMerkRequest $request, Merk $merk): JsonResponse
     {
@@ -156,6 +159,7 @@ class MerkController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyMerkRequest $request, $id)
     {
@@ -212,6 +216,7 @@ class MerkController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -220,6 +225,7 @@ class MerkController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {

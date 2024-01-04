@@ -17,8 +17,9 @@ use Illuminate\Support\Facades\DB;
 
 class HistoriPenerimaanStokController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexHistoriPenerimaanRequest $request)
     {
@@ -44,6 +45,7 @@ class HistoriPenerimaanStokController extends Controller
     
     /**
      * @ClassName
+     * @Keterangan CETAK DATA
      */
     public function report(Request $request)
     {
@@ -71,6 +73,7 @@ class HistoriPenerimaanStokController extends Controller
     
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(){
 

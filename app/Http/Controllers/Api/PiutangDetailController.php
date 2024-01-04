@@ -17,8 +17,9 @@ use Illuminate\Support\Facades\Validator;
 
 class PiutangDetailController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(): JsonResponse
     {

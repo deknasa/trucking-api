@@ -54,6 +54,7 @@ class GajiSupirHeaderController extends Controller
      * @ClassName 
      * GajiSupirHeader
      * @Detail1 GajiSupirDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -82,6 +83,7 @@ class GajiSupirHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreGajiSupirHeaderRequest $request)
     {
@@ -175,6 +177,7 @@ class GajiSupirHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateGajiSupirHeaderRequest $request, GajiSupirHeader $gajisupirheader)
     {
@@ -247,6 +250,7 @@ class GajiSupirHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyGajiSupirHeaderRequest $request, $id)
     {
@@ -635,6 +639,7 @@ class GajiSupirHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -644,6 +649,7 @@ class GajiSupirHeaderController extends Controller
     
     /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {
@@ -651,6 +657,7 @@ class GajiSupirHeaderController extends Controller
     
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {

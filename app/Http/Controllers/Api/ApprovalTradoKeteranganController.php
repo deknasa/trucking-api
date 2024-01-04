@@ -14,8 +14,9 @@ use Illuminate\Support\Facades\Storage;
 
 class ApprovalTradoKeteranganController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -36,6 +37,7 @@ class ApprovalTradoKeteranganController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreApprovalTradoKeteranganRequest $request)
     {
@@ -92,6 +94,7 @@ class ApprovalTradoKeteranganController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateApprovalTradoKeteranganRequest $request, ApprovalTradoKeterangan $approvaltradoketerangan)
     {
@@ -184,6 +187,7 @@ class ApprovalTradoKeteranganController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request, $id)
     {

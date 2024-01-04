@@ -10,8 +10,9 @@ use Illuminate\Support\Facades\DB;
 
 class ToEmailController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -27,6 +28,7 @@ class ToEmailController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreToEmailRequest $request)
     {
@@ -74,6 +76,7 @@ class ToEmailController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateToEmailRequest $request, ToEmail $toemail)
     {
@@ -110,6 +113,7 @@ class ToEmailController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(ToEmail $toemail)
     {

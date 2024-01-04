@@ -11,8 +11,9 @@ use App\Models\TutupBuku;
 
 class TutupBukuController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -24,7 +25,8 @@ class TutupBukuController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreTutupBukuRequest $request)
     {

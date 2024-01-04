@@ -20,8 +20,9 @@ use Illuminate\Http\JsonResponse;
 
 class JenisOrderController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -78,6 +79,7 @@ class JenisOrderController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreJenisOrderRequest $request): JsonResponse
     {
@@ -120,6 +122,7 @@ class JenisOrderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateJenisOrderRequest $request, JenisOrder $jenisorder): JsonResponse
     {
@@ -154,6 +157,7 @@ class JenisOrderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request, $id)
     {
@@ -208,6 +212,7 @@ class JenisOrderController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -215,6 +220,7 @@ class JenisOrderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {

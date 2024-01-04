@@ -12,8 +12,9 @@ use Illuminate\Support\Facades\DB;
 
 class ApprovalBukaTanggalSuratPengantarController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -48,6 +49,7 @@ class ApprovalBukaTanggalSuratPengantarController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateApprovalBukaTanggalSuratPengantarRequest $request, ApprovalBukaTanggalSuratPengantar $approvalBukaTanggalSP): JsonResponse
     {
@@ -78,6 +80,7 @@ class ApprovalBukaTanggalSuratPengantarController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request, $id): JsonResponse
     {

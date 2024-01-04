@@ -13,8 +13,9 @@ use Illuminate\Support\Facades\Validator;
 
 class PelunasanHutangDetailController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(): JsonResponse
     {

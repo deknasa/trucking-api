@@ -29,6 +29,7 @@ class ServiceOutHeaderController extends Controller
      * @ClassName 
      * ServiceOutHeader
      * @Detail1 ServiceOutDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -45,7 +46,8 @@ class ServiceOutHeaderController extends Controller
 
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreServiceOutHeaderRequest $request): JsonResponse
     {
@@ -98,7 +100,8 @@ class ServiceOutHeaderController extends Controller
 
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateServiceOutHeaderRequest $request, ServiceOutHeader $serviceoutheader): JsonResponse
     {
@@ -137,7 +140,8 @@ class ServiceOutHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyServiceOutHeaderRequest $request, $id)
     {
@@ -287,6 +291,7 @@ class ServiceOutHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -294,6 +299,7 @@ class ServiceOutHeaderController extends Controller
 
         /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {
@@ -301,6 +307,7 @@ class ServiceOutHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {

@@ -31,8 +31,9 @@ class AclController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-        /**
+    /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
 
     public function index()
@@ -200,15 +201,16 @@ class AclController extends Controller
      * @param  \App\Http\Requests\StoreaclRequest  $request
      * @return \Illuminate\Http\Response
      */
-        /**
+    /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreAclRequest $request)
     {
         DB::beginTransaction();
         try {
 
-            
+
 
             for ($i = 0; $i < count($request->aco_id); $i++) {
 
@@ -232,7 +234,6 @@ class AclController extends Controller
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
                     DB::commit();
-                                                             
                 }
             }
 
@@ -262,7 +263,7 @@ class AclController extends Controller
      */
     public function show($id)
     {
-        $data = Role::select('id as role_id','rolename')
+        $data = Role::select('id as role_id', 'rolename')
             ->where('id', '=',  $id)
             ->first();
         // $acl['rolename'] = $data['rolename'];
@@ -292,8 +293,9 @@ class AclController extends Controller
      * @param  \App\Models\acl  $acl
      * @return \Illuminate\Http\Response
      */
-        /**
+    /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateAclRequest $request, $id)
     {
@@ -304,7 +306,7 @@ class AclController extends Controller
             for ($i = 0; $i < count($request->aco_id); $i++) {
                 if ($request->status[$i] == 1) {
                     $acl = new Acl();
-                    
+
                     $acl->role_id = $request->role_id;
                     $acl->modifiedby = auth('api')->user()->name;
                     $acl->aco_id = $request->aco_id[$i]  ?? 0;
@@ -322,7 +324,6 @@ class AclController extends Controller
 
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
                 }
             }
 
@@ -350,21 +351,22 @@ class AclController extends Controller
      * @param  \App\Models\acl  $acl
      * @return \Illuminate\Http\Response
      */
-        /**
+    /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy($id, Request $request)
     {
         DB::beginTransaction();
 
-        try {            
+        try {
             $acl = new Acl();
-            $get = Acl::select('id')->where('role_id',$id)->get();
+            $get = Acl::select('id')->where('role_id', $id)->get();
 
-            for($i = 0; $i < count($get); $i++) {
-               $aclId = $get[$i]->id;
-               $delete = Acl::destroy($aclId);
-               $logTrail = [
+            for ($i = 0; $i < count($get); $i++) {
+                $aclId = $get[$i]->id;
+                $delete = Acl::destroy($aclId);
+                $logTrail = [
                     'namatabel' => strtoupper($acl->getTable()),
                     'postingdari' => 'DELETE ACL',
                     'idtrans' => $aclId,
@@ -376,7 +378,7 @@ class AclController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
             }
-            
+
             DB::commit();
             $selected = $this->getPosition($acl, $acl->getTable(), true);
             $acl->position = $selected->position;

@@ -42,6 +42,7 @@ class SuratPengantarController extends Controller
      * @ClassName 
      * SuratPengantar
      * @Detail1 SuratPengantarBiayaTambahanController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -67,6 +68,7 @@ class SuratPengantarController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreSuratPengantarRequest $request): JsonResponse
     {
@@ -163,6 +165,7 @@ class SuratPengantarController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateSuratPengantarRequest $request, SuratPengantar $suratpengantar): JsonResponse
     {
@@ -241,6 +244,7 @@ class SuratPengantarController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroySuratPengantarRequest $request, $id): JsonResponse
     {
@@ -443,6 +447,7 @@ class SuratPengantarController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan APPROVAL BATAL MUAT
      */
     public function approvalBatalMuat($id)
     {
@@ -488,6 +493,7 @@ class SuratPengantarController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan APPROVAL EDIT TUJUAN
      */
     public function approvalEditTujuan($id)
     {
@@ -543,6 +549,7 @@ class SuratPengantarController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan APPROVAL TITIPAN EMKL
      */
     public function approvalTitipanEmkl(Request $request)
     {
@@ -684,6 +691,7 @@ class SuratPengantarController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -691,6 +699,7 @@ class SuratPengantarController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(GetUpahSupirRangeRequest $request)
     {

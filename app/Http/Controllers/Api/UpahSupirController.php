@@ -35,6 +35,7 @@ class UpahSupirController extends Controller
      * @ClassName 
      * UpahSupir
      * @Detail1 UpahSupirRincianController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -52,6 +53,7 @@ class UpahSupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
 
     public function export(GetUpahSupirRangeRequest $request)
@@ -82,6 +84,7 @@ class UpahSupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreUpahSupirRequest $request): JsonResponse
     {
@@ -184,6 +187,7 @@ class UpahSupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateUpahSupirRequest $request, UpahSupir $upahsupir): JsonResponse
     {
@@ -248,6 +252,7 @@ class UpahSupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyUpahSupirRequest $request, $id): JsonResponse
     {
@@ -320,6 +325,7 @@ class UpahSupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan IMPORT DATA DARI KE EXCEL  KE SYSTEM
      */
     public function import(Request $request)
     {
@@ -579,6 +585,7 @@ class UpahSupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {

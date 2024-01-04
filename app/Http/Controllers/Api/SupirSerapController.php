@@ -15,8 +15,9 @@ use Throwable;
 
 class SupirSerapController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -32,6 +33,7 @@ class SupirSerapController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreSupirSerapRequest $request): JsonResponse
     {
@@ -72,6 +74,7 @@ class SupirSerapController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateSupirSerapRequest $request, SupirSerap $supirserap)
     {
@@ -107,6 +110,7 @@ class SupirSerapController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request, $id)
     {
@@ -135,8 +139,9 @@ class SupirSerapController extends Controller
         }
     }
 
-    /**
+     /**
      * @ClassName 
+     * @Keterangan APRROVAL DATA
      */
     public function approval(ApprovalSupirSerapRequest $request)
     {
@@ -161,6 +166,7 @@ class SupirSerapController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -168,6 +174,7 @@ class SupirSerapController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(Request $request)
     {

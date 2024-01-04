@@ -48,6 +48,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
      * @ClassName 
      * ProsesUangJalanSupirHeader
      * @Detail1 ProsesUangJalanSupirDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -62,7 +63,8 @@ class ProsesUangJalanSupirHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreProsesUangJalanSupirHeaderRequest $request): JsonResponse
     {
@@ -146,7 +148,8 @@ class ProsesUangJalanSupirHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateProsesUangJalanSupirHeaderRequest $request, ProsesUangJalanSupirHeader $prosesuangjalansupirheader): JsonResponse
     {
@@ -211,7 +214,8 @@ class ProsesUangJalanSupirHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyProsesUangJalanSupirHeaderRequest $request, $id): JsonResponse
     {
@@ -334,6 +338,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -341,6 +346,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {

@@ -12,8 +12,9 @@ use Illuminate\Support\Facades\DB;
 
 class HutangExtraDetailController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(): JsonResponse
     {

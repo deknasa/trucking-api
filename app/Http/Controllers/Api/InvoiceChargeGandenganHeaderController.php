@@ -40,6 +40,7 @@ class InvoiceChargeGandenganHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreInvoiceChargeGandenganHeaderRequest $request): JsonResponse
     {
@@ -98,6 +99,7 @@ class InvoiceChargeGandenganHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateInvoiceChargeGandenganHeaderRequest $request, InvoiceChargeGandenganHeader $invoicechargegandenganheader): JsonResponse
     {
@@ -145,6 +147,7 @@ class InvoiceChargeGandenganHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyInvoiceChargeGandenganRequest $request, $id)
     {
@@ -304,6 +307,7 @@ class InvoiceChargeGandenganHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -312,6 +316,7 @@ class InvoiceChargeGandenganHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {

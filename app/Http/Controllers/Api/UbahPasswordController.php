@@ -15,14 +15,17 @@ use Illuminate\Support\Facades\Hash;
 
 class UbahPasswordController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
     } 
+
     /**
     * @ClassName
+    * @Keterangan TAMBAH DATA
     */
     public function store(UbahPasswordRequest $request): JsonResponse
     {

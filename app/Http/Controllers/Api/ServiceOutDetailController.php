@@ -12,8 +12,9 @@ use Illuminate\Support\Facades\Validator;
 
 class ServiceOutDetailController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)
     {

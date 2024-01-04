@@ -9,8 +9,9 @@ use Illuminate\Support\Facades\Mail;
 
 class ReminderOliController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -28,6 +29,7 @@ class ReminderOliController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export()
     {

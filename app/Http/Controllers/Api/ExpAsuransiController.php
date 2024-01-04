@@ -7,8 +7,9 @@ use App\Models\ExpAsuransi;
 
 class ExpAsuransiController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {

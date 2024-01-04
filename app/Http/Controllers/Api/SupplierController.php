@@ -23,8 +23,9 @@ use Illuminate\Support\Facades\Http;
 class SupplierController extends Controller
 {
 
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -104,6 +105,7 @@ class SupplierController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreSupplierRequest $request): JsonResponse
     {
@@ -170,6 +172,7 @@ class SupplierController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateSupplierRequest $request, Supplier $supplier): JsonResponse
     {
@@ -224,6 +227,7 @@ class SupplierController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroySupplierRequest $request, $id)
     {
@@ -267,8 +271,9 @@ class SupplierController extends Controller
         ]);
     }
 
-    /**
+     /**
      * @ClassName 
+     * @Keterangan APRROVAL DATA
      */
     public function approval(ApprovalSupplierRequest $request)
     {
@@ -315,6 +320,7 @@ class SupplierController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -322,6 +328,7 @@ class SupplierController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {

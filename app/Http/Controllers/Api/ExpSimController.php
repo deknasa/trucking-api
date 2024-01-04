@@ -7,8 +7,9 @@ use App\Models\ExpSim;
 
 class ExpSimController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {

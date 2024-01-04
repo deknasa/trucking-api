@@ -16,8 +16,9 @@ use Illuminate\Http\JsonResponse;
 
 class MainAkunPusatController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -42,6 +43,7 @@ class MainAkunPusatController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreMainAkunPusatRequest $request): JsonResponse
     {
@@ -93,6 +95,7 @@ class MainAkunPusatController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateMainAkunPusatRequest $request, MainAkunPusat $mainakunpusat): JsonResponse
     {
@@ -135,6 +138,7 @@ class MainAkunPusatController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyMainAkunPusatRequest $request, $id)
     {
@@ -180,6 +184,7 @@ class MainAkunPusatController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -189,6 +194,7 @@ class MainAkunPusatController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {

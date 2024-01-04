@@ -41,6 +41,7 @@ class PengeluaranHeaderController extends Controller
      * @ClassName 
      * pengeluaranheadercontainer
      * @Detail1 PengeluaranDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -68,7 +69,8 @@ class PengeluaranHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StorePengeluaranHeaderRequest $request)
     {
@@ -133,7 +135,8 @@ class PengeluaranHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdatePengeluaranHeaderRequest $request, PengeluaranHeader $pengeluaranheader)
     {
@@ -187,7 +190,8 @@ class PengeluaranHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyPengeluaranHeaderRequest $request, $id)
     {
@@ -221,6 +225,7 @@ class PengeluaranHeaderController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan APPROVAL DATA
      */
     public function approval(Request $request)
     {
@@ -477,6 +482,7 @@ class PengeluaranHeaderController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -484,6 +490,7 @@ class PengeluaranHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {
@@ -492,6 +499,7 @@ class PengeluaranHeaderController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {

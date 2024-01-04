@@ -35,7 +35,8 @@ class HutangExtraHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreHutangExtraHeaderRequest $request): JsonResponse
     {
@@ -85,7 +86,8 @@ class HutangExtraHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateHutangExtraHeaderRequest $request, HutangExtraHeader $hutangextraheader): JsonResponse
     {
@@ -123,7 +125,8 @@ class HutangExtraHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyHutangExtraHeaderRequest $request, $id)
     {
@@ -172,12 +175,14 @@ class HutangExtraHeaderController extends Controller
     
      /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {}
     
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {
@@ -289,6 +294,10 @@ class HutangExtraHeaderController extends Controller
         }
     }
 
+        /**
+     * @ClassName 
+     * @Keterangan APPROVAL DATA
+     */
     public function approval(ApprovalHutangHeaderRequest $request)
     {
         DB::beginTransaction();

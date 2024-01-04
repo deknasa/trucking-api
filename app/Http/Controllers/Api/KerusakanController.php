@@ -22,8 +22,9 @@ use Illuminate\Database\QueryException;
 class KerusakanController extends Controller
 {
 
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -84,6 +85,7 @@ class KerusakanController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreKerusakanRequest $request)
     {
@@ -124,6 +126,7 @@ class KerusakanController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateKerusakanRequest $request, Kerusakan $kerusakan)
     {
@@ -155,6 +158,7 @@ class KerusakanController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyKerusakanRequest $request, $id)
     {
@@ -212,6 +216,7 @@ class KerusakanController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -219,6 +224,7 @@ class KerusakanController extends Controller
     
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {

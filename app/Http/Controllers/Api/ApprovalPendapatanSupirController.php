@@ -14,8 +14,9 @@ use Illuminate\Support\Facades\DB;
 
 class ApprovalPendapatanSupirController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -39,7 +40,8 @@ class ApprovalPendapatanSupirController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreApprovalPendapatanSupirRequest $request)
     {

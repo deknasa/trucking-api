@@ -7,8 +7,9 @@ use App\Models\ReminderSpkDetail;
 
 class ReminderSpkDetailController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -31,6 +32,7 @@ class ReminderSpkDetailController extends Controller
 
      /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export()
     {

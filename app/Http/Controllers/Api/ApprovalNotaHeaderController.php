@@ -15,8 +15,9 @@ use Illuminate\Support\Facades\DB;
 
 class ApprovalNotaHeaderController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -40,7 +41,8 @@ class ApprovalNotaHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreApprovalNotaHeaderRequest $request)
     {

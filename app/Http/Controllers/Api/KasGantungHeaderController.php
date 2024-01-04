@@ -39,6 +39,7 @@ class KasGantungHeaderController extends Controller
      * @ClassName 
      * KasGantungHeader
      * @Detail1 KasGantungDetailController
+     * @Keterangan TAMPILKAN DATA
      */
 
     public function index(GetIndexRangeRequest $request)
@@ -65,6 +66,7 @@ class KasGantungHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreKasGantungHeaderRequest $request): JsonResponse
     {
@@ -130,6 +132,7 @@ class KasGantungHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateKasGantungHeaderRequest $request, KasGantungHeader $kasgantungheader): JsonResponse
     {
@@ -182,6 +185,7 @@ class KasGantungHeaderController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyKasGantungHeaderRequest $request, $id): JsonResponse
     {
@@ -346,6 +350,7 @@ class KasGantungHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -353,6 +358,7 @@ class KasGantungHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {
@@ -360,6 +366,7 @@ class KasGantungHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {

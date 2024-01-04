@@ -25,6 +25,7 @@ class MandorAbsensiSupirController extends Controller
 {
     /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetMandorAbsensiSupirRequest $request)
     {
@@ -40,6 +41,7 @@ class MandorAbsensiSupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(MandorAbsensiSupirRequest $request)
     {
@@ -138,6 +140,7 @@ class MandorAbsensiSupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(MandorAbsensiSupirRequest $request, $id)
     {
@@ -176,6 +179,7 @@ class MandorAbsensiSupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(MandorAbsensiSupirRequest $request, $id)
     {

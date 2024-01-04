@@ -29,6 +29,7 @@ class PencairanGiroPengeluaranHeaderController extends Controller
      * @ClassName 
      * PencairanGiroPengeluaranHeader
      * @Detail1 PencairanGiroPengeluaranDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)
     {
@@ -58,7 +59,8 @@ class PencairanGiroPengeluaranHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StorePencairanGiroPengeluaranHeaderRequest $request): JsonResponse
     {
@@ -88,6 +90,7 @@ class PencairanGiroPengeluaranHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {

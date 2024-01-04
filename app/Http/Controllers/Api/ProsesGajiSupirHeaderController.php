@@ -64,6 +64,7 @@ class ProsesGajiSupirHeaderController extends Controller
      * @ClassName 
      * ProsesGajiSupirHeader
      * @Detail1 ProsesGajiSupirDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -101,6 +102,7 @@ class ProsesGajiSupirHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreProsesGajiSupirHeaderRequest $request): JsonResponse
     {
@@ -171,6 +173,7 @@ class ProsesGajiSupirHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateProsesGajiSupirHeaderRequest $request, ProsesGajiSupirHeader $prosesgajisupirheader): JsonResponse
     {
@@ -218,6 +221,7 @@ class ProsesGajiSupirHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyProsesGajiSupirHeaderRequest $request, $id): JsonResponse
     {
@@ -493,6 +497,7 @@ class ProsesGajiSupirHeaderController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -501,6 +506,7 @@ class ProsesGajiSupirHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {
@@ -508,6 +514,7 @@ class ProsesGajiSupirHeaderController extends Controller
     
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {

@@ -15,8 +15,9 @@ use Illuminate\Support\Facades\DB;
 
 class SuratPengantarApprovalInputTripController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -43,7 +44,8 @@ class SuratPengantarApprovalInputTripController extends Controller
 
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreSuratPengantarApprovalInputTripRequest $request): JsonResponse
     {
@@ -83,7 +85,8 @@ class SuratPengantarApprovalInputTripController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateSuratPengantarApprovalInputTripRequest $request, SuratPengantarApprovalInputTrip $suratpengantarapprovalinputtrip): JsonResponse
     {
@@ -115,7 +118,8 @@ class SuratPengantarApprovalInputTripController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroySuratPengantarApprovalInputTripRequest $request, $id): JsonResponse
     {

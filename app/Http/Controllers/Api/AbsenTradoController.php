@@ -18,8 +18,9 @@ use Illuminate\Support\Facades\Validator;
 
 class AbsenTradoController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -79,6 +80,7 @@ class AbsenTradoController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreAbsenTradoRequest $request): JsonResponse
     {
@@ -122,6 +124,7 @@ class AbsenTradoController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateAbsenTradoRequest $request, AbsenTrado $absentrado): JsonResponse
     {
@@ -161,6 +164,7 @@ class AbsenTradoController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyAbsenTradoRequest $request, $id)
     {
@@ -251,6 +255,7 @@ class AbsenTradoController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -260,6 +265,7 @@ class AbsenTradoController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {

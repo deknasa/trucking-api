@@ -11,8 +11,9 @@ use Illuminate\Support\Facades\DB;
 
 class TradoSupirMilikMandorController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -29,6 +30,7 @@ class TradoSupirMilikMandorController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreTradoSupirMilikMandorRequest $request)
     {
@@ -79,6 +81,7 @@ class TradoSupirMilikMandorController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateTradoSupirMilikMandorRequest $request, TradoSupirMilikMandor $tradoSupirMilikMandor,$id)
     {
@@ -114,6 +117,7 @@ class TradoSupirMilikMandorController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(TradoSupirMilikMandor $tradoSupirMilikMandor,$id, Request $request)
     {

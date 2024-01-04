@@ -20,8 +20,9 @@ use Illuminate\Database\QueryException;
 
 class MandorController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -81,6 +82,7 @@ class MandorController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreMandorRequest $request)
     {
@@ -122,6 +124,7 @@ class MandorController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateMandorRequest $request, Mandor $mandor)
     {
@@ -153,6 +156,7 @@ class MandorController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyMandorRequest $request, $id)
     {
@@ -208,6 +212,7 @@ class MandorController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
 
     public function export(RangeExportReportRequest $request)
@@ -276,6 +281,7 @@ class MandorController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {

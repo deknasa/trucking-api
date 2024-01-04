@@ -15,8 +15,9 @@ use Illuminate\Http\JsonResponse;
 
 class InvoiceChargeGandenganDetailController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(): JsonResponse
     {

@@ -49,6 +49,7 @@ class InvoiceExtraHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreInvoiceExtraHeaderRequest $request): JsonResponse
     {
@@ -99,6 +100,7 @@ class InvoiceExtraHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateInvoiceExtraHeaderRequest $request, InvoiceExtraHeader $invoiceextraheader): JsonResponse
     {
@@ -138,6 +140,7 @@ class InvoiceExtraHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyInvoiceExtraHeaderRequest $request, $id): JsonResponse
     {
@@ -171,6 +174,7 @@ class InvoiceExtraHeaderController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan APPROVAL DATA
      */
     public function approval(Request $request)
     {
@@ -351,6 +355,7 @@ class InvoiceExtraHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -358,6 +363,7 @@ class InvoiceExtraHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {
@@ -365,6 +371,7 @@ class InvoiceExtraHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {

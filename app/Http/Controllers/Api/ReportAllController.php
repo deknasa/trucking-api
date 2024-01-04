@@ -12,8 +12,9 @@ use Illuminate\Support\Facades\DB;
 class ReportAllController extends Controller
 {
 
-     /**
-     * @ClassName
+    /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {

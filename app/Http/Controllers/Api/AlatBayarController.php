@@ -25,8 +25,9 @@ use Illuminate\Support\Facades\Validator;
 
 class AlatBayarController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -84,6 +85,7 @@ class AlatBayarController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreAlatBayarRequest $request): JsonResponse
     {
@@ -133,6 +135,7 @@ class AlatBayarController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateAlatBayarRequest $request, AlatBayar $alatbayar): JsonResponse
     {
@@ -170,6 +173,7 @@ class AlatBayarController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyAlatBayarRequest $request, $id)
     {
@@ -230,6 +234,7 @@ class AlatBayarController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -237,6 +242,7 @@ class AlatBayarController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {

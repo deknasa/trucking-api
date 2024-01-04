@@ -11,8 +11,9 @@ use Illuminate\Support\Facades\DB;
 
 class ApprovalSupirKeteranganController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -29,6 +30,7 @@ class ApprovalSupirKeteranganController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreApprovalSupirKeteranganRequest $request)
     {
@@ -80,6 +82,7 @@ class ApprovalSupirKeteranganController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateApprovalSupirKeteranganRequest $request, ApprovalSupirKeterangan $approvalSupirKeterangan, $id)
     {
@@ -114,9 +117,10 @@ class ApprovalSupirKeteranganController extends Controller
         }
     }
 
-   /**
-    * @ClassName 
-    */
+    /**
+     * @ClassName 
+     * @Keterangan HAPUS DATA
+     */
     public function destroy(ApprovalSupirKeterangan $approvalSupirKeterangan,$id, Request $request)
     {
         DB::beginTransaction();

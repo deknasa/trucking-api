@@ -10,8 +10,9 @@ use App\Http\Requests\ValidasiLaporanDataJurnalRequest;
 
 class TarikDataAbsensiController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)
     {
@@ -26,6 +27,7 @@ class TarikDataAbsensiController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan CETAK DATA
      */
     public function report(ValidasiLaporanDataJurnalRequest $request)
     {
@@ -57,6 +59,7 @@ class TarikDataAbsensiController extends Controller
     
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(ValidasiLaporanDataJurnalRequest $request)
     {

@@ -18,8 +18,9 @@ use Illuminate\Support\Facades\Schema;
 
 class PenerimaanTruckingController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -69,6 +70,7 @@ class PenerimaanTruckingController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StorePenerimaanTruckingRequest $request): JsonResponse
     {
@@ -116,6 +118,7 @@ class PenerimaanTruckingController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdatePenerimaanTruckingRequest $request, PenerimaanTrucking $penerimaanTrucking): JsonResponse
     {
@@ -156,6 +159,7 @@ class PenerimaanTruckingController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyPenerimaanTruckingRequest $request, $id)
     {
@@ -189,6 +193,7 @@ class PenerimaanTruckingController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -196,6 +201,7 @@ class PenerimaanTruckingController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {

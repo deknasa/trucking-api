@@ -30,6 +30,7 @@ class PemutihanSupirController extends Controller
      * @ClassName 
      * PemutihanSupir
      * @Detail1 PemutihanSupirDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -44,7 +45,8 @@ class PemutihanSupirController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StorePemutihanSupirRequest $request): JsonResponse
     {
@@ -110,7 +112,8 @@ class PemutihanSupirController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdatePemutihanSupirRequest $request, PemutihanSupir $pemutihansupir): JsonResponse
     {
@@ -164,7 +167,8 @@ class PemutihanSupirController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request, $id): JsonResponse
     {
@@ -425,12 +429,14 @@ class PemutihanSupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {}
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {

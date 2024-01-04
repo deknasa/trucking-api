@@ -10,8 +10,9 @@ use App\Models\LaporanLabaRugi;
 
 class LaporanLabaRugiController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)
     {
@@ -26,6 +27,7 @@ class LaporanLabaRugiController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan CETAK DATA
      */
     public function report(ValidasiLaporanLabaRugiRequest $request)
     {
@@ -53,6 +55,7 @@ class LaporanLabaRugiController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(Request $request)
     {

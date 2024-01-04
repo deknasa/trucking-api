@@ -37,7 +37,8 @@ class OpnameHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreOpnameHeaderRequest $request): JsonResponse
     {
@@ -85,7 +86,8 @@ class OpnameHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateOpnameHeaderRequest $request, OpnameHeader $opnameheader): JsonResponse
     {
@@ -126,7 +128,8 @@ class OpnameHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyOpnameHeaderRequest $request, $id): JsonResponse
     {
@@ -216,6 +219,7 @@ class OpnameHeaderController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -223,6 +227,7 @@ class OpnameHeaderController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {
@@ -299,6 +304,7 @@ class OpnameHeaderController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan APPROVAL DATA
      */
     public function approval(OpnameHeader $id)
     {

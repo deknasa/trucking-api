@@ -14,8 +14,9 @@ use App\Http\Requests\StoreMandorTripRequest;
 
 class ListTripController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)//list history 
     {

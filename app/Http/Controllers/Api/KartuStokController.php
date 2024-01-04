@@ -16,8 +16,9 @@ use Illuminate\Support\Facades\DB;
 
 class KartuStokController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetKartuStokRequest $request)
     {
@@ -44,6 +45,7 @@ class KartuStokController extends Controller
     
     /**
      * @ClassName
+     * @Keterangan CETAK DATA
      */
     public function report(Request $request)
     {
@@ -91,6 +93,7 @@ class KartuStokController extends Controller
     
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(Request $request)
     {

@@ -19,8 +19,9 @@ use Illuminate\Database\QueryException;
 
 class JenisEmklController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -77,6 +78,7 @@ class JenisEmklController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreJenisEmklRequest $request)
     {
@@ -139,6 +141,7 @@ class JenisEmklController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateJenisEmklRequest $request, JenisEmkl $jenisemkl)
     {
@@ -186,6 +189,7 @@ class JenisEmklController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyJenisEmklRequest $request, $id)
     {
@@ -260,6 +264,7 @@ class JenisEmklController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -267,6 +272,7 @@ class JenisEmklController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {

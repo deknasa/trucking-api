@@ -13,8 +13,9 @@ use Illuminate\Support\Facades\DB;
 
 class PencairanGiroPengeluaranDetailController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(): JsonResponse
     {

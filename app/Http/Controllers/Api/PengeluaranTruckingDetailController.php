@@ -14,8 +14,9 @@ use Illuminate\Support\Facades\Validator;
 
 class PengeluaranTruckingDetailController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(): JsonResponse
     {

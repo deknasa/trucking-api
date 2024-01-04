@@ -25,6 +25,7 @@ class NotaDebetHeaderController extends Controller
      * @ClassName 
      * NotaDebetHeader
      * @Detail1 NotaDebetDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -49,7 +50,8 @@ class NotaDebetHeaderController extends Controller
 
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreNotaDebetHeaderRequest $request)
     {
@@ -104,6 +106,7 @@ class NotaDebetHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateNotaDebetHeaderRequest $request, NotaDebetHeader $notadebetheader)
     {
@@ -144,6 +147,7 @@ class NotaDebetHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyNotaDebetHeaderRequest $request, $id)
     {
@@ -205,6 +209,7 @@ class NotaDebetHeaderController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan APPROVAL DATA
      */
     public function approval(ApprovalNotaDebetRequest $request)
     {
@@ -383,6 +388,7 @@ class NotaDebetHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -390,6 +396,7 @@ class NotaDebetHeaderController extends Controller
 
         /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {
@@ -397,6 +404,7 @@ class NotaDebetHeaderController extends Controller
     
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {

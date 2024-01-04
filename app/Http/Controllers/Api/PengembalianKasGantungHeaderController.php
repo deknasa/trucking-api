@@ -40,6 +40,7 @@ class PengembalianKasGantungHeaderController extends Controller
      * @ClassName 
      * PengembalianKasGantungHeader
      * @Detail1 PengembalianKasGantungDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -64,6 +65,7 @@ class PengembalianKasGantungHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StorePengembalianKasGantungHeaderRequest $request)
     {
@@ -121,6 +123,7 @@ class PengembalianKasGantungHeaderController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdatePengembalianKasGantungHeaderRequest $request, PengembalianKasGantungHeader $pengembalianKasGantungHeader, $id)
     {
@@ -171,6 +174,7 @@ class PengembalianKasGantungHeaderController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyPengembalianKasGantungHeaderRequest $request, $id)
     {
@@ -400,6 +404,7 @@ class PengembalianKasGantungHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {
@@ -411,6 +416,7 @@ class PengembalianKasGantungHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -418,6 +424,7 @@ class PengembalianKasGantungHeaderController extends Controller
 
         /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {

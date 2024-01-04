@@ -31,8 +31,9 @@ use Illuminate\Support\Js;
 
 class SupirController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -49,6 +50,7 @@ class SupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan APPROVAL BLACK LIST SUPIR
      */
     public function approvalBlackListSupir($id)
     {
@@ -96,6 +98,7 @@ class SupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan APPROVAL SUPIR LUAR KOTA
      */
     public function approvalSupirLuarKota($id)
     {
@@ -141,6 +144,7 @@ class SupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan APPROVAL SUPIR RESIGN
      */
     public function approvalSupirResign(Request $request, $id)
     {
@@ -274,6 +278,7 @@ class SupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreSupirRequest $request): JsonResponse
     {
@@ -359,6 +364,7 @@ class SupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateSupirRequest $request, Supir $supir): JsonResponse
     {
@@ -425,6 +431,7 @@ class SupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request, $id)
     {
@@ -634,6 +641,7 @@ class SupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -641,6 +649,7 @@ class SupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {
@@ -805,6 +814,7 @@ class SupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HISTORY SUPIR MANDOR
      */
     public function historySupirMandor(HistorySupirMilikMandorRequest $request)
     {

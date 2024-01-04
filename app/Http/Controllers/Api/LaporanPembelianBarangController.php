@@ -12,8 +12,9 @@ use App\Http\Requests\UpdateLaporanPembelianBarangRequest;
 
 class LaporanPembelianBarangController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)
     {
@@ -28,6 +29,7 @@ class LaporanPembelianBarangController extends Controller
 
      /**
      * @ClassName
+     * @Keterangan CETAK DATA
      */
     public function report(ValidasiLaporanPembelianBarangRequest $request)
     {
@@ -54,6 +56,7 @@ class LaporanPembelianBarangController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(Request $request)
     {

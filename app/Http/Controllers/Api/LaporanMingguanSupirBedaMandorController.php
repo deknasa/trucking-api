@@ -8,8 +8,9 @@ use Illuminate\Http\Request;
 
 class LaporanMingguanSupirBedaMandorController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)
     {
@@ -24,6 +25,7 @@ class LaporanMingguanSupirBedaMandorController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(Request $request)
     {

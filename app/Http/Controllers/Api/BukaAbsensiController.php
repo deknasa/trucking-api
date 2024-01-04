@@ -13,8 +13,9 @@ use Illuminate\Support\Facades\DB;
 
 class BukaAbsensiController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -30,7 +31,8 @@ class BukaAbsensiController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreBukaAbsensiRequest $request)
     {
@@ -77,7 +79,10 @@ class BukaAbsensiController extends Controller
         ]);
     }
 
-    
+       /**
+     * @ClassName 
+     * @Keterangan EDIT DATA
+     */
     public function update(UpdateBukaAbsensiRequest $request, BukaAbsensi $bukaAbsensi,$id)
     {
         DB::beginTransaction();
@@ -107,6 +112,7 @@ class BukaAbsensiController extends Controller
     }
     /**
      * @ClassName
+     * @Keterangan PERBARUI BATAS TANGGAL
      */
     public function updateTanggalBatas($id)
     {
@@ -132,7 +138,8 @@ class BukaAbsensiController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request, $id)
     {

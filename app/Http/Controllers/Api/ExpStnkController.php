@@ -9,8 +9,9 @@ use Illuminate\Support\Facades\Mail;
 
 class ExpStnkController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {

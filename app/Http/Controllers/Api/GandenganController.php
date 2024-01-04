@@ -26,8 +26,9 @@ use Illuminate\Http\JsonResponse;
 
 class GandenganController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -43,6 +44,7 @@ class GandenganController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -91,6 +93,7 @@ class GandenganController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreGandenganRequest $request): JsonResponse
     {
@@ -147,6 +150,7 @@ class GandenganController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateGandenganRequest $request, Gandengan $gandengan): JsonResponse
     {
@@ -185,6 +189,7 @@ class GandenganController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyGandenganRequest $request, $id): JsonResponse
     {
@@ -217,6 +222,7 @@ class GandenganController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {

@@ -17,8 +17,9 @@ use Illuminate\Http\JsonResponse;
 
 class SubKelompokController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -84,6 +85,7 @@ class SubKelompokController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreSubKelompokRequest $request): JsonResponse
     {
@@ -121,6 +123,7 @@ class SubKelompokController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateSubKelompokRequest $request, SubKelompok $subKelompok): JsonResponse
     {
@@ -157,6 +160,7 @@ class SubKelompokController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroySubKelompokRequest $request, $id)
     {
@@ -187,6 +191,7 @@ class SubKelompokController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {
@@ -273,6 +278,7 @@ class SubKelompokController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {

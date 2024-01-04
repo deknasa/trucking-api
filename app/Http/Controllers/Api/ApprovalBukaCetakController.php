@@ -19,6 +19,7 @@ class ApprovalBukaCetakController extends Controller
 {
     /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)
     {
@@ -61,6 +62,7 @@ class ApprovalBukaCetakController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreApprovalBukuCetakHeaderRequest $request)
     {

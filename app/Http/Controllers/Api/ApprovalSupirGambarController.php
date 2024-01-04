@@ -12,8 +12,9 @@ use Illuminate\Support\Facades\DB;
 
 class ApprovalSupirGambarController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -29,7 +30,8 @@ class ApprovalSupirGambarController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreApprovalSupirGambarRequest $request)
     {
@@ -79,7 +81,8 @@ class ApprovalSupirGambarController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateApprovalSupirGambarRequest $request, ApprovalSupirGambar $approvalSupirGambar,$id)
     {
@@ -117,7 +120,8 @@ class ApprovalSupirGambarController extends Controller
 
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(ApprovalSupirGambar $approvalSupirGambar,$id, Request $request)
     {
