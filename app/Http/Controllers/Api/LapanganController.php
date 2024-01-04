@@ -13,8 +13,9 @@ use Illuminate\Support\Facades\DB;
 
 class LapanganController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -30,6 +31,7 @@ class LapanganController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreLapanganRequest $request): JsonResponse
     {
@@ -72,6 +74,7 @@ class LapanganController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateLapanganRequest $request, Lapangan $lapangan): JsonResponse
     {
@@ -107,6 +110,7 @@ class LapanganController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request, $id)
     {
@@ -152,6 +156,7 @@ class LapanganController extends Controller
    
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -159,6 +164,7 @@ class LapanganController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {

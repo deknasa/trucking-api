@@ -12,8 +12,9 @@ use App\Http\Requests\ImportDataCabangRequest;
 class ImportDataCabangController extends Controller
 {
 
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -21,6 +22,7 @@ class ImportDataCabangController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(ImportDataCabangRequest $request)
     {

@@ -12,6 +12,7 @@ class LogAbsensiController extends Controller
 {
     /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)
     {
@@ -29,6 +30,7 @@ class LogAbsensiController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export()
     {
@@ -36,6 +38,7 @@ class LogAbsensiController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {

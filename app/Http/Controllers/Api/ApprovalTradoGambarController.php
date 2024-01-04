@@ -13,8 +13,9 @@ use App\Http\Requests\UpdateApprovalTradoGambarRequest;
 
 class ApprovalTradoGambarController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -34,6 +35,7 @@ class ApprovalTradoGambarController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreApprovalTradoGambarRequest $request)
     {
@@ -89,6 +91,7 @@ class ApprovalTradoGambarController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateApprovalTradoGambarRequest $request, ApprovalTradoGambar $approvaltradogambar)
     {
@@ -186,6 +189,7 @@ class ApprovalTradoGambarController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request, $id)
     {

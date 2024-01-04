@@ -17,6 +17,7 @@ class InvoiceLunasKePusatController extends Controller
 {
     /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)
     {
@@ -34,6 +35,7 @@ class InvoiceLunasKePusatController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreinvoicelunaskepusatRequest $request)
     {
@@ -94,6 +96,7 @@ class InvoiceLunasKePusatController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateinvoicelunaskepusatRequest $request, InvoiceLunasKePusat $invoicelunaskepusat)
     {
@@ -129,6 +132,7 @@ class InvoiceLunasKePusatController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(InvoiceLunasKepusatRequest $request, $id)
     {
@@ -197,6 +201,7 @@ class InvoiceLunasKePusatController extends Controller
     
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export()
     {
@@ -213,6 +218,7 @@ class InvoiceLunasKePusatController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {

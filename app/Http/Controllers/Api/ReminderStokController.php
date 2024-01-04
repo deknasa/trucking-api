@@ -7,8 +7,9 @@ use App\Models\ReminderStok;
 
 class ReminderStokController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -24,6 +25,7 @@ class ReminderStokController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export()
     {

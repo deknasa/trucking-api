@@ -15,8 +15,9 @@ use Illuminate\Support\Facades\DB;
 
 class ProsesUangJalanSupirDetailController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(): JsonResponse
     {

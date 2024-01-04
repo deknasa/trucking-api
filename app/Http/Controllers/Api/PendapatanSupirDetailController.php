@@ -15,8 +15,9 @@ use Illuminate\Support\Facades\DB;
 
 class PendapatanSupirDetailController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(): JsonResponse
     {

@@ -23,6 +23,7 @@ class UserAclController extends Controller
 {
     /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(User $user): JsonResponse
     {
@@ -39,6 +40,7 @@ class UserAclController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreAclRequest $request, User $user): JsonResponse
     {

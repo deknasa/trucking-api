@@ -17,8 +17,9 @@ class ReminderEmailController extends Controller
         $this->service = $service;
     }
     
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -35,6 +36,7 @@ class ReminderEmailController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreReminderEmailRequest $request)
     {
@@ -77,6 +79,7 @@ class ReminderEmailController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(StoreReminderEmailRequest $request, ReminderEmail $reminderemail)
     {
@@ -108,6 +111,7 @@ class ReminderEmailController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(ReminderEmail $reminderemail)
     {

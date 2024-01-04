@@ -11,6 +11,7 @@ class SpkHarianController extends Controller
      * @ClassName 
      * SpkHarianController
      * @Detail1 SpkHarianDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {

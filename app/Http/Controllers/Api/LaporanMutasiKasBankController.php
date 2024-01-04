@@ -9,8 +9,9 @@ use Illuminate\Support\Facades\DB;
 
 class LaporanMutasiKasBankController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)
     {
@@ -26,6 +27,7 @@ class LaporanMutasiKasBankController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan CETAK DATA
      */
     public function report(Request $request)
     {

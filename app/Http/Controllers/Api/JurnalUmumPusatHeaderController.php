@@ -22,6 +22,7 @@ class JurnalUmumPusatHeaderController extends Controller
      * @ClassName 
      * JurnalUmumPusatHeader
      * @Detail1 JurnalUmumPusatDetailController
+     * @Keterangan TAMPILKAN DATA
      */
 
     public function index()
@@ -50,7 +51,8 @@ class JurnalUmumPusatHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreJurnalUmumPusatHeaderRequest $request)
     {
@@ -345,7 +347,8 @@ class JurnalUmumPusatHeaderController extends Controller
 
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy($id, Request $request)
     {
@@ -389,6 +392,7 @@ class JurnalUmumPusatHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {

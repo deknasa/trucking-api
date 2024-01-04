@@ -57,9 +57,10 @@ class HutangBayarHeaderController extends Controller
     }
 
     /**
-     * @ClassName store
+     * @ClassName
+     * @Keterangan TAMBAH DATA
      */
-    public function store(StoreHutangBayarHeaderRequest $request)
+    public function report(StoreHutangBayarHeaderRequest $request)
     {
         DB::beginTransaction();
         try {
@@ -229,6 +230,7 @@ class HutangBayarHeaderController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan APPROVAL DATA
      */
     public function approval(Request $request)
     {
@@ -455,12 +457,14 @@ class HutangBayarHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     { }
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {

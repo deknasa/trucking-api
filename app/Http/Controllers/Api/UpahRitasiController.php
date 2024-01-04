@@ -30,6 +30,7 @@ class UpahRitasiController extends Controller
      * @ClassName 
      * UpahRitasi
      * @Detail1 UpahRitasiRincianController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -56,6 +57,7 @@ class UpahRitasiController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(GetUpahSupirRangeRequest $request)
     {
@@ -86,6 +88,7 @@ class UpahRitasiController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreUpahRitasiRequest $request): JsonResponse
     {
@@ -141,6 +144,7 @@ class UpahRitasiController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateUpahRitasiRequest $request, UpahRitasi $upahritasi): JsonResponse
     {
@@ -183,6 +187,7 @@ class UpahRitasiController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request, $id)
     {
@@ -290,6 +295,7 @@ class UpahRitasiController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan IMPORT DATA DARI KE EXCEL  KE SYSTEM
      */
     public function import(Request $request)
     {

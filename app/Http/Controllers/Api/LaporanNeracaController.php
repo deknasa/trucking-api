@@ -11,8 +11,9 @@ use App\Models\LaporanNeraca;
 
 class LaporanNeracaController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)
     {
@@ -27,6 +28,7 @@ class LaporanNeracaController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan CETAK DATA
      */
     public function report(ValidasiLaporanNeracaRequest $request)
     {
@@ -58,6 +60,7 @@ class LaporanNeracaController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(ValidasiLaporanNeracaRequest $request)
     {

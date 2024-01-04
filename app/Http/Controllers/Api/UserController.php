@@ -27,6 +27,7 @@ class UserController extends Controller
      * @ClassName 
      * user
      * @Detail1 AcosController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -99,6 +100,7 @@ class UserController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreUserRequest $request): JsonResponse
     {
@@ -153,6 +155,7 @@ class UserController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateUserRequest $request, User $user): JsonResponse
     {
@@ -197,6 +200,7 @@ class UserController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyUserRequest $request, $id)
     {
@@ -230,6 +234,7 @@ class UserController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -237,6 +242,7 @@ class UserController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {

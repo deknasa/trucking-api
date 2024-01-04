@@ -13,7 +13,10 @@ use Illuminate\Http\JsonResponse;
 
 class LaporanSupirLebihDariTradoController extends Controller
 {
-  
+      /**
+     * @ClassName
+     * @Keterangan TAMPILKAN DATA
+     */
     public function index()
     {
         
@@ -31,6 +34,7 @@ class LaporanSupirLebihDariTradoController extends Controller
     
     /**
      * @ClassName
+     * @Keterangan CETAK DATA
      */
     public function report(Request $request)
     {
@@ -64,6 +68,7 @@ class LaporanSupirLebihDariTradoController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(Request $request)
     {

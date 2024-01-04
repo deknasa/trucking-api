@@ -13,8 +13,9 @@ use Illuminate\Support\Facades\DB;
 
 class OtobonController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -31,6 +32,7 @@ class OtobonController extends Controller
     
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreOtobonRequest $request): JsonResponse
     {
@@ -73,6 +75,7 @@ class OtobonController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateOtobonRequest $request, Otobon $otobon): JsonResponse
     {
@@ -108,6 +111,7 @@ class OtobonController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request, $id)
     {
@@ -153,6 +157,7 @@ class OtobonController extends Controller
     
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -160,6 +165,7 @@ class OtobonController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {

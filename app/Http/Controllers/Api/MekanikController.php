@@ -20,8 +20,9 @@ use Illuminate\Database\QueryException;
 
 class MekanikController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -81,6 +82,7 @@ class MekanikController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreMekanikRequest $request)
     {
@@ -138,6 +140,7 @@ class MekanikController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateMekanikRequest $request, Mekanik $mekanik)
     {
@@ -181,6 +184,7 @@ class MekanikController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request, $id)
     {

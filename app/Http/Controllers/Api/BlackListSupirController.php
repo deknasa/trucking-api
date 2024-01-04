@@ -11,8 +11,9 @@ use Illuminate\Support\Facades\DB;
 
 class BlackListSupirController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -29,6 +30,7 @@ class BlackListSupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreBlackListSupirRequest $request)
     {
@@ -79,6 +81,7 @@ class BlackListSupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateBlackListSupirRequest $request, BlackListSupir $blackListSupir, $id)
     {
@@ -114,6 +117,7 @@ class BlackListSupirController extends Controller
 
    /**
     * @ClassName 
+     * @Keterangan HAPUS DATA
     */
     public function destroy(BlackListSupir $blackListSupir,$id, Request $request)
     {

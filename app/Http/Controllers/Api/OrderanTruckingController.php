@@ -34,6 +34,7 @@ class OrderanTruckingController extends Controller
      * @ClassName 
      * orderantruckingcontroller
      * @Detail1 JobTruckingController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -169,6 +170,7 @@ class OrderanTruckingController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreOrderanTruckingRequest $request): JsonResponse
     {
@@ -222,6 +224,7 @@ class OrderanTruckingController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateOrderanTruckingRequest $request, OrderanTrucking $orderantrucking): JsonResponse
     {
@@ -275,6 +278,7 @@ class OrderanTruckingController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyOrderanTruckingRequest $request, $id): JsonResponse
     {
@@ -359,7 +363,7 @@ class OrderanTruckingController extends Controller
 
     /**
      * @ClassName
-     * 
+     * @Keterangan APPROVAL DATA
      */
     public function approval(ValidasiApprovalOrderanTruckingRequest $request)
     {
@@ -379,7 +383,7 @@ class OrderanTruckingController extends Controller
     }
     /**
      * @ClassName
-     * 
+     * @Keterangan APPROVAL EDIT DATA
      */
     public function approvaledit(ValidasiApprovalOrderanTruckingRequest $request)
     {
@@ -417,12 +421,14 @@ class OrderanTruckingController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(GetUpahSupirRangeRequest $request)
     {

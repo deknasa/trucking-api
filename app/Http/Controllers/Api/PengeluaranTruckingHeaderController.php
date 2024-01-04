@@ -45,6 +45,7 @@ class PengeluaranTruckingHeaderController extends Controller
      * @ClassName 
      * PengeluaranTruckingHeader
      * @Detail1 PengeluaranTruckingDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetPengeluaranRangeRequest $request)
     {
@@ -60,7 +61,8 @@ class PengeluaranTruckingHeaderController extends Controller
 
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StorePengeluaranTruckingHeaderRequest $request): JsonResponse
     {
@@ -230,7 +232,8 @@ class PengeluaranTruckingHeaderController extends Controller
 
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdatePengeluaranTruckingHeaderRequest $request, PengeluaranTruckingHeader $pengeluaranTruckingHeader, $id)
     {
@@ -384,7 +387,8 @@ class PengeluaranTruckingHeaderController extends Controller
 
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyPengeluaranTruckingHeaderRequest $request, $id)
     {
@@ -762,6 +766,7 @@ class PengeluaranTruckingHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -769,6 +774,7 @@ class PengeluaranTruckingHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {
@@ -780,6 +786,7 @@ class PengeluaranTruckingHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan PINJAMAN SUPIR
      */
     public function pengeluarantruckingpinjamansupir()
     {
@@ -787,6 +794,7 @@ class PengeluaranTruckingHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan PENARIKAN DEPOSITO SUPIR
      */
     public function pengeluarantruckingpenarikandeposito()
     {
@@ -794,6 +802,7 @@ class PengeluaranTruckingHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan SUMBANGAN SOSIAL
      */
     public function pengeluarantruckingsumbangansosial()
     {
@@ -801,12 +810,14 @@ class PengeluaranTruckingHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan INSENTIF SUPIR
      */
     public function pengeluarantruckinginsentifsupir()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan PELUNASAN HUTANG BBM
      */
     public function pengeluarantruckingpelunasanhutangbbm()
     {
@@ -814,6 +825,7 @@ class PengeluaranTruckingHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH
      */
     public function pengeluarantruckingbiayalainsupir()
     {
@@ -821,6 +833,7 @@ class PengeluaranTruckingHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan BIAYA LAIN SUPIR
      */
     public function pengeluarantruckingklaimsupir()
     {
@@ -828,6 +841,7 @@ class PengeluaranTruckingHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan PINJAMAN KARYAWAN
      */
     public function pengeluarantruckingpinjamankaryawan()
     {
@@ -835,12 +849,14 @@ class PengeluaranTruckingHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TITIPAN EMKL
      */
     public function pengeluarantruckingtitipanemkl()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan LAPANGAN LEMBUR
      */
     public function pengeluarantruckinglapanganlembur()
     {
@@ -848,12 +864,14 @@ class PengeluaranTruckingHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan LAPANGAN NGINAP
      */
     public function pengeluarantruckinglapangannginap()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan BIAYA PORTAL
      */
     public function pengeluarantruckingportal()
     {
@@ -861,36 +879,42 @@ class PengeluaranTruckingHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan BIAYA GAJI SUPIR
      */
     public function pengeluarantruckinggajisupir()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan BIAYA LAIN INSENTIF
      */
     public function pengeluarantruckingbiayainsentif()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan LAPANGAN UANG JALAN
      */
     public function pengeluarantruckinglapanganuangjalan()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan DEPOSITO KARYAWAN
      */
     public function pengeluarantruckingdepositokaryawan()
     {
     }
     /**
-     * @ClassName 
+     * @ClassName
+     * @Keterangan BIAYA OTOBON
      */
     public function pengeluarantruckingotobon()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan BIAYA LAPANGAN
      */
     public function pengeluarantruckingbiayalapangan()
     {
@@ -898,6 +922,7 @@ class PengeluaranTruckingHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {

@@ -10,8 +10,9 @@ use App\Http\Requests\UpdateSaldoAkunPusatDetailRequest;
 
 class SaldoAkunPusatDetailController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {

@@ -16,8 +16,9 @@ use Illuminate\Validation\Rule;
 class InvoiceExtraDetailController extends Controller
 {
 
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(): JsonResponse
     {

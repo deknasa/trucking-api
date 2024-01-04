@@ -35,6 +35,7 @@ class JurnalUmumHeaderController extends Controller
      * @ClassName 
      * JurnalUmumHeader
      * @Detail1 JurnalUmumDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -50,7 +51,8 @@ class JurnalUmumHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreJurnalUmumHeaderRequest $request): JsonResponse
     {
@@ -101,7 +103,8 @@ class JurnalUmumHeaderController extends Controller
 
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateJurnalUmumHeaderRequest $request, JurnalUmumHeader $jurnalumumheader): JsonResponse
     {
@@ -140,7 +143,8 @@ class JurnalUmumHeaderController extends Controller
 
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyJurnalUmumRequest $request, $id): JsonResponse
     {
@@ -208,6 +212,7 @@ class JurnalUmumHeaderController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan APPROVAL DATA
      */
     public function approval(ApprovalJurnalUmumRequest $request): JsonResponse
     {
@@ -382,6 +387,7 @@ class JurnalUmumHeaderController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan COPY DATA JURNAL
      */
     public function copy(StoreJurnalUmumHeaderRequest $request)
     {
@@ -648,6 +654,7 @@ class JurnalUmumHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -655,6 +662,7 @@ class JurnalUmumHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {

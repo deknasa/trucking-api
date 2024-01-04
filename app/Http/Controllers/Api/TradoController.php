@@ -32,8 +32,9 @@ use stdClass;
 
 class TradoController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -94,6 +95,7 @@ class TradoController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreTradoRequest $request): JsonResponse
     {
@@ -160,6 +162,7 @@ class TradoController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateTradoRequest $request, Trado $trado): JsonResponse
     {
@@ -234,6 +237,7 @@ class TradoController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyTradoRequest $request, $id): JsonResponse
     {
@@ -370,6 +374,7 @@ class TradoController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -377,6 +382,7 @@ class TradoController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {

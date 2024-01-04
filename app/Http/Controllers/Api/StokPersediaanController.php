@@ -17,8 +17,9 @@ use Illuminate\Support\Facades\Auth;
 
 class StokPersediaanController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetStokPersediaanRequest $request)
     {
@@ -57,6 +58,7 @@ class StokPersediaanController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(Request $request)
     {
@@ -111,6 +113,7 @@ class StokPersediaanController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan CETAK DATA
      */
     public function report(Request $request)
     {

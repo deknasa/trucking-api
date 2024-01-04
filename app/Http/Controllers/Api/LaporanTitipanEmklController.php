@@ -12,8 +12,9 @@ use App\Models\LaporanTitipanEmkl;
 class LaporanTitipanEmklController extends Controller
 {
 
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -29,6 +30,7 @@ class LaporanTitipanEmklController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan CETAK DATA
      */
     public function report(LaporanTitipanEmklRequest $request)
     {
@@ -52,6 +54,7 @@ class LaporanTitipanEmklController extends Controller
 
      /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(LaporanTitipanEmklRequest $request)
     {

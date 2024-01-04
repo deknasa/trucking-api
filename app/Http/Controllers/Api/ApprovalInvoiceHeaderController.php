@@ -14,6 +14,7 @@ class ApprovalInvoiceHeaderController extends Controller
 {
     /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)
     {
@@ -72,6 +73,7 @@ class ApprovalInvoiceHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreApprovalInvoiceHeaderRequest $request)
     {

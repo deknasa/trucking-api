@@ -10,8 +10,9 @@ use Illuminate\Support\Facades\DB;
 
 class BccEmailController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -26,6 +27,7 @@ class BccEmailController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreBccEmailRequest $request)
     {
@@ -73,6 +75,7 @@ class BccEmailController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateBccEmailRequest $request, BccEmail $bccemail)
     {
@@ -109,6 +112,7 @@ class BccEmailController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(BccEmail $bccemail)
     {

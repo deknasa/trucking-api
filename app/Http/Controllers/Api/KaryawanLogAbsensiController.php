@@ -16,7 +16,7 @@ class KaryawanLogAbsensiController extends Controller
 
     /**
      * @ClassName
-     * 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -33,7 +33,7 @@ class KaryawanLogAbsensiController extends Controller
 
     /**
      * @ClassName
-     * 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreKaryawanLogAbsensiRequest $request)
     {
@@ -51,7 +51,7 @@ class KaryawanLogAbsensiController extends Controller
 
     /**
      * @ClassName
-     * 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateKaryawanLogAbsensiRequest $request, $id): JsonResponse
     {
@@ -88,7 +88,7 @@ class KaryawanLogAbsensiController extends Controller
 
     /**
      * @ClassName
-     * 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request, $id): JsonResponse
     {

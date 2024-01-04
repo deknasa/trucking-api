@@ -14,21 +14,22 @@ use App\Models\PengeluaranStok;
 
 class HistoriPengeluaranStokController extends Controller
 {
-     /**
-     * @ClassName
+    /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexHistoriPengeluaranRequest $request)
     {
-            $HistoriPengeluaranStok = new HistoriPengeluaranStok();
+        $HistoriPengeluaranStok = new HistoriPengeluaranStok();
 
 
-            return response([
-                'data' => $HistoriPengeluaranStok->get(),
-                'attributes' => [
-                    'totalRows' => $HistoriPengeluaranStok->totalRows,
-                    'totalPages' => $HistoriPengeluaranStok->totalPages
-                ]
-            ]);
+        return response([
+            'data' => $HistoriPengeluaranStok->get(),
+            'attributes' => [
+                'totalRows' => $HistoriPengeluaranStok->totalRows,
+                'totalPages' => $HistoriPengeluaranStok->totalPages
+            ]
+        ]);
     }
 
     public function default()
@@ -39,9 +40,10 @@ class HistoriPengeluaranStokController extends Controller
             'data' => $histori->default(),
         ]);
     }
-    
+
     /**
      * @ClassName
+     * @Keterangan CETAK DATA
      */
     public function report(Request $request)
     {
@@ -51,7 +53,7 @@ class HistoriPengeluaranStokController extends Controller
         $stokdari_id = Stok::find($request->stokdari_id);
         $stoksampai_id = Stok::find($request->stoksampai_id);
         $filter = PengeluaranStok::findOrFail($request->filter);
-       
+
 
         $report = [
             'stokdari' => $stokdari_id->namastok,
@@ -69,8 +71,9 @@ class HistoriPengeluaranStokController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
-    public function export(){
-
+    public function export()
+    {
     }
 }

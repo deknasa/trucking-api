@@ -24,8 +24,9 @@ use Illuminate\Support\Facades\Validator;
 
 class ProsesGajiSupirDetailController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(): JsonResponse
     {

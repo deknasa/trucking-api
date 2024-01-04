@@ -22,8 +22,9 @@ use Illuminate\Support\Facades\DB;
 class PindahBukuController extends Controller
 {
 
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -49,7 +50,8 @@ class PindahBukuController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StorePindahBukuRequest $request): JsonResponse
     {
@@ -98,7 +100,8 @@ class PindahBukuController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdatePindahBukuRequest $request, PindahBuku $pindahbuku)
     {
@@ -137,7 +140,8 @@ class PindahBukuController extends Controller
 
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request, $id): JsonResponse
     {
@@ -213,6 +217,7 @@ class PindahBukuController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -220,6 +225,7 @@ class PindahBukuController extends Controller
 
         /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {
@@ -227,6 +233,7 @@ class PindahBukuController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {

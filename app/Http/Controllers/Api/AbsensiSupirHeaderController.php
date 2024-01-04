@@ -33,6 +33,7 @@ class AbsensiSupirHeaderController extends Controller
      * @ClassName 
      * AbsensiSupirHeader
      * @Detail1 AbsensiSupirDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -49,6 +50,7 @@ class AbsensiSupirHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan APPROVAL EDIT ABSENSI
      */
     public function approvalEditAbsensi($id)
     {
@@ -136,6 +138,7 @@ class AbsensiSupirHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan SIMPAN DATA
      */
     public function store(AbsensiSupirHeaderRequest $request)
     {
@@ -181,6 +184,7 @@ class AbsensiSupirHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(AbsensiSupirHeaderRequest $request, AbsensiSupirHeader $absensiSupirHeader)
     {
@@ -226,6 +230,7 @@ class AbsensiSupirHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(AbsensiSupirHeaderRequest $request, $id)
     {
@@ -350,8 +355,7 @@ class AbsensiSupirHeaderController extends Controller
                     'kodenobukti' => '1'
                 ];
                 $passes = false;
-
-            }else{
+            } else {
                 $data = [
                     'message' => '',
                     'errors' => 'success',
@@ -522,6 +526,7 @@ class AbsensiSupirHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {
@@ -532,13 +537,15 @@ class AbsensiSupirHeaderController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
     }
 
-     /**
+    /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {

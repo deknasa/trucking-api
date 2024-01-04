@@ -53,7 +53,8 @@ class HutangHeaderController extends Controller
 
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreHutangHeaderRequest $request)
     {
@@ -99,6 +100,7 @@ class HutangHeaderController extends Controller
     }
     /**
      * @ClassName
+     * @Keterangan APPROVAL DATA
      */
     public function approval(ApprovalHutangHeaderRequest $request)
     {
@@ -158,7 +160,8 @@ class HutangHeaderController extends Controller
 
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateHutangHeaderRequest $request, HutangHeader $hutangHeader, $id)
     {
@@ -204,6 +207,7 @@ class HutangHeaderController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyHutangHeaderRequest $request, $id)
     {
@@ -401,6 +405,7 @@ class HutangHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -408,6 +413,7 @@ class HutangHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {
@@ -415,6 +421,7 @@ class HutangHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {

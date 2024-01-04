@@ -10,8 +10,9 @@ use App\Models\LaporanKartuPiutangPerPelanggan;
 
 class LaporanKartuPiutangPerPelangganController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)
     {
@@ -26,6 +27,7 @@ class LaporanKartuPiutangPerPelangganController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan CETAK DATA
      */
     public function report(Request $request)
     {

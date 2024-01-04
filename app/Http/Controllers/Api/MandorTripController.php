@@ -18,8 +18,9 @@ use Illuminate\Http\Request;
 
 class MandorTripController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -29,6 +30,7 @@ class MandorTripController extends Controller
     
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreMandorTripRequest $request)
     {
@@ -130,6 +132,7 @@ class MandorTripController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateMandorTripRequest $request, MandorTrip $mandorTrip)
     {
@@ -138,6 +141,7 @@ class MandorTripController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(MandorTrip $mandorTrip)
     {

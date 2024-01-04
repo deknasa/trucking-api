@@ -39,6 +39,7 @@ class PenerimaanHeaderController extends Controller
      * @ClassName 
      * PenerimaanHeaderController
      * @Detail1 PenerimaanDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -66,7 +67,8 @@ class PenerimaanHeaderController extends Controller
 
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StorePenerimaanHeaderRequest $request)
     {
@@ -124,6 +126,7 @@ class PenerimaanHeaderController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan EDIT DATA
      */
 
     public function update(UpdatePenerimaanHeaderRequest $request, PenerimaanHeader $penerimaanheader)
@@ -171,7 +174,8 @@ class PenerimaanHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyPenerimaanHeaderRequest $request, $id)
     {
@@ -205,6 +209,7 @@ class PenerimaanHeaderController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan APPROVAL DATA
      */
     public function approval(ApprovalPenerimaanHeaderRequest $request)
     {
@@ -485,6 +490,7 @@ class PenerimaanHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -492,6 +498,7 @@ class PenerimaanHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {
@@ -499,6 +506,7 @@ class PenerimaanHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {

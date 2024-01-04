@@ -24,8 +24,9 @@ use Illuminate\Database\QueryException;
 class DataRitasiController extends Controller
 {
 
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -41,6 +42,7 @@ class DataRitasiController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -57,6 +59,7 @@ class DataRitasiController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA     
      */
 
     public function store(StoreDataRitasiRequest $request)
@@ -117,6 +120,7 @@ class DataRitasiController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateDataRitasiRequest $request, dataritasi $dataritasi)
     {
@@ -168,6 +172,7 @@ class DataRitasiController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
 
     public function destroy(DestroyDataRitasiRequest $request, $id)
@@ -231,6 +236,7 @@ class DataRitasiController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {

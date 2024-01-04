@@ -40,6 +40,7 @@ class PenerimaanTruckingHeaderController extends Controller
      * @ClassName 
      * PenerimaanTruckingHeader
      * @Detail1 PenerimaanTruckingDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetPenerimaanTruckingHeaderRequest $request)
     {
@@ -55,7 +56,8 @@ class PenerimaanTruckingHeaderController extends Controller
 
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StorePenerimaanTruckingHeaderRequest $request)
     {
@@ -124,7 +126,8 @@ class PenerimaanTruckingHeaderController extends Controller
 
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdatePenerimaanTruckingHeaderRequest $request, PenerimaanTruckingHeader $penerimaantruckingheader)
     {
@@ -180,7 +183,8 @@ class PenerimaanTruckingHeaderController extends Controller
 
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyPenerimaanTruckingHeaderRequest $request, $id)
     {
@@ -427,6 +431,7 @@ class PenerimaanTruckingHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -434,6 +439,7 @@ class PenerimaanTruckingHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {
@@ -445,36 +451,42 @@ class PenerimaanTruckingHeaderController extends Controller
 
      /**
      * @ClassName 
+     * @Keterangan HUTANG BBM
      */
     public function penerimaantruckinghutangbbm()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan PENGEMBALIAN PINJAMAN SUPIR
      */
     public function penerimaantruckingpengembalianpinjaman()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan DEPOSITO SUPIR
      */
     public function penerimaantruckingdepositosupir()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan PENGEMBALIAN PINJAMAN KARYAWAN
      */
     public function penerimaantruckingpengembalianpinjamankaryawan()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan PENGEMBALIAN TITIPAN EMKL
      */
     public function penerimaantruckingpengembaliantitipanemkl()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan PENGEMBALIAN DEPOSITO KARYAWAN
      */
     public function penerimaantruckingpengembaliandepositokaryawan()
     {
@@ -482,6 +494,7 @@ class PenerimaanTruckingHeaderController extends Controller
 
         /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {

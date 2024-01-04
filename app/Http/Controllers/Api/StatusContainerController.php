@@ -16,8 +16,9 @@ use Illuminate\Support\Facades\Schema;
 
 class StatusContainerController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -85,6 +86,7 @@ class StatusContainerController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreStatusContainerRequest $request)
     {
@@ -119,6 +121,7 @@ class StatusContainerController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateStatusContainerRequest $request, StatusContainer $statusContainer)
     {
@@ -153,6 +156,7 @@ class StatusContainerController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyStatusContainerRequest $request, $id)
     {
@@ -201,6 +205,7 @@ class StatusContainerController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {
@@ -268,6 +273,7 @@ class StatusContainerController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {

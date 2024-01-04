@@ -12,8 +12,9 @@ use Illuminate\Http\Request;
 
 class BukaPenerimaanStokController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -29,7 +30,8 @@ class BukaPenerimaanStokController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreBukaPenerimaanStokRequest $request)
     {
@@ -77,6 +79,7 @@ class BukaPenerimaanStokController extends Controller
     }
     /**
      * @ClassName
+     * @Keterangan PERBARUI BATAS TANGGAL
      */
     public function updateTanggalBatas($id)
     {
@@ -102,7 +105,8 @@ class BukaPenerimaanStokController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request, $id)
     {

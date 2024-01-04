@@ -14,8 +14,9 @@ use Illuminate\Support\Facades\Schema;
 
 class ChargeGandenganController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -31,6 +32,7 @@ class ChargeGandenganController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(Request $request)
     {

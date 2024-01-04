@@ -28,8 +28,9 @@ class AcosController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-        /**
+       /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -75,6 +76,7 @@ class AcosController extends Controller
      */
         /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreAcosRequest $request)
     {
@@ -155,6 +157,7 @@ class AcosController extends Controller
      */
         /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateAcosRequest $request, Acos $acos)
     {
@@ -167,8 +170,9 @@ class AcosController extends Controller
      * @param  \App\Models\Acos  $acos
      * @return \Illuminate\Http\Response
      */
-        /**
+       /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Acos $acos)
     {

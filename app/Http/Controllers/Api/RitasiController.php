@@ -30,6 +30,7 @@ class RitasiController extends Controller
 {
     /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -53,6 +54,7 @@ class RitasiController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreRitasiRequest $request): JsonResponse
     {
@@ -101,6 +103,7 @@ class RitasiController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateRitasiRequest $request, Ritasi $ritasi): JsonResponse
     {
@@ -138,6 +141,7 @@ class RitasiController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyRitasiRequest $request, $id): JsonResponse
     {
@@ -200,6 +204,7 @@ class RitasiController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -207,6 +212,7 @@ class RitasiController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(GetUpahSupirRangeRequest $request)
     {

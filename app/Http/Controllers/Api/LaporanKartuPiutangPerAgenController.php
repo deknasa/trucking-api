@@ -13,8 +13,9 @@ use Illuminate\Support\Facades\DB;
 
 class LaporanKartuPiutangPerAgenController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)
     {
@@ -30,6 +31,7 @@ class LaporanKartuPiutangPerAgenController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan CETAK DATA
      */
     public function report(ValidasiLaporanKartuPiutangPerAgenRequest $request)
     {
@@ -62,6 +64,7 @@ class LaporanKartuPiutangPerAgenController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(ValidasiLaporanKartuPiutangPerAgenRequest $request)
     {

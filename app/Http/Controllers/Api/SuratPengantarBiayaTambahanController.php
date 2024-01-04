@@ -13,8 +13,9 @@ use Illuminate\Support\Facades\Request;
 
 class SuratPengantarBiayaTambahanController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(): JsonResponse
     {
@@ -32,6 +33,7 @@ class SuratPengantarBiayaTambahanController extends Controller
     }
     /**
      * @ClassName
+     * @Keterangan APPROVAL DATA
      */
     public function approval(ApprovalSuratPengantarBiayaTambahanRequest $request)
     {

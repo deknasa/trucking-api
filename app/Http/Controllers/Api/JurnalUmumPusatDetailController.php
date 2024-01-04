@@ -17,8 +17,9 @@ use Illuminate\Support\Facades\DB;
 class JurnalUmumPusatDetailController extends Controller
 {
 
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(): JsonResponse
     {

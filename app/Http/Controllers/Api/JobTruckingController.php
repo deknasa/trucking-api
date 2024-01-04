@@ -11,8 +11,9 @@ use App\Http\Controllers\Controller;
 class JobTruckingController extends Controller
 {
 
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {

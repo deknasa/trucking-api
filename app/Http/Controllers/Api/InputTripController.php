@@ -20,7 +20,8 @@ class InputTripController extends Controller
 {
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -29,7 +30,8 @@ class InputTripController extends Controller
      * @ClassName 
      * inputtripcontroller
      * @Detail1 SuratPengantarApprovalInputTripController
-    */
+     * @Keterangan TAMBAH DATA
+     */
     public function store(StoreMandorTripRequest $request)
     {
 
@@ -80,7 +82,6 @@ class InputTripController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $inputTrip
             ], 201);
-
         } catch (\Throwable $th) {
             DB::rollBack();
 

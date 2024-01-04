@@ -29,6 +29,7 @@ class ProsesAbsensiSupirController extends Controller
 {
     /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)
     {
@@ -162,6 +163,7 @@ class ProsesAbsensiSupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreProsesAbsensiSupirRequest $request)
     {
@@ -318,6 +320,7 @@ class ProsesAbsensiSupirController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateProsesAbsensiSupirRequest $request, ProsesAbsensiSupir $prosesabsensisupir)
     {
@@ -436,6 +439,7 @@ class ProsesAbsensiSupirController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request, $id)
     {

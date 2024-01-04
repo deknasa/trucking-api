@@ -9,8 +9,9 @@ use Illuminate\Support\Facades\DB;
 
 class LaporanPenyesuaianBarangController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)
     {
@@ -25,6 +26,7 @@ class LaporanPenyesuaianBarangController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan CETAK DATA
      */
     public function report(Request $request)
     {

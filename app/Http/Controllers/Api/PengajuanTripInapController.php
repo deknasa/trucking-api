@@ -12,8 +12,9 @@ use App\Http\Requests\UpdatePengajuanTripInapRequest;
 
 class PengajuanTripInapController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -28,7 +29,8 @@ class PengajuanTripInapController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StorePengajuanTripInapRequest $request)
     {
@@ -73,7 +75,8 @@ class PengajuanTripInapController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdatePengajuanTripInapRequest $request, PengajuanTripInap $pengajuantripinap)
     {
@@ -108,7 +111,8 @@ class PengajuanTripInapController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request,PengajuanTripInap $pengajuantripinap)
     {
@@ -141,6 +145,7 @@ class PengajuanTripInapController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan APPROVAL DATA
      */
     public function approval(PengajuanTripInap $id)
     {

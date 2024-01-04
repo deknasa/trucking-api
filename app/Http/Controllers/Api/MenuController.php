@@ -24,8 +24,9 @@ use Illuminate\Database\QueryException;
 
 class MenuController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -44,6 +45,7 @@ class MenuController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreMenuRequest $request)
     {
@@ -90,6 +92,7 @@ class MenuController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateMenuRequest $request, Menu $menu)
     {
@@ -129,6 +132,7 @@ class MenuController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyMenuRequest $request, $id)
     {
@@ -160,6 +164,7 @@ class MenuController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {
@@ -571,6 +576,7 @@ class MenuController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {

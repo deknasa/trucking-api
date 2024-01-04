@@ -9,8 +9,9 @@ use App\Models\ReminderService;
 
 class ReminderServiceController extends Controller
 {
-     /**
+    /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {

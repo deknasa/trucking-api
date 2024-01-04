@@ -27,6 +27,7 @@ class UserRoleController extends Controller
 {
     /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(User $user): JsonResponse
     {
@@ -52,6 +53,7 @@ class UserRoleController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreAclRequest $request, Role $role): JsonResponse
     {
@@ -107,6 +109,7 @@ class UserRoleController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateUserRoleRequest $request, UserRole $userrole)
     {
@@ -159,6 +162,7 @@ class UserRoleController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy($id,  Request $request)
     {
@@ -275,6 +279,7 @@ class UserRoleController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export()
     {

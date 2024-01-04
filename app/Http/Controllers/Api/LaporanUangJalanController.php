@@ -15,8 +15,9 @@ use Illuminate\Http\JsonResponse;
 
 class LaporanUangJalanController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -44,6 +45,7 @@ class LaporanUangJalanController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan CETAK DATA
      */
     public function report(Request $request)
     {
@@ -92,6 +94,7 @@ class LaporanUangJalanController extends Controller
 
      /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(Request $request){
         $tgldari = date('Y-m-d', strtotime($request->ricdari1));

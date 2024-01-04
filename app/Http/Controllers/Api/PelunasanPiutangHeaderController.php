@@ -76,7 +76,8 @@ class PelunasanPiutangHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StorePelunasanPiutangHeaderRequest $request): JsonResponse
     {
@@ -140,7 +141,8 @@ class PelunasanPiutangHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdatePelunasanPiutangHeaderRequest $request, PelunasanPiutangHeader $pelunasanpiutangheader): JsonResponse
     {
@@ -188,7 +190,8 @@ class PelunasanPiutangHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyPelunasanPiutangHeaderRequest $request, $id): JsonResponse
     {
@@ -349,6 +352,7 @@ class PelunasanPiutangHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -356,6 +360,7 @@ class PelunasanPiutangHeaderController extends Controller
 
         /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {
@@ -363,6 +368,7 @@ class PelunasanPiutangHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {

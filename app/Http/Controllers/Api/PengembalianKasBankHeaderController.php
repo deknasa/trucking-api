@@ -34,6 +34,7 @@ class PengembalianKasBankHeaderController extends Controller
      * @ClassName 
      * PengembalianKasBankHeader
      * @Detail1 PengembalianKasBankDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -59,6 +60,7 @@ class PengembalianKasBankHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StorePengembalianKasBankHeaderRequest $request)
     {
@@ -268,6 +270,7 @@ class PengembalianKasBankHeaderController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdatePengembalianKasBankHeaderRequest $request, $id)
     {
@@ -426,6 +429,7 @@ class PengembalianKasBankHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(Request $request, $id)
     {
@@ -603,6 +607,7 @@ class PengembalianKasBankHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -610,6 +615,7 @@ class PengembalianKasBankHeaderController extends Controller
 
         /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {

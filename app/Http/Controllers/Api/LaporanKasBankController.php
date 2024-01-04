@@ -10,8 +10,9 @@ use Illuminate\Support\Facades\DB;
 
 class LaporanKasBankController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)
     {
@@ -26,6 +27,7 @@ class LaporanKasBankController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan CETAK DATA
      */
     public function report(ValidasiLaporanKasBankRequest $request)
     {
@@ -51,6 +53,7 @@ class LaporanKasBankController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(ValidasiLaporanKasBankRequest $request)
     {

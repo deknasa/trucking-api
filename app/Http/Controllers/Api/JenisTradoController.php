@@ -20,8 +20,9 @@ use Illuminate\Database\QueryException;
 
 class JenisTradoController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -80,6 +81,7 @@ class JenisTradoController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreJenisTradoRequest $request)
     {
@@ -123,6 +125,7 @@ class JenisTradoController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateJenisTradoRequest $request, JenisTrado $jenistrado)
     {
@@ -156,6 +159,7 @@ class JenisTradoController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyJenisTradoRequest $request, $id)
     {
@@ -213,6 +217,7 @@ class JenisTradoController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -220,6 +225,7 @@ class JenisTradoController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {

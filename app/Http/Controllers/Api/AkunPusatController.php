@@ -22,6 +22,7 @@ class AkunPusatController extends Controller
 {
     /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -46,6 +47,7 @@ class AkunPusatController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreAkunPusatRequest $request): JsonResponse
     {
@@ -68,7 +70,7 @@ class AkunPusatController extends Controller
             ];
             $akunPusat = (new AkunPusat())->processStore($data);
             $akunPusat->position = $this->getPosition($akunPusat, $akunPusat->getTable())->position;
-           if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $akunPusat->page = ceil($akunPusat->position / (10));
             } else {
                 $akunPusat->page = ceil($akunPusat->position / ($request->limit ?? 10));
@@ -99,6 +101,7 @@ class AkunPusatController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateAkunPusatRequest $request, AkunPusat $akunPusat): JsonResponse
     {
@@ -120,7 +123,7 @@ class AkunPusatController extends Controller
             ];
             $akunPusat = (new AkunPusat())->processUpdate($akunPusat, $data);
             $akunPusat->position = $this->getPosition($akunPusat, $akunPusat->getTable())->position;
-           if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $akunPusat->page = ceil($akunPusat->position / (10));
             } else {
                 $akunPusat->page = ceil($akunPusat->position / ($request->limit ?? 10));
@@ -142,6 +145,7 @@ class AkunPusatController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyAkunPusatRequest $request, $id)
     {
@@ -152,7 +156,7 @@ class AkunPusatController extends Controller
             $selected = $this->getPosition($akunPusat, $akunPusat->getTable(), true);
             $akunPusat->position = $selected->position;
             $akunPusat->id = $selected->id;
-           if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $akunPusat->page = ceil($akunPusat->position / (10));
             } else {
                 $akunPusat->page = ceil($akunPusat->position / ($request->limit ?? 10));
@@ -228,6 +232,7 @@ class AkunPusatController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -237,6 +242,7 @@ class AkunPusatController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {
@@ -377,6 +383,7 @@ class AkunPusatController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan TRANSFER DATA KE CABANG LAIN
      */
     public function transfer(TransferAkunPusatRequest $request)
     {

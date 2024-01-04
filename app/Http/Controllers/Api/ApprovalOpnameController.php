@@ -13,8 +13,9 @@ use Illuminate\Support\Facades\DB;
 
 class ApprovalOpnameController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -39,7 +40,8 @@ class ApprovalOpnameController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreApprovalOpnameRequest $request)
     {

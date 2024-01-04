@@ -10,7 +10,8 @@ use App\Models\ExportLaporanMingguanSupir;
 class ExportLaporanMingguanSupirController extends Controller
 {
    /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)
     {
@@ -25,6 +26,7 @@ class ExportLaporanMingguanSupirController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(ValidasiLaporanMingguanSupirRequest $request)
     {

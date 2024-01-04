@@ -14,8 +14,9 @@ use Illuminate\Support\Facades\DB;
 
 class LaporanPemakaianStokController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)
     {
@@ -30,6 +31,7 @@ class LaporanPemakaianStokController extends Controller
 
       /**
      * @ClassName
+     * @Keterangan CETAK DATA
      */
     public function report(ValidasiLaporanPemakaianStokRequest $request)
     {
@@ -56,6 +58,7 @@ class LaporanPemakaianStokController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(Request $request)
     {

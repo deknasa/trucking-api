@@ -27,6 +27,7 @@ class RekapPengeluaranHeaderController extends Controller
      * @ClassName 
      * RekapPengeluaranHeader
      * @Detail1 RekapPengeluaranDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -41,6 +42,7 @@ class RekapPengeluaranHeaderController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreRekapPengeluaranHeaderRequest $request): JsonResponse
     {
@@ -89,6 +91,7 @@ class RekapPengeluaranHeaderController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateRekapPengeluaranHeaderRequest $request, RekapPengeluaranHeader $rekappengeluaranheader)
     {
@@ -129,6 +132,7 @@ class RekapPengeluaranHeaderController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyRekapPengeluaranHeaderRequest $request, $id): JsonResponse
     {
@@ -159,8 +163,9 @@ class RekapPengeluaranHeaderController extends Controller
             throw $th;
         }
     }
-    /**
+     /**
      * @ClassName 
+     * @Keterangan APRROVAL DATA
      */
     public function approval(ApprovalRekapPenerimaanRequest $request)
     {
@@ -308,12 +313,14 @@ class RekapPengeluaranHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {}
 
         /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {
@@ -321,6 +328,7 @@ class RekapPengeluaranHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {

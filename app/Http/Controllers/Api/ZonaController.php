@@ -22,8 +22,9 @@ use Illuminate\Support\Facades\Schema;
 class ZonaController extends Controller
 {
 
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -81,6 +82,7 @@ class ZonaController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreZonaRequest $request)
     {
@@ -123,6 +125,7 @@ class ZonaController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateZonaRequest $request, Zona $zona)
     {
@@ -155,6 +158,7 @@ class ZonaController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyZonaRequest $request, $id)
     {
@@ -275,6 +279,7 @@ class ZonaController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {

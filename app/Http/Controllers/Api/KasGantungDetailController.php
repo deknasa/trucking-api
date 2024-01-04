@@ -13,8 +13,9 @@ use Illuminate\Support\Facades\Validator;
 class KasGantungDetailController extends Controller
 {
 
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(): JsonResponse
     {

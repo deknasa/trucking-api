@@ -7,8 +7,9 @@ use App\Models\SpkHarianDetail;
 
 class SpkHarianDetailController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {

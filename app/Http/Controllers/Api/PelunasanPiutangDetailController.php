@@ -17,6 +17,7 @@ class PelunasanPiutangDetailController extends Controller
 {
     /**
      * @ClassName 
+     * @Keterangan TAMPIKAN DATA
      */
 
     public function index(): JsonResponse

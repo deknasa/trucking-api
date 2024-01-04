@@ -24,6 +24,7 @@ class ServiceInHeaderController extends Controller
      * @ClassName 
      * ServiceInHeaderHeader
      * @Detail1 ServiceInDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -39,7 +40,8 @@ class ServiceInHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreServiceInHeaderRequest $request): JsonResponse
     {
@@ -89,7 +91,8 @@ class ServiceInHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateServiceInHeaderRequest $request, ServiceInHeader $serviceInHeader): JsonResponse
     {
@@ -127,7 +130,8 @@ class ServiceInHeaderController extends Controller
     }
 
     /**
-     * @ClassName
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyServiceInHeaderRequest $request, $id): JsonResponse
     {
@@ -275,6 +279,7 @@ class ServiceInHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
     {
@@ -286,12 +291,14 @@ class ServiceInHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
     }
         /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {

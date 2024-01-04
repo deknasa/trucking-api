@@ -9,8 +9,9 @@ use Illuminate\Support\Facades\DB;
 
 class LaporanRekapSumbanganController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)
     {
@@ -25,6 +26,7 @@ class LaporanRekapSumbanganController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan CETAK DATA
      */
     public function report(Request $request)
     {
@@ -54,6 +56,7 @@ class LaporanRekapSumbanganController extends Controller
 
       /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(Request $request)
     {

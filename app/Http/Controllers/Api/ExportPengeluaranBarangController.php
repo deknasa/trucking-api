@@ -9,8 +9,9 @@ use Illuminate\Support\Facades\DB;
 
 class ExportPengeluaranBarangController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(Request $request)
     {
@@ -25,6 +26,7 @@ class ExportPengeluaranBarangController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(Request $request)
     {

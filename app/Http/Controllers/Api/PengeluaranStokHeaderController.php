@@ -51,6 +51,7 @@ class PengeluaranStokHeaderController extends Controller
      * @ClassName 
      * PengeluaranStokHeader
      * @Detail1 PengeluaranStokDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -76,6 +77,7 @@ class PengeluaranStokHeaderController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StorePengeluaranStokHeaderRequest $request)
     {
@@ -155,6 +157,7 @@ class PengeluaranStokHeaderController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdatePengeluaranStokHeaderRequest $request, PengeluaranStokHeader $pengeluaranStokHeader, $id): JsonResponse
     {
@@ -228,6 +231,7 @@ class PengeluaranStokHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyPengeluaranStokHeaderRequest $request, PengeluaranStokHeader $pengeluaranStokHeader, $id): JsonResponse
     {
@@ -590,6 +594,7 @@ class PengeluaranStokHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -597,6 +602,7 @@ class PengeluaranStokHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export()
     {
@@ -605,6 +611,7 @@ class PengeluaranStokHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan APPROVAL EDIT DATA
      */
     public function approvalEdit($id)
     {
@@ -657,6 +664,7 @@ class PengeluaranStokHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan APPROVAL EDIT KETERANGAN
      */
     public function approvalEditKeterangan($id)
     {
@@ -708,43 +716,50 @@ class PengeluaranStokHeaderController extends Controller
     }
 
     /**
-     * @ClassName 
+     * @ClassName
+     * @Keterangan SPK 
      */
     public function pengeluaranstokspkstok()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan RETUR
      */
     public function pengeluaranstokreturstok()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan KOREKSI STOK MINUS
      */
     public function pengeluaranstokkoreksistok()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan PENJUALAN STOK AFKIR
      */
     public function pengeluaranstokpenjualanstokafkir()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan SPAREPART GANTUNG
      */
     public function pengeluaranstoksparepartgantungtrucking()
     {
     }
     /**
      * @ClassName 
+     * @Keterangan KOREKSI VULKAN MINUS
      */
     public function pengeluaranstokkoreksivulkan()
     {
     }
     /**
-     * @ClassName 
+     * @ClassName
+     * @Keterangan STATUS AFKIR 
      */
     public function pengeluaranstoksetstatusafkir()
     {
@@ -752,6 +767,7 @@ class PengeluaranStokHeaderController extends Controller
 
         /**
      * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {

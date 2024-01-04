@@ -23,8 +23,9 @@ use Illuminate\Http\JsonResponse;
 
 class BankController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
@@ -80,6 +81,7 @@ class BankController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StoreBankRequest $request): JsonResponse
     {
@@ -126,6 +128,7 @@ class BankController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EDIT DATA
      */
     public function update(UpdateBankRequest $request, Bank $bank): JsonResponse
     {
@@ -164,6 +167,7 @@ class BankController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyBankRequest $request, $id)
     {
@@ -223,6 +227,7 @@ class BankController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -230,6 +235,7 @@ class BankController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
      */
     public function export(RangeExportReportRequest $request)
     {
