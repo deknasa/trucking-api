@@ -2,24 +2,25 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use stdClass;
 
-use App\Models\MandorAbsensiSupir;
-use App\Models\AbsensiSupirHeader;
-use App\Models\AbsensiSupirDetail;
+use App\Models\Error;
 use App\Models\Trado;
 use App\Models\Parameter;
-use App\Http\Requests\StoreAbsensiSupirDetailRequest;
-use App\Http\Requests\StoreKasGantungDetailRequest;
-use App\Http\Requests\GetMandorAbsensiSupirRequest;
-use App\Http\Requests\StoreKasGantungHeaderRequest;
+use Illuminate\Http\Request;
+use App\Models\AbsensiSupirDetail;
+use App\Models\AbsensiSupirHeader;
+use App\Models\MandorAbsensiSupir;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\MandorAbsensiSupirRequest;
 
-use stdClass;
-use App\Models\Error;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Http\Requests\GetMandorAbsensiSupirRequest;
+use App\Http\Requests\MandorAbsensiSupirAllRequest;
+use App\Http\Requests\StoreKasGantungDetailRequest;
+use App\Http\Requests\StoreKasGantungHeaderRequest;
+use App\Http\Requests\StoreAbsensiSupirDetailRequest;
 
 class MandorAbsensiSupirController extends Controller
 {
@@ -43,7 +44,57 @@ class MandorAbsensiSupirController extends Controller
      * @ClassName 
      * @Keterangan TAMBAH DATA
      */
-    public function store(MandorAbsensiSupirRequest $request)
+    public function store(MandorAbsensiSupirAllRequest $request)
+    {
+        DB::beginTransaction();
+        try {
+            $data = json_decode(request()->data, true);
+            // dd($data);
+        
+            $statusaktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
+            foreach ($data as $key) {
+                $insert = [
+                    "tglbukti" =>$key['tglbukti'],
+                    "kasgantung_nobukti" =>"",
+                    "uangjalan" =>[0],
+                    "trado_id" => $key['trado_id'],
+                    "supir_id" => $key['supir_id'],
+                    "keterangan" => $key['keterangan'],
+                    "absen_id" => $key['absen_id'],
+                    "jam" => $key['jam'],
+                ];
+
+                $AbsensiSupirHeader = (new MandorAbsensiSupir())->processStore($insert);
+            }
+            // $data = [
+            //     "tglbukti" =>$request->tglbukti,
+            //     "kasgantung_nobukti" =>$request->kasgantung_nobukti,
+            //     "uangjalan" =>[0],
+            //     "trado_id" => $request->trado_id,
+            //     "supir_id" => $request->supir_id,
+            //     "keterangan" => $request->keterangan,
+            //     "absen_id" => $request->absen_id,
+            //     "jam" => $request->jam,
+            // ];
+            // $AbsensiSupirHeader = (new MandorAbsensiSupir())->processStore($data);
+            // $AbsensiSupirHeader->position = $this->getPositionMandor($AbsensiSupirHeader->trado_id)->position;
+            // if ($request->limit == 0) {
+            //     $request->limit = DB::table('trado')->where('statusaktif',$statusaktif->id)->count();
+            // }
+            // $AbsensiSupirHeader->page = ceil($AbsensiSupirHeader->position / ($request->limit ?? 10));
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil disimpan',
+                'data' => $AbsensiSupirHeader
+            ], 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
+    }
+    public function store2(MandorAbsensiSupirRequest $request)
     {
         DB::beginTransaction();
         try {
@@ -191,11 +242,11 @@ class MandorAbsensiSupirController extends Controller
 
             
             $AbsensiSupirDetail = (new MandorAbsensiSupir())->processDestroy($AbsensiSupirDetail->id);
-            $AbsensiSupirDetail->position = $this->getPositionMandor(0,true)->position;
-            if ($request->limit == 0) {
-                $request->limit = DB::table('trado')->where('statusaktif',$statusaktif->id)->count();
-            }
-            $AbsensiSupirDetail->page = ceil($AbsensiSupirDetail->position / ($request->limit ?? 10));
+            // $AbsensiSupirDetail->position = $this->getPositionMandor(0,true)->position;
+            // if ($request->limit == 0) {
+            //     $request->limit = DB::table('trado')->where('statusaktif',$statusaktif->id)->count();
+            // }
+            // $AbsensiSupirDetail->page = ceil($AbsensiSupirDetail->position / ($request->limit ?? 10));
  
             DB::commit();
             return response([
@@ -216,7 +267,7 @@ class MandorAbsensiSupirController extends Controller
         $getAbsen = AbsensiSupirHeader::from(DB::raw("absensisupirheader with (readuncommitted)"))->where('tglbukti', $now)->first();
 
         if ($getAbsen != null) {
-            $cekAbsen = AbsensiSupirDetail::from(DB::raw("absensisupirdetail with (readuncommitted)"))->where('nobukti', $getAbsen->nobukti)->where('trado_id', $tradoId)->where('supir_id', $supir_id)->first();
+            $cekAbsen = AbsensiSupirDetail::from(DB::raw("absensisupirdetail with (readuncommitted)"))->where('nobukti', $getAbsen->nobukti)->where('trado_id', $tradoId)->first();
             if ($cekAbsen != null) {
 
                 return response([

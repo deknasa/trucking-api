@@ -125,7 +125,7 @@ class MandorAbsensiSupir extends MyModel
                 'a.absentrado',
                 'a.absen_id',
                 'a.jam',
-                'a.tglbukti',
+                           DB::raw("(case when year(isnull(a.tglbukti,'1900/1/1'))=1900 then null else format(a.tglbukti,'dd-MM-yyyy')  end)as tglbukti"),
                 'a.supir_id',
             );
         return $query;
@@ -474,7 +474,6 @@ class MandorAbsensiSupir extends MyModel
             $absensiSupirDetail->delete();
         }
 
-
         $absensiSupirDetail = AbsensiSupirDetail::processStore($AbsensiSupirHeader, [
             'absensi_id' => $AbsensiSupirHeader->id,
             'nobukti' => $AbsensiSupirHeader->nobukti,
@@ -482,7 +481,7 @@ class MandorAbsensiSupir extends MyModel
             'supir_id' => $data['supir_id'],
             'keterangan' => $data['keterangan'],
             'absen_id' => $data['absen_id'] ?? '',
-            'jam' => $data['jam'],
+            'jam' => (strlen($data['jam'])<5) ?null:$data['jam'],
             'modifiedby' => $AbsensiSupirHeader->modifiedby,
         ]);
 
