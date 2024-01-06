@@ -34,7 +34,7 @@ class UserRoleController extends Controller
         $userRoles = new UserRole();
 
         return response()->json([
-            'data' => $userRoles->get($user->roles()),
+            'data' => $userRoles->get($user->id),
             'attributes' => [
                 'totalRows' => $userRoles->totalRows,
                 'totalPages' => $userRoles->totalPages
