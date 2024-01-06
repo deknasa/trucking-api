@@ -21,9 +21,13 @@ class UserRole extends MyModel
         'updated_at',
     ];
 
-    public function get($query)
+    public function get($userid)
     {
         $this->setRequestParameters();
+        $query = DB::table("userrole")->from(DB::raw("userrole"))
+            ->select('userrole.id', 'role.rolename', 'userrole.modifiedby', 'userrole.created_at', 'userrole.updated_at')
+            ->leftJoin(DB::raw("role with (readuncommitted)"), 'userrole.role_id', 'role.id')
+            ->where('userrole.user_id', $userid);
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -47,13 +51,18 @@ class UserRole extends MyModel
                 case "AND":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field']) {
-                                if (in_array($filters['field'], ['modifiedby', 'created_at', 'updated_at'])) {
-                                    $query = $query->where('userrole.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                } else {
-                                    $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
-                                }
+                            // if ($filters['field']) {
+                            //     if (in_array($filters['field'], ['modifiedby', 'created_at', 'updated_at'])) {
+                            //         $query = $query->where('userrole.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            //     } else {
+                            if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(userrole." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'rolename') {
+                                $query = $query->where('role.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->where('userrole.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
+                            // }
                         }
                     });
 
@@ -62,10 +71,15 @@ class UserRole extends MyModel
 
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if (in_array($filters['field'], ['modifiedby', 'created_at', 'updated_at'])) {
-                                $query = $query->orWhere('userrole.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            // if (in_array($filters['field'], ['modifiedby', 'created_at', 'updated_at'])) {
+                            //     $query = $query->orWhere('userrole.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            // } else {
+                            if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(userrole." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'rolename') {
+                                $query = $query->orWhere('role.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             } else {
-                                $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('userrole.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }
                     });

@@ -304,7 +304,7 @@ class Acl extends MyModel
         return $query;
     }
 
-    public function getdataedit($role_id )
+    public function getdataedit($role_id)
     {
 
         $tempmenu = '##tempmenu' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -315,7 +315,7 @@ class Acl extends MyModel
         });
 
 
-        $param1=0;
+        $param1 = 0;
         $querymenu = DB::table("menu")->from(
             DB::raw("menu a with (readuncommitted)")
         )
@@ -330,156 +330,154 @@ class Acl extends MyModel
                  (case when isnull(a.menuname,'')='' then '' else '->'+  isnull(a.menuname,'')	 end)
                  as menu
                 "),
-                'a.menukode',                
+                'a.menukode',
 
 
             )
             ->leftjoin(db::raw("menu b with (readuncommitted)"), function ($join) use ($param1) {
                 $join->on(db::raw("substring(a.menukode,1,1)"), '=', 'b.menukode');
-                $join->on(db::raw("isnull(b.aco_id,0)"), '=', DB::raw( $param1 ));
+                $join->on(db::raw("isnull(b.aco_id,0)"), '=', DB::raw($param1));
             })
             ->leftjoin(db::raw("menu c with (readuncommitted)"), function ($join) use ($param1) {
                 $join->on(db::raw("substring(a.menukode,1,2)"), '=', 'c.menukode');
-                $join->on(db::raw("isnull(c.aco_id,0)"), '=', DB::raw( $param1 ));
+                $join->on(db::raw("isnull(c.aco_id,0)"), '=', DB::raw($param1));
             })
             ->leftjoin(db::raw("menu d with (readuncommitted)"), function ($join) use ($param1) {
                 $join->on(db::raw("substring(a.menukode,1,3)"), '=', 'd.menukode');
-                $join->on(db::raw("isnull(d.aco_id,0)"), '=', DB::raw( $param1 ));
+                $join->on(db::raw("isnull(d.aco_id,0)"), '=', DB::raw($param1));
             })
             ->leftjoin(db::raw("menu e with (readuncommitted)"), function ($join) use ($param1) {
                 $join->on(db::raw("substring(a.menukode,1,4)"), '=', 'e.menukode');
-                $join->on(db::raw("isnull(e.aco_id,0)"), '=', DB::raw( $param1 ));
+                $join->on(db::raw("isnull(e.aco_id,0)"), '=', DB::raw($param1));
             })
             ->leftjoin(db::raw("menu f with (readuncommitted)"), function ($join) use ($param1) {
                 $join->on(db::raw("substring(a.menukode,1,5)"), '=', 'f.menukode');
-                $join->on(db::raw("isnull(f.aco_id,0)"), '=', DB::raw( $param1 ));
+                $join->on(db::raw("isnull(f.aco_id,0)"), '=', DB::raw($param1));
             })
             ->leftjoin(db::raw("menu g with (readuncommitted)"), function ($join) use ($param1) {
                 $join->on(db::raw("substring(a.menukode,1,6)"), '=', 'g.menukode');
-                $join->on(db::raw("isnull(g.aco_id,0)"), '=', DB::raw( $param1 ));
+                $join->on(db::raw("isnull(g.aco_id,0)"), '=', DB::raw($param1));
             })
-            ->whereRaw("a.aco_id<>0");     
-            
-            
-            DB::table($tempmenu)->insertUsing([
-                'aco_id',
-                'menu',
-                'menukode',
-            ], $querymenu);
+            ->whereRaw("a.aco_id<>0");
 
-            $tempacos = '##tempacos' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::create($tempacos, function ($table) {
-                $table->integer('id')->nullable();
-                $table->integer('idindex')->nullable();
-            });    
-            
-            
-            $param1='index';
-            $queryacos = DB::table("acos")->from(
-                DB::raw("acos a with (readuncommitted)")
+
+        DB::table($tempmenu)->insertUsing([
+            'aco_id',
+            'menu',
+            'menukode',
+        ], $querymenu);
+
+        $tempacos = '##tempacos' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempacos, function ($table) {
+            $table->integer('id')->nullable();
+            $table->integer('idindex')->nullable();
+        });
+
+
+        $param1 = 'index';
+        $queryacos = DB::table("acos")->from(
+            DB::raw("acos a with (readuncommitted)")
+        )
+            ->select(
+                'a.id',
+                'b.id as idindex',
             )
-                ->select(
-                    'a.id',
-                    'b.id as idindex',
-                )
-                ->leftjoin(db::raw("acos b with (readuncommitted)"), function ($join) use ($param1) {
-                    $join->on('a.class', '=', 'b.class');
-                    $join->on('b.method', '=', DB::raw("'". $param1 ."'"));
-                });
+            ->leftjoin(db::raw("acos b with (readuncommitted)"), function ($join) use ($param1) {
+                $join->on('a.class', '=', 'b.class');
+                $join->on('b.method', '=', DB::raw("'" . $param1 . "'"));
+            });
 
 
-                DB::table($tempacos)->insertUsing([
-                    'id',
-                    'idindex',
-                ], $queryacos);
+        DB::table($tempacos)->insertUsing([
+            'id',
+            'idindex',
+        ], $queryacos);
 
 
 
-                $tempacos2 = '##tempacos2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-                Schema::create($tempacos2, function ($table) {
-                    $table->id();        
-                    $table->integer('idacos')->nullable();
-                    $table->string('class',1000)->nullable();
-                    $table->string('method',1000)->nullable();
-                    $table->string('nama',1000)->nullable();
-                    $table->string('menukode', 1000)->nullable();
-                    $table->string('modifiedby',50)->nullable();
-                    $table->integer('idheader')->nullable();                    
-                    $table->dateTime('created_at')->nullable();
-                    $table->dateTime('updated_at')->nullable();
-                    $table->longtext('keterangan')->nullable();
+        $tempacos2 = '##tempacos2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempacos2, function ($table) {
+            $table->id();
+            $table->integer('idacos')->nullable();
+            $table->string('class', 1000)->nullable();
+            $table->string('method', 1000)->nullable();
+            $table->string('nama', 1000)->nullable();
+            $table->string('menukode', 1000)->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->integer('idheader')->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
+            $table->longtext('keterangan')->nullable();
+        });
 
-                });  
+        $queryacos2 = DB::table("acos")->from(
+            DB::raw("acos a with (readuncommitted)")
+        )
+            ->select(
+                'a.id as idacos',
+                DB::raw("replace(isnull(c.menu,isnull(c1.menu,'')),'agen','CUSTOMER') as class"),
+                'a.method',
+                'a.nama',
+                db::raw("isnull(a.idheader,0) as idheader"),
+                db::raw("isnull(c.menukode,isnull(c1.menukode,'')) as menukode"),
+                'a.modifiedby',
+                'a.created_at',
+                'a.updated_at',
+                db::raw("isnull(a.keterangan,'') as keterangan")
 
-                $queryacos2 = DB::table("acos")->from(
-                    DB::raw("acos a with (readuncommitted)")
-                )
-                    ->select(
-                        'a.id as idacos',
-                        DB::raw("replace(isnull(c.menu,isnull(c1.menu,'')),'agen','CUSTOMER') as class"),
-                        'a.method',
-                        'a.nama',
-                        db::raw("isnull(a.idheader,0) as idheader"),                        
-                        db::raw("isnull(c.menukode,isnull(c1.menukode,'')) as menukode"),
-                        'a.modifiedby',
-                        'a.created_at',
-                        'a.updated_at',
-                        db::raw("isnull(a.keterangan,'') as keterangan")
+            )
+            ->leftjoin(DB::raw($tempacos . " b"), 'a.id', 'b.id')
+            ->leftjoin(DB::raw($tempmenu . " c"), 'b.idindex', 'c.aco_id')
+            ->leftjoin(DB::raw($tempacos . " b1"), 'a.idheader', 'b1.id')
+            ->leftjoin(DB::raw($tempmenu . " c1"), 'b1.idindex', 'c1.aco_id')
+            ->whereRaw("isnull(c.menu,isnull(c1.menu,''))<>''")
+            ->OrderBy(db::raw("isnull(c.menukode,isnull(c1.menukode,''))"), 'asc');
 
-                    )
-                    ->leftjoin(DB::raw($tempacos . " b"), 'a.id', 'b.id')
-                    ->leftjoin(DB::raw($tempmenu . " c"), 'b.idindex', 'c.aco_id')
-                    ->leftjoin(DB::raw($tempacos . " b1"), 'a.idheader', 'b1.id')
-                    ->leftjoin(DB::raw($tempmenu . " c1"), 'b1.idindex', 'c1.aco_id')
-                    ->whereRaw("isnull(c.menu,isnull(c1.menu,''))<>''")
-                    ->OrderBy(db::raw("isnull(c.menukode,isnull(c1.menukode,''))"),'asc');
-                
-                    DB::table($tempacos2)->insertUsing([
-                        'idacos',
-                        'class',
-                        'method',
-                        'nama',
-                        'idheader',                        
-                        'menukode',
-                        'modifiedby',
-                        'created_at',
-                        'updated_at',
-                        'keterangan',
-                    ], $queryacos2);
-                    
-                 
-      
+        DB::table($tempacos2)->insertUsing([
+            'idacos',
+            'class',
+            'method',
+            'nama',
+            'idheader',
+            'menukode',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+            'keterangan',
+        ], $queryacos2);
+
+
+
 
         $tempacl = '##tempacl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempacl, function ($table) {
-            $table->id();        
+            $table->id();
             $table->integer('aco_id')->nullable();
-            $table->string('modifiedby',50)->nullable();
+            $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
+        });
 
-        });  
-
-        $queryacl=db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
+        $queryacl = db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
             ->select(
                 'a.aco_id',
                 db::raw("max(a.modifiedby) as modifiedby"),
                 db::raw("max(a.created_at) as created_at"),
                 db::raw("max(a.updated_at) as updated_at"),
-                
+
             )
-            ->where('a.role_id',$role_id)
+            ->where('a.role_id', $role_id)
             ->groupby('a.aco_id');
 
-            DB::table($tempacl)->insertUsing([
-                'aco_id',
-                'modifiedby',
-                'created_at',
-                'updated_at',
-            ], $queryacl);            
+        DB::table($tempacl)->insertUsing([
+            'aco_id',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+        ], $queryacl);
 
-            
-            // DD(db::table($tempacl)->get());
+
+        // DD(db::table($tempacl)->get());
 
         $query = DB::table($tempacos2)->from(
             db::raw($tempacos2 . " a")
@@ -488,8 +486,8 @@ class Acl extends MyModel
                 'a.id',
                 'a.idacos as acosid',
                 'a.class',
-          DB::raw("isnull(a.method,'') as method"),
-	            'a.nama',
+                DB::raw("isnull(a.method,'') as method"),
+                'a.nama',
                 'c.modifiedby',
                 'c.created_at',
                 'c.updated_at',
@@ -501,12 +499,12 @@ class Acl extends MyModel
                 //  DB::raw("'AKTIF'   as status"),
 
             )
-            ->join(db::raw($tempacl ." c "), 'a.idacos', 'c.aco_id')
+            ->join(db::raw($tempacl . " c "), 'a.idacos', 'c.aco_id')
 
-            ->orderby('a.id','asc');
-                
-            // dd($query->get());
-            return $query;
+            ->orderby('a.id', 'asc');
+
+        // dd($query->get());
+        return $query;
     }
 
     public function getAclRole($roleid)
@@ -559,9 +557,8 @@ class Acl extends MyModel
                 $table->string('menukode', 100)->nullable();
                 $table->string('status', 100)->nullable();
                 $table->longtext('keterangan')->nullable();
-
             });
-         
+
             DB::table($temtabel)->insertUsing([
                 'id',
                 'acosid',
@@ -591,19 +588,19 @@ class Acl extends MyModel
         }
 
         $query = db::table($temtabel)->from(
-            db::raw($temtabel . " acl")
+            db::raw($temtabel . " a")
         )
             ->select(
-                'acl.id',
-                'acl.acosid',
-                'acl.class',
-                'acl.method',
-                'acl.nama',
-                'acl.modifiedby',
-                'acl.created_at',
-                'acl.updated_at',
-                'acl.menukode',
-                'acl.keterangan',
+                'a.id',
+                'a.acosid',
+                'a.class',
+                'a.method',
+                'a.nama',
+                'a.modifiedby',
+                'a.created_at',
+                'a.updated_at',
+                'a.menukode',
+                'a.keterangan',
             );
 
 
@@ -650,7 +647,7 @@ class Acl extends MyModel
         )
             ->select(
                 'a.aco_id',
-     
+
                 DB::raw("isnull(b.menuname,'')+
                 (case when isnull(c.menuname,'')='' then '' else '->'+  isnull(c.menuname,'') end)+
                 (case when isnull(d.menuname,'')='' then '' else '->'+  isnull(d.menuname,'') end)+
@@ -660,7 +657,7 @@ class Acl extends MyModel
                  (case when isnull(a.menuname,'')='' then '' else '->'+  isnull(a.menuname,'')	 end)
                  as menu
                 "),
-                'a.menukode',                
+                'a.menukode',
 
             )
             ->leftjoin(db::raw("menu b with (readuncommitted)"), function ($join) use ($param1) {
@@ -689,7 +686,7 @@ class Acl extends MyModel
             })
             ->whereRaw("a.aco_id<>0");
 
-            // dd($querymenu->get());
+        // dd($querymenu->get());
 
         DB::table($tempmenu)->insertUsing([
             'aco_id',
@@ -727,7 +724,7 @@ class Acl extends MyModel
 
         $tempacos2 = '##tempacos2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempacos2, function ($table) {
-            $table->id();        
+            $table->id();
             $table->integer('idacos')->nullable();
             $table->string('class', 1000)->nullable();
             $table->string('method', 1000)->nullable();
@@ -737,7 +734,6 @@ class Acl extends MyModel
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
             $table->longText('keterangan')->nullable();
-
         });
         // dd('test');
         $queryacos2 = DB::table("acos")->from(
@@ -759,10 +755,10 @@ class Acl extends MyModel
             ->leftjoin(DB::raw($tempacos . " b1"), 'a.idheader', 'b1.id')
             ->leftjoin(DB::raw($tempmenu . " c1"), 'b1.idindex', 'c1.aco_id')
             ->whereRaw("isnull(c.menu,isnull(c1.menu,''))<>''")
-            ->OrderBy(db::raw("isnull(c.menukode,isnull(c1.menukode,''))"),'asc');
-            // ->OrderBy('a.id','asc');
+            ->OrderBy(db::raw("isnull(c.menukode,isnull(c1.menukode,''))"), 'asc');
+        // ->OrderBy('a.id','asc');
 
-            // DD($queryacos2->get());
+        // DD($queryacos2->get());
 
         DB::table($tempacos2)->insertUsing([
             'idacos',
@@ -776,34 +772,34 @@ class Acl extends MyModel
             'keterangan',
         ], $queryacos2);
 
-        
-// dd(db::table($tempacos2)->orderby('id','asc')->get());
 
-$tempacl = '##tempacl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-Schema::create($tempacl, function ($table) {
-    $table->id();        
-    $table->integer('aco_id')->nullable();
-    $table->string('modifiedby', 50)->nullable();
-    $table->dateTime('created_at')->nullable();
-    $table->dateTime('updated_at')->nullable();    
-});  
+        // dd(db::table($tempacos2)->orderby('id','asc')->get());
 
-$queryacl=db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
-    ->select(
-        'a.aco_id',
-        db::raw("max(a.modifiedby) as modifiedby"),
-        db::raw("max(a.created_at) as created_at"),
-        db::raw("max(a.updated_at) as updated_at"),
-    )
-    ->where('a.role_id',$roleid)
-    ->groupby('a.aco_id');
+        $tempacl = '##tempacl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempacl, function ($table) {
+            $table->id();
+            $table->integer('aco_id')->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
+        });
 
-    DB::table($tempacl)->insertUsing([
-        'aco_id',
-        'modifiedby',
-        'created_at',
-        'updated_at',
-    ], $queryacl);       
+        $queryacl = db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
+            ->select(
+                'a.aco_id',
+                db::raw("max(a.modifiedby) as modifiedby"),
+                db::raw("max(a.created_at) as created_at"),
+                db::raw("max(a.updated_at) as updated_at"),
+            )
+            ->where('a.role_id', $roleid)
+            ->groupby('a.aco_id');
+
+        DB::table($tempacl)->insertUsing([
+            'aco_id',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+        ], $queryacl);
 
 
         $query = DB::table($tempacos2)->from(
@@ -821,7 +817,7 @@ $queryacl=db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
                 'a.menukode',
                 DB::raw("isnull(a.keterangan,'') as keterangan"),
             )
-            ->join(db::raw($tempacl ." c "), 'a.id', 'c.aco_id')
+            ->join(db::raw($tempacl . " c "), 'a.id', 'c.aco_id')
             ->orderby('a.id', 'asc');
 
         // dd( $query->get());
@@ -859,7 +855,7 @@ $queryacl=db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
     public function sort($query)
     {
         // return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
-        return $query->orderBy( 'acl.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 
     public function filter($query, $relationFields = [])
@@ -877,8 +873,12 @@ $queryacl=db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
                         // } else if ($filters['field'] == 'created_at') {
                         //     $query = $query->where('acos.created_at', 'LIKE', "%$filters[data]%");
                         // } else {
-                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->where( 'acl.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else {
+                            $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                         // }
                     }
 
@@ -895,7 +895,11 @@ $queryacl=db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
                         //     $query = $query->orWhere('acos.created_at', 'LIKE', "%$filters[data]%");
                         // } else {
                         //     $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->orWhere('acl.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else {
+                            $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                         // }
                     }
 

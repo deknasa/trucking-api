@@ -356,13 +356,16 @@ class UserAcl extends MyModel
                 case "AND":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field']) {
-                                if (in_array($filters['field'], ['modifiedby', 'created_at', 'updated_at'])) {
-                                    $query = $query->where('acos.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                } else {
-                                    $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
-                                }
+                            // if ($filters['field']) {
+                            //     if (in_array($filters['field'], ['modifiedby', 'created_at', 'updated_at'])) {
+                            //         $query = $query->where('acos.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            //     } else {
+                            if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
+                            // }
                         }
                     });
 
@@ -371,10 +374,13 @@ class UserAcl extends MyModel
 
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if (in_array($filters['field'], ['modifiedby', 'created_at', 'updated_at'])) {
-                                $query = $query->orWhere('acos.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            // if (in_array($filters['field'], ['modifiedby', 'created_at', 'updated_at'])) {
+                            //     $query = $query->orWhere('acos.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            // } else {
+                            if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
-                                $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }
                     });
