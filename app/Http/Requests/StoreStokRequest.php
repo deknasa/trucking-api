@@ -53,7 +53,7 @@ class StoreStokRequest extends FormRequest
             "hargabelimax"=> [new NotDecimal(), new NumberMax(),'numeric'],
             'statusban' => [Rule::requiredIf($kelompokBan->id == $this->input('kelompok_id'))],
             'gambar' => 'array',
-            'gambar.*' => 'image'
+            'gambar.*' => ['image','min:100']
         ];
     }
 
