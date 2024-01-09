@@ -192,7 +192,7 @@ class UpdateUpahSupirRequest extends FormRequest
                 'before:' . $tglBatasAkhir,
                 'after_or_equal:' . date('d-m-Y', strtotime($dataUpahSupir->tglmulaiberlaku))
             ],
-            'gambar.*' => ['image', 'min:200']
+            'gambar.*' => ['image', 'min:100']
         ];
         $relatedRequests = [
             UpdateUpahSupirRincianRequest::class
