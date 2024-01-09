@@ -99,7 +99,7 @@ return [
         'array' => 'The :attribute must have at least :min items.',
     ],
     'multiple_of' => 'The :attribute must be a multiple of :value.',
-    'not_in' => 'The selected :attribute is invalid.',
+    'not_in' => ':attribute ' . (new ErrorController)->geterror('SPI')->keterangan,
     'not_regex' => 'The :attribute format is invalid.',
     'numeric' => ':attribute Nilai Harus ' . (new ErrorController)->geterror('BTSANGKA')->keterangan,
     'password' => 'The password is incorrect.',

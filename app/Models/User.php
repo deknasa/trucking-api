@@ -61,6 +61,32 @@ class User extends Authenticatable
         'updated_at',
     ];
 
+    public function isMandor() {
+        $role = DB::table('role')->select('id')->where('rolename', 'MANDOR')->first();
+        $userMandor = $this->checkUserRole($role);
+        
+        if ($userMandor->count()) {
+            //check user has mandor
+            return $this->select('mandor.id as mandor_id')->rightJoin(DB::raw("mandor with (readuncommitted)"), 'mandor.user_id', 'user.id')->
+            where('mandor.user_id', $this->id)->first();
+        }
+        return false;        
+    }
+    public function isAdmin() {
+        $role = DB::table('role')->select('id')->where('rolename', 'ADMIN')->first();
+        $userAdmin = $this->checkUserRole($role);
+        if ($userAdmin->count())  return true;
+        return false;     
+    }
+
+    public function checkUserRole($role)
+    {    
+        return $user = $this->select('user.id')
+        ->leftJoin(DB::raw("userrole with (readuncommitted)"), 'userrole.user_id', 'user.id')
+        ->where('userrole.role_id', $role->id)
+        ->where('user.id', $this->id);
+    }
+
     protected function serializeDate(DateTimeInterface $date)
     {
         return $date->format('d-m-Y H:i:s');
@@ -94,7 +120,7 @@ class User extends Authenticatable
     public function get()
     {
         $this->setRequestParameters();
-
+        $role = request()->role ?? '';
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->select('text')
             ->where('grp', 'JUDULAN LAPORAN')
@@ -124,6 +150,13 @@ class User extends Authenticatable
             ->leftJoin('parameter as statusakses', 'user.statusakses', '=', 'statusakses.id')
             ->leftJoin('cabang', 'user.cabang_id', '=', 'cabang.id');
 
+        if ($role) {
+            $query
+            ->leftJoin('userrole', 'user.id', '=', 'userrole.user_id')
+            ->leftJoin('role', 'userrole.role_id', '=', 'role.id')
+            ->where('role.rolename',$role);
+        }
+        
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
