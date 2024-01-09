@@ -92,7 +92,8 @@ class MandorController extends Controller
             $data = [
                 'namamandor' => $request->namamandor,
                 'keterangan' => $request->keterangan ?? '',
-                'statusaktif' => $request->statusaktif
+                'statusaktif' => $request->statusaktif,
+                'user_id' => $request->user_id
             ];
             $mandor = (new Mandor())->processStore($data);
             $mandor->position = $this->getPosition($mandor, $mandor->getTable())->position;
@@ -118,7 +119,7 @@ class MandorController extends Controller
     {
         return response([
             'status' => true,
-            'data' => $mandor
+            'data' => $mandor->findAll($mandor->id)
         ]);
     }
 
@@ -133,7 +134,8 @@ class MandorController extends Controller
             $data = [
                 'namamandor' => $request->namamandor,
                 'keterangan' => $request->keterangan ?? '',
-                'statusaktif' => $request->statusaktif
+                'statusaktif' => $request->statusaktif,
+                'user_id' => $request->user_id
             ];
             $mandor = (new Mandor())->processUpdate($mandor, $data);
             $mandor->position = $this->getPosition($mandor, $mandor->getTable())->position;

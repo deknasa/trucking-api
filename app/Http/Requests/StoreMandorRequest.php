@@ -2,10 +2,12 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use App\Http\Controllers\Api\ErrorController;
+use App\Models\Mandor;
 use App\Models\Parameter;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
 
 
 class StoreMandorRequest extends FormRequest
@@ -27,6 +29,13 @@ class StoreMandorRequest extends FormRequest
      */
     public function rules()
     {
+        $mandor = (new Mandor())->select('user.name')->leftJoin(DB::raw("[user] with (readuncommitted)"), 'mandor.user_id', '=', 'user.id')->get();
+        $namauser=[];
+        foreach ($mandor as $item) {
+            if ($item->name) {
+                $namauser[] = $item->name;
+            }
+        } 
         $parameter = new Parameter();
         $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
         $data = json_decode($data, true);
@@ -36,6 +45,8 @@ class StoreMandorRequest extends FormRequest
         return [
             'namamandor' => 'required|unique:mandor',
             'statusaktif' => ['required', Rule::in($status)],
+            'user' => ['nullable', Rule::notIn($namauser)],
+            'user_id' => ['nullable','unique:mandor'],
         ];
     }
 
@@ -43,7 +54,8 @@ class StoreMandorRequest extends FormRequest
     {
         return [
             'namamandor' => 'nama mandor',
-            'statusaktif' => 'statusaktif',
+            'statusaktif' => 'status aktif',
+            'user_id' => 'user',
         ];
         
     }

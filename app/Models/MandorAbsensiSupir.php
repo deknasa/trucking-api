@@ -17,6 +17,10 @@ class MandorAbsensiSupir extends MyModel
 
     public function tableTemp($date = 'now')
     {
+        $mandorId = false;
+        $isMandor = auth()->user()->isMandor();
+        $isAdmin = auth()->user()->isAdmin();
+
         $statusaktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
         $statusabsensisupir = DB::table('parameter')->where('grp', 'STATUS ABSENSI SUPIR')->where('subgrp', 'STATUS ABSENSI SUPIR')->where('text', 'ABSENSI SUPIR')->first();
         $tradoMilikSupir = DB::table('parameter')->where('grp', 'ABSENSI SUPIR')->where('subgrp', 'TRADO MILIK SUPIR')->first();
@@ -64,6 +68,14 @@ class MandorAbsensiSupir extends MyModel
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'absensisupirdetail.trado_id', 'trado.id')
             ->leftJoin(DB::raw("absentrado with (readuncommitted)"), 'absensisupirdetail.absen_id', 'absentrado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'absensisupirdetail.supir_id', 'supir.id');
+        if (!$isAdmin) {
+            if ($isMandor) {
+                $absensisupirdetail->where('trado.mandor_id',$isMandor->mandor_id);
+            }else{
+                $absensisupirdetail->where('trado.id',0);
+            }
+        }
+        
         DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id'], $absensisupirdetail);
 
         $trado = DB::table('trado as a')
@@ -84,6 +96,13 @@ class MandorAbsensiSupir extends MyModel
             ->where('a.statusaktif', $statusaktif->id)
             ->where('a.statusabsensisupir', $statusabsensisupir->id)
             ->whereRaw("a.id not in (select trado_id from $tempMandor)");
+        if (!$isAdmin) {
+            if ($isMandor) {
+                $trado->where('a.mandor_id',$isMandor->mandor_id);
+            }else{
+                $trado->where('a.id',0);
+            }
+        }
 
         if ($tradoMilikSupir->text == 'YA') {
             $trado->where('a.supir_id', '!=', 0);
@@ -112,6 +131,13 @@ class MandorAbsensiSupir extends MyModel
             ->where('e.tglabsensi', date('Y-m-d', strtotime($date)))
             ->where('e.statusapproval', 3)
             ->whereRaw("e.supirserap_id not in (select supir_id from absensisupirdetail join absensisupirheader on absensisupirheader.nobukti = absensisupirdetail.nobukti where absensisupirheader.tglbukti='$tgl')");
+        if (!$isAdmin) {
+            if ($isMandor) {
+                $trado->where('a.mandor_id',$isMandor->mandor_id);
+            }else{
+                $trado->where('a.id',0);
+            }
+        }
 
         DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id'], $trado);
 

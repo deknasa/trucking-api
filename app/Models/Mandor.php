@@ -35,6 +35,8 @@ class Mandor extends MyModel
                 'mandor.id',
                 'mandor.namamandor',
                 'mandor.keterangan',
+                'mandor.user_id',
+                'user.name as user',
                 'parameter.memo as statusaktif',
                 'mandor.modifiedby',
                 'mandor.created_at',
@@ -44,8 +46,8 @@ class Mandor extends MyModel
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'mandor.statusaktif', '=', 'parameter.id');
-
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'mandor.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("[user] with (readuncommitted)"), 'mandor.user_id', '=', 'user.id');
 
 
 
@@ -69,6 +71,26 @@ class Mandor extends MyModel
         $data = $query->get();
 
         return $data;
+    }
+
+    function findAll($id){
+       return $query = DB::table($this->table)->from(DB::raw("mandor with (readuncommitted)"))
+            ->select(
+                'mandor.id',
+                'mandor.namamandor',
+                'mandor.keterangan',
+                'mandor.user_id',
+                'user.name as user',
+                'mandor.statusaktif',
+                'mandor.modifiedby',
+                'mandor.created_at',
+                'mandor.updated_at',
+            )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'mandor.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("[user] with (readuncommitted)"), 'mandor.user_id', '=', 'user.id')
+            ->where('mandor.id',$id)
+            ->first();
+        
     }
     public function cekvalidasihapus($id)
     {
@@ -236,6 +258,7 @@ class Mandor extends MyModel
         $mandor->namamandor = $data['namamandor'];
         $mandor->keterangan = $data['keterangan'] ?? '';
         $mandor->statusaktif = $data['statusaktif'];
+        $mandor->user_id = $data['user_id'];
         $mandor->modifiedby = auth('api')->user()->user;
         $mandor->info = html_entity_decode(request()->info);
         $data['sortname'] = $data['sortname'] ?? 'id';
@@ -263,6 +286,7 @@ class Mandor extends MyModel
         $mandor->namamandor = $data['namamandor'];
         $mandor->keterangan = $data['keterangan'] ?? '';
         $mandor->statusaktif = $data['statusaktif'];
+        $mandor->user_id = $data['user_id'];
         $mandor->modifiedby = auth('api')->user()->user;
         $mandor->info = html_entity_decode(request()->info);
 
