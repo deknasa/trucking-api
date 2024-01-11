@@ -1372,7 +1372,7 @@ class PenerimaanStokHeader extends MyModel
                     'tanpaprosesnobukti' => 1,
                     'nobukti' => $penerimaanStokHeader->nobukti,
                     'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-                    'postingdari' => "ENTRY Penerimaan Stok Header",
+                    'postingdari' => "ENTRY PENERIMAAN STOK ($fetchFormat->kodepenerimaan)",
                     'statusapproval' => $statusApproval->id,
                     'userapproval' => "",
                     'tglapproval' => "",
@@ -1414,7 +1414,7 @@ class PenerimaanStokHeader extends MyModel
 
             $hutangRequest = [
                 'proseslain' => 'PEMBELIAN STOK',
-                'postingdari' => 'PENERIMAAN STOK PEMBELIAN',
+                'postingdari' => "PENERIMAAN STOK ($fetchFormat->kodepenerimaan)",
                 'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
                 'coa' => $memoDebet['JURNAL'],
                 'supplier_id' => ($data['supplier_id'] == null) ? "" : $data['supplier_id'],
@@ -1457,7 +1457,7 @@ class PenerimaanStokHeader extends MyModel
                 'tanpaprosesnobukti' => 1,
                 'nobukti' => $penerimaanStokHeader->nobukti,
                 'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-                'postingdari' => "ENTRY PENERIMAAN STOK",
+                'postingdari' => "ENTRY PENERIMAAN STOK ($fetchFormat->kodepenerimaan)",
                 'statusapproval' => $statusApproval->id,
                 'userapproval' => "",
                 'tglapproval' => "",
@@ -1475,7 +1475,7 @@ class PenerimaanStokHeader extends MyModel
 
         $penerimaanStokHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($penerimaanStokHeader->getTable()),
-            'postingdari' => strtoupper('ENTRY penerimaan Stok Header'),
+            'postingdari' => "ENTRY PENERIMAAN STOK ($fetchFormat->kodepenerimaan)",
             'idtrans' => $penerimaanStokHeader->id,
             'nobuktitrans' => $penerimaanStokHeader->nobukti,
             'aksi' => 'ENTRY',
@@ -1485,7 +1485,7 @@ class PenerimaanStokHeader extends MyModel
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($penerimaanStokDetail->getTable()),
-            'postingdari' => strtoupper('ENTRY penerimaan Stok Detail'),
+            'postingdari' => "PENERIMAAN STOK ($fetchFormat->kodepenerimaan",
             'idtrans' =>  $penerimaanStokHeaderLogTrail->id,
             'nobuktitrans' => $penerimaanStokHeader->nobukti,
             'aksi' => 'ENTRY',
@@ -1599,7 +1599,7 @@ class PenerimaanStokHeader extends MyModel
         // dd('test');
         $penerimaanStokHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($penerimaanStokHeader->getTable()),
-            'postingdari' => strtoupper('edit penerimaan Stok Header'),
+            'postingdari' => "EDIT PENERIMAAN STOK ($fetchFormat->kodepenerimaan)",
             'idtrans' => $penerimaanStokHeader->id,
             'nobuktitrans' => $penerimaanStokHeader->nobukti,
             'aksi' => strtoupper('edit'),
@@ -1921,7 +1921,7 @@ class PenerimaanStokHeader extends MyModel
                     'tanpaprosesnobukti' => 1,
                     'nobukti' => $penerimaanStokHeader->nobukti,
                     'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-                    'postingdari' => "ENTRY Penerimaan Stok Header",
+                    'postingdari' => "ENTRY PENERIMAAN STOK ($fetchFormat->kodepenerimaan)",
                     'statusapproval' => $statusApproval->id,
                     'userapproval' => "",
                     'tglapproval' => "",
@@ -1960,7 +1960,7 @@ class PenerimaanStokHeader extends MyModel
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($penerimaanStokDetail->getTable()),
-            'postingdari' => strtoupper('update penerimaan Stok Detail'),
+            'postingdari' => "UPDATE PENERIMAAN STOK ($fetchFormat->kodepenerimaan)",
             'idtrans' =>  $penerimaanStokHeaderLogTrail->id,
             'nobuktitrans' => $penerimaanStokHeader->nobukti,
             'aksi' => strtoupper('edit'),
@@ -1980,7 +1980,7 @@ class PenerimaanStokHeader extends MyModel
 
             $hutangRequest = [
                 'proseslain' => 'PEMBELIAN STOK',
-                'postingdari' => 'PENERIMAAN STOK PEMBELIAN',
+                'postingdari' => "PENERIMAAN STOK ($fetchFormat->kodepenerimaan)",
                 'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
                 'coa' => $memoDebet['JURNAL'],
                 'supplier_id' => ($data['supplier_id'] == null) ? "" : $data['supplier_id'],
@@ -2014,7 +2014,7 @@ class PenerimaanStokHeader extends MyModel
             /*STORE JURNAL*/
             $jurnalRequest = [
                 'tanpaprosesnobukti' => 1,
-                'postingdari' => "EDIT PENERIMAAN STOK",
+                'postingdari' => "EDIT PENERIMAAN STOK ($fetchFormat->kodepenerimaan)",
                 'coakredit_detail' => $coakredit_detail,
                 'coadebet_detail' => $coadebet_detail,
                 'nominal_detail' => $nominal_detail,
@@ -2100,7 +2100,7 @@ class PenerimaanStokHeader extends MyModel
 
         $penerimaanStokHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => $penerimaanStokHeader->getTable(),
-            'postingdari' => strtoupper('DELETE penerimaan Stok Header'),
+            'postingdari' => "DELETE PENERIMAAN STOK ($fetchFormat->kodepenerimaan)",
             'idtrans' => $penerimaanStokHeader->id,
             'nobuktitrans' => $penerimaanStokHeader->nobukti,
             'aksi' => 'DELETE',
@@ -2110,7 +2110,7 @@ class PenerimaanStokHeader extends MyModel
 
         (new LogTrail())->processStore([
             'namatabel' => "penerimaanstokdetail",
-            'postingdari' => strtoupper('DELETE penerimaan Stok detail'),
+            'postingdari' =>  "DELETE PENERIMAAN STOK ($fetchFormat->kodepenerimaan)",
             'idtrans' => $penerimaanStokHeaderLogTrail['id'],
             'nobuktitrans' => $penerimaanStokHeader->nobukti,
             'aksi' => 'DELETE',
@@ -2123,6 +2123,7 @@ class PenerimaanStokHeader extends MyModel
 
     public function resetPengeluaranFifo(PengeluaranStokHeader $pengeluaranStokHeader) 
     {
+        $fetchFormat =  PengeluaranStok::where('id', $pengeluaranStokHeader->pengeluaranstok_id)->first();
         $gudangkantor =  Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first()->text;
         $coaKasMasuk = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL RETUR STOK')->where('subgrp', 'KREDIT')->first();
         $memo = json_decode($coaKasMasuk->memo, true);
@@ -2258,7 +2259,7 @@ class PenerimaanStokHeader extends MyModel
                 'tanpaprosesnobukti' => 1,
                 'nobukti' => $itemspkheader['nobukti'],
                 'tglbukti' => $itemspkheader['tglbukti'],
-                'postingdari' => "ENTRY Pengeluaran stok header",
+                'postingdari' => "ENTRY PENGELUARAN STOK ($fetchFormat->kodepengeluaran)",
                 'statusapproval' => $statusApproval->id,
                 'userapproval' => "",
                 'tglapproval' => "",
@@ -2280,7 +2281,7 @@ class PenerimaanStokHeader extends MyModel
            
             $pengeluaranStokHeaderLogTrailReset = (new LogTrail())->processStore([
                 'namatabel' => strtoupper($pengeluaranStokHeader->getTable()),
-                'postingdari' => strtoupper('ENTRY Pengeluaran Stok Header'),
+                'postingdari' => "ENTRY PENGELUARAN STOK ($fetchFormat->kodepengeluaran)",
                 'idtrans' => $itemspkheader['id'],
                 'nobuktitrans' => $itemspkheader['nobukti'],
                 'aksi' => 'ENTRY',
@@ -2290,7 +2291,7 @@ class PenerimaanStokHeader extends MyModel
             //store logtrail detail
             (new LogTrail())->processStore([
                 'namatabel' => strtoupper('PengeluaranStokDetail'),
-                'postingdari' => strtoupper('ENTRY penerimaan Stok Detail'),
+                'postingdari' => "ENTRY PENGELUARAN STOK ($fetchFormat->kodepengeluaran)",
                 'idtrans' =>  $pengeluaranStokHeaderLogTrailReset->id,
                 'nobuktitrans' => $itemspkheader['nobukti'],
                 'aksi' => 'ENTRY',

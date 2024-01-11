@@ -544,7 +544,7 @@ class JurnalUmumHeader extends MyModel
             $jurnalUmumHeader->nobukti = $nobukti;
             $jurnalUmumHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
-
+        $jurnalUmumHeader->postingdari = $data['postingdari'] ?? 'EDIT JURNAL UMUM';
         $jurnalUmumHeader->modifiedby = auth('api')->user()->name;
         $jurnalUmumHeader->info = html_entity_decode(request()->info);
 
