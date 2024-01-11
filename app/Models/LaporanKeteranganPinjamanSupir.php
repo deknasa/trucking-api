@@ -161,6 +161,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             )
             ->join(DB::raw($penerimaanTruckingHeader . " as b"), 'a.nobukti', 'b.nobukti');
 
+
         DB::table($penerimaanTruckingDetail)->insertUsing([
             'id',
             'penerimaantruckingheader_id',
@@ -177,6 +178,36 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             'updated_at',
         ], $queryPenerimaanTruckingDetail);
 
+        $penerimaanTruckingDetailrekap = '##penerimaanTruckingDetailrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($penerimaanTruckingDetailrekap, function ($table) {
+            $table->string('nobukti', 50)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->integer('supir_id')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+
+        $querypenerimaanTruckingDetail = DB::table("penerimaantruckingdetail")->from(
+            DB::raw("penerimaantruckingdetail as a")
+        )
+            ->select(
+                'a.pengeluarantruckingheader_nobukti as nobukti',
+                DB::raw("max(a.keterangan) as keterangan"),
+                DB::raw("sum(a.nominal) as nominal"),
+                DB::raw("max(a.supir_id) as supir_id"),
+
+            )
+            ->join(DB::raw($penerimaanTruckingHeader . " as b"), 'a.nobukti', 'b.nobukti')
+            ->groupBy('a.pengeluarantruckingheader_nobukti');
+            
+
+        DB::table($penerimaanTruckingDetailrekap)->insertUsing([
+            'nobukti',
+            'keterangan',
+            'nominal',
+            'supir_id',
+        ], $querypenerimaanTruckingDetail);
+        
+        // dd(db::table($penerimaanTruckingDetailrekap)->get());
 
         $pengeluaranTruckingHeader = '##pengeluaranTruckingHeader' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($pengeluaranTruckingHeader, function ($table) {
@@ -279,6 +310,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             )
             ->join(DB::raw($pengeluaranTruckingHeader . " as b"), 'a.nobukti', 'b.nobukti')
             ->groupBy('a.nobukti');
+            
 
         DB::table($pengeluaranTruckingDetail)->insertUsing([
             'nobukti',
@@ -286,6 +318,8 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             'nominal',
             'supir_id',
         ], $queryPengeluaranTruckingDetail);
+
+        // dd(db::table($pengeluaranTruckingDetail)->get());
 
 
 
@@ -416,6 +450,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             DB::raw($pengeluaranTruckingHeader . " as a")
         )
             ->select(
+                // 'b.nobukti as nobukti2',
                 'a.tglbukti',
                 'a.tglbukti',
                 'c.nobukti',
@@ -427,7 +462,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
                 db::raw("isnull(d.namasupir,'') as namasupir")
 
             )
-            ->leftjoin(DB::raw($penerimaanTruckingDetail . " as b "), 'a.nobukti', 'b.pengeluarantruckingheader_nobukti')
+            ->leftjoin(DB::raw($penerimaanTruckingDetailrekap . " as b "), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw($pengeluaranTruckingDetail . " as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
             ->leftjoin(DB::raw("supir as d with (readuncommitted) "), 'c.supir_id', 'd.id')
             // ->whereRaw("isnull(B.nobukti,'')=''")
@@ -451,7 +486,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
         DB::delete(DB::raw("delete " . $tempLaporan . " from " . $tempLaporan . " as a WHERE isnull(a.debet,0)=0"));
 
 
-
+        // dd(db::table($penerimaanTruckingHeader2)->get());
 
         $queryTempLaporanDua = DB::table($penerimaanTruckingHeader2)->from(
             DB::raw($penerimaanTruckingHeader2 . " as a")
@@ -553,7 +588,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             DB::raw($tempLaporan2 . " as a")
         )
             ->select(
-                'a.tglbukti as tanggal',
+                db::raw("cast(a.tglbukti as date) as tanggal"),
                 'a.nobukti',
                 'a.namasupir',
                 'a.keterangan',
@@ -562,7 +597,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
                 DB::raw("sum ((isnull(A.saldo,0)+A.debet)-A.Kredit) over (order by id asc) as Saldo"),
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
-                DB::raw("'Laporan Keterangan Pinjaman Supir' as judulLaporan"),
+                DB::raw("upper('Laporan Keterangan Pinjaman Supir') as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
@@ -577,7 +612,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
         } else {
             $data = $queryRekap->get();
         }
-
+//  dd($data);
         return $data;
     }
 }
