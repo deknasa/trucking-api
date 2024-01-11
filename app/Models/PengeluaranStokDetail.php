@@ -96,9 +96,9 @@ class PengeluaranStokDetail extends MyModel
                 else '' end)
                 as stok"),
                 "$this->table.stok_id",
-                db::raw("format(isnull(pengeluaranStokdetail.qty,0),'#,#0') as qty"),
+                db::raw("isnull(pengeluaranStokdetail.qty,0) as qty"),
                 // "$this->table.qty",
-                db::raw("format(isnull(pengeluaranStokdetail.harga,0),'#,#0') as harga"),
+                db::raw("isnull(pengeluaranStokdetail.harga,0) as harga"),
                 // "$this->table.harga",
                 "$this->table.persentasediscount",
                 "$this->table.nominaldiscount",
@@ -130,9 +130,9 @@ class PengeluaranStokDetail extends MyModel
                 else '' end)
                 as stok"),
                 'statusreuse.memo as statusreuse',    
-                db::raw("format(isnull(pengeluaranStokdetail.qty,0),'#,#0') as qty"),
+                db::raw("isnull(pengeluaranStokdetail.qty,0) as qty"),
                 // "$this->table.qty",
-                db::raw("format(isnull(pengeluaranStokdetail.harga,0),'#,#0') as harga"),
+                db::raw("isnull(pengeluaranStokdetail.harga,0) as harga"),
                 // "$this->table.harga",
                 "$this->table.persentasediscount",
                 "$this->table.nominaldiscount",
