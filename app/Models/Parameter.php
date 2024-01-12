@@ -378,8 +378,10 @@ class Parameter extends MyModel
             DB::raw("parameter with (readuncommitted)")
         )
         ->select('*')
-        ->where('grp','=',request()->grp)
-        ->where('subgrp','=',request()->subgrp);
+        ->where('grp','=',request()->grp);
+        if (request()->subgrp) {
+            $query->where('subgrp','=',request()->subgrp);
+        }
         $this->filter($query);
         
         $query = $query->get();
