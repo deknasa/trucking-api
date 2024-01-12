@@ -3,46 +3,41 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
-use App\Models\AbsensiSupirDetail;
 use App\Models\Parameter;
-use App\Models\TarifRincian;
+use App\Models\ReminderOli;
 use App\Models\UpahSupirRincian;
+use App\Rules\cekJobTruckingEditTrip;
 use App\Rules\cekUpahRitasiDariInputTrip;
-use App\Rules\cekUpahRitasiInputTrip;
 use App\Rules\cekUpahRitasiKeInputTrip;
-use App\Rules\cekUpahSupirInputTrip;
+use App\Rules\cekUpahSupirEditTrip;
 use App\Rules\DateApprovalQuota;
 use App\Rules\ExistAbsensiSupirDetail;
 use App\Rules\ExistAgen;
 use App\Rules\ExistContainer;
-use App\Rules\ExistDataRitasi;
 use App\Rules\ExistGandengan;
 use App\Rules\ExistJenisOrder;
 use App\Rules\ExistKota;
-use App\Rules\ExistKotaDariSuratPengantar;
-use App\Rules\ExistKotaSampaiSuratPengantar;
 use App\Rules\ExistNominalUpahSupir;
 use App\Rules\ExistPelanggan;
 use App\Rules\ExistStatusContainer;
 use App\Rules\ExistSupir;
 use App\Rules\ExistTarifRincianSuratPengantar;
 use App\Rules\ExistTrado;
-use App\Rules\VAlidasiReminderOli;
-use App\Rules\VAlidasiReminderOliPersneling;
-use App\Rules\VAlidasiReminderOliGardan;
-use App\Rules\VAlidasiReminderSaringanHawa;
 use App\Rules\ExistUpahSupirRincianSuratPengantar;
 use App\Rules\JenisRitasiInputTrip;
 use App\Rules\ValidasiExistOmsetTarif;
 use App\Rules\ValidasiKotaUpahZona;
 use App\Rules\ValidasiKotaZonaTrip;
+use App\Rules\ValidasiReminderOli;
+use App\Rules\ValidasiReminderOliGardan;
+use App\Rules\ValidasiReminderOliPersneling;
+use App\Rules\ValidasiReminderSaringanHawa;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Schema;
-use App\Models\ReminderOli;
+use Illuminate\Validation\Rule;
 
-class StoreMandorTripRequest extends FormRequest
+class UpdateListTripRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -69,6 +64,35 @@ class StoreMandorTripRequest extends FormRequest
             $statusUpahZona[] = $item['id'];
         }
 
+        $trip = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))
+            ->select(DB::raw("suratpengantar.jobtrucking, suratpengantar.gudang, suratpengantar.upah_id, suratpengantar.statuscontainer_id, suratpengantar.dari_id, agen.namaagen as agen, container.kodecontainer as container,statuscontainer.kodestatuscontainer as statuscontainer, jenisorder.keterangan as jenisorder, pelanggan.namapelanggan as pelanggan"))
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'suratpengantar.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("container with (readuncommitted)"), 'suratpengantar.container_id', 'container.id')
+            ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'suratpengantar.statuscontainer_id', 'statuscontainer.id')
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'suratpengantar.jenisorder_id', 'jenisorder.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'suratpengantar.pelanggan_id', 'pelanggan.id')
+            ->where('suratpengantar.id', request()->id)->first();
+        $ruleAgen = '';
+        $ruleContainer = '';
+        $ruleStatusContainer = '';
+        $ruleJenisorder = '';
+        $rulePelanggan = '';
+        $ruleGudang = '';
+        $idUpahSupir = 0;
+        if ($trip->statuscontainer_id != 3) {
+            if ($trip->dari_id == 1) {
+                $cekjobtrucking = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', $trip->jobtrucking)->where('id', '<>', request()->id)->first();
+                if ($cekjobtrucking != '') {
+                    $idUpahSupir = $trip->upah_id;
+                    $ruleAgen = Rule::in($trip->agen);
+                    $ruleContainer = Rule::in($trip->container);
+                    $ruleStatusContainer = Rule::in($trip->statuscontainer);
+                    $ruleJenisorder = Rule::in($trip->jenisorder);
+                    $rulePelanggan = Rule::in($trip->pelanggan);
+                    $ruleGudang = Rule::in($trip->gudang);
+                }
+            }
+        }
         $getGudangSama = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GUDANG SAMA')->where('text', 'GUDANG SAMA')->first();
         $getBukanUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'NON UPAH ZONA')->first();
         $getUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
@@ -386,11 +410,9 @@ class StoreMandorTripRequest extends FormRequest
         $rulesTrado_id = [];
         if ($this->trado != '') {
             $rulesTrado_id = [
-                'trado_id' => ['required', 'numeric', 'min:1', new ExistTrado(),new ValidasiReminderOli($validasireminderolimesin,$keteranganvalidasireminderolimesin)
-                ,new ValidasiReminderOliPersneling($validasireminderolipersneling,$keteranganvalidasireminderolipersneling)
-                ,new ValidasiReminderOliGardan($validasireminderoligardan,$keteranganvalidasireminderoligardan)
-                ,new ValidasiReminderSaringanHawa($validasiremindersaringanhawa,$keteranganvalidasiremindersaringanhawa)
-            ],
+                'trado_id' => [
+                    'required', 'numeric', 'min:1', new ExistTrado(), new ValidasiReminderOli($validasireminderolimesin, $keteranganvalidasireminderolimesin), new ValidasiReminderOliPersneling($validasireminderolipersneling, $keteranganvalidasireminderolipersneling), new ValidasiReminderOliGardan($validasireminderoligardan, $keteranganvalidasireminderoligardan), new ValidasiReminderSaringanHawa($validasiremindersaringanhawa, $keteranganvalidasiremindersaringanhawa)
+                ],
                 'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()],
                 'absensidetail_id' => ['required', 'numeric', 'min:1', new ExistAbsensiSupirDetail()],
             ];
@@ -411,14 +433,14 @@ class StoreMandorTripRequest extends FormRequest
                         new DateApprovalQuota()
                     ],
                     "nobukti_tripasal" => 'required_if:statusgudangsama,=,' . $getGudangSama->id,
-                    "agen" => "required",
-                    "container" => "required",
+                    "agen" => ["required", $ruleAgen],
+                    "container" => ["required", $ruleContainer],
                     "dari" => ["required"],
-                    "gudang" => "required",
-                    "jenisorder" => "required",
-                    "pelanggan" => "required",
+                    "gudang" => ["required", $ruleGudang],
+                    "jenisorder" => ["required", $ruleJenisorder],
+                    "pelanggan" => ["required", $rulePelanggan],
                     "sampai" => ["required"],
-                    "statuscontainer" => "required",
+                    "statuscontainer" => ["required",$ruleStatusContainer],
                     "statusgudangsama" => "required",
                     "statuslongtrip" => "required",
                     "statuslangsir" => "required",
@@ -445,15 +467,15 @@ class StoreMandorTripRequest extends FormRequest
                         new DateApprovalQuota()
                     ],
                     "nobukti_tripasal" => 'required_if:statusgudangsama,=,' . $getGudangSama->id,
-                    "agen" => "required",
-                    "container" => "required",
+                    "agen" => ["required", $ruleAgen],
+                    "container" => ["required", $ruleContainer],
                     "dari" => ["required"],
                     "gandengan" => "required",
-                    "gudang" => "required",
-                    "jenisorder" => "required",
-                    "pelanggan" => "required",
+                    "gudang" => ["required", $ruleGudang],
+                    "jenisorder" => ["required", $ruleJenisorder],
+                    "pelanggan" => ["required", $rulePelanggan],
                     "sampai" => ["required"],
-                    "statuscontainer" => "required",
+                    "statuscontainer" => ["required",$ruleStatusContainer],
                     "statusgudangsama" => "required",
                     "statuslongtrip" => "required",
                     "statuslangsir" => "required",
@@ -479,6 +501,7 @@ class StoreMandorTripRequest extends FormRequest
             $getgerobak = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GEROBAK')->where('subgrp', 'STATUS GEROBAK')->where('text', 'GEROBAK')->first();
             $gettrado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))->where('id', request()->trado_id)->first();
             $gerobakVal = ($gettrado == null) ? 0 : $gettrado->statusgerobak;
+
             if ($getgerobak->id == $gerobakVal) {
                 $rules = [
                     'tglbukti' => [
@@ -486,21 +509,21 @@ class StoreMandorTripRequest extends FormRequest
                         new DateApprovalQuota()
                     ],
                     "nobukti_tripasal" => 'required_if:statusgudangsama,=,' . $getGudangSama->id,
-                    "agen" => "required",
+                    "agen" => ["required", $ruleAgen],
                     "tarifrincian" => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiExistOmsetTarif(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
-                    "container" => "required",
+                    "container" => ["required", $ruleContainer],
                     "dari" => ["required"],
-                    "gudang" => "required",
-                    "jenisorder" => "required",
-                    "pelanggan" => "required",
+                    "gudang" => ["required", $ruleGudang],
+                    "jenisorder" => ["required", $ruleJenisorder],
+                    "pelanggan" => ["required", $rulePelanggan],
                     "sampai" => ["required"],
-                    "statuscontainer" => "required",
+                    "statuscontainer" => ["required",$ruleStatusContainer],
                     "statusgudangsama" => "required",
                     "statuslongtrip" => "required",
                     "statuslangsir" => "required",
                     // "lokasibongkarmuat" => "required",
                     "trado" => "required",
-                    "upah" => ["required", new ExistNominalUpahSupir()],
+                    "upah" => ["required", new cekUpahSupirEditTrip($idUpahSupir), new ExistNominalUpahSupir()],
                     'statusupahzona' => ['required', Rule::in($statusUpahZona)],
                 ];
             } else {
@@ -518,25 +541,25 @@ class StoreMandorTripRequest extends FormRequest
                 $rules = [
                     'tglbukti' => [
                         'required', 'date_format:d-m-Y',
-                        new DateApprovalQuota()
+                        // new DateApprovalQuota()
                     ],
                     "nobukti_tripasal" => 'required_if:statusgudangsama,=,' . $getGudangSama->id,
-                    "agen" => "required",
+                    "agen" => ["required", $ruleAgen],
                     "tarifrincian" => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiExistOmsetTarif(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
-                    "container" => "required",
+                    "container" => ["required", $ruleContainer],
                     "dari" => ["required"],
                     "gandengan" => ["required", 'nullable'],
-                    "gudang" => "required",
-                    "jenisorder" => "required",
-                    "pelanggan" => "required",
+                    "gudang" => ["required", $ruleGudang],
+                    "jenisorder" => ["required", $ruleJenisorder],
+                    "pelanggan" => ["required", $rulePelanggan],
                     "sampai" => ["required"],
-                    "statuscontainer" => "required",
+                    "statuscontainer" => ["required",$ruleStatusContainer],
                     "statusgudangsama" => "required",
                     "statuslongtrip" => "required",
                     "statuslangsir" => "required",
                     // "lokasibongkarmuat" => "required",
                     "trado" => "required",
-                    "upah" => ["required", new ExistNominalUpahSupir()],
+                    "upah" => ["required", new cekUpahSupirEditTrip($idUpahSupir),new ExistNominalUpahSupir()],
                     'statusupahzona' => ['required', Rule::in($statusUpahZona)],
                 ];
             }
@@ -548,6 +571,9 @@ class StoreMandorTripRequest extends FormRequest
             $getListTampilan = (explode(",", $getListTampilan->INPUT));
             foreach ($getListTampilan as $value) {
                 if (array_key_exists(trim(strtolower($value)), $rules) == true) {
+                    if(trim(strtolower($value)) == 'gandengan'){
+                        unset($rulesGandengan_id['gandengan_id']);
+                    }
                     unset($rules[trim(strtolower($value))]);
                 }
             }
@@ -555,7 +581,6 @@ class StoreMandorTripRequest extends FormRequest
 
         $rulesJobTrucking = [];
         if ((request()->statuslongtrip == 66) && (request()->statuslangsir == 80)) {
-            // dd('disini');
             $rulesJobTrucking = [
                 'jobtrucking' => ['required_unless:dari_id,1']
             ];
@@ -577,7 +602,7 @@ class StoreMandorTripRequest extends FormRequest
             $ruleCekUpahRitasi,
             $rulesJobTrucking
         );
-
+        
         return $rules;
     }
     public function attributes()
