@@ -278,7 +278,7 @@ class GudangController extends Controller
                     'index' => 'gudang',
                 ],
                 [
-                    'label' => 'Status Aktif',
+                    'label' => 'Status',
                     'index' => 'statusaktif',
                 ],
             ];

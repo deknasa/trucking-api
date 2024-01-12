@@ -980,6 +980,8 @@ class Trado extends MyModel
             $trado->photostnk = $data['photostnk'];
             $trado->photobpkb = $data['photobpkb'];
             $trado->phototrado = $data['phototrado'];
+            $trado->modifiedby = auth('api')->user()->user;
+            $trado->info = html_entity_decode(request()->info);
 
             if (!$trado->save()) {
                 throw new \Exception("Error updating trado.");

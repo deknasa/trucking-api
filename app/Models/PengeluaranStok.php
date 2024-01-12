@@ -100,7 +100,7 @@ class PengeluaranStok extends MyModel
             'pengeluaranstok.id',
             'pengeluaranstok.kodepengeluaran',
             'pengeluaranstok.keterangan',
-            'pengeluaranstok.coa',
+            'akunpusat.keterangancoa as coa',
             'parameterformat.memo as format',
             'parameterformat.text as formattext',
             'parameterformat.id as formatid',
@@ -115,6 +115,7 @@ class PengeluaranStok extends MyModel
             DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
             DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
         )
+            ->leftJoin('akunpusat', 'pengeluaranstok.coa', '=', 'akunpusat.coa')
             ->leftJoin('parameter as parameterformat', 'pengeluaranstok.format', '=', 'parameterformat.id')
             ->leftJoin('parameter as parameterstatushitungstok', 'pengeluaranstok.statushitungstok', '=', 'parameterstatushitungstok.id');
 

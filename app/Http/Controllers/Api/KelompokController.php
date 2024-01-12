@@ -270,7 +270,7 @@ class KelompokController extends Controller
                     'label' => 'No',
                 ],
                 [
-                    'label' => 'Kode kelompok',
+                    'label' => 'Kelompok',
                     'index' => 'kodekelompok',
                 ],
                 [

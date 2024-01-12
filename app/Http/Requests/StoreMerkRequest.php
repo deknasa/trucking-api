@@ -35,7 +35,7 @@ class StoreMerkRequest extends FormRequest
         
         $rules = [
             'kodemerk' => ['required', 'unique:merk'],
-            'keterangan' => ['required'],
+            // 'keterangan' => ['required'],
             'statusaktif' => ['required', Rule::in($status)]
         ];
 
