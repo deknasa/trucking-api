@@ -741,6 +741,22 @@ class SupirController extends Controller
                     'index' => 'pemutihansupir_nobukti',
                 ],
                 [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'No KTP',
+                    'index' => 'noktp',
+                ],
+                [
+                    'label' => 'Status Blacklist',
+                    'index' => 'statusblacklist',
+                ],
+                [
+                    'label' => 'Tgl Berhenti Supir',
+                    'index' => 'tglberhentisupir',
+                ],
+                [
                     'label' => 'Status Aktif',
                     'index' => 'statusaktif',
                 ],
@@ -761,14 +777,6 @@ class SupirController extends Controller
                     'index' => 'tglexpsim',
                 ],
                 [
-                    'label' => 'Keterangan',
-                    'index' => 'keterangan',
-                ],
-                [
-                    'label' => 'No KTP',
-                    'index' => 'noktp',
-                ],
-                [
                     'label' => 'No KK',
                     'index' => 'nokk',
                 ],
@@ -787,14 +795,6 @@ class SupirController extends Controller
                 [
                     'label' => 'Keterangan Resign',
                     'index' => 'keteranganresign',
-                ],
-                [
-                    'label' => 'Status Blacklist',
-                    'index' => 'statusblacklist',
-                ],
-                [
-                    'label' => 'Tgl Berhenti Supir',
-                    'index' => 'tglberhentisupir',
                 ],
 
             ];
