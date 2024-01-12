@@ -466,7 +466,7 @@ class TradoController extends Controller
                     'index' => 'keterangan',
                 ],
                 [
-                    'label' => 'Kode Trado',
+                    'label' => 'No Polisi',
                     'index' => 'kodetrado',
                 ],
                 [
@@ -482,7 +482,7 @@ class TradoController extends Controller
                     'index' => 'tglasuransimati',
                 ],
                 [
-                    'label' => 'Merek',
+                    'label' => 'Merk',
                     'index' => 'merek',
                 ],
                 [
@@ -522,26 +522,6 @@ class TradoController extends Controller
                     'index' => 'tglgantiakiterakhir',
                 ],
                 [
-                    'label' => 'Tipe',
-                    'index' => 'tipe',
-                ],
-                [
-                    'label' => 'Jenis',
-                    'index' => 'jenis',
-                ],
-                [
-                    'label' => 'Isi Silinder',
-                    'index' => 'isisilinder',
-                ],
-                [
-                    'label' => 'Warna',
-                    'index' => 'warna',
-                ],
-                [
-                    'label' => 'Jenis Bahan Bakar',
-                    'index' => 'jenisbahanbakar',
-                ],
-                [
                     'label' => 'Jumlah Sumbu',
                     'index' => 'jumlahsumbu',
                 ],
@@ -554,12 +534,40 @@ class TradoController extends Controller
                     'index' => 'model',
                 ],
                 [
+                    'label' => 'Plus Borongan',
+                    'index' => 'nominalplusborongan',
+                ],
+                [
                     'label' => 'No BPKB',
                     'index' => 'nobpkb',
                 ],
                 [
+                    'label' => 'Status Validasi Kendaraan',
+                    'index' => 'statusvalidasikendaraan',
+                ],
+                [
+                    'label' => 'Tipe',
+                    'index' => 'tipe',
+                ],
+                [
+                    'label' => 'Jenis',
+                    'index' => 'jenis',
+                ],
+                [
+                    'label' => 'Isi Silinder',
+                    'index' => 'isisilinder',
+                ],
+                [
                     'label' => 'Jumlah Ban Serap',
                     'index' => 'jumlahbanserap',
+                ],
+                [
+                    'label' => 'Warna',
+                    'index' => 'warna',
+                ],
+                [
+                    'label' => 'Jenis Bahan Bakar',
+                    'index' => 'jenisbahanbakar',
                 ],
                 [
                     'label' => 'Status Aktif',
@@ -576,10 +584,6 @@ class TradoController extends Controller
                 [
                     'label' => 'Status Mutasi',
                     'index' => 'statusmutasi',
-                ],
-                [
-                    'label' => 'Status Validasi Kendaraan',
-                    'index' => 'statusvalidasikendaraan',
                 ],
                 [
                     'label' => 'Status Mobil Storing',
