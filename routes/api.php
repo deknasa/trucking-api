@@ -383,7 +383,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('prosesabsensisupir', ProsesAbsensiSupirController::class)->whereNumber('prosesabsensisupirs');
     Route::resource('mandorabsensisupir', MandorAbsensiSupirController::class)->whereNumber('mandorabsensisupir');
     Route::get('historytrip', [HistoryTripController::class, 'index']);
-    Route::get('listtrip', [ListTripController::class, 'index']);
+    Route::resource('listtrip', ListTripController::class)->whereNumber('listtrip');
+    Route::post('listtrip/{id}/cekValidasi', [ListTripController::class, 'cekValidasi'])->name('listtrip.cekvalidasi')->whereNumber('id');
     Route::resource('mekanik', MekanikController::class)->whereNumber('mekanik');
     Route::resource('upahsupir', UpahSupirController::class)->whereNumber('upahsupir');
     Route::resource('upahsupirrincian', UpahSupirRincianController::class)->whereNumber('upahsupirrincian');

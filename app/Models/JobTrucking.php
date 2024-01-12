@@ -83,7 +83,6 @@ class JobTrucking extends MyModel
             ->where('a.statusgerobak', '=', $statusgerobak->id)
             ->first();
 
-        // dd($query);
 
         $tempselesai = '##tempselesai' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempselesai, function ($table) {
@@ -374,7 +373,6 @@ class JobTrucking extends MyModel
 
 
 
-
         $this->filter($querydata);
 
 
@@ -387,10 +385,10 @@ class JobTrucking extends MyModel
             ->where('a.id', '=', request()->trado_id)
             ->where('a.statusgerobak', '=', $statusgerobak->id)
             ->first();
-
+        $edit = request()->edit ?? false;
+        $idtrip = request()->idtrip ?? '';
 
         if (isset($querygerobak)) {
-
 
             // dd(request()->gandengan_id);
             $querydata->where('a.container_id', '=', request()->container_id);
@@ -403,7 +401,42 @@ class JobTrucking extends MyModel
             // $querydata->where('a.tarif_id', '=', request()->tarif_id);
             $querydata->whereRaw("isnull(a.jobtrucking,'')<>''");
             $querydata->whereRaw(DB::raw("(a.dari_id=" . $pelabuhan->text . " or a.statuslongtrip=" . $statuslongtrip->id . ")"));
-            $querydata->whereRaw("isnull(d.jobtrucking,'')=''");
+            if ($edit == 'false') {
+                $querydata->whereRaw("isnull(d.jobtrucking,'')=''");
+            } else {
+                $getJenisOrderMuatan = DB::table("jenisorder")->from(DB::raw("jenisorder with (readuncommitted)"))
+                    ->select('id')
+                    ->where("kodejenisorder", 'MUAT')
+                    ->orWhere("kodejenisorder", 'EKS')
+                    ->get();
+
+
+                $getJenisOrderMuatan = json_decode($getJenisOrderMuatan, true);
+                foreach ($getJenisOrderMuatan as $item) {
+                    $dataMuatanEksport[] = $item['id'];
+                }
+                $trip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('id', $idtrip)->first();
+                if (in_array($trip->jenisorder_id, $dataMuatanEksport)) {
+                    $queryFull = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'FULL')->first();
+                    if ($trip->statuscontainer_id != $queryFull->id) {
+                        if ($trip->statuscontainer_id != request()->statuscontainer_id) {
+                            $querydata->whereRaw("isnull(a.nobukti,'') != '$trip->nobukti'");
+                        } else {
+                            $querydata->whereRaw("isnull(d.jobtrucking,'')=''");
+                        }
+                    }
+                } else {
+                    $queryEmpty = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'EMPTY')->first();
+
+                    if ($trip->statuscontainer_id != $queryEmpty->id) {
+                        if ($trip->statuscontainer_id != request()->statuscontainer_id) {
+                            $querydata->whereRaw("isnull(a.nobukti,'') != '$trip->nobukti'");
+                        } else {
+                            $querydata->whereRaw("isnull(d.jobtrucking,'')=''");
+                        }
+                    }
+                }
+            }
         } else {
             // $querydata->where('a.trado_id', '=', request()->trado_id);
             //  dd($querydata->get());
@@ -416,8 +449,44 @@ class JobTrucking extends MyModel
             // $querydata->where('a.tarif_id', '=', request()->tarif_id);
             $querydata->whereRaw("isnull(a.jobtrucking,'')<>''");
             $querydata->whereRaw(DB::raw("(a.dari_id=" . $pelabuhan->text . " or a.statuslongtrip=" . $statuslongtrip->id . ")"));
-            $querydata->whereRaw("isnull(d.jobtrucking,'')=''");
+            if ($edit == 'false') {
+                $querydata->whereRaw("isnull(d.jobtrucking,'')=''");
+            } else {
+                $getJenisOrderMuatan = DB::table("jenisorder")->from(DB::raw("jenisorder with (readuncommitted)"))
+                    ->select('id')
+                    ->where("kodejenisorder", 'MUAT')
+                    ->orWhere("kodejenisorder", 'EKS')
+                    ->get();
+
+
+                $getJenisOrderMuatan = json_decode($getJenisOrderMuatan, true);
+                foreach ($getJenisOrderMuatan as $item) {
+                    $dataMuatanEksport[] = $item['id'];
+                }
+                $trip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('id', $idtrip)->first();
+                if (in_array($trip->jenisorder_id, $dataMuatanEksport)) {
+                    $queryFull = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'FULL')->first();
+                    if ($trip->statuscontainer_id != $queryFull->id) {
+                        if ($trip->statuscontainer_id != request()->statuscontainer_id) {
+                            $querydata->whereRaw("isnull(a.nobukti,'') != '$trip->nobukti'");
+                        } else {
+                            $querydata->whereRaw("isnull(d.jobtrucking,'')=''");
+                        }
+                    }
+                } else {
+                    $queryEmpty = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'EMPTY')->first();
+
+                    if ($trip->statuscontainer_id != $queryEmpty->id) {
+                        if ($trip->statuscontainer_id != request()->statuscontainer_id) {
+                            $querydata->whereRaw("isnull(a.nobukti,'') != '$trip->nobukti'");
+                        } else {
+                            $querydata->whereRaw("isnull(d.jobtrucking,'')=''");
+                        }
+                    }
+                }
+            }
         }
+
 
         $this->totalRows = $querydata->count();
 

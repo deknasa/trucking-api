@@ -645,7 +645,7 @@ class SuratPengantar extends MyModel
                 'kotasampai.keterangan as sampai_id',
                 'suratpengantar.penyesuaian',
                 'suratpengantar.gajisupir',
-                'suratpengantar.jarak',
+                DB::raw("(case when suratpengantar.jarak IS NULL then 0 else suratpengantar.jarak end) as jarak"),
                 'agen.namaagen as agen_id',
                 'jenisorder.keterangan as jenisorder_id',
                 'container.keterangan as container_id',
@@ -1985,6 +1985,7 @@ class SuratPengantar extends MyModel
         $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
         if ($prosesLain == 0) {
+            $edittripmandor = $data['edittripmandor'] ?? 0;
             $tarif = TarifRincian::where('tarif_id', $data['tarif_id'])->where('container_id', $orderanTrucking->container_id)->first();
             $tarifNominal = $tarif->nominal ?? 0;
             $upahsupir = UpahSupir::where('id', $data['upah_id'])->first();
@@ -2107,57 +2108,60 @@ class SuratPengantar extends MyModel
                 'modifiedby' => auth('api')->user()->user
             ]);
 
-            if ($data['keterangan_detail'][0] != '') {
+            if ($edittripmandor == 0) {
 
-                // SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratPengantar->id)->lockForUpdate()->delete();
-                $spbt = DB::table("suratpengantarbiayatambahan")->from(DB::raw("suratpengantarbiayatambahan"))->where('suratpengantar_id', $suratPengantar->id)->get();
-                $pluck = $spbt->pluck('id')->toArray();
+                if ($data['keterangan_detail'][0] != '') {
 
-                // Find the difference between $dataIds and $cek
-                $commonElements = array_diff($pluck, $data['tambahan_id']);
-                foreach ($commonElements as $row) {
-                    (new SuratPengantarBiayaTambahan())->processDestroy($row);
-                }
-                $suratPengantarBiayaTambahans = [];
-                for ($i = 0; $i < count($data['keterangan_detail']); $i++) {
-                    if ($data['tambahan_id'][$i] != '') {
-                        $suratPengantarBiayaTambahan = (new SuratPengantarBiayaTambahan())->processUpdate($data['tambahan_id'][$i], [
-                            'keteranganbiaya' => $data['keterangan_detail'][$i],
-                            'nominal' => $data['nominal'][$i],
-                            'nominaltagih' => $data['nominalTagih'][$i]
-                        ]);
-                    } else {
-                        $suratPengantarBiayaTambahan = (new SuratPengantarBiayaTambahan())->processStore($suratPengantar, [
-                            'keteranganbiaya' => $data['keterangan_detail'][$i],
-                            'nominal' => $data['nominal'][$i],
-                            'nominaltagih' => $data['nominalTagih'][$i]
-                        ]);
+                    // SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratPengantar->id)->lockForUpdate()->delete();
+                    $spbt = DB::table("suratpengantarbiayatambahan")->from(DB::raw("suratpengantarbiayatambahan"))->where('suratpengantar_id', $suratPengantar->id)->get();
+                    $pluck = $spbt->pluck('id')->toArray();
+
+                    // Find the difference between $dataIds and $cek
+                    $commonElements = array_diff($pluck, $data['tambahan_id']);
+                    foreach ($commonElements as $row) {
+                        (new SuratPengantarBiayaTambahan())->processDestroy($row);
                     }
-                    $suratPengantarBiayaTambahans[] = $suratPengantarBiayaTambahan->toArray();
-                }
-                (new LogTrail())->processStore([
-                    'namatabel' => strtoupper($suratPengantarBiayaTambahan->getTable()),
-                    'postingdari' => 'EDIT SURAT PENGANTAR BIAYA TAMBAHAN',
-                    'idtrans' =>  $suratPengantarLogTrail->id,
-                    'nobuktitrans' => $suratPengantar->nobukti,
-                    'aksi' => 'EDIT',
-                    'datajson' => $suratPengantarBiayaTambahans,
-                    'modifiedby' => auth('api')->user()->user,
-                ]);
-            } else {
-                $cekBiaya = SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratPengantar->id)->first();
-                if ($cekBiaya != null) {
-                    $tambahan = SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratPengantar->id)->get();
-                    SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratPengantar->id)->lockForUpdate()->delete();
+                    $suratPengantarBiayaTambahans = [];
+                    for ($i = 0; $i < count($data['keterangan_detail']); $i++) {
+                        if ($data['tambahan_id'][$i] != '') {
+                            $suratPengantarBiayaTambahan = (new SuratPengantarBiayaTambahan())->processUpdate($data['tambahan_id'][$i], [
+                                'keteranganbiaya' => $data['keterangan_detail'][$i],
+                                'nominal' => $data['nominal'][$i],
+                                'nominaltagih' => $data['nominalTagih'][$i]
+                            ]);
+                        } else {
+                            $suratPengantarBiayaTambahan = (new SuratPengantarBiayaTambahan())->processStore($suratPengantar, [
+                                'keteranganbiaya' => $data['keterangan_detail'][$i],
+                                'nominal' => $data['nominal'][$i],
+                                'nominaltagih' => $data['nominalTagih'][$i]
+                            ]);
+                        }
+                        $suratPengantarBiayaTambahans[] = $suratPengantarBiayaTambahan->toArray();
+                    }
                     (new LogTrail())->processStore([
-                        'namatabel' => 'SURATPENGANTARBIAYATAMBAHAN',
-                        'postingdari' => 'DELETE SURAT PENGANTAR BIAYA TAMBAHAN',
+                        'namatabel' => strtoupper($suratPengantarBiayaTambahan->getTable()),
+                        'postingdari' => 'EDIT SURAT PENGANTAR BIAYA TAMBAHAN',
                         'idtrans' =>  $suratPengantarLogTrail->id,
                         'nobuktitrans' => $suratPengantar->nobukti,
-                        'aksi' => 'DELETE',
-                        'datajson' => $tambahan->toArray(),
+                        'aksi' => 'EDIT',
+                        'datajson' => $suratPengantarBiayaTambahans,
                         'modifiedby' => auth('api')->user()->user,
                     ]);
+                } else {
+                    $cekBiaya = SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratPengantar->id)->first();
+                    if ($cekBiaya != null) {
+                        $tambahan = SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratPengantar->id)->get();
+                        SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratPengantar->id)->lockForUpdate()->delete();
+                        (new LogTrail())->processStore([
+                            'namatabel' => 'SURATPENGANTARBIAYATAMBAHAN',
+                            'postingdari' => 'DELETE SURAT PENGANTAR BIAYA TAMBAHAN',
+                            'idtrans' =>  $suratPengantarLogTrail->id,
+                            'nobuktitrans' => $suratPengantar->nobukti,
+                            'aksi' => 'DELETE',
+                            'datajson' => $tambahan->toArray(),
+                            'modifiedby' => auth('api')->user()->user,
+                        ]);
+                    }
                 }
             }
         } else {

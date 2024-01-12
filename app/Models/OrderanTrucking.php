@@ -43,7 +43,7 @@ class OrderanTrucking extends MyModel
             if (isset($suratPengantar)) {
                 $data = [
                     'kondisi' => true,
-                    'keterangan' => 'Surat Pengantar '. $suratPengantar->nobukti,
+                    'keterangan' => 'Surat Pengantar ' . $suratPengantar->nobukti,
                 ];
 
 
@@ -65,7 +65,7 @@ class OrderanTrucking extends MyModel
                 if (isset($gajiSupir)) {
                     $data = [
                         'kondisi' => true,
-                        'keterangan' => 'GAJI SUPIR '. $gajiSupir->nobukti,
+                        'keterangan' => 'GAJI SUPIR ' . $gajiSupir->nobukti,
                     ];
 
 
@@ -87,7 +87,7 @@ class OrderanTrucking extends MyModel
         if (isset($invoice)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'invoice '. $invoice->nobukti,
+                'keterangan' => 'invoice ' . $invoice->nobukti,
             ];
 
 
@@ -110,7 +110,7 @@ class OrderanTrucking extends MyModel
             ->select('tglbataseditorderantrucking as tglbatasedit')
             ->where('id', $id)
             ->first();
-        if (date('Y-m-d H:i:s') < date('Y-m-d H:i:s', strtotime($query->tglbatasedit))) {            
+        if (date('Y-m-d H:i:s') < date('Y-m-d H:i:s', strtotime($query->tglbatasedit))) {
             return true;
         }
         return false;
@@ -1424,7 +1424,7 @@ class OrderanTrucking extends MyModel
             ->where('subgrp', 'STATUS APPROVAL')
             ->where('text', 'NON APPROVAL')
             ->first();
-
+        $inputtripmandor = $data['inputtripmandor'] ?? false;
         $orderanTrucking->container_id = $data['container_id'];
         $orderanTrucking->agen_id = $data['agen_id'];
         $orderanTrucking->jenisorder_id = $data['jenisorder_id'];
@@ -1461,32 +1461,35 @@ class OrderanTrucking extends MyModel
             'datajson' => $orderanTrucking->toArray(),
             'modifiedby' => auth('api')->user()->user
         ]);
-        $get = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
-            ->select('id', 'nominalperalihan', 'qtyton', 'nojob', 'nocont', 'noseal', 'nojob2', 'nocont2', 'noseal2', 'pelanggan_id', 'agen_id', 'jenisorder_id', 'container_id')
-            ->where('jobtrucking', $orderanTrucking->nobukti)->get();
+        if (!$inputtripmandor) {
 
-        $datadetail = json_decode($get, true);
-        if (count($datadetail) > 0) {
-            foreach ($datadetail as $item) {
-                $suratPengantar = [
-                    'proseslain' => '1',
-                    'jobtrucking' => $orderanTrucking->nobukti,
-                    'nojob' =>  $data['nojobemkl'] ?? '',
-                    'nocont' =>  $data['nocont'] ?? '',
-                    'noseal' =>  $data['noseal'] ?? '',
-                    'nojob2' =>  $data['nojobemkl2'] ?? '',
-                    'nocont2' =>  $data['nocont2'] ?? '',
-                    'noseal2' =>  $data['noseal2'] ?? '',
-                    'container_id' => $data['container_id'],
-                    'agen_id' => $data['agen_id'],
-                    'jenisorder_id' => $data['jenisorder_id'],
-                    'pelanggan_id' => $data['pelanggan_id'],
-                    // 'tarif_id' => $data['tarifrincian_id'],
-                    'postingdari' => 'EDIT ORDERAN TRUCKING'
-                ];
-                $newSuratPengantar = new SuratPengantar();
-                $newSuratPengantar = $newSuratPengantar->findAll($item['id']);
-                (new SuratPengantar())->processUpdate($newSuratPengantar, $suratPengantar);
+            $get = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+                ->select('id', 'nominalperalihan', 'qtyton', 'nojob', 'nocont', 'noseal', 'nojob2', 'nocont2', 'noseal2', 'pelanggan_id', 'agen_id', 'jenisorder_id', 'container_id')
+                ->where('jobtrucking', $orderanTrucking->nobukti)->get();
+
+            $datadetail = json_decode($get, true);
+            if (count($datadetail) > 0) {
+                foreach ($datadetail as $item) {
+                    $suratPengantar = [
+                        'proseslain' => '1',
+                        'jobtrucking' => $orderanTrucking->nobukti,
+                        'nojob' =>  $data['nojobemkl'] ?? '',
+                        'nocont' =>  $data['nocont'] ?? '',
+                        'noseal' =>  $data['noseal'] ?? '',
+                        'nojob2' =>  $data['nojobemkl2'] ?? '',
+                        'nocont2' =>  $data['nocont2'] ?? '',
+                        'noseal2' =>  $data['noseal2'] ?? '',
+                        'container_id' => $data['container_id'],
+                        'agen_id' => $data['agen_id'],
+                        'jenisorder_id' => $data['jenisorder_id'],
+                        'pelanggan_id' => $data['pelanggan_id'],
+                        // 'tarif_id' => $data['tarifrincian_id'],
+                        'postingdari' => 'EDIT ORDERAN TRUCKING'
+                    ];
+                    $newSuratPengantar = new SuratPengantar();
+                    $newSuratPengantar = $newSuratPengantar->findAll($item['id']);
+                    (new SuratPengantar())->processUpdate($newSuratPengantar, $suratPengantar);
+                }
             }
         }
         return $orderanTrucking;
