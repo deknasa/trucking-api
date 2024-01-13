@@ -556,7 +556,7 @@ class PengeluaranTruckingDetail extends MyModel
             }
         }
 
-        if ($id != null) {
+        if ($id != null && ($cekTitipan != null)) {
             $cekTitipan->where('a.pengeluarantruckingheader_id', '!=', $id);
         }
 

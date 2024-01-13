@@ -346,7 +346,11 @@ class PenerimaanStok extends MyModel
                 "$this->table.created_at",
                 "$this->table.updated_at",
                 "akunpusat.keterangancoa",
+                'format.text as formatnama',
+                'statushitungstok.text as statushitungstoknama'
             )
+            ->leftJoin('parameter as format', 'penerimaanstok.format', '=', 'format.id')
+            ->leftJoin('parameter as statushitungstok', 'penerimaanstok.statushitungstok', '=', 'statushitungstok.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'penerimaanstok.coa', 'akunpusat.coa');
         $data = $query->where("$this->table.id", $id)->first();
         return $data;
