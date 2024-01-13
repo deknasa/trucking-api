@@ -110,15 +110,19 @@ class TarifController extends Controller
             $tarifrincian = new TarifRincian();
 
             $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-            ->select('text')
-            ->where('grp', 'JUDULAN LAPORAN')
-            ->where('subgrp', 'JUDULAN LAPORAN')
-            ->first();
+                ->select(
+                    'text',
+                    DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                    DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                )
+                ->where('grp', 'JUDULAN LAPORAN')
+                ->where('subgrp', 'JUDULAN LAPORAN')
+                ->first();
 
             return response([
                 'status' => true,
                 'data' => $tarifrincian->listpivot($dari, $sampai),
-                'judul'=> $getJudul->text
+                'judul' => $getJudul
             ]);
         } else {
             return response([
