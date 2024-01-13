@@ -71,8 +71,8 @@ class MandorAbsensiSupir extends MyModel
         if (!$isAdmin) {
             if ($isMandor) {
                 $absensisupirdetail->where('trado.mandor_id',$isMandor->mandor_id);
-            }else{
-                $absensisupirdetail->where('trado.id',0);
+            // }else{
+            //     $absensisupirdetail->where('trado.id',0);
             }
         }
         
@@ -99,8 +99,8 @@ class MandorAbsensiSupir extends MyModel
         if (!$isAdmin) {
             if ($isMandor) {
                 $trado->where('a.mandor_id',$isMandor->mandor_id);
-            }else{
-                $trado->where('a.id',0);
+            // }else{
+            //     $trado->where('a.id',0);
             }
         }
 
@@ -134,8 +134,8 @@ class MandorAbsensiSupir extends MyModel
         if (!$isAdmin) {
             if ($isMandor) {
                 $trado->where('a.mandor_id',$isMandor->mandor_id);
-            }else{
-                $trado->where('a.id',0);
+            // }else{
+            //     $trado->where('a.id',0);
             }
         }
 
