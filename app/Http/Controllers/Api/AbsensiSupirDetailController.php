@@ -80,6 +80,7 @@ class AbsensiSupirDetailController extends Controller
             ]);
         }
         $request->request->add(['absensi_id' => $absensiSupirHeader->id]);
+        $request->request->add(['getabsen' => true]);
 
         return $this->index($request);
     }
