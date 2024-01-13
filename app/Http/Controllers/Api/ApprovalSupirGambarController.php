@@ -20,8 +20,12 @@ class ApprovalSupirGambarController extends Controller
     {
         $approvalSupirGambar = new ApprovalSupirGambar();
 
+        $data = $approvalSupirGambar->get();
+        if (isset(request()->supir_id)) {
+            $data = $approvalSupirGambar->firstOrFind(request()->supir_id);
+        }
         return response([
-            'data' => $approvalSupirGambar->get(),
+            'data' => $data,
             'attributes' => [
                 'totalRows' => $approvalSupirGambar->totalRows,
                 'totalPages' => $approvalSupirGambar->totalPages

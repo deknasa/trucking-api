@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Trado;
+use App\Models\Parameter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\ApprovalTradoGambar;
@@ -46,6 +48,17 @@ class ApprovalTradoGambarController extends Controller
             $approvalTradoGambar->tglbatas = date('Y-m-d', strtotime($request->tglbatas));
             $approvalTradoGambar->statusapproval = $request->statusapproval;
             $approvalTradoGambar->modifiedby = auth('api')->user()->name;
+
+            $statusApproval = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS APPROVAL')->where('subgrp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+            //nonaktif supir
+            if ($approvalTradoGambar->statusapproval == $statusApproval->id) {
+                $statusAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+                $trado = Trado::where('kodetrado',$approvalTradoGambar->kodetrado)->first();
+                if ($trado) {
+                    $trado->statusaktif = $statusAktif->id;
+                    $trado->save();
+                }
+            }
 
             if ($approvalTradoGambar->save()) {
                 $logTrail = [
