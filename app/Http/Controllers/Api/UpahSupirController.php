@@ -66,17 +66,23 @@ class UpahSupirController extends Controller
         $cekData = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
             ->whereBetween('tglmulaiberlaku', [$dari, $sampai])
             ->first();
-        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-            ->select('text')
-            ->where('grp', 'JUDULAN LAPORAN')
-            ->where('subgrp', 'JUDULAN LAPORAN')
-            ->first();
 
         if ($cekData != null) {
+
+            $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->select(
+                    'text',
+                    DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                    DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                )
+                ->where('grp', 'JUDULAN LAPORAN')
+                ->where('subgrp', 'JUDULAN LAPORAN')
+                ->first();
+
             return response([
                 'status' => true,
                 'data' => $upahsupirrincian->listpivot($dari, $sampai),
-                'judul' => $getJudul->text
+                'judul' => $getJudul
             ]);
         } else {
             return response([
