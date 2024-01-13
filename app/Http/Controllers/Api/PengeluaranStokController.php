@@ -261,7 +261,7 @@ class PengeluaranStokController extends Controller
                 $result = json_decode($format, true);
                 $resultHitungStok = json_decode($statusHitungStok, true);
 
-                $format = $result['MEMO'];
+                $format = $result['SINGKATAN'];
                 $statusHitungStok = $resultHitungStok['MEMO'];
 
 

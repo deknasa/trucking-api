@@ -235,8 +235,7 @@ class PenerimaanTruckingController extends Controller
                 $statusaktif = $params['format'];
 
                 $result = json_decode($statusaktif, true);
-
-                $statusaktif = $result['MEMO'];
+                $statusaktif = $result['SINGKATAN'];
 
 
                 $penerimaanTruckings[$i]['format'] = $statusaktif;
@@ -259,34 +258,18 @@ class PenerimaanTruckingController extends Controller
                 ],
                 [
                     'label' => 'COA Debet',
-                    'index' => 'coadebet',
-                ],
-                [
-                    'label' => 'COA Kredit',
-                    'index' => 'coakredit',
-                ],
-                [
-                    'label' => 'COA Posting Debet',
-                    'index' => 'coapostingdebet',
-                ],
-                [
-                    'label' => 'COA Posting Kredit',
-                    'index' => 'coapostingkredit',
-                ],
-                [
-                    'label' => 'COA Debet Keterangan',
                     'index' => 'coadebet_keterangan',
                 ],
                 [
-                    'label' => 'COA Kredit Keterangan',
+                    'label' => 'COA Kredit',
                     'index' => 'coakredit_keterangan',
                 ],
                 [
-                    'label' => 'COA Posting Debet Keterangan',
+                    'label' => 'COA Posting Debet',
                     'index' => 'coapostingdebet_keterangan',
                 ],
                 [
-                    'label' => 'COA Posting Kredit Keterangan',
+                    'label' => 'COA Posting Kredit',
                     'index' => 'coapostingkredit_keterangan',
                 ],
                 [

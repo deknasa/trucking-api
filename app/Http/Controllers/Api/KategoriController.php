@@ -256,7 +256,7 @@ class KategoriController extends Controller
             $i = 0;
             foreach ($kategoris as $index => $params) {
 
-                $statusaktif = $params['statusaktif'];
+                $statusaktif = $params['status'];
 
                 $result = json_decode($statusaktif, true);
 
@@ -279,6 +279,10 @@ class KategoriController extends Controller
                 [
                     'label' => 'Keterangan',
                     'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'Sub Kelompok',
+                    'index' => 'subkelompok',
                 ],
                 [
                     'label' => 'Status Aktif',

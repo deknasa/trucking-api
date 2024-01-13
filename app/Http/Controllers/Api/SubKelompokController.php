@@ -241,7 +241,7 @@ class SubKelompokController extends Controller
                     'label' => 'No',
                 ],
                 [
-                    'label' => 'Kode Subkelompok',
+                    'label' => 'Sub Kelompok',
                     'index' => 'kodesubkelompok',
                 ],
                 [

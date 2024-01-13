@@ -387,28 +387,20 @@ class StokController extends Controller
                     'index' => 'namastok',
                 ],
                 [
+                    'label' => 'Nama Terpusat',
+                    'index' => 'namaterpusat',
+                ],
+                [
+                    'label' => 'Kelompok',
+                    'index' => 'kelompok',
+                ],
+                [
                     'label' => 'Qty Min',
                     'index' => 'qtymin',
                 ],
                 [
                     'label' => 'Qty Max',
                     'index' => 'qtymax',
-                ],
-                [
-                    'label' => 'Keterangan',
-                    'index' => 'keterangan',
-                ],
-                [
-                    'label' => 'Nama Terpusat',
-                    'index' => 'namaterpusat',
-                ],
-                [
-                    'label' => 'Jenis Trado',
-                    'index' => 'jenistrado',
-                ],
-                [
-                    'label' => 'Kelompok',
-                    'index' => 'kelompok',
                 ],
                 [
                     'label' => 'Sub Kelompok',
@@ -419,12 +411,20 @@ class StokController extends Controller
                     'index' => 'kategori',
                 ],
                 [
+                    'label' => 'Jenis Trado',
+                    'index' => 'jenistrado',
+                ],
+                [
                     'label' => 'Merk',
                     'index' => 'merk',
                 ],
                 [
                     'label' => 'Status Aktif',
                     'index' => 'statusaktif',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
                 ],
             ];
             $this->toExcel($judulLaporan, $stoks, $columns);
