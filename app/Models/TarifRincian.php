@@ -158,6 +158,9 @@ class TarifRincian extends MyModel
                 'subgrp' => 'PENYESUAIAN HARGA',
             ];
             $statuspenyesuaianharga = $parameter->getdefaultparameter($logrequest);
+            $getBukanPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUS POSTING TNL')
+                ->where('text', 'TIDAK POSTING TNL')->first();
 
 
             $tarifRequest = [
@@ -168,6 +171,7 @@ class TarifRincian extends MyModel
                 'parent_id' => 0,
                 'upahsupir_id' => 0,
                 'statusaktif' =>  $statusaktif,
+                'statuspostingtnl' => $getBukanPostingTnl->id,
                 'statussistemton' => $statussistemton,
                 'kota_id' => $querykota->id ?? 0,
                 'zona_id' => 0,
