@@ -96,7 +96,7 @@ class AkuntansiController extends Controller
     {
         return response([
             'status' => true,
-            'data' => $akuntansi
+            'data' => $akuntansi->findAll($akuntansi->id)
         ]);
     }
 

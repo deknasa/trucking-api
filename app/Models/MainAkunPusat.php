@@ -171,16 +171,21 @@ class MainAkunPusat extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusparent')->nullable();
+            $table->string('statusparentnama')->nullable();
             $table->unsignedBigInteger('statuslabarugi')->nullable();
+            $table->string('statuslabaruginama')->nullable();
             $table->unsignedBigInteger('statusneraca')->nullable();
+            $table->string('statusneracanama')->nullable();
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama')->nullable();
         });
         // statusparent
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS PARENT')
             ->where('subgrp', '=', 'STATUS PARENT')
@@ -188,13 +193,15 @@ class MainAkunPusat extends MyModel
             ->first();
 
         $iddefaultstatusparent = $status->id ?? 0;
+        $textdefaultstatusparent = $status->text ?? "";
 
         // statuslabarugi
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS LABA RUGI')
             ->where('subgrp', '=', 'STATUS LABA RUGI')
@@ -202,13 +209,15 @@ class MainAkunPusat extends MyModel
             ->first();
 
         $iddefaultstatuslabarugi = $status->id ?? 0;
+        $textdefaultstatuslabarugi = $status->text ?? "";
 
         // statusneraca
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS NERACA')
             ->where('subgrp', '=', 'STATUS NERACA')
@@ -216,13 +225,15 @@ class MainAkunPusat extends MyModel
             ->first();
 
         $iddefaultstatusneraca = $status->id ?? 0;
+        $textdefaultstatusneraca = $status->text ?? "";
 
         // statusaktif
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
@@ -230,13 +241,18 @@ class MainAkunPusat extends MyModel
             ->first();
 
         $iddefaultstatusaktif = $status->id ?? 0;
+        $textdefaultstatusaktif = $status->text ?? "";
 
         DB::table($tempdefault)->insert(
             [
                 "statusparent" => $iddefaultstatusparent,
+                "statusparentnama"=>$textdefaultstatusparent,
                 "statuslabarugi" => $iddefaultstatuslabarugi,
+                "statuslabaruginama"=>$textdefaultstatuslabarugi,
                 "statusneraca" => $iddefaultstatusneraca,
+                "statusneracanama"=>$textdefaultstatusneraca,
                 "statusaktif" => $iddefaultstatusaktif,
+                "statusaktifnama"=>$textdefaultstatusaktif,
             ]
         );
 
@@ -244,10 +260,14 @@ class MainAkunPusat extends MyModel
             DB::raw($tempdefault)
         )
             ->select(
-                'statusparent',
-                'statuslabarugi',
-                'statusneraca',
-                'statusaktif'
+                "statusparent",
+                "statusparentnama",
+                "statuslabarugi",
+                "statuslabaruginama",
+                "statusneraca",
+                "statusneracanama",
+                "statusaktif",
+                "statusaktifnama",
             );
 
         $data = $query->first();
@@ -327,10 +347,18 @@ class MainAkunPusat extends MyModel
                 'mainakunpusat.parent',
                 DB::raw("(trim(parent.coa)+' - '+trim(parent.keterangancoa)) as parentnama"),
                 'mainakunpusat.statusparent',
+                'statusparent.text as statusparentnama',
                 'mainakunpusat.statusneraca',
+                'statusneraca.text as statusneracanama',
                 'mainakunpusat.statuslabarugi',
+                'statuslabarugi.text as statuslabaruginama',
                 'mainakunpusat.statusaktif',
+                'statusaktif.text as statusaktifnama',
             )
+            ->leftJoin(DB::raw("parameter as statusparent with (readuncommitted)"), 'mainakunpusat.statusparent', '=', 'statusparent.id')
+            ->leftJoin(DB::raw("parameter as statusneraca with (readuncommitted)"), 'mainakunpusat.statusneraca', '=', 'statusneraca.id')
+            ->leftJoin(DB::raw("parameter as statuslabarugi with (readuncommitted)"), 'mainakunpusat.statuslabarugi', '=', 'statuslabarugi.id')
+            ->leftJoin(DB::raw("parameter as statusaktif with (readuncommitted)"), 'mainakunpusat.statusaktif', '=', 'statusaktif.id')
             ->leftJoin(DB::raw("typeakuntansi with (readuncommitted)"), 'mainakunpusat.type_id', 'typeakuntansi.id')
             ->leftJoin(DB::raw("akuntansi with (readuncommitted)"), 'mainakunpusat.akuntansi_id', 'akuntansi.id')
             ->leftJoin(DB::raw("mainakunpusat as parent with (readuncommitted)"), 'mainakunpusat.parent', 'parent.coa')

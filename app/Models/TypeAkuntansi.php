@@ -77,34 +77,27 @@ class TypeAkuntansi extends MyModel
 
     public function default()
     {
-
-
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama')->nullable();
         });
-
-        $statusaktif = Parameter::from(
-            db::Raw("parameter with (readuncommitted)")
+        
+        $statusaktif = Parameter::from(db::Raw("parameter with (readuncommitted)"))->select(
+            'id',
+            'text'
         )
+        ->where('grp', '=', 'STATUS AKTIF')
+        ->where('subgrp', '=', 'STATUS AKTIF')
+        ->where('default', '=', 'YA')
+        ->first();
+        
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id,"statusaktifnama" => $statusaktif->text]);
+
+        $query = DB::table($tempdefault)->from(DB::raw($tempdefault))
             ->select(
-                'id'
-            )
-            ->where('grp', '=', 'STATUS AKTIF')
-            ->where('subgrp', '=', 'STATUS AKTIF')
-            ->where('DEFAULT', '=', 'YA')
-            ->first();
-
-        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
-
-
-
-
-        $query = DB::table($tempdefault)->from(
-            DB::raw($tempdefault)
-        )
-            ->select(
-                'statusaktif'
+                'statusaktif',
+                'statusaktifnama',
             );
 
         $data = $query->first();
@@ -126,6 +119,7 @@ class TypeAkuntansi extends MyModel
                 'typeakuntansi.akuntansi_id',
                 'akuntansi.kodeakuntansi as akuntansi',
                 'typeakuntansi.statusaktif',
+                'parameter.text as statusaktifnama',
                 'typeakuntansi.modifiedby',
                 'typeakuntansi.created_at',
                 'typeakuntansi.updated_at',

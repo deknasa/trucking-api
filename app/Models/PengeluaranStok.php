@@ -185,25 +185,28 @@ class PengeluaranStok extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statushitungstok')->nullable();
+            $table->string('statushitungstoknama')->nullable();
         });
 
         $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS HITUNG STOK')
             ->where('subgrp', '=', 'STATUS HITUNG STOK')
             ->where('default', '=', 'YA')
             ->first();
-        DB::table($tempdefault)->insert(["statushitungstok" => $statusaktif->id]);
+        DB::table($tempdefault)->insert(["statushitungstok" => $statusaktif->id,"statushitungstoknama" => $statusaktif->text]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
             ->select(
-                'statushitungstok'
+                'statushitungstok',
+                'statushitungstoknama'
             );
 
         $data = $query->first();
@@ -331,7 +334,11 @@ class PengeluaranStok extends MyModel
                 "$this->table.created_at",
                 "$this->table.updated_at",
                 "akunpusat.keterangancoa",
+                'format.text as formatnama',
+                'statushitungstok.text as statushitungstoknama'
             )
+            ->leftJoin('parameter as format', 'pengeluaranstok.format', '=', 'format.id')
+            ->leftJoin('parameter as statushitungstok', 'pengeluaranstok.statushitungstok', '=', 'statushitungstok.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluaranstok.coa', 'akunpusat.coa');
         $data = $query->where("$this->table.id", $id)->first();
         return $data;
