@@ -438,6 +438,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('typeakuntansi', TypeAkuntansiController::class)->whereNumber('typeakuntansi');
     Route::resource('maintypeakuntansi', MainTypeAkuntansiController::class)->whereNumber('maintypeakuntansi');    
     Route::apiResource('absensisupirheader', AbsensiSupirHeaderController::class)->parameter('absensisupirheader', 'absensiSupirHeader')->whereNumber('absensisupirheader');
+    Route::get('suratpengantar/{id}/getpelabuhan', [SuratPengantarController::class, 'getpelabuhan'])->whereNumber('id');
+    Route::get('upahritasi/comboluarkota', [UpahRitasiController::class, 'comboluarkota']);
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
@@ -1253,7 +1255,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('suratpengantar/export', [SuratPengantarController::class, 'export']);
     Route::post('suratpengantar/{id}/cekValidasi', [SuratPengantarController::class, 'cekValidasi'])->whereNumber('id');
     Route::get('suratpengantar/{id}/getTarifOmset', [SuratPengantarController::class, 'getTarifOmset'])->whereNumber('id');
-    Route::get('suratpengantar/{id}/getpelabuhan', [SuratPengantarController::class, 'getpelabuhan'])->whereNumber('id');
     Route::post('suratpengantar/{id}/batalmuat', [SuratPengantarController::class, 'approvalBatalMuat'])->whereNumber('id');
     Route::post('suratpengantar/{id}/edittujuan', [SuratPengantarController::class, 'approvalEditTujuan'])->whereNumber('id');
     Route::post('suratpengantar/titipanemkl', [SuratPengantarController::class, 'approvalTitipanEmkl']);
@@ -1291,7 +1292,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('upahritasi/combo', [UpahRitasiController::class, 'combo']);
     Route::get('upahritasi/default', [UpahRitasiController::class, 'default']);
-    Route::get('upahritasi/comboluarkota', [UpahRitasiController::class, 'comboluarkota']);
     Route::get('upahritasi/field_length', [UpahRitasiController::class, 'fieldLength']);
     Route::get('upahritasi/export', [UpahRitasiController::class, 'export']);
     Route::post('upahritasi/import', [UpahRitasiController::class, 'import']);
