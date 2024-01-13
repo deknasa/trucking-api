@@ -352,6 +352,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('absentrado', AbsenTradoController::class)->whereNumber('absentrado');
     Route::get('parameter/getparambytext', [ParameterController::class, 'getParamByText']);
     Route::get('parameter/combolist', [ParameterController::class, 'combolist']);
+    Route::get('parameter/comboapproval', [ParameterController::class, 'comboapproval']);
     Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
     Route::resource('harilibur', HariLiburController::class)->whereNumber('harilibur');
     Route::get('suratpengantarapprovalinputtrip/cektanggal', [SuratPengantarApprovalInputTripController::class, 'isTanggalAvaillable']);
@@ -435,7 +436,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('karyawan', KaryawanController::class)->whereNumber('karyawan');
     Route::resource('akuntansi', AkuntansiController::class)->whereNumber('akuntansi');
     Route::resource('typeakuntansi', TypeAkuntansiController::class)->whereNumber('typeakuntansi');
-    Route::resource('maintypeakuntansi', MainTypeAkuntansiController::class)->whereNumber('maintypeakuntansi');
+    Route::resource('maintypeakuntansi', MainTypeAkuntansiController::class)->whereNumber('maintypeakuntansi');    
+    Route::apiResource('absensisupirheader', AbsensiSupirHeaderController::class)->parameter('absensisupirheader', 'absensiSupirHeader')->whereNumber('absensisupirheader');
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
@@ -576,7 +578,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('parameter/detail', [ParameterController::class, 'detail']);
     Route::get('parameter/default', [ParameterController::class, 'default']);
     Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']);
-    Route::get('parameter/comboapproval', [ParameterController::class, 'comboapproval']);
     Route::get('parameter/getcoa', [ParameterController::class, 'getcoa']);
     Route::get('parameter/{id}', [ParameterController::class, 'show']);
     Route::post('parameter/addrow', [ParameterController::class, 'addrow']);
@@ -600,7 +601,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('absensisupirheader/{id}/cekvalidasidelete', [AbsensiSupirHeaderController::class, 'cekvalidasidelete'])->name('absensisupirheader.cekvalidasidelete')->whereNumber('id');
     Route::post('absensisupirheader/{id}/approval', [AbsensiSupirHeaderController::class, 'approval'])->name('absensisupirheader.approval')->whereNumber('id');
     Route::post('absensisupirheader/{id}/approvalEditAbsensi', [AbsensiSupirHeaderController::class, 'approvalEditAbsensi'])->whereNumber('id');
-    Route::apiResource('absensisupirheader', AbsensiSupirHeaderController::class)->parameter('absensisupirheader', 'absensiSupirHeader')->whereNumber('absensisupirheader');
 
     Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
     Route::post('bukaabsensi/{id}/updatetanggalbatas', [BukaAbsensiController::class, 'updateTanggalBatas']);
