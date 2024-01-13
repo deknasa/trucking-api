@@ -204,6 +204,11 @@ class BukaAbsensi extends MyModel
         $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
         $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
         $bukaAbsensi = BukaAbsensi::where('id',$id)->first();
+        $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti',$bukaAbsensi->tglabsensi)->first();
+        if ($absensiSupirHeader) {
+            $absensiSupirHeader->tglbataseditabsensi = $tglbatas;
+            $absensiSupirHeader->save();
+        }
         $bukaAbsensi->tglbatas = $tglbatas;
         $bukaAbsensi->save();
         return $bukaAbsensi;
