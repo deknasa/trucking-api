@@ -222,12 +222,12 @@ class MainAkunPusatController extends Controller
                 $statusLabaRugi = $params['statuslabarugi'];
 
                 $result = json_decode($statusaktif, true);
-                $resultAkunPayable = json_decode($statusParent, true);
+                $resultParent = json_decode($statusParent, true);
                 $resultNeraca = json_decode($statusNeraca, true);
                 $resultLabaRugi = json_decode($statusLabaRugi, true);
 
                 $format = $result['MEMO'];
-                $statusParent = $resultAkunPayable['MEMO'];
+                $statusParent = ($resultParent != '') ? $resultParent['MEMO'] : '';
                 $statusNeraca = $resultNeraca['MEMO'];
                 $statusLabaRugi = $resultLabaRugi['MEMO'];
 
