@@ -7,6 +7,7 @@ use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
 use App\Http\Controllers\Api\ParameterController;
+use App\Rules\ExistCabang;
 
 class UpdateUserRequest extends FormRequest
 {
@@ -38,18 +39,61 @@ class UpdateUserRequest extends FormRequest
         foreach ($data as $item) {
             $statusAkses[] = $item['id'];
         }
-        return [
+        
+        $cabang_id = $this->cabang_id;
+        $rulesCabang_id = [];
+        if ($cabang_id != null) {
+            $rulesCabang_id = [
+                'cabang_id' => ['required', 'numeric', 'min:1', new ExistCabang()]
+            ];
+        } else if ($cabang_id == null && $this->agen != '') {
+            $rulesCabang_id = [
+                'cabang_id' => ['required', 'numeric', 'min:1', new ExistCabang()]
+            ];
+        }
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        } else if ($statusaktif == null && $this->agen != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        }
+        
+        $statusakses = $this->statusakses;
+        $rulesStatusAkses = [];
+        if ($statusakses != null) {
+            $rulesStatusAkses = [
+                'statusakses' => ['required', Rule::in($statusAkses)]
+            ];
+        } else if ($statusakses == null && $this->agen != '') {
+            $rulesStatusAkses = [
+                'statusakses' => ['required', Rule::in($statusAkses)]
+            ];
+        }
+
+        $rules = [
             'user' => ['required',Rule::unique('user')->whereNotIn('id', [$this->id])],
             'name' => ['required',Rule::unique('user')->whereNotIn('id', [$this->id])],
             'email' => ['required','email:rfc,dns', Rule::unique('user')->whereNotIn('id', [$this->id])],
             // 'password' => 'required',
             // 'karyawan_id' => 'required',
-            'cabang_id' => 'required',
+            'cabang' => 'required',
             // 'dashboard' => 'required',
             // 'statusaktif' => ['required', 'int', 'exists:parameter,id'],
-            'statusaktif' => ['required', Rule::in($status)],
-            'statusakses' => ['required', Rule::in($statusAkses)],
+            'statusaksesnama' => ['required'],
+            'statusaktifnama' => ['required'],
         ];
+        $rules = array_merge(
+            $rules,
+            $rulesCabang_id,
+            $rulesStatusAktif,
+            $rulesStatusAkses
+        );
+        return $rules;
     }
 
     public function attributes()
@@ -62,7 +106,9 @@ class UpdateUserRequest extends FormRequest
             'cabang_id' => 'cabang',
             'dashboard' => 'dashboard',
             'statusaktif' => 'status',
+            'statusaktifnama' => 'status',
             'statusakses' => 'status akses',
+            'statusaksesnama' => 'status akses',
         ];
     }
 }
