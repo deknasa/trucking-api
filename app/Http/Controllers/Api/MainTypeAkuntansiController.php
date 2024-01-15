@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 
 namespace App\Http\Controllers\Api;
@@ -21,13 +21,13 @@ use Illuminate\Http\JsonResponse;
 class MainTypeAkuntansiController extends Controller
 {
 
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
-        
+
         $maintypeakuntansi = new MainTypeAkuntansi();
         return response([
             'data' => $maintypeakuntansi->get(),
@@ -54,9 +54,8 @@ class MainTypeAkuntansiController extends Controller
             'status' => true,
             'data' => $maintypeakuntansi->default(),
         ]);
-        
     }
-    
+
 
     /**
      * @ClassName 
@@ -75,7 +74,7 @@ class MainTypeAkuntansiController extends Controller
                 "statusaktif" => $request->statusaktif,
             ]);
             $maintypeakuntansi->position = $this->getPosition($maintypeakuntansi, $maintypeakuntansi->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $maintypeakuntansi->page = ceil($maintypeakuntansi->position / (10));
             } else {
                 $maintypeakuntansi->page = ceil($maintypeakuntansi->position / ($request->limit ?? 10));
@@ -113,14 +112,14 @@ class MainTypeAkuntansiController extends Controller
 
         try {
             $maintypeakuntansi = (new MainTypeAkuntansi())->processUpdate($maintypeakuntansi, [
-                "kodetype" =>$request->kodetype,
-                "order" =>$request->order,
-                "keterangantype" =>$request->keterangantype,
-                "akuntansi_id" =>$request->akuntansi_id,
-                "statusaktif" =>$request->statusaktif,
+                "kodetype" => $request->kodetype,
+                "order" => $request->order,
+                "keterangantype" => $request->keterangantype,
+                "akuntansi_id" => $request->akuntansi_id,
+                "statusaktif" => $request->statusaktif,
             ]);
             $maintypeakuntansi->position = $this->getPosition($maintypeakuntansi, $maintypeakuntansi->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $maintypeakuntansi->page = ceil($maintypeakuntansi->position / (10));
             } else {
                 $maintypeakuntansi->page = ceil($maintypeakuntansi->position / ($request->limit ?? 10));
@@ -153,7 +152,7 @@ class MainTypeAkuntansiController extends Controller
             $selected = $this->getPosition($maintypeakuntansi, $maintypeakuntansi->getTable(), true);
             $maintypeakuntansi->position = $selected->position;
             $maintypeakuntansi->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $maintypeakuntansi->page = ceil($maintypeakuntansi->position / (10));
             } else {
                 $maintypeakuntansi->page = ceil($maintypeakuntansi->position / ($request->limit ?? 10));
@@ -171,132 +170,124 @@ class MainTypeAkuntansiController extends Controller
             throw $th;
         }
     }
-    
+
     /**
      * @ClassName 
      * @Keterangan EXPORT KE EXCEL
      */
 
-     public function export(RangeExportReportRequest $request)
-     {
-         if (request()->cekExport) {
-             return response([
-                 'status' => true,
-             ]);
-         } else {
-             $response = $this->index();
-             $decodedResponse = json_decode($response->content(), true);
-             $maintypeakuntansi = $decodedResponse['data'];
- 
-             $judulLaporan = $maintypeakuntansi[0]['judulLaporan'];
- 
-             $i = 0;
-             foreach ($maintypeakuntansi as $index => $params) {
- 
- 
-                 $statusaktif = $params['statusaktif'];
- 
- 
-                 $result = json_decode($statusaktif, true);
- 
-                 $statusaktif = $result['MEMO'];
- 
- 
-                 $maintypeakuntansi[$i]['statusaktif'] = $statusaktif;
-                 $i++;
-             }
- 
-             $columns = [
-                 [
-                     'label' => 'No',
-                 ],
-                 [
-                     'label' => 'Kode Tipe',
-                     'index' => 'kodetype',
-                 ],
-                 [
-                     'label' => 'Order',
-                     'index' => 'order',
-                 ],
-                 [
-                    'label' => 'Keterangan',
-                    'index' => 'keterangantype',
+    public function export(RangeExportReportRequest $request)
+    {
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $maintypeakuntansi = $decodedResponse['data'];
+
+            $judulLaporan = $maintypeakuntansi[0]['judulLaporan'];
+
+            $i = 0;
+            foreach ($maintypeakuntansi as $index => $params) {
+
+
+                $statusaktif = $params['statusaktif'];
+
+
+                $result = json_decode($statusaktif, true);
+
+                $statusaktif = $result['MEMO'];
+
+
+                $maintypeakuntansi[$i]['statusaktif'] = $statusaktif;
+                $i++;
+            }
+
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Kode Tipe',
+                    'index' => 'kodetype',
+                ],
+                [
+                    'label' => 'Order',
+                    'index' => 'order',
                 ],
                 [
                     'label' => 'Akuntansi',
                     'index' => 'akuntansi',
                 ],
-                 [
-                     'label' => 'Status Aktif',
-                     'index' => 'statusaktif',
-                 ],
-             ];
- 
-             $this->toExcel($judulLaporan, $maintypeakuntansi, $columns);
-         }
-     }
-     
-     public function fieldLength()
-     {
-         $data = [];
-         $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('maintypeakuntansi')->getColumns();
- 
-         foreach ($columns as $index => $column) {
-             $data[$index] = $column->getLength();
-         }
- 
-         return response([
-             'data' => $data
-         ]);
-     }
-     public function combostatus(Request $request)
-     {
- 
-         $params = [
-             'status' => $request->status ?? '',
-             'grp' => $request->grp ?? '',
-             'subgrp' => $request->subgrp ?? '',
-         ];
-         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-         if ($params['status'] == 'entry') {
-             $query = Parameter::select('id', 'text as keterangan')
-                 ->where('grp', "=", $params['grp'])
-                 ->where('subgrp', "=", $params['subgrp']);
-         } else {
-             Schema::create($temp, function ($table) {
-                 $table->integer('id')->length(11)->nullable();
-                 $table->string('parameter', 50)->nullable();
-                 $table->string('param', 50)->nullable();
-             });
- 
-             DB::table($temp)->insert(
-                 [
-                     'id' => '0',
-                     'parameter' => 'ALL',
-                     'param' => '',
-                 ]
-             );
- 
-             $queryall = Parameter::select('id', 'text as parameter', 'text as param')
-                 ->where('grp', "=", $params['grp'])
-                 ->where('subgrp', "=", $params['subgrp']);
- 
-             $query = DB::table($temp)
-                 ->unionAll($queryall);
-         }
- 
-         $data = $query->get();
- 
-         return response([
-             'data' => $data
-         ]);
-     }
-     
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangantype',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $maintypeakuntansi, $columns);
+        }
+    }
+
+    public function fieldLength()
+    {
+        $data = [];
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('maintypeakuntansi')->getColumns();
+
+        foreach ($columns as $index => $column) {
+            $data[$index] = $column->getLength();
+        }
+
+        return response([
+            'data' => $data
+        ]);
+    }
+    public function combostatus(Request $request)
+    {
+
+        $params = [
+            'status' => $request->status ?? '',
+            'grp' => $request->grp ?? '',
+            'subgrp' => $request->subgrp ?? '',
+        ];
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        if ($params['status'] == 'entry') {
+            $query = Parameter::select('id', 'text as keterangan')
+                ->where('grp', "=", $params['grp'])
+                ->where('subgrp', "=", $params['subgrp']);
+        } else {
+            Schema::create($temp, function ($table) {
+                $table->integer('id')->length(11)->nullable();
+                $table->string('parameter', 50)->nullable();
+                $table->string('param', 50)->nullable();
+            });
+
+            DB::table($temp)->insert(
+                [
+                    'id' => '0',
+                    'parameter' => 'ALL',
+                    'param' => '',
+                ]
+            );
+
+            $queryall = Parameter::select('id', 'text as parameter', 'text as param')
+                ->where('grp', "=", $params['grp'])
+                ->where('subgrp', "=", $params['subgrp']);
+
+            $query = DB::table($temp)
+                ->unionAll($queryall);
+        }
+
+        $data = $query->get();
+
+        return response([
+            'data' => $data
+        ]);
+    }
 }
-
-
-
-
-
-
-?>

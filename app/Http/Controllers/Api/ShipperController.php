@@ -134,7 +134,7 @@ class ShipperController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdatePelangganRequest $request, Pelanggan $pelanggan): JsonResponse
+    public function update(UpdatePelangganRequest $request, Pelanggan $shipper): JsonResponse
     {
         DB::beginTransaction();
 
@@ -153,7 +153,7 @@ class ShipperController extends Controller
                 'statusaktif' => $request->statusaktif,
             ];
 
-            $pelanggan = (new Pelanggan())->processUpdate($pelanggan, $data);
+            $pelanggan = (new Pelanggan())->processUpdate($shipper, $data);
             $pelanggan->position = $this->getPosition($pelanggan, $pelanggan->getTable())->position;
             if ($request->limit==0) {
                 $pelanggan->page = ceil($pelanggan->position / (10));
@@ -281,28 +281,28 @@ class ShipperController extends Controller
                     'label' => 'No',
                 ],
                 [
-                    'label' => 'Kode Pelanggan',
+                    'label' => 'Kode Shipper',
                     'index' => 'kodepelanggan',
                 ],
                 [
-                    'label' => 'Nama Pelanggan',
+                    'label' => 'Nama Shipper',
                     'index' => 'namapelanggan',
-                ],
-                [
-                    'label' => 'Status Aktif',
-                    'index' => 'statusaktif',
-                ],
-                [
-                    'label' => 'Telp',
-                    'index' => 'telp',
                 ],
                 [
                     'label' => 'Alamat',
                     'index' => 'alamat',
                 ],
                 [
+                    'label' => 'Telepon',
+                    'index' => 'telp',
+                ],
+                [
                     'label' => 'Alamat2',
                     'index' => 'alamat2',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
                 ],
                 [
                     'label' => 'Kota',
@@ -311,10 +311,6 @@ class ShipperController extends Controller
                 [
                     'label' => 'Kode Pos',
                     'index' => 'kodepos',
-                ],
-                [
-                    'label' => 'Keterangan',
-                    'index' => 'keterangan',
                 ],
             ];
 
