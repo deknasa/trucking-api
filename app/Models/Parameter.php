@@ -153,7 +153,7 @@ class Parameter extends MyModel
         $query = DB::table('parameter as A')->from(
             DB::raw("parameter as A with (readuncommitted)")
         )
-            ->select('A.id', 'A.grp', 'A.subgrp', 'A.kelompok', 'A.text', 'A.memo', 'A.default', 'A.type', 'B.grp as grup')
+            ->select('A.id', 'A.grp', 'A.subgrp', 'A.kelompok', 'A.text', 'A.memo', 'A.default', DB::raw("A.[default] as defaultnama"), 'A.type', 'B.grp as grup')
             ->leftJoin(DB::raw("parameter as B with (readuncommitted)"), 'A.type', 'B.id')
             ->where('A.id', $id);
 

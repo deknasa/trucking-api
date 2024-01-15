@@ -150,7 +150,7 @@ class StoreTradoRequest extends FormRequest
             'statusabsensisupir' => [$ruleKeterangan],
             'nominalplusborongan' => [new NotDecimal()],
             'phototrado' => [$ruleGambar, 'array'],
-            'phototrado.*' => [$ruleGambar, 'image', 'min:100'],
+            'phototrado.*' => [$ruleGambar, 'image'],
             'photobpkb' => [$ruleGambar, 'array'],
             'photobpkb.*' => [$ruleGambar, 'image', 'min:100'],
             'photostnk' => [$ruleGambar, 'array'],

@@ -51,7 +51,7 @@ class UpdateStokRequest extends FormRequest
             "qtymax"=> [new NotDecimal(), new NumberMax(),'numeric','max:10000'],
             'statusban' => [Rule::requiredIf($kelompokBan->id == $this->input('kelompok_id'))],
             'gambar' => 'array',
-            'gambar.*' => ['image','min:100']
+            'gambar.*' => ['image']
         ];
     }
     public function attributes()
