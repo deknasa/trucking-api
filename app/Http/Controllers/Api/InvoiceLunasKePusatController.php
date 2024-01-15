@@ -52,6 +52,7 @@ class InvoiceLunasKePusatController extends Controller
                 "tglbayar" => $request->tglbayar,
                 "bayar" => $request->bayar,
                 "sisa" => $request->sisa,
+                "potongan" => $request->potongan,
             ];
             $InvoiceLunasKePusat = (new InvoiceLunasKePusat())->processStore($data);
             $InvoiceLunasKePusat->position = $request->indexRow;
@@ -111,6 +112,7 @@ class InvoiceLunasKePusatController extends Controller
                 "tglbayar" => $request->tglbayar,
                 "bayar" => $request->bayar,
                 "sisa" => $request->sisa,
+                "potongan" => $request->potongan,
             ];
             $InvoiceLunasKePusat = (new InvoiceLunasKePusat())->processUpdate($invoicelunaskepusat, $data);
             $InvoiceLunasKePusat->position = $request->indexRow;
