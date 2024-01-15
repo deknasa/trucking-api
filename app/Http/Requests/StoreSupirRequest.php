@@ -159,7 +159,7 @@ class StoreSupirRequest extends FormRequest
                 $rulesGambar = [
 
                     'photosupir' => [$ruleGambar, 'array'],
-                    'photosupir.*' => [$ruleGambar, 'image', 'min:100'],
+                    'photosupir.*' => [$ruleGambar, 'image'],
                     'photoktp' => [$ruleGambar, 'array'],
                     'photoktp.*' => [$ruleGambar, 'image', 'min:100'],
                     'photosim' => [$ruleGambar, 'array'],
