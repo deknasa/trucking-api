@@ -71,9 +71,6 @@ class InvoiceLunasKePusatController extends Controller
         }
     }
 
-    /**
-     * @ClassName
-     */
     public function show($id)
     {
         $invoicelunaskepusat = new InvoiceLunasKePusat();
