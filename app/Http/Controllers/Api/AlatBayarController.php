@@ -307,10 +307,6 @@ class AlatBayarController extends Controller
                     'index' => 'namaalatbayar',
                 ],
                 [
-                    'label' => 'Keterangan',
-                    'index' => 'keterangan',
-                ],
-                [
                     'label' => 'Status Langsung Cair',
                     'index' => 'statuslangsungcair',
                 ],
@@ -325,6 +321,10 @@ class AlatBayarController extends Controller
                 [
                     'label' => 'Status AKtif',
                     'index' => 'statusaktif',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
                 ],
             ];
 

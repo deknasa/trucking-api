@@ -121,11 +121,11 @@ class ShipperController extends Controller
         }
     }
 
-    public function show(Pelanggan $pelanggan)
+    public function show(Pelanggan $shipper)
     {
         return response([
             'status' => true,
-            'data' => $pelanggan
+            'data' => $shipper
         ]);
     }
 
