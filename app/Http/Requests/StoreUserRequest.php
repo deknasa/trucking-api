@@ -7,6 +7,7 @@ use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
 use App\Http\Controllers\Api\ParameterController;
+use App\Rules\ExistCabang;
 use Illuminate\Support\Facades\DB;
 
 class StoreUserRequest extends FormRequest
@@ -39,19 +40,61 @@ class StoreUserRequest extends FormRequest
         foreach ($data as $item) {
             $statusAkses[] = $item['id'];
         }
-        return [
+        
+        $cabang_id = $this->cabang_id;
+        $rulesCabang_id = [];
+        if ($cabang_id != null) {
+            $rulesCabang_id = [
+                'cabang_id' => ['required', 'numeric', 'min:1', new ExistCabang()]
+            ];
+        } else if ($cabang_id == null && $this->agen != '') {
+            $rulesCabang_id = [
+                'cabang_id' => ['required', 'numeric', 'min:1', new ExistCabang()]
+            ];
+        }
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        } else if ($statusaktif == null && $this->agen != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        }
+        
+        $statusakses = $this->statusakses;
+        $rulesStatusAkses = [];
+        if ($statusakses != null) {
+            $rulesStatusAkses = [
+                'statusakses' => ['required', Rule::in($statusAkses)]
+            ];
+        } else if ($statusakses == null && $this->agen != '') {
+            $rulesStatusAkses = [
+                'statusakses' => ['required', Rule::in($statusAkses)]
+            ];
+        }
+        $rules = [
          
             'user' => ['required', 'unique:user,user'],
             'name' => 'required|unique:user',
             'email' => 'required|unique:user|email:rfc,dns',
             'password' => 'required',
             // 'karyawan_id' => 'required',
-            'cabang_id' => 'required',
+            'cabang' => 'required',
             // 'dashboard' => 'required',
             // 'statusaktif' => ['required', 'int', 'exists:parameter,id'],
-            'statusaktif' => ['required', Rule::in($status)],
-            'statusakses' => ['required', Rule::in($statusAkses)],
+            'statusaksesnama' => ['required'],
+            'statusaktifnama' => ['required'],
         ];
+        $rules = array_merge(
+            $rules,
+            $rulesCabang_id,
+            $rulesStatusAktif,
+            $rulesStatusAkses
+        );
+        return $rules;
         
     }
 
@@ -66,6 +109,8 @@ class StoreUserRequest extends FormRequest
             'dashboard' => 'dashboard',
             'statusaktif' => 'status',
             'statusakses' => 'status akses',
+            'statusaksesnama' => 'status akses',
+            'statusaktifnama' => 'status',
         ];
     }
 

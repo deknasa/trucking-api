@@ -61,30 +61,31 @@ class User extends Authenticatable
         'updated_at',
     ];
 
-    public function isMandor() {
+    public function isMandor()
+    {
         $role = DB::table('role')->select('id')->where('rolename', 'MANDOR')->first();
         $userMandor = $this->checkUserRole($role);
-        
+
         if ($userMandor->count()) {
             //check user has mandor
-            return $this->select('mandor.id as mandor_id')->rightJoin(DB::raw("mandor with (readuncommitted)"), 'mandor.user_id', 'user.id')->
-            where('mandor.user_id', $this->id)->first();
+            return $this->select('mandor.id as mandor_id')->rightJoin(DB::raw("mandor with (readuncommitted)"), 'mandor.user_id', 'user.id')->where('mandor.user_id', $this->id)->first();
         }
-        return false;        
+        return false;
     }
-    public function isAdmin() {
+    public function isAdmin()
+    {
         $role = DB::table('role')->select('id')->where('rolename', 'ADMIN')->first();
         $userAdmin = $this->checkUserRole($role);
         if ($userAdmin->count())  return true;
-        return false;     
+        return false;
     }
 
     public function checkUserRole($role)
-    {    
+    {
         return $user = $this->select('user.id')
-        ->leftJoin(DB::raw("userrole with (readuncommitted)"), 'userrole.user_id', 'user.id')
-        ->where('userrole.role_id', $role->id)
-        ->where('user.id', $this->id);
+            ->leftJoin(DB::raw("userrole with (readuncommitted)"), 'userrole.user_id', 'user.id')
+            ->where('userrole.role_id', $role->id)
+            ->where('user.id', $this->id);
     }
 
     protected function serializeDate(DateTimeInterface $date)
@@ -152,11 +153,11 @@ class User extends Authenticatable
 
         if ($role) {
             $query
-            ->leftJoin('userrole', 'user.id', '=', 'userrole.user_id')
-            ->leftJoin('role', 'userrole.role_id', '=', 'role.id')
-            ->where('role.rolename',$role);
+                ->leftJoin('userrole', 'user.id', '=', 'userrole.user_id')
+                ->leftJoin('role', 'userrole.role_id', '=', 'role.id')
+                ->where('role.rolename', $role);
         }
-        
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -176,7 +177,9 @@ class User extends Authenticatable
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('karyawan_id')->nullable();
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 255)->nullable();
             $table->unsignedBigInteger('statusakses')->nullable();
+            $table->string('statusaksesnama', 255)->nullable();
         });
 
         $status = Parameter::from(
@@ -196,7 +199,8 @@ class User extends Authenticatable
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
@@ -204,12 +208,14 @@ class User extends Authenticatable
             ->first();
 
         $iddefaultstatusaktif = $status->id ?? 0;
+        $defaultstatusaktif = $status->text ?? '';
 
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKSES')
             ->where('subgrp', '=', 'STATUS AKSES')
@@ -217,10 +223,11 @@ class User extends Authenticatable
             ->first();
 
         $iddefaultstatusakses = $status->id ?? 0;
+        $defaultstatusakses = $status->text ?? 0;
 
 
         DB::table($tempdefault)->insert(
-            ["karyawan_id" => $iddefaultstatuskaryawan, "statusaktif" => $iddefaultstatusaktif, "statusakses" => $iddefaultstatusakses]
+            ["karyawan_id" => $iddefaultstatuskaryawan, "statusaktif" => $iddefaultstatusaktif, "statusaktifnama" => $defaultstatusaktif, "statusakses" => $iddefaultstatusakses, "statusaksesnama" => $defaultstatusakses]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -229,6 +236,8 @@ class User extends Authenticatable
             ->select(
                 'karyawan_id',
                 'statusaktif',
+                'statusaktifnama',
+                'statusaksesnama',
                 'statusakses'
             );
 
@@ -534,5 +543,24 @@ class User extends Authenticatable
         ]);
 
         return $user;
+    }
+
+    public function findAll($id)
+    {
+        $query = DB::table("[user]")->from(DB::raw("[user] with (readuncommitted)"))
+            ->select(DB::raw("[user].id, [user].[user], [user].[name], [user].email, [user].cabang_id, cabang.namacabang as cabang, [user].dashboard, [user].karyawan_id, [user].statusaktif, [user].statusakses, statusaktif.text as statusaktifnama, statusakses.text as statusaksesnama"))
+            ->leftJoin(DB::raw("cabang with (readuncommitted)"), DB::raw("[user].cabang_id"), 'cabang.id')
+            ->leftJoin(DB::raw("parameter as statusaktif with (readuncommitted)"), DB::raw("[user].statusaktif"), 'statusaktif.id')
+            ->leftJoin(DB::raw("parameter as statusakses with (readuncommitted)"), DB::raw("[user].statusakses"), 'statusakses.id')
+            ->whereRaw("[user].id = $id");
+
+        return $query->first();
+    }
+
+    public function getRole($id)
+    {
+        $query = DB::table("userrole")->from(DB::raw("userrole with (readuncommitted)"))
+            ->where('user_id', $id);
+        return $query->get();
     }
 }
