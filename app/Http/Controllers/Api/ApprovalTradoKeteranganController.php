@@ -49,13 +49,13 @@ class ApprovalTradoKeteranganController extends Controller
                 'statusapproval' => $request->statusapproval
             ];
             $approvalTradoKeterangan = (new ApprovalTradoKeterangan())->processStore($data);
-            $selected = $this->getPosition($approvalTradoKeterangan, $approvalTradoKeterangan->getTable());
-            $approvalTradoKeterangan->position = $selected->position;
-            if ($request->limit == 0) {
-                $approvalTradoKeterangan->page = ceil($approvalTradoKeterangan->position / (10));
-            } else {
-                $approvalTradoKeterangan->page = ceil($approvalTradoKeterangan->position / ($request->limit ?? 10));
-            }
+            // $selected = $this->getPosition($approvalTradoKeterangan, $approvalTradoKeterangan->getTable());
+            // $approvalTradoKeterangan->position = $selected->position;
+            // if ($request->limit == 0) {
+            //     $approvalTradoKeterangan->page = ceil($approvalTradoKeterangan->position / (10));
+            // } else {
+            //     $approvalTradoKeterangan->page = ceil($approvalTradoKeterangan->position / ($request->limit ?? 10));
+            // }
             DB::commit();
             return response([
                 'status' => true,
@@ -90,13 +90,13 @@ class ApprovalTradoKeteranganController extends Controller
                 'statusapproval' => $request->statusapproval
             ];
             $approvaltradoketerangan = (new ApprovalTradoKeterangan())->processUpdate($approvaltradoketerangan, $data);
-            $selected = $this->getPosition($approvaltradoketerangan, $approvaltradoketerangan->getTable());
-            $approvaltradoketerangan->position = $selected->position;
-            if ($request->limit == 0) {
-                $approvaltradoketerangan->page = ceil($approvaltradoketerangan->position / (10));
-            } else {
-                $approvaltradoketerangan->page = ceil($approvaltradoketerangan->position / ($request->limit ?? 10));
-            }
+            // $selected = $this->getPosition($approvaltradoketerangan, $approvaltradoketerangan->getTable());
+            // $approvaltradoketerangan->position = $selected->position;
+            // if ($request->limit == 0) {
+            //     $approvaltradoketerangan->page = ceil($approvaltradoketerangan->position / (10));
+            // } else {
+            //     $approvaltradoketerangan->page = ceil($approvaltradoketerangan->position / ($request->limit ?? 10));
+            // }
             DB::commit();
 
             return response([
