@@ -109,7 +109,7 @@ class Aco extends MyModel
                 'a.updated_at',
                 'a.status',
                 'a.keterangan',
-            );
+            )->where('a.keterangan','!=','');
 
         // dd($query ->get());
 
@@ -416,7 +416,7 @@ class Aco extends MyModel
                 'a.updated_at',
                 'a.status',
                 'a.keterangan',
-            );
+            )->where('a.keterangan','!=','');
 
         // dd($query ->get());
 

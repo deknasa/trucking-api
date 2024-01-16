@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\NominalInvoiceLunasPusat;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateinvoicelunaskepusatRequest extends FormRequest
@@ -24,7 +25,16 @@ class UpdateinvoicelunaskepusatRequest extends FormRequest
     public function rules()
     {
         return [
-            'bayar' => 'required|gt:0|numeric',
+            'bayar' => ['required','gt:0','numeric'],
+            'potongan' => ['min:0','numeric'],
+            'sisa'=> new NominalInvoiceLunasPusat()
+        ];
+    }
+    
+    public function attributes()
+    {
+        return[
+            'potongan' => 'nk'
         ];
     }
 }

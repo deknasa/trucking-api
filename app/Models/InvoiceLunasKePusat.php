@@ -39,10 +39,11 @@ class InvoiceLunasKePusat extends MyModel
             $table->double('nominal', 15, 2)->nullable();
             $table->date('tglbayar')->nullable();
             $table->double('bayar', 15, 2)->nullable();
+            $table->double('potongan', 15, 2)->nullable();
             $table->double('sisa', 15, 2)->nullable();
         });
 
-        $querytemp = db::table("invoicelunaskepust")->from(db::raw("invoicelunaskepusat a with (readuncommitted)"))
+        $querytemp = db::table("invoicelunaskepusat")->from(db::raw("invoicelunaskepusat a with (readuncommitted)"))
             ->select(
                 'a.invoiceheader_id',
                 'a.nobukti',
@@ -51,6 +52,7 @@ class InvoiceLunasKePusat extends MyModel
                 'a.nominal',
                 'a.tglbayar',
                 'a.bayar',
+                db::raw("isnull(a.potongan,0) as potongan"),
                 'a.sisa',
             )
             ->whereRaw("format(a.tglbukti,'MM-yyyy')='" . $periode . "'");
@@ -63,6 +65,7 @@ class InvoiceLunasKePusat extends MyModel
             'nominal',
             'tglbayar',
             'bayar',
+            'potongan',
             'sisa',
         ], $querytemp);
 
@@ -75,6 +78,7 @@ class InvoiceLunasKePusat extends MyModel
                 'a.nominal',
                 db::raw("null as tglbayar"),
                 db::raw("0 as bayar"),
+                db::raw("0 as potongan"),
                 db::raw("a.nominal as sisa"),
             )
             ->leftjoin(db::raw($tempinvoice . " b "), 'a.nobukti', 'b.nobukti')
@@ -91,6 +95,7 @@ class InvoiceLunasKePusat extends MyModel
             'nominal',
             'tglbayar',
             'bayar',
+            'potongan',
             'sisa',
         ], $querytemp);
 
@@ -103,6 +108,7 @@ class InvoiceLunasKePusat extends MyModel
                 'a.nominal',
                 'a.tglbayar',
                 'a.bayar',
+                'a.potongan',
                 'a.sisa',
             )
             ->leftjoin(db::raw("agen  b with (readuncommitted)"), 'a.agen_id', 'b.id')
@@ -186,6 +192,7 @@ class InvoiceLunasKePusat extends MyModel
                 'a.nominal',
                 db::raw("isnull(c.tglbayar,format(getdate(),'yyyy/MM/dd')) as tglbayar"),
                 db::raw("isnull(c.bayar,0) as bayar"),
+                db::raw("isnull(c.potongan,0) as potongan"),
                 db::raw("(isnull(a.nominal,0)-isnull(c.nominal,0)) as sisa"),
             )
             ->leftjoin(db::raw("agen b with (readuncommitted)"), 'a.agen_id', 'b.id')
@@ -207,6 +214,7 @@ class InvoiceLunasKePusat extends MyModel
         $InvoiceLunaskePusat->tglbayar = date('Y-m-d', strtotime($data['tglbayar']));
         $InvoiceLunaskePusat->bayar = $data['bayar'];
         $InvoiceLunaskePusat->sisa = $data['sisa'];
+        $InvoiceLunaskePusat->potongan = $data['potongan'];
         $InvoiceLunaskePusat->modifiedby = auth('api')->user()->name;
         $InvoiceLunaskePusat->info = html_entity_decode(request()->info);
         // $request->sortname = $request->sortname ?? 'id';
@@ -239,6 +247,7 @@ class InvoiceLunasKePusat extends MyModel
         $InvoiceLunaskePusat->tglbayar = date('Y-m-d', strtotime($data['tglbayar']));
         $InvoiceLunaskePusat->bayar = $data['bayar'];
         $InvoiceLunaskePusat->sisa = $data['sisa'];
+        $InvoiceLunaskePusat->potongan = $data['potongan'];
         $InvoiceLunaskePusat->modifiedby = auth('api')->user()->name;
         $InvoiceLunaskePusat->info = html_entity_decode(request()->info);
 

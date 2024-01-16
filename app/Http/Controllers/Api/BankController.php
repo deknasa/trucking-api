@@ -303,7 +303,7 @@ class BankController extends Controller
                     'index' => 'namabank',
                 ],
                 [
-                    'label' => 'COA',
+                    'label' => 'Kode Perkiraan',
                     'index' => 'coa',
                 ],
                 [

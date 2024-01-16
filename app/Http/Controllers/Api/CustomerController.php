@@ -134,7 +134,7 @@ class CustomerController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateAgenRequest $request, Agen $agen): JsonResponse
+    public function update(UpdateAgenRequest $request, Agen $customer): JsonResponse
     {
 
         $data = [
@@ -155,7 +155,7 @@ class CustomerController extends Controller
         DB::beginTransaction();
 
         try {
-            $agen = (new Agen())->processUpdate($agen, $data);
+            $agen = (new Agen())->processUpdate($customer, $data);
             $agen->position = $this->getPosition($agen, $agen->getTable())->position;
             if ($request->limit==0) {
                 $agen->page = ceil($agen->position / (10));
@@ -284,8 +284,8 @@ class CustomerController extends Controller
                     'index' => 'namaagen',
                 ],
                 [
-                    'label' => 'Keterangan',
-                    'index' => 'keterangan',
+                    'label' => 'Status Tas',
+                    'index' => 'statustas',
                 ],
                 [
                     'label' => 'Status Aktif',
@@ -308,12 +308,12 @@ class CustomerController extends Controller
                     'index' => 'contactperson',
                 ],
                 [
-                    'label' => 'Status Pembayaran (TOP)',
-                    'index' => 'top',
-                ],
-                [
                     'label' => 'Status Approval',
                     'index' => 'statusapproval',
+                ],
+                [
+                    'label' => 'TOP',
+                    'index' => 'top',
                 ],
                 [
                     'label' => 'User approval',
@@ -324,8 +324,8 @@ class CustomerController extends Controller
                     'index' => 'tglapproval',
                 ],
                 [
-                    'label' => 'Status Tas',
-                    'index' => 'statustas',
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
                 ],
                 // [
                 //     'label' => 'Jenis Emkl',

@@ -23,6 +23,7 @@ class CreateInvoicelunaskepusatTable extends Migration
             $table->double('nominal',15,2)->nullable();
             $table->date('tglbayar')->nullable();
             $table->double('bayar',15,2)->nullable();
+            $table->double('potongan',15,2)->nullable();
             $table->double('sisa',15,2)->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();     

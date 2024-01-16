@@ -141,14 +141,15 @@ class UserController extends Controller
         }
     }
 
-    public function show(User $user)
+    public function show($id)
     {
-        request()->user_id = $user->id;
+        request()->user_id = $id;
         request()->limit = 0;
         $detail = (new Aco())->getUserAcl();
         return response([
             'status' => true,
-            'data' => $user->load('roles'),
+            'data' => (new User())->findAll($id),
+            'roles' => (new User())->getRole($id),
             'detail' => $detail
         ]);
     }
