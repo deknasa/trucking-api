@@ -56,6 +56,36 @@ class ApprovalSupirGambar extends MyModel
         return $data;
     }
 
+    public function firstOrFind($supir_id){
+        $supir = Supir::find($supir_id);
+        $data = DB::table($this->table)
+        ->select(
+            'approvalsupirgambar.id',
+            'approvalsupirgambar.namasupir',
+            'approvalsupirgambar.noktp',
+            'approvalsupirgambar.statusapproval',
+            'approvalsupirgambar.tglbatas',
+            'approvalsupirgambar.created_at',
+            'approvalsupirgambar.updated_at',
+            'approvalsupirgambar.modifiedby'
+        )
+        ->where('noktp',$supir->noktp)->first();
+        
+        if (!$data) {
+            $data = [
+                "id"=>null,
+                "namasupir"=>$supir->namasupir,
+                "noktp"=>$supir->noktp,
+                "statusapproval"=>null,
+                "tglbatas"=>null,
+                "created_at"=>null,
+                "updated_at"=>null,
+                "modifiedby"=>null,
+            ];
+        }
+        return $data;
+    }
+
     public function filter($query, $relationFields = [])
     {
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
@@ -179,6 +209,19 @@ class ApprovalSupirGambar extends MyModel
         $approvalSupirGambar->noktp = $data['noktp'];
         $approvalSupirGambar->statusapproval = $data['statusapproval'];
         $approvalSupirGambar->tglbatas = date('Y-m-d', strtotime($data['tglbatas']));
+        
+        $statusNonApproval = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS APPROVAL')->where('subgrp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+        //nonaktif supir
+        if ($data['statusapproval'] == $statusNonApproval->id) {
+            $supirModel = Supir::processStatusNonAktifGambar($approvalSupirGambar->noktp);
+        }else{
+            $statusAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+            $supir = Supir::where('noktp',$approvalSupirGambar->noktp)->first();
+            if ($supir) {
+                $supir->statusaktif = $statusAktif->id;
+                $supir->save();
+            }
+        }
 
         if (!$approvalSupirGambar->save()) {
             throw new \Exception("Error store Approval Supir Gambar.");
@@ -208,6 +251,13 @@ class ApprovalSupirGambar extends MyModel
         //nonaktif supir
         if ($data['statusapproval'] == $statusNonApproval->id) {
             $supirModel = Supir::processStatusNonAktifGambar($approvalSupirGambar->noktp);
+        }else{
+            $statusAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+            $supir = Supir::where('noktp',$approvalSupirGambar->noktp)->first();
+            if ($supir) {
+                $supir->statusaktif = $statusAktif->id;
+                $supir->save();
+            }
         }
 
         if (!$approvalSupirGambar->save()) {

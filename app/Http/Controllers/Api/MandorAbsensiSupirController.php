@@ -36,6 +36,7 @@ class MandorAbsensiSupirController extends Controller
             'attributes' => [
                 'total' => $mandorabsensisupir->totalPages,
                 'records' => $mandorabsensisupir->totalRows,
+                'tradosupir' =>$mandorabsensisupir->isTradoMilikSupir(),
             ]
         ]);
     }

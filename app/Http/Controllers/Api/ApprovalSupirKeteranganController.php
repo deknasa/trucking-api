@@ -19,8 +19,12 @@ class ApprovalSupirKeteranganController extends Controller
     {
         $approvalSupirKeterangan = new ApprovalSupirKeterangan();
 
+        $data = $approvalSupirKeterangan->get();
+        if (isset(request()->supir_id)) {
+            $data = $approvalSupirKeterangan->firstOrFind(request()->supir_id);
+        }
         return response([
-            'data' => $approvalSupirKeterangan->get(),
+            'data' => $data,
             'attributes' => [
                 'totalRows' => $approvalSupirKeterangan->totalRows,
                 'totalPages' => $approvalSupirKeterangan->totalPages
