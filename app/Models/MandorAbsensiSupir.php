@@ -78,6 +78,7 @@ class MandorAbsensiSupir extends MyModel
             ->leftJoin(DB::raw("absentrado with (readuncommitted)"), 'absensisupirdetail.absen_id', 'absentrado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'absensisupirdetail.supir_id', 'supir.id')
             ->leftJoin(DB::raw("supir as d with (readuncommitted)"), 'absensisupirdetail.supirold_id', 'd.id');
+
         if (!$isAdmin) {
             if ($isMandor) {
                 $absensisupirdetail->where('trado.mandor_id',$isMandor->mandor_id);
@@ -118,6 +119,7 @@ class MandorAbsensiSupir extends MyModel
      DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id','namasupir_old','supir_id_old'], $absensisupirdetail);
 
         $trados = DB::table('trado as a')
+
             ->select(
                 // DB::raw('isnull(b.id,null) as id'),
                 'a.id as trado_id',
@@ -161,6 +163,7 @@ class MandorAbsensiSupir extends MyModel
 
         DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id','namasupir_old','supir_id_old'], $trados);
 
+
         //supir serap yang belum diisi
         $tgl = date('Y-m-d', strtotime($date));
         $trado = DB::table('trado as a')
@@ -197,6 +200,7 @@ class MandorAbsensiSupir extends MyModel
         if ($tradoMilikSupir->text == 'YA') {
             $trado->where('a.supir_id', '!=', 0);
         }
+
         DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id','namasupir_old','supir_id_old'], $trado);
 
         $query = DB::table($tempMandor)->from(DB::raw("$tempMandor as a"))

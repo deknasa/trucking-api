@@ -50,12 +50,12 @@ class ApprovalSupirKeteranganController extends Controller
             /* Store header */
             $approvalSupirKeterangan = (new ApprovalSupirKeterangan())->processStore($data);
             /* Set position and page */
-            $approvalSupirKeterangan->position = $this->getPosition($approvalSupirKeterangan, $approvalSupirKeterangan->getTable())->position;
-            if ($request->limit==0) {
-                $approvalSupirKeterangan->page = ceil($approvalSupirKeterangan->position / (10));
-            } else {
-                $approvalSupirKeterangan->page = ceil($approvalSupirKeterangan->position / ($request->limit ?? 10));
-            }
+            // $approvalSupirKeterangan->position = $this->getPosition($approvalSupirKeterangan, $approvalSupirKeterangan->getTable())->position;
+            // if ($request->limit==0) {
+            //     $approvalSupirKeterangan->page = ceil($approvalSupirKeterangan->position / (10));
+            // } else {
+            //     $approvalSupirKeterangan->page = ceil($approvalSupirKeterangan->position / ($request->limit ?? 10));
+            // }
     
             DB::commit();
             return response()->json([
@@ -102,12 +102,12 @@ class ApprovalSupirKeteranganController extends Controller
             $approvalSupirKeterangan = ApprovalSupirKeterangan::findOrFail($id);
             $approvalSupirKeterangan = (new ApprovalSupirKeterangan())->processUpdate($approvalSupirKeterangan,$data);
             /* Set position and page */
-            $approvalSupirKeterangan->position = $this->getPosition($approvalSupirKeterangan, $approvalSupirKeterangan->getTable())->position;
-            if ($request->limit==0) {
-                $approvalSupirKeterangan->page = ceil($approvalSupirKeterangan->position / (10));
-            } else {
-                $approvalSupirKeterangan->page = ceil($approvalSupirKeterangan->position / ($request->limit ?? 10));
-            }
+            // $approvalSupirKeterangan->position = $this->getPosition($approvalSupirKeterangan, $approvalSupirKeterangan->getTable())->position;
+            // if ($request->limit==0) {
+            //     $approvalSupirKeterangan->page = ceil($approvalSupirKeterangan->position / (10));
+            // } else {
+            //     $approvalSupirKeterangan->page = ceil($approvalSupirKeterangan->position / ($request->limit ?? 10));
+            // }
 
             DB::commit();
             return response()->json([

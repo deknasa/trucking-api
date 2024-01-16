@@ -25,6 +25,7 @@ class CreatePenerimaanstokTable extends Migration
             $table->integer('statushitungstok')->length(11)->nullable();         
             $table->integer('urutfifo')->length(11)->nullable();         
             $table->unsignedBigInteger('aco_id')->nullable();          
+            $table->integer('statusaktif')->length(11)->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();              
             $table->timestamps();

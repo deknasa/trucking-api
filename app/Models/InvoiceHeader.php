@@ -898,9 +898,8 @@ class InvoiceHeader extends MyModel
         $class = 'SumbanganSosialController';
 
 
-
         if ($proses == 'reload') {
-            $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+            $temtabel = 'tempgetinv' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
 
             $querydata = DB::table('listtemporarytabel')->from(
                 DB::raw("listtemporarytabel a with (readuncommitted)")
@@ -1018,24 +1017,68 @@ class InvoiceHeader extends MyModel
 
         // ->where('invoiceheader.tsglbukti', '<=', date('Y-m-d', strtotime($tglsampai)));
 
-        // dd('test');
-        $query = db::table($temtabel)->from(db::raw($temtabel))
+        $this->setRequestParameters();
+        $query = db::table($temtabel)->from(db::raw("$temtabel as a"))
             ->select(
-                'id as id_detail',
-                'noinvoice_detail',
-                'nojobtrucking_detail',
-                'container_detail',
-                'tglbukti',
-                'nominal_detail',
+                'a.id as id_detail',
+                'a.noinvoice_detail',
+                'a.nojobtrucking_detail',
+                'a.container_detail',
+                'a.tglbukti',
+                'a.nominal_detail',
+                DB::raw("'$temtabel' as namatabel")
             )->orderBY('id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-        $this->totalNominal = $query->sum('nominal_detail');
+        $this->totalNominal = $query->sum('a.nominal_detail');
+        
+        $this->filterGetInvoice($query);
+        if (request()->limit != 0) {
+            $query->skip($this->params['offset'])->take($this->params['limit']);
+        }
         $data = $query->get();
 
 
         return $data;
+    }
+
+    public function filterGetInvoice($query, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] != '') {
+
+                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        }
+                    }
+
+                    break;
+                case "OR":
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] != '') {
+
+                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->OrwhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
+                        }
+                    });
+
+                    break;
+                default:
+
+                    break;
+            }
+
+            $this->totalRows = $query->count();
+            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+        }
+
+        return $query;
     }
 
     public function getEdit($id, $request)

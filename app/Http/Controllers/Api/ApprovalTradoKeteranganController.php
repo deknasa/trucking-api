@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ApprovalTradoKeteranganController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -43,35 +43,19 @@ class ApprovalTradoKeteranganController extends Controller
     {
         DB::beginTransaction();
         try {
-            $approvalTradoKeterangan = new ApprovalTradoKeterangan();
-            $approvalTradoKeterangan->kodetrado = $request->kodetrado;
-            $approvalTradoKeterangan->tglbatas = date('Y-m-d', strtotime($request->tglbatas));
-            $approvalTradoKeterangan->statusapproval = $request->statusapproval;
-            $approvalTradoKeterangan->modifiedby = auth('api')->user()->name;
-
-            if ($approvalTradoKeterangan->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($approvalTradoKeterangan->getTable()),
-                    'postingdari' => 'ENTRY APPROVAL TRADO KETERANGAN',
-                    'idtrans' => $approvalTradoKeterangan->id,
-                    'nobuktitrans' => $approvalTradoKeterangan->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $approvalTradoKeterangan->toArray(),
-                    'modifiedby' => $approvalTradoKeterangan->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-            }
-
-            
-            $selected = $this->getPosition($approvalTradoKeterangan, $approvalTradoKeterangan->getTable());
-            $approvalTradoKeterangan->position = $selected->position;
-           if ($request->limit==0) {
-                $approvalTradoKeterangan->page = ceil($approvalTradoKeterangan->position / (10));
-            } else {
-                $approvalTradoKeterangan->page = ceil($approvalTradoKeterangan->position / ($request->limit ?? 10));
-            }
+            $data = [
+                'kodetrado' => $request->kodetrado,
+                'tglbatas' => $request->tglbatas,
+                'statusapproval' => $request->statusapproval
+            ];
+            $approvalTradoKeterangan = (new ApprovalTradoKeterangan())->processStore($data);
+            // $selected = $this->getPosition($approvalTradoKeterangan, $approvalTradoKeterangan->getTable());
+            // $approvalTradoKeterangan->position = $selected->position;
+            // if ($request->limit == 0) {
+            //     $approvalTradoKeterangan->page = ceil($approvalTradoKeterangan->position / (10));
+            // } else {
+            //     $approvalTradoKeterangan->page = ceil($approvalTradoKeterangan->position / ($request->limit ?? 10));
+            // }
             DB::commit();
             return response([
                 'status' => true,
@@ -100,85 +84,26 @@ class ApprovalTradoKeteranganController extends Controller
     {
         DB::beginTransaction();
         try {
-            $approvaltradoketerangan->kodetrado = $request->kodetrado;
-            $approvaltradoketerangan->tglbatas = date('Y-m-d', strtotime($request->tglbatas));
-            $approvaltradoketerangan->statusapproval = $request->statusapproval;
-            $approvaltradoketerangan->modifiedby = auth('api')->user()->name;
-
-            if ($approvaltradoketerangan->save()) {
-
-                $statusApp = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
-                $trado = Trado::from(DB::raw("trado with (readuncommitted)"))
-                    ->where('kodetrado', $request->kodetrado)
-                    ->first();
-                if ($trado != '') {
-                    if ($request->statusapproval == $statusApp->id) {
-
-                        $statusAktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
-                        DB::table('trado')->where('kodetrado', $request->kodetrado)->update([
-                            'statusaktif' => $statusAktif->id,
-                        ]);
-                    } else {
-
-                        $statusNonAktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'NON AKTIF')->first();
-                        
-                            $required = [
-                                "kodetrado" => $trado->kodetrado,
-                                "tahun" => $trado->tahun,
-                                "merek" => $trado->merek,
-                                "norangka" => $trado->norangka,
-                                "nomesin" => $trado->nomesin,
-                                "nama" => $trado->nama,
-                                "nostnk" => $trado->nostnk,
-                                "alamatstnk" => $trado->alamatstnk,
-                                "tglpajakstnk" => $trado->tglpajakstnk,
-                                "tipe" => $trado->tipe,
-                                "jenis" => $trado->jenis,
-                                "isisilinder" => $trado->isisilinder,
-                                "warna" => $trado->warna,
-                                "jenisbahanbakar" => $trado->jenisbahanbakar,
-                                "jumlahsumbu" => $trado->jumlahsumbu,
-                                "jumlahroda" => $trado->jumlahroda,
-                                "model" => $trado->model,
-                                "nobpkb" => $trado->nobpkb,
-                                "jumlahbanserap" => $trado->jumlahbanserap, 
-                            ];
-                            $key = array_keys($required, null);
-                            if (count($key)) {
-                                $trado->statusaktif = $statusNonAktif->id;
-                                $trado->save();
-                            }
-                    }
-                }
-
-                $logTrail = [
-                    'namatabel' => strtoupper($approvaltradoketerangan->getTable()),
-                    'postingdari' => 'EDIT APPROVAL TRADO KETERANGAN',
-                    'idtrans' => $approvaltradoketerangan->id,
-                    'nobuktitrans' => $approvaltradoketerangan->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $approvaltradoketerangan->toArray(),
-                    'modifiedby' => $approvaltradoketerangan->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-            }
-
-            $selected = $this->getPosition($approvaltradoketerangan, $approvaltradoketerangan->getTable());
-            $approvaltradoketerangan->position = $selected->position;
-           if ($request->limit==0) {
-                $approvaltradoketerangan->page = ceil($approvaltradoketerangan->position / (10));
-            } else {
-                $approvaltradoketerangan->page = ceil($approvaltradoketerangan->position / ($request->limit ?? 10));
-            }
+            $data = [
+                'kodetrado' => $request->kodetrado,
+                'tglbatas' => $request->tglbatas,
+                'statusapproval' => $request->statusapproval
+            ];
+            $approvaltradoketerangan = (new ApprovalTradoKeterangan())->processUpdate($approvaltradoketerangan, $data);
+            // $selected = $this->getPosition($approvaltradoketerangan, $approvaltradoketerangan->getTable());
+            // $approvaltradoketerangan->position = $selected->position;
+            // if ($request->limit == 0) {
+            //     $approvaltradoketerangan->page = ceil($approvaltradoketerangan->position / (10));
+            // } else {
+            //     $approvaltradoketerangan->page = ceil($approvaltradoketerangan->position / ($request->limit ?? 10));
+            // }
             DB::commit();
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $approvaltradoketerangan
-            ], 201);
+            ], 200);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -219,7 +144,7 @@ class ApprovalTradoKeteranganController extends Controller
                     "jumlahroda" => $trado->jumlahroda,
                     "model" => $trado->model,
                     "nobpkb" => $trado->nobpkb,
-                    "jumlahbanserap" => $trado->jumlahbanserap, 
+                    "jumlahbanserap" => $trado->jumlahbanserap,
                 ];
                 $key = array_keys($required, null);
                 if (count($key)) {
@@ -247,7 +172,7 @@ class ApprovalTradoKeteranganController extends Controller
             $selected = $this->getPosition($approvalTradoKeterangan, $approvalTradoKeterangan->getTable(), true);
             $approvalTradoKeterangan->position = $selected->position;
             $approvalTradoKeterangan->id = $selected->id;
-           if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $approvalTradoKeterangan->page = ceil($approvalTradoKeterangan->position / (10));
             } else {
                 $approvalTradoKeterangan->page = ceil($approvalTradoKeterangan->position / ($request->limit ?? 10));

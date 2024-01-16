@@ -83,6 +83,7 @@ class PengeluaranTruckingController extends Controller
                 'coakredit' => $request->coakredit ?? '',
                 'coapostingdebet' => $request->coapostingdebet ?? '',
                 'coapostingkredit' => $request->coapostingkredit ?? '',
+                'statusaktif' => $request->statusaktif ?? 1,
                 'format' => $request->format
             ];
             $pengeluaranTrucking = (new PengeluaranTrucking())->processStore($data);
@@ -131,6 +132,7 @@ class PengeluaranTruckingController extends Controller
                 'coakredit' => $request->coakredit ?? '',
                 'coapostingdebet' => $request->coapostingdebet ?? '',
                 'coapostingkredit' => $request->coapostingkredit ?? '',
+                'statusaktif' => $request->statusaktif ?? 1,
                 'format' => $request->format
             ];
 
