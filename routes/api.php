@@ -444,6 +444,14 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('approvaltradoketerangan', ApprovalTradoKeteranganController::class)->whereNumber('approvaltradoketerangan');
     Route::resource('approvalsupirgambar', ApprovalSupirGambarController::class)->whereNumber('approvalsupirgambar');
     Route::resource('approvalsupirketerangan', ApprovalSupirKeteranganController::class)->whereNumber('approvalsupirketerangan');
+    Route::get('invoiceheader/comboapproval', [InvoiceHeaderController::class, 'comboapproval']);  
+    Route::get('hutangbayarheader/comboapproval', [HutangBayarHeaderController::class, 'comboapproval']);
+    Route::get('user/combocabang', [UserController::class, 'combocabang']);
+    Route::resource('jobtrucking', JobTruckingController::class);
+    Route::get('menu/combomenuparent', [MenuController::class, 'combomenuparent']);
+    Route::get('gandengan/combostatus', [GandenganController::class, 'combostatus']);
+    Route::get('jenisemkl/combo', [JenisEmklController::class, 'combo']);
+    Route::get('shipper/combostatus', [ShipperController::class, 'combostatus']);
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
@@ -540,8 +548,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('orderantrucking/getorderantrip', [OrderanTruckingController::class, 'getOrderanTrip']);
     Route::post('orderantrucking/approvaledit', [OrderanTruckingController::class, 'approvaledit']);
     Route::post('orderantrucking/approval', [OrderanTruckingController::class, 'approval']);
-
-    Route::resource('jobtrucking', JobTruckingController::class);
 
     Route::get('chargegandengan/export', [ChargeGandenganController::class, 'export']);
 
@@ -667,7 +673,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
 
     Route::get('gandengan/field_length', [GandenganController::class, 'fieldLength']);
-    Route::get('gandengan/combostatus', [GandenganController::class, 'combostatus']);
     Route::get('gandengan/getPosition2', [GandenganController::class, 'getPosition2']);
     Route::get('gandengan/default', [GandenganController::class, 'default']);
     Route::get('gandengan/report', [GandenganController::class, 'report']);
@@ -740,7 +745,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('bankpelanggan/export', [BankPelangganController::class, 'export']);
     Route::get('bankpelanggan/report', [BankPelangganController::class, 'report']);
 
-    Route::get('jenisemkl/combo', [JenisEmklController::class, 'combo']);
     Route::get('jenisemkl/field_length', [JenisEmklController::class, 'fieldLength']);
     Route::get('jenisemkl/default', [JenisEmklController::class, 'default']);
     Route::post('jenisemkl/{id}/cekValidasi', [JenisEmklController::class, 'cekValidasi'])->name('jenisemkl.cekValidasi')->whereNumber('id');
@@ -797,7 +801,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('user/field_length', [UserController::class, 'fieldLength']);
     Route::get('user/export', [UserController::class, 'export'])->name('user.export');
-    Route::get('user/combocabang', [UserController::class, 'combocabang']);
     Route::get('user/getuserid', [UserController::class, 'getuserid']);
     Route::get('user/default', [UserController::class, 'default']);
     Route::get('user/{user}/role', [UserRoleController::class, 'index'])->whereNumber('user');
@@ -806,7 +809,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('user/{user}/acl', [UserAclController::class, 'store'])->whereNumber('user');
 
     Route::get('menu/field_length', [MenuController::class, 'fieldLength']);
-    Route::get('menu/combomenuparent', [MenuController::class, 'combomenuparent']);
     Route::get('menu/controller', [MenuController::class, 'listclassall']);
     Route::get('menu/getdatanamaacos', [MenuController::class, 'getdatanamaacos']);
     Route::get('menu/export', [MenuController::class, 'export'])->name('menu.export');
@@ -883,7 +885,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('shipper/field_length', [ShipperController::class, 'fieldLength']);
     Route::get('shipper/default', [ShipperController::class, 'default']);
     Route::post('shipper/{id}/cekValidasi', [ShipperController::class, 'cekValidasi'])->name('shipper.cekValidasi')->whereNumber('id');
-    Route::get('shipper/combostatus', [ShipperController::class, 'combostatus']);
+    
 
     Route::get('statuscontainer/export', [StatusContainerController::class, 'export']);
     Route::get('statuscontainer/field_length', [StatusContainerController::class, 'fieldLength']);
@@ -1071,7 +1073,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('hutangbayarheader/field_length', [HutangBayarHeaderController::class, 'fieldLength']);
     Route::get('hutangbayarheader/combo', [HutangBayarHeaderController::class, 'combo']);
     Route::get('hutangbayarheader/{id}/getHutang', [HutangBayarHeaderController::class, 'getHutang'])->name('hutangbayarheader.getHutang')->whereNumber('id');
-    Route::get('hutangbayarheader/comboapproval', [HutangBayarHeaderController::class, 'comboapproval']);
     Route::post('hutangbayarheader/approval', [HutangBayarHeaderController::class, 'approval']);
     Route::get('hutangbayarheader/{id}/export', [HutangBayarHeaderController::class, 'export'])->name('hutangbayarheader.export')->whereNumber('id');
     Route::post('hutangbayarheader/{id}/cekapproval', [HutangBayarHeaderController::class, 'cekapproval'])->name('hutangbayarheader.cekapproval')->whereNumber('id');
@@ -1235,7 +1236,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('invoiceheader/{id}/printreport', [InvoiceHeaderController::class, 'printReport'])->whereNumber('id');
     Route::get('invoiceheader/grid', [InvoiceHeaderController::class, 'grid']);
     Route::get('invoiceheader/field_length', [InvoiceHeaderController::class, 'fieldLength']);
-    Route::get('invoiceheader/comboapproval', [InvoiceHeaderController::class, 'comboapproval']);
     Route::get('invoiceheader/{id}/getEdit', [InvoiceHeaderController::class, 'getEdit'])->whereNumber('id');
     Route::get('invoiceheader/{id}/getAllEdit', [InvoiceHeaderController::class, 'getAllEdit'])->whereNumber('id');
     Route::get('invoiceheader/getSP', [InvoiceHeaderController::class, 'getSP']);
