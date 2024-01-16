@@ -918,13 +918,15 @@ class PenerimaanTruckingHeader extends MyModel
             )
             ->select(DB::raw("pengeluarantruckingdetail.nobukti,  SUM(pengeluarantruckingdetail.nominal) AS jlhpinjaman,
             (SELECT isnull(SUM(penerimaantruckingdetail.nominal),0) FROM penerimaantruckingdetail
-            WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS totalbayar ,(SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa"));
+            WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti and penerimaantruckingdetail.supir_id=$supir_id) AS totalbayar ,
+            (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti and penerimaantruckingdetail.supir_id=$supir_id) AS sisa"));
         // ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti', 'pengeluarantruckingdetail.nobukti')
         if ($supir_id != 0) {
             $fetch->whereRaw("pengeluarantruckingdetail.supir_id = $supir_id");
         }
         $fetch->where("pengeluarantruckingdetail.nobukti",  'LIKE', "%PJT%")
             ->groupBy('pengeluarantruckingdetail.nobukti', 'pengeluarantruckingdetail.nominal');
+            
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
             $table->bigInteger('jlhpinjaman')->nullable();
