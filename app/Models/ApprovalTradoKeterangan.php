@@ -175,4 +175,112 @@ class ApprovalTradoKeterangan extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    
+    public function processStore(array $data): ApprovalTradoKeterangan
+    {
+        $approvalTradoKeterangan = new ApprovalTradoKeterangan();
+        $approvalTradoKeterangan->kodetrado = $data['kodetrado'];
+        $approvalTradoKeterangan->tglbatas = date('Y-m-d', strtotime($data['tglbatas']));
+        $approvalTradoKeterangan->statusapproval = $data['statusapproval'];
+        $approvalTradoKeterangan->modifiedby = auth('api')->user()->name;
+
+        $statusApproval = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS APPROVAL')->where('subgrp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        //nonaktif supir
+        if ($approvalTradoKeterangan->statusapproval == $statusApproval->id) {
+            $statusAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+            $trado = Trado::where('kodetrado', $approvalTradoKeterangan->kodetrado)->first();
+            if ($trado) {
+                $trado->statusaktif = $statusAktif->id;
+                $trado->save();
+            }
+        }
+
+        if (!$approvalTradoKeterangan->save()) {
+            throw new \Exception('Error storing approvalTradoKeterangan.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => $approvalTradoKeterangan->getTable(),
+            'postingdari' => 'ENTRY APPROVAL TRADO KETERANGAN',
+            'idtrans' => $approvalTradoKeterangan->id,
+            'nobuktitrans' => $approvalTradoKeterangan->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $approvalTradoKeterangan->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $approvalTradoKeterangan;
+    }
+    public function processUpdate(ApprovalTradoKeterangan $approvaltradoketerangan, array $data): ApprovalTradoKeterangan
+    {
+        
+        $approvaltradoketerangan->kodetrado = $data['kodetrado'];
+        $approvaltradoketerangan->tglbatas = date('Y-m-d', strtotime($data['tglbatas']));
+        $approvaltradoketerangan->statusapproval = $data['statusapproval'];
+        $approvaltradoketerangan->modifiedby = auth('api')->user()->name;
+
+        if (!$approvaltradoketerangan->save()) {
+            throw new \Exception('Error updating approvaltradoketerangan.');
+        }
+            $statusApp = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+            $trado = Trado::from(DB::raw("trado with (readuncommitted)"))
+                ->where('kodetrado', $data['kodetrado'])
+                ->first();
+            if ($trado != '') {
+                if ($data['statusapproval'] == $statusApp->id) {
+
+                    $statusAktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
+                    DB::table('trado')->where('kodetrado', $data['kodetrado'])->update([
+                        'statusaktif' => $statusAktif->id,
+                    ]);
+                } else {
+
+                    $statusNonAktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'NON AKTIF')->first();
+
+                    $required = [
+                        "kodetrado" => $trado->kodetrado,
+                        "tahun" => $trado->tahun,
+                        "merek" => $trado->merek,
+                        "norangka" => $trado->norangka,
+                        "nomesin" => $trado->nomesin,
+                        "nama" => $trado->nama,
+                        "nostnk" => $trado->nostnk,
+                        "alamatstnk" => $trado->alamatstnk,
+                        "tglpajakstnk" => $trado->tglpajakstnk,
+                        "tipe" => $trado->tipe,
+                        "jenis" => $trado->jenis,
+                        "isisilinder" => $trado->isisilinder,
+                        "warna" => $trado->warna,
+                        "jenisbahanbakar" => $trado->jenisbahanbakar,
+                        "jumlahsumbu" => $trado->jumlahsumbu,
+                        "jumlahroda" => $trado->jumlahroda,
+                        "model" => $trado->model,
+                        "nobpkb" => $trado->nobpkb,
+                        "jumlahbanserap" => $trado->jumlahbanserap,
+                    ];
+                    $key = array_keys($required, null);
+                    if (count($key)) {
+                        $trado->statusaktif = $statusNonAktif->id;
+                        $trado->save();
+                    }
+                }
+            }
+
+        if (!$approvaltradoketerangan->save()) {
+            throw new \Exception('Error updating approvaltradoketerangan.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => $approvaltradoketerangan->getTable(),
+            'postingdari' => 'EDIT APPROVAL TRADO KETERANGAN',
+            'idtrans' => $approvaltradoketerangan->id,
+            'nobuktitrans' => $approvaltradoketerangan->id,
+            'aksi' => 'EDIT',
+            'datajson' => $approvaltradoketerangan->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $approvaltradoketerangan;
+    }
 }

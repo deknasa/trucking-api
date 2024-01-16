@@ -15,7 +15,7 @@ use App\Http\Requests\UpdateApprovalTradoGambarRequest;
 
 class ApprovalTradoGambarController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -43,41 +43,15 @@ class ApprovalTradoGambarController extends Controller
     {
         DB::beginTransaction();
         try {
-            $approvalTradoGambar = new ApprovalTradoGambar();
-            $approvalTradoGambar->kodetrado = $request->kodetrado;
-            $approvalTradoGambar->tglbatas = date('Y-m-d', strtotime($request->tglbatas));
-            $approvalTradoGambar->statusapproval = $request->statusapproval;
-            $approvalTradoGambar->modifiedby = auth('api')->user()->name;
-
-            $statusApproval = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS APPROVAL')->where('subgrp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            //nonaktif supir
-            if ($approvalTradoGambar->statusapproval == $statusApproval->id) {
-                $statusAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
-                $trado = Trado::where('kodetrado',$approvalTradoGambar->kodetrado)->first();
-                if ($trado) {
-                    $trado->statusaktif = $statusAktif->id;
-                    $trado->save();
-                }
-            }
-
-            if ($approvalTradoGambar->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($approvalTradoGambar->getTable()),
-                    'postingdari' => 'ENTRY APPROVAL TRADO GAMBAR',
-                    'idtrans' => $approvalTradoGambar->id,
-                    'nobuktitrans' => $approvalTradoGambar->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $approvalTradoGambar->toArray(),
-                    'modifiedby' => $approvalTradoGambar->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-            }
-
+            $data = [
+                'kodetrado' => $request->kodetrado,
+                'tglbatas' => $request->tglbatas,
+                'statusapproval' => $request->statusapproval
+            ];
+            $approvalTradoGambar = (new ApprovalTradoGambar())->processStore($data);
             $selected = $this->getPosition($approvalTradoGambar, $approvalTradoGambar->getTable());
             $approvalTradoGambar->position = $selected->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $approvalTradoGambar->page = ceil($approvalTradoGambar->position / (10));
             } else {
                 $approvalTradoGambar->page = ceil($approvalTradoGambar->position / ($request->limit ?? 10));
@@ -110,90 +84,27 @@ class ApprovalTradoGambarController extends Controller
     {
         DB::beginTransaction();
         try {
-            $approvaltradogambar->kodetrado = $request->kodetrado;
-            $approvaltradogambar->tglbatas = date('Y-m-d', strtotime($request->tglbatas));
-            $approvaltradogambar->statusapproval = $request->statusapproval;
-            $approvaltradogambar->modifiedby = auth('api')->user()->name;
-
-            if ($approvaltradogambar->save()) {
-
-                $statusApp = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
-                $trado = DB::table('trado')->from(DB::raw("trado with (readuncommitted)"))
-                    ->where('kodetrado', $request->kodetrado)
-                    ->first();
-                if ($trado != '') {
-                    if ($request->statusapproval == $statusApp->id) {
-
-                        $statusAktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
-                        DB::table('trado')->where('kodetrado', $request->kodetrado)->update([
-                            'statusaktif' => $statusAktif->id,
-                        ]);
-                    } else {
-
-                        $statusNonAktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'NON AKTIF')->first();
-                        if ($trado->photostnk == '' || $trado->phototrado == '' || $trado->photobpkb == '') {
-                            DB::table('trado')->where('kodetrado', $request->kodetrado)->update([
-                                'statusaktif' => $statusNonAktif->id,
-                            ]);
-                            goto selesai;
-                        } else {
-                            foreach (json_decode($trado->photobpkb) as $value) {
-                                if (!Storage::exists("trado/bpkb/$value")) {
-                                    DB::table('trado')->where('kodetrado', $request->kodetrado)->update([
-                                        'statusaktif' => $statusNonAktif->id,
-                                    ]);
-                                    goto selesai;
-                                }
-                            }
-                            foreach (json_decode($trado->photostnk) as $value) {
-                                if (!Storage::exists("trado/stnk/$value")) {
-                                    DB::table('trado')->where('kodetrado', $request->kodetrado)->update([
-                                        'statusaktif' => $statusNonAktif->id,
-                                    ]);
-                                    goto selesai;
-                                }
-                            }
-                            foreach (json_decode($trado->phototrado) as $value) {
-                                if (!Storage::exists("trado/trado/$value")) {
-                                    DB::table('trado')->where('kodetrado', $request->kodetrado)->update([
-                                        'statusaktif' => $statusNonAktif->id,
-                                    ]);
-                                    goto selesai;
-                                }
-                            }
-                        }
-                        selesai:
-                    }
-                }
-
-                $logTrail = [
-                    'namatabel' => strtoupper($approvaltradogambar->getTable()),
-                    'postingdari' => 'EDIT APPROVAL TRADO GAMBAR',
-                    'idtrans' => $approvaltradogambar->id,
-                    'nobuktitrans' => $approvaltradogambar->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $approvaltradogambar->toArray(),
-                    'modifiedby' => $approvaltradogambar->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-            }
-
+            
+            $data = [
+                'kodetrado' => $request->kodetrado,
+                'tglbatas' => $request->tglbatas,
+                'statusapproval' => $request->statusapproval
+            ];
+            $approvaltradogambar = (new ApprovalTradoGambar())->processUpdate($approvaltradogambar, $data);
             $selected = $this->getPosition($approvaltradogambar, $approvaltradogambar->getTable());
             $approvaltradogambar->position = $selected->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $approvaltradogambar->page = ceil($approvaltradogambar->position / (10));
             } else {
                 $approvaltradogambar->page = ceil($approvaltradogambar->position / ($request->limit ?? 10));
             }
-            
+
             DB::commit();
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $approvaltradogambar
-            ], 201);
+            ], 200);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -269,7 +180,7 @@ class ApprovalTradoGambarController extends Controller
             $selected = $this->getPosition($approvalTradoGambar, $approvalTradoGambar->getTable(), true);
             $approvalTradoGambar->position = $selected->position;
             $approvalTradoGambar->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $approvalTradoGambar->page = ceil($approvalTradoGambar->position / (10));
             } else {
                 $approvalTradoGambar->page = ceil($approvalTradoGambar->position / ($request->limit ?? 10));
