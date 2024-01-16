@@ -110,6 +110,7 @@ class PengeluaranTrucking extends MyModel
                 'pengeluarantrucking.created_at',
                 'pengeluarantrucking.modifiedby',
                 'pengeluarantrucking.updated_at',
+                'statusaktif.memo as statusaktif',
                 DB::raw("'Laporan Pengeluaran Trucking' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
@@ -120,7 +121,9 @@ class PengeluaranTrucking extends MyModel
             ->leftJoin(DB::raw("akunpusat as kredit  with (readuncommitted)"), "pengeluarantrucking.coakredit", "kredit.coa")
             ->leftJoin(DB::raw("akunpusat as postingdebet  with (readuncommitted)"), "pengeluarantrucking.coapostingdebet", "postingdebet.coa")
             ->leftJoin(DB::raw("akunpusat as postingkredit  with (readuncommitted)"), "pengeluarantrucking.coapostingkredit", "postingkredit.coa")
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pengeluarantrucking.format', 'parameter.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pengeluarantrucking.format', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statusaktif with (readuncommitted)"), 'pengeluarantrucking.statusaktif', '=', 'statusaktif.id');
+
 
         $this->filter($query);
 
@@ -177,7 +180,7 @@ class PengeluaranTrucking extends MyModel
         if ($roleinput != '') {
             $query->join(db::raw($temprole . " d "), 'pengeluarantrucking.aco_id', 'd.aco_id');
         }
-       
+
         $data = $query->get();
 
         return $data;
@@ -287,6 +290,8 @@ class PengeluaranTrucking extends MyModel
                             $query = $query->where('postingdebet.keterangancoa', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'coapostingkredit_keterangan') {
                             $query = $query->where('postingkredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
@@ -309,6 +314,8 @@ class PengeluaranTrucking extends MyModel
                                 $query->orWhere('postingdebet.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'coapostingkredit_keterangan') {
                                 $query->orWhere('postingkredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'statusaktif') {
+                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
@@ -348,6 +355,7 @@ class PengeluaranTrucking extends MyModel
         $pengeluaranTrucking->coapostingdebet = $data['coapostingdebet'];
         $pengeluaranTrucking->coapostingkredit = $data['coapostingkredit'];
         $pengeluaranTrucking->format = $data['format'];
+        $pengeluaranTrucking->statusaktif = $data['statusaktif'];
         $pengeluaranTrucking->modifiedby = auth('api')->user()->name;
         $pengeluaranTrucking->info = html_entity_decode(request()->info);
 
@@ -379,6 +387,7 @@ class PengeluaranTrucking extends MyModel
         $pengeluaranTrucking->coapostingdebet = $data['coapostingdebet'] ?? '';
         $pengeluaranTrucking->coapostingkredit = $data['coapostingkredit'] ?? '';
         $pengeluaranTrucking->format = $data['format'];
+        $pengeluaranTrucking->statusaktif = $data['statusaktif'];
         $pengeluaranTrucking->modifiedby = auth('api')->user()->name;
         $pengeluaranTrucking->info = html_entity_decode(request()->info);
 

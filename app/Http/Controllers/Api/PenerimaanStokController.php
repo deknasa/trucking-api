@@ -87,6 +87,7 @@ class PenerimaanStokController extends Controller
                 'keterangan' => $request->keterangan ?? '',
                 'coa' => $request->coa ?? '',
                 'format' => $request->format ?? '',
+                'statusaktif' => $request->statusaktif ?? 1,
                 'statushitungstok' => $request->statushitungstok
             ];
             $penerimaanStok = (new PenerimaanStok())->processStore($data);
@@ -135,6 +136,7 @@ class PenerimaanStokController extends Controller
                 'keterangan' => $request->keterangan ?? '',
                 'coa' => $request->coa ?? '',
                 'format' => $request->format ?? '',
+                'statusaktif' => $request->statusaktif ?? 1,
                 'statushitungstok' => $request->statushitungstok
             ];
 
