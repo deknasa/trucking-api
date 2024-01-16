@@ -474,7 +474,7 @@ class TradoController extends Controller
                     'index' => 'kmawal',
                 ],
                 [
-                    'label' => 'KM Akhir Ganti Oli',
+                    'label' => 'KM Ganti Oli',
                     'index' => 'kmakhirgantioli',
                 ],
                 [
@@ -510,7 +510,7 @@ class TradoController extends Controller
                     'index' => 'tglserviceopname',
                 ],
                 [
-                    'label' => 'Keterangan Progress Standarisasi',
+                    'label' => 'Ket Progress Standarisasi',
                     'index' => 'keteranganprogressstandarisasi',
                 ],
                 [
@@ -518,7 +518,7 @@ class TradoController extends Controller
                     'index' => 'tglpajakstnk',
                 ],
                 [
-                    'label' => 'Tgl Ganti Aki Terakhir',
+                    'label' => 'Tgl Aki Terakhir',
                     'index' => 'tglgantiakiterakhir',
                 ],
                 [

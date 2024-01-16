@@ -50,12 +50,12 @@ class ApprovalSupirGambarController extends Controller
             /* Store header */
             $approvalSupirGambar = (new ApprovalSupirGambar())->processStore($data);
             /* Set position and page */
-            $approvalSupirGambar->position = $this->getPosition($approvalSupirGambar, $approvalSupirGambar->getTable())->position;
-            if ($request->limit==0) {
-                $approvalSupirGambar->page = ceil($approvalSupirGambar->position / (10));
-            } else {
-                $approvalSupirGambar->page = ceil($approvalSupirGambar->position / ($request->limit ?? 10));
-            }
+            // $approvalSupirGambar->position = $this->getPosition($approvalSupirGambar, $approvalSupirGambar->getTable())->position;
+            // if ($request->limit==0) {
+            //     $approvalSupirGambar->page = ceil($approvalSupirGambar->position / (10));
+            // } else {
+            //     $approvalSupirGambar->page = ceil($approvalSupirGambar->position / ($request->limit ?? 10));
+            // }
 
             DB::commit();
             return response()->json([
@@ -103,12 +103,12 @@ class ApprovalSupirGambarController extends Controller
             $approvalSupirGambar = ApprovalSupirGambar::findOrFail($id);
             $approvalSupirGambar = (new ApprovalSupirGambar())->processUpdate($approvalSupirGambar,$data);
             /* Set position and page */
-            $approvalSupirGambar->position = $this->getPosition($approvalSupirGambar, $approvalSupirGambar->getTable())->position;
-            if ($request->limit==0) {
-                $approvalSupirGambar->page = ceil($approvalSupirGambar->position / (10));
-            } else {
-                $approvalSupirGambar->page = ceil($approvalSupirGambar->position / ($request->limit ?? 10));
-            }
+            // $approvalSupirGambar->position = $this->getPosition($approvalSupirGambar, $approvalSupirGambar->getTable())->position;
+            // if ($request->limit==0) {
+            //     $approvalSupirGambar->page = ceil($approvalSupirGambar->position / (10));
+            // } else {
+            //     $approvalSupirGambar->page = ceil($approvalSupirGambar->position / ($request->limit ?? 10));
+            // }
 
             DB::commit();
             return response()->json([

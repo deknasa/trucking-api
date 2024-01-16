@@ -49,13 +49,13 @@ class ApprovalTradoGambarController extends Controller
                 'statusapproval' => $request->statusapproval
             ];
             $approvalTradoGambar = (new ApprovalTradoGambar())->processStore($data);
-            $selected = $this->getPosition($approvalTradoGambar, $approvalTradoGambar->getTable());
-            $approvalTradoGambar->position = $selected->position;
-            if ($request->limit == 0) {
-                $approvalTradoGambar->page = ceil($approvalTradoGambar->position / (10));
-            } else {
-                $approvalTradoGambar->page = ceil($approvalTradoGambar->position / ($request->limit ?? 10));
-            }
+            // $selected = $this->getPosition($approvalTradoGambar, $approvalTradoGambar->getTable());
+            // $approvalTradoGambar->position = $selected->position;
+            // if ($request->limit == 0) {
+            //     $approvalTradoGambar->page = ceil($approvalTradoGambar->position / (10));
+            // } else {
+            //     $approvalTradoGambar->page = ceil($approvalTradoGambar->position / ($request->limit ?? 10));
+            // }
             DB::commit();
             return response([
                 'status' => true,
@@ -91,13 +91,13 @@ class ApprovalTradoGambarController extends Controller
                 'statusapproval' => $request->statusapproval
             ];
             $approvaltradogambar = (new ApprovalTradoGambar())->processUpdate($approvaltradogambar, $data);
-            $selected = $this->getPosition($approvaltradogambar, $approvaltradogambar->getTable());
-            $approvaltradogambar->position = $selected->position;
-            if ($request->limit == 0) {
-                $approvaltradogambar->page = ceil($approvaltradogambar->position / (10));
-            } else {
-                $approvaltradogambar->page = ceil($approvaltradogambar->position / ($request->limit ?? 10));
-            }
+            // $selected = $this->getPosition($approvaltradogambar, $approvaltradogambar->getTable());
+            // $approvaltradogambar->position = $selected->position;
+            // if ($request->limit == 0) {
+            //     $approvaltradogambar->page = ceil($approvaltradogambar->position / (10));
+            // } else {
+            //     $approvaltradogambar->page = ceil($approvaltradogambar->position / ($request->limit ?? 10));
+            // }
 
             DB::commit();
             return response([
