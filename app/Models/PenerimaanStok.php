@@ -123,7 +123,8 @@ class PenerimaanStok extends MyModel
 
         if ($roleinput != '') {
             $getParam = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp','ID CABANG')->first();
-            $query->where('penerimaanstok.cabang_id', $getParam->text);
+            $query->where('penerimaanstok.cabang_id', $getParam->text)
+            ->where('penerimaanstok.statusaktif', 1);
         }
 
         // if ($roleinput != '') {
