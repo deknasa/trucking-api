@@ -452,6 +452,18 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('gandengan/combostatus', [GandenganController::class, 'combostatus']);
     Route::get('jenisemkl/combo', [JenisEmklController::class, 'combo']);
     Route::get('shipper/combostatus', [ShipperController::class, 'combostatus']);
+    Route::get('penerimaandetail/getPenerimaan', [PenerimaanDetailController::class, 'getPenerimaan']);
+    Route::get('penerimaandetail/getDetail', [PenerimaanDetailController::class, 'getDetail']);
+    Route::get('rekappenerimaanheader/getpenerimaan', [RekapPenerimaanHeaderController::class, 'getPenerimaan']);
+    Route::get('pengeluarandetail/getPengeluaran', [PengeluaranDetailController::class, 'getPengeluaran']);
+    Route::get('rekappengeluaranheader/getpengeluaran', [RekapPengeluaranHeaderController::class, 'getPengeluaran']);
+
+    Route::get('gajisupirdetail/bbm', [GajiSupirDetailController::class, 'bbm']);
+    Route::get('gajisupirdetail/absensi', [GajiSupirDetailController::class, 'absensi']);
+    Route::get('gajisupirdetail/deposito', [GajiSupirDetailController::class, 'deposito']);
+    Route::get('gajisupirdetail/potpribadi', [GajiSupirDetailController::class, 'potPribadi']);
+    Route::get('gajisupirdetail/potsemua', [GajiSupirDetailController::class, 'potSemua']);
+    Route::get('prosesgajisupirdetail/getjurnal', [ProsesGajiSupirDetailController::class, 'getJurnal']);
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
@@ -1135,12 +1147,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('gajisupirheader/{gajiId}/getEditAbsensi', [GajiSupirHeaderController::class, 'getEditAbsensi'])->whereNumber('gajiId');
     Route::get('gajisupirheader/{id}/export', [GajiSupirHeaderController::class, 'export'])->whereNumber('id');
     Route::resource('gajisupirheader', GajiSupirHeaderController::class)->whereNumber('gajisupirheader');
-
-    Route::get('gajisupirdetail/bbm', [GajiSupirDetailController::class, 'bbm']);
-    Route::get('gajisupirdetail/absensi', [GajiSupirDetailController::class, 'absensi']);
-    Route::get('gajisupirdetail/deposito', [GajiSupirDetailController::class, 'deposito']);
-    Route::get('gajisupirdetail/potpribadi', [GajiSupirDetailController::class, 'potPribadi']);
-    Route::get('gajisupirdetail/potsemua', [GajiSupirDetailController::class, 'potSemua']);
     Route::resource('gajisupirdetail', GajiSupirDetailController::class)->whereNumber('gajisupirdetail');
 
     Route::post('notakreditheader/addrow', [NotaKreditDetailController::class, 'addrow']);
@@ -1172,7 +1178,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('notadebetdetail', NotaDebetDetailController::class)->whereNumber('notadebet_detail');
 
     Route::get('rekappengeluaranheader/field_length', [RekapPengeluaranHeaderController::class, 'fieldLength']);
-    Route::get('rekappengeluaranheader/getpengeluaran', [RekapPengeluaranHeaderController::class, 'getPengeluaran']);
     Route::get('rekappengeluaranheader/{id}/printreport', [RekapPengeluaranHeaderController::class, 'printReport'])->whereNumber('id');
     Route::get('rekappengeluaranheader/{id}/export', [RekapPengeluaranHeaderController::class, 'export'])->name('rekappengeluaranheader.export')->whereNumber('id');
     Route::get('rekappengeluaranheader/{id}/getrekappengeluaran', [RekapPengeluaranHeaderController::class, 'getRekapPengeluaran'])->whereNumber('id');
@@ -1183,7 +1188,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('rekappengeluarandetail', RekapPengeluaranDetailController::class)->whereNumber('rekappengeluarandetail');
 
     Route::get('rekappenerimaanheader/field_length', [RekapPenerimaanHeaderController::class, 'fieldLength']);
-    Route::get('rekappenerimaanheader/getpenerimaan', [RekapPenerimaanHeaderController::class, 'getPenerimaan']);
     Route::get('rekappenerimaanheader/{id}/printreport', [RekapPenerimaanHeaderController::class, 'printReport'])->whereNumber('id');
     Route::get('rekappenerimaanheader/{id}/export', [RekapPenerimaanHeaderController::class, 'export'])->name('rekappenerimaanheader.export')->whereNumber('id');
     Route::get('rekappenerimaanheader/{id}/getrekappenerimaan', [RekapPenerimaanHeaderController::class, 'getRekapPenerimaan'])->whereNumber('id');
@@ -1230,7 +1234,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('prosesgajisupirheader/{id}/printreport', [ProsesGajiSupirHeaderController::class, 'printReport'])->whereNumber('id');
     Route::get('prosesgajisupirheader/{dari}/{sampai}/getAllData', [ProsesGajiSupirHeaderController::class, 'getAllData']);
     Route::resource('prosesgajisupirheader', ProsesGajiSupirHeaderController::class)->whereNumber('prosesgajisupirheader');
-    Route::get('prosesgajisupirdetail/getjurnal', [ProsesGajiSupirDetailController::class, 'getJurnal']);
     Route::resource('prosesgajisupirdetail', ProsesGajiSupirDetailController::class)->whereNumber('prosesgajisupirdetail');
 
     Route::get('invoiceheader/{id}/printreport', [InvoiceHeaderController::class, 'printReport'])->whereNumber('id');
@@ -1281,8 +1284,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('penerimaanheader/grid', [PenerimaanHeaderController::class, 'grid']);
     Route::get('penerimaanheader/default', [PenerimaanHeaderController::class, 'default']);
     Route::resource('penerimaanheader', PenerimaanHeaderController::class)->whereNumber('penerimaanheader');
-    Route::get('penerimaandetail/getPenerimaan', [PenerimaanDetailController::class, 'getPenerimaan']);
-    Route::get('penerimaandetail/getDetail', [PenerimaanDetailController::class, 'getDetail']);
     Route::resource('penerimaandetail', PenerimaanDetailController::class)->whereNumber('penerimaandetail');
 
     // Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
@@ -1326,7 +1327,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('pengeluaranheader/{id}/cekValidasiAksi', [PengeluaranHeaderController::class, 'cekValidasiAksi'])->name('pengeluaranheader.cekValidasiAksi')->whereNumber('id');
     Route::post('pengeluaranheader/{id}/cekvalidasi', [PengeluaranHeaderController::class, 'cekvalidasi'])->name('pengeluaranheader.cekvalidasi')->whereNumber('id');
     Route::resource('pengeluaranheader', PengeluaranHeaderController::class)->whereNumber('pengeluaranheader');
-    Route::get('pengeluarandetail/getPengeluaran', [PengeluaranDetailController::class, 'getPengeluaran']);
     Route::resource('pengeluarandetail', PengeluaranDetailController::class)->whereNumber('pengeluarandetail');
 
     Route::post('penerimaangiroheader/approvalkacab', [PenerimaanGiroHeaderController::class, 'approvalKacab']);

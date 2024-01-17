@@ -116,9 +116,6 @@ class UpahSupirRincianController extends Controller
             ]);
         }
     }
-    /**
-     * @ClassName 
-     */
     public function get(GetUpahSupirRincianRequest $request)
     {
         $upahSupirRincian = new UpahSupirRincian();
