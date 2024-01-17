@@ -557,6 +557,7 @@ class MandorAbsensiSupir extends MyModel
                 "kasgantung_nobukti" => $data['kasgantung_nobukti'],
                 "tglbataseditabsensi" => $tglbataseditabsensi,
                 "uangjalan" => [0],
+                'supirold_id' => [$data['supirold_id']],
                 "trado_id" => [$data['trado_id']],
                 "supir_id" => [$data['supir_id']],
                 "keterangan_detail" => [$data['keterangan']],

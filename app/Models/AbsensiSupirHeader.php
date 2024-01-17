@@ -547,6 +547,7 @@ class AbsensiSupirHeader extends MyModel
                 'nobukti' => $absensiSupir->nobukti,
                 'trado_id' => $data['trado_id'][$i],
                 'supir_id' => $data['supir_id'][$i],
+                'supirold_id' => $data['supirold_id'][$i],
                 'keterangan' => $data['keterangan_detail'][$i],
                 'uangjalan' => $data['uangjalan'][$i],
                 'absen_id' => $data['absen_id'][$i] ?? '',
