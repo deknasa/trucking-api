@@ -2064,7 +2064,7 @@ class PenerimaanStokHeader extends MyModel
                 (new PenerimaanStokDetail())->validasiSPBMinus(
                     $penerimaanStokHeader->id,
                     $stokDetail->stok_id,
-                    -($stokDetail->qty)
+                    0
                 );
             }
         }
