@@ -2041,7 +2041,7 @@ class PenerimaanStokHeader extends MyModel
 
         $penerimaanStokHeader = PenerimaanStokHeader::findOrFail($id);
         $dataHeader =  $penerimaanStokHeader->toArray();
-        $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')->where('format', '=', $penerimaanStokHeader->statusformat)->first();
+        $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id','kodepenerimaan')->where('format', '=', $penerimaanStokHeader->statusformat)->first();
         $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', '=', $penerimaanStokHeader->id)->get();
         $dataDetail = $penerimaanStokDetail->toArray();
         $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
@@ -2100,7 +2100,7 @@ class PenerimaanStokHeader extends MyModel
 
         $penerimaanStokHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => $penerimaanStokHeader->getTable(),
-            'postingdari' => "DELETE PENERIMAAN STOK ($fetchFormat->kodepenerimaan)",
+            'postingdari' => "DELETE PENERIMAAN STOK ($datahitungstok->kodepenerimaan)",
             'idtrans' => $penerimaanStokHeader->id,
             'nobuktitrans' => $penerimaanStokHeader->nobukti,
             'aksi' => 'DELETE',
@@ -2110,7 +2110,7 @@ class PenerimaanStokHeader extends MyModel
 
         (new LogTrail())->processStore([
             'namatabel' => "penerimaanstokdetail",
-            'postingdari' =>  "DELETE PENERIMAAN STOK ($fetchFormat->kodepenerimaan)",
+            'postingdari' =>  "DELETE PENERIMAAN STOK ($datahitungstok->kodepenerimaan)",
             'idtrans' => $penerimaanStokHeaderLogTrail['id'],
             'nobuktitrans' => $penerimaanStokHeader->nobukti,
             'aksi' => 'DELETE',
