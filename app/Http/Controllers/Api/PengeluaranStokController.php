@@ -92,6 +92,7 @@ class PengeluaranStokController extends Controller
                 'coa' => $request->coa ?? '',
                 'format' => $request->format ?? '',
                 'statushitungstok' => $request->statushitungstok ?? '',
+                'statusaktif' => $request->statusaktif ?? 1,
             ];
             $pengeluaranStok = (new PengeluaranStok())->processStore($data);
             $pengeluaranStok->position = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable())->position;
@@ -141,6 +142,7 @@ class PengeluaranStokController extends Controller
                 'coa' => $request->coa ?? '',
                 'format' => $request->format ?? '',
                 'statushitungstok' => $request->statushitungstok ?? '',
+                'statusaktif' => $request->statusaktif ?? 1,
             ];
 
             $pengeluaranStok = PengeluaranStok::findOrFail($id);
