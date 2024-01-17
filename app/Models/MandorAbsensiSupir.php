@@ -568,7 +568,7 @@ class MandorAbsensiSupir extends MyModel
 
         // $AbsensiSupirDetail = (new AbsensiSupirDetail())->processStore($absensiSupirRequest);
         if ($this->isTradoMilikSupir()) {
-            $absensiSupirDetail = AbsensiSupirDetail::where('absensi_id', $AbsensiSupirHeader->id)->where('trado_id', $data['trado_id'])->where('supir_id', $data['supir_id'])->lockForUpdate()->first();
+            $absensiSupirDetail = AbsensiSupirDetail::where('absensi_id', $AbsensiSupirHeader->id)->where('trado_id', $data['trado_id'])->where('supirold_id', $data['supirold_id'])->lockForUpdate()->first();
         }else{
             $absensiSupirDetail = AbsensiSupirDetail::where('absensi_id', $AbsensiSupirHeader->id)->where('trado_id', $data['trado_id'])->lockForUpdate()->first();
         }
