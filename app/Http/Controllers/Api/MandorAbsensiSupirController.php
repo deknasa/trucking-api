@@ -60,6 +60,7 @@ class MandorAbsensiSupirController extends Controller
                     "uangjalan" =>[0],
                     "trado_id" => $key['trado_id'],
                     "supir_id" => $key['supir_id'],
+                    "supirold_id" => $key['supirold_id'],
                     "keterangan" => $key['keterangan'],
                     "absen_id" => $key['absen_id'],
                     "jam" => $key['jam'],

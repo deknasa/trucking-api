@@ -43,6 +43,46 @@ class ApprovalTradoGambarController extends Controller
     {
         DB::beginTransaction();
         try {
+//             $approvalTradoGambar = new ApprovalTradoGambar();
+//             $approvalTradoGambar->kodetrado = $request->kodetrado;
+//             $approvalTradoGambar->tglbatas = date('Y-m-d', strtotime($request->tglbatas));
+//             $approvalTradoGambar->statusapproval = $request->statusapproval;
+//             $approvalTradoGambar->modifiedby = auth('api')->user()->name;
+
+//             $statusApproval = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS APPROVAL')->where('subgrp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+//             //nonaktif supir
+//             if ($approvalTradoGambar->statusapproval == $statusApproval->id) {
+//                 $statusAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+//                 $trado = Trado::where('kodetrado',$approvalTradoGambar->kodetrado)->first();
+//                 if ($trado) {
+//                     $trado->statusaktif = $statusAktif->id;
+//                     $trado->save();
+//                 }
+//             }
+
+//             if ($approvalTradoGambar->save()) {
+//                 $logTrail = [
+//                     'namatabel' => strtoupper($approvalTradoGambar->getTable()),
+//                     'postingdari' => 'ENTRY APPROVAL TRADO GAMBAR',
+//                     'idtrans' => $approvalTradoGambar->id,
+//                     'nobuktitrans' => $approvalTradoGambar->id,
+//                     'aksi' => 'ENTRY',
+//                     'datajson' => $approvalTradoGambar->toArray(),
+//                     'modifiedby' => $approvalTradoGambar->modifiedby
+//                 ];
+
+//                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+//                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+//             }
+
+//             $selected = $this->getPosition($approvalTradoGambar, $approvalTradoGambar->getTable());
+//             $approvalTradoGambar->position = $selected->position;
+//             if ($request->limit==0) {
+//                 $approvalTradoGambar->page = ceil($approvalTradoGambar->position / (10));
+//             } else {
+//                 $approvalTradoGambar->page = ceil($approvalTradoGambar->position / ($request->limit ?? 10));
+//             }
+
             $data = [
                 'kodetrado' => $request->kodetrado,
                 'tglbatas' => $request->tglbatas,

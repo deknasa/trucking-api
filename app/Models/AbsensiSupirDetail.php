@@ -449,6 +449,7 @@ class AbsensiSupirDetail extends MyModel
         $absensiSupirDetail->trado_id = $data['trado_id'] ?? '';
         $absensiSupirDetail->absen_id = $data['absen_id'] ?? '';
         $absensiSupirDetail->supir_id = $data['supir_id'] ?? '';
+        $absensiSupirDetail->supirold_id = $data['supirold_id'] ?? '';
         $absensiSupirDetail->jam = $data['jam'] ?? '';
         $absensiSupirDetail->uangjalan = $data['uangjalan'] ?? '';
         $absensiSupirDetail->keterangan = $data['keterangan'] ?? '';
