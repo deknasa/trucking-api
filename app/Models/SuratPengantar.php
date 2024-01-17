@@ -1421,7 +1421,7 @@ class SuratPengantar extends MyModel
             ->leftJoin('mandor as mandortrado', 'suratpengantar.mandortrado_id', 'mandortrado.id')
             ->leftJoin('mandor as mandorsupir', 'suratpengantar.mandorsupir_id', 'mandorsupir.id')
             ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id')
-            ->where('suratpengantar.tglbukti', ">", date('Y-m-d', strtotime('- 7 days')))
+            ->where('suratpengantar.tglbukti', ">", date('Y-m-d', strtotime('- 30 days')))
             ->where('suratpengantar.tglbukti', "<=", date('Y-m-d', strtotime('now')))
             ->where('suratpengantar.supir_id', request()->supir_id);
 
