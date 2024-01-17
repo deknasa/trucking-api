@@ -975,8 +975,8 @@ class PenerimaanTruckingHeader extends MyModel
 
         Schema::create($temp, function ($table) {
             $table->bigInteger('penerimaantrucking_id')->nullable();
-            $table->string('nobukti');
-            $table->string('keterangan')->nullable();
+            $table->string('nobukti');     
+            $table->longText('keterangan')->nullable();
             $table->bigInteger('jlhpinjaman')->nullable();
             $table->bigInteger('totalbayar')->nullable();
             $table->bigInteger('sisa')->nullable();
@@ -1011,7 +1011,7 @@ class PenerimaanTruckingHeader extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('penerimaantrucking_id')->nullable();
             $table->string('nobukti');
-            $table->string('keterangan')->nullable();
+            $table->longText('keterangan')->nullable();
             $table->bigInteger('sisa')->nullable();
             $table->bigInteger('bayar')->nullable();
         });
@@ -1054,7 +1054,7 @@ class PenerimaanTruckingHeader extends MyModel
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
-            $table->string('keterangan');
+            $table->longText('keterangan');
             $table->bigInteger('jlhpinjaman')->nullable();
             $table->bigInteger('totalbayar')->nullable();
             $table->bigInteger('sisa')->nullable();
@@ -1083,7 +1083,7 @@ class PenerimaanTruckingHeader extends MyModel
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
-            $table->string('keterangan');
+            $table->longText('keterangan');
             $table->bigInteger('sisa')->nullable();
         });
         // return $fetch->get();
@@ -1121,7 +1121,7 @@ class PenerimaanTruckingHeader extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('penerimaantrucking_id')->nullable();
             $table->string('nobukti');
-            $table->string('keterangan');
+            $table->longText('keterangan');
             $table->bigInteger('bayar')->nullable();
             $table->bigInteger('sisa')->nullable();
             $table->bigInteger('totalbayar')->nullable();
@@ -1158,7 +1158,7 @@ class PenerimaanTruckingHeader extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('penerimaantrucking_id')->nullable();
             $table->string('nobukti');
-            $table->string('keterangan');
+            $table->longText('keterangan');
             $table->bigInteger('bayar')->nullable();
             $table->bigInteger('sisa')->nullable();
         });
