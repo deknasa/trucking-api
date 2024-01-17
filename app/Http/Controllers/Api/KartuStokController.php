@@ -68,6 +68,11 @@ class KartuStokController extends Controller
                 $datafilter =$getdatafilter->keterangan;
             } 
         }
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
 
         $user = Auth::user();
         $userCetak = $user->name;
@@ -79,7 +84,7 @@ class KartuStokController extends Controller
             'sampai' => $request->sampai,
             'filter' => $filter->text??"",
             'datafilter' => $datafilter??"",
-            'judul' => 'PT TRANSPORINDO AGUNG SEJAHTERA',
+            'judul' => $getJudul->text,
             'judulLaporan' => 'Laporan Kartu Stok',
             'user' => $userCetak,
             'tglCetak' => date('d-m-Y H:i:s'),
