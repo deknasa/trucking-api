@@ -124,8 +124,9 @@ class PenerimaanTrucking extends MyModel
         $this->filter($query);
 
         if ($roleinput != '') {
-            $getParam = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp','ID CABANG')->first();
-            $query->where('penerimaantrucking.cabang_id', $getParam->text);
+            $getParam = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'ID CABANG')->first();
+            $query->where('penerimaantrucking.cabang_id', $getParam->text)
+                ->where('penerimaantrucking.statusaktif', 1);
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

@@ -89,6 +89,11 @@ class PengeluaranTruckingHeaderController extends Controller
                 $statusPosting = DB::table(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'POSTING')->first();
                 $request->postingpinjaman = $statusPosting->id;
             }
+            
+            if ($fetchFormat->kodepengeluaran != "PJT") {
+                $statusPosting = DB::table(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'POSTING')->first();
+                $request->statusposting = $statusPosting->id;
+            }
 
             $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processStore([
                 'pengeluarantrucking_id' => $request->pengeluarantrucking_id,
@@ -260,6 +265,13 @@ class PengeluaranTruckingHeaderController extends Controller
                 $statusPosting = DB::table(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'POSTING')->first();
                 $request->postingpinjaman = $statusPosting->id;
             }
+            
+            
+            if ($fetchFormat->kodepengeluaran != "PJT") {
+                $statusPosting = DB::table(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'POSTING')->first();
+                $request->statusposting = $statusPosting->id;
+            }
+
 
             $pengeluaranTruckingHeader = PengeluaranTruckingHeader::findOrfail($id);
             $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processUpdate($pengeluaranTruckingHeader, [

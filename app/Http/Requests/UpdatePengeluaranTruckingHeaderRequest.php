@@ -204,7 +204,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
                     new DateTutupBuku()
                 ],
                 'pengeluarantrucking' => 'required','numeric', 'min:1',
-                'statusposting' => 'required',
+                // 'statusposting' => 'required',
                 'bank' => [$ruleBank],
                 'supirheader' => ['required',  new ValidasiDetail($jumlahdetail)],
                 // 'keterangancoa' => 'required',
@@ -228,7 +228,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
                     new DateTutupBuku()
                 ],
                 'pengeluarantrucking' => 'required','numeric', 'min:1',
-                'statusposting' => 'required',
+                // 'statusposting' => 'required',
                 'bank' => [$ruleBank],
                 'karyawanheader' => ['required',  new ValidasiDetail($jumlahdetail)],
                 // 'keterangancoa' => 'required',
@@ -256,7 +256,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
                     new DateTutupBuku()
                 ],
                 'pengeluarantrucking' => 'required','numeric', 'min:1',
-                'statusposting' => 'required',
+                // 'statusposting' => 'required',
                 'agen' => ['required', new ValidasiDetail($jumlahdetail)],
                 'containerheader' => 'required',
                 'bank' => [$ruleBank],

@@ -85,14 +85,14 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
             $bankIds[] = $bankId->id;
         }
         $ruleStatusPosting = Rule::requiredIf(function () {
-            $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
+            $pjt = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
                 // ->where('id',$this->pengeluarantrucking_id)
-                ->where('kodepengeluaran', "KLAIM")
+                ->where('kodepengeluaran', "PJT")
                 ->first();
                 
                 if ($this->pengeluarantrucking_id) {
-                    if ($klaim) {
-                        if ($klaim->id ==  $this->pengeluarantrucking_id) {
+                    if ($pjt) {
+                        if ($pjt->id !=  $this->pengeluarantrucking_id) {
                             return false;
                         }
                     }
@@ -187,7 +187,6 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                     new DateTutupBuku()
                 ],
                 'pengeluarantrucking' => 'required','numeric', 'min:1',
-                'statusposting' => 'required',
                 'bank' => [$ruleBank],
                 'tgldari' => [
                     'required', 'date_format:d-m-Y',
@@ -209,7 +208,6 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                     new DateTutupBuku()
                 ],
                 'pengeluarantrucking' => 'required','numeric', 'min:1',
-                'statusposting' => 'required',
                 'bank' => [$ruleBank],
                 'tgldari' => [
                     'required', 'date_format:d-m-Y',
@@ -232,7 +230,6 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                     new DateTutupBuku()
                 ],
                 'pengeluarantrucking' => 'required','numeric', 'min:1',
-                'statusposting' => 'required',
                 'agen' => ['required', new ValidasiDetail($jumlahdetail)],
                 'containerheader' => 'required',
                 'bank' => [$ruleBank],
@@ -264,7 +261,6 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                     new DateTutupBuku()
                 ],
                 'pengeluarantrucking' => 'required','numeric', 'min:1',
-                'statusposting' => 'required',
                 'bank' => [$ruleBank],
                 'supirheader' => ['required',  new ValidasiDetail($jumlahdetail)],
                 // 'keterangancoa' => 'required',
@@ -288,7 +284,6 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                     new DateTutupBuku()
                 ],
                 'pengeluarantrucking' => 'required','numeric', 'min:1',
-                'statusposting' => 'required',
                 'bank' => [$ruleBank],
                 'karyawanheader' => ['required',  new ValidasiDetail($jumlahdetail)],
                 // 'keterangancoa' => 'required',
@@ -302,7 +297,6 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                     new DateTutupBuku()
                 ],
                 'pengeluarantrucking' => 'required','numeric', 'min:1',
-                'statusposting' => 'required',
                 'bank' => [$ruleBank],
                 'jenisorderan' => ['required', new validasiJenisOrderanPengeluaranTrucking()]
                 // 'keterangancoa' => 'required',

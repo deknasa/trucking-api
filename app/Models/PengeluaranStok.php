@@ -124,7 +124,8 @@ class PengeluaranStok extends MyModel
         $roleinput = request()->roleinput ?? '';
         if ($roleinput != '') {
             $getParam = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp','ID CABANG')->first();
-            $query->where('pengeluaranstok.cabang_id', $getParam->text);
+            $query->where('pengeluaranstok.cabang_id', $getParam->text)
+            ->where('pengeluaranstok.statusaktif', 1);
         }
         // if ($roleinput != '') {
         //     $query->join(db::raw($temprole . " d "), 'pengeluaranstok.aco_id', 'd.aco_id');
