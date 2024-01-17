@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Schema;
 class ZonaController extends Controller
 {
 
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -96,7 +96,7 @@ class ZonaController extends Controller
             ];
             $zona = (new Zona())->processStore($data);
             $zona->position = $this->getPosition($zona, $zona->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $zona->page = ceil($zona->position / (10));
             } else {
                 $zona->page = ceil($zona->position / ($request->limit ?? 10));
@@ -138,7 +138,7 @@ class ZonaController extends Controller
             ];
             $zona = (new Zona())->processUpdate($zona, $data);
             $zona->position = $this->getPosition($zona, $zona->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $zona->page = ceil($zona->position / (10));
             } else {
                 $zona->page = ceil($zona->position / ($request->limit ?? 10));
@@ -169,7 +169,7 @@ class ZonaController extends Controller
             $selected = $this->getPosition($zona, $zona->getTable(), true);
             $zona->position = $selected->position;
             $zona->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $zona->page = ceil($zona->position / (10));
             } else {
                 $zona->page = ceil($zona->position / ($request->limit ?? 10));
@@ -214,13 +214,18 @@ class ZonaController extends Controller
         ]);
     }
 
+
+    /**
+     * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
+     */
     public function export(
         RangeExportReportRequest $request
     ) {
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan

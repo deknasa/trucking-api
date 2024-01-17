@@ -45,9 +45,6 @@ class GajiSupirDetailController extends Controller
         ]);
     }
 
-    /**
-     * @ClassName
-     */
     public function potSemua(): JsonResponse
     {
         $potSemua = new PenerimaanTruckingDetail();
@@ -73,9 +70,6 @@ class GajiSupirDetailController extends Controller
         }
     }
 
-    /**
-     * @ClassName
-     */
     public function potPribadi(): JsonResponse
     {
         $potPribadi = new PenerimaanTruckingDetail();
@@ -101,9 +95,6 @@ class GajiSupirDetailController extends Controller
         }
     }
 
-    /**
-     * @ClassName
-     */
     public function deposito(): JsonResponse
     {
         $deposito = new PenerimaanTruckingDetail();
@@ -129,9 +120,6 @@ class GajiSupirDetailController extends Controller
         }
     }
 
-    /**
-     * @ClassName
-     */
     public function bbm(): JsonResponse
     {
         $BBM = new PenerimaanTruckingDetail();
@@ -157,9 +145,6 @@ class GajiSupirDetailController extends Controller
         }
     }
 
-    /**
-     * @ClassName
-     */
     public function absensi(): JsonResponse
     {
         $absensi = new AbsensiSupirDetail();
