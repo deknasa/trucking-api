@@ -32,25 +32,89 @@ class ValidasiDestroyPenerimaanStokHeader implements Rule
       $penerimaanStokHeader = new PenerimaanStokHeader();
       $data = $penerimaanStokHeader->find($id);
       $spb = DB::table('parameter')->where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
-      if ($penerimaanStokHeader->isOutUsed($id) && ($data->penerimaanstok_id != $spb->text)) {
+      // if ($penerimaanStokHeader->isOutUsed($id) && ($data->penerimaanstok_id != $spb->text)) {
+      //   $this->message = 'SATL';
+      //   return false;
+      // }
+      // if ($penerimaanStokHeader->isEhtUsed($id)) {
+      //   $this->message = 'SATL';
+      //   return false;
+      // }
+      // if ($penerimaanStokHeader->isPOUsed($id)) {
+      //   $this->message = 'SATL';
+      //   return false;
+      // } else if ($penerimaanStokHeader->printValidation($id)) {
+      //   $this->message = 'SDC';
+      //   return false;
+      // }
+      //   return true;
+      $passes = true;
+      $isEhtUsed = $penerimaanStokHeader->isEhtUsed($id);
+      if ($isEhtUsed) {
+        
         $this->message = 'SATL';
-        return false;
+        $passes = false;
+        // return response($data);
       }
-      if ($penerimaanStokHeader->isEhtUsed($id)) {
-        $this->message = 'SATL';
-        return false;
+      
+      $isEHTApprovedJurnal = $penerimaanStokHeader->isEHTApprovedJurnal($id);
+      if ($isEHTApprovedJurnal) {
+        
+        $this->message = 'SAP';
+        $passes = false;
+        // return response($data);
       }
-      if ($penerimaanStokHeader->isPOUsed($id)) {
+      
+      $isPOUsed = $penerimaanStokHeader->isPOUsed($id);
+      if ($isPOUsed) {
+        
         $this->message = 'SATL';
-        return false;
-      } else if ($penerimaanStokHeader->printValidation($id)) {
+        $passes = false;
+        // return response($data);
+      }
+      $todayValidation = $penerimaanStokHeader->todayValidation($data->tglbukti);
+      if (!$todayValidation) {
+        
+        $this->message = 'TEPT';
+        
+        $passes = false;
+        // return response($data);
+      }
+      $isEditAble = $penerimaanStokHeader->isEditAble($id);
+      $isKeteranganEditAble = $penerimaanStokHeader->isKeteranganEditAble($id);
+      if ((!$isEditAble) || (!$isKeteranganEditAble)) {
+        $this->message = 'TED';
+        $passes = false;
+        // return response($data);
+      }
+      $printValidation = $penerimaanStokHeader->printValidation($id);
+      if ($printValidation) {
         $this->message = 'SDC';
-        return false;
+        $passes = false;
+        // return response($data);
       }
-        return true;
-          
-    }
-
+      $isOutUsed = $penerimaanStokHeader->isOutUsed($id);
+      if ($isOutUsed) {
+        $this->message = 'SATL';
+        $passes = false;
+        // return response($data);
+      }
+      
+      if (($todayValidation || (($isEditAble || $isKeteranganEditAble) && !$printValidation))) {
+        $passes =true;
+        if ($spb->text == $data->penerimaanstok_id) {
+          //ika sudah digunakan di eth, jurnal, dan po
+          if ($isEhtUsed || $isEHTApprovedJurnal || $isPOUsed) {
+            return $passes;
+          }
+        }
+        if (!$isOutUsed) {
+          return $passes;
+        }
+        
+      }
+      return $passes;
+    }  
     /**
      * Get the validation error message.
      *
