@@ -845,7 +845,7 @@ class PengeluaranTruckingHeaderController extends Controller
 
     /**
      * @ClassName 
-     * @Keterangan BIAYA LAIN SUPIR
+     * @Keterangan KLAIM SUPIR
      */
     public function pengeluarantruckingklaimsupir()
     {
@@ -937,6 +937,14 @@ class PengeluaranTruckingHeaderController extends Controller
      * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
+    {
+    }
+
+        /**
+     * @ClassName 
+     * @Keterangan BIAYA UANG MAKAN SUPIR
+     */
+    public function pengeluarantruckingbiayauangmakansupir()
     {
     }
 }
