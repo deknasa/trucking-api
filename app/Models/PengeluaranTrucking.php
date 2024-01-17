@@ -93,6 +93,12 @@ class PengeluaranTrucking extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
+            $cabang_id = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'ID CABANG')
+            ->where('subgrp', 'ID CABANG')
+            ->first()->text ?? '';            
+
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'pengeluarantrucking.id',
@@ -122,7 +128,8 @@ class PengeluaranTrucking extends MyModel
             ->leftJoin(DB::raw("akunpusat as postingdebet  with (readuncommitted)"), "pengeluarantrucking.coapostingdebet", "postingdebet.coa")
             ->leftJoin(DB::raw("akunpusat as postingkredit  with (readuncommitted)"), "pengeluarantrucking.coapostingkredit", "postingkredit.coa")
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pengeluarantrucking.format', 'parameter.id')
-            ->leftJoin(DB::raw("parameter as statusaktif with (readuncommitted)"), 'pengeluarantrucking.statusaktif', '=', 'statusaktif.id');
+            ->leftJoin(DB::raw("parameter as statusaktif with (readuncommitted)"), 'pengeluarantrucking.statusaktif', '=', 'statusaktif.id')
+            ->where('pengeluarantrucking.cabang_id', $cabang_id);
 
 
         $this->filter($query);
