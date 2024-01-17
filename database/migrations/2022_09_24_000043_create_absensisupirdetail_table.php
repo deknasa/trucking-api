@@ -25,6 +25,7 @@ class CreateabsensisupirdetailTable extends Migration
             $table->longText('keterangan')->nullable();
             $table->double('uangjalan', 15, 2)->nullable();
             $table->unsignedBigInteger('absen_id')->nullable();
+            $table->unsignedBigInteger('supirold_id')->nullable();
             $table->time('jam')->nullable();
             $table->integer('statusapprovaleditabsensi')->Length(11)->nullable();
             $table->string('userapprovaleditabsensi', 50)->nullable();
