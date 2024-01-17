@@ -97,6 +97,7 @@ class UpahSupir extends MyModel
                 $table->longText('zonasampai_id')->nullable();
                 $table->longText('penyesuaian')->nullable();
                 $table->longText('jarak')->nullable();
+                $table->longText('jarakfullempty')->nullable();
                 $table->longText('zona_id')->nullable()->nullable();
                 $table->longText('statusaktif')->nullable();
                 $table->longText('statusaktif_text')->nullable();
@@ -144,6 +145,7 @@ class UpahSupir extends MyModel
                     'zonasampai.zona as zonasampai_id',
                     'upahsupir.penyesuaian',
                     DB::raw("CONCAT(upahsupir.jarak, ' KM') as jarak"),
+                    DB::raw("CONCAT(upahsupir.jarakfullempty, ' KM') as jarakfullempty"),
                     'zona.keterangan as zona_id',
                     'parameter.memo as statusaktif',
                     'parameter.text as statusaktif_text',
@@ -187,6 +189,7 @@ class UpahSupir extends MyModel
                 'zonasampai_id',
                 'penyesuaian',
                 'jarak',
+                'jarakfullempty',
                 'zona_id',
                 'statusaktif',
                 'statusaktif_text',
@@ -244,6 +247,7 @@ class UpahSupir extends MyModel
                 'a.zonasampai_id',
                 'a.penyesuaian',
                 'a.jarak',
+                'a.jarakfullempty',
                 'a.zona_id',
                 'a.statusaktif',
                 'a.statusupahzona',
