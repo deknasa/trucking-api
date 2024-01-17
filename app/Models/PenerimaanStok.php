@@ -121,6 +121,10 @@ class PenerimaanStok extends MyModel
 
         $this->filter($query);
 
+        if ($roleinput != '') {
+            $getParam = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp','ID CABANG')->first();
+            $query->where('penerimaanstok.cabang_id', $getParam->text);
+        }
 
         // if ($roleinput != '') {
         //     $query->join(db::raw($temprole ." d "), 'penerimaanstok.aco_id', 'd.aco_id');
