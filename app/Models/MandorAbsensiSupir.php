@@ -52,6 +52,7 @@ class MandorAbsensiSupir extends MyModel
             $table->integer('supir_id')->nullable();
             $table->string('namasupir_old')->nullable();
             $table->integer('supir_id_old')->nullable();
+            $table->text('memo')->nullable();
 
         });
 
@@ -117,6 +118,10 @@ class MandorAbsensiSupir extends MyModel
 
      //supir Trado yang belum diisi
      DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id','namasupir_old','supir_id_old'], $absensisupirdetail);
+
+     $update = DB::table($tempMandor);
+     $update->update(["memo"=>'{"MEMO":"AKTIF","SINGKATAN":"A","WARNA":"#009933","WARNATULISAN":"#FFF"}']);
+    //  {"MEMO":"AKTIF","SINGKATAN":"A","WARNA":"#009933","WARNATULISAN":"#FFF"}
 
         $trados = DB::table('trado as a')
 
@@ -218,6 +223,7 @@ class MandorAbsensiSupir extends MyModel
                 'a.supir_id',
                 'a.namasupir_old',
                 'a.supir_id_old',
+                'a.memo'
             );
         return $query;
     }
