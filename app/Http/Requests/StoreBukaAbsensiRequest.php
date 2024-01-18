@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\DateTutupBuku;
 use App\Rules\UniqueTglBukaAbsensi;
+use App\Rules\DateAllowedAbsenMandor;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreBukaAbsensiRequest extends FormRequest
@@ -29,7 +31,9 @@ class StoreBukaAbsensiRequest extends FormRequest
                 
                 'required', 'date_format:d-m-Y', 
                 'before_or_equal:' . date('d-m-Y'),
-                new UniqueTglBukaAbsensi
+                new UniqueTglBukaAbsensi,
+                new DateAllowedAbsenMandor(),
+                new DateTutupBuku(),
             ]
         ];
     }

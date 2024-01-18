@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Models\BukaAbsensi;
+use App\Rules\DateTutupBuku;
+use App\Rules\DateAllowedAbsenMandor;
 use App\Rules\UniqueTglBukaAbsensiEdit;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -30,7 +32,9 @@ class UpdateBukaAbsensiRequest extends FormRequest
             "tglabsensi"=> [
                 'required', 'date_format:d-m-Y', 
                 'before_or_equal:' . date('d-m-Y', strtotime($bukaAbsensi->tglabsensi)),
-                new UniqueTglBukaAbsensiEdit
+                new UniqueTglBukaAbsensiEdit,
+                new DateAllowedAbsenMandor(),
+                new DateTutupBuku(),
             ]
         ];
     }

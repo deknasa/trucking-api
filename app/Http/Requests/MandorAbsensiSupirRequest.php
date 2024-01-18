@@ -58,9 +58,9 @@ class MandorAbsensiSupirRequest extends FormRequest
                 'supir' => 'nullable',
                 'supir_id' => 'nullable',
                 'absen' => 'nullable',
-                'jam' => [Rule::requiredIf(function () {
-                    return empty($this->input('absen'));
-                }), Rule::when(empty($this->input('absen')), 'date_format:H:i')]
+                // 'jam' => [Rule::requiredIf(function () {
+                //     return empty($this->input('absen'));
+                // }), Rule::when(empty($this->input('absen')), 'date_format:H:i')]
             ];
             $rulesBeda = [];
         } else if ($supirAbsen->id == request()->absen_id) {
@@ -70,9 +70,9 @@ class MandorAbsensiSupirRequest extends FormRequest
                 'supir' => 'nullable',
                 'supir_id' => 'nullable',
                 'absen' => 'nullable',
-                'jam' => [Rule::requiredIf(function () {
-                    return empty($this->input('absen'));
-                }), Rule::when(empty($this->input('absen')), 'date_format:H:i')]
+                // 'jam' => [Rule::requiredIf(function () {
+                //     return empty($this->input('absen'));
+                // }), Rule::when(empty($this->input('absen')), 'date_format:H:i')]
             ];
             $rulesBeda = [];
         } else {
@@ -92,9 +92,9 @@ class MandorAbsensiSupirRequest extends FormRequest
                 'trado_id' => 'required',
                 'supir' => $requiredSupir,
                 'absen' => 'nullable',
-                'jam' => [Rule::requiredIf(function () {
-                    return empty($this->input('absen'));
-                }), Rule::when(empty($this->input('absen')), 'date_format:H:i')]
+                // 'jam' => [Rule::requiredIf(function () {
+                //     return empty($this->input('absen'));
+                // }), Rule::when(empty($this->input('absen')), 'date_format:H:i')]
             ];
 
             if (request()->isMethod('POST')) {
