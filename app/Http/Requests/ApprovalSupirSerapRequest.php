@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Rules\ValidasiSupirSerapApproval;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ApprovalSupirSerapRequest extends FormRequest
@@ -25,7 +26,8 @@ class ApprovalSupirSerapRequest extends FormRequest
     public function rules()
     {
         return [
-            'serapId' => 'required'
+            'serapId' => ['required'],
+            'serapId.*' => new ValidasiSupirSerapApproval()
         ];
     }
     

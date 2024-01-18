@@ -15,7 +15,7 @@ use Throwable;
 
 class SupirSerapController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -139,7 +139,7 @@ class SupirSerapController extends Controller
         }
     }
 
-     /**
+    /**
      * @ClassName 
      * @Keterangan APRROVAL DATA
      */
@@ -225,12 +225,35 @@ class SupirSerapController extends Controller
             return response($data);
         } else {
 
-            $data = [
-                'error' => false,
-                'message' => '',
-                'statuspesan' => 'success',
-            ];
+            $query = DB::table('absensisupirdetail')->from(DB::raw("absensisupirdetail as detail with (readuncommitted)"))
+                ->select('header.nobukti')
+                ->whereRaw("detail.trado_id = $supirSerap->trado_id and header.tglbukti = '$supirSerap->tglabsensi' and (detail.supir_id = $supirSerap->supirserap_id or detail.supirold_id = $supirSerap->supirserap_id)")
+                ->leftJoin(DB::raw("absensisupirheader as header with (readuncommitted)"), 'header.id', 'detail.absensi_id')
+                ->first();
 
+            if ($query != '') {
+
+                $data = DB::table("supirserap")->from(DB::raw("supirserap with (readuncommitted)"))
+                    ->select(DB::raw("supirserap.trado_id, supirserap.tglabsensi, supirserap.supirserap_id, trado.kodetrado, supir.namasupir"))
+                    ->leftJoin(DB::raw("trado with (readuncommitted)"), 'supirserap.trado_id', 'trado.id')
+                    ->leftJoin(DB::raw("supir with (readuncommitted)"), 'supirserap.supirserap_id', 'supir.id')
+                    ->where('supirserap.id', $id)
+                    ->first();
+                $keterangan = 'supir serap ' . $data->namasupir . ' di trado ' . $data->kodetrado . ' tgl ' . date('d-m-Y', strtotime($data->tglabsensi)) . ' SUDAH DIINPUT DI ABSENSI ' . $query->nobukti;
+               
+                $data = [
+                    'error' => true,
+                    'message' => $keterangan,
+                    'statuspesan' => 'warning',
+                ];
+            } else {
+
+                $data = [
+                    'error' => false,
+                    'message' => '',
+                    'statuspesan' => 'success',
+                ];
+            }
             return response($data);
         }
     }
