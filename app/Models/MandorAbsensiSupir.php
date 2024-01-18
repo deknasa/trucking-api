@@ -529,6 +529,9 @@ class MandorAbsensiSupir extends MyModel
         if ($tidakadasupir->text == $data['absen_id']) {
             $data['supir_id'] = "";
         }
+        $data['jam'] = date('H:i',strtotime('now'));
+        // $data['jam'] = date('H:i',strtotime('now'));
+
 
         $tglbataseditabsensi = null;
         $tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
@@ -566,7 +569,7 @@ class MandorAbsensiSupir extends MyModel
             ];
             $AbsensiSupirHeader = (new AbsensiSupirHeader())->processStore($absensiSupirRequest);
         }
-
+        $jam =$data['jam'];
         // $AbsensiSupirDetail = (new AbsensiSupirDetail())->processStore($absensiSupirRequest);
         if ($this->isTradoMilikSupir()) {
             $absensiSupirDetail = AbsensiSupirDetail::where('absensi_id', $AbsensiSupirHeader->id)->where('trado_id', $data['trado_id'])->where('supirold_id', $data['supirold_id'])->lockForUpdate()->first();
@@ -574,6 +577,7 @@ class MandorAbsensiSupir extends MyModel
             $absensiSupirDetail = AbsensiSupirDetail::where('absensi_id', $AbsensiSupirHeader->id)->where('trado_id', $data['trado_id'])->lockForUpdate()->first();
         }
         if ($absensiSupirDetail) {
+            $jam = $absensiSupirDetail->jam;
             $absensiSupirDetail->delete();
         }
 
@@ -585,7 +589,7 @@ class MandorAbsensiSupir extends MyModel
             'supirold_id' => $data['supirold_id'],
             'keterangan' => $data['keterangan'],
             'absen_id' => $data['absen_id'] ?? '',
-            'jam' => (strlen($data['jam'])<5) ?null:$data['jam'],
+            'jam' => $jam,
             'modifiedby' => $AbsensiSupirHeader->modifiedby,
         ]);
 

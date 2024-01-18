@@ -63,7 +63,7 @@ class MandorAbsensiSupirController extends Controller
                     "supirold_id" => $key['supirold_id'],
                     "keterangan" => $key['keterangan'],
                     "absen_id" => $key['absen_id'],
-                    "jam" => $key['jam'],
+                    // "jam" => $key['jam'],
                 ];
 
                 $AbsensiSupirHeader = (new MandorAbsensiSupir())->processStore($insert);

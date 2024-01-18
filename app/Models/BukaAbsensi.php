@@ -203,6 +203,10 @@ class BukaAbsensi extends MyModel
     {
         $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'BATAS JAM EDIT ABSENSI')->where('subgrp', '=', 'BATAS JAM EDIT ABSENSI')->first();
         $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
+        
+        if (strtotime('now')>strtotime($tglbatas)) {
+            $tglbatas = date('Y-m-d',strtotime('tomorrow')). ' ' . $jambatas->text ?? '00:00:00';
+        }
         $bukaAbsensi = BukaAbsensi::where('id',$id)->first();
         $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti',$bukaAbsensi->tglabsensi)->first();
         if ($absensiSupirHeader) {
