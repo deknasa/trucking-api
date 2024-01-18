@@ -121,7 +121,6 @@ class MandorAbsensiSupir extends MyModel
 
      $update = DB::table($tempMandor);
      $update->update(["memo"=>'{"MEMO":"AKTIF","SINGKATAN":"A","WARNA":"#009933","WARNATULISAN":"#FFF"}']);
-    //  {"MEMO":"AKTIF","SINGKATAN":"A","WARNA":"#009933","WARNATULISAN":"#FFF"}
 
         $trados = DB::table('trado as a')
 
@@ -192,7 +191,7 @@ class MandorAbsensiSupir extends MyModel
             ->leftJoin('supir as c', 'e.supirserap_id', 'c.id')
             ->where('e.tglabsensi', date('Y-m-d', strtotime($date)))
             ->where('e.statusapproval', 3)
-            ->whereRaw("e.supirserap_id not in (select supirold_id from absensisupirdetail join absensisupirheader on absensisupirheader.nobukti = absensisupirdetail.nobukti where absensisupirheader.tglbukti='$tgl')");
+            ->whereRaw("e.supirserap_id not in (select supirold_id from absensisupirdetail join absensisupirheader on absensisupirheader.nobukti = absensisupirdetail.nobukti where absensisupirheader.tglbukti='$tgl' and absensisupirdetail.trado_id = e.trado_id)");
             // ->whereRaw("e.supirserap_id not in (select supir_id from absensisupirdetail join absensisupirheader on absensisupirheader.nobukti = absensisupirdetail.nobukti where absensisupirheader.tglbukti='$tgl')");
         if (!$isAdmin) {
             if ($isMandor) {
