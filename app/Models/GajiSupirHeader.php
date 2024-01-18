@@ -1034,7 +1034,7 @@ class GajiSupirHeader extends MyModel
     {
         $temp = $this->createTempPinjSemua();
         $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
-            ->select(DB::raw("pengeluarantruckingdetail.nobukti as pinjSemua_nobukti,row_number() Over(Order By pengeluarantruckingdetail.nobukti) as id,$temp.tglbukti as pinjSemua_tglbukti,pengeluarantruckingdetail.supir_id, 'SEMUA' as pinjSemua_supir,pengeluarantruckingdetail.keterangan as pinjSemua_keterangan,$temp.sisa as pinjSemua_sisa"))
+            ->select(DB::raw("pengeluarantruckingdetail.nobukti as pinjSemua_nobukti,row_number() Over(Order By pengeluarantruckingdetail.nobukti) as id,$temp.tglbukti as pinjSemua_tglbukti,pengeluarantruckingdetail.supir_id, 'SEMUA' as pinjSemua_supir,pengeluarantruckingdetail.keterangan as pinjSemua_keterangan,$temp.sisa as pinjSemua_sisa, null as nominalPS"))
             // ->distinct('pengeluarantruckingheader.tglbukti')
             ->join(DB::raw("$temp with (readuncommitted)"), $temp . '.nobukti', 'pengeluarantruckingdetail.nobukti')
             // ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti', 'pengeluarantruckingdetail.nobukti')
@@ -1081,7 +1081,7 @@ class GajiSupirHeader extends MyModel
 
         $tglBukti = date('Y-m-d', strtotime(request()->tglbukti));
         $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By pengeluarantruckingheader.tglbukti asc,pengeluarantruckingdetail.nobukti) as id,pengeluarantruckingheader.tglbukti as pinjPribadi_tglbukti,pengeluarantruckingdetail.nobukti as pinjPribadi_nobukti,pengeluarantruckingdetail.keterangan as pinjPribadi_keterangan," . $tempPribadi . ".sisa as pinjPribadi_sisa"))
+            ->select(DB::raw("row_number() Over(Order By pengeluarantruckingheader.tglbukti asc,pengeluarantruckingdetail.nobukti) as id,pengeluarantruckingheader.tglbukti as pinjPribadi_tglbukti,pengeluarantruckingdetail.nobukti as pinjPribadi_nobukti,pengeluarantruckingdetail.keterangan as pinjPribadi_keterangan," . $tempPribadi . ".sisa as pinjPribadi_sisa, null as nominalPP"))
             ->leftJoin(DB::raw("$tempPribadi with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', $tempPribadi . ".nobukti")
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', "pengeluarantruckingheader.nobukti")
             ->whereRaw("pengeluarantruckingdetail.supir_id = $supir_id")
@@ -1377,13 +1377,20 @@ class GajiSupirHeader extends MyModel
             $table->float('absensi_uangjalan')->nullable();
         });
 
+        // $fetch = DB::table("absensisupirdetail")->from(DB::raw("absensisupirdetail with (readuncommitted)"))
+        //     ->select(DB::raw("max(absensisupirheader.nobukti) as absensi_nobukti"), DB::raw("max(absensisupirheader.tglbukti) as absensi_tglbukti"), DB::raw("sum(absensisupirdetail.uangjalan) as absensi_uangjalan"))
+        //     ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirheader.nobukti', 'absensisupirdetail.nobukti')
+        //     ->whereBetween('absensisupirheader.tglbukti', [$tglDari, $tglSampai])
+        //     ->where('absensisupirdetail.supir_id', $supir_id)
+        //     ->whereRaw("absensisupirheader.nobukti not in (select absensisupir_nobukti from gajisupiruangjalan where supir_id=$supir_id)")
+        //     ->groupBy('absensisupirdetail.supir_id');
+
         $fetch = DB::table("absensisupirdetail")->from(DB::raw("absensisupirdetail with (readuncommitted)"))
-            ->select(DB::raw("max(absensisupirheader.nobukti) as absensi_nobukti"), DB::raw("max(absensisupirheader.tglbukti) as absensi_tglbukti"), DB::raw("sum(absensisupirdetail.uangjalan) as absensi_uangjalan"))
+            ->select('absensisupirheader.nobukti as absensi_nobukti', 'absensisupirheader.tglbukti as absensi_tglbukti', 'absensisupirdetail.uangjalan as absensi_uangjalan')
             ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirheader.nobukti', 'absensisupirdetail.nobukti')
             ->whereBetween('absensisupirheader.tglbukti', [$tglDari, $tglSampai])
             ->where('absensisupirdetail.supir_id', $supir_id)
-            ->whereRaw("absensisupirheader.nobukti not in (select absensisupir_nobukti from gajisupiruangjalan where supir_id=$supir_id)")
-            ->groupBy('absensisupirdetail.supir_id');
+            ->whereRaw("absensisupirheader.nobukti not in (select absensisupir_nobukti from gajisupiruangjalan where supir_id=$supir_id)");
 
         DB::table($temp)->insertUsing(['absensi_nobukti', 'absensi_tglbukti', 'absensi_uangjalan'], $fetch);
 
@@ -1460,7 +1467,7 @@ class GajiSupirHeader extends MyModel
             ->join(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirheader.nobukti', 'gajisupiruangjalan.absensisupir_nobukti')
             ->where('gajisupiruangjalan.gajisupir_id', $id);
         Schema::create($temp, function ($table) {
-            $table->bigInteger('gajisupir_id');
+            $table->bigInteger('gajisupir_id')->nullable();
             $table->string('absensi_nobukti');
             $table->date('absensi_tglbukti')->nullable();
             $table->float('absensi_uangjalan')->nullable();
