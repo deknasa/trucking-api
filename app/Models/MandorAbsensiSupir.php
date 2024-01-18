@@ -332,8 +332,8 @@ class MandorAbsensiSupir extends MyModel
             ->select(
                 'text',
             )
-            ->where('grp', 'TIDAK ADA SUPIR')
-            ->where('subgrp', 'TIDAK ADA SUPIR')
+            ->where('grp', 'ABSEN TIDAK ADA SUPIR')
+            ->where('subgrp', 'ABSEN TIDAK ADA SUPIR')
             ->where('text', $id)
             ->first();
         if ($queryabsen) {
