@@ -214,9 +214,11 @@ class BukaAbsensi extends MyModel
         $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti',$bukaAbsensi->tglabsensi)->first();
         if ($absensiSupirHeader) {
             $absensiSupirHeader->tglbataseditabsensi = $tglbatas;
+            $absensiSupirHeader->modifiedby = auth('api')->user()->name;
             $absensiSupirHeader->save();
         }
         $bukaAbsensi->tglbatas = $tglbatas;
+        $bukaAbsensi->modifiedby = auth('api')->user()->name;
         $bukaAbsensi->save();
         return $bukaAbsensi;
     }
