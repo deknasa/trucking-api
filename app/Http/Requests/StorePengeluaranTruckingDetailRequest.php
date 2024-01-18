@@ -36,7 +36,7 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
                 $fetchFormat =  DB::table('pengeluarantrucking')
                     ->where('id', $idpengeluaran)
                     ->first();
-                if ($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'TDEK' || $fetchFormat->kodepengeluaran == 'BST' || $fetchFormat->kodepengeluaran == 'KBBM' || $fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT' || $fetchFormat->kodepengeluaran == 'OTOK' || $fetchFormat->kodepengeluaran == 'OTOL') {
+                if ($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'TDEK' || $fetchFormat->kodepengeluaran == 'BST' || $fetchFormat->kodepengeluaran == 'KBBM' || $fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT' || $fetchFormat->kodepengeluaran == 'OTOK' || $fetchFormat->kodepengeluaran == 'OTOL' || $fetchFormat->kodepengeluaran == 'BSM') {
                     return false;
                 } else {
                     return true;
@@ -151,10 +151,10 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
             ->first();
         if ($idpengeluaran != '') {
 
-            if ($fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT') {
-                $min = Rule::when((($fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT')), 'numeric|min:0');
+            if ($fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT' || $fetchFormat->kodepengeluaran == 'BSM') {
+                $min = Rule::when((($fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT' || $fetchFormat->kodepengeluaran == 'BSM')), 'numeric|min:0');
             } else {
-                $min = Rule::when((($fetchFormat->kodepengeluaran != 'BLL' || $fetchFormat->kodepengeluaran != 'BLN' || $fetchFormat->kodepengeluaran != 'BTU' || $fetchFormat->kodepengeluaran != 'BPT' || $fetchFormat->kodepengeluaran != 'BGS' || $fetchFormat->kodepengeluaran != 'BIT')), 'numeric|gt:0');
+                $min = Rule::when((($fetchFormat->kodepengeluaran != 'BLL' || $fetchFormat->kodepengeluaran != 'BLN' || $fetchFormat->kodepengeluaran != 'BTU' || $fetchFormat->kodepengeluaran != 'BPT' || $fetchFormat->kodepengeluaran != 'BGS' || $fetchFormat->kodepengeluaran != 'BIT' || $fetchFormat->kodepengeluaran != 'BSM')), 'numeric|gt:0');
             }
         }
         $rules = [
