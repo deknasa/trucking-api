@@ -130,7 +130,7 @@ class BukaAbsensi extends MyModel
 
     public function processStore(array $data): BukaAbsensi
     {
-        $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
+        $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'BATAS JAM EDIT ABSENSI')->where('subgrp', '=', 'BATAS JAM EDIT ABSENSI')->first();
         $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
         $bukaAbsensi = new BukaAbsensi();
         $bukaAbsensi->tglabsensi = date('Y-m-d', strtotime($data['tglabsensi']));
@@ -201,7 +201,7 @@ class BukaAbsensi extends MyModel
 
     public function processTanggalBatasUpdate($id)
     {
-        $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
+        $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'BATAS JAM EDIT ABSENSI')->where('subgrp', '=', 'BATAS JAM EDIT ABSENSI')->first();
         $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
         $bukaAbsensi = BukaAbsensi::where('id',$id)->first();
         $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti',$bukaAbsensi->tglabsensi)->first();
