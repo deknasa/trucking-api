@@ -510,6 +510,9 @@ class AbsensiSupirHeader extends MyModel
         $tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $query_jam = strtotime($tglbukti . ' ' . $jam . ':' . $menit . ':00');
         $tglbataseditabsensi = date('Y-m-d H:i:s', $query_jam);
+        // if (strtotime('now')>strtotime($tglbataseditabsensi)) {
+        //     $tglbatas = date('Y-m-d',strtotime('tomorrow')). ' ' . $query_jam ?? '00:00:00';
+        // }
 
         if ($data['tglbataseditabsensi']) {
             $tglbataseditabsensi = $data['tglbataseditabsensi'];

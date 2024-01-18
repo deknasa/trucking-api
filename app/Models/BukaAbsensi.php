@@ -141,6 +141,12 @@ class BukaAbsensi extends MyModel
         $bukaAbsensi->modifiedby = auth('api')->user()->name;
         $bukaAbsensi->info = html_entity_decode(request()->info);
 
+        $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti',$bukaAbsensi->tglabsensi)->first();
+        if ($absensiSupirHeader) {
+            $absensiSupirHeader->tglbataseditabsensi = $tglbatas;
+            $absensiSupirHeader->modifiedby = auth('api')->user()->name;
+            $absensiSupirHeader->save();
+        }
         if (!$bukaAbsensi->save()) {
             throw new \Exception("Error Update Buka Absensi.");
         }
@@ -183,9 +189,18 @@ class BukaAbsensi extends MyModel
 
     public function processDestroy($id, $postingdari = ""): BukaAbsensi
     {
+        $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'BATAS JAM EDIT ABSENSI')->where('subgrp', '=', 'BATAS JAM EDIT ABSENSI')->first();
+
         $bukaAbsensi = BukaAbsensi::findOrFail($id);
         $dataHeader =  $bukaAbsensi->toArray();
 
+        $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti',$bukaAbsensi->tglabsensi)->first();
+        $tglbatas = $bukaAbsensi->tglabsensi . ' ' . $jambatas->text ?? '00:00:00';
+        if ($absensiSupirHeader) {
+            $absensiSupirHeader->tglbataseditabsensi = $tglbatas;
+            $absensiSupirHeader->modifiedby = auth('api')->user()->name;
+            $absensiSupirHeader->save();
+        }
         $bukaAbsensi = $bukaAbsensi->lockAndDestroy($id);
         $hutangLogTrail = (new LogTrail())->processStore([
             'namatabel' => $this->table,

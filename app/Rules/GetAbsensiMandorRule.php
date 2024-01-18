@@ -39,6 +39,7 @@ class GetAbsensiMandorRule implements Rule
                 //check tanggal sudah dibuka
                 return $isBukaTanggalValidation;
             }
+            //cek tgl dari absensiSupirHeader
             $tglbatas = $absensiSupirHeader->tglbataseditabsensi ?? 0;
             $limit = strtotime($tglbatas);
             $now = strtotime('now');
