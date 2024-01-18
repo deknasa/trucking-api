@@ -302,19 +302,19 @@ class UserController extends Controller
                     'index' => 'user',
                 ],
                 [
-                    'label' => 'Name',
+                    'label' => 'Nama User',
                     'index' => 'name',
+                ],
+                [
+                    'label' => 'Email',
+                    'index' => 'email',
                 ],
                 [
                     'label' => 'Cabang',
                     'index' => 'cabang_id',
                 ],
                 [
-                    'label' => 'Dashboard',
-                    'index' => 'dashboard',
-                ],
-                [
-                    'label' => 'Status aktif',
+                    'label' => 'Status',
                     'index' => 'statusaktif',
                 ],
                 [
