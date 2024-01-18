@@ -211,7 +211,8 @@ class AbsensiSupirDetail extends MyModel
                     })
                     ->where('trado.statusabsensisupir', $statusabsensi);
                 if ($getAbsen) {
-                    $query->where("$this->table.supir_id", '!=', 0);
+                    $query->where("$this->table.supir_id", '!=', 0)
+                    ->whereRaw("absentrado.kodeabsen is null");
                 }
                 $this->totalRows = $query->count();
                 $this->totalNominal = $query->sum('uangjalan');
