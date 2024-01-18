@@ -1416,6 +1416,14 @@ class Supir extends MyModel
             'datajson' => $dataLogtrail,
             'modifiedby' => auth('api')->user()->name
         ]);
+        
+        DB::table('suratpengantar')
+            ->where('supir_id', $supir->id)
+            ->where('tglbukti', '>=', $supir->tglberlakumilikmandor)
+            ->update([
+                'mandorsupir_id' => $supir->mandor_id,
+                'modifiedby' => auth('api')->user()->name
+            ]);
         return $supir;
     }
 
