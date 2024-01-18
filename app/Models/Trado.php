@@ -169,6 +169,8 @@ class Trado extends MyModel
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
 
+        $isMandor = auth()->user()->isMandor();
+        $isAdmin = auth()->user()->isAdmin();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->select('text')
@@ -255,6 +257,11 @@ class Trado extends MyModel
                 ->first();
 
             $query->where('trado.statusaktif', '=', $statusaktif->id);
+        }
+        if (!$isAdmin) {
+            if ($isMandor) {
+                $query->where('trado.mandor_id',$isMandor->mandor_id);
+            }
         }
 
         if ($absensiId != '') {

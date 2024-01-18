@@ -69,9 +69,9 @@ class MandorAbsensiSupirAllRequest extends FormRequest
                     "$key.namasupir" => 'nullable',
                     "$key.supir_id" => 'nullable',
                     "$key.absen" => 'nullable',
-                    "$key.jam" => [Rule::requiredIf(function () use($key,$data){
-                        return empty($data[$key]['absen_id']);
-                    }), Rule::when(empty($data[$key]['absen_id']), 'date_format:H:i')]
+                    // "$key.jam" => [Rule::requiredIf(function () use($key,$data){
+                    //     return empty($data[$key]['absen_id']);
+                    // }), Rule::when(empty($data[$key]['absen_id']), 'date_format:H:i')]
                 ];
                 $rulesBeda = [];
             } else if ($supirAbsen->id == $data[$key]['absen_id']) {
@@ -81,9 +81,9 @@ class MandorAbsensiSupirAllRequest extends FormRequest
                     "$key.namasupir" => 'nullable',
                     "$key.supir_id" => 'nullable',
                     "$key.absen" => 'nullable',
-                    "$key.jam" => [Rule::requiredIf(function () use($key,$data){
-                        return empty($data[$key]['absen_id']);
-                    }), Rule::when(empty($data[$key]['absen_id']), 'date_format:H:i')]
+                    // "$key.jam" => [Rule::requiredIf(function () use($key,$data){
+                    //     return empty($data[$key]['absen_id']);
+                    // }), Rule::when(empty($data[$key]['absen_id']), 'date_format:H:i')]
                 ];
                 $rulesBeda = [];
                 
@@ -102,9 +102,9 @@ class MandorAbsensiSupirAllRequest extends FormRequest
                     "$key.trado_id" => 'required',
                     "$key.namasupir" => $requiredSupir,
                     "$key.absen" => 'nullable',
-                    "$key.jam" => [Rule::requiredIf(function () use($key,$data){
-                        return empty($data[$key]['absen_id']);
-                    }), Rule::when(empty($data[$key]['absen_id']), 'date_format:H:i')]
+                    // "$key.jam" => [Rule::requiredIf(function () use($key,$data){
+                    //     return empty($data[$key]['absen_id']);
+                    // }), Rule::when(empty($data[$key]['absen_id']), 'date_format:H:i')]
                 ];
                 // dd($this->input("$key.kodetrado"));
                 $rulesBeda = [
