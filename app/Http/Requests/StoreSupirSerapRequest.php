@@ -7,6 +7,7 @@ use App\Rules\ExistSupir;
 use App\Rules\ExistSupirSerap;
 use App\Rules\ExistTrado;
 use App\Rules\ValidasiSupirSerap;
+use App\Rules\ValidasiTglSupirSerap;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreSupirSerapRequest extends FormRequest
@@ -32,6 +33,7 @@ class StoreSupirSerapRequest extends FormRequest
             'tglabsensi' => [
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku(),
+                new ValidasiTglSupirSerap()
             ],
             'trado' => 'required',
             'supir' => 'required',
