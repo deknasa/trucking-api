@@ -1776,12 +1776,13 @@ class SuratPengantar extends MyModel
         $upahsupir = UpahSupir::where('id', $data['upah_id'])->first();
 
         $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $data['upah_id'])->where('container_id', $data['container_id'])->where('statuscontainer_id', $data['statuscontainer_id'])->first();
-
+        
+        $trado = Trado::find($data['trado_id']);
+        $supir = Supir::find($data['supir_id']);
         if ($inputTripMandor == 0) {
             $orderanTrucking = OrderanTrucking::where('nobukti', $data['jobtrucking'])->first();
 
             $tarifrincian = TarifRincian::from(DB::raw("tarifrincian with (readuncommitted)"))->where('tarif_id', $orderanTrucking->tarif_id)->where('container_id', $orderanTrucking->container_id)->first();
-            $trado = Trado::find($data['trado_id']);
 
             $suratPengantar->jobtrucking = $data['jobtrucking'];
             $suratPengantar->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
@@ -1848,7 +1849,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->liter = $upahsupirRincian->liter ?? 0;
             $suratPengantar->qtyton = $data['qtyton'] ?? 0;
             $suratPengantar->totalton = $tarifrincian->nominal * $data['qtyton'];
-            $suratPengantar->mandorsupir_id = $trado->mandor_id;
+            $suratPengantar->mandorsupir_id = $supir->mandor_id;
             $suratPengantar->mandortrado_id = $trado->mandor_id;
             $suratPengantar->statusgudangsama = $data['statusgudangsama'];
             $suratPengantar->statusbatalmuat = $data['statusbatalmuat'];
@@ -1923,7 +1924,9 @@ class SuratPengantar extends MyModel
             $suratPengantar->statusgudangsama = $data['statusgudangsama'];
             $suratPengantar->statusbatalmuat = $data['statusbatalmuat'];
             $suratPengantar->statusedittujuan = $statusTidakBolehEditTujuan->id;
-            $suratPengantar->gudang = $data['gudang'];
+            $suratPengantar->gudang = $data['gudang'];            
+            $suratPengantar->mandorsupir_id = $supir->mandor_id;
+            $suratPengantar->mandortrado_id = $trado->mandor_id;
             $suratPengantar->lokasibongkarmuat = $data['lokasibongkarmuat'];
             $suratPengantar->modifiedby = auth('api')->user()->name;
             $suratPengantar->info = html_entity_decode(request()->info);
@@ -1983,7 +1986,9 @@ class SuratPengantar extends MyModel
         $statusTidakBolehEditTujuan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT TUJUAN')->where('text', '=', 'TIDAK BOLEH EDIT TUJUAN')->first();
 
         $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
-
+        
+        $trado = Trado::find($data['trado_id']);
+        $supir = Supir::find($data['supir_id']);
         if ($prosesLain == 0) {
             $edittripmandor = $data['edittripmandor'] ?? 0;
             $tarif = TarifRincian::where('tarif_id', $data['tarif_id'])->where('container_id', $orderanTrucking->container_id)->first();
@@ -2001,7 +2006,6 @@ class SuratPengantar extends MyModel
                 $data['zonasampai_id'] = $upahZona->zonasampai_id;
             }
             // return response($tarif,422);
-            $trado = Trado::find($data['trado_id']);
             $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->where('container_id', $data['container_id'])->where('statuscontainer_id', $data['statuscontainer_id'])->first();
             $params = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'GAJI KENEK')->first();
             $komisi_gajisupir = $params->text;
@@ -2083,7 +2087,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->liter = $upahsupirRincian->liter ?? 0;
             $suratPengantar->qtyton = $data['qtyton'] ?? 0;
             $suratPengantar->totalton = $tarifNominal * $data['qtyton'];
-            $suratPengantar->mandorsupir_id = $trado->mandor_id;
+            $suratPengantar->mandorsupir_id = $supir->mandor_id;
             $suratPengantar->mandortrado_id = $trado->mandor_id;
             $suratPengantar->statusgudangsama = $data['statusgudangsama'];
             $suratPengantar->statusbatalmuat = $data['statusbatalmuat'];
@@ -2203,6 +2207,8 @@ class SuratPengantar extends MyModel
                 $nominalPeralihan = ($tarifNominal * ($suratPengantar->persentaseperalihan / 100));
             }
 
+            $suratPengantar->mandorsupir_id = $supir->mandor_id;
+            $suratPengantar->mandortrado_id = $trado->mandor_id;
             $suratPengantar->nominalperalihan = $nominalPeralihan;
             $suratPengantar->persentaseperalihan = $suratPengantar->persentaseperalihan;
             $suratPengantar->totalomset = $tarifNominal - ($tarifNominal * ($suratPengantar->persentaseperalihan / 100));
