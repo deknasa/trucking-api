@@ -120,7 +120,7 @@ class AbsensiSupirHeaderController extends Controller
     public function show($id)
     {
         $data = AbsensiSupirHeader::findAll($id);
-        $detail = AbsensiSupirDetail::getAll($id);
+        $detail = (new AbsensiSupirDetail())->getAll($id);
 
         return response([
             'status' => true,

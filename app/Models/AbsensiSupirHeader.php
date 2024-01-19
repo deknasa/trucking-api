@@ -452,6 +452,19 @@ class AbsensiSupirHeader extends MyModel
         if ($query->statuscetak != $statusCetak->id) return true;
         return false;
     }
+    
+    public function isAbsensiRicUsed($tglbukti){
+        $absensisupirheader = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))->select('nobukti')->where('tglbukti', $tglbukti)->first();
+        if (!$absensisupirheader) {
+            return true;
+        }
+        $gajisupiruangjalan = DB::table('gajisupiruangjalan')->from(DB::raw("gajisupiruangjalan with (readuncommitted)"))->where('absensisupir_nobukti', $absensisupirheader->nobukti)->first();
+        if (!$gajisupiruangjalan) {
+            return true;
+        }
+        return false;
+        
+    }
 
     public function getExport($id)
     {
@@ -677,6 +690,7 @@ class AbsensiSupirHeader extends MyModel
                 'nobukti' => $absensiSupir->nobukti,
                 'trado_id' => $data['trado_id'][$i],
                 'supir_id' => $data['supir_id'][$i],
+                'supirold_id' => $data['supir_id'][$i],
                 'keterangan' => $data['keterangan_detail'][$i],
                 'uangjalan' => $data['uangjalan'][$i],
                 'absen_id' => $data['absen_id'][$i] ?? '',
