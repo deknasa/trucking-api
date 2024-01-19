@@ -246,7 +246,7 @@ class UpahSupirRincian extends MyModel
                             when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.id,0)  
                             when isnull(tarifexport.id,0)<>0 and " . $jenisorderanexport . "=" . $jenisorder_id  . " then isnull(tarifexport.id,0)  
                             else  isnull(tarif.id,0) end) as tarif_id
-             "),
+                            "),
                             db::raw("(case when isnull(tarifmuatan.id,0)<>0 and " . $jenisorderanmuatan . "=" . $jenisorder_id  . " then isnull(tarifmuatan.tujuan,0)  
                             when isnull(tarifbongkaran.id,0)<>0 and " . $jenisorderanbongkaran . "=" . $jenisorder_id  . " then isnull(tarifbongkaran.tujuan,0)  
                             when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.tujuan,0)  
@@ -293,13 +293,13 @@ class UpahSupirRincian extends MyModel
                             when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.id,0)  
                             when isnull(tarifexport.id,0)<>0 and " . $jenisorderanexport . "=" . $jenisorder_id  . " then isnull(tarifexport.id,0)  
                             else  isnull(tarif.id,0) end) as tarif_id
-             "),
+                            "),
                             db::raw("(case when isnull(tarifmuatan.id,0)<>0 and " . $jenisorderanmuatan . "=" . $jenisorder_id  . " then isnull(tarifmuatan.tujuan,0)  
                             when isnull(tarifbongkaran.id,0)<>0 and " . $jenisorderanbongkaran . "=" . $jenisorder_id  . " then isnull(tarifbongkaran.tujuan,0)  
                             when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.tujuan,0)  
                             when isnull(tarifexport.id,0)<>0 and " . $jenisorderanexport . "=" . $jenisorder_id  . " then isnull(tarifexport.tujuan,0)  
                             else  isnull(tarif.tujuan,'') end) as tarif
-                         "),
+                            "),
                             'upahsupir.penyesuaian',
                             'upahsupir.jarak',
                             'upahsupir.statusaktif',
@@ -335,7 +335,7 @@ class UpahSupirRincian extends MyModel
                             when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.id,0)  
                             when isnull(tarifexport.id,0)<>0 and " . $jenisorderanexport . "=" . $jenisorder_id  . " then isnull(tarifexport.id,0)  
                             else  isnull(tarif.id,0) end) as tarif_id
-             "),
+                            "),
                             db::raw("(case when isnull(tarifmuatan.id,0)<>0 and " . $jenisorderanmuatan . "=" . $jenisorder_id  . " then isnull(tarifmuatan.tujuan,0)  
                             when isnull(tarifbongkaran.id,0)<>0 and " . $jenisorderanbongkaran . "=" . $jenisorder_id  . " then isnull(tarifbongkaran.tujuan,0)  
                             when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.tujuan,0)  
@@ -368,6 +368,82 @@ class UpahSupirRincian extends MyModel
             // dd(DB::table($temp)->get());
 
 
+            DB::table($temp)->where('tarif_id', 0)->delete();
+            $temptarif = '##tempTarif' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temptarif, function ($table) {
+                $table->bigInteger('id')->nullable();
+                $table->integer('kotadari_id')->length(11)->nullable();
+                $table->integer('kotasampai_id')->length(11)->nullable();
+                $table->string('kotadari')->nullable();
+                $table->string('kotasampai')->nullable();
+                $table->integer('zonadari_id')->length(11)->nullable();
+                $table->integer('zonasampai_id')->length(11)->nullable();
+                $table->string('zonadari')->nullable();
+                $table->string('zonasampai')->nullable();
+                $table->integer('tarif_id')->nullable();
+                $table->string('tarif')->nullable();
+                $table->string('penyesuaian')->nullable();
+                $table->double('jarak', 15, 2)->nullable();
+                $table->integer('statusaktif')->length(11)->nullable();
+                $table->date('tglmulaiberlaku')->nullable();
+                $table->string('modifiedby', 50)->nullable();
+                $table->dateTime('created_at')->nullable();
+                $table->dateTime('updated_at')->nullable();
+                $table->double('omset', 15, 2)->nullable();
+            });
+
+            $query = DB::table("tarifrincian")->from(DB::raw("tarifrincian with (readuncommitted)"))
+                ->select(
+                    'B.id',
+                    'B.kotadari_id',
+                    'B.kotasampai_id',
+                    'B.kotadari',
+                    'B.kotasampai',
+                    'B.zonadari_id',
+                    'B.zonasampai_id',
+                    'B.zonadari',
+                    'B.zonasampai',
+                    'B.tarif_id',
+                    'B.tarif',
+                    'B.penyesuaian',
+                    'B.jarak',
+                    'B.statusaktif',
+                    'B.tglmulaiberlaku',
+                    'B.modifiedby',
+                    'B.created_at',
+                    'B.updated_at',
+                    DB::raw("tarifrincian.nominal as omset")
+                )
+                ->join(DB::raw("$temp as B with (readuncommitted)"), 'B.tarif_id', 'tarifrincian.tarif_id')
+                ->where('tarifrincian.container_id', $container_id)
+                ->where('tarifrincian.nominal', '!=', 0);
+
+            DB::table($temptarif)->insertUsing([
+                'id',
+                'kotadari_id',
+                'kotasampai_id',
+                'kotadari',
+                'kotasampai',
+                'zonadari_id',
+                'zonasampai_id',
+                'zonadari',
+                'zonasampai',
+                'tarif_id',
+                'tarif',
+                'penyesuaian',
+                'jarak',
+                'statusaktif',
+                'tglmulaiberlaku',
+                'modifiedby',
+                'created_at',
+                'updated_at',
+                'omset',
+            ], $query);
+            // delete temp yg tarif_id=0
+            // join tarif dengan $temp ke temp baru
+            // join upah dengan temp dari tarif ke tamp upah baru
+            // hasilnya baru di masukkan ke dalam temp fisik
+
 
             $query = DB::table("upahsupirrincian")->from(DB::raw("upahsupirrincian with (readuncommitted)"))
                 ->select(
@@ -397,10 +473,11 @@ class UpahSupirRincian extends MyModel
                     DB::raw("(trim(b.kotadari)+' - '+trim(b.kotasampai)) as kotadarisampai"),
 
                 )
-                ->leftJoin(DB::raw("$temp as B with (readuncommitted)"), 'B.id', 'upahsupirrincian.upahsupir_id')
+                ->leftJoin(DB::raw("$temptarif as B with (readuncommitted)"), 'B.id', 'upahsupirrincian.upahsupir_id')
                 ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'B.statusaktif', '=', 'parameter.id')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'upahsupirrincian.container_id', 'container.id')
-                ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'upahsupirrincian.statuscontainer_id', 'statuscontainer.id');
+                ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'upahsupirrincian.statuscontainer_id', 'statuscontainer.id')
+                ->where('upahsupirrincian.nominalsupir', '!=', 0);
 
             if (($aktif == 'AKTIF')) {
                 $statusaktif = Parameter::from(
@@ -488,7 +565,6 @@ class UpahSupirRincian extends MyModel
                 'a.updated_at',
                 'a.kotadarisampai',
             );
-
 
         $this->sort($query);
 
