@@ -296,6 +296,32 @@ class SupplierController extends Controller
         }
     }
 
+     /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalSupplierRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+                'nama' => $request->nama
+            ];
+            (new Supplier())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+
     public function approvalTNL(Request $request)
     {
         DB::beginTransaction();

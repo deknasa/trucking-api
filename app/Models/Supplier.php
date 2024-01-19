@@ -699,6 +699,35 @@ class Supplier extends MyModel
         return $Supplier;
     }
 
+
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $Supplier = Supplier::find($data['Id'][$i]);
+
+                $Supplier->statusaktif = $statusnonaktif->id;
+                $aksi = $statusnonaktif->text;
+
+            if ($Supplier->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($Supplier->getTable()),
+                    'postingdari' => 'APPROVAL SUPPLIER',
+                    'idtrans' => $Supplier->id,
+                    'nobuktitrans' => $Supplier->id,
+                    'aksi' => $aksi,
+                    'datajson' => $Supplier->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+
+        return $Supplier;
+    }
+
     public function approvalToTNL($data)
     {
         $server = config('app.server_jkt');
