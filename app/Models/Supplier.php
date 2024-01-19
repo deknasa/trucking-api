@@ -657,6 +657,7 @@ class Supplier extends MyModel
             throw new \Exception("server tidak bisa diakses");
         }
     }
+    
     public function processApproval(array $data)
     {
 
@@ -695,7 +696,7 @@ class Supplier extends MyModel
         if ($approvalTnl == 'YA') {
             (new Supplier())->approvalToTNL($data);
         }
-
+        
         return $Supplier;
     }
 

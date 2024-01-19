@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Requests\StoreGandenganRequest;
 use App\Http\Requests\UpdateGandenganRequest;
 use App\Http\Requests\DestroyGandenganRequest;
+use App\Http\Requests\ApprovalGandenganRequest;
 
 use App\Http\Requests\StoreLogTrailRequest;
 
@@ -142,7 +143,7 @@ class GandenganController extends Controller
         $gandengan = new Gandengan();
         return response([
             'status' => true,
-            'data' => $gandengan->find($id)
+            'data' => $gandengan->findAll($id)
         ]);
     }
 
@@ -300,6 +301,32 @@ class GandenganController extends Controller
             $this->toExcel($judulLaporan, $gandengans, $columns);
         }
     }
+
+     /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalGandenganRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+                'nama' => $request->nama
+            ];
+            (new Gandengan())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
 
     public function fieldLength()
     {

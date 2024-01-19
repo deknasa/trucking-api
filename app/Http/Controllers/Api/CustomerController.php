@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
+use App\Http\Requests\ApprovalAgenRequest;
 
 class CustomerController extends Controller
 {
@@ -355,7 +356,29 @@ class CustomerController extends Controller
      * @ClassName
      * @Keterangan APPROVAL DATA
      */
-    public function approval(Agen $agen)
+    public function approval(ApprovalAgenRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+                'nama' => $request->nama
+            ];
+            (new Agen())->processApproval($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+    
+    public function approvalOld(Agen $agen)
     {
         DB::beginTransaction();
 
@@ -396,6 +419,31 @@ class CustomerController extends Controller
                 'data' => $agen
             ]);
         } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+     /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalAgenRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+                'nama' => $request->nama
+            ];
+            (new Agen())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }

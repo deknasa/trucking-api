@@ -24,6 +24,7 @@ use Illuminate\Database\QueryException;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Http\Requests\GetUpahSupirRangeRequest;
 use Illuminate\Http\JsonResponse;
+use App\Http\Requests\ApprovalTarifRequest;
 
 
 class TarifController extends Controller
@@ -512,4 +513,30 @@ class TarifController extends Controller
 
         $this->toExcel('Tarif', $tarifs, $columns);
     }
+
+         /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalTarifRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+                'nama' => $request->nama
+            ];
+            (new Tarif())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
 }

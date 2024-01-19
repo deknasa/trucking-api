@@ -260,7 +260,7 @@ class Trado extends MyModel
         }
         if (!$isAdmin) {
             if ($isMandor) {
-                $query->where('trado.mandor_id',$isMandor->mandor_id);
+                $query->where('trado.mandor_id', $isMandor->mandor_id);
             }
         }
 
@@ -700,6 +700,8 @@ class Trado extends MyModel
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglserviceopname' || $filters['field'] == 'tglpajakstnk' || $filters['field'] == 'tglstnkmati' || $filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglspeksimati' || $filters['field'] == 'tglgantiakiterakhir' || $filters['field'] == 'tglakhirgantioli') {
                             $query = $query->whereRaw("format((case when year(isnull($this->table." . $filters['field'] . ",'1900/1/1'))<2000 then null else trado." . $filters['field'] . " end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'check') {
+                            $query = $query->whereRaw('1 = 1');
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -736,6 +738,8 @@ class Trado extends MyModel
                                 $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglserviceopname' || $filters['field'] == 'tglpajakstnk' || $filters['field'] == 'tglstnkmati' || $filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglspeksimati' || $filters['field'] == 'tglgantiakiterakhir' || $filters['field'] == 'tglakhirgantioli') {
                                 $query = $query->orWhereRaw("format((case when year(isnull($this->table." . $filters['field'] . ",'1900/1/1'))<2000 then null else trado." . $filters['field'] . " end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'check') {
+                                $query = $query->whereRaw('1 = 1');
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -1411,5 +1415,36 @@ class Trado extends MyModel
             'modifiedby' => auth('api')->user()->name
         ]);
         return $trado;
+    }
+
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $Trado = Trado::find($data['Id'][$i]);
+
+            $Trado->statusaktif = $statusnonaktif->id;
+            $aksi = $statusnonaktif->text;
+
+            // dd($Trado);
+            if ($Trado->save()) {
+
+                (new LogTrail())->processStore([
+
+                    'namatabel' => strtoupper($Trado->getTable()),
+                    'postingdari' => 'APPROVAL Trado',
+                    'idtrans' => $Trado->id,
+                    'nobuktitrans' => $Trado->id,
+                    'aksi' => $aksi,
+                    'datajson' => $Trado->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+
+        return $Trado;
     }
 }

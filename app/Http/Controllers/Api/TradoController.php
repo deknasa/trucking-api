@@ -10,6 +10,7 @@ use App\Http\Requests\StoreTradoRequest;
 use App\Http\Requests\DestroyTradoRequest;
 use App\Http\Requests\HistoryTradoMilikMandorRequest;
 use App\Http\Requests\HistoryTradoMilikSupirRequest;
+use App\Http\Requests\ApprovalTradoRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\TradoRequest;
 use App\Http\Requests\UpdateTradoRequest;
@@ -235,6 +236,34 @@ class TradoController extends Controller
             'data' => $dataTrado
         ]);
     }
+
+     /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalTradoRequest $request)
+    {
+        
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+                'nama' => $request->nama
+            ];
+            (new Trado())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+
     /**
      * @ClassName 
      * @Keterangan HAPUS DATA
