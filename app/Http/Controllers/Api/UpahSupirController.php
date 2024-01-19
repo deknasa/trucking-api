@@ -14,6 +14,7 @@ use App\Http\Requests\UpdateUpahSupirRequest;
 use App\Http\Requests\StoreUpahSupirRincianRequest;
 use App\Http\Requests\UpdateUpahSupirRincianRequest;
 use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\ApprovalUpahSupirRequest;
 
 use App\Helpers\App;
 use App\Http\Requests\DestroyUpahSupirRequest;
@@ -602,4 +603,30 @@ class UpahSupirController extends Controller
     public function report()
     {
     }
+
+         /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalUpahSupirRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+                'nama' => $request->nama
+            ];
+            (new UpahSupir())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
 }

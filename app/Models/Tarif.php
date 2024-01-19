@@ -439,6 +439,9 @@ class Tarif extends MyModel
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'check') {
+                            $query = $query->whereRaw('1 = 1');
+
                         } else {
                             // $query = $query->where('tarif.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw('tarif' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -475,6 +478,9 @@ class Tarif extends MyModel
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'check') {
+                                $query = $query->whereRaw('1 = 1');
+
                             } else {
                                 // $query = $query->orWhere('tarif.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw('tarif' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -724,4 +730,37 @@ class Tarif extends MyModel
             throw new \Exception("server tidak bisa diakses");
         }
     }
+
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $Tarif = Tarif::find($data['Id'][$i]);
+
+                $Tarif->statusaktif = $statusnonaktif->id;
+                $aksi = $statusnonaktif->text;
+
+                // dd($Tarif);
+            if ($Tarif->save()) {
+                
+                (new LogTrail())->processStore([
+                    
+                    'namatabel' => strtoupper($Tarif->getTable()),
+                    'postingdari' => 'APPROVAL Tarif',
+                    'idtrans' => $Tarif->id,
+                    'nobuktitrans' => $Tarif->id,
+                    'aksi' => $aksi,
+                    'datajson' => $Tarif->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+
+        return $Tarif;
+    }
+
+    
 }

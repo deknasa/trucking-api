@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
 use App\Models\Parameter;
 use Illuminate\Http\JsonResponse;
+use App\Http\Requests\ApprovalShipperRequest;
 
 class ShipperController extends Controller
 {
@@ -367,4 +368,31 @@ class ShipperController extends Controller
             'data' => $data
         ]);
     }
+
+         /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalShipperRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+                'nama' => $request->nama
+            ];
+            (new Pelanggan())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+
 }

@@ -5,8 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
 
-
-class ApprovalSupplierRequest extends FormRequest
+class ApprovalUpahSupirRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -33,7 +32,7 @@ class ApprovalSupplierRequest extends FormRequest
     public function messages()
     {
         return [
-            'Id.required' => 'Supplier ' . app(ErrorController::class)->geterror('WP')->keterangan,
+            'Id.required' => 'Upah Supir ' . app(ErrorController::class)->geterror('WP')->keterangan,
         ];
     }
 }

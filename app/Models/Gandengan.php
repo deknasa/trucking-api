@@ -161,7 +161,7 @@ class Gandengan extends MyModel
                 'gandengan.kodegandengan',
                 'gandengan.keterangan',
                 'trado.kodetrado as trado',
-                'container.kodecontainer as container',                
+                'container.kodecontainer as container',
                 'gandengan.jumlahroda',
                 'gandengan.jumlahbanserap',
                 'parameter.memo as statusaktif',
@@ -174,7 +174,7 @@ class Gandengan extends MyModel
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gandengan.statusaktif', 'parameter.id')
-            ->leftJoin(DB::raw("container with (readuncommitted)"), 'gandengan.container_id', '=', 'container.id')            
+            ->leftJoin(DB::raw("container with (readuncommitted)"), 'gandengan.container_id', '=', 'container.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'gandengan.trado_id', '=', 'trado.id');
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
@@ -284,7 +284,7 @@ class Gandengan extends MyModel
         foreach ($data as $row) {
             DB::table($temtabel)->insert($row);
         }
-        
+
         return $temtabel;
     }
 
@@ -321,7 +321,7 @@ class Gandengan extends MyModel
         return $data;
     }
 
-    public function find($id)
+    public function findAll($id)
     {
         $this->setRequestParameters();
 
@@ -437,6 +437,8 @@ class Gandengan extends MyModel
                             $query = $query->where('jumlahbanserap', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'check') {
+                            $query = $query->whereRaw('1 = 1');
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -459,6 +461,8 @@ class Gandengan extends MyModel
                                 $query = $query->orWhere('jumlahbanserap', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'check') {
+                                $query = $query->whereRaw('1 = 1');
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -653,5 +657,37 @@ class Gandengan extends MyModel
         ]);
 
         return $gandengan;
+    }
+
+
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $Gandengan = Gandengan::find($data['Id'][$i]);
+
+            $Gandengan->statusaktif = $statusnonaktif->id;
+            $aksi = $statusnonaktif->text;
+
+            // dd($Gandengan);
+            if ($Gandengan->save()) {
+
+                (new LogTrail())->processStore([
+
+                    'namatabel' => strtoupper($Gandengan->getTable()),
+                    'postingdari' => 'APPROVAL Gandengan',
+                    'idtrans' => $Gandengan->id,
+                    'nobuktitrans' => $Gandengan->id,
+                    'aksi' => $aksi,
+                    'datajson' => $Gandengan->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+
+        return $Gandengan;
     }
 }

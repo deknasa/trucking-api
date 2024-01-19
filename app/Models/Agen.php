@@ -443,6 +443,9 @@ class Agen extends MyModel
                             $query = $query->where('statustas.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'check') {
+                            $query = $query->whereRaw('1 = 1');
+
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -461,6 +464,9 @@ class Agen extends MyModel
                                 $query = $query->orWhere('statustas.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'check') {
+                                $query = $query->whereRaw('1 = 1');
+
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -583,4 +589,75 @@ class Agen extends MyModel
 
         return $agen;
     }
+
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $Agen = Agen::find($data['Id'][$i]);
+
+                $Agen->statusaktif = $statusnonaktif->id;
+                $aksi = $statusnonaktif->text;
+
+                // dd($Agen);
+            if ($Agen->save()) {
+                
+                (new LogTrail())->processStore([
+                    
+                    'namatabel' => strtoupper($Agen->getTable()),
+                    'postingdari' => 'APPROVAL Agen',
+                    'idtrans' => $Agen->id,
+                    'nobuktitrans' => $Agen->id,
+                    'aksi' => $aksi,
+                    'datajson' => $Agen->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+
+        return $Agen;
+    }
+
+    
+    public function processApproval(array $data)
+    {
+
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $Agen = Agen::find($data['Id'][$i]);
+
+            if ($Agen->statusapproval == $statusApproval->id) {
+                $Agen->statusapproval = $statusNonApproval->id;
+                $aksi = $statusNonApproval->text;
+            } else {
+                $Agen->statusapproval = $statusApproval->id;
+                $aksi = $statusApproval->text;
+            }
+
+            $Agen->tglapproval = date('Y-m-d', time());
+            $Agen->userapproval = auth('api')->user()->name;
+            if ($Agen->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($Agen->getTable()),
+                    'postingdari' => 'APPROVAL Agen',
+                    'idtrans' => $Agen->id,
+                    'nobuktitrans' => $Agen->id,
+                    'aksi' => $aksi,
+                    'datajson' => $Agen->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+     
+        return $Agen;
+    }
+
+    
 }

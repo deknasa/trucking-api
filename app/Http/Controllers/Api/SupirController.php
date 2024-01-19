@@ -18,6 +18,7 @@ use App\Models\PemutihanSupir;
 use App\Models\Zona;
 use Exception;
 use Illuminate\Http\Request;
+use App\Http\Requests\ApprovalSupirRequest;
 
 use Illuminate\Support\Facades\DB;
 use Intervention\Image\ImageManagerStatic as Image;
@@ -857,4 +858,30 @@ class SupirController extends Controller
             'data' => (new HistorySupirMilikMandor())->get($id)
         ]);
     }
+
+         /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalSupirRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+                'nama' => $request->nama
+            ];
+            (new Supir())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
 }
