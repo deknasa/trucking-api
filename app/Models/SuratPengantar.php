@@ -185,6 +185,7 @@ class SuratPengantar extends MyModel
         $this->setRequestParameters();
         $tglabsensi = request()->tglabsensi ?? '';
         $trado_id = request()->trado_id ?? '';
+        $supir_id = request()->supir_id ?? '';
 
         $tempsuratpengantar = '##tempsuratpengantar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsuratpengantar, function ($table) {
@@ -722,6 +723,9 @@ class SuratPengantar extends MyModel
         }
         if ($tglabsensi != '') {
             $query->where('suratpengantar.tglbukti', date('Y-m-d', strtotime($tglabsensi)));
+        }
+        if ($supir_id != '') {
+            $query->where('suratpengantar.supir_id', $supir_id);
         }
         if ($trado_id != '') {
             $query->where('suratpengantar.trado_id', $trado_id);
@@ -1776,7 +1780,7 @@ class SuratPengantar extends MyModel
         $upahsupir = UpahSupir::where('id', $data['upah_id'])->first();
 
         $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $data['upah_id'])->where('container_id', $data['container_id'])->where('statuscontainer_id', $data['statuscontainer_id'])->first();
-        
+
         $trado = Trado::find($data['trado_id']);
         $supir = Supir::find($data['supir_id']);
         if ($inputTripMandor == 0) {
@@ -1924,7 +1928,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->statusgudangsama = $data['statusgudangsama'];
             $suratPengantar->statusbatalmuat = $data['statusbatalmuat'];
             $suratPengantar->statusedittujuan = $statusTidakBolehEditTujuan->id;
-            $suratPengantar->gudang = $data['gudang'];            
+            $suratPengantar->gudang = $data['gudang'];
             $suratPengantar->mandorsupir_id = $supir->mandor_id;
             $suratPengantar->mandortrado_id = $trado->mandor_id;
             $suratPengantar->lokasibongkarmuat = $data['lokasibongkarmuat'];
@@ -1986,10 +1990,10 @@ class SuratPengantar extends MyModel
         $statusTidakBolehEditTujuan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT TUJUAN')->where('text', '=', 'TIDAK BOLEH EDIT TUJUAN')->first();
 
         $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
-        
-        $trado = Trado::find($data['trado_id']);
-        $supir = Supir::find($data['supir_id']);
+
         if ($prosesLain == 0) {
+            $trado = Trado::find($data['trado_id']);
+            $supir = Supir::find($data['supir_id']);
             $edittripmandor = $data['edittripmandor'] ?? 0;
             $tarif = TarifRincian::where('tarif_id', $data['tarif_id'])->where('container_id', $orderanTrucking->container_id)->first();
             $tarifNominal = $tarif->nominal ?? 0;
@@ -2207,8 +2211,8 @@ class SuratPengantar extends MyModel
                 $nominalPeralihan = ($tarifNominal * ($suratPengantar->persentaseperalihan / 100));
             }
 
-            $suratPengantar->mandorsupir_id = $supir->mandor_id;
-            $suratPengantar->mandortrado_id = $trado->mandor_id;
+            // $suratPengantar->mandorsupir_id = $supir->mandor_id;
+            // $suratPengantar->mandortrado_id = $trado->mandor_id;
             $suratPengantar->nominalperalihan = $nominalPeralihan;
             $suratPengantar->persentaseperalihan = $suratPengantar->persentaseperalihan;
             $suratPengantar->totalomset = $tarifNominal - ($tarifNominal * ($suratPengantar->persentaseperalihan / 100));
