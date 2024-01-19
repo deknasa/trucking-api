@@ -217,7 +217,7 @@ class Controller extends BaseController
                     isset($column['index']) && $column['index'] == 'tglexpsim' ||
                     isset($column['index']) && $column['index'] == 'tglberhentisupir' ||
                     isset($column['index']) && $column['index'] == 'tgllahir' ||
-                    isset($column['index']) && $column['index'] == 'tglterbitsim' || isset($column['index']) && $column['index'] == 'tglapproval'
+                    isset($column['index']) && $column['index'] == 'tglterbitsim' || isset($column['index']) && $column['index'] == 'tglapproval' || isset($column['index']) && $column['index'] == 'tglabsensi'
 
                 ) {
                     if (isset($row[$column['index']])) {

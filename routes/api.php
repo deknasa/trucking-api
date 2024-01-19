@@ -1796,9 +1796,15 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('pelunasanhutangheader', PelunasanHutangHeaderController::class)->whereNumber('pelunasanhutangheader');
     Route::resource('pelunasanhutangdetail', PelunasanHutangDetailController::class)->whereNumber('pelunasanhutangdetail');
     
+    Route::get('tripinap/export', [TripInapController::class, 'export']);
+    Route::get('tripinap/report', [TripInapController::class, 'report']);
+    Route::post('tripinap/approval', [TripInapController::class, 'approval']);
     Route::post('tripinap/{id}/approval', [TripInapController::class, 'approval'])->name('tripinap.approval')->whereNumber('tripinap');
     Route::resource('tripinap', TripInapController::class)->whereNumber('tripinap');
     
+    Route::get('pengajuantripinap/export', [PengajuanTripInapController::class, 'export']);
+    Route::get('pengajuantripinap/report', [PengajuanTripInapController::class, 'report']);
+    Route::post('pengajuantripinap/approval', [PengajuanTripInapController::class, 'approval']);
     Route::post('pengajuantripinap/{id}/approval', [PengajuanTripInapController::class, 'approval'])->name('pengajuantripinap.approval')->whereNumber('pengajuantripinap');
     Route::resource('pengajuantripinap', PengajuanTripInapController::class)->whereNumber('pengajuantripinap');
     
