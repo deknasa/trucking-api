@@ -27,9 +27,60 @@ class PengajuanTripInap extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+        $dari = request()->dari ?? '';
+        $sampai = request()->sampai ?? '';
 
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
         $query = DB::table($this->table)->from(
             DB::raw("pengajuantripinap with (readuncommitted)")
+        )
+            ->select(
+                'pengajuantripinap.id',
+                'pengajuantripinap.tglabsensi',
+                'pengajuantripinap.trado_id',
+                'trado.kodetrado as trado',
+                'pengajuantripinap.supir_id',
+                'supir.namasupir as supir',
+                'pengajuantripinap.statusapproval as statusapproval_id',
+                'approval.memo as statusapproval',
+                'pengajuantripinap.tglapproval',
+                'pengajuantripinap.userapproval',
+                'pengajuantripinap.modifiedby',
+                'pengajuantripinap.created_at',
+                'pengajuantripinap.updated_at',
+                DB::raw("'Laporan Pengajuan Trip Inap' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            )
+            ->leftJoin(DB::raw("parameter as approval with (readuncommitted)"), 'pengajuantripinap.statusapproval', 'approval.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'pengajuantripinap.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengajuantripinap.supir_id', 'supir.id');
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        if ($dari != '' && $sampai != '') {
+            $query->whereBetween('pengajuantripinap.tglabsensi', [date('Y-m-d', strtotime($dari)), date('Y-m-d', strtotime($sampai))]);
+        }
+        $this->sort($query);
+        $this->filter($query);
+        $this->paginate($query);
+
+        $data = $query->get();
+
+        return $data;
+    }
+
+    public function selectColumns($query)
+    {
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
         )
             ->select(
                 'pengajuantripinap.id',
@@ -49,42 +100,6 @@ class PengajuanTripInap extends MyModel
             ->leftJoin(DB::raw("parameter as approval with (readuncommitted)"), 'pengajuantripinap.statusapproval', 'approval.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'pengajuantripinap.trado_id', 'trado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengajuantripinap.supir_id', 'supir.id');
-        
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
-        $this->sort($query);
-        $this->filter($query);
-        $this->paginate($query);
-
-        $data = $query->get();
-
-        return $data;
-    }
-
-    public function selectColumns($query)
-    {
-        return $query->from(
-            DB::raw($this->table . " with (readuncommitted)")
-        )
-        ->select(
-            'pengajuantripinap.id',
-            'pengajuantripinap.tglabsensi',
-            'pengajuantripinap.trado_id',
-            'trado.kodetrado as trado',
-            'pengajuantripinap.supir_id',
-            'supir.namasupir as supir',
-            'pengajuantripinap.statusapproval as statusapproval_id',
-            'approval.memo as statusapproval',
-            'pengajuantripinap.tglapproval',
-            'pengajuantripinap.userapproval',
-            'pengajuantripinap.modifiedby',
-            'pengajuantripinap.created_at',
-            'pengajuantripinap.updated_at',
-        )
-        ->leftJoin(DB::raw("parameter as approval with (readuncommitted)"), 'pengajuantripinap.statusapproval', 'approval.id')
-        ->leftJoin(DB::raw("trado with (readuncommitted)"), 'pengajuantripinap.trado_id', 'trado.id')
-        ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengajuantripinap.supir_id', 'supir.id');
     }
 
     public function createTemp(string $modelTable)
@@ -106,7 +121,7 @@ class PengajuanTripInap extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
-        
+
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
@@ -114,19 +129,19 @@ class PengajuanTripInap extends MyModel
         $models = $this->filter($query);
         $models = $query;
         DB::table($temp)->insertUsing([
-            'id', 
-            'tglabsensi', 
-            'trado_id', 
-            'trado', 
-            'supir_id', 
-            'supir', 
-            'statusapproval_id', 
-            'statusapproval', 
-            'tglapproval', 
-            'userapproval', 
-            'modifiedby', 
-            'created_at', 
-            'updated_at' 
+            'id',
+            'tglabsensi',
+            'trado_id',
+            'trado',
+            'supir_id',
+            'supir',
+            'statusapproval_id',
+            'statusapproval',
+            'tglapproval',
+            'userapproval',
+            'modifiedby',
+            'created_at',
+            'updated_at'
         ], $models);
 
         return $temp;
@@ -136,9 +151,9 @@ class PengajuanTripInap extends MyModel
     {
         if ($this->params['sortIndex'] == 'trado') {
             return $query->orderBy('trado.kodetrado', $this->params['sortOrder']);
-        } else if($this->params['sortIndex'] == 'supir') {
+        } else if ($this->params['sortIndex'] == 'supir') {
             return $query->orderBy('supir.namasupir', $this->params['sortOrder']);
-        } else if($this->params['sortIndex'] == 'statusapproval') {
+        } else if ($this->params['sortIndex'] == 'statusapproval') {
             return $query->orderBy('approval.text', $this->params['sortOrder']);
         } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
@@ -151,19 +166,21 @@ class PengajuanTripInap extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusapproval') {
-                            $query = $query->where('approval.id', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'trado') {
-                            $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'supir') {
-                            $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'tglabsensi' || $filters['field'] == 'tglapproval') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusapproval') {
+                                $query = $query->where('approval.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'trado') {
+                                $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'supir') {
+                                $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tglabsensi' || $filters['field'] == 'tglapproval') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -171,19 +188,21 @@ class PengajuanTripInap extends MyModel
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusapproval') {
-                                $query = $query->orWhere('approval.id', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'trado') {
-                                $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'supir') {
-                                $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'tglabsensi' || $filters['field'] == 'tglapproval') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
-                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusapproval') {
+                                    $query = $query->orWhere('approval.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'trado') {
+                                    $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'supir') {
+                                    $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'tglabsensi' || $filters['field'] == 'tglapproval') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
                     });
@@ -206,7 +225,8 @@ class PengajuanTripInap extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function findAll(PengajuanTripInap $pengajuanTripInap){
+    public function findAll(PengajuanTripInap $pengajuanTripInap)
+    {
 
         return $query = DB::table($this->table)->from(
             DB::raw("pengajuantripinap with (readuncommitted)")
@@ -216,7 +236,7 @@ class PengajuanTripInap extends MyModel
                 DB::raw("format(pengajuantripinap.tglabsensi,'dd-MM-yyyy')as tglabsensi"),
                 'pengajuantripinap.trado_id',
                 'absensisupirheader.id as absensi_id',
-                'trado.kodetrado as trado',
+                DB::raw("(trim(trado.kodetrado)+' - '+trim(supir.namasupir)) as trado"),
                 'pengajuantripinap.supir_id',
                 'supir.namasupir as supir',
                 'pengajuantripinap.statusapproval as statusapproval_id',
@@ -231,54 +251,56 @@ class PengajuanTripInap extends MyModel
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'pengajuantripinap.trado_id', 'trado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengajuantripinap.supir_id', 'supir.id')
             ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"), 'pengajuantripinap.tglabsensi', 'absensisupirheader.tglbukti')
-            ->where('pengajuantripinap.id',$pengajuanTripInap->id)
+            ->where('pengajuantripinap.id', $pengajuanTripInap->id)
             ->first();
     }
 
     public function processStore(array $data)
     {
-        $statusapproval = Parameter::from( DB::raw("parameter with (readuncommitted)") )->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+        $statusapproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
-        $pengajuanTripInap = new PengajuanTripInap();        
+        $pengajuanTripInap = new PengajuanTripInap();
         $pengajuanTripInap->tglabsensi =  date('Y-m-d', strtotime($data['tglabsensi']));
         $pengajuanTripInap->trado_id = $data["trado_id"];
         $pengajuanTripInap->supir_id = $data["supir_id"];
-        $pengajuanTripInap->statusapproval = $statusapproval->id; 
+        $pengajuanTripInap->statusapproval = $statusapproval->id;
+        $pengajuanTripInap->modifiedby = auth('api')->user()->name;
         if (!$pengajuanTripInap->save()) {
-            throw new \Exception("Error storing Trip Inap.");
+            throw new \Exception("Error storing pengajuan Trip Inap.");
         }
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($pengajuanTripInap->getTable()),
-            'postingdari' => 'ENTRY To Email',
+            'postingdari' => 'ENTRY PENGAJUAN TRIP INAP',
             'idtrans' => $pengajuanTripInap->id,
             'nobuktitrans' => $pengajuanTripInap->id,
             'aksi' => 'ENTRY',
             'datajson' => $pengajuanTripInap->toArray(),
-            'modifiedby' => $pengajuanTripInap->modifiedby
+            'modifiedby' => auth('api')->user()->name
         ]);
 
         return $pengajuanTripInap;
     }
 
-    public function processUpdate(PengajuanTripInap $tripInap ,array $data)
+    public function processUpdate(PengajuanTripInap $tripInap, array $data)
     {
 
         $tripInap->tglabsensi =  date('Y-m-d', strtotime($data['tglabsensi']));
         $tripInap->trado_id = $data["trado_id"];
         $tripInap->supir_id = $data["supir_id"];
+        $tripInap->modifiedby = auth('api')->user()->name;
         if (!$tripInap->save()) {
-            throw new \Exception("Error storing Trip Inap.");
+            throw new \Exception("Error storing pengajuan Trip Inap.");
         }
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($tripInap->getTable()),
-            'postingdari' => 'ENTRY To Email',
+            'postingdari' => 'EDIT PENGAJUAN TRIP INAP',
             'idtrans' => $tripInap->id,
             'nobuktitrans' => $tripInap->id,
-            'aksi' => 'ENTRY',
+            'aksi' => 'EDIT',
             'datajson' => $tripInap->toArray(),
-            'modifiedby' => $tripInap->modifiedby
+            'modifiedby' => auth('api')->user()->name
         ]);
 
         return $tripInap;
@@ -294,7 +316,7 @@ class PengajuanTripInap extends MyModel
             'namatabel' => $pengajuanTripInap->getTable(),
             'postingdari' => $postingDari,
             'idtrans' => $pengajuanTripInap->id,
-            'nobuktitrans' => $pengajuanTripInap->nobukti,
+            'nobuktitrans' => $pengajuanTripInap->id,
             'aksi' => 'DELETE',
             'datajson' => $pengajuanTripInap->toArray(),
             'modifiedby' => auth('api')->user()->name
@@ -304,33 +326,38 @@ class PengajuanTripInap extends MyModel
     }
 
 
-    public function processApprove(PengajuanTripInap $tripInap)
+    public function processApprove(array $data)
     {
 
-        $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-        $statusBelumApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $tripInap = PengajuanTripInap::find($data['Id'][$i]);
 
-        if ($tripInap->statusapproval == $statusApproval->id) {
-            $tripInap->statusapproval = $statusBelumApproval->id;
-        } else {
-            $tripInap->statusapproval = $statusApproval->id;
-        }
+            if ($tripInap->statusapproval == $statusApproval->id) {
+                $tripInap->statusapproval = $statusNonApproval->id;
+                $aksi = $statusNonApproval->text;
+            } else {
+                $tripInap->statusapproval = $statusApproval->id;
+                $aksi = $statusApproval->text;
+            }
 
-        $tripInap->tglapproval = date('Y-m-d', time());
-        $tripInap->userapproval = auth('api')->user()->name;
-        if (!$tripInap->save()) {
-            throw new \Exception('Error Approval.');
+            $tripInap->tglapproval = date('Y-m-d', time());
+            $tripInap->userapproval = auth('api')->user()->name;
+            if ($tripInap->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($tripInap->getTable()),
+                    'postingdari' => 'APPROVAL PENGAJUAN TRIP INAP',
+                    'idtrans' => $tripInap->id,
+                    'nobuktitrans' => $tripInap->id,
+                    'aksi' => $aksi,
+                    'datajson' => $tripInap->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
         }
-        (new LogTrail())->processStore([
-            'namatabel' => strtoupper($tripInap->getTable()),
-            'postingdari' => "opnameheader",
-            'idtrans' => $tripInap->id,
-            'nobuktitrans' => $tripInap->nobukti,
-            'aksi' => 'Un/Approve',
-            'datajson' => $tripInap->toArray(),
-            'modifiedby' => auth('api')->user()->name,
-        ]);
         return $tripInap;
     }
-
 }

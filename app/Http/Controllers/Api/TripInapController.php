@@ -7,12 +7,13 @@ use App\Models\TripInap;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalTripInapRequest;
 use App\Http\Requests\StoreTripInapRequest;
 use App\Http\Requests\UpdateTripInapRequest;
 
 class TripInapController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -28,7 +29,7 @@ class TripInapController extends Controller
         ]);
     }
 
-   /**
+    /**
      * @ClassName
      * @Keterangan TAMBAH DATA
      */
@@ -37,18 +38,18 @@ class TripInapController extends Controller
         DB::beginTransaction();
         try {
             $data = [
-                "absensi_id" =>$request->absensi_id,
-                "tglabsensi" =>$request->tglabsensi,
-                "trado_id" =>$request->trado_id,
-                "trado" =>$request->trado,
-                "suratpengantar_nobukti" =>$request->suratpengantar_nobukti,
-                "jammasukinap" =>$request->jammasukinap,
-                "jamkeluarinap" =>$request->jamkeluarinap,
+                "absensi_id" => $request->absensi_id,
+                "tglabsensi" => $request->tglabsensi,
+                "trado_id" => $request->trado_id,
+                "trado" => $request->trado,
+                "suratpengantar_nobukti" => $request->suratpengantar_nobukti,
+                "jammasukinap" => $request->jammasukinap,
+                "jamkeluarinap" => $request->jamkeluarinap,
             ];
 
             $tripInap = (new TripInap())->processStore($data);
             $tripInap->position = $this->getPosition($tripInap, $tripInap->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $tripInap->page = ceil($tripInap->position / (10));
             } else {
                 $tripInap->page = ceil($tripInap->position / ($request->limit ?? 10));
@@ -67,9 +68,6 @@ class TripInapController extends Controller
         }
     }
 
-    /**
-     * @ClassName
-     */
     public function show(TripInap $tripinap)
     {
         return response([
@@ -86,17 +84,17 @@ class TripInapController extends Controller
         DB::beginTransaction();
         try {
             $data = [
-                "absensi_id" =>$request->absensi_id,
-                "tglabsensi" =>$request->tglabsensi,
-                "trado_id" =>$request->trado_id,
-                "trado" =>$request->trado,
-                "suratpengantar_nobukti" =>$request->suratpengantar_nobukti,
-                "jammasukinap" =>$request->jammasukinap,
-                "jamkeluarinap" =>$request->jamkeluarinap,
+                "absensi_id" => $request->absensi_id,
+                "tglabsensi" => $request->tglabsensi,
+                "trado_id" => $request->trado_id,
+                "trado" => $request->trado,
+                "suratpengantar_nobukti" => $request->suratpengantar_nobukti,
+                "jammasukinap" => $request->jammasukinap,
+                "jamkeluarinap" => $request->jamkeluarinap,
             ];
-            $tripInap = (new TripInap())->processUpdate($tripinap,$data);
+            $tripInap = (new TripInap())->processUpdate($tripinap, $data);
             $tripInap->position = $this->getPosition($tripInap, $tripInap->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $tripInap->page = ceil($tripInap->position / (10));
             } else {
                 $tripInap->page = ceil($tripInap->position / ($request->limit ?? 10));
@@ -119,12 +117,12 @@ class TripInapController extends Controller
      * @ClassName 
      * @Keterangan HAPUS DATA
      */
-    public function destroy(Request $request,TripInap $tripinap)
+    public function destroy(Request $request, TripInap $tripinap)
     {
         DB::beginTransaction();
 
         try {
-            $tripInap = (new TripInap())->processDestroy($tripinap->id, 'DELETE Trip Inap');
+            $tripInap = (new TripInap())->processDestroy($tripinap->id, 'DELETE TRIP INAP');
             $selected = $this->getPosition($tripInap, $tripInap->getTable(), true);
             $tripInap->position = $selected->position;
             $tripInap->id = $selected->id;
@@ -153,12 +151,14 @@ class TripInapController extends Controller
      * @ClassName
      * @Keterangan APPROVAL DATA
      */
-    public function approval(TripInap $id)
+    public function approval(ApprovalTripInapRequest $request)
     {
         DB::beginTransaction();
         try {
-            $tripInap =$id;
-            $tripInap = (new TripInap())->processApprove($tripInap);
+            $data = [
+                'Id' => $request->Id,
+            ];
+            $tripInap = (new TripInap())->processApprove($data);
 
             DB::commit();
             return response([
@@ -167,5 +167,91 @@ class TripInapController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
+    }
+
+
+    /**
+     * @ClassName 
+     * @Keterangan CETAK DATA
+     */
+    public function report()
+    {
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan EXPORT KE EXCEL
+     */
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $tarifs = $decodedResponse['data'];
+
+        $i = 0;
+        foreach ($tarifs as $index => $params) {
+
+            // $tarifRincian = new TarifRincian();
+
+            $statusapproval = $params['statusapproval'];
+
+            $result = json_decode($statusapproval, true);
+
+            $statusapproval = $result['MEMO'];
+
+            $tarifs[$i]['statusapproval'] = $statusapproval;
+            $tarifs[$i]['jammasukinap'] = date('H:i', strtotime($params['jammasukinap']));
+            $tarifs[$i]['jamkeluarinap'] = date('H:i', strtotime($params['jamkeluarinap']));
+
+
+            // $tarifs[$i]['rincian'] = json_decode($tarifRincian->getAll($tarifs[$i]['id']), true);
+
+
+            $i++;
+        }
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'Tgl Absensi',
+                'index' => 'tglabsensi',
+            ],
+            [
+                'label' => 'Trado',
+                'index' => 'trado',
+            ],
+            [
+                'label' => 'Supir',
+                'index' => 'supir',
+            ],
+            [
+                'label' => 'Surat Pengantar',
+                'index' => 'suratpengantar_nobukti',
+            ],
+            [
+                'label' => 'Jam Masuk Inap',
+                'index' => 'jammasukinap',
+            ],
+            [
+                'label' => 'Jam Keluar Inap',
+                'index' => 'jamkeluarinap',
+            ],
+            [
+                'label' => 'Status Approval',
+                'index' => 'statusapproval',
+            ],
+            [
+                'label' => 'Tgl Approval',
+                'index' => 'tglapproval',
+            ],
+            [
+                'label' => 'User Approval',
+                'index' => 'userapproval',
+            ],
+
+        ];
+
+        $this->toExcel('Laporan Trip Inap', $tarifs, $columns);
     }
 }
