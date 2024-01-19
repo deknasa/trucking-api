@@ -2,9 +2,10 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\GetAbsensiMandorRule;
+use App\Rules\AbsensiRicUsed;
 use Illuminate\Support\Facades\DB;
+use App\Rules\GetAbsensiMandorRule;
+use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
 
 class GetMandorAbsensiSupirRequest extends FormRequest
@@ -29,7 +30,7 @@ class GetMandorAbsensiSupirRequest extends FormRequest
     {
 
         return [
-            "tglbukaabsensi" => new GetAbsensiMandorRule()
+            "tglbukaabsensi" => [new GetAbsensiMandorRule(), new AbsensiRicUsed()]
         ];
     }
 
