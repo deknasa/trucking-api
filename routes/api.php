@@ -865,10 +865,10 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('supir/getImage/{id}/{field}', [SupirController::class, 'getImage'])->whereNumber('id');
     Route::post('supir/upload_image/{id}', [SupirController::class, 'uploadImage'])->whereNumber('id');
     Route::get('supir/default', [SupirController::class, 'default']);
-    Route::post('supir/{id}/approvalblacklist', [SupirController::class, 'approvalBlackListSupir'])->whereNumber('id');
-    Route::post('supir/{id}/approvalluarkota', [SupirController::class, 'approvalSupirLuarKota'])->whereNumber('id');
     Route::post('supir/{id}/approvalresign', [SupirController::class, 'approvalSupirResign'])->whereNumber('id');
     Route::post('supir/{id}/cekValidasi', [SupirController::class, 'cekValidasi'])->name('supir.cekValidasi')->whereNumber('id');
+    Route::post('supir/approvalblacklist', [SupirController::class, 'approvalBlackListSupir'])->whereNumber('id');
+    Route::post('supir/approvalluarkota', [SupirController::class, 'approvalSupirLuarKota'])->whereNumber('id');
     Route::post('supir/approvalnonaktif', [SupirController::class, 'approvalnonaktif']);
 
     Route::get('supir/export', [SupirController::class, 'export']);

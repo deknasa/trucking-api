@@ -1575,6 +1575,73 @@ class Supir extends MyModel
 
         return $Supir;
     }
+    public function processApprovalSupirLuarKota(array $data)
+    {
+
+        $statusLuarKota = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS LUAR KOTA')->where('text', '=', 'BOLEH LUAR KOTA')->first();
+        $statusBukanLuarKota = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS LUAR KOTA')->where('text', '=', 'TIDAK BOLEH LUAR KOTA')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $supir = Supir::find($data['Id'][$i]);
+            if ($supir->statusluarkota == $statusLuarKota->id) {
+                $supir->statusluarkota = $statusBukanLuarKota->id;
+                $aksi = $statusBukanLuarKota->text;
+            } else {
+                $supir->statusluarkota = $statusLuarKota->id;
+                $aksi = $statusLuarKota->text;
+            }
+
+                // dd($Supir);
+            if ($supir->save()) {
+                
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($supir->getTable()),
+                    'postingdari' => 'APPROVED SUPIR LUAR KOTA',
+                    'idtrans' => $supir->id,
+                    'nobuktitrans' => $supir->id,
+                    'aksi' => $aksi,
+                    'datajson' => $supir->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ]);
+            }
+        }
+
+
+        return $supir;
+    }
+    
+    public function processApprovalBlackListSupir(array $data)
+    {
+        $statusBlackList = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'BLACKLIST SUPIR')->where('text', '=', 'SUPIR BLACKLIST')->first();
+        $statusBukanBlackList = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'BLACKLIST SUPIR')->where('text', '=', 'BUKAN SUPIR BLACKLIST')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $supir = Supir::find($data['Id'][$i]);
+            if ($supir->statusblacklist == $statusBlackList->id) {
+                $supir->statusblacklist = $statusBukanBlackList->id;
+                $aksi = $statusBukanBlackList->text;
+            } else {
+                $supir->statusblacklist = $statusBlackList->id;
+                $aksi = $statusBlackList->text;
+            }
+            
+            
+            // dd($Supir);
+            if ($supir->save()) {
+                
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($supir->getTable()),
+                    'postingdari' => 'APPROVED BLACKLIST SUPIR',
+                    'idtrans' => $supir->id,
+                    'nobuktitrans' => $supir->id,
+                    'aksi' => $aksi,
+                    'datajson' => $supir->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ]);
+            }
+        }
+        
+
+        return $supir;
+    }
 
     
 }
