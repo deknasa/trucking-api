@@ -71,8 +71,10 @@ class StorePengeluaranStokDetailRequest extends FormRequest
                 function ($attribute, $value, $fail) {
                     $item = explode('.',$attribute); // Mengambil id dari detail_stok
                     $stok = DB::table('stok')->where('id', request()->detail_stok_id[$item[1]])->first();
-                    if(in_array($stok->statusservicerutin, [345,346,347]) && !$value){
-                        $fail('Status oli '. app(ErrorController::class)->geterror('WI')->keterangan);
+                    if($stok){
+                        if(in_array($stok->statusservicerutin, [345,346,347]) && !$value){
+                            $fail('Status oli '. app(ErrorController::class)->geterror('WI')->keterangan);
+                        }
                     }
                     
                 },
