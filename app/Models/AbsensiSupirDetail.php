@@ -573,6 +573,8 @@ class AbsensiSupirDetail extends MyModel
                                 $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'supir') {
                                 $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tradosupir') {
+                                $query = $query->whereRaw("(trim(trado.kodetrado)+' - '+trim(supir.namasupir)) LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'status') {
                                 $query = $query->where('absentrado.kodeabsen', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statusKeterangan') {
@@ -599,6 +601,8 @@ class AbsensiSupirDetail extends MyModel
                                 $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'supir') {
                                 $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tradosupir') {
+                                $query = $query->orWhereRaw("(trim(trado.kodetrado)+' - '+trim(supir.namasupir)) LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'status') {
                                 $query = $query->orWhere('absentrado.kodeabsen', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statusKeterangan') {
