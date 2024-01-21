@@ -61,6 +61,7 @@ class PengeluaranTrucking extends MyModel
         $this->setRequestParameters();
 
         $roleinput = request()->roleinput ?? '';
+        $isLookup = request()->isLookup ?? '';
         $user_id = auth('api')->user()->id ?? 0;
 
         // $temprole = '##temprole' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -93,11 +94,11 @@ class PengeluaranTrucking extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
-            $cabang_id = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        $cabang_id = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->select('text')
             ->where('grp', 'ID CABANG')
             ->where('subgrp', 'ID CABANG')
-            ->first()->text ?? '';            
+            ->first()->text ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -138,6 +139,32 @@ class PengeluaranTrucking extends MyModel
             $getParam = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'ID CABANG')->first();
             $query->where('pengeluarantrucking.cabang_id', $getParam->text)
                 ->where('pengeluarantrucking.statusaktif', 1);
+        }
+        if ($isLookup != '') {
+            $temprole = '##temprole' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temprole, function ($table) {
+                $table->bigInteger('aco_id')->nullable();
+            });
+
+            $queryaco = db::table("useracl")->from(db::raw("useracl a with (readuncommitted)"))
+                ->select('a.aco_id')
+                ->join(db::raw("pengeluarantrucking b with (readuncommitted)"), 'a.aco_id', 'b.aco_id')
+                ->where('a.user_id', $user_id);
+            DB::table($temprole)->insertUsing(['aco_id'], $queryaco);
+
+
+            $queryrole = db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
+                ->select('a.aco_id')
+                ->join(db::raw("userrole b with (readuncommitted)"), 'a.role_id', 'b.role_id')
+                ->join(db::raw("pengeluarantrucking c with (readuncommitted)"), 'a.aco_id', 'c.aco_id')
+                ->leftjoin(db::raw($temprole . " d "), 'a.aco_id', 'd.aco_id')
+                ->where('b.user_id', $user_id)
+                ->whereRaw("isnull(d.aco_id,0)=0")
+                ->where('c.cabang_id', $cabang_id);
+
+            DB::table($temprole)->insertUsing(['aco_id'], $queryrole);
+            $query
+                ->join($temprole, 'pengeluarantrucking.aco_id', $temprole.'.aco_id');
         }
         // if ($roleinput != '') {
         //     $query->join(db::raw($temprole ." d "), 'pengeluarantrucking.aco_id', 'd.aco_id');
