@@ -53,40 +53,19 @@ class SupirController extends Controller
      * @ClassName 
      * @Keterangan APPROVAL BLACK LIST SUPIR
      */
-    public function approvalBlackListSupir($id)
+    public function approvalBlackListSupir(ApprovalSupirRequest $request)
     {
 
         DB::beginTransaction();
+
         try {
-            $supir = Supir::lockForUpdate()->findOrFail($id);
-            $statusBlackList = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'BLACKLIST SUPIR')->where('text', '=', 'SUPIR BLACKLIST')->first();
-            $statusBukanBlackList = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'BLACKLIST SUPIR')->where('text', '=', 'BUKAN SUPIR BLACKLIST')->first();
+            $data = [
+                'Id' => $request->Id,
+                'nama' => $request->nama
+            ];
+            (new Supir())->processApprovalBlackListSupir($data);
 
-            if ($supir->statusblacklist == $statusBlackList->id) {
-                $supir->statusblacklist = $statusBukanBlackList->id;
-                $aksi = $statusBukanBlackList->text;
-            } else {
-                $supir->statusblacklist = $statusBlackList->id;
-                $aksi = $statusBlackList->text;
-            }
-
-            if ($supir->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($supir->getTable()),
-                    'postingdari' => 'APPROVED BLACKLIST SUPIR',
-                    'idtrans' => $supir->id,
-                    'nobuktitrans' => $supir->id,
-                    'aksi' => $aksi,
-                    'datajson' => $supir->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
+            DB::commit();
             return response([
                 'message' => 'Berhasil'
             ]);
@@ -94,6 +73,8 @@ class SupirController extends Controller
             DB::rollBack();
             throw $th;
         }
+
+        
     }
 
 
@@ -101,39 +82,18 @@ class SupirController extends Controller
      * @ClassName 
      * @Keterangan APPROVAL SUPIR LUAR KOTA
      */
-    public function approvalSupirLuarKota($id)
+    public function approvalSupirLuarKota(ApprovalSupirRequest $request)
     {
         DB::beginTransaction();
+
         try {
-            $supir = Supir::lockForUpdate()->findOrFail($id);
-            $statusLuarKota = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS LUAR KOTA')->where('text', '=', 'BOLEH LUAR KOTA')->first();
-            $statusBukanLuarKota = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS LUAR KOTA')->where('text', '=', 'TIDAK BOLEH LUAR KOTA')->first();
+            $data = [
+                'Id' => $request->Id,
+                'nama' => $request->nama
+            ];
+            (new Supir())->processApprovalSupirLuarKota($data);
 
-            if ($supir->statusluarkota == $statusLuarKota->id) {
-                $supir->statusluarkota = $statusBukanLuarKota->id;
-                $aksi = $statusBukanLuarKota->text;
-            } else {
-                $supir->statusluarkota = $statusLuarKota->id;
-                $aksi = $statusLuarKota->text;
-            }
-
-            if ($supir->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($supir->getTable()),
-                    'postingdari' => 'APPROVED SUPIR LUAR KOTA',
-                    'idtrans' => $supir->id,
-                    'nobuktitrans' => $supir->id,
-                    'aksi' => $aksi,
-                    'datajson' => $supir->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
+            DB::commit();
             return response([
                 'message' => 'Berhasil'
             ]);
