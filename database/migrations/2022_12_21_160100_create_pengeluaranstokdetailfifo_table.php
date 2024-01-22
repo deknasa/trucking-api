@@ -27,8 +27,10 @@ class CreatePengeluaranstokdetailfifoTable extends Migration
             $table->double('penerimaanstok_harga',15,2)->nullable();
             $table->double('penerimaanstok_total',15,2)->nullable();            
             $table->double('penerimaanstok_totalterpakai',15,2)->nullable();            
+            $table->double('penerimaanstokheader_total',15,2)->nullable();
+            $table->double('penerimaanstokheader_totalterpakai',15,2)->nullable();
             $table->longText('info')->nullable();
-            $table->string('modifiedby',50)->nullable();            
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
             $table->foreign('pengeluaranstokheader_id', 'pengeluaranstokdetailfifo_pengeluaranstokheader_penerimaanstokheader_id_foreign')->references('id')->on('pengeluaranstokheader')->onDelete('cascade');  
