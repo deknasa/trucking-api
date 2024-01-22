@@ -35,6 +35,7 @@ class MainAkunPusat extends MyModel
         $potongan = request()->potongan ?? '';
 
         $aktif = request()->aktif ?? '';
+        $isParent = request()->isParent ?? '';
 
 
 
@@ -93,6 +94,10 @@ class MainAkunPusat extends MyModel
                 ->first();
 
             $query->where('mainakunpusat.statusaktif', '=', $statusaktif->id);
+        }
+        if ($isParent != '') {
+
+            $query->whereRaw("RIGHT(mainakunpusat.coa, 3) = '.00'");
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
