@@ -15,13 +15,13 @@
 $curlHandles = array();
 
 // Inisialisasi beberapa handle cURL
-$curlHandles[] = curl_init("http://localhost/trucking-laravel/public/api/reminder-expstnk");
-$curlHandles[] = curl_init("http://localhost/trucking-laravel/public/api/reminder-spk");
-$curlHandles[] = curl_init("http://localhost/trucking-laravel/public/api/reminder-olimesin");
-$curlHandles[] = curl_init("http://localhost/trucking-laravel/public/api/reminder-saringanhawa");
-$curlHandles[] = curl_init("http://localhost/trucking-laravel/public/api/reminder-perseneling");
-$curlHandles[] = curl_init("http://localhost/trucking-laravel/public/api/reminder-oligardan");
-$curlHandles[] = curl_init("http://localhost/trucking-laravel/public/api/reminder-servicerutin");
+$curlHandles[] = curl_init("http://localhost:8074/trucking-api/public/api/reminder-expstnk");
+$curlHandles[] = curl_init("http://localhost:8074/trucking-api/public/api/reminder-spk");
+$curlHandles[] = curl_init("http://localhost:8074/trucking-api/public/api/reminder-olimesin");
+$curlHandles[] = curl_init("http://localhost:8074/trucking-api/public/api/reminder-saringanhawa");
+$curlHandles[] = curl_init("http://localhost:8074/trucking-api/public/api/reminder-perseneling");
+$curlHandles[] = curl_init("http://localhost:8074/trucking-api/public/api/reminder-oligardan");
+$curlHandles[] = curl_init("http://localhost:8074/trucking-api/public/api/reminder-servicerutin");
 
 // Set opsi shared di antara handles
 // Contohnya, opsi dapat diatur dengan curl_setopt()

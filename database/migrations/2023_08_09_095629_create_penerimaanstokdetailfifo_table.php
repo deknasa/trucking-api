@@ -27,8 +27,9 @@ class CreatePenerimaanstokdetailfifoTable extends Migration
             $table->double('penerimaanstok_harga',15,2)->nullable();
             $table->double('penerimaanstokheader_total',15,2)->nullable();            
             $table->double('penerimaanstokheader_totalterpakai',15,2)->nullable();            
+
             $table->longText('info')->nullable();
-            $table->string('modifiedby',50)->nullable();                 
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
             $table->foreign('penerimaanstokheader_id', 'penerimaanstokdetailfifo_penerimaanstokheader_penerimaanstokheader_id_foreign')->references('id')->on('penerimaanstokheader')->onDelete('cascade');  
