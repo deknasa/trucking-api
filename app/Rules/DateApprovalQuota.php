@@ -54,7 +54,8 @@ class DateApprovalQuota implements Rule
             $allowed = true;
         }
         if ($bukaAbsensi){
-            $suratPengantar = SuratPengantar::where('tglbukti', '=', $date)->count();
+            $now = date('Y-m-d');
+            $suratPengantar = SuratPengantar::where('tglbukti', '=', $date)->whereRaw("CONVERT(VARCHAR(10), created_at, 23) = '$now'")->count();
             $nonApproval = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where("grp", 'STATUS APPROVAL')->where("text", "NON APPROVAL")->first();
             $cekApproval = SuratPengantarApprovalInputTrip::where('statusapproval', '=', $nonApproval->id)->where('tglbukti', '=', $date)->first();
             if($cekApproval){

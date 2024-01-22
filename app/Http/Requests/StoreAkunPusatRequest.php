@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use App\Rules\ExistAkuntansi;
 use App\Rules\ExistTypeAkuntansi;
+use App\Rules\ValidasiCoaParent;
 use App\Rules\ValidasiParentAkunPusat;
 use Illuminate\Validation\Rule;
 
@@ -69,24 +70,11 @@ class StoreAkunPusatRequest extends FormRequest
             ];
         }
         
-        $akuntansi_id = $this->akuntansi_id;
-        $rulesAkuntansi_id = [];
-        if ($akuntansi_id != null) {
-            $rulesAkuntansi_id = [
-                'akuntansi_id' => ['required', 'numeric', 'min:1', new ExistAkuntansi()],
-            ];
-        } else if ($akuntansi_id == null && $this->akuntansi != '') {
-            $rulesAkuntansi_id = [
-                'akuntansi_id' => ['required', 'numeric', 'min:1', new ExistAkuntansi()],
-            ];
-        }
-
 
         $rules = [
-            'coa' => ['required','unique:akunpusat'],
+            'coa' => ['required','unique:akunpusat', new ValidasiCoaParent()],
             'keterangancoa' => ['required','unique:akunpusat'],
             'type' => ['required'],
-            'akuntansi' => ['required'],
             'statusparent' => ['required', Rule::in($statusAccount)],
             'statusneraca' => ['required', Rule::in($statusNeraca)],
             'statuslabarugi' => ['required', Rule::in($statusLabaRugi)],
@@ -97,8 +85,7 @@ class StoreAkunPusatRequest extends FormRequest
 
         $rules = array_merge(
             $rules,
-            $rulesType_id,
-            $rulesAkuntansi_id
+            $rulesType_id
         );
 
         return $rules;
@@ -113,7 +100,7 @@ class StoreAkunPusatRequest extends FormRequest
             'statusparent' => 'status parent',
             'statusneraca' => 'status neraca',
             'statuslabarugi' => 'status laba rugi',
-            'coamainket' => 'kode perkiraan utama',
+            'coamainket' => 'kode perkiraan pusat',
             'statusaktif' => 'status aktif',
             'parentnama' => 'parent'
         ];

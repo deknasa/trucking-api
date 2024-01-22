@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use App\Rules\ExistAkuntansi;
 use App\Rules\ExistTypeAkuntansi;
+use App\Rules\ValidasiCoaParent;
 use App\Rules\ValidasiParentAkunPusat;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
@@ -94,10 +95,9 @@ class UpdateMainAkunPusatRequest extends FormRequest
             return false;
         });
         $rules = [
-            'coa' => ['required', Rule::unique('mainakunpusat')->whereNotIn('id', [$this->id])],
+            'coa' => ['required', Rule::unique('mainakunpusat')->whereNotIn('id', [$this->id]), new ValidasiCoaParent],
             'keterangancoa' => ['required', Rule::unique('mainakunpusat')->whereNotIn('id', [$this->id])],
             'type' => ['required'],
-            'akuntansi' => ['required'],
             'statusparent' => ['required', Rule::in($statusAccount)],
             'statusneraca' => ['required', Rule::in($statusNeraca)],
             'statuslabarugi' => ['required', Rule::in($statusLabaRugi)],
@@ -107,7 +107,6 @@ class UpdateMainAkunPusatRequest extends FormRequest
         $rules = array_merge(
             $rules,
             $rulesType_id,
-            $rulesAkuntansi_id
         );
         return $rules;
     }
