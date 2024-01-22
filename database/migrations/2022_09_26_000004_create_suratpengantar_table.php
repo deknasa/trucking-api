@@ -102,6 +102,7 @@ class CreateSuratpengantarTable extends Migration
             $table->integer('statusapprovalbiayatitipanemkl')->Length(11)->nullable();
             $table->string('userapprovalbiayatitipanemkl', 50)->nullable();
             $table->date('tglapprovalbiayatitipanemkl')->nullable();
+            $table->date('tglbatasbiayatitipanemkl')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->string('editing_by',50)->nullable();            

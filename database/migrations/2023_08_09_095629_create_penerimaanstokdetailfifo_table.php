@@ -25,10 +25,9 @@ class CreatePenerimaanstokdetailfifoTable extends Migration
             $table->string('penerimaanstokheader_nobukti',50)->nullable();
             $table->double('penerimaanstok_qty',15,2)->nullable();
             $table->double('penerimaanstok_harga',15,2)->nullable();
-            $table->double('penerimaanstok_total',15,2)->nullable();
-            $table->double('penerimaanstok_totalterpakai',15,2)->nullable();
-            $table->double('penerimaanstokheader_total',15,2)->nullable();
-            $table->double('penerimaanstokheader_totalterpakai',15,2)->nullable();
+            $table->double('penerimaanstokheader_total',15,2)->nullable();            
+            $table->double('penerimaanstokheader_totalterpakai',15,2)->nullable();            
+
             $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
