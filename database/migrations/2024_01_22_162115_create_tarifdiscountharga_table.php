@@ -16,6 +16,7 @@ class CreateTarifdiscounthargaTable extends Migration
         Schema::create('tarifdiscountharga', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('tarif_id')->nullable();
+            $table->unsignedBigInteger('container_id')->nullable();
             $table->string('tujuanbongkar', 500)->nullable();
             $table->string('lokasidooring', 500)->nullable();
             $table->unsignedBigInteger('lokasidooring_id')->nullable();
@@ -23,6 +24,7 @@ class CreateTarifdiscounthargaTable extends Migration
             $table->double('nominal', 15, 2)->nullable();
             $table->string('cabang', 500)->nullable();
             $table->integer('statuscabang')->length(11)->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
