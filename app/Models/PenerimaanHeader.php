@@ -945,6 +945,7 @@ class PenerimaanHeader extends MyModel
         }
 
         $penerimaanHeader->pelanggan_id = $data['pelanggan_id'] ?? '';
+        $penerimaanHeader->postingdari = $data['postingdari'] ?? '';
         $penerimaanHeader->diterimadari = $data['diterimadari'] ?? '';
         $penerimaanHeader->tgllunas = date('Y-m-d', strtotime($data['tgllunas']));
         $penerimaanHeader->bank_id = $data['bank_id'] ?? '';
