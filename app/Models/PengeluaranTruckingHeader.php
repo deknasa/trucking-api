@@ -1461,7 +1461,7 @@ class PengeluaranTruckingHeader extends MyModel
                             if ($filters['field'] == 'statuscetak') {
                                 $query->orWhere('a.statuscetaktext', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statusposting') {
-                                $query = $query->where('a.statuspostingtext', '=', "$filters[data]");
+                                $query = $query->orWhere('a.statuspostingtext', '=', "$filters[data]");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak') {
                                 $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
