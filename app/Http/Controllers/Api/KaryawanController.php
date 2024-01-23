@@ -109,11 +109,11 @@ class KaryawanController extends Controller
         }
     }
 
-    public function show(Karyawan $karyawan)
+    public function show($id)
     {
         return response([
             'status' => true,
-            'data' => $karyawan
+            'data' => (new Karyawan())->findAll($id)
         ]);
     }
 

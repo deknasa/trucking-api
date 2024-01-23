@@ -38,14 +38,43 @@ class StoreKaryawanRequest extends FormRequest
         foreach ($data as $item) {
             $statusstaff[] = $item['id'];
         }
+        
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        } else if ($statusaktif == null && $this->statusaktifnama != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        }
+        
+        $statusstaff = $this->statusstaff;
+        $rulesStatusStaff = [];
+        if ($statusstaff != null) {
+            $rulesStatusStaff = [
+                'statusstaff' => ['required', Rule::in($statusstaff)]
+            ];
+        } else if ($statusstaff == null && $this->statusstaffnama != '') {
+            $rulesStatusStaff = [
+                'statusstaff' => ['required', Rule::in($statusstaff)]
+            ];
+        }
 
         $rules = [
             'namakaryawan' => ['required','unique:karyawan'],
             'jabatan' => ['required'],
-            'statusaktif' => ['required', Rule::in($status)],
-            'statusstaff' => ['required', Rule::in($statusstaff)]
+            'statusstaffnama' => ['required'],
+            'statusaktifnama' => ['required'],
         ];
 
+        $rules = array_merge(
+            $rules,
+            $rulesStatusAktif,
+            $rulesStatusStaff
+        );
         return $rules;
 
     
@@ -55,8 +84,8 @@ class StoreKaryawanRequest extends FormRequest
     {
         return [
           'namakaryawan' => 'Nama Karyawan',
-          'statusaktif' => 'status',
-          'statusstaff' => 'status staff'
+          'statusaktifnama' => 'status',
+          'statusstaffnama' => 'status staff'
         ];
     }
 }

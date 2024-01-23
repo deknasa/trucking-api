@@ -294,26 +294,29 @@ class Gandengan extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
         });
 
         $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
 
-        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id, "statusaktifnama" => $statusaktif->text]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
             ->select(
-                'statusaktif'
+                'statusaktif',
+                'statusaktifnama'
             );
 
         $data = $query->first();
@@ -341,10 +344,12 @@ class Gandengan extends MyModel
                 'gandengan.modifiedby',
                 'gandengan.created_at',
                 'gandengan.updated_at',
+                'parameter.text as statusaktifnama'
             )
 
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'gandengan.trado_id', '=', 'trado.id')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'gandengan.container_id', '=', 'container.id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gandengan.statusaktif', '=', 'parameter.id')
             ->where('gandengan.id', $id)
             ->first();
 
