@@ -3090,4 +3090,25 @@ class PengeluaranStokHeader extends MyModel
 
         return $pengeluaranStokHeader;
     }
+
+    public function updateApproval()
+    {
+        DB::beginTransaction();
+        try {
+            $tutupbuku = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'TUTUP BUKU')->where('subgrp', '=', 'TUTUP BUKU')->first();
+            $approval = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where("grp", 'STATUS APPROVAL')->where("text", "APPROVAL")->first();
+            $nonApproval = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where("grp", 'STATUS APPROVAL')->where("text", "NON APPROVAL")->first();
+            
+            $query = DB::table('pengeluaranstokheader')->where('tglbataseditketerangan' ,'<',date('Y-m-d H:i:s'))->where('tglbukti', '>', $tutupbuku->text)->where('statusapprovaleditketerangan', $approval->id);
+            $query->update(['statusapprovaleditketerangan'=>$nonApproval->id]);
+
+            $query = DB::table('pengeluaranstokheader')->where('tglbatasedit' ,'<',date('Y-m-d H:i:s'))->where('tglbukti', '>', $tutupbuku->text)->where('statusapprovaledit', $approval->id);
+            $query->update(['statusapprovaledit'=>$nonApproval->id]);
+            
+            DB::commit();
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
 }

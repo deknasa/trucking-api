@@ -881,6 +881,10 @@ class Stok extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusservicerutin') {
                             $query = $query->where('service.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusreuse') {
+                            $query = $query->where('statusreuse.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'jenistrado') {
                             $query = $query->whereRaw('jenistrado.keterangan LIKE' . "'%$filters[data]%'");
                         } else if ($filters['field'] == 'kelompok') {
@@ -911,6 +915,10 @@ class Stok extends MyModel
                                 $query = $query->orWhere('service.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'jenistrado') {
                                 $query = $query->orWhereRaw('jenistrado.keterangan LIKE ' . "'%$filters[data]%'");
+                            } else if ($filters['field'] == 'statusaktif') {
+                                $query = $query->orWhereRaw('parameter.text LIKE ' . "'%$filters[data]%'");
+                            } else if ($filters['field'] == 'statusreuse') {
+                                $query = $query->orWhereRaw('statusreuse.text LIKE ' . "'%$filters[data]%'");
                             } else if ($filters['field'] == 'kelompok') {
                                 $query = $query->orWhereRaw('kelompok.kodekelompok LIKE ' . "'%$filters[data]%'");
                             } else if ($filters['field'] == 'subkelompok') {

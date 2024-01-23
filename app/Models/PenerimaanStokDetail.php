@@ -39,11 +39,12 @@ class PenerimaanStokDetail extends MyModel
             $table->integer('stok_id')->nullable();
             $table->integer('vulkan')->nullable();
         });
-        
-        DB::table($tempvulkan)->insertUsing([
-            'stok_id',
-            'vulkan',
-        ], (new Stok())->getVulkan($header->tglbukti));
+        if ($header) {
+            DB::table($tempvulkan)->insertUsing([
+                'stok_id',
+                'vulkan',
+            ], (new Stok())->getVulkan($header->tglbukti));
+        }
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
         $spbp = DB::table('penerimaanstok')->where('kodepenerimaan', 'SPBP')->first();
@@ -489,6 +490,9 @@ class PenerimaanStokDetail extends MyModel
                 throw ValidationException::withMessages(["detail_penerimaanstoknobukti" => "penerimaan stok No Bukti tidak valid"]);
             }
         }
+        if ($penerimaanStokHeader->penerimaanstok_id == $spb->text) {
+            $this->updateStokBanMasak($stok);
+        }
         if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
             if (($penerimaanStokHeader->penerimaanstok_id == $spb->text) || ($penerimaanStokHeader->penerimaanstok_id == $kor->text) || ($penerimaanStokHeader->penerimaanstok_id == $pst->text) || ($penerimaanStokHeader->penerimaanstok_id == $pspk->text)) {
                 $persediaan = $this->persediaan($penerimaanStokHeader->gudang_id, $penerimaanStokHeader->trado_id, $penerimaanStokHeader->gandengan_id);
@@ -557,6 +561,20 @@ class PenerimaanStokDetail extends MyModel
         }
 
         return $penerimaanStokDetail;
+    }
+
+    public function updateStokBanMasak(Stok $stok) {
+        $kelompokBan = DB::table('kelompok')->select('id')->where('kelompok.kodekelompok', 'BAN')->first();
+        if (!$stok) {
+            return false;
+        }
+        if ($stok->kelompok_id == $kelompokBan->id) {
+            $kondisiBanMasak = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp','STATUS KONDISI BAN')->where('subgrp','STATUS KONDISI BAN')->where('text','MASAK')->first();
+            $stok->statusban = $kondisiBanMasak->id;
+            $stok->totalvulkanisir = 0;
+            $stok->save();
+            return true;
+        }
     }
 
 

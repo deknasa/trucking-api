@@ -42,7 +42,7 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
             'id' => [new ValidasiDestroyPengeluaranStokHeader ()],
             "tglbukti" => [
                 "required",
-                new DatePengeluaranStokAllowed(),
+                // new DatePengeluaranStokAllowed(),
                 new DateTutupBuku()
             ],
             
@@ -113,16 +113,18 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
         if($afkir->id == request()->pengeluaranstok_id) {
             $stok = DB::table('stok')->select('kelompok.id as kelompok_id')->where('stok.id', request()->detail_stok_id[0])->leftJoin("kategori", "kategori.id", "stok.kategori_id")->leftJoin("subkelompok", "subkelompok.id", "kategori.subkelompok_id")->leftJoin("kelompok", "kelompok.id", "subkelompok.kelompok_id")->first();
             $kelompok = DB::table('kelompok')->select('id')->where('kelompok.kodekelompok', 'AKI')->first();
-            $kolom = request()->detail_vulkanisirke[0];
-            $batas = 2;
-            if ($stok->kelompok_id == $kelompok->id) {
-                $kolom = request()->jlhhari;
-                $batas = 730;
-            }
+            if ($stok) {
+                $kolom = request()->detail_vulkanisirke[0];
+                $batas = 2;
+                if ($stok->kelompok_id == $kelompok->id) {
+                    $kolom = request()->jlhhari;
+                    $batas = 730;
+                }
 
-            $afkirRules = [
-                'pengeluarantrucking_nobukti' => Rule::requiredIf($kolom < $batas)
-            ];
+                $afkirRules = [
+                    'pengeluarantrucking_nobukti' => Rule::requiredIf($kolom < $batas)
+                ];
+            }
         }
 
         $rules = array_merge($rules, $gudangTradoGandengan,$returRules,$spkRules);
