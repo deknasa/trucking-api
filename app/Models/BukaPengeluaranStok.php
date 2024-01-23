@@ -230,6 +230,7 @@ class BukaPengeluaranStok extends MyModel
        
         $bukaPengeluaranStok = DB::table("bukapengeluaranstok")->from(DB::raw("bukapengeluaranstok with (readuncommitted)"))
             ->select('bukapengeluaranstok.pengeluaranstok_id','bukapengeluaranstok.tglbukti')
+            ->where('bukapengeluaranstok.tglbatas', '<', date('Y-m-d'))
             ->where('bukapengeluaranstok.tglbukti', '>', $tutupbuku->text)
             ->where('bukapengeluaranstok.pengeluaranstok_id', $id)
             ->get();

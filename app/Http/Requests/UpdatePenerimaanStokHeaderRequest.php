@@ -67,10 +67,10 @@ class UpdatePenerimaanStokHeaderRequest extends FormRequest
             return false;
         });
         $rules = [
-            'id' => [new ValidasiDestroyPenerimaanStokHeader()],
+            'id' => [new ValidasiDestroyPenerimaanStokHeader(),],
             'tglbukti' => [
                 'required',
-                new DatePenerimaanStokAllowed(),
+                // new DatePenerimaanStokAllowed(),
                 new DateTutupBuku()
             ],
             "supplier" => $requiredSupplier,

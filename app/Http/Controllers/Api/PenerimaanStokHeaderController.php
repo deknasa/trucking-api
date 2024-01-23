@@ -48,6 +48,7 @@ class PenerimaanStokHeaderController extends Controller
     {
         if ($request->reload == '') {
             $penerimaanStokHeader = new PenerimaanStokHeader();
+            $penerimaanStokHeader->updateApproval();
             return response([
                 'data' => $penerimaanStokHeader->get(),
                 'attributes' => [
@@ -511,7 +512,8 @@ class PenerimaanStokHeaderController extends Controller
                     'detail' => PenerimaanStokDetail::getAll($id),
                 ]);
             }
-            
+            $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
+            $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
             $statusBolehEdit = DB::table('penerimaanstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
             $statusTidakBolehEdit = DB::table('penerimaanstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
             // statusapprovaleditabsensi,tglapprovaleditabsensi,userapprovaleditabsensi 
@@ -520,8 +522,7 @@ class PenerimaanStokHeaderController extends Controller
                 $penerimaanStokHeader->tglbatasedit = null;
                 $aksi = $statusTidakBolehEdit->text;
             } else {
-                $tglbatasedit = date("Y-m-d", strtotime('today'));
-                $tglbatasedit = date("Y-m-d H:i:s", strtotime($tglbatasedit . ' 23:59:00'));
+                $tglbatasedit = $tglbatas;
                 $penerimaanStokHeader->tglbatasedit = $tglbatasedit;
                 $penerimaanStokHeader->statusapprovaledit = $statusBolehEdit->id;
                 $aksi = $statusBolehEdit->text;
@@ -564,7 +565,8 @@ class PenerimaanStokHeaderController extends Controller
         DB::beginTransaction();
         try {
             $penerimaanStokHeader = PenerimaanStokHeader::lockForUpdate()->findOrFail($id);
-
+            $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
+            $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
             $statusBolehEdit = DB::table('penerimaanstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
             $statusTidakBolehEdit = DB::table('penerimaanstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
             // statusapprovaleditabsensi,tglapprovaleditabsensi,userapprovaleditabsensi 
@@ -573,8 +575,7 @@ class PenerimaanStokHeaderController extends Controller
                 $penerimaanStokHeader->tglbataseditketerangan = null;
                 $aksi = $statusTidakBolehEdit->text;
             } else {
-                $tglbatasedit = date("Y-m-d", strtotime('today'));
-                $tglbatasedit = date("Y-m-d H:i:s", strtotime($tglbatasedit . ' 23:59:00'));
+                $tglbatasedit = $tglbatas;
                 $penerimaanStokHeader->tglbataseditketerangan = $tglbatasedit;
                 $penerimaanStokHeader->statusapprovaleditketerangan = $statusBolehEdit->id;
                 $aksi = $statusBolehEdit->text;

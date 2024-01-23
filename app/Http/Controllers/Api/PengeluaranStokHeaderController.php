@@ -58,6 +58,7 @@ class PengeluaranStokHeaderController extends Controller
         if ($request->reload == '') {
 
             $pengeluaranStokHeader = new PengeluaranStokHeader();
+            $pengeluaranStokHeader->updateApproval();
             return response([
                 'data' => $pengeluaranStokHeader->get(),
                 'attributes' => [
@@ -627,8 +628,8 @@ class PengeluaranStokHeaderController extends Controller
                 $pengeluaranStokHeader->tglbatasedit = null;
                 $aksi = $statusTidakBolehEdit->text;
             } else {
-                $tglbatasedit = date("Y-m-d", strtotime('today'));
-                $tglbatasedit = date("Y-m-d H:i:s", strtotime($tglbatasedit . ' 23:59:00'));
+                $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
+                $tglbatasedit = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
                 $pengeluaranStokHeader->tglbatasedit = $tglbatasedit;
                 $pengeluaranStokHeader->statusapprovaledit = $statusBolehEdit->id;
                 $aksi = $statusBolehEdit->text;
@@ -680,8 +681,8 @@ class PengeluaranStokHeaderController extends Controller
                 $pengeluaranStokHeader->tglbataseditketerangan = null;
                 $aksi = $statusTidakBolehEdit->text;
             } else {
-                $tglbatasedit = date("Y-m-d", strtotime('today'));
-                $tglbatasedit = date("Y-m-d H:i:s", strtotime($tglbatasedit . ' 23:59:00'));
+                $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
+                $tglbatasedit = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
                 $pengeluaranStokHeader->tglbataseditketerangan = $tglbatasedit;
                 $pengeluaranStokHeader->statusapprovaleditketerangan = $statusBolehEdit->id;
                 $aksi = $statusBolehEdit->text;
