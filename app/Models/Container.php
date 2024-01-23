@@ -140,10 +140,10 @@ class Container extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $aktif = request()->aktif ?? '';
 
@@ -160,7 +160,7 @@ class Container extends MyModel
                 DB::raw("'Laporan Container' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'container.statusaktif', '=', 'parameter.id');
 
@@ -264,7 +264,7 @@ class Container extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'kodecontainer', 'keterangan', 'statusaktif','nominalsumbangan', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'kodecontainer', 'keterangan', 'statusaktif', 'nominalsumbangan', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return  $temp;
     }
@@ -283,11 +283,10 @@ class Container extends MyModel
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -299,11 +298,10 @@ class Container extends MyModel
                             if ($filters['field'] == 'statusaktif') {
                                 $query = $query->orWhere('parameter.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });
@@ -328,12 +326,12 @@ class Container extends MyModel
     public function processStore(array $data): Container
     {
         $container = new Container();
-            $container->kodecontainer = strtoupper($data['kodecontainer']);
-            $container->keterangan = strtoupper($data['keterangan']) ?? '';
-            $container->nominalsumbangan = $data['nominalsumbangan'];
-            $container->statusaktif = $data['statusaktif'];
-            $container->modifiedby = auth('api')->user()->user;
-            $container->info = html_entity_decode(request()->info);
+        $container->kodecontainer = strtoupper($data['kodecontainer']);
+        $container->keterangan = strtoupper($data['keterangan']) ?? '';
+        $container->nominalsumbangan = $data['nominalsumbangan'];
+        $container->statusaktif = $data['statusaktif'];
+        $container->modifiedby = auth('api')->user()->user;
+        $container->info = html_entity_decode(request()->info);
 
         if (!$container->save()) {
             throw new \Exception('Error storing container.');
@@ -385,12 +383,12 @@ class Container extends MyModel
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($container->getTable()),
-                'postingdari' => 'DELETE CONTAINER',
-                'idtrans' => $container->id,
-                'nobuktitrans' => $container->id,
-                'aksi' => 'DELETE',
-                'datajson' => $container->toArray(),
-                'modifiedby' => auth('api')->user()->user
+            'postingdari' => 'DELETE CONTAINER',
+            'idtrans' => $container->id,
+            'nobuktitrans' => $container->id,
+            'aksi' => 'DELETE',
+            'datajson' => $container->toArray(),
+            'modifiedby' => auth('api')->user()->user
         ]);
 
         return $container;
