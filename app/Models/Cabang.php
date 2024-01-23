@@ -113,20 +113,21 @@ class Cabang extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
         });
 
         $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id','text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('DEFAULT', '=', 'YA')
             ->first();
 
-        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id, "statusaktifnama" => $statusaktif->text]);
 
 
 
@@ -135,12 +136,31 @@ class Cabang extends MyModel
             DB::raw($tempdefault)
         )
             ->select(
-                'statusaktif'
+                'statusaktif',
+                'statusaktifnama'
             );
 
         $data = $query->first();
         // dd($data);
         return $data;
+    }
+
+    public function findAll($id)
+    {
+        $query = DB::table("cabang")->from(DB::raw("cabang with (readuncommitted)"))
+        ->select(
+            'cabang.id',
+            'cabang.kodecabang',
+            'cabang.namacabang',
+            'cabang.statusaktif',
+            'cabang.memo',
+            'parameter.text as statusaktifnama',
+        )
+        ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'cabang.statusaktif', 'parameter.id')
+        ->where('cabang.id', $id)
+        ->first();
+
+        return $query;
     }
 
     public function selectColumns($query)

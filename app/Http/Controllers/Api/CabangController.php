@@ -92,11 +92,11 @@ class CabangController extends Controller
         }
     }
 
-    public function show(Cabang $cabang)
+    public function show($id)
     {
         return response([
             'status' => true,
-            'data' => $cabang
+            'data' => (new Cabang())->findAll($id)
         ]);
     }
 
