@@ -533,7 +533,7 @@ class AbsensiSupirDetail extends MyModel
     {
         $this->setRequestParameters();
         $fetch =  DB::table('gajisupiruangjalan')->from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
-            ->select(DB::raw("supir_id"))
+            ->select(DB::raw("supir_id, trado_id"))
             ->whereRaw("gajisupir_nobukti = '$nobukti'")
             ->first();
 
@@ -546,7 +546,8 @@ class AbsensiSupirDetail extends MyModel
             )
             ->join(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirheader.nobukti', 'absensisupirdetail.nobukti')
             ->whereRaw("absensisupirdetail.nobukti in (select absensisupir_nobukti from gajisupiruangjalan where gajisupir_nobukti='$nobukti')")
-            ->where('absensisupirdetail.supir_id', $fetch->supir_id);
+            ->where('absensisupirdetail.supir_id', $fetch->supir_id)
+            ->where('absensisupirdetail.trado_id', $fetch->trado_id);
 
         if ($query->first() != null) {
             $this->sort($query);

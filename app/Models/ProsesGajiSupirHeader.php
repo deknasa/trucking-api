@@ -169,6 +169,7 @@ class ProsesGajiSupirHeader extends MyModel
                 $table->longText('userapproval')->nullable();
                 $table->longText('statusapproval')->nullable();
                 $table->longText('statuscetak')->nullable();
+                $table->longText('statuscetaktext')->nullable();
                 $table->longText('userbukacetak')->nullable();
                 $table->integer('jumlahcetak')->nullable();
                 $table->string('pengeluaran_nobukti', 1000)->nullable();
@@ -253,6 +254,7 @@ class ProsesGajiSupirHeader extends MyModel
                     'prosesgajisupirheader.userapproval',
                     'statusapproval.memo as statusapproval',
                     'statuscetak.memo as statuscetak',
+                    'statuscetak.text as statuscetaktext',
                     'prosesgajisupirheader.userbukacetak',
                     'prosesgajisupirheader.jumlahcetak',
                     'prosesgajisupirheader.pengeluaran_nobukti',
@@ -308,6 +310,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'userapproval',
                 'statusapproval',
                 'statuscetak',
+                'statuscetaktext',
                 'userbukacetak',
                 'jumlahcetak',
                 'pengeluaran_nobukti',
@@ -361,6 +364,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'a.userapproval',
                 'a.statusapproval',
                 'a.statuscetak',
+                'a.statuscetaktext',
                 'a.userbukacetak',
                 'a.jumlahcetak',
                 'a.pengeluaran_nobukti',
@@ -616,15 +620,15 @@ class ProsesGajiSupirHeader extends MyModel
 
         $tempDetail = '##tempDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $fetchDetail = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail with (readuncommitted)"))
-        ->select(
-            'gajisupirdetail.nobukti',
-            DB::raw("SUM(gajisupirdetail.gajisupir) AS gajisupir"),
-            DB::raw("SUM(gajisupirdetail.gajikenek) AS gajikenek"),
-            DB::raw("SUM(gajisupirdetail.biayatambahan) AS extra"),
-        )
-        ->leftJoin(DB::raw("prosesgajisupirdetail with (readuncommitted)"), 'prosesgajisupirdetail.gajisupir_nobukti', 'gajisupirdetail.nobukti')
-        ->where('prosesgajisupirdetail.prosesgajisupir_id', $gajiId)
-        ->groupBy('gajisupirdetail.nobukti');
+            ->select(
+                'gajisupirdetail.nobukti',
+                DB::raw("SUM(gajisupirdetail.gajisupir) AS gajisupir"),
+                DB::raw("SUM(gajisupirdetail.gajikenek) AS gajikenek"),
+                DB::raw("SUM(gajisupirdetail.biayatambahan) AS extra"),
+            )
+            ->leftJoin(DB::raw("prosesgajisupirdetail with (readuncommitted)"), 'prosesgajisupirdetail.gajisupir_nobukti', 'gajisupirdetail.nobukti')
+            ->where('prosesgajisupirdetail.prosesgajisupir_id', $gajiId)
+            ->groupBy('gajisupirdetail.nobukti');
 
         Schema::create($tempDetail, function ($table) {
             $table->string('nobukti');
@@ -691,27 +695,27 @@ class ProsesGajiSupirHeader extends MyModel
         if ($aksi != '') {
             $tempDetail = '##tempDet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             $fetchDetail = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail with (readuncommitted)"))
-            ->select(
-                'gajisupirdetail.nobukti',
-                DB::raw("SUM(gajisupirdetail.gajisupir) AS gajisupir"),
-                DB::raw("SUM(gajisupirdetail.gajikenek) AS gajikenek"),
-                DB::raw("SUM(gajisupirdetail.biayatambahan) AS extra"),
-            )
-            ->leftJoin(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupirheader.nobukti', 'gajisupirdetail.nobukti')
-            ->where('gajisupirheader.tglbukti', '>=', $dari)
-            ->where('gajisupirheader.tglbukti', '<=', $sampai)
-            ->whereRaw("gajisupirheader.nobukti not in(select gajisupir_nobukti from prosesgajisupirdetail)")
-            ->groupBy('gajisupirdetail.nobukti');
-    
+                ->select(
+                    'gajisupirdetail.nobukti',
+                    DB::raw("SUM(gajisupirdetail.gajisupir) AS gajisupir"),
+                    DB::raw("SUM(gajisupirdetail.gajikenek) AS gajikenek"),
+                    DB::raw("SUM(gajisupirdetail.biayatambahan) AS extra"),
+                )
+                ->leftJoin(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupirheader.nobukti', 'gajisupirdetail.nobukti')
+                ->where('gajisupirheader.tglbukti', '>=', $dari)
+                ->where('gajisupirheader.tglbukti', '<=', $sampai)
+                ->whereRaw("gajisupirheader.nobukti not in(select gajisupir_nobukti from prosesgajisupirdetail)")
+                ->groupBy('gajisupirdetail.nobukti');
+
             Schema::create($tempDetail, function ($table) {
                 $table->string('nobukti');
                 $table->float('gajisupir')->nullable();
                 $table->float('gajikenek')->nullable();
                 $table->float('extra')->nullable();
             });
-    
+
             DB::table($tempDetail)->insertUsing(['nobukti', 'gajisupir', 'gajikenek', 'extra'], $fetchDetail);
-    
+
             $fetch = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))
                 ->select(
                     'gajisupirheader.id as idric',
@@ -741,7 +745,7 @@ class ProsesGajiSupirHeader extends MyModel
                 ->where('gajisupirheader.tglbukti', '<=', $sampai)
                 ->whereRaw("gajisupirheader.nobukti not in(select gajisupir_nobukti from prosesgajisupirdetail)");
 
-            $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'supir', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'uangmakanberjenjang', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir', 'gajisupir', 'gajikenek','extra'], $fetch);
+            $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'supir', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'uangmakanberjenjang', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir', 'gajisupir', 'gajikenek', 'extra'], $fetch);
         }
 
         return $temp;
@@ -762,6 +766,7 @@ class ProsesGajiSupirHeader extends MyModel
             $table->longText('userapproval')->nullable();
             $table->longText('statusapproval')->nullable();
             $table->longText('statuscetak')->nullable();
+            $table->longText('statuscetaktext')->nullable();
             $table->longText('userbukacetak')->nullable();
             $table->integer('jumlahcetak')->nullable();
             $table->string('pengeluaran_nobukti', 1000)->nullable();
@@ -837,6 +842,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'prosesgajisupirheader.userapproval',
                 'statusapproval.memo as statusapproval',
                 'statuscetak.memo as statuscetak',
+                'statuscetak.text as statuscetaktext',
                 'prosesgajisupirheader.userbukacetak',
                 'prosesgajisupirheader.jumlahcetak',
                 'prosesgajisupirheader.pengeluaran_nobukti',
@@ -880,6 +886,7 @@ class ProsesGajiSupirHeader extends MyModel
             'userapproval',
             'statusapproval',
             'statuscetak',
+            'statuscetaktext',
             'userbukacetak',
             'jumlahcetak',
             'pengeluaran_nobukti',
@@ -918,6 +925,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'a.userapproval',
                 'a.statusapproval',
                 'a.statuscetak',
+                'a.statuscetaktext',
                 'a.userbukacetak',
                 'a.jumlahcetak',
                 'a.pengeluaran_nobukti',
@@ -960,6 +968,7 @@ class ProsesGajiSupirHeader extends MyModel
             $table->longText('userapproval')->nullable();
             $table->longText('statusapproval')->nullable();
             $table->longText('statuscetak')->nullable();
+            $table->longText('statuscetaktext')->nullable();
             $table->longText('userbukacetak')->nullable();
             $table->integer('jumlahcetak')->nullable();
             $table->string('pengeluaran_nobukti', 1000)->nullable();
@@ -995,8 +1004,8 @@ class ProsesGajiSupirHeader extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         $models = $query
-        ->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-    
+            ->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+
         DB::table($temp)->insertUsing([
             'id',
             'nobukti',
@@ -1008,6 +1017,7 @@ class ProsesGajiSupirHeader extends MyModel
             'userapproval',
             'statusapproval',
             'statuscetak',
+            'statuscetaktext',
             'userbukacetak',
             'jumlahcetak',
             'pengeluaran_nobukti',
@@ -1090,20 +1100,20 @@ class ProsesGajiSupirHeader extends MyModel
 
     public function createTempGetRIC($dari, $sampai)
     {
-        
+
         $tempDetail = '##tempDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $fetchDetail = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail with (readuncommitted)"))
-        ->select(
-            'gajisupirdetail.nobukti',
-            DB::raw("SUM(gajisupirdetail.gajisupir) AS gajisupir"),
-            DB::raw("SUM(gajisupirdetail.gajikenek) AS gajikenek"),
-            DB::raw("SUM(gajisupirdetail.biayatambahan) AS extra"),
-        )
-        ->leftJoin(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupirheader.nobukti', 'gajisupirdetail.nobukti')
-        ->where('gajisupirheader.tglbukti', '>=', $dari)
-        ->where('gajisupirheader.tglbukti', '<=', $sampai)
-        ->whereRaw("gajisupirheader.nobukti not in(select gajisupir_nobukti from prosesgajisupirdetail)")
-        ->groupBy('gajisupirdetail.nobukti');
+            ->select(
+                'gajisupirdetail.nobukti',
+                DB::raw("SUM(gajisupirdetail.gajisupir) AS gajisupir"),
+                DB::raw("SUM(gajisupirdetail.gajikenek) AS gajikenek"),
+                DB::raw("SUM(gajisupirdetail.biayatambahan) AS extra"),
+            )
+            ->leftJoin(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupirheader.nobukti', 'gajisupirdetail.nobukti')
+            ->where('gajisupirheader.tglbukti', '>=', $dari)
+            ->where('gajisupirheader.tglbukti', '<=', $sampai)
+            ->whereRaw("gajisupirheader.nobukti not in(select gajisupir_nobukti from prosesgajisupirdetail)")
+            ->groupBy('gajisupirdetail.nobukti');
 
         Schema::create($tempDetail, function ($table) {
             $table->string('nobukti');
@@ -1112,9 +1122,9 @@ class ProsesGajiSupirHeader extends MyModel
             $table->float('extra')->nullable();
         });
 
-        DB::table($tempDetail)->insertUsing(['nobukti', 'gajisupir', 'gajikenek','extra'], $fetchDetail);
+        DB::table($tempDetail)->insertUsing(['nobukti', 'gajisupir', 'gajikenek', 'extra'], $fetchDetail);
 
-        
+
         $temp = '##tempRIC' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $fetch = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))
             ->select(
@@ -1168,7 +1178,7 @@ class ProsesGajiSupirHeader extends MyModel
             $table->float('extra')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'supir', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'uangmakanberjenjang', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir', 'gajisupir', 'gajikenek','extra'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'supir', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'uangmakanberjenjang', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir', 'gajisupir', 'gajikenek', 'extra'], $fetch);
 
         return $temp;
     }
@@ -1718,15 +1728,34 @@ class ProsesGajiSupirHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-
-                        $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('a.statuscetaktext', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglbukacetak') {
+                            $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'total' || $filters['field'] == 'totalposting' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'deposito' || $filters['field'] == 'komisisupir' || $filters['field'] == 'gajisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'biayaextra') {
+                            $query = $query->whereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else {
+                            $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                     }
 
                     break;
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] == 'statuscetak') {
+                                $query = $query->orWhere('a.statuscetaktext', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglbukacetak') {
+                                $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'total' || $filters['field'] == 'totalposting' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'deposito' || $filters['field'] == 'komisisupir' || $filters['field'] == 'gajisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'biayaextra') {
+                                $query = $query->orWhereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
                     });
 
@@ -2053,7 +2082,8 @@ class ProsesGajiSupirHeader extends MyModel
             $nobuktiPostingPS = '';
             $nobuktiNonPostingPS = '';
             $fetchFormatPJP =  DB::table('penerimaantrucking')->where('id', 2)->first();
-
+            $uniqueValuesNonPosting = [];
+            $uniqueValuesPosting = [];
             foreach ($gajiSupir as $key => $value) {
                 $fetchPS = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->nobukti)->where('supir_id', '0')->get();
 
@@ -2078,11 +2108,16 @@ class ProsesGajiSupirHeader extends MyModel
                         if ($bukanposting == $queryposting->statusposting) {
                             if ($firstBuktiNonPostingPS == '') {
                                 $nobuktiNonPostingPS = $nobuktiNonPostingPS .  $dataPS->pengeluarantrucking_nobukti;
+                                $uniqueValuesNonPosting[] = $dataPS->pengeluarantrucking_nobukti;
                                 $coakreditPostingNonPS['nonposting'] =  $queryposting->coa ?? $fetchFormatPJP->coapostingkredit;
                                 $tglJatuhTempoPS[] = date('Y-m-d', strtotime($data['tglbukti']));
                                 $firstBuktiNonPostingPS =  $dataPS->pengeluarantrucking_nobukti;
                             } else {
-                                $nobuktiNonPostingPS = $nobuktiNonPostingPS . ', ' .  $dataPS->pengeluarantrucking_nobukti;
+                                if (!in_array($dataPS->pengeluarantrucking_nobukti, $uniqueValuesNonPosting)) {
+                                    $uniqueValuesNonPosting[] = $dataPS->pengeluarantrucking_nobukti;
+
+                                    $nobuktiNonPostingPS = $nobuktiNonPostingPS . ', ' .  $dataPS->pengeluarantrucking_nobukti;
+                                }
                             }
                             $keteranganPostingNonPS['nonposting'] =  '(NON POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiNonPostingPS;
 
@@ -2090,11 +2125,16 @@ class ProsesGajiSupirHeader extends MyModel
                         } else {
                             if ($firstBuktiPostingPS == '') {
                                 $nobuktiPostingPS = $nobuktiPostingPS . $dataPS->pengeluarantrucking_nobukti;
+                                $uniqueValuesPosting[] = $dataPS->pengeluarantrucking_nobukti;
                                 $coakreditPostingNonPS['posting'] = $fetchFormatPJP->coapostingkredit;
                                 $tglJatuhTempoPS[] = date('Y-m-d', strtotime($data['tglbukti']));
                                 $firstBuktiPostingPS = $dataPS->pengeluarantrucking_nobukti;
                             } else {
-                                $nobuktiPostingPS = $nobuktiPostingPS . ', ' . $dataPS->pengeluarantrucking_nobukti;
+                                if (!in_array($dataPS->pengeluarantrucking_nobukti, $uniqueValuesPosting)) {
+                                    $uniqueValuesPosting[] = $dataPS->pengeluarantrucking_nobukti;
+
+                                    $nobuktiPostingPS = $nobuktiPostingPS . ', ' . $dataPS->pengeluarantrucking_nobukti;
+                                }
                             }
                             $keteranganPostingNonPS['posting'] =  '(POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiPostingPS;
 
@@ -2103,6 +2143,7 @@ class ProsesGajiSupirHeader extends MyModel
                     }
                 }
             }
+
             $nominalPostingNonPS = array_filter($nominalPostingNonPS, function ($value) {
                 return $value !== 0;
             });
@@ -2125,7 +2166,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'pelanggan_id' => '',
                 'bank_id' => $data['bank_id'],
                 'postingdari' => 'ENTRY PROSES GAJI SUPIR',
-                'diterimadari' => "PROSES GAJI SUPIR PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'],
+                'diterimadari' => "PROSES GAJI SUPIR PERIODE " . date('d-m-Y', strtotime($data['tgldari'])) . " S/D " . date('d-m-Y', strtotime($data['tglsampai'])),
                 'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
                 'coakredit' => $coaKreditPS,
                 'nominal_detail' => $nominalPS,
@@ -2246,7 +2287,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'pelanggan_id' => '',
                 'bank_id' => $data['bank_id'],
                 'postingdari' => 'ENTRY PROSES GAJI SUPIR',
-                'diterimadari' => "PROSES GAJI SUPIR PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'],
+                'diterimadari' => "PROSES GAJI SUPIR PERIODE " . date('d-m-Y', strtotime($data['tgldari'])) . " S/D " . date('d-m-Y', strtotime($data['tglsampai'])),
                 'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
                 'coakredit' => $coaKreditPP,
                 'nominal_detail' => $nominalPP,
@@ -2305,7 +2346,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'pelanggan_id' => '',
                 'bank_id' => $data['bank_id'],
                 'postingdari' => 'ENTRY PROSES GAJI SUPIR',
-                'diterimadari' => "PROSES GAJI SUPIR PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'],
+                'diterimadari' => "PROSES GAJI SUPIR PERIODE " . date('d-m-Y', strtotime($data['tgldari'])) . " S/D " . date('d-m-Y', strtotime($data['tglsampai'])),
                 'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
                 'coakredit' => $coaKreditDeposito,
                 'nominal_detail' => $nominalDeposito,
@@ -2363,7 +2404,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'pelanggan_id' => '',
                 'bank_id' => $data['bank_id'],
                 'postingdari' => 'ENTRY PROSES GAJI SUPIR',
-                'diterimadari' => "PROSES GAJI SUPIR PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'],
+                'diterimadari' => "PROSES GAJI SUPIR PERIODE " . date('d-m-Y', strtotime($data['tgldari'])) . " S/D " . date('d-m-Y', strtotime($data['tglsampai'])),
                 'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
                 'coakredit' => $coaKreditBBM,
                 'nominal_detail' => $nominalBBM,
@@ -2497,7 +2538,7 @@ class ProsesGajiSupirHeader extends MyModel
 
         $prosesGajiSupirHeader->tgldari = date('Y-m-d', strtotime($data['tgldari']));
         $prosesGajiSupirHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
-        $prosesGajiSupirHeader->keterangan = 'PROSES GAJI SUPIR ' . $data['tgldari'] . ' s/d ' . $data['tglsampai'];
+        $prosesGajiSupirHeader->keterangan = 'PROSES GAJI SUPIR ' . date('d-m-Y', strtotime($data['tgldari'])) . ' s/d ' .  date('d-m-Y', strtotime($data['tglsampai']));
         $prosesGajiSupirHeader->modifiedby = auth('api')->user()->name;
         $prosesGajiSupirHeader->info = html_entity_decode(request()->info);
 
@@ -2533,7 +2574,7 @@ class ProsesGajiSupirHeader extends MyModel
 
                 $penerimaanTruckingHeaderPS = [
                     'ebs' => true,
-                    'postingdari' => 'PROSES GAJI SUPIR',
+                    'postingdari' => 'EDIT PROSES GAJI SUPIR',
                     'bank_id' => 0,
                     'penerimaan_nobukti' => ''
                 ];
@@ -2568,7 +2609,7 @@ class ProsesGajiSupirHeader extends MyModel
 
                 $penerimaanTruckingHeaderPP = [
                     'ebs' => true,
-                    'postingdari' => 'PROSES GAJI SUPIR',
+                    'postingdari' => 'EDIT PROSES GAJI SUPIR',
                     'bank_id' => 0,
                     'penerimaan_nobukti' => ''
                 ];
@@ -2603,7 +2644,7 @@ class ProsesGajiSupirHeader extends MyModel
 
                 $penerimaanTruckingHeaderDeposito = [
                     'ebs' => true,
-                    'postingdari' => 'PROSES GAJI SUPIR',
+                    'postingdari' => 'EDIT PROSES GAJI SUPIR',
                     'bank_id' => 0,
                     'penerimaan_nobukti' => ''
                 ];
@@ -2633,7 +2674,7 @@ class ProsesGajiSupirHeader extends MyModel
 
                 $penerimaanTruckingHeaderBBM = [
                     'ebs' => true,
-                    'postingdari' => 'PROSES GAJI SUPIR',
+                    'postingdari' => 'EDIT PROSES GAJI SUPIR',
                     'bank_id' => 0,
                     'penerimaan_nobukti' => ''
                 ];
@@ -2684,6 +2725,9 @@ class ProsesGajiSupirHeader extends MyModel
         $nobuktiPosting = '';
         $nobuktiNonPosting = '';
 
+        $uniqueValuesNonPosting = [];
+        $uniqueValuesPosting = [];
+
         for ($i = 0; $i < count($data['rincianId']); $i++) {
             $sp = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
                 ->where('supir_id', $data['supir_id'][$i])->first();
@@ -2721,11 +2765,16 @@ class ProsesGajiSupirHeader extends MyModel
                         if ($bukanposting == $queryposting->statusposting) {
                             if ($firstBuktiNonPostingPS == '') {
                                 $nobuktiNonPostingPS = $nobuktiNonPostingPS .  $dataPS->pengeluarantrucking_nobukti;
+                                $uniqueValuesNonPosting[] = $dataPS->pengeluarantrucking_nobukti;
                                 $coakreditPostingNonPS['nonposting'] =  $queryposting->coa ?? $fetchFormatPJP->coapostingkredit;
                                 $tglJatuhTempoPS[] = date('Y-m-d', strtotime($data['tglbukti']));
                                 $firstBuktiNonPostingPS =  $dataPS->pengeluarantrucking_nobukti;
                             } else {
-                                $nobuktiNonPostingPS = $nobuktiNonPostingPS . ', ' .  $dataPS->pengeluarantrucking_nobukti;
+                                if (!in_array($dataPS->pengeluarantrucking_nobukti, $uniqueValuesNonPosting)) {
+                                    $uniqueValuesNonPosting[] = $dataPS->pengeluarantrucking_nobukti;
+
+                                    $nobuktiNonPostingPS = $nobuktiNonPostingPS . ', ' .  $dataPS->pengeluarantrucking_nobukti;
+                                }
                             }
                             $keteranganPostingNonPS['nonposting'] =  '(NON POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiNonPostingPS;
 
@@ -2733,11 +2782,16 @@ class ProsesGajiSupirHeader extends MyModel
                         } else {
                             if ($firstBuktiPostingPS == '') {
                                 $nobuktiPostingPS = $nobuktiPostingPS . $dataPS->pengeluarantrucking_nobukti;
+                                $uniqueValuesPosting[] = $dataPS->pengeluarantrucking_nobukti;
                                 $coakreditPostingNonPS['posting'] = $fetchFormatPJP->coapostingkredit;
                                 $tglJatuhTempoPS[] = date('Y-m-d', strtotime($data['tglbukti']));
                                 $firstBuktiPostingPS = $dataPS->pengeluarantrucking_nobukti;
                             } else {
-                                $nobuktiPostingPS = $nobuktiPostingPS . ', ' . $dataPS->pengeluarantrucking_nobukti;
+                                if (!in_array($dataPS->pengeluarantrucking_nobukti, $uniqueValuesPosting)) {
+                                    $uniqueValuesPosting[] = $dataPS->pengeluarantrucking_nobukti;
+
+                                    $nobuktiPostingPS = $nobuktiPostingPS . ', ' . $dataPS->pengeluarantrucking_nobukti;
+                                }
                             }
                             $keteranganPostingNonPS['posting'] =  '(POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiPostingPS;
 
@@ -2837,8 +2891,8 @@ class ProsesGajiSupirHeader extends MyModel
                     'tglbukti' => $prosesGajiSupirHeader->tglbukti,
                     'pelanggan_id' => '',
                     'bank_id' => $data['bank_id'],
-                    'postingdari' => 'PROSES GAJI SUPIR',
-                    'diterimadari' => "PROSES GAJI SUPIR PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'],
+                    'postingdari' => 'EDIT PROSES GAJI SUPIR',
+                    'diterimadari' => "PROSES GAJI SUPIR PERIODE " . date('d-m-Y', strtotime($data['tgldari'])) . " S/D " . date('d-m-Y', strtotime($data['tglsampai'])),
                     'tgllunas' => $prosesGajiSupirHeader->tglbukti,
                     'coakredit' => $coaKreditPS,
                     'nominal_detail' => $nominalPS,
@@ -2860,7 +2914,7 @@ class ProsesGajiSupirHeader extends MyModel
                         ->where('nobukti', $fetchPS->penerimaantrucking_nobukti)->first();
                     $penerimaanTruckingHeaderPS = [
                         'ebs' => true,
-                        'postingdari' => 'PROSES GAJI SUPIR',
+                        'postingdari' => 'EDIT PROSES GAJI SUPIR',
                         'bank_id' => $data['bank_id'],
                         'penerimaan_nobukti' => $penerimaan_nobuktiPS,
                     ];
@@ -2903,8 +2957,8 @@ class ProsesGajiSupirHeader extends MyModel
                     'tglbukti' => $prosesGajiSupirHeader->tglbukti,
                     'pelanggan_id' => '',
                     'bank_id' => $data['bank_id'],
-                    'postingdari' => 'PROSES GAJI SUPIR',
-                    'diterimadari' => "PROSES GAJI SUPIR PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'],
+                    'postingdari' => 'EDIT PROSES GAJI SUPIR',
+                    'diterimadari' => "PROSES GAJI SUPIR PERIODE " . date('d-m-Y', strtotime($data['tgldari'])) . " S/D " . date('d-m-Y', strtotime($data['tglsampai'])),
                     'tgllunas' => $prosesGajiSupirHeader->tglbukti,
                     'coakredit' => $coaKreditPP,
                     'nominal_detail' => $nominalPP,
@@ -2928,7 +2982,7 @@ class ProsesGajiSupirHeader extends MyModel
                     $penerimaanTruckingHeaderPP = [
                         'ebs' => true,
                         'tglbukti' => $prosesGajiSupirHeader->tglbukti,
-                        'postingdari' => 'PROSES GAJI SUPIR',
+                        'postingdari' => 'EDIT PROSES GAJI SUPIR',
                         'bank_id' => $data['bank_id'],
                         'penerimaan_nobukti' => $penerimaan_nobuktiPP,
                     ];
@@ -2960,8 +3014,8 @@ class ProsesGajiSupirHeader extends MyModel
                         'tglbukti' => $prosesGajiSupirHeader->tglbukti,
                         'pelanggan_id' => '',
                         'bank_id' => $data['bank_id'],
-                        'postingdari' => 'PROSES GAJI SUPIR',
-                        'diterimadari' => "PROSES GAJI SUPIR PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'],
+                        'postingdari' => 'EDIT PROSES GAJI SUPIR',
+                        'diterimadari' => "PROSES GAJI SUPIR PERIODE " . date('d-m-Y', strtotime($data['tgldari'])) . " S/D " . date('d-m-Y', strtotime($data['tglsampai'])),
                         'tgllunas' => $prosesGajiSupirHeader->tglbukti,
                         'coakredit' => $coaKreditDeposito,
                         'nominal_detail' => $nominalDeposito,
@@ -3002,8 +3056,8 @@ class ProsesGajiSupirHeader extends MyModel
                         'tglbukti' => $prosesGajiSupirHeader->tglbukti,
                         'pelanggan_id' => '',
                         'bank_id' => $data['bank_id'],
-                        'postingdari' => 'PROSES GAJI SUPIR',
-                        'diterimadari' => "PROSES GAJI SUPIR PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'],
+                        'postingdari' => 'EDIT PROSES GAJI SUPIR',
+                        'diterimadari' => "PROSES GAJI SUPIR PERIODE " . date('d-m-Y', strtotime($data['tgldari'])) . " S/D " . date('d-m-Y', strtotime($data['tglsampai'])),
                         'tgllunas' => $prosesGajiSupirHeader->tglbukti,
                         'coakredit' => $coaKreditDeposito,
                         'nominal_detail' => $nominalDeposito,
@@ -3031,7 +3085,7 @@ class ProsesGajiSupirHeader extends MyModel
                     $penerimaanTruckingHeaderDeposito = [
                         'ebs' => true,
                         'tglbukti' => $prosesGajiSupirHeader->tglbukti,
-                        'postingdari' => 'PROSES GAJI SUPIR',
+                        'postingdari' => 'EDIT PROSES GAJI SUPIR',
                         'bank_id' => $data['bank_id'],
                         'penerimaan_nobukti' => $penerimaan_nobuktiDeposito,
                     ];
@@ -3061,8 +3115,8 @@ class ProsesGajiSupirHeader extends MyModel
                         'tglbukti' => $prosesGajiSupirHeader->tglbukti,
                         'pelanggan_id' => '',
                         'bank_id' => $data['bank_id'],
-                        'postingdari' => 'PROSES GAJI SUPIR',
-                        'diterimadari' => "PROSES GAJI SUPIR PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'],
+                        'postingdari' => 'EDIT PROSES GAJI SUPIR',
+                        'diterimadari' => "PROSES GAJI SUPIR PERIODE " . date('d-m-Y', strtotime($data['tgldari'])) . " S/D " . date('d-m-Y', strtotime($data['tglsampai'])),
                         'tgllunas' => $prosesGajiSupirHeader->tglbukti,
                         'coakredit' => $coaKreditBBM,
                         'nominal_detail' => $nominalBBM,
@@ -3101,8 +3155,8 @@ class ProsesGajiSupirHeader extends MyModel
                         'tglbukti' => $prosesGajiSupirHeader->tglbukti,
                         'pelanggan_id' => '',
                         'bank_id' => $data['bank_id'],
-                        'postingdari' => 'ENTRY PROSES GAJI SUPIR',
-                        'diterimadari' => "PROSES GAJI SUPIR PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'],
+                        'postingdari' => 'EDIT PROSES GAJI SUPIR',
+                        'diterimadari' => "PROSES GAJI SUPIR PERIODE " . date('d-m-Y', strtotime($data['tgldari'])) . " S/D " . date('d-m-Y', strtotime($data['tglsampai'])),
                         'tgllunas' => $prosesGajiSupirHeader->tglbukti,
                         'coakredit' => $coaKreditBBM,
                         'nominal_detail' => $nominalBBM,
@@ -3143,7 +3197,7 @@ class ProsesGajiSupirHeader extends MyModel
                     $penerimaanTruckingHeaderBBM = [
                         'ebs' => true,
                         'tglbukti' => $prosesGajiSupirHeader->tglbukti,
-                        'postingdari' => 'PROSES GAJI SUPIR',
+                        'postingdari' => 'EDIT PROSES GAJI SUPIR',
                         'bank_id' => $data['bank_id'],
                         'penerimaan_nobukti' => $penerimaan_nobuktiBBM,
                     ];
@@ -3167,7 +3221,7 @@ class ProsesGajiSupirHeader extends MyModel
                         'tanpaprosesnobukti' => 1,
                         'nobukti' => $penerimaanBBM->nobukti,
                         'tglbukti' => $prosesGajiSupirHeader->tglbukti,
-                        'postingdari' => "PROSES GAJI SUPIR",
+                        'postingdari' => "EDIT PROSES GAJI SUPIR",
                         'statusformat' => "0",
                         'coakredit_detail' => $coakreditBBM_detail,
                         'coadebet_detail' => $coadebetBBM_detail,
@@ -3213,7 +3267,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'bank_id' => $data['bank_id'],
                 'tgldari' => date('Y-m-d', strtotime($data['tgldari'])),
                 'tglsampai' => date('Y-m-d', strtotime($data['tglsampai'])),
-                'postingdari' => 'PROSES GAJI SUPIR',
+                'postingdari' => 'EDIT PROSES GAJI SUPIR',
                 'tglkasmasuk' => $prosesGajiSupirHeader->tglbukti,
                 'nominal' => $nominalUangJalan,
                 'keterangandetail' => $keteranganUangJalan,
