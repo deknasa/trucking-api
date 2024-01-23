@@ -245,6 +245,7 @@ class PengeluaranTruckingHeader extends MyModel
                 $table->string('pengeluarantrucking_nobukti', 50)->nullable();
                 $table->dateTime('tglbukacetak')->nullable();
                 $table->longText('statuscetak')->nullable();
+                $table->longText('statuscetaktext')->nullable();
                 $table->string('userbukacetak', 200)->nullable();
                 $table->string('coa', 200)->nullable();
                 $table->date('tgldariheaderpengeluaranheader')->nullable();
@@ -252,6 +253,7 @@ class PengeluaranTruckingHeader extends MyModel
                 $table->date('tgldariheaderpenerimaantrucking')->nullable();
                 $table->date('tglsampaiheaderpenerimaantrucking')->nullable();
                 $table->longText('statusposting')->nullable();
+                $table->longText('statuspostingtext')->nullable();
                 $table->double('qty')->nullable();
                 $table->double('harga')->nullable();
             });
@@ -299,13 +301,15 @@ class PengeluaranTruckingHeader extends MyModel
                     'pengeluarantruckingheader.pengeluarantrucking_nobukti',
                     DB::raw('(case when (year(pengeluarantruckingheader.tglbukacetak) <= 2000) then null else pengeluarantruckingheader.tglbukacetak end ) as tglbukacetak'),
                     'statuscetak.memo as statuscetak',
+                    'statuscetak.text as statuscetaktext',
                     'pengeluarantruckingheader.userbukacetak',
                     'akunpusat.keterangancoa as coa',
                     db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
                     db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
                     db::raw("cast((format(penerimaantruckingheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaantrucking"),
                     db::raw("cast(cast(format((cast((format(penerimaantruckingheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaantrucking"),
-                    'statusposting.memo as statusposting'
+                    'statusposting.memo as statusposting',
+                    'statusposting.text as statuspostingtext',
                 )
                 // ->whereBetween('pengeluarantruckingheader.tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])            
                 ->leftJoin(DB::raw("pengeluaranheader with (readuncommitted)"), 'pengeluarantruckingheader.pengeluaran_nobukti', '=', 'pengeluaranheader.nobukti')
@@ -395,6 +399,7 @@ class PengeluaranTruckingHeader extends MyModel
                     'pengeluarantrucking_nobukti' => $item['pengeluarantrucking_nobukti'],
                     'tglbukacetak' => $item['tglbukacetak'],
                     'statuscetak' => $item['statuscetak'],
+                    'statuscetaktext' => $item['statuscetaktext'],
                     'userbukacetak' => $item['userbukacetak'],
                     'coa' => $item['coa'],
                     'tgldariheaderpengeluaranheader' => $item['tgldariheaderpengeluaranheader'],
@@ -402,6 +407,7 @@ class PengeluaranTruckingHeader extends MyModel
                     'tgldariheaderpenerimaantrucking' => $item['tgldariheaderpenerimaantrucking'],
                     'tglsampaiheaderpenerimaantrucking' => $item['tglsampaiheaderpenerimaantrucking'],
                     'statusposting' => $item['statusposting'],
+                    'statuspostingtext' => $item['statuspostingtext'],
                     'qty' => $item['qty'] ?? '',
                     'harga' => $item['harga'] ?? '',
                 ]);
@@ -1185,6 +1191,7 @@ class PengeluaranTruckingHeader extends MyModel
             $table->string('pengeluarantrucking_nobukti', 50)->nullable();
             $table->dateTime('tglbukacetak')->nullable();
             $table->longText('statuscetak')->nullable();
+            $table->longText('statuscetaktext')->nullable();
             $table->string('userbukacetak', 200)->nullable();
             $table->string('coa', 200)->nullable();
             $table->date('tgldariheaderpengeluaranheader')->nullable();
@@ -1192,6 +1199,7 @@ class PengeluaranTruckingHeader extends MyModel
             $table->date('tgldariheaderpenerimaantrucking')->nullable();
             $table->date('tglsampaiheaderpenerimaantrucking')->nullable();
             $table->longText('statusposting')->nullable();
+            $table->longText('statuspostingtext')->nullable();
             $table->double('qty')->nullable();
             $table->double('harga')->nullable();
         });
@@ -1238,13 +1246,15 @@ class PengeluaranTruckingHeader extends MyModel
                 'pengeluarantruckingheader.pengeluarantrucking_nobukti',
                 DB::raw('(case when (year(pengeluarantruckingheader.tglbukacetak) <= 2000) then null else pengeluarantruckingheader.tglbukacetak end ) as tglbukacetak'),
                 'statuscetak.memo as statuscetak',
+                'statuscetak.text as statuscetaktext',
                 'pengeluarantruckingheader.userbukacetak',
                 'akunpusat.keterangancoa as coa',
                 db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
                 db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
                 db::raw("cast((format(penerimaantruckingheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaantrucking"),
                 db::raw("cast(cast(format((cast((format(penerimaantruckingheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaantrucking"),
-                'statusposting.memo as statusposting'
+                'statusposting.memo as statusposting',
+                'statusposting.text as statuspostingtext'
             )
             // ->whereBetween('pengeluarantruckingheader.tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])            
             ->leftJoin(DB::raw("pengeluaranheader with (readuncommitted)"), 'pengeluarantruckingheader.pengeluaran_nobukti', '=', 'pengeluaranheader.nobukti')
@@ -1296,6 +1306,7 @@ class PengeluaranTruckingHeader extends MyModel
                 'pengeluarantrucking_nobukti' => $item['pengeluarantrucking_nobukti'],
                 'tglbukacetak' => $item['tglbukacetak'],
                 'statuscetak' => $item['statuscetak'],
+                'statuscetaktext' => $item['statuscetaktext'],
                 'userbukacetak' => $item['userbukacetak'],
                 'coa' => $item['coa'],
                 'tgldariheaderpengeluaranheader' => $item['tgldariheaderpengeluaranheader'],
@@ -1303,6 +1314,7 @@ class PengeluaranTruckingHeader extends MyModel
                 'tgldariheaderpenerimaantrucking' => $item['tgldariheaderpenerimaantrucking'],
                 'tglsampaiheaderpenerimaantrucking' => $item['tglsampaiheaderpenerimaantrucking'],
                 'statusposting' => $item['statusposting'],
+                'statuspostingtext' => $item['statuspostingtext'],
                 'qty' => $item['qty'] ?? '',
                 'harga' => $item['harga'] ?? '',
             ]);
@@ -1326,6 +1338,7 @@ class PengeluaranTruckingHeader extends MyModel
                 'a.pengeluarantrucking_nobukti',
                 'a.tglbukacetak',
                 'a.statuscetak',
+                'a.statuscetaktext',
                 'a.userbukacetak',
                 'a.coa',
                 'a.tgldariheaderpengeluaranheader',
@@ -1333,6 +1346,7 @@ class PengeluaranTruckingHeader extends MyModel
                 'a.tgldariheaderpenerimaantrucking',
                 'a.tglsampaiheaderpenerimaantrucking',
                 'a.statusposting',
+                'a.statuspostingtext',
                 'a.qty',
                 'a.harga',
                 'a.modifiedby',
@@ -1363,6 +1377,7 @@ class PengeluaranTruckingHeader extends MyModel
             $table->string('pengeluarantrucking_nobukti', 50)->nullable();
             $table->dateTime('tglbukacetak')->nullable();
             $table->longText('statuscetak')->nullable();
+            $table->longText('statuscetaktext')->nullable();
             $table->string('userbukacetak', 200)->nullable();
             $table->string('coa', 200)->nullable();
             $table->date('tgldariheaderpengeluaranheader')->nullable();
@@ -1370,6 +1385,7 @@ class PengeluaranTruckingHeader extends MyModel
             $table->date('tgldariheaderpenerimaantrucking')->nullable();
             $table->date('tglsampaiheaderpenerimaantrucking')->nullable();
             $table->longText('statusposting')->nullable();
+            $table->longText('statuspostingtext')->nullable();
             $table->double('qty')->nullable();
             $table->double('harga')->nullable();
             $table->string('modifiedby', 200)->nullable();
@@ -1393,7 +1409,7 @@ class PengeluaranTruckingHeader extends MyModel
             $models->where('a.pengeluarantruckingid', request()->pengeluaranheader_id);
         }
 
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pengeluaran_nobukti', 'penerimaantrucking_nobukti', 'pengeluarantruckingid', 'pengeluarantrucking_id', 'bank_id', 'trado_id', 'trado', 'tradoheader_id', 'supirheader', 'supir', 'gandengan', 'pengeluarantrucking_nobukti',  'tglbukacetak', 'statuscetak', 'userbukacetak', 'coa', 'tgldariheaderpengeluaranheader', 'tglsampaiheaderpengeluaranheader', 'tgldariheaderpenerimaantrucking', 'tglsampaiheaderpenerimaantrucking', 'statusposting', 'qty', 'harga', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pengeluaran_nobukti', 'penerimaantrucking_nobukti', 'pengeluarantruckingid', 'pengeluarantrucking_id', 'bank_id', 'trado_id', 'trado', 'tradoheader_id', 'supirheader', 'supir', 'gandengan', 'pengeluarantrucking_nobukti',  'tglbukacetak', 'statuscetak', 'statuscetaktext', 'userbukacetak', 'coa', 'tgldariheaderpengeluaranheader', 'tglsampaiheaderpengeluaranheader', 'tgldariheaderpenerimaantrucking', 'tglsampaiheaderpenerimaantrucking', 'statusposting', 'statuspostingtext', 'qty', 'harga', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -1424,64 +1440,36 @@ class PengeluaranTruckingHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        // if ($filters['field'] == 'pengeluarantrucking_id') {
-                        //     $query = $query->where('pengeluarantrucking.keterangan', 'LIKE', "%$filters[data]%");
-                        // } else if ($filters['field'] == 'bank_id') {
-                        //     $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
-                        // } else if ($filters['field'] == 'coa') {
-                        //     $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
-                        // } else if ($filters['field'] == 'supir') {
-                        //     $query = $query->where('getsupir.supir', 'LIKE', "%$filters[data]%");
-                        // } else if ($filters['field'] == 'gandengan') {
-                        //     $query = $query->where('gandengan.kodegandengan', 'LIKE', "%$filters[data]%");
-                        // } else if ($filters['field'] == 'trado') {
-                        //     $query = $query->where('trado.keterangan', 'LIKE', "%$filters[data]%");
-                        // } else if ($filters['field'] == 'penerimaantrucking_nobukti') {
-                        //     $query = $query->where('penerimaantruckingdetail.nobukti', 'LIKE', "%$filters[data]%");
-                        // } else if ($filters['field'] == 'statusposting') {
-                        //     $query = $query->where('statusposting.text', '=', "$filters[data]");
-                        // } else if ($filters['field'] == 'statuscetak') {
-                        //     $query = $query->where('statuscetak.text', '=', "$filters[data]");
-                        // } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak') {
-                        //     $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                        // } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                        //     $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        // } else {
-                        // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-                        // }
+                        if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('a.statuscetaktext', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'statusposting') {
+                            $query = $query->where('a.statuspostingtext', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak') {
+                            $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else {
+                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        }
                     }
 
                     break;
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            // if ($filters['field'] == 'pengeluarantrucking_id') {
-                            //     $query->orWhere('pengeluarantrucking.keterangan', 'LIKE', "%$filters[data]%");
-                            // } else if ($filters['field'] == 'bank_id') {
-                            //     $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                            // } else if ($filters['field'] == 'coa') {
-                            //     $query = $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
-                            // } else if ($filters['field'] == 'penerimaantrucking_nobukti') {
-                            //     $query = $query->orwhere('penerimaantruckingdetail.nobukti', 'LIKE', "%$filters[data]%");
-                            // } else if ($filters['field'] == 'supir') {
-                            //     $query = $query->orwhere('getsupir.supir', 'LIKE', "%$filters[data]%");
-                            // } else if ($filters['field'] == 'gandengan') {
-                            //     $query = $query->orwhere('gandengan.kodegandengan', 'LIKE', "%$filters[data]%");
-                            // } else if ($filters['field'] == 'trado') {
-                            //     $query = $query->orwhere('trado.keterangan', 'LIKE', "%$filters[data]%");
-                            // } else if ($filters['field'] == 'statusposting') {
-                            //     $query->orWhere('statusposting.text', '=', "$filters[data]");
-                            // } else if ($filters['field'] == 'statuscetak') {
-                            //     $query->orWhere('statuscetak.text', '=', "$filters[data]");
-                            // } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak') {
-                            //     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            // } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            //     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            // } else {
-                            // $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->OrwhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-                            // }
+                            if ($filters['field'] == 'statuscetak') {
+                                $query->orWhere('a.statuscetaktext', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusposting') {
+                                $query = $query->where('a.statuspostingtext', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak') {
+                                $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->OrwhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     });
                     break;
