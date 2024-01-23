@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class GetPengeluaranRangeRequest extends FormRequest
@@ -31,21 +32,29 @@ class GetPengeluaranRangeRequest extends FormRequest
         $getBatas = $parameter->getBatasAwalTahun();
         $tglbatasawal = $getBatas->text;
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
+        
+        $penerimaanTruckingQuery = DB::table('pengeluarantrucking')->from(DB::raw('pengeluarantrucking with (readuncommitted)'))->select('pengeluarantrucking.id')->get();
+        $penerimaanTruckings = [];
+        foreach ($penerimaanTruckingQuery as $penerimaanTrucking2) {
+            $penerimaanTruckings[] = $penerimaanTrucking2->id;
+        }
+        $penerimaanTruckingRule = Rule::in($penerimaanTruckings);
         $rules =  [
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
-                'after_or_equal:'.$tglbatasawal,
+                'before:' . $tglbatasakhir,
+                'after_or_equal:' . $tglbatasawal,
             ],
             'tglsampai' => [
                 'required', 'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
-                'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
+                'before:' . $tglbatasakhir,
+                'after_or_equal:' . date('Y-m-d', strtotime($this->tgldari))
             ],
             'pengeluaranheader_id' => [
-                'required'
+                'nullable',
+                $penerimaanTruckingRule,
             ]
-            
+
         ];
 
         return $rules;
@@ -64,10 +73,9 @@ class GetPengeluaranRangeRequest extends FormRequest
         $controller = new ErrorController;
 
         return [
-            'tglsampai.after_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan.' '. $this->tgldari,
-            'tglsampai.after_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan.' '. $this->tgldari,
+            'tglsampai.after_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan . ' ' . $this->tgldari,
+            'tglsampai.after_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan . ' ' . $this->tgldari,
             'pengeluaranheader_id.required' => ':attribute ' . $controller->geterror('WI')->keterangan,
         ];
-    }    
-
+    }
 }
