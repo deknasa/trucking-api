@@ -65,12 +65,11 @@ class TarifDiscountHargaController extends Controller
                 'tujuanbongkar' => $request->tujuanbongkar,
                 'lokasidooring' => $request->lokasidooring,
                 'lokasidooring_id' => $request->lokasidooring_id,
-                'tarifrincian_id' => $request->tarifrincian_id,
                 'shipper' => $request->shipper,
                 'nominal' => $request->nominal,
                 'cabang' => $request->cabang,
-                'nojobemkl2' => $request->nojobemkl2,
                 'statuscabang' => $request->statuscabang,
+                'statusaktif' => $request->statusaktif,
             ];
             $tarifDiscountHarga = (new TarifDiscountHarga())->processStore($data);
             $tarifDiscountHarga->position = $this->getPosition($tarifDiscountHarga, $tarifDiscountHarga->getTable())->position;
@@ -118,12 +117,11 @@ class TarifDiscountHargaController extends Controller
                 'tujuanbongkar' => $request->tujuanbongkar,
                 'lokasidooring' => $request->lokasidooring,
                 'lokasidooring_id' => $request->lokasidooring_id,
-                'tarifrincian_id' => $request->tarifrincian_id,
                 'shipper' => $request->shipper,
                 'nominal' => $request->nominal,
                 'cabang' => $request->cabang,
-                'nojobemkl2' => $request->nojobemkl2,
                 'statuscabang' => $request->statuscabang,
+                'statusaktif' => $request->statusaktif,
             ];
             $tarifDiscountHarga = (new TarifDiscountHarga())->processUpdate($tarifdiscountharga, $data);
             $tarifDiscountHarga->position = $this->getPosition($tarifDiscountHarga, $tarifDiscountHarga->getTable())->position;
