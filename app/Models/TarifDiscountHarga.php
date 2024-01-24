@@ -60,7 +60,8 @@ class TarifDiscountHarga extends MyModel
                 DB::raw("'Laporan Container' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'tarifdiscountharga.statuscabang', '=', 'parameter.id')
             ->leftJoin(DB::raw("parameter as aktif with (readuncommitted)"), 'tarifdiscountharga.statusaktif', '=', 'aktif.id')
@@ -86,9 +87,45 @@ class TarifDiscountHarga extends MyModel
 
         $this->sort($query);
         $this->paginate($query);
-// dd($query->get());
+        // dd($query->get());
         $data = $query->get();
 
+        return $data;
+    }
+
+    public function findAll($id)
+    {
+        $query = TarifDiscountHarga::from(DB::raw("tarifdiscountharga with (readuncommitted)"))
+            ->select(
+                'tarifdiscountharga.id',
+                'tarifdiscountharga.tarif_id',
+                'tarif.tujuan as tarif',
+                'tarif.penyesuaian',
+                'tarifdiscountharga.container_id',
+                'container.keterangan as container',
+                'tarifdiscountharga.tujuanbongkar',
+                'tarifdiscountharga.lokasidooring',
+                'tarifdiscountharga.lokasidooring_id',
+                'tarifdiscountharga.shipper',
+                'tarifdiscountharga.nominal',
+                'tarifdiscountharga.cabang',
+                'parameter.text as statuscabang',
+                'tarifdiscountharga.statusaktif as statusaktif',
+                'tarifdiscountharga.modifiedby',
+                'tarifdiscountharga.created_at',
+                'tarifdiscountharga.updated_at',
+                DB::raw("'Laporan Container' as judulLaporan"),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'tarifdiscountharga.statuscabang', '=', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as aktif with (readuncommitted)"), 'tarifdiscountharga.statusaktif', '=', 'aktif.id')
+            ->leftJoin(DB::raw("container with (readuncommitted)"), 'tarifdiscountharga.container_id', '=', 'container.id')
+            ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'tarifdiscountharga.tarif_id', '=', 'tarif.id')
+
+            ->where('tarifdiscountharga.id', $id);
+
+        $data = $query->first();
         return $data;
     }
 
@@ -98,23 +135,22 @@ class TarifDiscountHarga extends MyModel
         return $query->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
-
             ->select(
                 DB::raw(
                     "$this->table.id,
-            $this->table.tarif_id,
-            'tarif.tujuan as tujuan',
+                    $this->table.tarif_id,
+                    $this->table.container_id,
+                    'container.keterangan as container',
+                    'tarif.tujuan as tujuan',
             'tarif.penyesuaian as penyesuaian',
-            'tarif.keterangan as container',
-            'parameter.text as statuscabang',
-            'aktif.text as statusaktif',
             $this->table.tujuanbongkar,
             $this->table.lokasidooring,
             $this->table.lokasidooring_id,
             $this->table.shipper,
             $this->table.nominal,
             $this->table.cabang,
-
+            'parameter.text as statuscabang',
+            'aktif.text as statusaktif',
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
@@ -169,22 +205,20 @@ class TarifDiscountHarga extends MyModel
     {
         if ($this->params['sortIndex'] == 'statusaktif') {
             return $query->orderBy('aktif.text', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex']== 'statuscabang') {
+        } else if ($this->params['sortIndex'] == 'statuscabang') {
             return $query->orderBy('parameter.text', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex']== 'container') {
+        } else if ($this->params['sortIndex'] == 'container') {
             return $query->orderBy('container.keterangan', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex']== 'tujuan') {
+        } else if ($this->params['sortIndex'] == 'tujuan') {
             return $query->orderBy('tarif.tujuan', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex']== 'penyesuaian') {
+        } else if ($this->params['sortIndex'] == 'penyesuaian') {
             return $query->orderBy('tarif.penyesuaian', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex']== 'created_at' || $this->params['sortIndex'] == 'updated_at') {
+        } else if ($this->params['sortIndex'] == 'created_at' || $this->params['sortIndex'] == 'updated_at') {
             return $query->orderBy(db::raw("format(" . $this->table . "." . $this->params['sortIndex'] . ", 'dd-MM-yyyy HH:mm:ss') "), $this->params['sortOrder']);
         } else {
             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
-
-        
     }
 
     public function filter($query, $relationFields = [])
@@ -226,7 +260,6 @@ class TarifDiscountHarga extends MyModel
                                 $query = $query->orWhere('tarif.tujuan', '=', "$filters[data]");
                             } else if ($filters['field'] == 'penyesuaian') {
                                 $query = $query->orWhere('tarif.penyesuaian', '=', "$filters[data]");
-    
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
@@ -255,6 +288,17 @@ class TarifDiscountHarga extends MyModel
 
     public function processStore(array $data): TarifDiscountHarga
     {
+
+        $statuscabang = db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.grp', 'STATUS CABANG')
+            ->where('a.subgrp', 'STATUS CABANG')
+            ->where('a.text', $data['statuscabang'])
+            ->first()->id ?? 0;
+
+
         $tarifDiscountHarga = new TarifDiscountHarga();
         $tarifDiscountHarga->tarif_id = $data['tarif_id'];
         $tarifDiscountHarga->container_id = $data['container_id'];
@@ -264,10 +308,11 @@ class TarifDiscountHarga extends MyModel
         $tarifDiscountHarga->shipper = $data['shipper'];
         $tarifDiscountHarga->nominal = $data['nominal'];
         $tarifDiscountHarga->cabang = $data['cabang'];
-        $tarifDiscountHarga->statuscabang = $data['statuscabang'];
+        $tarifDiscountHarga->statuscabang = $statuscabang;
         $tarifDiscountHarga->statusaktif = $data['statusaktif'];
         $tarifDiscountHarga->modifiedby = auth('api')->user()->user;
         $tarifDiscountHarga->info = html_entity_decode(request()->info);
+
 
         if (!$tarifDiscountHarga->save()) {
             throw new \Exception('Error storing Tarif Discount Harga.');
@@ -288,6 +333,16 @@ class TarifDiscountHarga extends MyModel
 
     public function processUpdate(TarifDiscountHarga $tarifDiscountHarga, array $data): TarifDiscountHarga
     {
+
+        $statuscabang = db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.grp', 'STATUS CABANG')
+            ->where('a.subgrp', 'STATUS CABANG')
+            ->where('a.text', $data['statuscabang'])
+            ->first()->id ?? 0;
+
         $tarifDiscountHarga->tarif_id = $data['tarif_id'];
         $tarifDiscountHarga->container_id = $data['container_id'];
         $tarifDiscountHarga->tujuanbongkar = $data['tujuanbongkar'];
@@ -296,7 +351,7 @@ class TarifDiscountHarga extends MyModel
         $tarifDiscountHarga->shipper = $data['shipper'];
         $tarifDiscountHarga->nominal = $data['nominal'];
         $tarifDiscountHarga->cabang = $data['cabang'];
-        $tarifDiscountHarga->statuscabang = $data['statuscabang'];
+        $tarifDiscountHarga->statuscabang = $statuscabang;
         $tarifDiscountHarga->statusaktif = $data['statusaktif'];
         $tarifDiscountHarga->modifiedby = auth('api')->user()->user;
         $tarifDiscountHarga->info = html_entity_decode(request()->info);
@@ -382,7 +437,6 @@ class TarifDiscountHarga extends MyModel
         )
             ->select(
                 'statusaktif',
-                'statuscabang'
             );
 
         $data = $query->first();
