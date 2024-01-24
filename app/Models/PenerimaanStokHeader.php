@@ -828,8 +828,10 @@ class PenerimaanStokHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        // if ($filters['field'] == 'statuscetak') {
-                        //     $query = $query->where('statuscetak.text', '=', "$filters[data]");
+                        if ($filters['field'] == 'statuscetak') {
+                            if ($filters['data']) {
+                                $query = $query->where('a.statuscetak_id' , '=', "$filters[data]");
+                            }
                         // } else if ($filters['field'] == 'penerimaanstok') {
                         //     $query = $query->where('penerimaanstok.kodepenerimaan', 'LIKE', "%$filters[data]%");
                         // } else if ($filters['field'] == 'gudang') {
@@ -846,13 +848,13 @@ class PenerimaanStokHeader extends MyModel
                         //     $query = $query->where('ke.gudang', 'LIKE', "%$filters[data]%");
                         // } else if ($filters['field'] == 'coa') {
                         //     $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
-                        // } else if ($filters['field'] == 'tglbukti') {
-                        //     $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                        // } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                        //     $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        // } else {
+                        } else if ($filters['field'] == 'tglbukti') {
+                            $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else {
                         $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        // }
+                        }
                     }
 
                     break;
@@ -877,13 +879,14 @@ class PenerimaanStokHeader extends MyModel
                             //     $query = $query->orWhere('ke.gudang', 'LIKE', "%$filters[data]%");
                             // } else if ($filters['field'] == 'coa') {
                             //     $query = $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
-                            // } else if ($filters['field'] == 'tglbukti') {
-                            //     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            // } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            //     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            // } else {
+                            // } else 
+                            if ($filters['field'] == 'tglbukti') {
+                                $query = $query->orWhereRaw("format( a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
                             $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            // }
+                            }
                         }
                     });
                     //function query
