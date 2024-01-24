@@ -87,6 +87,7 @@ class PengeluaranStokHeader extends MyModel
                 $table->string('servicein_nobukti', 50)->nullable();
                 $table->integer('kerusakan_id')->nullable();
                 $table->longText('statuscetak')->nullable();
+                $table->integer('statuscetak_id')->nullable();
                 $table->integer('statusformat')->nullable();
                 $table->integer('statuspotongretur')->nullable();
                 $table->integer('bank_id')->nullable();
@@ -423,6 +424,7 @@ class PengeluaranStokHeader extends MyModel
                     'servicein_nobukti' => $item['servicein_nobukti'],
                     'kerusakan_id' => $item['kerusakan_id'],
                     'statuscetak' => $item['statuscetak'],
+                    'statuscetak_id' => $item['statuscetak_id'],
                     'statusformat' => $item['statusformat'],
                     'statuspotongretur' => $item['statuspotongretur'],
                     'bank_id' => $item['bank_id'],
@@ -550,6 +552,7 @@ class PengeluaranStokHeader extends MyModel
                 'a.servicein_nobukti',
                 'a.kerusakan_id',
                 'a.statuscetak',
+                'a.statuscetak_id',
                 'a.statusformat',
                 'a.statuspotongretur',
                 'a.bank_id',
@@ -726,8 +729,10 @@ class PengeluaranStokHeader extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
 
-                        // if ($filters['field'] == 'statuscetak') {
-                        //     $query = $query->where('statuscetak.text', '=', "$filters[data]");
+                        if ($filters['field'] == 'statuscetak') {
+                            if ($filters['data']) {
+                                $query = $query->where('a.statuscetak_id' , '=', "$filters[data]");
+                            }
                         // } else if ($filters['field'] == 'pengeluaranstok') {
                         //     $query = $query->where('pengeluaranstok.kodepengeluaran', 'LIKE', "%$filters[data]%");
                         // } else if ($filters['field'] == 'gudang') {
@@ -744,14 +749,14 @@ class PengeluaranStokHeader extends MyModel
                         //     $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
                         // } else if ($filters['field'] == 'bank') {
                         //     $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
-                        // } else if ($filters['field'] == 'tglbukti') {
-                        //     $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                        // } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                        //     $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        // } else {
+                        } else if ($filters['field'] == 'tglbukti') {
+                            $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else {
                         // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-                        // }
+                        }
                     }
 
                     break;
@@ -777,14 +782,15 @@ class PengeluaranStokHeader extends MyModel
                             //     $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
                             // } else if ($filters['field'] == 'bank') {
                             //     $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                            // } else if ($filters['field'] == 'tglbukti') {
-                            //     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            // } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            //     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            // } else {
+                            // } else 
+                            if ($filters['field'] == 'tglbukti') {
+                                $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
                             // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->orWhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-                            // }
+                            }
                         }
                     });
 
@@ -1028,6 +1034,7 @@ class PengeluaranStokHeader extends MyModel
             "$this->table.servicein_nobukti",
             "$this->table.kerusakan_id",
             'statuscetak.memo as statuscetak',
+            'statuscetak.id as statuscetak_id',
             "$this->table.statusformat",
             "$this->table.statuspotongretur",
             "$this->table.bank_id",
