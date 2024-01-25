@@ -891,8 +891,10 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('stok/default', [StokController::class, 'default']);
     Route::get('stok/field_length', [StokController::class, 'fieldLength']);
+    Route::post('stok/approvalklaim', [StokController::class, 'approvalklaim']);
+    Route::post('stok/approvalreuse', [StokController::class, 'approvalReuse']);
     Route::post('stok/{stok}/getvulkan', [StokController::class, 'getvulkan']);
-    Route::post('stok/{stok}/approvalklaim', [StokController::class, 'approvalklaim']);
+    // Route::post('stok/{stok}/approvalklaim', [StokController::class, 'approvalklaim']);
     Route::post('stok/{id}/cekValidasi', [StokController::class, 'cekValidasi'])->name('stok.cekValidasi')->whereNumber('id');
     Route::get('stok/export', [StokController::class, 'export']);
     Route::get('stok/report', [StokController::class, 'report']);

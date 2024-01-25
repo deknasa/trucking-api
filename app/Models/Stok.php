@@ -217,6 +217,7 @@ class Stok extends MyModel
                     'stok.keterangan',
                     'stok.gambar',
                     'stok.namaterpusat',
+                    'statusapprovaltanpaklaim.memo as statusapprovaltanpaklaim',                    
                     'statusban.text as statusban',
                     'stok.statusban as statusban_id',
                     'statusreuse.memo as statusreuse',
@@ -249,6 +250,7 @@ class Stok extends MyModel
                     ->leftJoin(DB::raw("parameter as service with (readuncommitted)"), 'stok.statusservicerutin', 'service.id')
                     ->leftJoin(DB::raw("parameter as statusban with (readuncommitted)"), 'stok.statusban', 'statusban.id')
                     ->leftJoin(DB::raw("parameter as statusreuse with (readuncommitted)"), 'stok.statusreuse', 'statusreuse.id')
+                    ->leftJoin(DB::raw("parameter as statusapprovaltanpaklaim with (readuncommitted)"), 'stok.statusapprovaltanpaklaim', 'statusapprovaltanpaklaim.id')                    
                     ->leftJoin('merk', 'stok.merk_id', 'merk.id')
                     ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
                     ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id");
@@ -881,6 +883,8 @@ class Stok extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusservicerutin') {
                             $query = $query->where('service.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'check') {
+                            
                         } else if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusreuse') {
@@ -913,6 +917,8 @@ class Stok extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statusservicerutin') {
                                 $query = $query->orWhere('service.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'check') {
+                                
                             } else if ($filters['field'] == 'jenistrado') {
                                 $query = $query->orWhereRaw('jenistrado.keterangan LIKE ' . "'%$filters[data]%'");
                             } else if ($filters['field'] == 'statusaktif') {
@@ -1091,32 +1097,66 @@ class Stok extends MyModel
         return $stok;
     }
 
-    public function processApprovalklaim(Stok $stok): Stok
+    public function processApprovalklaim($data)
     {
         $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
         $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
-
-        if ($stok->statusapprovaltanpaklaim == $statusApproval->id) {
-            $stok->statusapprovaltanpaklaim = $statusNonApproval->id;
-        } else {
-            $stok->statusapprovaltanpaklaim = $statusApproval->id;
+        for ($i = 0; $i < count($data['id']); $i++) {
+            $stok = Stok::find($data['id'][$i]);
+            if ($stok->statusapprovaltanpaklaim == $statusApproval->id) {
+                $stok->statusapprovaltanpaklaim = $statusNonApproval->id;
+            } else {
+                $stok->statusapprovaltanpaklaim = $statusApproval->id;
+            }
+    
+            $stok->tglapprovaltanpaklaim = date('Y-m-d', time());
+            $stok->userapprovaltanpaklaim = auth('api')->user()->name;
+    
+            if ($stok->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($stok->getTable()),
+                    'postingdari' => 'UN/APPROVE STOK TANPA KALIM',
+                    'idtrans' => $stok->id,
+                    'nobuktitrans' => $stok->id,
+                    'aksi' => 'UN/APPROVE',
+                    'datajson' => $stok->toArray(),
+                    'modifiedby' => $stok->modifiedby
+                ]);
+    
+                DB::commit();
+            }
         }
-
-        $stok->tglapprovaltanpaklaim = date('Y-m-d', time());
-        $stok->userapprovaltanpaklaim = auth('api')->user()->name;
-
-        if ($stok->save()) {
-            (new LogTrail())->processStore([
-                'namatabel' => strtoupper($stok->getTable()),
-                'postingdari' => 'UN/APPROVE STOK TANPA KALIM',
-                'idtrans' => $stok->id,
-                'nobuktitrans' => $stok->id,
-                'aksi' => 'UN/APPROVE',
-                'datajson' => $stok->toArray(),
-                'modifiedby' => $stok->modifiedby
-            ]);
-
-            DB::commit();
+        return $stok;
+    }
+    
+    public function processApprovalReuse($data)
+    {
+        $statusReuse = DB::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))->select('a.id')->where('grp', 'STATUS REUSE')->where('subgrp', 'STATUS REUSE')->where('text', 'REUSE')->first();
+        $statusNonReuse = DB::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))->select('a.id')->where('grp', 'STATUS REUSE')->where('subgrp', 'STATUS REUSE')->where('text', 'NON REUSE')->first();
+        for ($i = 0; $i < count($data['id']); $i++) {
+            $stok = Stok::find($data['id'][$i]);
+            if ($stok->statusreuse == $statusReuse->id) {
+                $stok->statusreuse = $statusNonReuse->id;
+            } else {
+                $stok->statusreuse = $statusReuse->id;
+            }
+    
+            // $stok->tglapprovalstatusreuse = date('Y-m-d', time());
+            // $stok->userapprovalstatusreuse = auth('api')->user()->name;
+    
+            if ($stok->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($stok->getTable()),
+                    'postingdari' => 'UN/APPROVE STOK Reuse',
+                    'idtrans' => $stok->id,
+                    'nobuktitrans' => $stok->id,
+                    'aksi' => 'UN/APPROVE',
+                    'datajson' => $stok->toArray(),
+                    'modifiedby' => $stok->modifiedby
+                ]);
+    
+                DB::commit();
+            }
         }
         return $stok;
     }
