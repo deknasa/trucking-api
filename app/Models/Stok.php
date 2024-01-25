@@ -1123,7 +1123,7 @@ class Stok extends MyModel
                     'modifiedby' => $stok->modifiedby
                 ]);
     
-                DB::commit();
+                
             }
         }
         return $stok;
@@ -1139,6 +1139,7 @@ class Stok extends MyModel
                 $stok->statusreuse = $statusNonReuse->id;
             } else {
                 $stok->statusreuse = $statusReuse->id;
+                (new ApprovalStokReuse)->processStokReuseStore($stok);
             }
     
             // $stok->tglapprovalstatusreuse = date('Y-m-d', time());
@@ -1155,7 +1156,7 @@ class Stok extends MyModel
                     'modifiedby' => $stok->modifiedby
                 ]);
     
-                DB::commit();
+                
             }
         }
         return $stok;
