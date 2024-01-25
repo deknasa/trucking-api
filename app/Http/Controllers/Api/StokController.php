@@ -3,20 +3,21 @@
 namespace App\Http\Controllers\Api;
 
 use App\Helpers\App;
-use App\Http\Requests\StoreLogTrailRequest;
-
-use App\Http\Controllers\Controller;
-use App\Http\Requests\RangeExportReportRequest;
 use App\Models\Stok;
-use App\Http\Requests\StoreStokRequest;
-use App\Http\Requests\UpdateStokRequest;
-use Illuminate\Http\JsonResponse;
+
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
-use Intervention\Image\ImageManagerStatic as Image;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
+use App\Http\Requests\StoreStokRequest;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Requests\UpdateStokRequest;
+use App\Http\Requests\ApprovalSupirRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\RangeExportReportRequest;
+use Intervention\Image\ImageManagerStatic as Image;
 
 class StokController extends Controller
 {
@@ -247,12 +248,43 @@ class StokController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan APPROVAL TANPA KLAIM
      */
-    public function approvalklaim(Stok $stok)
+    public function approvalklaim(ApprovalSupirRequest $request)
     {
         DB::beginTransaction();
         try {
-            $stok->processApprovalklaim($stok);
+            $data = [
+                'id' => $request->Id,
+                'nama' => $request->nama,
+            ];
+            $stok = new Stok();
+            $stok->processApprovalklaim($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+    
+    /**
+     * @ClassName 
+     * @Keterangan APPROVAL STOK REUSE
+     */
+    public function approvalReuse(ApprovalSupirRequest $request)
+    {
+        DB::beginTransaction();
+        try {
+            $data = [
+                'id' => $request->Id,
+                'nama' => $request->nama,
+            ];
+            $stok = new Stok();
+            $stok->processApprovalReuse($data);
 
             DB::commit();
             return response([
