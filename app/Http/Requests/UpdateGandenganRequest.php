@@ -35,14 +35,28 @@ class UpdateGandenganRequest extends FormRequest
             $status[] = $item['id'];
         }
 
-        return [
-            'kodegandengan' => ['required',Rule::unique('gandengan')->whereNotIn('id', [$this->id])],
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        } else if ($statusaktif == null && $this->statusaktifnama != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        }
+        $rules = [
+            'kodegandengan' => ['required', Rule::unique('gandengan')->whereNotIn('id', [$this->id])],
             'jumlahroda' => ['required'],
             'jumlahbanserap' => ['required'],
-            'statusaktif' => ['required', Rule::in($status)]
+            'statusaktifnama' => ['required'],
         ];
-
-       
+        $rules = array_merge(
+            $rules,
+            $rulesStatusAktif,
+        );
+        return $rules;
     }
 
     public function attributes()
@@ -51,8 +65,7 @@ class UpdateGandenganRequest extends FormRequest
             'kodegandengan' => 'kode gandengan',
             'jumlahroda' => 'jumlah roda',
             'jumlahbanserap' => 'jumlah ban serap',
-            'statusaktif' => 'status',
+            'statusaktifnama' => 'status',
         ];
     }
-
 }

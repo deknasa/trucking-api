@@ -31,7 +31,7 @@ class Karyawan extends MyModel
 
         // dd(request()->forReport);
 
-        $report=request()->forReport ?? false;
+        $report = request()->forReport ?? false;
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->select('text')
@@ -53,7 +53,7 @@ class Karyawan extends MyModel
                 DB::raw("'Laporan Karyawan' as judulLaporan "),
                 DB::raw("'" . $getJudul->text . "' as judul "),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter as statusaktif with (readuncommitted)"), 'karyawan.statusaktif', 'statusaktif.id')
             ->leftJoin(DB::raw("parameter as statusstaff with (readuncommitted)"), 'karyawan.statusstaff', 'statusstaff.id');
@@ -91,7 +91,7 @@ class Karyawan extends MyModel
         // if ($report==true) {p
         //     dd('test');
         // } else {
-            // return $data;
+        // return $data;
         // }
 
         // if(array_key_exists("id",$data)) { $data_id = $data['id'];}  else  {$data_id = 0;}
@@ -108,7 +108,7 @@ class Karyawan extends MyModel
         //     dd('test1');
         // }
         return $data;
-        
+
 
         // dd($data);
         // if ($data != []) {
@@ -139,14 +139,16 @@ class Karyawan extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
             $table->unsignedBigInteger('statusstaff')->nullable();
+            $table->string('statusstaffnama', 300)->nullable();
         });
 
         $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id','text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
@@ -157,26 +159,49 @@ class Karyawan extends MyModel
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id','text'
             )
             ->where('grp', '=', 'STATUS STAFF')
             ->where('subgrp', '=', 'STATUS STAFF')
             ->where('default', '=', 'YA')
             ->first();
 
-        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id, "statusstaff" => $statusstaff->id]);
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id,"statusaktifnama" => $statusaktif->text, "statusstaff" => $statusstaff->id, "statusstaffnama" => $statusstaff->text]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
             ->select(
                 'statusaktif',
-                'statusstaff'
+                'statusstaff',
+                'statusaktifnama',
+                'statusstaffnama',
             );
 
         $data = $query->first();
         // dd($data);
         return $data;
+    }
+
+    public function findAll($id)
+    {
+        $query = DB::table("karyawan")->from(DB::raw("karyawan with (readuncommitted)"))
+            ->select(
+                'karyawan.id',
+                'karyawan.namakaryawan',
+                'karyawan.keterangan',
+                'karyawan.jabatan',
+                'karyawan.statusaktif',
+                'karyawan.statusstaff',
+                'statusaktif.text as statusaktifnama',
+                'statusstaff.text as statusstaffnama',
+            )
+            ->leftJoin(DB::raw("parameter as statusaktif with (readuncommitted)"), 'karyawan.statusaktif', 'statusaktif.id')
+            ->leftJoin(DB::raw("parameter as statusstaff with (readuncommitted)"), 'karyawan.statusstaff', 'statusstaff.id')
+            ->where('karyawan.id', $id)
+            ->first();
+
+        return $query;
     }
 
     public function cekvalidasihapus($id)

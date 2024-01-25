@@ -52,6 +52,7 @@ use App\Http\Controllers\Api\AkunPusatController;
 use App\Http\Controllers\Api\AkuntansiController;
 use App\Http\Controllers\Api\AlatBayarController;
 use App\Http\Controllers\Api\ContainerController;
+use App\Http\Controllers\Api\TarifDiscountHargaController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ExportRicController;
 use App\Http\Controllers\Api\GandenganController;
@@ -365,6 +366,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('jenisorder', JenisOrderController::class)->whereNumber('jenisorder');
     Route::resource('statuscontainer', StatusContainerController::class)->parameters(['statuscontainer' => 'statusContainer'])->whereNumber('statusContainer');
     Route::resource('container', ContainerController::class)->whereNumber('container');
+    Route::resource('tarifdiscountharga', TarifDiscountHargaController::class)->whereNumber('tarifdiscountharga');
     Route::resource('shipper', ShipperController::class)->whereNumber('shipper');
     Route::get('upahsupirrincian/get', [UpahSupirRincianController::class, 'get']);
     Route::get('absensisupirdetail/get', [AbsensiSupirDetailController::class, 'getDetailAbsensi']);
@@ -743,6 +745,15 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('container/{id}/cekValidasi', [ContainerController::class, 'cekValidasi'])->name('container.cekValidasi')->whereNumber('id');
     Route::get('container/export', [ContainerController::class, 'export']);
     Route::get('container/report', [ContainerController::class, 'report']);
+
+    Route::get('tarifdiscountharga/field_length', [TarifDiscountHargaController::class, 'fieldLength']);
+    Route::get('tarifdiscountharga/combostatus', [TarifDiscountHargaController::class, 'combostatus']);
+    Route::get('tarifdiscountharga/getPosition2', [TarifDiscountHargaController::class, 'getPosition2']);
+    Route::get('tarifdiscountharga/default', [TarifDiscountHargaController::class, 'default']);
+    Route::post('tarifdiscountharga/{id}/cekValidasi', [TarifDiscountHargaController::class, 'cekValidasi'])->name('tarifdiscountharga.cekValidasi')->whereNumber('id');
+    Route::get('tarifdiscountharga/combo', [TarifDiscountHargaController::class, 'combo']);
+    Route::get('tarifdiscountharga/export', [TarifDiscountHargaController::class, 'export']);
+    Route::get('tarifdiscountharga/report', [TarifDiscountHargaController::class, 'report']);    
 
     Route::get('bank/combo', [BankController::class, 'combo']);
     Route::get('bank/field_length', [BankController::class, 'fieldLength']);

@@ -34,12 +34,27 @@ class UpdateCabangRequest extends FormRequest
         foreach ($data as $item) {
             $status[] = $item['id'];
         }
-
-        return [
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        } else if ($statusaktif == null && $this->statusaktifnama != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        }
+        $rules = [
             'kodecabang' => ['required',Rule::unique('cabang')->whereNotIn('id', [$this->id])],
             'namacabang' => ['required',Rule::unique('cabang')->whereNotIn('id', [$this->id])],
-            'statusaktif' => ['required', Rule::in($status)]
+            'statusaktifnama' => ['required'],
         ];
+        $rules = array_merge(
+            $rules,
+            $rulesStatusAktif,
+        );
+        return $rules;
     }
 
     public function attributes()
@@ -47,7 +62,7 @@ class UpdateCabangRequest extends FormRequest
         return [
             'kodecabang' => 'kode cabang',
             'namacabang' => 'nama cabang',
-            'statusaktif' => 'status',
+            'statusaktifnama' => 'status',
         ];
     }
 

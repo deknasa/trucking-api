@@ -93,6 +93,7 @@ class AkunPusat extends MyModel
         $level = request()->level ?? '';
         $potongan = request()->potongan ?? '';
         $supplier = request()->supplier ?? '';
+        $isParent = request()->isParent ?? '';
 
         $aktif = request()->aktif ?? '';
         $KeteranganCoa = request()->keterangancoa ?? '';
@@ -167,6 +168,12 @@ class AkunPusat extends MyModel
                 ->first();
 
             $query->where('akunpusat.statusaktif', '=', $statusaktif->id);
+        }
+
+        
+        if ($isParent != '') {
+
+            $query->whereRaw("RIGHT(akunpusat.coa, 3) = '.00'");
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

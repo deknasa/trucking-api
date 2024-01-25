@@ -58,29 +58,28 @@ class InputTrip extends MyModel
             ->first();
 
         $tarifrincian = TarifRincian::where('tarif_id', $data['tarifrincian_id'])->where('container_id', $data['container_id'])->first();
-            
+
         $kondisi = true;
-        $tanggal = date('Y-m-d', strtotime($data['tglbukti'].'+1 days'));
+        $tanggal = date('Y-m-d', strtotime($data['tglbukti'] . '+1 days'));
         start:
         while ($kondisi == true) {
-            
+
             $cekHarilibur = DB::table("harilibur")->from(DB::raw("harilibur with (readuncommitted)"))->where('tgl', $tanggal)->first();
-            if($cekHarilibur != '')
-            {
-                $tanggal = date('Y-m-d', strtotime($tanggal.'+1 days'));
+            if ($cekHarilibur != '') {
+                $tanggal = date('Y-m-d', strtotime($tanggal . '+1 days'));
                 goto start;
-            } 
-            
-            if(date('D',strtotime($tanggal)) == 'Sun'){
-                $tanggal = date('Y-m-d', strtotime($tanggal.'+1 days'));
-            }else{
+            }
+
+            if (date('D', strtotime($tanggal)) == 'Sun') {
+                $tanggal = date('Y-m-d', strtotime($tanggal . '+1 days'));
+            } else {
                 $kondisi = false;
             }
         }
         end:
 
         $tglBatasEdit = date('Y-m-d', strtotime($tanggal)) . ' ' . '12:00:00';
-        
+
         if ($jobtrucking == '') {
             $orderan = [
                 'tglbukti' => $tglbukti,
@@ -248,44 +247,47 @@ class InputTrip extends MyModel
 
     public function getInfo($trado_id, $upah_id, $statuscontainer)
     {
-        $getUpah = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->where('id', $upah_id)->first();
-        if($statuscontainer == 3){
-            $jarak = number_format((float) $getUpah->jarakfullempty,2);
-        } else {
-            $jarak = number_format((float) $getUpah->jarak, 2);
+        if ($upah_id != '') {
+
+            $getUpah = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->where('id', $upah_id)->first();
+            if ($statuscontainer == 3) {
+                $jarak = number_format((float) $getUpah->jarakfullempty, 2);
+            } else {
+                $jarak = number_format((float) $getUpah->jarak, 2);
+            }
+
+            $getTrado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))->where('id', $trado_id)->first();
+            $temtabel = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+
+            Schema::create($temtabel, function (Blueprint $table) {
+                $table->id();
+                $table->longText('nopol')->nullable();
+                $table->integer('trado_id')->nullable();
+                $table->date('tanggal')->nullable();
+                $table->string('status', 100)->nullable();
+                $table->double('km', 15, 2)->nullable();
+                $table->double('kmperjalanan', 15, 2)->nullable();
+                $table->integer('statusbatas')->nullable();
+            });
+
+            DB::table($temtabel)->insertUsing([
+                'nopol',
+                'trado_id',
+                'tanggal',
+                'status',
+                'km',
+                'kmperjalanan',
+                'statusbatas'
+            ], (new ReminderOli())->getdata());
+
+            $query = DB::table($temtabel)->from(DB::raw("$temtabel as a with (readuncommitted)"))
+                ->select(
+                    DB::raw("REPLACE(a.status, 'PENGGANTIAN', '') as status"),
+                    DB::raw("CONCAT(CAST(a.kmperjalanan AS DECIMAL(10, 2)),'(+$jarak)') as kmperjalanan"),
+                    DB::raw(" CAST(ROUND((a.kmperjalanan + $jarak), 2, 1) AS DECIMAL(10, 2)) as kmtotal")
+                )
+                ->where('a.nopol', $getTrado->kodetrado)->get();
+            return $query;
         }
-
-        $getTrado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))->where('id', $trado_id)->first();
-        $temtabel = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
-
-        Schema::create($temtabel, function (Blueprint $table) {
-            $table->id();
-            $table->longText('nopol')->nullable();
-            $table->integer('trado_id')->nullable();
-            $table->date('tanggal')->nullable();
-            $table->string('status', 100)->nullable();
-            $table->double('km', 15, 2)->nullable();
-            $table->double('kmperjalanan', 15, 2)->nullable();
-            $table->integer('statusbatas')->nullable();
-        });
-
-        DB::table($temtabel)->insertUsing([
-            'nopol',
-            'trado_id',
-            'tanggal',
-            'status',
-            'km',
-            'kmperjalanan',
-            'statusbatas'
-        ], (new ReminderOli())->getdata());
-
-        $query = DB::table($temtabel)->from(DB::raw("$temtabel as a with (readuncommitted)"))
-        ->select(
-            DB::raw("REPLACE(a.status, 'PENGGANTIAN', '') as status"),
-            DB::raw("CONCAT(CAST(a.kmperjalanan AS DECIMAL(10, 2)),'(+$jarak)') as kmperjalanan"),
-            DB::raw(" CAST(ROUND((a.kmperjalanan + $jarak), 2, 1) AS DECIMAL(10, 2)) as kmtotal")
-        )
-        ->where('a.nopol', $getTrado->kodetrado)->get();
-       return $query;
     }
 }

@@ -618,7 +618,7 @@ class PengembalianKasGantungHeader extends MyModel
 
         $penerimaanRequest = [
             'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-            'postingdari' => "ENTRY PENGEMBALIAN KAS GANTUNG HEADER",
+            'postingdari' =>  $data['postingdari'] ?? "ENTRY PENGEMBALIAN KAS GANTUNG",
             'statusapproval' => $statusApproval->id,
             'pelanggan_id' => 0,
             'agen_id' => 0,
@@ -644,7 +644,7 @@ class PengembalianKasGantungHeader extends MyModel
 
         $pengembalianKasGantungHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($pengembalianKasGantungHeader->getTable()),
-            'postingdari' => strtoupper('ENTRY penerimaan Stok Header'),
+            'postingdari' =>  $data['postingdari'] ?? strtoupper('ENTRY PENGEMBALIAN KAS GANTUNG'),
             'idtrans' => $pengembalianKasGantungHeader->id,
             'nobuktitrans' => $pengembalianKasGantungHeader->nobukti,
             'aksi' => 'ENTRY',
@@ -655,7 +655,7 @@ class PengembalianKasGantungHeader extends MyModel
         //store logtrail detail
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($pengembalianKasGantungDetail->getTable()),
-            'postingdari' => strtoupper('ENTRY penerimaan Stok Detail'),
+            'postingdari' =>  $data['postingdari'] ?? strtoupper('ENTRY PENGEMBALIAN KAS GANTUNG'),
             'idtrans' =>  $pengembalianKasGantungHeaderLogTrail->id,
             'nobuktitrans' => $pengembalianKasGantungHeader->nobukti,
             'aksi' => 'ENTRY',
@@ -749,7 +749,7 @@ class PengembalianKasGantungHeader extends MyModel
 
         $penerimaanRequest = [
             'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-            'postingdari' => "ENTRY PENGEMBALIAN KAS GANTUNG HEADER",
+            'postingdari' =>  $data['postingdari'] ?? "ENTRY PENGEMBALIAN KAS GANTUNG",
             'statusapproval' => $statusApproval->id,
             'pelanggan_id' => 0,
             'agen_id' => 0,
@@ -776,7 +776,7 @@ class PengembalianKasGantungHeader extends MyModel
         $pengembalianKasGantungHeader->save();
         $pengembalianKasGantungHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($pengembalianKasGantungHeader->getTable()),
-            'postingdari' => strtoupper('ENTRY penerimaan Stok Header'),
+            'postingdari' =>  $data['postingdari'] ?? strtoupper('ENTRY PENGEMBALIAN KAS GANTUNG'),
             'idtrans' => $pengembalianKasGantungHeader->id,
             'nobuktitrans' => $pengembalianKasGantungHeader->nobukti,
             'aksi' => 'ENTRY',
@@ -787,7 +787,7 @@ class PengembalianKasGantungHeader extends MyModel
         //store logtrail detail
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($pengembalianKasGantungDetail->getTable()),
-            'postingdari' => strtoupper('ENTRY penerimaan Stok Detail'),
+            'postingdari' =>  $data['postingdari'] ?? strtoupper('ENTRY PENGEMBALIAN KAS GANTUNG'),
             'idtrans' =>  $pengembalianKasGantungHeaderLogTrail->id,
             'nobuktitrans' => $pengembalianKasGantungHeader->nobukti,
             'aksi' => 'ENTRY',
@@ -814,7 +814,7 @@ class PengembalianKasGantungHeader extends MyModel
 
         $pengembalianKasGantungHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => $pengembalianKasGantungHeader->getTable(),
-            'postingdari' => $postingdari ?? strtoupper('DELETE penerimaan Stok Header'),
+            'postingdari' => $postingdari ?? strtoupper('DELETE PENGEMBALIAN KAS GANTUNG'),
             'idtrans' => $pengembalianKasGantungHeader->id,
             'nobuktitrans' => $pengembalianKasGantungHeader->nobukti,
             'aksi' => 'DELETE',
@@ -824,7 +824,7 @@ class PengembalianKasGantungHeader extends MyModel
 
         (new LogTrail())->processStore([
             'namatabel' => "penerimaanstokdetail",
-            'postingdari' => $postingdari ?? strtoupper('PENGEMBALIAN KAS GANTUNG'),
+            'postingdari' => $postingdari ?? strtoupper('DELETE PENGEMBALIAN KAS GANTUNG'),
             'idtrans' => $pengembalianKasGantungHeaderLogTrail['id'],
             'nobuktitrans' => $pengembalianKasGantungHeader->nobukti,
             'aksi' => 'DELETE',

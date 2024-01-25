@@ -27,19 +27,33 @@ class StoreCabangRequest extends FormRequest
      */
     public function rules()
     {
-
         $parameter = new Parameter();
         $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
         $data = json_decode($data, true);
         foreach ($data as $item) {
             $status[] = $item['id'];
         }
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        } else if ($statusaktif == null && $this->statusaktifnama != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        }
 
         $rules = [
             'kodecabang' => ['required', 'string', 'unique:cabang'],
             'namacabang' => ['required', 'string', 'unique:cabang'],
-            'statusaktif' => ['required', Rule::in($status)]
+            'statusaktifnama' => ['required'],
         ];
+        $rules = array_merge(
+            $rules,
+            $rulesStatusAktif,
+        );
         return $rules;
     }
 
@@ -48,7 +62,7 @@ class StoreCabangRequest extends FormRequest
         return [
             'kodecabang' => 'kode cabang',
             'namacabang' => 'nama cabang',
-            'statusaktif' => 'status',
+            'statusaktifnama' => 'status',
         ];
     }
 }

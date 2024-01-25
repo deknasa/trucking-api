@@ -28,6 +28,7 @@ class GajisUpirUangJalan extends MyModel
         $gajiSupirUangJalan->gajisupir_nobukti = $data['gajisupir_nobukti'];
         $gajiSupirUangJalan->absensisupir_nobukti = $data['absensisupir_nobukti'];
         $gajiSupirUangJalan->supir_id = $data['supir_id'];
+        $gajiSupirUangJalan->trado_id = $data['trado_id'];
         $gajiSupirUangJalan->nominal = $data['nominal'];
 
         if (!$gajiSupirUangJalan->save()) {

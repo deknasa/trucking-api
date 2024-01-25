@@ -38,14 +38,28 @@ class StoreGandenganRequest extends FormRequest
         }
 
 
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        } else if ($statusaktif == null && $this->statusaktifnama != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        }
         $rules = [
             'kodegandengan' => ['required', 'unique:gandengan'],
             'jumlahroda' => ['required'],
             'jumlahbanserap' => ['required'],
-            'statusaktif' => ['required', Rule::in($status)]
+            'statusaktifnama' => ['required'],
         ];
+        $rules = array_merge(
+            $rules,
+            $rulesStatusAktif,
+        );
         return $rules;
-
     }
 
     public function attributes()
@@ -54,8 +68,7 @@ class StoreGandenganRequest extends FormRequest
             'kodegandengan' => 'kode gandengan',
             'jumlahroda' => 'jumlah roda',
             'jumlahbanserap' => 'jumlah ban serap',
-            'statusaktif' => 'status',
+            'statusaktifnama' => 'status',
         ];
     }
-
 }

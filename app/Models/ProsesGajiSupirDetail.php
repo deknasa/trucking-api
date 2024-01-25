@@ -26,7 +26,7 @@ class ProsesGajiSupirDetail extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-        
+
         if (isset(request()->forReport) && request()->forReport) {
             $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
 
@@ -132,7 +132,8 @@ class ProsesGajiSupirDetail extends MyModel
                         'a.gajisupir_nobukti',
                         'supir.namasupir as supir_id',
                         'trado.kodetrado as trado_id',
-                        DB::RAW("(gajisupirheader.total+gajisupirheader.komisisupir+isnull(d.gajikenek,0)) as total"),
+
+                        DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then gajisupirheader.total else (gajisupirheader.total+gajisupirheader.komisisupir+isnull(d.gajikenek,0)) end) as total"),
                         'gajisupirheader.uangjalan',
                         'gajisupirheader.bbm',
                         'gajisupirheader.uangmakanharian',
@@ -193,7 +194,7 @@ class ProsesGajiSupirDetail extends MyModel
                 // dd($querydata);
                 $temtabel = $querydata->namatabel;
             }
-            
+
             $query = DB::table($temtabel)->from(DB::raw($temtabel  . " a "));
             $query->select(
                 'id',
@@ -216,7 +217,7 @@ class ProsesGajiSupirDetail extends MyModel
                 'a.tgldariheadergajisupirheaderheader',
                 'a.tglsampaiheadergajisupirheaderheader',
             );
-            
+
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
             $query->where('a.prosesgajisupir_id', '=', request()->prosesgajisupir_id);
@@ -316,7 +317,11 @@ class ProsesGajiSupirDetail extends MyModel
                 case "AND":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] == 'total' || $filters['field'] == 'tolsupir' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'deposito' || $filters['field'] == 'komisisupir' || $filters['field'] == 'gajisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'biayaextra') {
+                                $query = $query->whereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
                     });
 
@@ -324,7 +329,11 @@ class ProsesGajiSupirDetail extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] == 'total' || $filters['field'] == 'tolsupir' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'deposito' || $filters['field'] == 'komisisupir' || $filters['field'] == 'gajisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'biayaextra') {
+                                $query = $query->orWhereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
                     });
                     break;

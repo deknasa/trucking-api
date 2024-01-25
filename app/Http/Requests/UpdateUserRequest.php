@@ -46,7 +46,7 @@ class UpdateUserRequest extends FormRequest
             $rulesCabang_id = [
                 'cabang_id' => ['required', 'numeric', 'min:1', new ExistCabang()]
             ];
-        } else if ($cabang_id == null && $this->agen != '') {
+        } else if ($cabang_id == null && $this->cabang != '') {
             $rulesCabang_id = [
                 'cabang_id' => ['required', 'numeric', 'min:1', new ExistCabang()]
             ];
@@ -57,7 +57,7 @@ class UpdateUserRequest extends FormRequest
             $rulesStatusAktif = [
                 'statusaktif' => ['required', Rule::in($status)]
             ];
-        } else if ($statusaktif == null && $this->agen != '') {
+        } else if ($statusaktif == null && $this->statusaktifnama != '') {
             $rulesStatusAktif = [
                 'statusaktif' => ['required', Rule::in($status)]
             ];
@@ -69,7 +69,7 @@ class UpdateUserRequest extends FormRequest
             $rulesStatusAkses = [
                 'statusakses' => ['required', Rule::in($statusAkses)]
             ];
-        } else if ($statusakses == null && $this->agen != '') {
+        } else if ($statusakses == null && $this->statusaksesnama != '') {
             $rulesStatusAkses = [
                 'statusakses' => ['required', Rule::in($statusAkses)]
             ];
