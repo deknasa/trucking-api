@@ -24,6 +24,7 @@ class InvoiceChargeGandenganHeaderController extends Controller
      * @ClassName 
      * InvoiceChargeGandenganHeader
      * @Detail InvoiceChargeGandenganDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {

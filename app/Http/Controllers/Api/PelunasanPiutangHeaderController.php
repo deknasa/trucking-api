@@ -53,6 +53,7 @@ class PelunasanPiutangHeaderController extends Controller
      * @ClassName 
      * PelunasanPiutangHeader
      * @Detail PelunasanPiutangDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -220,82 +221,82 @@ class PelunasanPiutangHeaderController extends Controller
 
             throw $th;
         }
-        $getDetail = PelunasanPiutangDetail::where('pelunasanpiutang_id', $id)->get();
+        // $getDetail = PelunasanPiutangDetail::where('pelunasanpiutang_id', $id)->get();
 
-        $request['postingdari'] = "DELETE PELUNASAN PIUTANG";
-        $pelunasanpiutangheader = new PelunasanPiutangHeader();
-        $pelunasanpiutangheader = $pelunasanpiutangheader->lockAndDestroy($id);
+        // $request['postingdari'] = "DELETE PELUNASAN PIUTANG";
+        // $pelunasanpiutangheader = new PelunasanPiutangHeader();
+        // $pelunasanpiutangheader = $pelunasanpiutangheader->lockAndDestroy($id);
 
-        $newRequestPenerimaan = new DestroyPenerimaanHeaderRequest();
-        $newRequestPenerimaan->postingdari = "DELETE PELUNASAN PIUTANG HEADER";
-        if ($pelunasanpiutangheader) {
-            $logTrail = [
-                'namatabel' => strtoupper($pelunasanpiutangheader->getTable()),
-                'postingdari' => 'DELETE PELUNASAN PIUTANG HEADER',
-                'idtrans' => $pelunasanpiutangheader->id,
-                'nobuktitrans' => $pelunasanpiutangheader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $pelunasanpiutangheader->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
+        // $newRequestPenerimaan = new DestroyPenerimaanHeaderRequest();
+        // $newRequestPenerimaan->postingdari = "DELETE PELUNASAN PIUTANG HEADER";
+        // if ($pelunasanpiutangheader) {
+        //     $logTrail = [
+        //         'namatabel' => strtoupper($pelunasanpiutangheader->getTable()),
+        //         'postingdari' => 'DELETE PELUNASAN PIUTANG HEADER',
+        //         'idtrans' => $pelunasanpiutangheader->id,
+        //         'nobuktitrans' => $pelunasanpiutangheader->nobukti,
+        //         'aksi' => 'DELETE',
+        //         'datajson' => $pelunasanpiutangheader->toArray(),
+        //         'modifiedby' => auth('api')->user()->name
+        //     ];
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+        //     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+        //     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            // DELETE PELUNASAN PIUTANG DETAIL
+        //     // DELETE PELUNASAN PIUTANG DETAIL
 
-            $logTrailPiutangDetail = [
-                'namatabel' => 'PELUNASANPIUTANGDETAIL',
-                'postingdari' => 'DELETE PELUNASAN PIUTANG DETAIL',
-                'idtrans' => $storedLogTrail['id'],
-                'nobuktitrans' => $pelunasanpiutangheader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $getDetail->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
+        //     $logTrailPiutangDetail = [
+        //         'namatabel' => 'PELUNASANPIUTANGDETAIL',
+        //         'postingdari' => 'DELETE PELUNASAN PIUTANG DETAIL',
+        //         'idtrans' => $storedLogTrail['id'],
+        //         'nobuktitrans' => $pelunasanpiutangheader->nobukti,
+        //         'aksi' => 'DELETE',
+        //         'datajson' => $getDetail->toArray(),
+        //         'modifiedby' => auth('api')->user()->name
+        //     ];
 
-            $validatedLogTrailPiutangDetail = new StoreLogTrailRequest($logTrailPiutangDetail);
-            app(LogTrailController::class)->store($validatedLogTrailPiutangDetail);
+        //     $validatedLogTrailPiutangDetail = new StoreLogTrailRequest($logTrailPiutangDetail);
+        //     app(LogTrailController::class)->store($validatedLogTrailPiutangDetail);
 
-            if ($pelunasanpiutangheader->penerimaan_nobukti != '-') {
-                $getPenerimaan = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', $pelunasanpiutangheader->penerimaan_nobukti)->first();
-                app(PenerimaanHeaderController::class)->destroy($newRequestPenerimaan, $getPenerimaan->id);
-            }
-            if ($pelunasanpiutangheader->penerimaangiro_nobukti != '-') {
-                $getGiro = PenerimaanGiroHeader::from(DB::raw("penerimaangiroheader with (readuncommitted)"))->where('nobukti', $pelunasanpiutangheader->penerimaangiro_nobukti)->first();
-                app(PenerimaanGiroHeaderController::class)->destroy($request, $getGiro->id);
-            }
+        //     if ($pelunasanpiutangheader->penerimaan_nobukti != '-') {
+        //         $getPenerimaan = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', $pelunasanpiutangheader->penerimaan_nobukti)->first();
+        //         app(PenerimaanHeaderController::class)->destroy($newRequestPenerimaan, $getPenerimaan->id);
+        //     }
+        //     if ($pelunasanpiutangheader->penerimaangiro_nobukti != '-') {
+        //         $getGiro = PenerimaanGiroHeader::from(DB::raw("penerimaangiroheader with (readuncommitted)"))->where('nobukti', $pelunasanpiutangheader->penerimaangiro_nobukti)->first();
+        //         app(PenerimaanGiroHeaderController::class)->destroy($request, $getGiro->id);
+        //     }
 
-            if ($pelunasanpiutangheader->notakredit_nobukti != '-') {
-                $getNotaKredit = NotaKreditHeader::from(DB::raw("notakreditheader with (readuncommitted)"))->where('nobukti', $pelunasanpiutangheader->notakredit_nobukti)->first();
-                app(NotaKreditHeaderController::class)->destroy($request, $getNotaKredit->id);
-            }
+        //     if ($pelunasanpiutangheader->notakredit_nobukti != '-') {
+        //         $getNotaKredit = NotaKreditHeader::from(DB::raw("notakreditheader with (readuncommitted)"))->where('nobukti', $pelunasanpiutangheader->notakredit_nobukti)->first();
+        //         app(NotaKreditHeaderController::class)->destroy($request, $getNotaKredit->id);
+        //     }
 
-            if ($pelunasanpiutangheader->notadebet_nobukti != '-') {
-                $getNotaDebet = NotaDebetHeader::from(DB::raw("notadebetheader with (readuncommitted)"))->where('nobukti', $pelunasanpiutangheader->notadebet_nobukti)->first();
-                app(NotaDebetHeaderController::class)->destroy($request, $getNotaDebet->id);
-            }
+        //     if ($pelunasanpiutangheader->notadebet_nobukti != '-') {
+        //         $getNotaDebet = NotaDebetHeader::from(DB::raw("notadebetheader with (readuncommitted)"))->where('nobukti', $pelunasanpiutangheader->notadebet_nobukti)->first();
+        //         app(NotaDebetHeaderController::class)->destroy($request, $getNotaDebet->id);
+        //     }
 
-            DB::commit();
+        //     DB::commit();
 
-            $selected = $this->getPosition($pelunasanpiutangheader, $pelunasanpiutangheader->getTable(), true);
-            $pelunasanpiutangheader->position = $selected->position;
-            $pelunasanpiutangheader->id = $selected->id;
-            $pelunasanpiutangheader->page = ceil($pelunasanpiutangheader->position / ($request->limit ?? 10));
+        //     $selected = $this->getPosition($pelunasanpiutangheader, $pelunasanpiutangheader->getTable(), true);
+        //     $pelunasanpiutangheader->position = $selected->position;
+        //     $pelunasanpiutangheader->id = $selected->id;
+        //     $pelunasanpiutangheader->page = ceil($pelunasanpiutangheader->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $pelunasanpiutangheader
-            ]);
-        } else {
-            DB::rollBack();
+        //     return response([
+        //         'status' => true,
+        //         'message' => 'Berhasil dihapus',
+        //         'data' => $pelunasanpiutangheader
+        //     ]);
+        // } else {
+        //     DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
-        }
+        //     return response([
+        //         'status' => false,
+        //         'message' => 'Gagal dihapus'
+        //     ]);
+        // }
     }
 
     public function getpiutang($id)

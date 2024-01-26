@@ -37,8 +37,9 @@ class PiutangHeaderController extends Controller
 {
     /**
      * @ClassName 
-     * PiutangHeaderHeader
+     * PiutangHeader
      * @Detail PiutangDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index(GetIndexRangeRequest $request)
     {
