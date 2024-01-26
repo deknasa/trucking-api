@@ -28,7 +28,7 @@ class ExistTarifRincian implements Rule
     public function passes($attribute, $value)
     {
         $TarifRincian = DB::table("TarifRincian")->from(DB::raw("TarifRincian with (readuncommitted)"))
-        ->where('id', request()->tarifrincian_id)
+        ->where('tarif_id', request()->tarifrincian_id)
         ->first();
     if ($TarifRincian == null) {
         return false;
