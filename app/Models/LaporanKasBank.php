@@ -441,8 +441,8 @@ class LaporanKasBank extends MyModel
                 'a.tglbukti',
                 'a.nobukti',
                 'b.keterangan',
-                'b.nominal as debet',
-                DB::raw("0 as kredit"),
+                DB::raw("(case when b.nominal>0 then b.nominal else 0 end) as debet "),
+                DB::raw("(case when b.nominal<0 then abs(b.nominal) else 0 end) as kredit "),
                 DB::raw("0 as saldo"),
             )
             ->join(DB::raw("penerimaandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
@@ -472,8 +472,8 @@ class LaporanKasBank extends MyModel
                 'a.tglbukti',
                 'a.nobukti',
                 'a.keterangan',
-                'a.nominal as debet',
-                DB::raw("0 as kredit"),
+                DB::raw("(case when a.nominal>0 then a.nominal else 0 end) as debet "),
+                DB::raw("(case when a.nominal<0 then abs(a.nominal) else 0 end) as kredit "),
                 DB::raw("0 as saldo"),
             )
             ->where('a.tglbukti', '>=', $dari)
@@ -502,8 +502,8 @@ class LaporanKasBank extends MyModel
                 'a.tglbukti',
                 'a.nobukti',
                 'b.keterangan',
-                DB::raw("0 as debet"),
-                'b.nominal as kredit',
+                DB::raw("(case when b.nominal<0 then abs(b.nominal) else 0 end) as debet "),
+                DB::raw("(case when b.nominal>0 then b.nominal else 0 end) as kredit "),
                 DB::raw("0 as saldo"),
             )
             ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
@@ -533,8 +533,8 @@ class LaporanKasBank extends MyModel
                     'a.tglbukti',
                     'a.nobukti',
                     'b.keterangan',
-                    DB::raw("0 as debet"),
-                    'b.nominal as kredit',
+                    DB::raw("(case when b.nominal<0 then abs(b.nominal) else 0 end) as debet "),
+                    DB::raw("(case when b.nominal>0 then b.nominal else 0 end) as kredit "),
                     DB::raw("0 as saldo"),
                 )
                 ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
@@ -566,8 +566,8 @@ class LaporanKasBank extends MyModel
                 'a.tglbukti',
                 'a.nobukti',
                 'a.keterangan',
-                DB::raw("0 as debet"),
-                'a.nominal as kredit',
+                DB::raw("(case when a.nominal<0 then abs(a.nominal) else 0 end) as debet "),
+                DB::raw("(case when a.nominal>0 then a.nominal else 0 end) as kredit "),
                 DB::raw("0 as saldo"),
             )
             ->where('a.tglbukti', '>=', $dari)
