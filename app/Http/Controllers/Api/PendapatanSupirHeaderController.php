@@ -62,15 +62,15 @@ class PendapatanSupirHeaderController extends Controller
                 "tglsampai" => $request->tglsampai,
                 "tglbukti" => $request->tglbukti,
                 "bank_id" => $request->bank_id,
-                "supir_id" => $request->supir_id,                
-                "supir" => $request->supir,        
-                'id_detail' => $requestData['id_detail'],    
-                'nobukti_trip' => $requestData['nobukti_trip'],   
-                'nobukti_ric' => $requestData['nobukti_ric'],   
-                'dari_id' => $requestData['dari_id'],  
-                'sampai_id' => $requestData['sampai_id'],  
-                'nominal_detail' => $requestData['nominal_detail'],  
-                'gajikenek' => $requestData['gajikenek'],  
+                "supir_id" => $request->supir_id,
+                "supir" => $request->supir,
+                'id_detail' => $requestData['id_detail'],
+                'nobukti_trip' => $requestData['nobukti_trip'],
+                'nobukti_ric' => $requestData['nobukti_ric'],
+                'dari_id' => $requestData['dari_id'],
+                'sampai_id' => $requestData['sampai_id'],
+                'nominal_detail' => $requestData['nominal_detail'],
+                'gajikenek' => $requestData['gajikenek'],
                 'supirtrip' => $requestData['supirtrip'],
                 "nominal_depo" => $request->nominal_depo,
                 "keterangan_depo" => $request->keterangan_depo,
@@ -85,14 +85,14 @@ class PendapatanSupirHeaderController extends Controller
 
             $pendapatanSupirHeader = (new PendapatanSupirHeader())->processStore($data);
             $pendapatanSupirHeader->position = $this->getPosition($pendapatanSupirHeader, $pendapatanSupirHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / (10));
             } else {
                 $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / ($request->limit ?? 10));
             }
             $pendapatanSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $pendapatanSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -115,9 +115,14 @@ class PendapatanSupirHeaderController extends Controller
         $data = (new PendapatanSupirHeader())->findUpdate($id);
 
         $supir_id = ($data->supir_id == '') ? 0 : $data->supir_id;
-        $detail = (new PendapatanSupirHeader())->getTrip($data->tgldari, $data->tglsampai,$supir_id,$id, 'show');
 
-
+        $formatTab = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'TAB KOMISI')
+            ->first()->text;
+        if ($formatTab == 'FORMAT 1') {
+            $detail = (new PendapatanSupirHeader())->getTrip($data->tgldari, $data->tglsampai, $supir_id, $id, 'show');
+        } else {
+            $detail = (new PendapatanSupirHeader())->getTrip2($data->tgldari, $data->tglsampai, $supir_id, $id, 'show');
+        }
         return response([
             'data' => $data,
             'detail' => $detail,
@@ -132,22 +137,22 @@ class PendapatanSupirHeaderController extends Controller
      */
     public function update(UpdatePendapatanSupirHeaderRequest $request, PendapatanSupirHeader $pendapatanSupirHeader): JsonResponse
     {
-        try {            
+        try {
             $requestData = json_decode($request->detail, true);
             $data = [
                 "tgldari" => $request->tgldari,
                 "tglsampai" => $request->tglsampai,
                 "tglbukti" => $request->tglbukti,
                 "bank_id" => $request->bank_id,
-                "supir_id" => $request->supir_id,                
-                "supir" => $request->supir,    
-                'id_detail' => $requestData['id_detail'],    
-                'nobukti_trip' => $requestData['nobukti_trip'],   
-                'nobukti_ric' => $requestData['nobukti_ric'],   
-                'dari_id' => $requestData['dari_id'],  
-                'sampai_id' => $requestData['sampai_id'],  
-                'nominal_detail' => $requestData['nominal_detail'],  
-                'gajikenek' => $requestData['gajikenek'],  
+                "supir_id" => $request->supir_id,
+                "supir" => $request->supir,
+                'id_detail' => $requestData['id_detail'],
+                'nobukti_trip' => $requestData['nobukti_trip'],
+                'nobukti_ric' => $requestData['nobukti_ric'],
+                'dari_id' => $requestData['dari_id'],
+                'sampai_id' => $requestData['sampai_id'],
+                'nominal_detail' => $requestData['nominal_detail'],
+                'gajikenek' => $requestData['gajikenek'],
                 'supirtrip' => $requestData['supirtrip'],
                 "nominal_depo" => $request->nominal_depo,
                 "keterangan_depo" => $request->keterangan_depo,
@@ -165,14 +170,14 @@ class PendapatanSupirHeaderController extends Controller
 
             $pendapatanSupirHeader = (new PendapatanSupirHeader())->processUpdate($pendapatanSupirHeader, $data);
             $pendapatanSupirHeader->position = $this->getPosition($pendapatanSupirHeader, $pendapatanSupirHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / (10));
             } else {
                 $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / ($request->limit ?? 10));
             }
             $pendapatanSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $pendapatanSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -198,14 +203,14 @@ class PendapatanSupirHeaderController extends Controller
             $selected = $this->getPosition($pendapatanSupir, $pendapatanSupir->getTable(), true);
             $pendapatanSupir->position = $selected->position;
             $pendapatanSupir->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $pendapatanSupir->page = ceil($pendapatanSupir->position / (10));
             } else {
                 $pendapatanSupir->page = ceil($pendapatanSupir->position / ($request->limit ?? 10));
             }
             $pendapatanSupir->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $pendapatanSupir->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -330,7 +335,7 @@ class PendapatanSupirHeaderController extends Controller
         $statusdatacetak = $pendapatan->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
-            $aksi = request()->aksi ?? '';
+        $aksi = request()->aksi ?? '';
 
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $query = DB::table('error')
@@ -349,12 +354,12 @@ class PendapatanSupirHeaderController extends Controller
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SDC')
                 ->first();
-                $data = [
-                    'error' => true,
-                    'message' =>  'No Bukti ' . $pendapatan->nobukti . ' ' . $query->keterangan,
-                    'kodeerror' => 'SDC',
-                    'statuspesan' => 'warning',
-                ];
+            $data = [
+                'error' => true,
+                'message' =>  'No Bukti ' . $pendapatan->nobukti . ' ' . $query->keterangan,
+                'kodeerror' => 'SDC',
+                'statuspesan' => 'warning',
+            ];
 
             return response($data);
         } else {
@@ -409,14 +414,14 @@ class PendapatanSupirHeaderController extends Controller
     {
     }
 
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {
     }
-    
+
     /**
      * @ClassName 
      * @Keterangan EXPORT KE EXCEL
@@ -448,10 +453,18 @@ class PendapatanSupirHeaderController extends Controller
         $tglsampai  = date('Y-m-d', strtotime($request->tglsampai));
         $supir_id  = $request->supir_id;
         $id  = $request->idPendapatan;
+        $aksi = $request->aksi;
         // dd('test');
         $pendapatanSupir = new PendapatanSupirHeader();
+        $formatTab = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'TAB KOMISI')
+            ->first()->text;
+        if ($formatTab == 'FORMAT 1') {
+            $data = $pendapatanSupir->getTrip($tgldari, $tglsampai, $supir_id, $id, $aksi);
+        } else {
+            $data = $pendapatanSupir->getTrip2($tgldari, $tglsampai, $supir_id, $id, $aksi);
+        }
         return response([
-            'data' => $pendapatanSupir->getTrip($tgldari, $tglsampai,$supir_id,$id),
+            'data' => $data,
             'attributes' => [
                 'totalRows' => $pendapatanSupir->totalRows,
                 'totalPages' => $pendapatanSupir->totalPages,

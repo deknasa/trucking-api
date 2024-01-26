@@ -8,6 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\DestroyProsesGajiSupir;
 use App\Rules\ExistBank;
+use App\Rules\ValidasiHutangList;
 use Illuminate\Validation\Rule;
 
 class UpdateProsesGajiSupirHeaderRequest extends FormRequest
@@ -48,6 +49,7 @@ class UpdateProsesGajiSupirHeaderRequest extends FormRequest
                 'bank_id' => ['required', 'numeric', 'min:1', new ExistBank(), Rule::in($getDataProsesGaji->bank_id)]
             ];
         }
+        $jumlahdetail = $this->jumlahdetail ?? 0;
         $rules = [
             'id' => new DestroyProsesGajiSupir(),
             'nobukti' => [Rule::in($getDataProsesGaji->nobukti)],
@@ -71,6 +73,7 @@ class UpdateProsesGajiSupirHeaderRequest extends FormRequest
                 'before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
+            'rincianId' => [new ValidasiHutangList($jumlahdetail)],
         ];
         $relatedRequests = [
             UpdateProsesGajiSupirDetailRequest::class

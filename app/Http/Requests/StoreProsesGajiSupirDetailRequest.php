@@ -34,7 +34,6 @@ class StoreProsesGajiSupirDetailRequest extends FormRequest
     {
         //HARUS DI CEK PAKAI QUERY BERDASARKAN TGL DARI&SAMPAI
         $rules = [
-            'rincianId' => 'required',
             'nomPR' => ['required', 'numeric', 'gt:0', new GetBoronganEBS()],
             'nomPS' => ['required', 'numeric', 'min:0', new GetPinjSemuaEBS()],
             'nomPP' => ['required', 'numeric', 'min:0', new GetPinjPribadiEBS()],

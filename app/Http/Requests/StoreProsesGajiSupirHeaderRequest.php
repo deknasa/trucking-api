@@ -7,6 +7,7 @@ use App\Models\Parameter;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\ExistBank;
+use App\Rules\ValidasiHutangList;
 
 class StoreProsesGajiSupirHeaderRequest extends FormRequest
 {
@@ -40,6 +41,8 @@ class StoreProsesGajiSupirHeaderRequest extends FormRequest
                 'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
             ];
         }
+        
+        $jumlahdetail = $this->jumlahdetail ?? 0;
         // First day of the month.
         $awalPeriode = date('Y-m-01', strtotime(request()->tgldari));
         $rules = [
@@ -62,6 +65,7 @@ class StoreProsesGajiSupirHeaderRequest extends FormRequest
                 'before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
+            'rincianId' => [new ValidasiHutangList($jumlahdetail)],
         ];
 
         $relatedRequests = [

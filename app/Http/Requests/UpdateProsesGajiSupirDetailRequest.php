@@ -42,7 +42,6 @@ class UpdateProsesGajiSupirDetailRequest extends FormRequest
         $getDataProsesGaji = $prosesGaji->findAll(request()->id);
 
         $rules = [
-            'rincianId' => 'required',
             'nomPR' => ['required', 'numeric', 'gt:0', new GetBoronganEBS()],
             'nomPS' => ['required', 'numeric', 'min:0', new GetPinjSemuaEBS()],
             'nomPP' => ['required', 'numeric', 'min:0', new GetPinjPribadiEBS()],

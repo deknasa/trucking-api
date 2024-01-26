@@ -1960,6 +1960,10 @@ class ProsesGajiSupirHeader extends MyModel
 
         $coaDebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PROSES GAJI SUPIR')->where('kelompok', 'PENGELUARAN')
             ->first();
+        $pisahGajiKenek = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PROSES GAJI SUPIR')->where('subgrp', 'PISAH GAJI KENEK')
+            ->first();
+        $isPisahGajiKenek = $pisahGajiKenek->text;
+
         $memoDebet = json_decode($coaDebet->memo, true);
         $noWarkat = [];
         $tglJatuhTempo = [];
@@ -1979,13 +1983,18 @@ class ProsesGajiSupirHeader extends MyModel
                 'keterangan' => '',
             ]);
             $prosesGajiSupirDetails[] = $prosesGajiSupirDetail->toArray();
-            $totalKBT = $totalKBT + $data['totalborongan'][$i];
+            
+            if($isPisahGajiKenek == 'YA'){
+                $totalKBT = $totalKBT + ($data['totalborongan'][$i] - $data['gajikenek'][$i]);
+            }else{
+                $totalKBT = $totalKBT + $data['totalborongan'][$i];
+            }
         }
         $noWarkat[] = '';
         $tglJatuhTempo[] = $data['tglbukti'];
         $nominalDetailPengeluaran[] = $totalKBT;
         $coaDebetPengeluaran[] = $memoDebet['JURNAL'];
-        $keteranganDetailPengeluaran[] = "Rincian Borongan Supir " . $data['tgldari'] . " s/d " . $data['tglsampai'];
+        $keteranganDetailPengeluaran[] = "Rincian Borongan Supir " . date('d-m-Y', strtotime($data['tgldari'])) . " s/d " . date('d-m-Y', strtotime($data['tglsampai']));
         // POSTING KE PENGELUARAN
         $pengeluaranHeaderRequest = [
             'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
@@ -2556,6 +2565,9 @@ class ProsesGajiSupirHeader extends MyModel
             'modifiedby' => auth('api')->user()->user
         ]);
 
+        $pisahGajiKenek = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PROSES GAJI SUPIR')->where('subgrp', 'PISAH GAJI KENEK')
+            ->first();
+        $isPisahGajiKenek = $pisahGajiKenek->text;
         $penerimaan_nobuktiPS = '';
         $gajiSupir = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))
             ->where('tglbukti', '>=', $prosesGajiSupirHeader['tgldari'])
@@ -2742,7 +2754,12 @@ class ProsesGajiSupirHeader extends MyModel
 
             $prosesGajiSupirDetails[] = $prosesGajiSupirDetail->toArray();
             // DATA DETAIL PENGELUARAN
-            $totalKBT = $totalKBT + $data['totalborongan'][$i];
+            
+            if($isPisahGajiKenek == 'YA'){
+                $totalKBT = $totalKBT + ($data['totalborongan'][$i] - $data['gajikenek'][$i]);
+            }else{
+                $totalKBT = $totalKBT + $data['totalborongan'][$i];
+            }
 
             $fetchPS = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $data['nobuktiRIC'][$i])->where('supir_id', '0');
             $cekFetchPS = $fetchPS->first();
@@ -3290,7 +3307,7 @@ class ProsesGajiSupirHeader extends MyModel
         $tglJatuhTempo[] = $prosesGajiSupirHeader->tglbukti;
         $nominalDetailPengeluaran[] = $totalKBT;
         $coaDebetPengeluaran[] = $memoDebet['JURNAL'];
-        $keteranganDetailPengeluaran[] = "Rincian Borongan Supir periode " . $data['tgldari'] . " s/d " . $data['tglsampai'];
+        $keteranganDetailPengeluaran[] = "Rincian Borongan Supir periode " . date('d-m-Y', strtotime($data['tgldari'])) . " s/d " . date('d-m-Y', strtotime($data['tglsampai']));
         $pengeluaranHeaderRequest = [
             'tglbukti' => $prosesGajiSupirHeader->tglbukti,
             'pelanggan_id' => 0,

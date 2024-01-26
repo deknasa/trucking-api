@@ -24,6 +24,7 @@ class Acos extends Model
         $Acos->class = $data['class'];
         $Acos->method = $data['method'];
         $Acos->nama = $data['nama'];
+        $Acos->idheader = $data['idheader'];
         $Acos->keterangan = $data['keterangan'];
         $Acos->modifiedby = $data['modifiedby'];
 

@@ -1574,7 +1574,7 @@ class PenerimaanTruckingHeader extends MyModel
             /*STORE PENERIMAAN*/
             $penerimaanRequest = [
                 'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-                'postingdari' => (array_key_exists("postingdari", $data)) ? $data['postingdari'] : "ENTRY PENERIMAAN TRUCKING HEADER",
+                'postingdari' => (array_key_exists("postingdari", $data)) ? $data['postingdari'] : "ENTRY PENERIMAAN TRUCKING",
                 'statusapproval' => $statusApproval->id,
                 'pelanggan_id' => 0,
                 'agen_id' => 0,
@@ -1858,7 +1858,7 @@ class PenerimaanTruckingHeader extends MyModel
                             }
                             if ($tanpaprosesnobukti == 3) {
                                 if ($fetchFormat->kodepenerimaan == 'PJP') {
-                                    $keteranganPostingNon['posting'] =  '(POSTING) PENGEMBALIAN PINJAMAN DARI PENDAPATAN SUPIR' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'] . ' ' . $nobuktiPosting;
+                                    $keteranganPostingNon['posting'] =  '(POSTING) PENGEMBALIAN PINJAMAN DARI PENDAPATAN SUPIR ' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'] . ' ' . $nobuktiPosting;
                                 }
                             } else {
                                 $keteranganPostingNon['posting'] =  '(POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiPosting;
@@ -1965,7 +1965,7 @@ class PenerimaanTruckingHeader extends MyModel
                 /*UPDATE PENERIMAAN*/
                 $penerimaanRequest = [
                     'tglbukti' => $penerimaanTruckingHeader->tglbukti,
-                    'postingdari' => (array_key_exists("postingdari", $data)) ? $data['postingdari'] : "ENTRY PENERIMAAN TRUCKING HEADER",
+                    'postingdari' => (array_key_exists("postingdari", $data)) ? $data['postingdari'] : "ENTRY PENERIMAAN TRUCKING",
                     'statusapproval' => $statusApproval->id,
                     'pelanggan_id' => 0,
                     'agen_id' => 0,
@@ -2011,7 +2011,7 @@ class PenerimaanTruckingHeader extends MyModel
                         /*STORE PENERIMAAN*/
                         $penerimaanRequest = [
                             'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-                            'postingdari' => (array_key_exists("postingdari", $data)) ? $data['postingdari'] : "ENTRY PENERIMAAN TRUCKING HEADER",
+                            'postingdari' => (array_key_exists("postingdari", $data)) ? $data['postingdari'] : "ENTRY PENERIMAAN TRUCKING",
                             'statusapproval' => $statusApproval->id,
                             'pelanggan_id' => 0,
                             'agen_id' => 0,
@@ -2069,7 +2069,7 @@ class PenerimaanTruckingHeader extends MyModel
                             /*STORE PENERIMAAN*/
                             $penerimaanRequest = [
                                 'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-                                'postingdari' => (array_key_exists("postingdari", $data)) ? $data['postingdari'] : "ENTRY PENERIMAAN TRUCKING HEADER",
+                                'postingdari' => (array_key_exists("postingdari", $data)) ? $data['postingdari'] : "ENTRY PENERIMAAN TRUCKING",
                                 'statusapproval' => $statusApproval->id,
                                 'pelanggan_id' => 0,
                                 'agen_id' => 0,
@@ -2113,7 +2113,7 @@ class PenerimaanTruckingHeader extends MyModel
                             /*UPDATE PENERIMAAN*/
                             $penerimaanRequest = [
                                 'tglbukti' => $penerimaanTruckingHeader->tglbukti,
-                                'postingdari' => (array_key_exists("postingdari", $data)) ? $data['postingdari'] : "ENTRY PENERIMAAN TRUCKING HEADER",
+                                'postingdari' => (array_key_exists("postingdari", $data)) ? $data['postingdari'] : "ENTRY PENERIMAAN TRUCKING",
                                 'statusapproval' => $statusApproval->id,
                                 'pelanggan_id' => 0,
                                 'agen_id' => 0,
@@ -2153,10 +2153,10 @@ class PenerimaanTruckingHeader extends MyModel
 
             $penerimaanTruckingDetailLogTrail = (new LogTrail())->processStore([
                 'namatabel' => strtoupper($penerimaanTruckingHeaderLogTrail->getTable()),
-                'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY penerimaan Trucking detail '),
+                'postingdari' => $data['postingdari'] ?? strtoupper('EDIT penerimaan Trucking detail '),
                 'idtrans' => $penerimaanTruckingHeaderLogTrail->id,
                 'nobuktitrans' => $penerimaanTruckingHeader->nobukti,
-                'aksi' => 'ENTRY',
+                'aksi' => 'EDIT',
                 'datajson' => $penerimaanTruckingDetails,
                 'modifiedby' => auth('api')->user()->user
             ]);

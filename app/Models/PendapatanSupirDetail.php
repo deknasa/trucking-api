@@ -43,6 +43,13 @@ class PendapatanSupirDetail extends MyModel
     {
         $this->setRequestParameters();
 
+
+        $formatCetak = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'FORMAT CETAK')
+            ->where('subgrp', 'KOMISI SUPIR')
+            ->first();
+
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
         $tempsaldopendapatan = '##tempsaldopendapatan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsaldopendapatan, function ($table) {
@@ -50,36 +57,57 @@ class PendapatanSupirDetail extends MyModel
             $table->string('nobuktitrip', 1000)->nullable();
             $table->integer('supir_id')->nullable();
             $table->integer('trado_id')->nullable();
-            $table->string('tgltrip', 1000)->nullable();
+            $table->date('tgltrip')->nullable();
+            $table->date('tgl_ric')->nullable();
             $table->string('nobuktirincian', 1000)->nullable();
             $table->integer('dari_id')->nullable();
             $table->integer('sampai_id')->nullable();
             $table->double('nominal')->nullable();
             $table->double('gajikenek')->nullable();
         });
-        $querysaldopendapatan = $query->select(
-            $this->table . '.nobukti',
-            $this->table . '.nobuktitrip',
-            DB::raw("(case when ISNULL(suratpengantar.supir_id, '') = '' then ISNULL(saldosuratpengantar.supir_id, '') else ISNULL(suratpengantar.supir_id, '')  end) as supir_id"),
-            DB::raw("(case when ISNULL(suratpengantar.trado_id, '') = '' then ISNULL(saldosuratpengantar.trado_id, '') else ISNULL(suratpengantar.trado_id, '')  end) as trado_id"),
-            DB::raw("(case when ISNULL(suratpengantar.tglbukti, '') = '' then ISNULL(saldopendapatansupir.suratpengantar_tglbukti, '') else ISNULL(suratpengantar.tglbukti, '')  end) as tgltrip"),
-            $this->table . '.nobuktirincian',
-            DB::raw("(case when ISNULL(suratpengantar.dari_id, '') = '' then ISNULL(saldopendapatansupir.dari_id, '') else ISNULL(suratpengantar.dari_id, '')  end) as dari_id"),
-            DB::raw("(case when ISNULL(suratpengantar.sampai_id, '') = '' then ISNULL(saldopendapatansupir.sampai_id, '') else ISNULL(suratpengantar.sampai_id, '')  end) as sampai_id"),
-            $this->table . '.nominal',
-            DB::raw("(case when pendapatansupirdetail.gajikenek IS NULL then 0 else pendapatansupirdetail.gajikenek end) as gajikenek"),
-        )
-            ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), $this->table . '.nobuktitrip', 'suratpengantar.nobukti')
-            ->leftJoin(DB::raw("saldopendapatansupir with (readuncommitted)"), $this->table . '.nobuktitrip', 'saldopendapatansupir.suratpengantar_nobukti')
-            ->leftJoin(DB::raw("saldosuratpengantar with (readuncommitted)"), 'saldopendapatansupir.suratpengantar_nobukti', 'saldosuratpengantar.nobukti')
-            ->where($this->table . '.pendapatansupir_id', '=', request()->pendapatansupir_id);
 
+        if ($formatCetak->text == 'FORMAT 1') {
+            $querysaldopendapatan = $query->select(
+                $this->table . '.nobukti',
+                $this->table . '.nobuktitrip',
+                DB::raw("(case when ISNULL(suratpengantar.supir_id, '') = '' then ISNULL(saldosuratpengantar.supir_id, '') else ISNULL(suratpengantar.supir_id, '')  end) as supir_id"),
+                DB::raw("(case when ISNULL(suratpengantar.trado_id, '') = '' then ISNULL(saldosuratpengantar.trado_id, '') else ISNULL(suratpengantar.trado_id, '')  end) as trado_id"),
+                DB::raw("(case when ISNULL(suratpengantar.tglbukti, '') = '' then ISNULL(saldopendapatansupir.suratpengantar_tglbukti, '') else ISNULL(suratpengantar.tglbukti, '')  end) as tgltrip"),
+                DB::raw("null as tgl_ric"),
+                $this->table . '.nobuktirincian',
+                DB::raw("(case when ISNULL(suratpengantar.dari_id, '') = '' then ISNULL(saldopendapatansupir.dari_id, '') else ISNULL(suratpengantar.dari_id, '')  end) as dari_id"),
+                DB::raw("(case when ISNULL(suratpengantar.sampai_id, '') = '' then ISNULL(saldopendapatansupir.sampai_id, '') else ISNULL(suratpengantar.sampai_id, '')  end) as sampai_id"),
+                $this->table . '.nominal',
+                DB::raw("(case when pendapatansupirdetail.gajikenek IS NULL then 0 else pendapatansupirdetail.gajikenek end) as gajikenek"),
+            )
+                ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), $this->table . '.nobuktitrip', 'suratpengantar.nobukti')
+                ->leftJoin(DB::raw("saldopendapatansupir with (readuncommitted)"), $this->table . '.nobuktitrip', 'saldopendapatansupir.suratpengantar_nobukti')
+                ->leftJoin(DB::raw("saldosuratpengantar with (readuncommitted)"), 'saldopendapatansupir.suratpengantar_nobukti', 'saldosuratpengantar.nobukti')
+                ->where($this->table . '.pendapatansupir_id', '=', request()->pendapatansupir_id);
+        } else {
+            $querysaldopendapatan = $query->select(
+                $this->table . '.nobukti',
+                $this->table . '.nobuktitrip',
+                $this->table . '.supir_id',
+                DB::raw("0 as trado_id"),
+                DB::raw("null as tgltrip"),
+                'gajisupirheader.tglbukti as tgl_ric',
+                $this->table . '.nobuktirincian',
+                $this->table . '.dari_id',
+                $this->table . '.sampai_id',
+                DB::raw("(case when pendapatansupirdetail.nominal IS NULL then 0 else pendapatansupirdetail.nominal end) as nominal"),
+                DB::raw("(case when pendapatansupirdetail.gajikenek IS NULL then 0 else pendapatansupirdetail.gajikenek end) as gajikenek"),
+
+            )->join(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupirheader.nobukti', 'pendapatansupirdetail.nobuktirincian')
+                ->where('pendapatansupirdetail.pendapatansupir_id', request()->pendapatansupir_id);
+        }
         DB::table($tempsaldopendapatan)->insertUsing([
             'nobukti',
             'nobuktitrip',
             'supir_id',
             'trado_id',
             'tgltrip',
+            'tgl_ric',
             'nobuktirincian',
             'dari_id',
             'sampai_id',
@@ -255,14 +283,15 @@ class PendapatanSupirDetail extends MyModel
             )
                 ->select(
                     'a.nobukti',
-                    'a.nobuktitrip',
+                    'a.nobuktitrip as nobukti_trip',
                     'supir.namasupir as supirdetail',
                     'trado.kodetrado as tradodetail',
-                    'a.tgltrip',
+                    'a.tgltrip as tgl_trip',
+                    'a.tgl_ric',
                     'a.nobuktirincian',
                     DB::raw("isnull(b.kodekota,'') as dari"),
                     DB::raw("isnull(c.kodekota,'') as sampai"),
-                    'a.nominal',
+                    'a.nominal as nominal_detail',
                     'a.gajikenek',
                     DB::raw("(a.gajikenek + a.nominal) as totaldetail")
                 )
@@ -287,8 +316,11 @@ class PendapatanSupirDetail extends MyModel
 
     public function getsupir()
     {
-
-
+        $formatCetak = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'FORMAT CETAK')
+            ->where('subgrp', 'KOMISI SUPIR')
+            ->first();
 
         if (isset(request()->forReport) && request()->forReport) {
 
@@ -375,6 +407,7 @@ class PendapatanSupirDetail extends MyModel
                     $table->double('nominal')->nullable();
                     $table->double('gajikenek')->nullable();
                     $table->bigInteger('trado_id')->nullable();
+                    $table->string('nobuktirincian', 500)->nullable();
                 });
 
                 $fetch2 = DB::table("pendapatansupirdetail")->from(DB::raw("pendapatansupirdetail as a with (readuncommitted)"))
@@ -383,12 +416,13 @@ class PendapatanSupirDetail extends MyModel
                         'a.nominal',
                         'a.gajikenek',
                         db::raw("(case when isnull(b.trado_id,0)=0 then isnull(b1.trado_id,0) else isnull(b.trado_id,0) end) as trado_id"),
+                        'a.nobuktirincian'
                     )
                     ->leftJoin(DB::raw("suratpengantar as b with (readuncommitted)"), 'a.nobuktitrip', 'b.nobukti')
                     ->leftJoin(DB::raw("saldosuratpengantar as b1 with (readuncommitted)"), 'a.nobuktitrip', 'b1.nobukti')
                     ->where('a.nobukti', $getNobukti->nobukti);
 
-                DB::table($tempPendapatan)->insertUsing(['supir_id', 'nominal', 'gajikenek', 'trado_id'], $fetch2);
+                DB::table($tempPendapatan)->insertUsing(['supir_id', 'nominal', 'gajikenek', 'trado_id','a.nobuktirincian'], $fetch2);
 
 
 
@@ -400,23 +434,37 @@ class PendapatanSupirDetail extends MyModel
                     $table->string('kode_trado', 500)->nullable();
                     $table->string('namasupir', 500)->nullable();
                     $table->double('komisi')->nullable();
+                    $table->string('nobuktirincian', 500)->nullable();
                 });
 
-                $query = DB::table($tempPendapatan)->from(DB::raw("$tempPendapatan as t1 with (readuncommitted)"))
-                    ->select(
-                        DB::raw(
-                            "'SUPIR' as jenis,t1.supir_id,max(t1.trado_id) as trado_id,max(trado.kodetrado) as kodetrado,isnull(supir.namasupir,'') as namasupir,
-                    SUM(t1.nominal) AS komisi
-                    "
-                        )
-                    )
-                    ->leftJoin(DB::raw("trado with (readuncommitted)"), 't1.trado_id', 'trado.id')
-                    ->leftJoin(DB::raw("supir with (readuncommitted)"), 't1.supir_id', 'supir.id')
-                    ->groupBy('t1.supir_id', 'supir.namasupir');
+                if ($formatCetak->text == 'FORMAT 1') {
 
+                    $query = DB::table($tempPendapatan)->from(DB::raw("$tempPendapatan as t1 with (readuncommitted)"))
+                        ->select(
+                            DB::raw(
+                                "'SUPIR' as jenis,t1.supir_id,max(t1.trado_id) as trado_id,max(trado.kodetrado) as kodetrado,isnull(supir.namasupir,'') as namasupir,
+                                    SUM(t1.nominal) AS komisi,t1.nobuktirincian"
+                            )
+                        )
+                        ->leftJoin(DB::raw("trado with (readuncommitted)"), 't1.trado_id', 'trado.id')
+                        ->leftJoin(DB::raw("supir with (readuncommitted)"), 't1.supir_id', 'supir.id')
+                        ->groupBy('t1.supir_id', 'supir.namasupir','t1.nobuktirincian');
+                } else {
+
+                    $query = DB::table($tempPendapatan)->from(DB::raw("$tempPendapatan as t1 with (readuncommitted)"))
+                        ->select(
+                            DB::raw(
+                                "'SUPIR' as jenis,t1.supir_id,max(t1.trado_id) as trado_id,max(trado.kodetrado) as kodetrado,isnull(supir.namasupir,'') as namasupir,
+                                    SUM(t1.gajikenek) AS komisi,t1.nobuktirincian"
+                            )
+                        )
+                        ->leftJoin(DB::raw("trado with (readuncommitted)"), 't1.trado_id', 'trado.id')
+                        ->leftJoin(DB::raw("supir with (readuncommitted)"), 't1.supir_id', 'supir.id')
+                        ->groupBy('t1.supir_id', 'supir.namasupir','t1.nobuktirincian');
+                }
                 // dd($query->get());
 
-                DB::table($tempkomisi)->insertUsing(['jenis', 'supir_id', 'trado_id', 'kode_trado', 'namasupir', 'komisi'], $query);
+                DB::table($tempkomisi)->insertUsing(['jenis', 'supir_id', 'trado_id', 'kode_trado', 'namasupir', 'komisi', 'nobuktirincian'], $query);
 
                 $tempkomisi2 = '##komisi2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                 Schema::create($tempkomisi2, function ($table) {
@@ -429,6 +477,7 @@ class PendapatanSupirDetail extends MyModel
                     $table->integer('urut')->nullable();
                     $table->double('deposito')->nullable();
                     $table->double('pengembalianpinjaman')->nullable();
+                    $table->string('nobuktirincian', 500)->nullable();
                 });
 
                 $query = db::table($tempkomisi)->from(db::raw($tempkomisi . " a"))
@@ -442,12 +491,13 @@ class PendapatanSupirDetail extends MyModel
                         DB::raw('ROW_NUMBER() OVER (PARTITION BY A.namasupir ORDER BY A.namasupir,a.kode_trado) as urut'),
                         db::raw(" isnull(b.deposito,0)  as deposito"),
                         db::raw(" isnull(b.pengembalianpinjaman,0)  as pengembalianpinjaman"),
+                        'a.nobuktirincian'
                     )
                     ->leftjoin(db::raw($tempdepo . " b"), 'a.supir_id', 'b.supir_id')
                     ->orderBY('a.namasupir', 'asc')
                     ->orderBY('a.kode_trado', 'asc');
 
-                DB::table($tempkomisi2)->insertUsing(['jenis', 'supir_id', 'trado_id', 'kode_trado', 'namasupir', 'komisi', 'urut', 'deposito', 'pengembalianpinjaman'], $query);
+                DB::table($tempkomisi2)->insertUsing(['jenis', 'supir_id', 'trado_id', 'kode_trado', 'namasupir', 'komisi', 'urut', 'deposito', 'pengembalianpinjaman','nobuktirincian'], $query);
 
                 // dd(db::table($tempkomisi2)->get());
 
@@ -458,6 +508,7 @@ class PendapatanSupirDetail extends MyModel
                         'a.kode_trado',
                         'a.namasupir',
                         'a.komisi',
+                        'a.nobuktirincian',
                         db::raw("(case when a.urut=1 then isnull(a.deposito,0) else 0 end) as deposito"),
                         db::raw("(case when a.urut=1 then isnull(a.pengembalianpinjaman,0) else 0 end) as pengembalianpinjaman"),
                         db::raw("(isnull(a.komisi,0)-isnull(a.deposito,0)-isnull(a.pengembalianpinjaman,0)) as total"),
@@ -477,6 +528,8 @@ class PendapatanSupirDetail extends MyModel
             return $query->orderBy(DB::raw("isnull(b.kodekota,'')"), $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'sampai') {
             return $query->orderBy(DB::raw("isnull(c.kodekota,'')"), $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'tgl_trip') {
+            return $query->orderBy(DB::raw("a.tgltrip"), $this->params['sortOrder']);
         } else {
             return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
@@ -497,12 +550,18 @@ class PendapatanSupirDetail extends MyModel
                                 $query = $query->where(DB::raw("isnull(supir.namasupir,'')"), 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tradodetail') {
                                 $query = $query->where(DB::raw("isnull(trado.kodetrado,'')"), 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'nominal') {
+                            } else if ($filters['field'] == 'nobukti_trip') {
+                                $query = $query->where(DB::raw("isnull(a.nobuktitrip,'')"), 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal_detail') {
                                 $query = $query->whereRaw("format(a.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'gajikenek') {
                                 $query = $query->whereRaw("format(a.gajikenek, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'totaldetail') {
                                 $query = $query->whereRaw("format((a.gajikenek + a.nominal), '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tgl_trip') {
+                                $query = $query->whereRaw("format(a.tgltrip, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tgl_ric') {
+                                $query = $query->whereRaw("format(a.tgl_ric, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -521,12 +580,18 @@ class PendapatanSupirDetail extends MyModel
                                 $query = $query->orWhere(DB::raw("isnull(supir.namasupir,'')"), 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tradodetail') {
                                 $query = $query->orWhere(DB::raw("isnull(trado.kodetrado,'')"), 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'nominal') {
+                            } else if ($filters['field'] == 'nobukti_trip') {
+                                $query = $query->orWhere(DB::raw("isnull(a.nobuktitrip,'')"), 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal_detail') {
                                 $query = $query->orWhereRaw("format(a.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'gajikenek') {
                                 $query = $query->orWhereRaw("format(a.gajikenek, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'totaldetail') {
                                 $query = $query->orWhereRaw("format((a.gajikenek + a.nominal), '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tgl_trip') {
+                                $query = $query->OrwhereRaw("format(a.tgltrip, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tgl_ric') {
+                                $query = $query->OrwhereRaw("format(a.tgl_ric, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -557,6 +622,8 @@ class PendapatanSupirDetail extends MyModel
         $pendapatanSupirDetail->pendapatansupir_id = $pendapatanSupirHeader->id;
         $pendapatanSupirDetail->nobukti = $pendapatanSupirHeader->nobukti;
         $pendapatanSupirDetail->supir_id = $data['supir_id'];
+        $pendapatanSupirDetail->dari_id = $data['dari_id'];
+        $pendapatanSupirDetail->sampai_id = $data['sampai_id'];
         $pendapatanSupirDetail->nominal = $data['nominal'];
         $pendapatanSupirDetail->gajikenek = $data['gajikenek'];
         $pendapatanSupirDetail->nobuktirincian = $data['nobuktirincian'];
