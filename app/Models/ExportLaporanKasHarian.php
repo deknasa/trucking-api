@@ -421,6 +421,7 @@ class ExportLaporanKasHarian extends MyModel
             'saldo'
         ], $queryTempList);
 
+        // disini
 
         $queryTempPindahBuku = DB::table('pindahbuku')->from(
             DB::raw('pindahbuku as a')
@@ -430,7 +431,7 @@ class ExportLaporanKasHarian extends MyModel
                 DB::raw("3 as jenis"),
                 'a.tgljatuhtempo',
                 'a.nobukti',
-                DB::raw("isnull(C.keterangancoa,'') as perkiraan"),
+                DB::raw("isnull(C.keterangancoa,'')  as perkiraan"),
                 'a.keterangan',
                 'nominal as debet',
                 DB::raw("0 as kredit"),
@@ -438,7 +439,6 @@ class ExportLaporanKasHarian extends MyModel
 
             )
             ->leftjoin(DB::raw("akunpusat as c "), 'a.coakredit', 'c.coa')
-            ->leftjoin(DB::raw("akunpusat as c1 "), 'a.coadebet', 'c1.coa')
             ->whereRaw("month(A.tgljatuhtempo)= cast(left($bulan,2) as integer)")
             ->whereRaw("year(A.tgljatuhtempo)= cast(right($tahun,4) as integer)")
             ->where('a.bankke_id', '=', $jenis);
@@ -501,7 +501,8 @@ class ExportLaporanKasHarian extends MyModel
                 DB::raw("nominal as kredit"),
                 DB::raw("0 as saldo"),
             )
-            ->leftjoin(DB::raw("akunpusat as c "), 'a.coakredit', 'c.coa')
+            
+            ->leftjoin(DB::raw("akunpusat as c "), 'a.coadebet', 'c.coa')
             ->whereRaw("month(A.tgljatuhtempo)= cast(left($bulan,2) as integer)")
             ->whereRaw("year(A.tgljatuhtempo)= cast(right($tahun,4) as integer)")
             ->where('a.bankdari_id', '=', $jenis);
