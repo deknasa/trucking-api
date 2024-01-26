@@ -158,6 +158,7 @@ use App\Http\Controllers\Api\ServiceOutHeaderController;
 use App\Http\Controllers\Api\TarikDataAbsensiController;
 use App\Http\Controllers\Api\UpahSupirRincianController;
 use App\Http\Controllers\Api\ApprovalBukaCetakController;
+use App\Http\Controllers\api\ApprovalStokReuseController;
 use App\Http\Controllers\Api\ExportLaporanStokController;
 use App\Http\Controllers\Api\HutangBayarDetailController;
 use App\Http\Controllers\Api\HutangBayarHeaderController;
@@ -232,6 +233,7 @@ use App\Http\Controllers\Api\RekapPenerimaanDetailController;
 use App\Http\Controllers\Api\RekapPenerimaanHeaderController;
 use App\Http\Controllers\Api\TradoSupirMilikMandorController;
 use App\Http\Controllers\Api\ExportLaporanKasHarianController;
+use App\Http\Controllers\Api\ExportPerhitunganBonusController;
 use App\Http\Controllers\Api\HistoriPengeluaranStokController;
 use App\Http\Controllers\Api\LaporanHistoryDepositoController;
 use App\Http\Controllers\Api\LaporanHistoryPinjamanController;
@@ -295,7 +297,6 @@ use App\Http\Controllers\Api\SuratPengantarApprovalInputTripController;
 use App\Http\Controllers\Api\ApprovalBukaTanggalSuratPengantarController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
-use App\Http\Controllers\api\ApprovalStokReuseController;
 
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
@@ -1861,6 +1862,10 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporanapprovalstokreuse/export', [LaporanApprovalStokReuseController::class, 'export'])->name('laporanapprovalstokreuse.export');
     Route::resource('laporanapprovalstokreuse', LaporanApprovalStokReuseController::class);
     
+    Route::get('exportperhitunganbonus/report', [ExportPerhitunganBonusController::class, 'report'])->name('exportperhitunganbonus.report');
+    Route::get('exportperhitunganbonus/export', [ExportPerhitunganBonusController::class, 'export'])->name('exportperhitunganbonus.export');
+    Route::resource('exportperhitunganbonus', ExportPerhitunganBonusController::class);
+
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);
 
