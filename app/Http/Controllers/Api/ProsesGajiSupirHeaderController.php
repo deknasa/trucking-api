@@ -109,15 +109,18 @@ class ProsesGajiSupirHeaderController extends Controller
         DB::beginTransaction();
 
         try {
+            
+            $requestData = json_decode($request->dataric, true);
             $data = [
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                 'tgldari' => date('Y-m-d', strtotime($request->tgldari)),
                 'tglsampai' => date('Y-m-d', strtotime($request->tglsampai)),
                 'bank_id' => $request->bank_id,
-                'rincianId' => $request->rincianId,
-                'nobuktiRIC' => $request->nobuktiRIC,
-                'supir_id' => $request->supir_id,
-                'totalborongan' => $request->totalborongan,
+                'rincianId' => $requestData['rincianId'],
+                'nobuktiRIC' => $requestData['nobuktiRIC'],
+                'supir_id' => $requestData['supir_id'],
+                'totalborongan' => $requestData['totalborongan'],
+                'gajikenek' => $requestData['gajikenek'],
                 'nomPS' => $request->nomPS,
                 'nomPP' => $request->nomPP,
                 'nomDeposito' => $request->nomDeposito,
@@ -180,16 +183,17 @@ class ProsesGajiSupirHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-
+            $requestData = json_decode($request->dataric, true);
             $data = [
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                 'tgldari' => date('Y-m-d', strtotime($request->tgldari)),
                 'tglsampai' => date('Y-m-d', strtotime($request->tglsampai)),
                 'bank_id' => $request->bank_id,
-                'rincianId' => $request->rincianId,
-                'nobuktiRIC' => $request->nobuktiRIC,
-                'supir_id' => $request->supir_id,
-                'totalborongan' => $request->totalborongan,
+                'rincianId' => $requestData['rincianId'],
+                'nobuktiRIC' => $requestData['nobuktiRIC'],
+                'supir_id' => $requestData['supir_id'],
+                'totalborongan' => $requestData['totalborongan'],
+                'gajikenek' => $requestData['gajikenek'],
                 'nomPS' => $request->nomPS,
                 'nomPP' => $request->nomPP,
                 'nomDeposito' => $request->nomDeposito,
