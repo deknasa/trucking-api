@@ -324,9 +324,11 @@ class ExportLaporanKasHarian extends MyModel
             ->select(
                 DB::Raw('isnull(sum(isnull(nominaldebet,0)-isnull(nominalkredit,0)),0) as saldoawal'),
             )
-            ->whereRaw("right(bulan,4)+left(bulan,2)<right($tahun,4)+left($bulan,2)")
-            ->where('bank_id', $jenis)->first();
+            ->whereRaw("right(bulan,4)+left(bulan,2)<right('" . $tahun . "',4)+left('" . $bulan . "',2)")
+            ->where('bank_id', $jenis)
+         ->first();
 
+        // dd($querySaldoAwal->tosql());
 
         $saldoAwal = $querySaldoAwal->saldoawal;
 
@@ -371,6 +373,7 @@ class ExportLaporanKasHarian extends MyModel
             'saldo' => $saldoAwal
         ]);
 
+        // dd(db::table($tempList)->get());
 
         while ($tgl1 <= $tgl2) {
             DB::table($tempList)->insert([
@@ -501,7 +504,7 @@ class ExportLaporanKasHarian extends MyModel
                 DB::raw("nominal as kredit"),
                 DB::raw("0 as saldo"),
             )
-            
+
             ->leftjoin(DB::raw("akunpusat as c "), 'a.coadebet', 'c.coa')
             ->whereRaw("month(A.tgljatuhtempo)= cast(left($bulan,2) as integer)")
             ->whereRaw("year(A.tgljatuhtempo)= cast(right($tahun,4) as integer)")
@@ -859,6 +862,8 @@ class ExportLaporanKasHarian extends MyModel
             'kredit',
             'saldo',
         ], $queryLaporanRekap01);
+
+        // dd(db::table($tempRekap01)->whereraw("tgl='2024/1/1'")->get());
 
 
         $queryLaporanRekap01Dua = DB::table($tempRekap01)->from(
