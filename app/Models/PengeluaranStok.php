@@ -61,7 +61,15 @@ class PengeluaranStok extends MyModel
         $this->setRequestParameters();
 
         $roleinput = request()->roleinput ?? '';
+        $isLookup = request()->isLookup ?? '';
         $user_id = auth('api')->user()->id ?? 0;
+
+        $cabang_id = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'ID CABANG')
+        ->where('subgrp', 'ID CABANG')
+        ->first()->text ?? '';
+        
 
         $temprole = '##temprole' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temprole, function ($table) {
@@ -127,9 +135,34 @@ class PengeluaranStok extends MyModel
             $query->where('pengeluaranstok.cabang_id', $getParam->text)
             ->where('pengeluaranstok.statusaktif', 1);
         }
-        if ($roleinput != '') {
-            $query->join(db::raw($temprole . " d "), 'pengeluaranstok.aco_id', 'd.aco_id');
+   
+        if ($isLookup != '') {
+            $temprole = '##temprole' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temprole, function ($table) {
+                $table->bigInteger('aco_id')->nullable();
+            });
+
+            $queryaco = db::table("useracl")->from(db::raw("useracl a with (readuncommitted)"))
+                ->select('a.aco_id')
+                ->join(db::raw("pengeluaranstok b with (readuncommitted)"), 'a.aco_id', 'b.aco_id')
+                ->where('a.user_id', $user_id);
+            DB::table($temprole)->insertUsing(['aco_id'], $queryaco);
+
+
+            $queryrole = db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
+                ->select('a.aco_id')
+                ->join(db::raw("userrole b with (readuncommitted)"), 'a.role_id', 'b.role_id')
+                ->join(db::raw("pengeluaranstok c with (readuncommitted)"), 'a.aco_id', 'c.aco_id')
+                ->leftjoin(db::raw($temprole . " d "), 'a.aco_id', 'd.aco_id')
+                ->where('b.user_id', $user_id)
+                ->whereRaw("isnull(d.aco_id,0)=0")
+                ->where('c.cabang_id', $cabang_id);
+
+            DB::table($temprole)->insertUsing(['aco_id'], $queryrole);
+            $query
+                ->join($temprole, 'pengeluaranstok.aco_id', $temprole.'.aco_id');
         }
+
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
