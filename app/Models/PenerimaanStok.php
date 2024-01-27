@@ -59,12 +59,20 @@ class PenerimaanStok extends MyModel
         $this->setRequestParameters();
 
         $roleinput = request()->roleinput ?? '';
+        $isLookup = request()->isLookup ?? '';
         $user_id = auth('api')->user()->id ?? 0;
 
         $temprole = '##temprole' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temprole, function ($table) {
             $table->bigInteger('aco_id')->nullable();
         });
+
+        $cabang_id = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'ID CABANG')
+        ->where('subgrp', 'ID CABANG')
+        ->first()->text ?? '';
+
 
         $queryaco = db::table("useracl")->from(db::raw("useracl a with (readuncommitted)"))
             ->select('a.aco_id')
@@ -114,8 +122,10 @@ class PenerimaanStok extends MyModel
             DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
             DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
         )
+        
             ->leftJoin(DB::raw("parameter as parameterformat with (readuncommitted)"), 'penerimaanstok.format', '=', 'parameterformat.id')
-            ->leftJoin(DB::raw("parameter as parameterstatushitungstok with (readuncommitted)"), 'penerimaanstok.statushitungstok', '=', 'parameterstatushitungstok.id');
+            ->leftJoin(DB::raw("parameter as parameterstatushitungstok with (readuncommitted)"), 'penerimaanstok.statushitungstok', '=', 'parameterstatushitungstok.id')
+            ->where('penerimaanstok.cabang_id', $cabang_id);
 
         // $query = $this->selectColumns($query);
 
@@ -126,11 +136,33 @@ class PenerimaanStok extends MyModel
             $query->where('penerimaanstok.cabang_id', $getParam->text)
             ->where('penerimaanstok.statusaktif', 1);
         }
+        if ($isLookup != '') {
+            $temprole = '##temprole' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temprole, function ($table) {
+                $table->bigInteger('aco_id')->nullable();
+            });
 
-        if ($roleinput != '') {
-            $query->join(db::raw($temprole ." d "), 'penerimaanstok.aco_id', 'd.aco_id');
+            $queryaco = db::table("useracl")->from(db::raw("useracl a with (readuncommitted)"))
+                ->select('a.aco_id')
+                ->join(db::raw("penerimaanstok b with (readuncommitted)"), 'a.aco_id', 'b.aco_id')
+                ->where('a.user_id', $user_id);
+            DB::table($temprole)->insertUsing(['aco_id'], $queryaco);
 
+
+            $queryrole = db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
+                ->select('a.aco_id')
+                ->join(db::raw("userrole b with (readuncommitted)"), 'a.role_id', 'b.role_id')
+                ->join(db::raw("penerimaanstok c with (readuncommitted)"), 'a.aco_id', 'c.aco_id')
+                ->leftjoin(db::raw($temprole . " d "), 'a.aco_id', 'd.aco_id')
+                ->where('b.user_id', $user_id)
+                ->whereRaw("isnull(d.aco_id,0)=0")
+                ->where('c.cabang_id', $cabang_id);
+
+            DB::table($temprole)->insertUsing(['aco_id'], $queryrole);
+            $query
+                ->join($temprole, 'penerimaanstok.aco_id', $temprole.'.aco_id');
         }
+    
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
