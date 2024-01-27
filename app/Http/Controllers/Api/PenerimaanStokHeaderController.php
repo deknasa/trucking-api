@@ -444,7 +444,7 @@ class PenerimaanStokHeaderController extends Controller
                 ];
 
                 $passes = false;
-                // return response($data);
+                return response($data);
             }
             $isOutUsed = $penerimaanStokHeader->isOutUsed($id);
             if ($isOutUsed) {
