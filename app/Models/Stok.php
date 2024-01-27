@@ -148,114 +148,304 @@ class Stok extends MyModel
     
         
 
+        $proses = request()->proses ?? 'reload';
+        $user = auth('api')->user()->name;
+        $class = 'StokController';
+
+        if ($proses == 'reload') {
+            $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel a with (readuncommitted)")
+            )
+                ->select(
+                    'id',
+                    'class',
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            if (isset($querydata)) {
+                Schema::dropIfExists($querydata->namatabel);
+                DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+            }
+
+            DB::table('listtemporarytabel')->insert(
+                [
+                    'class' => $class,
+                    'namatabel' => $temtabel,
+                    'modifiedby' => $user,
+                    'created_at' => date('Y/m/d H:i:s'),
+                    'updated_at' => date('Y/m/d H:i:s'),
+                ]
+            );
+
+            Schema::create($temtabel, function (Blueprint $table) {
+                $table->bigInteger('id')->nullable();
+                $table->string('namastok',3000)->nullable();
+                $table->longtext('statusaktif')->nullable();
+                $table->longtext('statusservicerutin')->nullable();
+                $table->string('servicerutin_text',1000)->nullable();
+                $table->double('qtymin',15,2)->nullable();
+                $table->double('qtymax',15,2)->nullable();
+                $table->longtext('keterangan')->nullable();
+                $table->longtext('gambar')->nullable();
+                $table->string('namaterpusat',3000)->nullable();
+                $table->longtext('statusapprovaltanpaklaim')->nullable();
+                $table->longtext('statusban')->nullable();
+                $table->bigInteger('statusban_id')->nullable();
+                $table->longtext('statusreuse')->nullable();
+                $table->string('modifiedby',3000)->nullable();
+                $table->double('totalvulkanisir',15,2)->nullable();
+                $table->double('vulkanisirawal',15,2)->nullable();
+                $table->string('jenistrado',3000)->nullable();
+                $table->string('kelompok',3000)->nullable();
+                $table->string('subkelompok',3000)->nullable();
+                $table->string('kategori',3000)->nullable();
+                $table->string('merk',3000)->nullable();
+                $table->datetime('created_at')->nullable();
+                $table->datetime('updated_at')->nullable();
+                $table->string('judulLaporan',3000)->nullable();
+                $table->string('judul',3000)->nullable();
+                $table->string('tglcetak',3000)->nullable();
+                $table->string('usercetak',3000)->nullable();
+                $table->double('umuraki',15,2)->nullable();
+                $table->double('vulkan',15,2)->nullable();
+                $table->longtext('penerimaanstokdetail_keterangan')->nullable();
+                $table->double('penerimaanstokdetail_qty',15,2)->nullable();
+                $table->double('penerimaanstokdetail_harga',15,2)->nullable();
+                $table->double('penerimaanstokdetail_total',15,2)->nullable();
+                $table->bigInteger('statusaktif_id')->nullable();
+                $table->bigInteger('statusreuse_id')->nullable();
+                $table->bigInteger('kelompok_id')->nullable();
+
+            });
+
+          
+
+        //    
+        $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
+        $retur = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
+        if ($penerimaanstokheader_nobukti && $retur->text == $pengeluaranstok_id) {
+            $query = DB::table($this->table)->select(
+                'stok.id',
+                'stok.namastok',
+                'parameter.memo as statusaktif',
+                'service.memo as statusservicerutin',
+                'service.text as servicerutin_text',
+                'stok.qtymin',
+                'stok.qtymax',
+                'stok.keterangan',
+                'stok.gambar',
+                'stok.namaterpusat',
+                'statusban.text as statusban',
+                'stok.statusban as statusban_id',
+                'statusreuse.memo as statusreuse',
+                'stok.modifiedby',
+                'stok.totalvulkanisir',
+                'stok.vulkanisirawal',
+                'jenistrado.keterangan as jenistrado',
+                'kelompok.kodekelompok as kelompok',
+                'subkelompok.kodesubkelompok as subkelompok',
+                'kategori.kodekategori as kategori',
+                'merk.keterangan as merk',
+                'stok.created_at',
+                'stok.updated_at',
+                DB::raw("'Laporan Stok' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                DB::raw("isnull(c1.jumlahhari,0) as umuraki"),
+                DB::raw("isnull(d1.vulkan,0) as vulkan"),
+                DB::raw("penerimaanstokdetail.keterangan as penerimaanstokdetail_keterangan"),
+                DB::raw("penerimaanstokdetail.qty as penerimaanstokdetail_qty"),
+                DB::raw("penerimaanstokdetail.harga as penerimaanstokdetail_harga"),
+                DB::raw("penerimaanstokdetail.total as penerimaanstokdetail_total"),
+                'stok.statusaktif as statusaktif_id',
+                'stok.statusreuse as statusreuse_id',
+                'stok.kelompok_id as kelompok_id',
+
+    
+            )
+                ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
+                ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
+                ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
+                ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
+                ->leftJoin('parameter', 'stok.statusaktif', 'parameter.id')
+                ->leftJoin(DB::raw("parameter as service with (readuncommitted)"), 'stok.statusservicerutin', 'service.id')
+                ->leftJoin(DB::raw("parameter as statusban with (readuncommitted)"), 'stok.statusban', 'statusban.id')
+                ->leftJoin(DB::raw("parameter as statusreuse with (readuncommitted)"), 'stok.statusreuse', 'statusreuse.id')
+                ->leftJoin('merk', 'stok.merk_id', 'merk.id')
+                ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
+                ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id");
+    
+        } else {
+            $query = DB::table($this->table)->select(
+                'stok.id',
+                'stok.namastok',
+                'parameter.memo as statusaktif',
+                'service.memo as statusservicerutin',
+                'service.text as servicerutin_text',
+                'stok.qtymin',
+                'stok.qtymax',
+                'stok.keterangan',
+                'stok.gambar',
+                'stok.namaterpusat',
+                'statusapprovaltanpaklaim.memo as statusapprovaltanpaklaim',                    
+                'statusban.text as statusban',
+                'stok.statusban as statusban_id',
+                'statusreuse.memo as statusreuse',
+                'stok.modifiedby',
+                'stok.totalvulkanisir',
+                'stok.vulkanisirawal',
+                'jenistrado.keterangan as jenistrado',
+                'kelompok.kodekelompok as kelompok',
+                'subkelompok.kodesubkelompok as subkelompok',
+                'kategori.kodekategori as kategori',
+                'merk.keterangan as merk',
+                'stok.created_at',
+                'stok.updated_at',
+                DB::raw("'Laporan Stok' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                DB::raw("isnull(c1.jumlahhari,0) as umuraki"),
+                DB::raw("isnull(d1.vulkan,0) as vulkan"),
+                DB::raw("'' as penerimaanstokdetail_keterangan"),
+                DB::raw("'' as penerimaanstokdetail_qty"),
+                DB::raw("'' as penerimaanstokdetail_harga"),
+                DB::raw("'' as penerimaanstokdetail_total"),
+                'stok.statusaktif as statusaktif_id',
+                'stok.statusreuse as statusreuse_id',
+                'stok.kelompok_id as kelompok_id',
+                
+            )
+                ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
+                ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
+                ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
+                ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
+                ->leftJoin('parameter', 'stok.statusaktif', 'parameter.id')
+                ->leftJoin(DB::raw("parameter as service with (readuncommitted)"), 'stok.statusservicerutin', 'service.id')
+                ->leftJoin(DB::raw("parameter as statusban with (readuncommitted)"), 'stok.statusban', 'statusban.id')
+                ->leftJoin(DB::raw("parameter as statusreuse with (readuncommitted)"), 'stok.statusreuse', 'statusreuse.id')
+                ->leftJoin(DB::raw("parameter as statusapprovaltanpaklaim with (readuncommitted)"), 'stok.statusapprovaltanpaklaim', 'statusapprovaltanpaklaim.id')                    
+                ->leftJoin('merk', 'stok.merk_id', 'merk.id')
+                ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
+                ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id");
+    
+        }
+        // 
+
+            DB::table($temtabel)->insertUsing([
+                'id',
+                'namastok',
+                'statusaktif',
+                'statusservicerutin',
+                'servicerutin_text',
+                'qtymin',
+                'qtymax',
+                'keterangan',
+                'gambar',
+                'namaterpusat',
+                'statusapprovaltanpaklaim',
+                'statusban',
+                'statusban_id',
+                'statusreuse',
+                'modifiedby',
+                'totalvulkanisir',
+                'vulkanisirawal',
+                'jenistrado',
+                'kelompok',
+                'subkelompok',
+                'kategori',
+                'merk',
+                'created_at',
+                'updated_at',
+                'judulLaporan',
+                'judul',
+                'tglcetak',
+                'usercetak',
+                'umuraki',
+                'vulkan',
+                'penerimaanstokdetail_keterangan',
+                'penerimaanstokdetail_qty',
+                'penerimaanstokdetail_harga',
+                'penerimaanstokdetail_total',
+                'statusaktif_id',
+                'statusreuse_id',
+                'kelompok_id',
+            ], $query);
+        } else {
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel with (readuncommitted)")
+            )
+                ->select(
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            $temtabel = $querydata->namatabel;
+        }
+
+        $querydata = DB::table('listtemporarytabel')->from(
+            DB::raw("listtemporarytabel with (readuncommitted)")
+        )
+            ->select(
+                'namatabel',
+            )
+            ->where('class', '=', $class)
+            ->where('modifiedby', '=', $user)
+            ->first();
+
+        $temtabel = $querydata->namatabel;
+        $query = DB::table(DB::raw($temtabel))->from(
+            DB::raw(DB::raw($temtabel) . " stok with (readuncommitted)")
+        )
+            ->select(
+                'stok.id',
+                'stok.namastok',
+                'stok.statusaktif',
+                'stok.statusservicerutin',
+                'stok.servicerutin_text',
+                'stok.qtymin',
+                'stok.qtymax',
+                'stok.keterangan',
+                'stok.gambar',
+                'stok.namaterpusat',
+                'stok.statusapprovaltanpaklaim',
+                'stok.statusban',
+                'stok.statusban_id',
+                'stok.statusreuse',
+                'stok.modifiedby',
+                'stok.totalvulkanisir',
+                'stok.vulkanisirawal',
+                'stok.jenistrado',
+                'stok.kelompok',
+                'stok.subkelompok',
+                'stok.kategori',
+                'stok.merk',
+                'stok.created_at',
+                'stok.updated_at',
+                'stok.judulLaporan',
+                'stok.judul',
+                'stok.tglcetak',
+                'stok.usercetak',
+                'stok.umuraki',
+                'stok.vulkan',
+                'stok.penerimaanstokdetail_keterangan',
+                'stok.penerimaanstokdetail_qty',
+                'stok.penerimaanstokdetail_harga',
+                'stok.penerimaanstokdetail_total',
+            );
 
 
 
         // end update vulkanisir
-        $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
-            $retur = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
-            if ($penerimaanstokheader_nobukti && $retur->text == $pengeluaranstok_id) {
-                $query = DB::table($this->table)->select(
-                    'stok.id',
-                    'stok.namastok',
-                    'parameter.memo as statusaktif',
-                    'service.memo as statusservicerutin',
-                    'service.text as servicerutin_text',
-                    'stok.qtymin',
-                    'stok.qtymax',
-                    'stok.keterangan',
-                    'stok.gambar',
-                    'stok.namaterpusat',
-                    'statusban.text as statusban',
-                    'stok.statusban as statusban_id',
-                    'statusreuse.memo as statusreuse',
-                    'stok.modifiedby',
-                    'stok.totalvulkanisir',
-                    'stok.vulkanisirawal',
-                    'jenistrado.keterangan as jenistrado',
-                    'kelompok.kodekelompok as kelompok',
-                    'subkelompok.kodesubkelompok as subkelompok',
-                    'kategori.kodekategori as kategori',
-                    'merk.keterangan as merk',
-                    'stok.created_at',
-                    'stok.updated_at',
-                    DB::raw("'Laporan Stok' as judulLaporan"),
-                    DB::raw("'" . $getJudul->text . "' as judul"),
-                    DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                    DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
-                    DB::raw("isnull(c1.jumlahhari,0) as umuraki"),
-                    DB::raw("isnull(d1.vulkan,0) as vulkan"),
-                    DB::raw("penerimaanstokdetail.keterangan as penerimaanstokdetail_keterangan"),
-                    DB::raw("penerimaanstokdetail.qty as penerimaanstokdetail_qty"),
-                    DB::raw("penerimaanstokdetail.harga as penerimaanstokdetail_harga"),
-                    DB::raw("penerimaanstokdetail.total as penerimaanstokdetail_total"),
-                    
-
-        
-                )
-                    ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
-                    ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
-                    ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
-                    ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
-                    ->leftJoin('parameter', 'stok.statusaktif', 'parameter.id')
-                    ->leftJoin(DB::raw("parameter as service with (readuncommitted)"), 'stok.statusservicerutin', 'service.id')
-                    ->leftJoin(DB::raw("parameter as statusban with (readuncommitted)"), 'stok.statusban', 'statusban.id')
-                    ->leftJoin(DB::raw("parameter as statusreuse with (readuncommitted)"), 'stok.statusreuse', 'statusreuse.id')
-                    ->leftJoin('merk', 'stok.merk_id', 'merk.id')
-                    ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
-                    ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id");
-        
-            } else {
-                $query = DB::table($this->table)->select(
-                    'stok.id',
-                    'stok.namastok',
-                    'parameter.memo as statusaktif',
-                    'service.memo as statusservicerutin',
-                    'service.text as servicerutin_text',
-                    'stok.qtymin',
-                    'stok.qtymax',
-                    'stok.keterangan',
-                    'stok.gambar',
-                    'stok.namaterpusat',
-                    'statusapprovaltanpaklaim.memo as statusapprovaltanpaklaim',                    
-                    'statusban.text as statusban',
-                    'stok.statusban as statusban_id',
-                    'statusreuse.memo as statusreuse',
-                    'stok.modifiedby',
-                    'stok.totalvulkanisir',
-                    'stok.vulkanisirawal',
-                    'jenistrado.keterangan as jenistrado',
-                    'kelompok.kodekelompok as kelompok',
-                    'subkelompok.kodesubkelompok as subkelompok',
-                    'kategori.kodekategori as kategori',
-                    'merk.keterangan as merk',
-                    'stok.created_at',
-                    'stok.updated_at',
-                    DB::raw("'Laporan Stok' as judulLaporan"),
-                    DB::raw("'" . $getJudul->text . "' as judul"),
-                    DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                    DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
-                    DB::raw("isnull(c1.jumlahhari,0) as umuraki"),
-                    DB::raw("isnull(d1.vulkan,0) as vulkan"),
-                    DB::raw("'' as penerimaanstokdetail_keterangan"),
-                    DB::raw("'' as penerimaanstokdetail_qty"),
-                    DB::raw("'' as penerimaanstokdetail_harga"),
-                    DB::raw("'' as penerimaanstokdetail_total"),
-                )
-                    ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
-                    ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
-                    ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
-                    ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
-                    ->leftJoin('parameter', 'stok.statusaktif', 'parameter.id')
-                    ->leftJoin(DB::raw("parameter as service with (readuncommitted)"), 'stok.statusservicerutin', 'service.id')
-                    ->leftJoin(DB::raw("parameter as statusban with (readuncommitted)"), 'stok.statusban', 'statusban.id')
-                    ->leftJoin(DB::raw("parameter as statusreuse with (readuncommitted)"), 'stok.statusreuse', 'statusreuse.id')
-                    ->leftJoin(DB::raw("parameter as statusapprovaltanpaklaim with (readuncommitted)"), 'stok.statusapprovaltanpaklaim', 'statusapprovaltanpaklaim.id')                    
-                    ->leftJoin('merk', 'stok.merk_id', 'merk.id')
-                    ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
-                    ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id");
-        
-            }
+       
 
        
 
@@ -270,8 +460,9 @@ class Stok extends MyModel
                 ->where('text', '=', 'AKTIF')
                 ->first();
 
-            $query->where('stok.statusaktif', '=', $statusaktif->id);
+            $query->where('stok.statusaktif_id', '=', $statusaktif->id);
         }
+        // dd($query->get());
         if (($statusreuse == 'REUSE') || ($pg->text == $penerimaanstok_id)) {
 
             $statusaktif = Parameter::from(
@@ -854,95 +1045,132 @@ class Stok extends MyModel
     }
 
 
+    // public function sort($query)
+    // {
+    //     if ($this->params['sortIndex'] == 'jenistrado') {
+    //         return $query->orderBy('jenistrado.keterangan', $this->params['sortOrder']);
+    //     } else if ($this->params['sortIndex'] == 'kelompok') {
+    //         return $query->orderBy('kelompok.kodekelompok', $this->params['sortOrder']);
+    //     } else if ($this->params['sortIndex'] == 'subkelompok') {
+    //         return $query->orderBy('subkelompok.kodesubkelompok', $this->params['sortOrder']);
+    //     } else if ($this->params['sortIndex'] == 'kategori') {
+    //         return $query->orderBy('kategori.kodekategori', $this->params['sortOrder']);
+    //     } else if ($this->params['sortIndex'] == 'merk') {
+    //         return $query->orderBy('merk.keterangan', $this->params['sortOrder']);
+    //     } else if ($this->params['sortIndex'] == 'umuraki') {
+    //         return $query->orderBy('c1.jumlahhari', $this->params['sortOrder']);
+    //     } else if ($this->params['sortIndex'] == 'vulkan') {
+    //         return $query->orderBy('d1.vulkan', $this->params['sortOrder']);
+    //     } else {
+    //         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+    //     }
+    // }
+
     public function sort($query)
     {
-        if ($this->params['sortIndex'] == 'jenistrado') {
-            return $query->orderBy('jenistrado.keterangan', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'kelompok') {
-            return $query->orderBy('kelompok.kodekelompok', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'subkelompok') {
-            return $query->orderBy('subkelompok.kodesubkelompok', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'kategori') {
-            return $query->orderBy('kategori.kodekategori', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'merk') {
-            return $query->orderBy('merk.keterangan', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'umuraki') {
-            return $query->orderBy('c1.jumlahhari', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'vulkan') {
-            return $query->orderBy('d1.vulkan', $this->params['sortOrder']);
-        } else {
-            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
-        }
+            return $query->orderBy('stok.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 
+    // public function filter($query, $relationFields = [])
+    // {
+    //     if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+    //         switch ($this->params['filters']['groupOp']) {
+    //             case "AND":
+    //                 foreach ($this->params['filters']['rules'] as $index => $filters) {
+    //                     if ($filters['field'] == 'statusservicerutin') {
+    //                         $query = $query->where('service.text', '=', $filters['data']);
+    //                     } else if ($filters['field'] == 'check') {
+                            
+    //                     } else if ($filters['field'] == 'statusaktif') {
+    //                         $query = $query->where('parameter.text', '=', $filters['data']);
+    //                     } else if ($filters['field'] == 'statusreuse') {
+    //                         $query = $query->where('statusreuse.text', '=', $filters['data']);
+    //                     } else if ($filters['field'] == 'jenistrado') {
+    //                         $query = $query->whereRaw('jenistrado.keterangan LIKE' . "'%$filters[data]%'");
+    //                     } else if ($filters['field'] == 'kelompok') {
+    //                         $query = $query->whereRaw('kelompok.kodekelompok LIKE' . "'%$filters[data]%'");
+    //                     } else if ($filters['field'] == 'subkelompok') {
+    //                         $query = $query->whereRaw('subkelompok.kodesubkelompok LIKE' . "'%$filters[data]%'");
+    //                     } else if ($filters['field'] == 'kategori') {
+    //                         $query = $query->whereRaw('kategori.kodekategori LIKE' . "'%$filters[data]%'");
+    //                     } else if ($filters['field'] == 'merk') {
+    //                         $query = $query->whereRaw('merk.keterangan LIKE' . "'%$filters[data]%'");
+    //                     } else if ($filters['field'] == 'umuraki') {
+    //                         $query = $query->whereRaw('c1.jumlahhari LIKE' . "'%$filters[data]%'");
+    //                     } else if ($filters['field'] == 'vulkan') {
+    //                         $query = $query->whereRaw('d1.vulkan LIKE' . "'%$filters[data]%'");
+    //                     } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+    //                         $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+    //                     } else {
+    //                         // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+    //                         $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+    //                     }
+    //                 }
+
+    //                 break;
+    //             case "OR":
+    //                 $query->where(function ($query) {
+    //                     foreach ($this->params['filters']['rules'] as $index => $filters) {
+    //                         if ($filters['field'] == 'statusservicerutin') {
+    //                             $query = $query->orWhere('service.text', '=', $filters['data']);
+    //                         } else if ($filters['field'] == 'check') {
+                                
+    //                         } else if ($filters['field'] == 'jenistrado') {
+    //                             $query = $query->orWhereRaw('jenistrado.keterangan LIKE ' . "'%$filters[data]%'");
+    //                         } else if ($filters['field'] == 'statusaktif') {
+    //                             $query = $query->orWhereRaw('parameter.text LIKE ' . "'%$filters[data]%'");
+    //                         } else if ($filters['field'] == 'statusreuse') {
+    //                             $query = $query->orWhereRaw('statusreuse.text LIKE ' . "'%$filters[data]%'");
+    //                         } else if ($filters['field'] == 'kelompok') {
+    //                             $query = $query->orWhereRaw('kelompok.kodekelompok LIKE ' . "'%$filters[data]%'");
+    //                         } else if ($filters['field'] == 'subkelompok') {
+    //                             $query = $query->orWhereRaw('subkelompok.kodesubkelompok LIKE ' . "'%$filters[data]%'");
+    //                         } else if ($filters['field'] == 'kategori') {
+    //                             $query = $query->orWhereRaw('kategori.kodekategori LIKE ' . "'%$filters[data]%'");
+    //                         } else if ($filters['field'] == 'merk') {
+    //                             $query = $query->orWhereRaw('merk.keterangan LIKE ' . "'%$filters[data]%'");
+    //                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+    //                             $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+    //                         } else if ($filters['field'] == 'umuraki') {
+    //                             $query = $query->orwhereRaw('c1.jumlahhari LIKE' . "'%$filters[data]%'");
+    //                         } else if ($filters['field'] == 'vulkan') {
+    //                             $query = $query->orwhereRaw('d1.vulkan LIKE' . "'%$filters[data]%'");
+    //                         } else {
+    //                             // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+    //                             $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+    //                         }
+    //                     }
+    //                 });
+
+    //                 break;
+    //             default:
+
+    //                 break;
+    //         }
+
+    //         $this->totalRows = $query->count();
+    //         $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+    //     }
+
+    //     return $query;
+    // }
+
+    
     public function filter($query, $relationFields = [])
     {
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusservicerutin') {
-                            $query = $query->where('service.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'check') {
-                            
-                        } else if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statusreuse') {
-                            $query = $query->where('statusreuse.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'jenistrado') {
-                            $query = $query->whereRaw('jenistrado.keterangan LIKE' . "'%$filters[data]%'");
-                        } else if ($filters['field'] == 'kelompok') {
-                            $query = $query->whereRaw('kelompok.kodekelompok LIKE' . "'%$filters[data]%'");
-                        } else if ($filters['field'] == 'subkelompok') {
-                            $query = $query->whereRaw('subkelompok.kodesubkelompok LIKE' . "'%$filters[data]%'");
-                        } else if ($filters['field'] == 'kategori') {
-                            $query = $query->whereRaw('kategori.kodekategori LIKE' . "'%$filters[data]%'");
-                        } else if ($filters['field'] == 'merk') {
-                            $query = $query->whereRaw('merk.keterangan LIKE' . "'%$filters[data]%'");
-                        } else if ($filters['field'] == 'umuraki') {
-                            $query = $query->whereRaw('c1.jumlahhari LIKE' . "'%$filters[data]%'");
-                        } else if ($filters['field'] == 'vulkan') {
-                            $query = $query->whereRaw('d1.vulkan LIKE' . "'%$filters[data]%'");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-                        }
+                            $query = $query->whereRaw("stok.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                     }
 
                     break;
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusservicerutin') {
-                                $query = $query->orWhere('service.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'check') {
-                                
-                            } else if ($filters['field'] == 'jenistrado') {
-                                $query = $query->orWhereRaw('jenistrado.keterangan LIKE ' . "'%$filters[data]%'");
-                            } else if ($filters['field'] == 'statusaktif') {
-                                $query = $query->orWhereRaw('parameter.text LIKE ' . "'%$filters[data]%'");
-                            } else if ($filters['field'] == 'statusreuse') {
-                                $query = $query->orWhereRaw('statusreuse.text LIKE ' . "'%$filters[data]%'");
-                            } else if ($filters['field'] == 'kelompok') {
-                                $query = $query->orWhereRaw('kelompok.kodekelompok LIKE ' . "'%$filters[data]%'");
-                            } else if ($filters['field'] == 'subkelompok') {
-                                $query = $query->orWhereRaw('subkelompok.kodesubkelompok LIKE ' . "'%$filters[data]%'");
-                            } else if ($filters['field'] == 'kategori') {
-                                $query = $query->orWhereRaw('kategori.kodekategori LIKE ' . "'%$filters[data]%'");
-                            } else if ($filters['field'] == 'merk') {
-                                $query = $query->orWhereRaw('merk.keterangan LIKE ' . "'%$filters[data]%'");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'umuraki') {
-                                $query = $query->orwhereRaw('c1.jumlahhari LIKE' . "'%$filters[data]%'");
-                            } else if ($filters['field'] == 'vulkan') {
-                                $query = $query->orwhereRaw('d1.vulkan LIKE' . "'%$filters[data]%'");
-                            } else {
-                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-                            }
+                                $query = $query->OrwhereRaw( "stok.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                         }
                     });
 
