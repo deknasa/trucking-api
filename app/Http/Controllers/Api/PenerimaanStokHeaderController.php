@@ -309,64 +309,65 @@ class PenerimaanStokHeaderController extends Controller
     public function cekvalidasi($id)
     {
 
-     
+
         $penerimaanStokHeader  = new PenerimaanStokHeader();
         $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
 
         $aksi = request()->aksi ?? '';
         $peneimaan = $penerimaanStokHeader->findOrFail($id);
 
-        $penerimaanstok_id= $peneimaan->penerimaanstok_id;
-        $aco_id=db::table("penerimaanstok")->from(db::raw("penerimaanstok a with (readuncommitted)"))
-        ->select(
-            'a.aco_id'
-        )->where('a.id', $penerimaanstok_id)
-        ->first()->aco_id ?? 0;
+        $penerimaanstok_id = $peneimaan->penerimaanstok_id;
+        $aco_id = db::table("penerimaanstok")->from(db::raw("penerimaanstok a with (readuncommitted)"))
+            ->select(
+                'a.aco_id'
+            )->where('a.id', $penerimaanstok_id)
+            ->first()->aco_id ?? 0;
 
-        $user_id=auth('api')->user()->id;
-        $user=auth('api')->user()->user;
-        $role=db::table("userrole")->from(db::raw("userrole a with (readuncommitted)"))
-        ->select(
-            'a.id'
-        )
-        ->join(db::raw("acl b with (readuncommitted)"),'a.role_id','b.role_id')
-        ->where('a.user_id',$user_id)
-        ->where('b.aco_id',$aco_id)
-        // ->tosql();
-        ->first();
-
-    
-        $passes = true;
-        // dd($role);
-        if (!isset($role)) {
-            $acl=db::table('useracl')->from(db::raw("useracl a with (readuncommitted)"))
+        $user_id = auth('api')->user()->id;
+        $user = auth('api')->user()->user;
+        $role = db::table("userrole")->from(db::raw("userrole a with (readuncommitted)"))
             ->select(
                 'a.id'
-            )->where('a.user_id',$user_id)
-            ->where('a.aco_id',$aco_id)
+            )
+            ->join(db::raw("acl b with (readuncommitted)"), 'a.role_id', 'b.role_id')
+            ->where('a.user_id', $user_id)
+            ->where('b.aco_id', $aco_id)
+            // ->tosql();
             ->first();
 
-            if (!isset($acl)) {
-                $query = DB::table('error')
-                ->select(db::raw("'USER " .$user ." '+keterangan as keterangan"))
-                ->where('kodeerror', '=', 'TPH')
-                ->get();
-            $keterangan = $query['0'];
-            $data = [
-                'message' => $keterangan,
-                'errors' => $keterangan,
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ]; 
-                  $passes = false;
-                  return response($data);
-                  goto selesai;
-            }
-        } 
-            
-    
 
-        
+        $passes = true;
+        // dd($role);
+        if ($aksi == 'EDIT' || $aksi == 'DELETE') {
+            if (!isset($role)) {
+                $acl = db::table('useracl')->from(db::raw("useracl a with (readuncommitted)"))
+                    ->select(
+                        'a.id'
+                    )->where('a.user_id', $user_id)
+                    ->where('a.aco_id', $aco_id)
+                    ->first();
+
+                if (!isset($acl)) {
+                    $query = DB::table('error')
+                        ->select(db::raw("'USER " . $user . " '+keterangan as keterangan"))
+                        ->where('kodeerror', '=', 'TPH')
+                        ->get();
+                    $keterangan = $query['0'];
+                    $data = [
+                        'message' => $keterangan,
+                        'errors' => $keterangan,
+                        'kodestatus' => '1',
+                        'kodenobukti' => '1'
+                    ];
+                    $passes = false;
+                    return response($data);
+                    goto selesai;
+                }
+            }
+        }
+
+
+
         // dd($penerimaanstok_id);
         // dd(auth('api')->user()->id);
 
@@ -538,7 +539,6 @@ class PenerimaanStokHeaderController extends Controller
                 if (!$isOutUsed) {
                     return response($data);
                 }
-                
             }
         }
         return response($data);
@@ -550,12 +550,12 @@ class PenerimaanStokHeaderController extends Controller
      * @ClassName 
      * @Keterangan APPROVAL EDIT DATA
      */
-    public function approvalEdit(Request $request,$id)
+    public function approvalEdit(Request $request, $id)
     {
         DB::beginTransaction();
         try {
             $penerimaanStokHeader = PenerimaanStokHeader::lockForUpdate()->findOrFail($id);
-            $opnameheader = DB::table('penerimaanstokheader')->from(DB::raw("opnameheader with (readuncommitted)"))->orderBy('id','desc')->first();
+            $opnameheader = DB::table('penerimaanstokheader')->from(DB::raw("opnameheader with (readuncommitted)"))->orderBy('id', 'desc')->first();
             $isBeforeOpname = false;
             $opnameTglBukti = null;
             if ($opnameheader) {
@@ -615,7 +615,7 @@ class PenerimaanStokHeaderController extends Controller
         }
     }
 
-     /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL EDIT KETERANGAN
      */
@@ -815,12 +815,11 @@ class PenerimaanStokHeaderController extends Controller
     public function penerimaanstokpenambahannilai()
     {
     }
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {
     }
-    
 }

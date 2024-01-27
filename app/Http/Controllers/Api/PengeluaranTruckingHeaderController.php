@@ -89,7 +89,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 $statusPosting = DB::table(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'POSTING')->first();
                 $request->postingpinjaman = $statusPosting->id;
             }
-            
+
             if ($fetchFormat->kodepengeluaran != "PJT") {
                 $statusPosting = DB::table(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'POSTING')->first();
                 $request->statusposting = $statusPosting->id;
@@ -265,8 +265,8 @@ class PengeluaranTruckingHeaderController extends Controller
                 $statusPosting = DB::table(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'POSTING')->first();
                 $request->postingpinjaman = $statusPosting->id;
             }
-            
-            
+
+
             if ($fetchFormat->kodepengeluaran != "PJT") {
                 $statusPosting = DB::table(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'POSTING')->first();
                 $request->statusposting = $statusPosting->id;
@@ -480,6 +480,55 @@ class PengeluaranTruckingHeaderController extends Controller
         $statusdatacetak = $pengeluaran->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        $aksi = request()->aksi;
+        $pengeluarantrucking_id = $pengeluaran->pengeluarantrucking_id;
+        $aco_id = db::table("pengeluarantrucking")->from(db::raw("pengeluarantrucking a with (readuncommitted)"))
+            ->select(
+                'a.aco_id'
+            )->where('a.id', $pengeluarantrucking_id)
+            ->first()->aco_id ?? 0;
+
+        $user_id = auth('api')->user()->id;
+        $user = auth('api')->user()->user;
+        $role = db::table("userrole")->from(db::raw("userrole a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->join(db::raw("acl b with (readuncommitted)"), 'a.role_id', 'b.role_id')
+            ->where('a.user_id', $user_id)
+            ->where('b.aco_id', $aco_id)
+            // ->tosql();
+            ->first();
+
+        if ($aksi == 'EDIT' || $aksi == 'DELETE') {
+
+            if (!isset($role)) {
+                $acl = db::table('useracl')->from(db::raw("useracl a with (readuncommitted)"))
+                    ->select(
+                        'a.id'
+                    )->where('a.user_id', $user_id)
+                    ->where('a.aco_id', $aco_id)
+                    ->first();
+
+                if (!isset($acl)) {
+                    $query = DB::table('error')
+                        ->select(db::raw("'USER " . $user . " '+keterangan as keterangan"))
+                        ->where('kodeerror', '=', 'TPH')
+                        ->get();
+                    $keterangan = $query['0'];
+
+                    $data = [
+                        'message' => $keterangan,
+                        'errors' => 'sudah cetak',
+                        'kodestatus' => '1',
+                        'kodenobukti' => '1'
+                    ];
+                    $passes = false;
+                    return response($data);
+                }
+            }
+        }
 
         if ($statusdatacetak == $statusCetak->id) {
             $query = DB::table('error')
@@ -722,7 +771,7 @@ class PengeluaranTruckingHeaderController extends Controller
         ]);
     }
 
-    
+
     public function getOtol(Request $request)
     {
         $tgldari = date('Y-m-d', strtotime($request->tgldari));
@@ -940,7 +989,7 @@ class PengeluaranTruckingHeaderController extends Controller
     {
     }
 
-        /**
+    /**
      * @ClassName 
      * @Keterangan BIAYA UANG MAKAN SUPIR
      */

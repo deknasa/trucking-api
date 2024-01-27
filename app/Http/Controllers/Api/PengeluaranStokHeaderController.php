@@ -353,57 +353,58 @@ class PengeluaranStokHeaderController extends Controller
 
 
         // cek hak
-        $pengeluaranstok_id= $pengeluaran->pengeluaranstok_id;
-        $aco_id=db::table("pengeluaranstok")->from(db::raw("pengeluaranstok a with (readuncommitted)"))
-        ->select(
-            'a.aco_id'
-        )->where('a.id', $pengeluaranstok_id)
-        ->first()->aco_id ?? 0;
+        $pengeluaranstok_id = $pengeluaran->pengeluaranstok_id;
+        $aco_id = db::table("pengeluaranstok")->from(db::raw("pengeluaranstok a with (readuncommitted)"))
+            ->select(
+                'a.aco_id'
+            )->where('a.id', $pengeluaranstok_id)
+            ->first()->aco_id ?? 0;
 
-        $user_id=auth('api')->user()->id;
-        $user=auth('api')->user()->user;
-        $role=db::table("userrole")->from(db::raw("userrole a with (readuncommitted)"))
-        ->select(
-            'a.id'
-        )
-        ->join(db::raw("acl b with (readuncommitted)"),'a.role_id','b.role_id')
-        ->where('a.user_id',$user_id)
-        ->where('b.aco_id',$aco_id)
-        // ->tosql();
-        ->first();
-
-    
-        $passes = true;
-        // dd($role);
-        if (!isset($role)) {
-            $acl=db::table('useracl')->from(db::raw("useracl a with (readuncommitted)"))
+        $user_id = auth('api')->user()->id;
+        $user = auth('api')->user()->user;
+        $role = db::table("userrole")->from(db::raw("userrole a with (readuncommitted)"))
             ->select(
                 'a.id'
-            )->where('a.user_id',$user_id)
-            ->where('a.aco_id',$aco_id)
+            )
+            ->join(db::raw("acl b with (readuncommitted)"), 'a.role_id', 'b.role_id')
+            ->where('a.user_id', $user_id)
+            ->where('b.aco_id', $aco_id)
+            // ->tosql();
             ->first();
 
-            if (!isset($acl)) {
-                $query = DB::table('error')
-                ->select(db::raw("'USER " .$user ." '+keterangan as keterangan"))
-                ->where('kodeerror', '=', 'TPH')
-                ->get();
-            $keterangan = $query['0'];
-            $data = [
-                'message' => $keterangan,
-                'errors' => $keterangan,
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ]; 
-                  $passes = false;
-                  return response($data);
-                  goto selesai;
-            }
-        } 
+        $aksi = request()->aksi;
 
+        $passes = true;
+        // dd($role);
+        if ($aksi == 'EDIT' || $aksi == 'DELETE') {
+            if (!isset($role)) {
+                $acl = db::table('useracl')->from(db::raw("useracl a with (readuncommitted)"))
+                    ->select(
+                        'a.id'
+                    )->where('a.user_id', $user_id)
+                    ->where('a.aco_id', $aco_id)
+                    ->first();
+
+                if (!isset($acl)) {
+                    $query = DB::table('error')
+                        ->select(db::raw("'USER " . $user . " '+keterangan as keterangan"))
+                        ->where('kodeerror', '=', 'TPH')
+                        ->get();
+                    $keterangan = $query['0'];
+                    $data = [
+                        'message' => $keterangan,
+                        'errors' => $keterangan,
+                        'kodestatus' => '1',
+                        'kodenobukti' => '1'
+                    ];
+                    $passes = false;
+                    return response($data);
+                    goto selesai;
+                }
+            }
+        }
         // 
 
-        $aksi = request()->aksi ?? '';
         if ($aksi == 'PRINTER BESAR' || $aksi == 'PRINTER KECIL') {
 
             $peneimaan = $pengeluaran->findOrFail($id);
@@ -505,7 +506,7 @@ class PengeluaranStokHeaderController extends Controller
                 ];
 
                 return response($data);
-            } 
+            }
             $todayValidation = $pengeluaran->todayValidation($pengeluaran->tglbukti);
             if (!$todayValidation) {
                 $query = Error::from(DB::raw("error with (readuncommitted)"))
@@ -520,11 +521,10 @@ class PengeluaranStokHeaderController extends Controller
                     'kodestatus' => '1',
                     'kodenobukti' => '1'
                 ];
-
-            } 
+            }
             $isEditAble = $pengeluaran->isEditAble($id);
             $isKeteranganEditAble = $pengeluaran->isKeteranganEditAble($id);
-            if ((!$isEditAble)||(!$isKeteranganEditAble)) {
+            if ((!$isEditAble) || (!$isKeteranganEditAble)) {
                 $query = Error::from(DB::raw("error with (readuncommitted)"))
                     ->select('keterangan')
                     ->whereRaw("kodeerror = 'SDC'")
@@ -538,8 +538,8 @@ class PengeluaranStokHeaderController extends Controller
                     'kodenobukti' => '1'
                 ];
             }
-            
-        //    dd($pengeluaran->tglbukti,$isEditAble,$printValidation);
+
+            //    dd($pengeluaran->tglbukti,$isEditAble,$printValidation);
 
             if ($todayValidation || (($isEditAble || $isKeteranganEditAble) && !$printValidation)) {
                 $data = [
@@ -548,10 +548,10 @@ class PengeluaranStokHeaderController extends Controller
                     'kodestatus' => '0',
                     'kodenobukti' => '1'
                 ];
-            }else {
+            } else {
                 return response($data);
             }
-            
+
 
             return response($data);
             selesai:;
@@ -819,7 +819,7 @@ class PengeluaranStokHeaderController extends Controller
     {
     }
 
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */

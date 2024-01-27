@@ -66,31 +66,31 @@ class PenerimaanTruckingHeaderController extends Controller
         try {
             /* Store header */
             $penerimaanTruckingHeader = (new PenerimaanTruckingHeader())->processStore([
-                "keteranganheader" =>$request->keteranganheader,
-                "periodedari" =>$request->periodedari,
-                "periodesampai" =>$request->periodesampai,
-                "jenisorderan_id" =>$request->jenisorderan_id,
-                "penerimaantrucking_id" =>$request->penerimaantrucking_id,
-                "tanpaprosesnobukti" =>$request->tanpaprosesnobukti,
-                "coa" =>$request->coa,
-                "bank_id" =>$request->bank_id,
-                "tglbukti" =>$request->tglbukti,
-                "supirheader_id" =>$request->supirheader_id,
-                "karyawanheader_id" =>$request->karyawanheader_id,
-                "penerimaan_nobukti" =>$request->penerimaan_nobukti,
-                "pendapatansupir_bukti" =>$request->pendapatansupir_bukti,
-                "statusformat" =>$request->statusformat,
-                "nominal" =>$request->nominal,
-                "supir_id" =>$request->supir_id,
-                "karyawan_id" =>$request->karyawan_id,
-                "pengeluarantruckingheader_nobukti" =>$request->pengeluarantruckingheader_nobukti,
-                "keterangan" =>$request->keterangan,
+                "keteranganheader" => $request->keteranganheader,
+                "periodedari" => $request->periodedari,
+                "periodesampai" => $request->periodesampai,
+                "jenisorderan_id" => $request->jenisorderan_id,
+                "penerimaantrucking_id" => $request->penerimaantrucking_id,
+                "tanpaprosesnobukti" => $request->tanpaprosesnobukti,
+                "coa" => $request->coa,
+                "bank_id" => $request->bank_id,
+                "tglbukti" => $request->tglbukti,
+                "supirheader_id" => $request->supirheader_id,
+                "karyawanheader_id" => $request->karyawanheader_id,
+                "penerimaan_nobukti" => $request->penerimaan_nobukti,
+                "pendapatansupir_bukti" => $request->pendapatansupir_bukti,
+                "statusformat" => $request->statusformat,
+                "nominal" => $request->nominal,
+                "supir_id" => $request->supir_id,
+                "karyawan_id" => $request->karyawan_id,
+                "pengeluarantruckingheader_nobukti" => $request->pengeluarantruckingheader_nobukti,
+                "keterangan" => $request->keterangan,
                 "ebs" => false,
-                "from" =>$request->from,
+                "from" => $request->from,
             ]);
             /* Set position and page */
             $penerimaanTruckingHeader->position = $this->getPosition($penerimaanTruckingHeader, $penerimaanTruckingHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / (10));
             } else {
                 $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
@@ -136,31 +136,31 @@ class PenerimaanTruckingHeaderController extends Controller
             /* Store header */
             // PenerimaanTruckingHeader::findOrFail($id);
             $penerimaanTruckingHeader = (new PenerimaanTruckingHeader())->processUpdate($penerimaantruckingheader, [
-                "keteranganheader" =>$request->keteranganheader,
-                "periodedari" =>$request->periodedari,
-                "periodesampai" =>$request->periodesampai,
-                "jenisorderan_id" =>$request->jenisorderan_id,
-                "penerimaantrucking_id" =>$request->penerimaantrucking_id,
-                "tanpaprosesnobukti" =>$request->tanpaprosesnobukti,
-                "coa" =>$request->coa,
-                "bank_id" =>$request->bank_id,
-                "tglbukti" =>$request->tglbukti,
-                "supirheader_id" =>$request->supirheader_id,
-                "karyawanheader_id" =>$request->karyawanheader_id,
-                "penerimaan_nobukti" =>$request->penerimaan_nobukti,
-                "pendapatansupir_bukti" =>$request->pendapatansupir_bukti,
-                "statusformat" =>$request->statusformat,
-                "nominal" =>$request->nominal,
-                "supir_id" =>$request->supir_id,
-                "karyawan_id" =>$request->karyawan_id,
-                "pengeluarantruckingheader_nobukti" =>$request->pengeluarantruckingheader_nobukti,
-                "keterangan" =>$request->keterangan,
+                "keteranganheader" => $request->keteranganheader,
+                "periodedari" => $request->periodedari,
+                "periodesampai" => $request->periodesampai,
+                "jenisorderan_id" => $request->jenisorderan_id,
+                "penerimaantrucking_id" => $request->penerimaantrucking_id,
+                "tanpaprosesnobukti" => $request->tanpaprosesnobukti,
+                "coa" => $request->coa,
+                "bank_id" => $request->bank_id,
+                "tglbukti" => $request->tglbukti,
+                "supirheader_id" => $request->supirheader_id,
+                "karyawanheader_id" => $request->karyawanheader_id,
+                "penerimaan_nobukti" => $request->penerimaan_nobukti,
+                "pendapatansupir_bukti" => $request->pendapatansupir_bukti,
+                "statusformat" => $request->statusformat,
+                "nominal" => $request->nominal,
+                "supir_id" => $request->supir_id,
+                "karyawan_id" => $request->karyawan_id,
+                "pengeluarantruckingheader_nobukti" => $request->pengeluarantruckingheader_nobukti,
+                "keterangan" => $request->keterangan,
                 "ebs" => false,
-                "from" =>$request->from,
+                "from" => $request->from,
             ]);
             /* Set position and page */
             $penerimaanTruckingHeader->position = $this->getPosition($penerimaanTruckingHeader, $penerimaanTruckingHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / (10));
             } else {
                 $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
@@ -195,7 +195,7 @@ class PenerimaanTruckingHeaderController extends Controller
             $selected = $this->getPosition($penerimaanTruckingHeader, $penerimaanTruckingHeader->getTable(), true);
             $penerimaanTruckingHeader->position = $selected->position;
             $penerimaanTruckingHeader->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / (10));
             } else {
                 $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
@@ -257,7 +257,7 @@ class PenerimaanTruckingHeaderController extends Controller
     {
         $penerimaanTrucking = new PenerimaanTruckingHeader();
         $reloadGrid = $request->reloadGrid;
-        if($reloadGrid != null){
+        if ($reloadGrid != null) {
             $data = $penerimaanTrucking->getPengembalianTitipanReload([
                 "periodedari" => $request->periodedari,
                 "periodesampai" => $request->periodesampai,
@@ -332,7 +332,54 @@ class PenerimaanTruckingHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $penerimaanTrucking = PenerimaanTruckingHeader::find($id);
+        $aksi = request()->aksi;
+        $penerimaantrucking_id = $penerimaanTrucking->penerimaantrucking_id;
+        $aco_id = db::table("penerimaantrucking")->from(db::raw("penerimaantrucking a with (readuncommitted)"))
+            ->select(
+                'a.aco_id'
+            )->where('a.id', $penerimaantrucking_id)
+            ->first()->aco_id ?? 0;
 
+        $user_id = auth('api')->user()->id;
+        $user = auth('api')->user()->user;
+        $role = db::table("userrole")->from(db::raw("userrole a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->join(db::raw("acl b with (readuncommitted)"), 'a.role_id', 'b.role_id')
+            ->where('a.user_id', $user_id)
+            ->where('b.aco_id', $aco_id)
+            // ->tosql();
+            ->first();
+
+        if ($aksi == 'EDIT' || $aksi == 'DELETE') {
+
+            if (!isset($role)) {
+                $acl = db::table('useracl')->from(db::raw("useracl a with (readuncommitted)"))
+                    ->select(
+                        'a.id'
+                    )->where('a.user_id', $user_id)
+                    ->where('a.aco_id', $aco_id)
+                    ->first();
+
+                if (!isset($acl)) {
+                    $query = DB::table('error')
+                        ->select(db::raw("'USER " . $user . " '+keterangan as keterangan"))
+                        ->where('kodeerror', '=', 'TPH')
+                        ->first();
+
+                    $data = [
+                        'error' => true,
+                        'message' => $query->keterangan,
+                        'kodeerror' => 'TPH',
+                        'statuspesan' => 'warning',
+                    ];
+                    $passes = false;
+                    return response($data);
+                }
+            }
+        }
+        
         if ((new PenerimaanTruckingHeader())->printValidation($id)) {
             $query = DB::table('error')
                 ->select('keterangan')
@@ -449,7 +496,7 @@ class PenerimaanTruckingHeaderController extends Controller
         ]);
     }
 
-     /**
+    /**
      * @ClassName 
      * @Keterangan HUTANG BBM
      */
@@ -492,7 +539,7 @@ class PenerimaanTruckingHeaderController extends Controller
     {
     }
 
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */
