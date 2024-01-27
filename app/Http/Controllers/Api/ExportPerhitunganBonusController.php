@@ -34,7 +34,15 @@ class ExportPerhitunganBonusController extends Controller
 
         $laporan = new ExportPerhitunganBonus();
         return response([
-            'data' => $laporan->getReport()
+            'data' => $laporan->getReport(),
+            'dataheader' =>[
+                'perkiraan' => 'Perkiraan',
+                'bulankesatu' => 'Januari',
+                'bulankedua' => 'Februari',
+                'bulanketiga' => 'Maret',
+            ],
+            
+            'judul' => "BONUS KARYAWAN JKT JUL s.d SEP",
         ]);
     }
 }
