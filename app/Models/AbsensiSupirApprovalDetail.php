@@ -47,8 +47,8 @@ class AbsensiSupirApprovalDetail extends MyModel
             ->leftJoin("absensisupirapprovalheader", "$this->table.absensisupirapproval_id", "absensisupirapprovalheader.id")
             ->join(DB::raw("absensisupirdetail as b with(readuncommitted)"), function ($join) {
                 $join->on('absensisupirapprovalheader.absensisupir_nobukti', '=', 'b.nobukti');
-                $join->on('absensisupirapprovalheader.trado_id', '=', 'b.trado_id');
-                $join->on('absensisupirapprovalheader.supir_id', '=', 'b.supir_id');
+                $join->on('absensisupirapprovaldetail.trado_id', '=', 'b.trado_id');
+                $join->on('absensisupirapprovaldetail.supir_id', '=', 'b.supir_id');
             })
             ->leftJoin("trado", "$this->table.trado_id", "trado.id")
             ->leftJoin("supir as supirutama", "$this->table.supir_id", "supirutama.id")
