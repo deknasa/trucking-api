@@ -473,6 +473,9 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::post('absensisupirheader/{id}/cekvalidasi', [AbsensiSupirHeaderController::class, 'cekvalidasi'])->name('absensisupirheader.cekvalidasi')->whereNumber('id');
     Route::post('absensisupirheader/{id}/cekvalidasidelete', [AbsensiSupirHeaderController::class, 'cekvalidasidelete'])->name('absensisupirheader.cekvalidasidelete')->whereNumber('id');
+    Route::post('supir/approvalblacklist', [SupirController::class, 'approvalBlackListSupir'])->whereNumber('id');
+    Route::post('supir/approvalluarkota', [SupirController::class, 'approvalSupirLuarKota'])->whereNumber('id');
+    Route::post('supir/approvalnonaktif', [SupirController::class, 'approvalnonaktif']);
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
@@ -881,9 +884,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('supir/default', [SupirController::class, 'default']);
     Route::post('supir/{id}/approvalresign', [SupirController::class, 'approvalSupirResign'])->whereNumber('id');
     Route::post('supir/{id}/cekValidasi', [SupirController::class, 'cekValidasi'])->name('supir.cekValidasi')->whereNumber('id');
-    Route::post('supir/approvalblacklist', [SupirController::class, 'approvalBlackListSupir'])->whereNumber('id');
-    Route::post('supir/approvalluarkota', [SupirController::class, 'approvalSupirLuarKota'])->whereNumber('id');
-    Route::post('supir/approvalnonaktif', [SupirController::class, 'approvalnonaktif']);
 
     Route::get('supir/export', [SupirController::class, 'export']);
     Route::get('supir/report', [SupirController::class, 'report']);
