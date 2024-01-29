@@ -486,7 +486,7 @@ class PenerimaanTruckingHeader extends MyModel
         }
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'penerimaantruckingid', 'penerimaantrucking_id', 'penerimaan_nobukti', 'keteranganheader', 'bank_id', 'supir_id', 'karyawan_id', 'tglbukacetak', 'statuscetak','statuscetaktext', 'userbukacetak',  'jumlahcetak', 'coa', 'modifiedby', 'created_at', 'updated_at', 'tgldariheaderpenerimaanheader', 'tglsampaiheaderpenerimaanheader'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'penerimaantruckingid', 'penerimaantrucking_id', 'penerimaan_nobukti', 'keteranganheader', 'bank_id', 'supir_id', 'karyawan_id', 'tglbukacetak', 'statuscetak', 'statuscetaktext', 'userbukacetak',  'jumlahcetak', 'coa', 'modifiedby', 'created_at', 'updated_at', 'tgldariheaderpenerimaanheader', 'tglsampaiheaderpenerimaanheader'], $models);
 
 
         return  $temp;
@@ -716,19 +716,19 @@ class PenerimaanTruckingHeader extends MyModel
     {
         $tempPribadi = $this->createTempPelunasan($tgldari, $tglsampai);
 
-        $query = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By penerimaantruckingdetail.nobukti) as id, penerimaantruckingheader.tglbukti, penerimaantruckingdetail.nobukti, penerimaantruckingdetail.keterangan, {$tempPribadi}.sisa"))
-            ->leftJoin(DB::raw("{$tempPribadi} with (readuncommitted)"), 'penerimaantruckingdetail.nobukti', '=', "{$tempPribadi}.nobukti")
-            ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.nobukti', "penerimaantruckingheader.nobukti")
+        $query =  DB::table('penerimaantruckingheader')
+            ->from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+            ->select(DB::raw("row_number() Over(Order By penerimaantruckingheader.nobukti) as id, penerimaantruckingheader.tglbukti, penerimaantruckingheader.nobukti, $tempPribadi.keterangan, $tempPribadi.sisa"))
+            ->leftJoin(DB::raw("$tempPribadi with (readuncommitted)"), 'penerimaantruckingheader.nobukti', "$tempPribadi.nobukti")
             ->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
-            ->where('penerimaantruckingheader.penerimaantrucking_id', '=', 1)
+            ->whereRaw("penerimaantruckingheader.nobukti = $tempPribadi.nobukti")
             ->where(function ($query) use ($tempPribadi) {
                 $query->whereRaw("$tempPribadi.sisa != 0")
                     ->orWhereRaw("$tempPribadi.sisa is null");
             })
             ->orderBy('penerimaantruckingheader.tglbukti', 'asc')
-            ->orderBy('penerimaantruckingdetail.nobukti', 'asc');
-
+            ->orderBy('penerimaantruckingheader.nobukti', 'asc');
+            
         return $query->get();
     }
 
@@ -739,17 +739,17 @@ class PenerimaanTruckingHeader extends MyModel
         $fetch = DB::table('penerimaantruckingdetail')
             ->from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
             ->leftJoin('penerimaantruckingheader', 'penerimaantruckingdetail.nobukti', '=', 'penerimaantruckingheader.nobukti')
-            ->select(DB::raw("penerimaantruckingdetail.nobukti, (SELECT (penerimaantruckingdetail.nominal - COALESCE(SUM(pengeluarantruckingdetail.nominal), 0)) FROM pengeluarantruckingdetail WHERE pengeluarantruckingdetail.penerimaantruckingheader_nobukti = penerimaantruckingdetail.nobukti) AS sisa"))
+            ->select(DB::raw("penerimaantruckingdetail.nobukti, MAX(penerimaantruckingdetail.keterangan) as keterangan, (SELECT (SUM(penerimaantruckingdetail.nominal) - COALESCE(SUM(pengeluarantruckingdetail.nominal), 0)) FROM pengeluarantruckingdetail WHERE pengeluarantruckingdetail.penerimaantruckingheader_nobukti = penerimaantruckingdetail.nobukti) AS sisa"))
             ->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
             ->where('penerimaantruckingheader.penerimaantrucking_id', '=', 1)
-            ->groupBy('penerimaantruckingdetail.nobukti', 'penerimaantruckingdetail.nominal');
-
+            ->groupBy('penerimaantruckingdetail.nobukti');
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
+            $table->longText('keterangan')->nullable();
             $table->bigInteger('sisa')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['nobukti', 'sisa'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'keterangan', 'sisa'], $fetch);
 
         return $temp;
     }

@@ -642,9 +642,10 @@ class PengeluaranTruckingHeaderController extends Controller
         $pengeluaranTrucking = new PengeluaranTruckingHeader();
         $getPelunasan = $pengeluaranTrucking->find($id);
         ///echo json_encode($getPelunasan);die;
-
+        $tgldari = (request()->tgldari != '') ? request()->tgldari : $getPelunasan->periodedari;
+        $tglsampai = (request()->tglsampai != '') ? request()->tglsampai : $getPelunasan->periodesampai;
         if ($aksi == 'edit') {
-            $data = $pengeluaranTrucking->getEditPelunasan($id, $getPelunasan->periodedari, $getPelunasan->periodesampai);
+            $data = $pengeluaranTrucking->getEditPelunasan($id, $tgldari, $tglsampai);
         } else {
             $data = $pengeluaranTrucking->getDeleteEditPelunasan($id, $getPelunasan->periodedari, $getPelunasan->periodesampai);
         }
