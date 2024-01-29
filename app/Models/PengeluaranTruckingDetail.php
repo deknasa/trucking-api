@@ -344,6 +344,8 @@ class PengeluaranTruckingDetail extends MyModel
                                 $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'karyawan_id') {
                                 $query = $query->where('karyawan.namakaryawan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'stok') {
+                                $query = $query->where('stok.namastok', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statustitipanemkl') {
                                 $query = $query->where('statustitipanemkl.text', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
@@ -362,6 +364,8 @@ class PengeluaranTruckingDetail extends MyModel
                                 $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'karyawan_id') {
                                 $query = $query->orWhere('karyawan.namakaryawan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'stok') {
+                                $query = $query->orWhere('stok.namastok', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statustitipanemkl') {
                                 $query = $query->orWhere('statustitipanemkl.text', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
