@@ -519,7 +519,7 @@ class Stok extends MyModel
 
 
 
-            $query->where('stok.statusreuse', '=', $statusaktif->id);
+            $query->where('stok.statusreuse_id', '=', $statusaktif->id);
         }
 
         if (($dari != 'index') &&($po->text != $penerimaanstok_id)) {
