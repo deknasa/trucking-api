@@ -519,16 +519,15 @@ class PenerimaanStokHeaderController extends Controller
                         return response($dataUsed);
                     }
                 }
-                if (!$isOutUsed) {
-                    return response($data);
-                }
-                //check apaka spb
                 $data = [
                     'message' => '',
                     'errors' => 'bisa',
                     'kodestatus' => '0',
                     'kodenobukti' => '1'
                 ];
+                if (!$isOutUsed) {
+                    return response($data);
+                }                
             }
         }
         return response($data);
