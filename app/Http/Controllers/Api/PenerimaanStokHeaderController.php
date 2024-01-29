@@ -361,7 +361,6 @@ class PenerimaanStokHeaderController extends Controller
                     ];
                     $passes = false;
                     return response($data);
-                    goto selesai;
                 }
             }
         }
@@ -400,38 +399,40 @@ class PenerimaanStokHeaderController extends Controller
             }
         } else {
 
+            if ($aksi == 'EDIT') {
+                $msg = 'PROSES EDIT TIDAK BISA LANJUT KARENA';
+            }else {
+                $msg = 'PROSES DELETE TIDAK BISA LANJUT KARENA';
+            }
+
             $isEhtUsed = $penerimaanStokHeader->isEhtUsed($id);
             if ($isEhtUsed) {
                 $query = Error::from(DB::raw("error with (readuncommitted)"))
-                    ->select('keterangan')
-                    ->whereRaw("kodeerror = 'SATL'")
+                    ->select(db::raw("'$msg <br>'+keterangan +' <br>(" . $isEhtUsed[1] . ")' as keterangan"))
+                    ->whereRaw("kodeerror = 'SATL2'")
                     ->get();
                 $keterangan = $query['0'];
-                $data = [
+                $dataUsed = [
                     'message' => $keterangan,
                     'errors' => 'Hutang',
                     'kodestatus' => '1',
                     'kodenobukti' => '1'
                 ];
-                $passes = false;
-                // return response($data);
             }
 
             $isEHTApprovedJurnal = $penerimaanStokHeader->isEHTApprovedJurnal($id);
             if ($isEHTApprovedJurnal) {
                 $query = Error::from(DB::raw("error with (readuncommitted)"))
-                    ->select(DB::raw("keterangan + ' (APPROVAL JURNAL)' as keterangan"))
+                    ->select(db::raw("'$msg <br>'+keterangan +' <br>(" . $isEHTApprovedJurnal[1] . ")' as keterangan"))
                     ->whereRaw("kodeerror = 'SAP'")
                     ->get();
                 $keterangan = $query['0'];
-                $data = [
+                $dataUsed = [
                     'message' => $keterangan,
                     'errors' => 'Approval Jurnal',
                     'kodestatus' => '1',
                     'kodenobukti' => '1'
                 ];
-                $passes = false;
-                // return response($data);
             }
 
             $isPOUsed = $penerimaanStokHeader->isPOUsed($id);
@@ -441,56 +442,48 @@ class PenerimaanStokHeaderController extends Controller
                     ->whereRaw("kodeerror = 'SATL'")
                     ->get();
                 $keterangan = $query['0'];
-                $data = [
+                $dataUsed = [
                     'message' => $keterangan,
                     'errors' => 'sudah approve',
                     'kodestatus' => '1',
                     'kodenobukti' => '1'
                 ];
-                $passes = false;
-                // return response($data);
             }
             $todayValidation = $penerimaanStokHeader->todayValidation($peneimaan->tglbukti);
             if (!$todayValidation) {
                 $query = Error::from(DB::raw("error with (readuncommitted)"))
                     ->select('keterangan')
                     ->whereRaw("kodeerror = 'TEPT'")
-                    ->get();
-                // $keterangan = $query['0'];
-                $keterangan = ['keterangan' => 'transaksi Sudah berbeda tanggal']; //$query['0'];
+                    ->first();
+                $keterangan = $query;
+                // $keterangan = ['keterangan' => 'transaksi Sudah berbeda tanggal']; //$query['0'];
                 $data = [
                     'message' => $keterangan,
                     'errors' => 'sudah cetak',
                     'kodestatus' => '1',
                     'kodenobukti' => '1'
                 ];
-
-                $passes = false;
-                // return response($data);
             }
             $isEditAble = $penerimaanStokHeader->isEditAble($id);
             $isKeteranganEditAble = $penerimaanStokHeader->isKeteranganEditAble($id);
             if ((!$isEditAble) || (!$isKeteranganEditAble)) {
                 $query = Error::from(DB::raw("error with (readuncommitted)"))
-                    ->select('keterangan')
-                    ->whereRaw("kodeerror = 'TED'")
-                    ->get();
-                // $keterangan = $query['0'];
-                $keterangan = ['keterangan' => 'Transaksi Tidak Bisa diedit']; //$query['0'];
+                    ->select(db::raw("'$msg <br>'+keterangan as keterangan"))
+                    ->whereRaw("kodeerror = 'TED2'")
+                    ->first();
+                $keterangan = $query;
+                // $keterangan = ['keterangan' => 'Transaksi Tidak Bisa diedit']; //$query['0'];
                 $data = [
                     'message' => $keterangan,
                     'errors' => 'Transaksi Tidak Bisa diedit',
                     'kodestatus' => '1',
                     'kodenobukti' => '1'
                 ];
-
-                $passes = false;
-                // return response($data);
             }
             $printValidation = $penerimaanStokHeader->printValidation($id);
             if ($printValidation) {
                 $query = Error::from(DB::raw("error with (readuncommitted)"))
-                    ->select('keterangan')
+                    ->select(db::raw("'$msg <br>'+keterangan as keterangan"))
                     ->whereRaw("kodeerror = 'SDC'")
                     ->get();
                 $keterangan = $query['0'];
@@ -501,14 +494,13 @@ class PenerimaanStokHeaderController extends Controller
                     'kodenobukti' => '1'
                 ];
 
-                $passes = false;
                 return response($data);
             }
             $isOutUsed = $penerimaanStokHeader->isOutUsed($id);
             if ($isOutUsed) {
                 $query = Error::from(DB::raw("error with (readuncommitted)"))
-                    ->select(db::raw("keterangan +' (" . $isOutUsed[1] . ")' as keterangan"))
-                    ->whereRaw("kodeerror = 'SATL'")
+                    ->select(db::raw("'$msg <br>'+keterangan +' <br>(" . $isOutUsed[1] . ")' as keterangan"))
+                    ->whereRaw("kodeerror = 'SATL2'")
                     ->first();
 
                 $keterangan = $query;
@@ -518,11 +510,18 @@ class PenerimaanStokHeaderController extends Controller
                     'kodestatus' => '1',
                     'kodenobukti' => '1'
                 ];
-                $passes = false;
-                // return response($data);
             }
 
             if (($todayValidation || (($isEditAble || $isKeteranganEditAble) && !$printValidation))) {
+                if ($spb->text == $peneimaan->penerimaanstok_id) {
+                    //ika sudah digunakan di eth, jurnal, dan po
+                    if ($isEhtUsed || $isEHTApprovedJurnal || $isPOUsed) {
+                        return response($dataUsed);
+                    }
+                }
+                if (!$isOutUsed) {
+                    return response($data);
+                }
                 //check apaka spb
                 $data = [
                     'message' => '',
@@ -530,32 +529,22 @@ class PenerimaanStokHeaderController extends Controller
                     'kodestatus' => '0',
                     'kodenobukti' => '1'
                 ];
-                if ($spb->text == $peneimaan->penerimaanstok_id) {
-                    //ika sudah digunakan di eth, jurnal, dan po
-                    if ($isEhtUsed || $isEHTApprovedJurnal || $isPOUsed) {
-                        return response($data);
-                    }
-                }
-                if (!$isOutUsed) {
-                    return response($data);
-                }
             }
         }
         return response($data);
 
-        selesai:;
     }
 
     /**
      * @ClassName 
      * @Keterangan APPROVAL EDIT DATA
      */
-    public function approvalEdit(Request $request, $id)
+    public function approvalEdit(Request $request,$id)
     {
         DB::beginTransaction();
         try {
             $penerimaanStokHeader = PenerimaanStokHeader::lockForUpdate()->findOrFail($id);
-            $opnameheader = DB::table('penerimaanstokheader')->from(DB::raw("opnameheader with (readuncommitted)"))->orderBy('id', 'desc')->first();
+            $opnameheader = DB::table('penerimaanstokheader')->from(DB::raw("opnameheader with (readuncommitted)"))->orderBy('id','desc')->first();
             $isBeforeOpname = false;
             $opnameTglBukti = null;
             if ($opnameheader) {
@@ -615,7 +604,7 @@ class PenerimaanStokHeaderController extends Controller
         }
     }
 
-    /**
+     /**
      * @ClassName 
      * @Keterangan APPROVAL EDIT KETERANGAN
      */
@@ -815,11 +804,12 @@ class PenerimaanStokHeaderController extends Controller
     public function penerimaanstokpenambahannilai()
     {
     }
-    /**
+        /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {
     }
+    
 }
