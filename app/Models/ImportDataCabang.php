@@ -22,6 +22,7 @@ class ImportDataCabang extends Model
         $statusImportTimpa = Parameter::where('grp', 'STATUSIMPORT')->where('text', 'HAPUS DAN TIMPA DATA JIKA SUDAH ADA')->first();
         $statusImportSisip = Parameter::where('grp', 'STATUSIMPORT')->where('text', 'HANYA TAMBAHKAN DATA YANG BELUM DATA ADA SAJA')->first();
 
+    
 
 
         $cabangMemo = json_decode($cabang->memo, TRUE);
@@ -35,6 +36,8 @@ class ImportDataCabang extends Model
         $encode = $cabangMemo['ENCODE'] ?? 'UTF-8';
         $singkatan = $cabangMemo['SINGKATAN'] ?? '';
 
+       
+
         $periode1 = date('Y-m-d', strtotime('01-' . $data['periode']));
 
 
@@ -46,18 +49,20 @@ class ImportDataCabang extends Model
             // DB::delete(DB::raw("delete  JurnalUmumPusatheader from JurnalUmumPusatheader as b 
             // WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and format(b.tglbukti,'MM-yyyy')='" . $data['periode'] . "'"));
 
-            if ($singkatan == 'PST') {
+            if ($singkatan=='PST') {
                 DB::delete(DB::raw("delete  JurnalUmumPusatdetail from JurnalUmumPusatdetail as a inner join JurnalUmumPusatHeader b on a.nobukti=b.nobukti 
                 WHERE (isnull(b.cabang_id,0)=" . $cabang->id . " or isnull(b.cabang_id,0)=0) and b.tglbukti>='" . $periode1 . "'"));
-
+    
                 DB::delete(DB::raw("delete  JurnalUmumPusatheader from JurnalUmumPusatheader as b 
                 WHERE (isnull(b.cabang_id,0)=" . $cabang->id . " or isnull(b.cabang_id,0)=0)  and b.tglbukti>='" . $periode1 . "'"));
+    
             } else {
                 DB::delete(DB::raw("delete  JurnalUmumPusatdetail from JurnalUmumPusatdetail as a inner join JurnalUmumPusatHeader b on a.nobukti=b.nobukti 
                 WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and b.tglbukti>='" . $periode1 . "'"));
-
+    
                 DB::delete(DB::raw("delete  JurnalUmumPusatheader from JurnalUmumPusatheader as b 
                 WHERE isnull(b.cabang_id,0)=" . $cabang->id . " and b.tglbukti>='" . $periode1 . "'"));
+    
             }
         }
 
@@ -66,10 +71,10 @@ class ImportDataCabang extends Model
         // dd($data['periode']);
 
         if ($web == "YA") {
-
+            // dd($singkatan);
             DB::delete(DB::raw("delete AkunPusatDetail 
             WHERE isnull(cabang_id,0)=" . $cabang->id . " and bulan<>0 and bulan=cast(left('" . $data['periode'] . "',2) as integer) and tahun=cast(right('" . $data['periode'] . "',4) as integer)"));
-
+    
 
             if (!$cabangMemo) {
                 throw ValidationException::withMessages(["message" => "Cabang Tidak Compatible Unutk di impor"]);
@@ -314,10 +319,10 @@ class ImportDataCabang extends Model
             foreach ($konsolidasiakunpusatdetail as $item3) {
                 $Akunpusatdetail = new AkunPusatDetail();
                 $Akunpusatdetail->coa = $item3['coa'];
-                if ($item3['coa'] == '05.03.01.02' || $item3['coa'] == '05.03.01.07' || $item3['coa'] == '05.03.01.01' || $item3['coa'] == '05.03.01.03' || $item3['coa'] == '05.03.01.04' || $item3['coa'] == '05.03.01.05') {
-                    $Akunpusatdetail->coagroup = '05.03.01.01';
+                if ($item3['coa']=='05.03.01.02' || $item3['coa']=='05.03.01.07' || $item3['coa']=='05.03.01.01' || $item3['coa']=='05.03.01.03' || $item3['coa']=='05.03.01.04' || $item3['coa']=='05.03.01.05') {
+                    $Akunpusatdetail->coagroup ='05.03.01.01';
                 } else {
-                    $Akunpusatdetail->coagroup = '';
+                    $Akunpusatdetail->coagroup ='';
                 }
 
                 $Akunpusatdetail->bulan = $item3['bulan'];
@@ -340,97 +345,97 @@ class ImportDataCabang extends Model
             $year = substr($data['periode'], -4);
             $aptgl = '2023-10-01';
 
-            if ($singkatan = 'PST') {
+            if ($singkatan=='PST') {
                 $queryloop = DB::connection('sqlsrv2')->table("j_happ")->from(db::raw("j_happ a with (readuncommitted)"))
-                    ->select(
-                        db::raw("0 as header_id"),
-                        'a.fntrans as header_nobukti',
-                        'a.ftgl as header_tglbukti',
-                        db::raw("format(a.ftgl,'MM-yyyy') as header_tglbuktiformat"),
-                        'a.fket as header_keterangan',
-                        'a.fpostfrom as header_postingdari',
-                        db::raw("(case when isnull(a.fisapp,0)=1 then 3 else 4 end) as header_statusapproval"),
-                        'a.appuserid as header_userapproval',
-                        'a.appdate as header_tglapproval',
-                        db::raw("0 as header_statusformat"),
-                        db::raw("'' as header_info"),
-                        'a.fuserid as header_modifiedby',
-                        'a.ftglinput as header_created_at',
-                        'a.ftglinput as header_updated_at',
-                        db::raw("'" . $cabang->namacabang . "' as header_cabang"),
-                        db::raw("(case when isnull(a.fkcabang,'')='' then 0 else " . $cabang->id . " end) as header_cabang_id"),
-                        db::raw("0 as detail_id"),
-                        db::raw("0 as detail_jurnalumumpusat_id"),
-                        'b.fntrans as detail_nobukti',
-                        'b.ftgl as detail_tglbukti',
-                        db::raw("format(b.ftgl,'MM-yyyy') as detail_tglbuktiformat"),
-                        'b.fcoa as detail_coa',
-                        'b.fcoamain as detail_coamain',
-                        'b.fnominal as detail_nominal',
-                        'b.fket as detail_keterangan',
-                        db::raw("0 as detail_baris"),
-                        db::raw("'' as detail_info"),
-                        'b.fuserid as detail_modifiedby',
-                        'b.ftglinput as detail_created_at',
-                        'b.ftglinput as detail_updated_at',
-                    )
-                    ->join(db::raw("j_rapp b with (readuncommitted)"), 'a.fntrans', 'b.fntrans')
-                    ->whereRaw("MONTH(b.ftgl) = " . $month)
-                    ->whereRaw("YEAR(b.ftgl) = " . $year)
-                    ->whereRaw("a.ftgl >='" . $aptgl . "'")
-                    ->whereRaw("(a.FKcabang='" . $singkatan . "' or isnull(A.fkcabang,'')='')")
+                ->select(
+                    db::raw("0 as header_id"),
+                    'a.fntrans as header_nobukti',
+                    'a.ftgl as header_tglbukti',
+                    db::raw("format(a.ftgl,'MM-yyyy') as header_tglbuktiformat"),
+                    'a.fket as header_keterangan',
+                    'a.fpostfrom as header_postingdari',
+                    db::raw("(case when isnull(a.fisapp,0)=1 then 3 else 4 end) as header_statusapproval"),
+                    'a.appuserid as header_userapproval',
+                    'a.appdate as header_tglapproval',
+                    db::raw("0 as header_statusformat"),
+                    db::raw("'' as header_info"),
+                    'a.fuserid as header_modifiedby',
+                    'a.ftglinput as header_created_at',
+                    'a.ftglinput as header_updated_at',
+                    db::raw("'" . $cabang->namacabang . "' as header_cabang"),
+                    db::raw("(case when isnull(a.fkcabang,'')='' then 0 else " .$cabang->id . " end) as header_cabang_id"),
+                    db::raw("0 as detail_id"),
+                    db::raw("0 as detail_jurnalumumpusat_id"),
+                    'b.fntrans as detail_nobukti',
+                    'b.ftgl as detail_tglbukti',
+                    db::raw("format(b.ftgl,'MM-yyyy') as detail_tglbuktiformat"),
+                    'b.fcoa as detail_coa',
+                    'b.fcoamain as detail_coamain',
+                    'b.fnominal as detail_nominal',
+                    'b.fket as detail_keterangan',
+                    db::raw("0 as detail_baris"),
+                    db::raw("'' as detail_info"),
+                    'b.fuserid as detail_modifiedby',
+                    'b.ftglinput as detail_created_at',
+                    'b.ftglinput as detail_updated_at',
+                )
+                ->join(db::raw("j_rapp b with (readuncommitted)"), 'a.fntrans', 'b.fntrans')
+                ->whereRaw("MONTH(b.ftgl) = " . $month)
+                ->whereRaw("YEAR(b.ftgl) = " . $year)
+                ->whereRaw("a.ftgl >='" . $aptgl . "'")
+                ->whereRaw("(a.FKcabang='" . $singkatan . "' or isnull(A.fkcabang,'')='')")
 
-                    ->orderby('a.fntrans', 'asc')
-                    ->orderby('b.fpostid', 'asc')
-                    ->get();
+                ->orderby('a.fntrans', 'asc')
+                ->orderby('b.fpostid', 'asc')
+                ->get();
             } else {
                 $queryloop = DB::connection('sqlsrv2')->table("j_happ")->from(db::raw("j_happ a with (readuncommitted)"))
-                    ->select(
-                        db::raw("0 as header_id"),
-                        'a.fntrans as header_nobukti',
-                        'a.ftgl as header_tglbukti',
-                        db::raw("format(a.ftgl,'MM-yyyy') as header_tglbuktiformat"),
-                        'a.fket as header_keterangan',
-                        'a.fpostfrom as header_postingdari',
-                        db::raw("(case when isnull(a.fisapp,0)=1 then 3 else 4 end) as header_statusapproval"),
-                        'a.appuserid as header_userapproval',
-                        'a.appdate as header_tglapproval',
-                        db::raw("0 as header_statusformat"),
-                        db::raw("'' as header_info"),
-                        'a.fuserid as header_modifiedby',
-                        'a.ftglinput as header_created_at',
-                        'a.ftglinput as header_updated_at',
-                        db::raw("'" . $cabang->namacabang . "' as header_cabang"),
-                        db::raw($cabang->id . " as header_cabang_id"),
-                        db::raw("0 as detail_id"),
-                        db::raw("0 as detail_jurnalumumpusat_id"),
-                        'b.fntrans as detail_nobukti',
-                        'b.ftgl as detail_tglbukti',
-                        db::raw("format(b.ftgl,'MM-yyyy') as detail_tglbuktiformat"),
-                        'b.fcoa as detail_coa',
-                        'b.fcoamain as detail_coamain',
-                        'b.fnominal as detail_nominal',
-                        'b.fket as detail_keterangan',
-                        db::raw("0 as detail_baris"),
-                        db::raw("'' as detail_info"),
-                        'b.fuserid as detail_modifiedby',
-                        'b.ftglinput as detail_created_at',
-                        'b.ftglinput as detail_updated_at',
-                    )
-                    ->join(db::raw("j_rapp b with (readuncommitted)"), 'a.fntrans', 'b.fntrans')
-                    ->whereRaw("MONTH(b.ftgl) = " . $month)
-                    ->whereRaw("YEAR(b.ftgl) = " . $year)
-                    ->whereRaw("a.ftgl >='" . $aptgl . "'")
-                    ->whereRaw("a.FKcabang='" . $singkatan . "'")
+                ->select(
+                    db::raw("0 as header_id"),
+                    'a.fntrans as header_nobukti',
+                    'a.ftgl as header_tglbukti',
+                    db::raw("format(a.ftgl,'MM-yyyy') as header_tglbuktiformat"),
+                    'a.fket as header_keterangan',
+                    'a.fpostfrom as header_postingdari',
+                    db::raw("(case when isnull(a.fisapp,0)=1 then 3 else 4 end) as header_statusapproval"),
+                    'a.appuserid as header_userapproval',
+                    'a.appdate as header_tglapproval',
+                    db::raw("0 as header_statusformat"),
+                    db::raw("'' as header_info"),
+                    'a.fuserid as header_modifiedby',
+                    'a.ftglinput as header_created_at',
+                    'a.ftglinput as header_updated_at',
+                    db::raw("'" . $cabang->namacabang . "' as header_cabang"),
+                    db::raw($cabang->id . " as header_cabang_id"),
+                    db::raw("0 as detail_id"),
+                    db::raw("0 as detail_jurnalumumpusat_id"),
+                    'b.fntrans as detail_nobukti',
+                    'b.ftgl as detail_tglbukti',
+                    db::raw("format(b.ftgl,'MM-yyyy') as detail_tglbuktiformat"),
+                    'b.fcoa as detail_coa',
+                    'b.fcoamain as detail_coamain',
+                    'b.fnominal as detail_nominal',
+                    'b.fket as detail_keterangan',
+                    db::raw("0 as detail_baris"),
+                    db::raw("'' as detail_info"),
+                    'b.fuserid as detail_modifiedby',
+                    'b.ftglinput as detail_created_at',
+                    'b.ftglinput as detail_updated_at',
+                )
+                ->join(db::raw("j_rapp b with (readuncommitted)"), 'a.fntrans', 'b.fntrans')
+                ->whereRaw("MONTH(b.ftgl) = " . $month)
+                ->whereRaw("YEAR(b.ftgl) = " . $year)
+                ->whereRaw("a.ftgl >='" . $aptgl . "'")
+                ->whereRaw("a.FKcabang='" . $singkatan . "'")
 
-                    ->orderby('a.fntrans', 'asc')
-                    ->orderby('b.fpostid', 'asc')
-                    ->get();
+                ->orderby('a.fntrans', 'asc')
+                ->orderby('b.fpostid', 'asc')
+                ->get();
             }
 
+           
 
-
-            // dd($queryloop->toSql());
+                // dd($queryloop->toSql());
 
             $queryloop = json_encode($queryloop, JSON_INVALID_UTF8_SUBSTITUTE);
             $konsolidasi = json_decode($queryloop, true);
@@ -502,12 +507,13 @@ class ImportDataCabang extends Model
                     if (!array_key_exists(mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8'), $jurnalRequest)) {
                         // $tgl2=date('Y-m-d', $item['header_tglbukti']);
                         // if ($tgl2 >=$periode1) {
-                        $querycek = Jurnalumumpusatheader::select('id')
-                            ->whereraw("nobukti='" . $item['header_nobukti'] . "'")
+                        $querycek =Jurnalumumpusatheader::
+                            select('id')
+                            ->whereraw("nobukti='".$item['header_nobukti']."'")
                             ->first();
-                        // dd($querycek);
-                        $idheader = $querycek->id ?? 0;
-
+                            // dd($querycek);
+                            $idheader= $querycek->id ?? 0;
+                            
                         if (!isset($querycek)) {
                             $jurnalUmumPusat = new JurnalUmumPusatHeader();
 
@@ -540,7 +546,8 @@ class ImportDataCabang extends Model
                                 'datajson' => $jurnalUmumPusat->toArray(),
                                 'modifiedby' => auth('api')->user()->user
                             ]);
-                            $idheader = $jurnalRequest[mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8')]->id;
+                            $idheader= $jurnalRequest[mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8')]->id;
+
                         }
                     }
 
@@ -549,7 +556,7 @@ class ImportDataCabang extends Model
                     // $tgl2=date('Y-m-d', $item['detail_tglbukti']);
 
                     // if ( $tgl2 >= $periode1) {
-
+                  
                     $jurnalUmumPusatDetail = new JurnalUmumPusatDetail();
                     // $jurnalUmumPusatDetail->jurnalumumpusat_id = $jurnalRequest[mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8')]->id;
                     // $jurnalUmumPusatDetail->nobukti = $jurnalRequest[mb_convert_encoding($item['header_nobukti'],  $encode, 'UTF-8')]->nobukti;
@@ -568,11 +575,11 @@ class ImportDataCabang extends Model
                     if (!$jurnalUmumPusatDetail->save()) {
                         throw new \Exception("Error storing jurnal umum pusat detail.");
                     }
-                    //     if ($item['header_nobukti']=='KGT 0061/X/2023-MDN')
-                    //     {
-                    //   dd('test');
+                //     if ($item['header_nobukti']=='KGT 0061/X/2023-MDN')
+                //     {
+                //   dd('test');
 
-                    //     }
+                //     }
                     // }
                 }
             }
@@ -595,7 +602,7 @@ class ImportDataCabang extends Model
             //     ->whereRaw("cast(trim(str(" . $tahun . "))+'/'+trim(str(" . $bulan . "))+'/1' as datetime)>='" . $ptgl . "'");
 
             //     dd($querytest->toSql());
-
+                
             DB::table('akunpusatdetail')
                 ->where('bulan', '<>', 0)
                 ->whereRaw("bulan = " . $bulan)
@@ -675,13 +682,13 @@ class ImportDataCabang extends Model
             foreach ($konsolidasicoar as $item2) {
                 $akunPusatDetail = new AkunPusatDetail();
                 $akunPusatDetail->coa = mb_convert_encoding($item2['coa'],  $encode, 'UTF-8');
-
-                if ($item2['coa'] == '05.03.01.02' || $item2['coa'] == '05.03.01.07' || $item2['coa'] == '05.03.01.01' || $item2['coa'] == '05.03.01.03' || $item2['coa'] == '05.03.01.04' || $item2['coa'] == '05.03.01.05') {
-                    $akunPusatDetail->coagroup = '05.03.01.01';
+ 
+                if ($item2['coa']=='05.03.01.02' || $item2['coa']=='05.03.01.07' || $item2['coa']=='05.03.01.01' || $item2['coa']=='05.03.01.03' || $item2['coa']=='05.03.01.04' || $item2['coa']=='05.03.01.05') {
+                    $akunPusatDetail->coagroup ='05.03.01.01';
                 } else {
-                    $akunPusatDetail->coagroup = '';
+                    $akunPusatDetail->coagroup ='';
                 }
-
+                
                 $akunPusatDetail->tahun = mb_convert_encoding($item2['tahun'],  $encode, 'UTF-8');
                 $akunPusatDetail->bulan = mb_convert_encoding($item2['bulan'],  $encode, 'UTF-8');
                 $akunPusatDetail->cabang_id = $data['cabang'];
