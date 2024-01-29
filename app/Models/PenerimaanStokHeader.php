@@ -2313,7 +2313,10 @@ class PenerimaanStokHeader extends MyModel
         $data = $query->first();
         if ($data->id) {
             # code...
-            return true;
+            return [
+                true,
+                $data->penerimaanstok_nobukti
+            ];
         }
         return false;
     }
@@ -2344,8 +2347,10 @@ class PenerimaanStokHeader extends MyModel
         foreach ($data as $penerimaanstok) {
             if ($statusApproval->id == $penerimaanstok->statusapproval) {
                 $test[] = $penerimaanstok->statusapproval;
-                // dd($test);
-                return true;
+                return [
+                    true,
+                    $penerimaanstok->hutang_nobukti
+                ];
             }
         }
 
@@ -2374,14 +2379,18 @@ class PenerimaanStokHeader extends MyModel
                 DB::raw("penerimaanstokheader as a with (readuncommitted)")
             )
             ->select(
-                'a.nobukti'
+                'a.nobukti',
+                'a.hutang_nobukti',
             )
             ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.hutang_nobukti', 'b.nobukti')
             ->where('a.nobukti', '=', $data->nobukti)
             ->first();
 
         if (isset($approvalJurnal)) {
-            return true;
+            return [
+                true,
+                $approvalJurnal->hutang_nobukti
+            ];
         }
 
         return false;
