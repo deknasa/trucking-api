@@ -812,11 +812,9 @@ class PengeluaranTruckingHeader extends MyModel
     {
         $tempPribadi = $this->createTempEditPelunasan($id, $periodedari, $periodesampai);
         $tempAll = $this->createTempPelunasan($id, $periodedari, $periodesampai);
-
         $temp = '##tempGet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $pelunasan = DB::table($tempPribadi)->from(DB::raw("$tempPribadi with (readuncommitted)"))
             ->select(DB::raw("pengeluarantruckingheader_id,nobukti,keterangan,sisa,bayar"));
-
 
         Schema::create($temp, function ($table) {
             $table->bigInteger('pengeluarantruckingheader_id')->nullable();
@@ -830,7 +828,12 @@ class PengeluaranTruckingHeader extends MyModel
 
 
         $pinjaman = DB::table($tempAll)->from(DB::raw("$tempAll with (readuncommitted)"))
-            ->select(DB::raw("null as pengeluarantruckingheader_id,nobukti,keterangan,sisa, 0 as bayar"));
+            ->select(DB::raw("null as pengeluarantruckingheader_id,nobukti,keterangan,sisa, 0 as bayar"))
+            
+            ->where(function ($pinjaman) use ($tempAll) {
+                $pinjaman->whereRaw("$tempAll.sisa != 0")
+                    ->orWhereRaw("$tempAll.sisa is null");
+            });
         DB::table($temp)->insertUsing(['pengeluarantruckingheader_id', 'nobukti', 'keterangan', 'sisa', 'bayar'], $pinjaman);
 
 
@@ -851,18 +854,19 @@ class PengeluaranTruckingHeader extends MyModel
             ->from(
                 DB::raw("penerimaantruckingdetail with (readuncommitted)")
             )
-            ->select(DB::raw("penerimaantruckingdetail.nobukti,penerimaantruckingdetail.keterangan,
-        (SELECT (penerimaantruckingdetail.nominal - coalesce(SUM(pengeluarantruckingdetail.nominal),0)) FROM pengeluarantruckingdetail WHERE pengeluarantruckingdetail.penerimaantruckingheader_nobukti= penerimaantruckingdetail.nobukti) AS sisa"))
+            ->select(DB::raw("penerimaantruckingdetail.nobukti,  MAX(penerimaantruckingdetail.keterangan) as keterangan,
+        (SELECT (SUM(penerimaantruckingdetail.nominal) - coalesce(SUM(pengeluarantruckingdetail.nominal),0)) FROM pengeluarantruckingdetail WHERE pengeluarantruckingdetail.penerimaantruckingheader_nobukti= penerimaantruckingdetail.nobukti) AS sisa"))
             ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingheader.nobukti', 'penerimaantruckingdetail.nobukti')
             ->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d', strtotime($periodedari)), date('Y-m-d', strtotime($periodesampai))])
             ->whereRaw("penerimaantruckingheader.nobukti not in (select penerimaantruckingheader_nobukti from pengeluarantruckingdetail where pengeluarantruckingheader_id=$id)")
             ->where("penerimaantruckingdetail.nobukti",  'LIKE', "%BBM%")
+            ->groupBy('penerimaantruckingdetail.nobukti','penerimaantruckingheader.tglbukti')
             ->orderBy('penerimaantruckingheader.tglbukti', 'asc')
             ->orderBy('penerimaantruckingdetail.nobukti', 'asc');
-
+            
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
-            $table->longText('keterangan');
+            $table->longText('keterangan')->nullable();
             $table->bigInteger('sisa')->nullable();
         });
         // return $fetch->get();
@@ -878,13 +882,13 @@ class PengeluaranTruckingHeader extends MyModel
             ->from(
                 DB::raw("penerimaantruckingdetail with (readuncommitted)")
             )
-            ->select(DB::raw("pengeluarantruckingdetail.pengeluarantruckingheader_id,penerimaantruckingdetail.nobukti,penerimaantruckingdetail.keterangan,pengeluarantruckingdetail.nominal as bayar ,(SELECT (penerimaantruckingdetail.nominal - coalesce(SUM(pengeluarantruckingdetail.nominal),0)) FROM pengeluarantruckingdetail WHERE pengeluarantruckingdetail.penerimaantruckingheader_nobukti= penerimaantruckingdetail.nobukti) AS sisa"))
+            ->select(DB::raw("max(pengeluarantruckingdetail.pengeluarantruckingheader_id) as pengeluarantruckingheader_id, penerimaantruckingdetail.nobukti, max(penerimaantruckingdetail.keterangan) as keterangan, max(pengeluarantruckingdetail.nominal) as bayar ,(SELECT (sum(penerimaantruckingdetail.nominal) - coalesce(SUM(pengeluarantruckingdetail.nominal),0)) FROM pengeluarantruckingdetail WHERE pengeluarantruckingdetail.penerimaantruckingheader_nobukti= penerimaantruckingdetail.nobukti) AS sisa"))
             ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingheader.nobukti', 'penerimaantruckingdetail.nobukti')
             ->leftJoin(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'pengeluarantruckingdetail.penerimaantruckingheader_nobukti', 'penerimaantruckingdetail.nobukti')
             ->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d', strtotime($periodedari)), date('Y-m-d', strtotime($periodesampai))])
             ->where("pengeluarantruckingdetail.pengeluarantruckingheader_id", $id)
             ->where("penerimaantruckingdetail.nobukti",  'LIKE', "%BBM%")
-            ->orderBy('penerimaantruckingheader.tglbukti', 'asc')
+            ->groupBy('penerimaantruckingdetail.nobukti')
             ->orderBy('penerimaantruckingdetail.nobukti', 'asc');
 
         Schema::create($temp, function ($table) {
