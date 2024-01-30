@@ -509,6 +509,7 @@ class JurnalUmumHeader extends MyModel
 
     public function processUpdate(JurnalUmumHeader $jurnalUmumHeader, array $data): JurnalUmumHeader
     {
+        $tanpaprosesnobukti = $data['tanpaprosesnobukti'] ?? 0;
         $sumNominal = 0;
         for ($i = 0; $i < count($data['nominal_detail']); $i++) {
             $sumNominal += $data['nominal_detail'][$i];
@@ -578,6 +579,12 @@ class JurnalUmumHeader extends MyModel
                         'keterangan' => $data['keterangan_detail'][$i],
                         'baris' => $i,
                     ]);
+                    if ($tanpaprosesnobukti == 0) {
+                        $coa_detail[] = $data['coakredit_detail'][$i];
+                        $nominal_detail[] = '-' . $data['nominal_detail'][$i];
+                        $keterangan_detail[] = $data['keterangan_detail'][$i];
+                        $baris[] = $i;
+                    }
                 } else {
                     $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
                         'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
@@ -586,6 +593,12 @@ class JurnalUmumHeader extends MyModel
                         'keterangan' => $data['keterangan_detail'][$i],
                         'baris' => $i,
                     ]);
+                    if ($tanpaprosesnobukti == 0) {
+                        $coa_detail[] = $data['coadebet_detail'][$i];
+                        $nominal_detail[] = $data['nominal_detail'][$i];
+                        $keterangan_detail[] = $data['keterangan_detail'][$i];
+                        $baris[] = $i;
+                    }
                 }
                 $jurnalUmumDetails[] = $jurnalUmumDetail->toArray();
             }
@@ -601,6 +614,25 @@ class JurnalUmumHeader extends MyModel
             'modifiedby' => auth('api')->user()->user,
         ]);
 
+        if ($tanpaprosesnobukti == 0) {
+            $getJurnal = JurnalUmumPusatHeader::from(DB::raw("jurnalumumpusatheader with (readuncommitted)"))->where('nobukti', $jurnalUmumHeader->nobukti)->first();
+
+            $jurnalUmumPusatHeader = new JurnalUmumPusatHeader();
+            $jurnalUmumPusatHeader = $jurnalUmumPusatHeader->lockAndDestroy($getJurnal->id);
+
+            $jurnalRequest = [
+                'nobukti' => $jurnalUmumHeader->nobukti,
+                'tglbukti' => $jurnalUmumHeader->tglbukti,
+                'postingdari' => $jurnalUmumHeader->postingdari,
+                'statusapproval' => $jurnalUmumHeader->statusapproval,
+                'statusformat' => $jurnalUmumHeader->statusformat,
+                'coa_detail' => $coa_detail,
+                'nominal_detail' => $nominal_detail,
+                'keterangan_detail' => $keterangan_detail,
+                'baris' => $baris,
+            ];
+            (new JurnalUmumPusatHeader())->processStore($jurnalRequest);
+        }
         return $jurnalUmumHeader;
     }
 
