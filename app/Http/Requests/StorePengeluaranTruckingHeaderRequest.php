@@ -116,6 +116,7 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                 //     $this->input('gandenganheader_id')
                 // );
                 if ($klaim->id ==  $this->pengeluarantrucking_id) {
+                    
                     $salahSatuDari = Rule::requiredIf(function ()  {
                         if ( empty($this->input('tradoheader_id')) && empty($this->input('gandenganheader_id')) ) {
                             return true;
@@ -132,6 +133,20 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                         // "postingpinjaman" =>"required",
                         "statuscabang" =>"required",
                     ];    
+                    $getListTampilan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'UBAH TAMPILAN')->where('text', 'PENGELUARAN TRUCKING HEADER')->first();
+
+                    $getListTampilan = json_decode($getListTampilan->memo);
+                    if ($getListTampilan->INPUT != '') {
+                        $getListTampilan = (explode(",", $getListTampilan->INPUT));
+                        foreach ($getListTampilan as $value) {
+                            if ($value =="CABANG") {
+                                $value ='statuscabang';
+                            }
+                            if (array_key_exists(trim(strtolower($value)), $rulseKlaim) == true) {
+                                unset($rulseKlaim[trim(strtolower($value))]);
+                            }
+                        }
+                    }
                 }
             }
         }
