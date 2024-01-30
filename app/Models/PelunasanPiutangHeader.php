@@ -350,7 +350,7 @@ class PelunasanPiutangHeader extends MyModel
         $tempo = '##tempPelunasan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         $fetch = DB::table('pelunasanpiutangdetail as ppd')->from(DB::raw("pelunasanpiutangdetail as ppd with (readuncommitted)"))
-            ->select(DB::raw("ppd.pelunasanpiutang_id,ppd.piutang_nobukti,piutangheader.tglbukti,ppd.nominal,ppd.keterangan,ppd.potongan,ppd.coapotongan,ppd.keteranganpotongan,ppd.nominallebihbayar, piutangheader.nominal as nominalpiutang,ppd.invoice_nobukti, (SELECT (piutangheader.nominal - SUM(pelunasanpiutangdetail.nominal) - SUM(pelunasanpiutangdetail.potongan)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa, ppd.statusnotadebet, ppd.statusnotakredit"))
+            ->select(DB::raw("ppd.pelunasanpiutang_id,ppd.piutang_nobukti,piutangheader.tglbukti,ppd.nominal,ppd.keterangan,ppd.potongan,ppd.coapotongan,ppd.keteranganpotongan,ppd.nominallebihbayar, piutangheader.nominal as nominalpiutang,ppd.invoice_nobukti, (SELECT (piutangheader.nominal - SUM(isnull(pelunasanpiutangdetail.nominal,0)) - SUM(isnull(pelunasanpiutangdetail.potongan,0))) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa, ppd.statusnotadebet, ppd.statusnotakredit"))
             ->join(DB::raw("piutangheader with (readuncommitted)"), 'ppd.piutang_nobukti', 'piutangheader.nobukti')
             ->whereRaw("ppd.pelunasanpiutang_id = $id");
         Schema::create($tempo, function ($table) {
@@ -504,16 +504,28 @@ class PelunasanPiutangHeader extends MyModel
             DB::raw($this->table . " with (readuncommitted)")
         )
             ->select(
-                DB::raw("
-            $this->table.id,
-            $this->table.nobukti,
-            $this->table.tglbukti,
-            'bank.namabank as bank_id',
-            $this->table.modifiedby,
-            $this->table.updated_at
-            ")
+               
+                'pelunasanpiutangheader.id',
+                'pelunasanpiutangheader.nobukti',
+                'pelunasanpiutangheader.tglbukti',
+                'pelunasanpiutangheader.pengeluaran_nobukti',
+                'pelunasanpiutangheader.penerimaan_nobukti',
+                'pelunasanpiutangheader.penerimaangiro_nobukti',
+                'pelunasanpiutangheader.notadebet_nobukti',
+                'pelunasanpiutangheader.notakredit_nobukti',
+                'statuscetak.text as statuscetak',
+                'bank.namabank as bank_id',
+                'agen.namaagen as agen_id',
+                'alatbayar.namaalatbayar as alatbayar_id',
+                'pelunasanpiutangheader.modifiedby',
+                'pelunasanpiutangheader.created_at',
+                'pelunasanpiutangheader.updated_at',
             )
-            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pelunasanpiutangheader.bank_id', 'bank.id');
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pelunasanpiutangheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pelunasanpiutangheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'pelunasanpiutangheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pelunasanpiutangheader.alatbayar_id', 'alatbayar.id');
+
     }
 
     public function createTemp(string $modelTable)
@@ -523,8 +535,17 @@ class PelunasanPiutangHeader extends MyModel
             $table->bigInteger('id')->nullable();
             $table->string('nobukti', 1000)->nullable();
             $table->date('tglbukti')->nullable();
+            $table->string('pengeluaran_nobukti', 1000)->nullable();
+            $table->string('penerimaan_nobukti', 1000)->nullable();
+            $table->string('penerimaangiro_nobukti', 1000)->nullable();
+            $table->string('notadebet_nobukti', 1000)->nullable();
+            $table->string('notakredit_nobukti', 1000)->nullable();
+            $table->string('statuscetak')->nullable();
             $table->string('bank_id')->nullable();
+            $table->string('agen_id')->nullable();
+            $table->string('alatbayar_id')->nullable();
             $table->string('modifiedby')->default();
+            $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
@@ -535,7 +556,7 @@ class PelunasanPiutangHeader extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'bank_id', 'modifiedby', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti','pengeluaran_nobukti','penerimaan_nobukti','penerimaangiro_nobukti','notadebet_nobukti', 'notakredit_nobukti', 'statuscetak', 'bank_id', 'agen_id', 'alatbayar_id','modifiedby','created_at', 'updated_at'], $models);
 
         return $temp;
     }

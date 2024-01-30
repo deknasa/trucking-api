@@ -58,7 +58,8 @@ class PelunasanHutangHeaderController extends Controller
     }
 
     /**
-     * @ClassName store
+     * @ClassName 
+     * @Keterangan TAMBAH DATA
      */
     public function store(StorePelunasanHutangHeaderRequest $request)
     {
@@ -117,7 +118,8 @@ class PelunasanHutangHeaderController extends Controller
     }
 
     /**
-     * @ClassName update
+     * @ClassName 
+     * @Keterangan EDIT DATA
      */
 
     public function update(UpdatePelunasanHutangHeaderRequest $request, PelunasanHutangHeader $PelunasanHutangHeader, $id)
@@ -167,7 +169,8 @@ class PelunasanHutangHeaderController extends Controller
     }
 
     /**
-     * @ClassName destroy
+     * @ClassName 
+     * @Keterangan HAPUS DATA
      */
     public function destroy(DestroyPelunasanHutangHeaderRequest $request, $id)
     {

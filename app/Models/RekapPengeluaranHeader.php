@@ -187,17 +187,19 @@ class RekapPengeluaranHeader extends MyModel
             $table->bigInteger('id')->nullable();
             $table->string('nobukti', 50)->unique();
             $table->date('tglbukti')->nullable();
-            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->string('bank', 100)->nullable();
             $table->date('tgltransaksi')->nullable();
             $table->longText('keterangan')->nullable();
-            $table->integer('statusapproval')->length(11)->nullable();
+            $table->string('statusapproval', 100)->nullable();
             $table->string('userapproval', 50)->nullable();
             $table->date('tglapproval')->nullable();
-            $table->unsignedBigInteger('statusformat')->nullable();
+            $table->string('statuscetak', 100)->nullable();
+            $table->string('userbukacetak', 50)->nullable();
+            $table->date('tglbukacetak')->nullable();
             $table->string('modifiedby', 50)->nullable();
-            $table->increments('position');
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
+            $table->increments('position');
         });
 
         if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
@@ -206,20 +208,29 @@ class RekapPengeluaranHeader extends MyModel
         }
 
         $query = DB::table($modelTable);
-        $query = $this->select(
-            "id",
-            "nobukti",
-            "tglbukti",
-            "bank_id",
-            "tgltransaksi",
-            "keterangan",
-            "statusapproval",
-            "userapproval",
-            "tglapproval",
-            "statusformat",
-            "modifiedby",
-        );
-        $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+        
+        $query = $query->select(
+            "$this->table.id",
+            "$this->table.nobukti",
+            "$this->table.tglbukti",
+            "bank.namabank as bank",
+            "$this->table.tgltransaksi",
+            "$this->table.keterangan",
+            "statusapproval.text as statusapproval",
+            "$this->table.userapproval",
+            DB::raw('(case when (year(rekappengeluaranheader.tglapproval) <= 2000) then null else rekappengeluaranheader.tglapproval end ) as tglapproval'),
+            "statuscetak.text as statuscetak",
+            "$this->table.userbukacetak",
+            DB::raw('(case when (year(rekappengeluaranheader.tglbukacetak) <= 2000) then null else rekappengeluaranheader.tglbukacetak end ) as tglbukacetak'),
+            "$this->table.modifiedby",
+            "$this->table.created_at",
+            "$this->table.updated_at",
+
+        )
+            ->leftJoin('parameter as statusapproval', 'rekappengeluaranheader.statusapproval', 'statusapproval.id')
+            ->leftJoin('parameter as statuscetak', 'rekappengeluaranheader.statuscetak', 'statuscetak.id')
+            ->leftJoin('bank', 'rekappengeluaranheader.bank_id', 'bank.id');
+        $query->whereBetween($this->table.'.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
 
         $this->sort($query);
         $models = $this->filter($query);
@@ -228,14 +239,18 @@ class RekapPengeluaranHeader extends MyModel
             "id",
             "nobukti",
             "tglbukti",
-            "bank_id",
+            "bank",
             "tgltransaksi",
             "keterangan",
             "statusapproval",
             "userapproval",
             "tglapproval",
-            "statusformat",
+            "statuscetak",
+            "userbukacetak",
+            "tglbukacetak",
             "modifiedby",
+            "created_at",
+            "updated_at",
         ], $models);
 
         return  $temp;
