@@ -240,6 +240,7 @@ class Stok extends MyModel
                 'stok.keterangan',
                 'stok.gambar',
                 'stok.namaterpusat',
+                'statusapprovaltanpaklaim.memo as statusapprovaltanpaklaim',                    
                 'statusban.text as statusban',
                 'stok.statusban as statusban_id',
                 'statusreuse.memo as statusreuse',
@@ -259,17 +260,17 @@ class Stok extends MyModel
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
                 DB::raw("isnull(c1.jumlahhari,0) as umuraki"),
                 DB::raw("isnull(d1.vulkan,0) as vulkan"),
-                DB::raw("penerimaanstokdetail.keterangan as penerimaanstokdetail_keterangan"),
-                DB::raw("penerimaanstokdetail.qty as penerimaanstokdetail_qty"),
-                DB::raw("penerimaanstokdetail.harga as penerimaanstokdetail_harga"),
-                DB::raw("penerimaanstokdetail.total as penerimaanstokdetail_total"),
+                DB::raw("'' as penerimaanstokdetail_keterangan"),
+                DB::raw("'' as penerimaanstokdetail_qty"),
+                DB::raw("'' as penerimaanstokdetail_harga"),
+                DB::raw("'' as penerimaanstokdetail_total"),
                 'stok.statusaktif as statusaktif_id',
                 'stok.statusreuse as statusreuse_id',
                 'stok.kelompok_id as kelompok_id',
 
     
             )
-                ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
+               ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
                 ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
                 ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
                 ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
@@ -277,6 +278,7 @@ class Stok extends MyModel
                 ->leftJoin(DB::raw("parameter as service with (readuncommitted)"), 'stok.statusservicerutin', 'service.id')
                 ->leftJoin(DB::raw("parameter as statusban with (readuncommitted)"), 'stok.statusban', 'statusban.id')
                 ->leftJoin(DB::raw("parameter as statusreuse with (readuncommitted)"), 'stok.statusreuse', 'statusreuse.id')
+                ->leftJoin(DB::raw("parameter as statusapprovaltanpaklaim with (readuncommitted)"), 'stok.statusapprovaltanpaklaim', 'statusapprovaltanpaklaim.id')                    
                 ->leftJoin('merk', 'stok.merk_id', 'merk.id')
                 ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
                 ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id");
@@ -1207,15 +1209,28 @@ class Stok extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'check') {
+                        } else if ($filters['field'] == 'statusreuse') {
+                            if ($filters['data']) {
+                                $query = $query->whereRaw('stok.statusreuse_id =' . "'$filters[data]'");
+                            }
+                        } else {
                             $query = $query->whereRaw("stok.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        }
                     }
 
                     break;
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'check') {
+                            // } else if ($filters['field'] == 'statusreuse') {
+                            //     if ($filters['data']) {
+                            //         $query = $query->orWhereRaw('stok.statusreuse_id =' . "'$filters[data]'");
+                            //     }
+                            } else {
                                 $query = $query->OrwhereRaw( "stok.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     });
 

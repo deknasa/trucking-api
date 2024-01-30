@@ -2336,6 +2336,22 @@ class PenerimaanStokHeader extends MyModel
         }
         return false;
     }
+    public function isPGUsed($id)
+    {
+        $query = DB::table($this->table)->from($this->table)
+            ->where('penerimaanstokheader.id', $id)
+            ->join('pengeluaranstokheader', 'penerimaanstokheader.nobukti', 'pengeluaranstokheader.penerimaanstok_nobukti');
+
+        $data = $query->first();
+        if ($data) {
+            # code...
+            return [
+                true,
+                $data->nobukti
+            ];
+        }
+        return false;
+    }
     public function isEhtUsed($id)
     {
         $query = DB::table($this->table)->from($this->table)

@@ -496,10 +496,26 @@ class PenerimaanStokHeaderController extends Controller
 
                 return response($data);
             }
-            $isOutUsed = $penerimaanStokHeader->isOutUsed($id);
-            if ($isOutUsed) {
+            // $isOutUsed = $penerimaanStokHeader->isOutUsed($id);
+            // if ($isOutUsed) {
+            //     $query = Error::from(DB::raw("error with (readuncommitted)"))
+            //         ->select(db::raw("'$msg <br>'+keterangan +' <br>(" . $isOutUsed[1] . ")' as keterangan"))
+            //         ->whereRaw("kodeerror = 'SATL2'")
+            //         ->first();
+
+            //     $keterangan = $query;
+            //     $data = [
+            //         'message' => $keterangan,
+            //         'errors' => 'Pengeluaran stok',
+            //         'kodestatus' => '1',
+            //         'kodenobukti' => '1'
+            //     ];
+            // }
+            $isPGUsed = $penerimaanStokHeader->isPGUsed($id);
+            
+            if ($isPGUsed) {
                 $query = Error::from(DB::raw("error with (readuncommitted)"))
-                    ->select(db::raw("'$msg <br>'+keterangan +' <br>(" . $isOutUsed[1] . ")' as keterangan"))
+                    ->select(db::raw("'$msg <br>'+keterangan +' <br>(" . $isPGUsed[1] . ")' as keterangan"))
                     ->whereRaw("kodeerror = 'SATL2'")
                     ->first();
 
@@ -511,6 +527,8 @@ class PenerimaanStokHeaderController extends Controller
                     'kodenobukti' => '1'
                 ];
             }
+            // dd(!$isOutUsed||!$isPGUsed,$isOutUsed,$isPGUsed);
+            // dd($dataOut);
 
             if (($todayValidation || (($isEditAble || $isKeteranganEditAble) && !$printValidation))) {
                 if ($spb->text == $peneimaan->penerimaanstok_id) {
@@ -519,15 +537,17 @@ class PenerimaanStokHeaderController extends Controller
                         return response($dataUsed);
                     }
                 }
-                $data = [
-                    'message' => '',
-                    'errors' => 'bisa',
-                    'kodestatus' => '0',
-                    'kodenobukti' => '1'
-                ];
-                if (!$isOutUsed) {
+                
+                if (!$isPGUsed) {
+                    $data = [
+                        'message' => '',
+                        'errors' => 'bisa',
+                        'kodestatus' => '0',
+                        'kodenobukti' => '1'
+                    ]; 
                     return response($data);
-                }                
+                }
+                       
             }
         }
         return response($data);
