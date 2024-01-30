@@ -31,8 +31,8 @@ class ApprovalBukaCetak extends MyModel
 
         if ($data->statuscetak == $statusCetak->id) {
             $data->statuscetak = $statusBelumCetak->id;
-        } else {
-            $data->statuscetak = $statusCetak->id;
+        // } else {
+        //     $data->statuscetak = $statusCetak->id;
         }
 
         $data->tglbukacetak = date('Y-m-d', time());
