@@ -255,7 +255,9 @@ class PindahBuku extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'bankdari') {
+                        if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('statuscetak.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'bankdari') {
                             $query = $query->where('bankdari.namabank', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'bankke') {
                             $query = $query->where('bankke.namabank', 'LIKE', "%$filters[data]%");
@@ -281,7 +283,9 @@ class PindahBuku extends MyModel
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'bankdari') {
+                            if ($filters['field'] == 'statuscetak') {
+                                $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'bankdari') {
                                 $query = $query->orWhere('bankdari.namabank', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'bankke') {
                                 $query = $query->orWhere('bankke.namabank', 'LIKE', "%$filters[data]%");

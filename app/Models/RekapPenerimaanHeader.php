@@ -199,12 +199,14 @@ class RekapPenerimaanHeader extends MyModel
             $table->bigInteger('id')->nullable();
             $table->string('nobukti', 50)->unique();
             $table->date('tglbukti')->nullable();
-            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->string('bank',100)->nullable();
             $table->date('tgltransaksi')->nullable();
-            $table->integer('statusapproval')->length(11)->nullable();
-            $table->integer('statuscetak')->length(11)->nullable();
+            $table->string('statusapproval',100)->nullable();
             $table->string('userapproval', 50)->nullable();
             $table->date('tglapproval')->nullable();
+            $table->string('statuscetak',100)->nullable();
+            $table->string('userbukacetak', 50)->nullable();
+            $table->date('tglbukacetak')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -216,21 +218,27 @@ class RekapPenerimaanHeader extends MyModel
             request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
         }
         $query = DB::table($modelTable);
-        $query = $this->select(
-            "id",
-            "nobukti",
-            "tglbukti",
-            "bank_id",
-            "tgltransaksi",
-            "statusapproval",
-            "statuscetak",
-            "userapproval",
-            "tglapproval",
-            "modifiedby",
-            "created_at",
-            "updated_at",
-        );
-        $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+        $query = $query->select(
+            "$this->table.id",
+            "$this->table.nobukti",
+            "$this->table.tglbukti",
+            "bank.namabank as bank",
+            "$this->table.tgltransaksi",
+            "statusapproval.text as  statusapproval",
+            "$this->table.userapproval",
+            DB::raw("(case when year(isnull($this->table.tglapproval,'1900/1/1'))=1900 then null else $this->table.tglapproval end) as tglapproval"),
+            "statuscetak.text as  statuscetak",
+            "$this->table.userbukacetak",
+            DB::raw("(case when year(isnull($this->table.tglbukacetak,'1900/1/1'))=1900 then null else $this->table.tglbukacetak end) as tglbukacetak"),
+            "$this->table.modifiedby",
+            "$this->table.created_at",
+            "$this->table.updated_at",
+
+        )
+        ->leftJoin('parameter as statusapproval', 'rekappenerimaanheader.statusapproval', 'statusapproval.id')
+        ->leftJoin('parameter as statuscetak', 'rekappenerimaanheader.statuscetak', 'statuscetak.id')
+        ->leftJoin('bank', 'rekappenerimaanheader.bank_id', 'bank.id');;
+        $query->whereBetween($this->table.'.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
 
         $this->sort($query);
         $models = $this->filter($query);
@@ -239,12 +247,14 @@ class RekapPenerimaanHeader extends MyModel
             "id",
             "nobukti",
             "tglbukti",
-            "bank_id",
+            "bank",
             "tgltransaksi",
             "statusapproval",
-            "statuscetak",
             "userapproval",
             "tglapproval",
+            "statuscetak",
+            "userbukacetak",
+            "tglbukacetak",
             "modifiedby",
             "created_at",
             "updated_at",

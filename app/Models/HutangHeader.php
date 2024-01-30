@@ -160,7 +160,8 @@ class HutangHeader extends MyModel
                     "$this->table.id,
                  $this->table.nobukti,
                  $this->table.tglbukti,
-                 $this->table.coa,
+                 akunpusat.keterangancoa as coa,
+                 $this->table.postingdari,
                  'supplier.namasupplier as supplier_id',
                  $this->table.total,
                  isnull(c.nominal,0) as nominalbayar,
@@ -174,13 +175,13 @@ class HutangHeader extends MyModel
                  $this->table.jumlahcetak,
                  $this->table.modifiedby,
                  $this->table.created_at,
-                 $this->table.updated_at,
-                 $this->table.statusformat"
+                 $this->table.updated_at"
                 )
 
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangheader.statusapproval', 'statusapproval.id')
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id')
             ->leftJoin(DB::raw($tempbayar . " as c"), 'hutangheader.nobukti', 'c.hutang_nobukti');
     }
@@ -192,7 +193,8 @@ class HutangHeader extends MyModel
             $table->bigInteger('id')->nullable();
             $table->string('nobukti', 50)->unique();
             $table->date('tglbukti')->nullable();
-            $table->string('coa', 50)->nullable();
+            $table->string('coa', 255)->nullable();
+            $table->string('postingdari', 255)->nullable();
             $table->string('supplier_id', 50)->nullable();
             $table->double('total', 15, 2)->nullable();
             $table->double('nominalbayar', 15, 2)->nullable();
@@ -207,7 +209,6 @@ class HutangHeader extends MyModel
             $table->string('modifiedby')->default();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
-            $table->bigInteger('statusformat')->nullable();
             $table->increments('position');
         });
         if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
@@ -222,7 +223,7 @@ class HutangHeader extends MyModel
         $models = $query
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
 
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'coa', 'supplier_id', 'total', 'nominalbayar', 'sisahutang', 'statuscetak', 'statusapproval', 'userapproval', 'tglapproval','userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at', 'statusformat'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'coa', 'postingdari', 'supplier_id', 'total', 'nominalbayar', 'sisahutang', 'statuscetak', 'statusapproval', 'userapproval', 'tglapproval','userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }

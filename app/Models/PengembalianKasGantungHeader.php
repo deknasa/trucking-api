@@ -41,7 +41,7 @@ class PengembalianKasGantungHeader extends MyModel
         if (isset($prosesUangJalan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Proses Uang Jalan Supir '. $prosesUangJalan->nobukti,
+                'keterangan' => 'Proses Uang Jalan Supir ' . $prosesUangJalan->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -61,7 +61,7 @@ class PengembalianKasGantungHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal '. $jurnal->penerimaan_nobukti,
+                'keterangan' => 'Approval Jurnal ' . $jurnal->penerimaan_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
@@ -142,10 +142,10 @@ class PengembalianKasGantungHeader extends MyModel
             'pengembaliankasgantungheader.created_at',
             'pengembaliankasgantungheader.updated_at',
             db::raw("cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaanheader"),
-            db::raw("cast(cast(format((cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanheader"), 
+            db::raw("cast(cast(format((cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanheader"),
 
         )
-    
+
             ->leftJoin(DB::raw("penerimaanheader with (readuncommitted)"), 'pengembaliankasgantungheader.penerimaan_nobukti', '=', 'penerimaanheader.nobukti')
             ->leftJoin('akunpusat', 'pengembaliankasgantungheader.coakasmasuk', 'akunpusat.coa')
             ->leftJoin('bank', 'pengembaliankasgantungheader.bank_id', 'bank.id')
@@ -185,44 +185,30 @@ class PengembalianKasGantungHeader extends MyModel
             $table->string('nobukti', 50)->unique();
             $table->date('tglbukti')->nullable();
             $table->longText('keterangan')->nullable();
-            $table->string('bank_id', 1000)->nullable();
+            $table->string('bank', 1000)->nullable();
             $table->date('tgldari')->nullable();
             $table->date('tglsampai')->nullable();
             $table->string('penerimaan_nobukti', 50)->nullable();
-            $table->string('coakasmasuk', 50)->nullable();
+            $table->string('coa', 50)->nullable();
             $table->string('postingdari', 50)->nullable();
             $table->date('tglkasmasuk')->nullable();
-            $table->string('statusformat', 1000)->nullable();
             $table->string('statuscetak', 1000)->nullable();
             $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
             $table->integer('jumlahcetak')->Length(11)->nullable();
             $table->string('modifiedby', 50)->nullable();
-            $table->increments('position');
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
+            $table->increments('position');
         });
 
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
+
         $query = DB::table($modelTable);
-        $query = $this->select(
-            "id",
-            "nobukti",
-            "tglbukti",
-            "keterangan",
-            "bank_id",
-            "tgldari",
-            "tglsampai",
-            "penerimaan_nobukti",
-            "coakasmasuk",
-            "postingdari",
-            "tglkasmasuk",
-            "statusformat",
-            "statuscetak",
-            "userbukacetak",
-            "tglbukacetak",
-            "jumlahcetak",
-            "modifiedby",
-        );
+        $query = $this->selectColumns($query);
         $query = $this->sort($query);
         $models = $this->filter($query);
         if (request()->tgldariheader) {
@@ -233,19 +219,20 @@ class PengembalianKasGantungHeader extends MyModel
             "nobukti",
             "tglbukti",
             "keterangan",
-            "bank_id",
+            "bank",
             "tgldari",
             "tglsampai",
             "penerimaan_nobukti",
-            "coakasmasuk",
+            "coa",
             "postingdari",
             "tglkasmasuk",
-            "statusformat",
             "statuscetak",
             "userbukacetak",
             "tglbukacetak",
             "jumlahcetak",
             "modifiedby",
+            "created_at",
+            "updated_at",
         ], $models);
         return $temp;
     }
@@ -257,22 +244,23 @@ class PengembalianKasGantungHeader extends MyModel
             "$this->table.nobukti",
             "$this->table.tglbukti",
             "$this->table.keterangan",
-            "$this->table.bank_id",
+            'bank.namabank as bank',
             "$this->table.tgldari",
             "$this->table.tglsampai",
             "$this->table.penerimaan_nobukti",
-            "$this->table.coakasmasuk",
+            'akunpusat.keterangancoa as coa',
             "$this->table.postingdari",
             "$this->table.tglkasmasuk",
-            "$this->table.statusformat",
-            "$this->table.statuscetak",
+            'statuscetak.memo as statuscetak',
             "$this->table.userbukacetak",
             "$this->table.tglbukacetak",
             "$this->table.jumlahcetak",
             "$this->table.modifiedby",
-            "bank.namabank as bank",
-            "akunpusat.coa as coa",
-        );
+            "$this->table.created_at",
+            "$this->table.updated_at",
+        )->leftJoin('akunpusat', 'pengembaliankasgantungheader.coakasmasuk', 'akunpusat.coa')
+            ->leftJoin('bank', 'pengembaliankasgantungheader.bank_id', 'bank.id')
+            ->leftJoin('parameter as statuscetak', 'pengembaliankasgantungheader.statuscetak', 'statuscetak.id');
     }
 
     public function getPengembalian($id, $dari, $sampai)
@@ -362,7 +350,7 @@ class PengembalianKasGantungHeader extends MyModel
             $table->bigInteger('sisa')->nullable();
             $table->longText('keterangan')->nullabble();
         });
-        $tes = DB::table($temp)->insertUsing(['nobukti', 'tglbukti', 'sisa','keterangan'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'tglbukti', 'sisa', 'keterangan'], $fetch);
         return $temp;
     }
 
@@ -465,8 +453,28 @@ class PengembalianKasGantungHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = PengembalianKasGantungHeader::from(DB::raw("pengembaliankasgantungheader with (readuncommitted)"));
-        $query = $this->selectColumns($query)
+        $query = PengembalianKasGantungHeader::from(DB::raw("pengembaliankasgantungheader with (readuncommitted)"))
+            ->select(
+                "$this->table.id",
+                "$this->table.nobukti",
+                "$this->table.tglbukti",
+                "$this->table.keterangan",
+                "$this->table.bank_id",
+                'bank.namabank as bank',
+                "$this->table.tgldari",
+                "$this->table.tglsampai",
+                "$this->table.penerimaan_nobukti",
+                'akunpusat.keterangancoa as coa',
+                "$this->table.postingdari",
+                "$this->table.tglkasmasuk",
+                "$this->table.statuscetak",
+                "$this->table.userbukacetak",
+                "$this->table.tglbukacetak",
+                "$this->table.jumlahcetak",
+                "$this->table.modifiedby",
+                "$this->table.created_at",
+                "$this->table.updated_at",
+            )
             ->leftJoin('bank', 'pengembaliankasgantungheader.bank_id', 'bank.id')
             ->leftJoin('penerimaanheader', 'pengembaliankasgantungheader.penerimaan_nobukti', 'penerimaanheader.nobukti')
             ->leftJoin('akunpusat', 'pengembaliankasgantungheader.coakasmasuk', 'akunpusat.coa');

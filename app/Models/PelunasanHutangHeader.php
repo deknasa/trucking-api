@@ -414,7 +414,7 @@ class PelunasanHutangHeader extends MyModel
         $tempo = '##tempPembayaran' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         $fetch = DB::table('PelunasanHutangdetail as hbd')->from(DB::raw("PelunasanHutangdetail as hbd with (readuncommitted)"))
-            ->select(DB::raw("hbd.PelunasanHutang_id,hbd.hutang_nobukti,hutangheader.tglbukti,hbd.nominal as bayar, hbd.keterangan,hbd.potongan,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - SUM(PelunasanHutangdetail.nominal) - SUM(PelunasanHutangdetail.potongan)) FROM PelunasanHutangdetail WHERE PelunasanHutangdetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
+            ->select(DB::raw("hbd.PelunasanHutang_id,hbd.hutang_nobukti,hutangheader.tglbukti,hbd.nominal as bayar, hbd.keterangan,hbd.potongan,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - SUM(isnull(PelunasanHutangdetail.nominal,0)) - SUM(isnull(PelunasanHutangdetail.potongan,0))) FROM PelunasanHutangdetail WHERE PelunasanHutangdetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
             ->join(DB::raw("hutangheader with (readuncommitted)"), 'hbd.hutang_nobukti', 'hutangheader.nobukti')
             ->whereRaw("hbd.PelunasanHutang_id = $id");
 
