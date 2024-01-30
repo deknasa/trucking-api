@@ -409,11 +409,13 @@ class PengeluaranStokHeaderController extends Controller
 
             $peneimaan = $pengeluaran->findOrFail($id);
             $statusdatacetak = $peneimaan->statuscetak;
+            $msg = 'PROSES CETAK TIDAK BISA LANJUT KARENA';
+
             $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
             if ($statusdatacetak == $statusCetak->id) {
                 $query = DB::table('error')
-                    ->select('keterangan')
+                    ->select(db::raw("'$msg <br>'+keterangan as keterangan"))            
                     ->where('kodeerror', '=', 'SDC')
                     ->get();
                 $keterangan = $query['0'];
