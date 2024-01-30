@@ -2,10 +2,11 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 use App\Rules\ApprovalBukaCetak;
+use App\Rules\BukaCetakSatuArah;
+use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
 
 class StoreApprovalBukuCetakHeaderRequest extends FormRequest
@@ -42,7 +43,7 @@ class StoreApprovalBukuCetakHeaderRequest extends FormRequest
 
         
         $rules = [
-            'tableId' => ['required','min:1',new ApprovalBukaCetak()],
+            'tableId' => ['required','min:1',new ApprovalBukaCetak(),new BukaCetakSatuArah()],
             'periode' => ['required'],
             'table' => ['required', Rule::in($statusCetakUlang)],
         ];
