@@ -32,36 +32,39 @@ class DateApprovalQuota implements Rule
     {
         $date = date('Y-m-d', strtotime($value));
         $today = date('Y-m-d', strtotime("today"));
-        $getDay = date('l', strtotime(request()->tglbukti.'+1 days'));
-        $getTomorrow = date('Y-m-d', strtotime(request()->tglbukti.'+1 days'));
+        $getDay = date('l', strtotime(request()->tglbukti . '+1 days'));
+        $getTomorrow = date('Y-m-d', strtotime(request()->tglbukti . '+1 days'));
         $getHariLibur = HariLibur::where('tgl', $getTomorrow)->first();
-        
-        $allowed = false ;
+        $allowed = false;
         $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JAMBATASINPUTTRIP')->where('subgrp', 'JAMBATASINPUTTRIP')->first();
-       
+        $getFormat = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'INPUT TRIP')->where('subgrp', 'FORMAT BATAS INPUT')->first();
+
         $bukaAbsensi = SuratPengantarApprovalInputTrip::where('tglbukti', '=', $date)
-        ->sum('jumlahtrip');
-        if($date == $today){
+            ->sum('jumlahtrip');
+        if ($date == $today) {
             $allowed = true;
         }
-         if(date('Y-m-d', strtotime(request()->tglbukti.'+1 days')) . ' ' . $getBatasInput->text > date('Y-m-d H:i:s')){
+        if ($getFormat->text == 'FORMAT 2') {
+            if (date('Y-m-d', strtotime(request()->tglbukti . '+1 days')) . ' ' . $getBatasInput->text > date('Y-m-d H:i:s')) {
+                $allowed = true;
+            }
+        }
+        
+        if (strtolower($getDay) == 'sunday') {
             $allowed = true;
         }
-        if(strtolower($getDay) == 'sunday'){
+        if ($getHariLibur != null) {
             $allowed = true;
         }
-        if($getHariLibur != null){
-            $allowed = true;
-        }
-        if ($bukaAbsensi){
+        if ($bukaAbsensi) {
             $now = date('Y-m-d');
             $suratPengantar = SuratPengantar::where('tglbukti', '=', $date)->whereRaw("CONVERT(VARCHAR(10), created_at, 23) = '$now'")->count();
             $nonApproval = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where("grp", 'STATUS APPROVAL')->where("text", "NON APPROVAL")->first();
             $cekApproval = SuratPengantarApprovalInputTrip::where('statusapproval', '=', $nonApproval->id)->where('tglbukti', '=', $date)->first();
-            if($cekApproval){
+            if ($cekApproval) {
                 return false;
             }
-            if($bukaAbsensi < ($suratPengantar+1)){
+            if ($bukaAbsensi < ($suratPengantar + 1)) {
                 return false;
             }
             $allowed = true;

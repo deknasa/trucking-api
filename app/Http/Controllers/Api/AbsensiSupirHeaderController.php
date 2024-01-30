@@ -461,6 +461,7 @@ class AbsensiSupirHeaderController extends Controller
     }
     /**
      * @ClassName 
+     * @Keterangan CEK ABSENSI
      */
     public function cekabsensi(Request $request, $id)
     {

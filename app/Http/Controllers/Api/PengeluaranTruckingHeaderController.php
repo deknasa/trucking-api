@@ -962,9 +962,9 @@ class PengeluaranTruckingHeaderController extends Controller
     }
     /**
      * @ClassName 
-     * @Keterangan DEPOSITO KARYAWAN
+     * @Keterangan PENARIKAN DEPOSITO KARYAWAN
      */
-    public function pengeluarantruckingdepositokaryawan()
+    public function pengeluarantruckingpenarikandepositokaryawan()
     {
     }
     /**
