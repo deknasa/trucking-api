@@ -1119,8 +1119,10 @@ class PengeluaranStokHeader extends MyModel
         $data = $query->first();
         if (isset($data)) {
             if ($data->id) {
-                # code...
-                return true;
+                return [
+                    true,
+                    $data->nobukti
+                ];
             }
         }
         return false;
@@ -1143,7 +1145,10 @@ class PengeluaranStokHeader extends MyModel
                 ->first();
 
             if (isset($approvalJurnal)) {
-                return true;
+                return [
+                    true,
+                    $data->nobukti
+                ];
             }
         }
         return false;
@@ -1165,7 +1170,10 @@ class PengeluaranStokHeader extends MyModel
                 ->first();
 
             if (isset($approvalJurnal)) {
-                return true;
+                return [
+                    true,
+                    $data->nobukti
+                ];
             }
         }
         return false;
@@ -1189,7 +1197,10 @@ class PengeluaranStokHeader extends MyModel
                 ->first();
 
             if (isset($approvalJurnal)) {
-                return true;
+                return [
+                    true,
+                    $data->nobukti
+                ];
             }
         }
         return false;
