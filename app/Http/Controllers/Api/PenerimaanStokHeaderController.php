@@ -373,13 +373,14 @@ class PenerimaanStokHeaderController extends Controller
 
 
         if ($aksi == 'PRINTER BESAR' || $aksi == 'PRINTER KECIL') {
-
+            $msg = 'PROSES CETAK TIDAK BISA LANJUT KARENA';
             $statusdatacetak = $peneimaan->statuscetak;
             $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
             if ($statusdatacetak == $statusCetak->id) {
                 $query = DB::table('error')
-                    ->select('keterangan')
+                ->select(db::raw("'$msg <br>'+keterangan as keterangan"))
+                ->whereRaw("kodeerror = 'SDC'")
                     ->where('kodeerror', '=', 'SDC')
                     ->get();
                 $keterangan = $query['0'];
