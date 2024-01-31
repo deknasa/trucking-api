@@ -94,6 +94,8 @@ class LaporanNeraca extends MyModel
 
 
 
+
+
                 $subquery1 = DB::table('jurnalumumpusatheader as J')
                     ->select(
                         'D.coamain as FCOA',
@@ -154,6 +156,40 @@ class LaporanNeraca extends MyModel
                     'nominal',
 
                 ], $RecalKdPerkiraan);
+
+                if ($bulan==1) {
+                    DB::table('akunpusatdetail')
+                    ->where('bulan', '=', 0)
+                    ->where('tahun', '=', $tahun)
+                    ->whereRaw("cabang_id=" . $cabang_id)
+                        ->delete();
+
+                        $tahunsaldo=$tahun-1;
+                    $querysaldo=db::table('akunpusatdetail')->from(db::raw("akunpusatdetail a with (readuncommitted)"))
+                    ->select(
+                        'a.coa',
+                        db::raw($tahun. ' as tahun'),
+                        db::raw('0 as bulan'),
+                        'a.cabang_id',
+                        db::raw("sum(a.nominal) as nominal")
+                    )
+                    ->where('a.tahun',$tahunsaldo)
+                    ->whereRaw("cabang_id=" . $cabang_id)
+                    ->groupBy('a.coa')
+                    ->groupBy('a.cabang_id');
+
+
+
+                    DB::table('akunpusatdetail')->insertUsing([
+                        'coa',
+                        'tahun',
+                        'bulan',
+                        'cabang_id',
+                        'nominal',
+    
+                    ], $querysaldo);                    
+                
+                }
             }
 
             $tempAkunPusatDetail = '##tempAkunPusatDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -372,7 +408,7 @@ class LaporanNeraca extends MyModel
                 ->groupBy('d.keterangancoa');
             // ->having(DB::raw('sum(d.nominal)'), '<>', 0);
 
-
+            // dd($query2->toSql());
 
             DB::table($tempquery2)->insertUsing([
                 'tipemaster',
@@ -1281,6 +1317,87 @@ class LaporanNeraca extends MyModel
                 'nominal',
 
             ], $RecalKdPerkiraan);
+            if ($bulan==1) {
+                DB::table('akunpusatdetail')
+                ->where('bulan', '=', 0)
+                ->where('tahun', '=', $tahun)
+                    ->delete();
+
+                    $tahunsaldo=$tahun-1;
+
+                    
+            $tempAkunPusatDetailsaldo = '##tempAkunPusatDetailsaldo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempAkunPusatDetailsaldo, function ($table) {
+                $table->bigIncrements('id');
+                $table->string('coa', 50)->nullable();
+                $table->integer('tahun')->nullable();
+                $table->integer('bulan')->nullable();
+                $table->double('nominal')->nullable();
+            });
+
+                $querysaldo1=db::table('akunpusatdetail')->from(db::raw("akunpusatdetail a with (readuncommitted)"))
+                ->select(
+                    'a.coa',
+                    db::raw($tahun. ' as tahun'),
+                    db::raw('0 as bulan'),
+                    db::raw("sum(a.nominal) as nominal")
+                )
+                ->where('a.tahun',$tahunsaldo)
+                ->groupBy('a.coa');
+
+                DB::table($tempAkunPusatDetailsaldo)->insertUsing([
+                    'coa',
+                    'tahun',
+                    'bulan',
+                    'nominal',
+
+                ], $querysaldo1);                 
+
+                
+                $querysaldo2=db::table('saldoakunpusatdetail')->from(db::raw("saldoakunpusatdetail a with (readuncommitted)"))
+                ->select(
+                    'a.coa',
+                    db::raw($tahun. ' as tahun'),
+                    db::raw('0 as bulan'),
+                    db::raw("sum(a.nominal) as nominal")
+                )
+                ->where('a.tahun',$tahunsaldo)
+                ->groupBy('a.coa');
+
+                DB::table($tempAkunPusatDetailsaldo)->insertUsing([
+                    'coa',
+                    'tahun',
+                    'bulan',
+                    'nominal',
+
+                ], $querysaldo2);     
+                // dd(db::table($tempAkunPusatDetailsaldo)->where('coa','01.01.01.03' )->get());
+
+                
+                $querysaldo=db::table($tempAkunPusatDetailsaldo)->from(db::raw($tempAkunPusatDetailsaldo ." a"))
+                ->select(
+                    'a.coa',
+                    db::raw($tahun. ' as tahun'),
+                    db::raw('0 as bulan'),
+                    db::raw("sum(a.nominal) as nominal")
+                )
+                ->where('a.tahun',$tahun)
+                // ->where('coa','01.01.01.03' )
+                ->groupBy('a.coa');
+
+                // dd($querysaldo->get());
+
+                
+
+                DB::table('akunpusatdetail')->insertUsing([
+                    'coa',
+                    'tahun',
+                    'bulan',
+                    'nominal',
+
+                ], $querysaldo);                    
+            
+            }
 
             $tempAkunPusatDetail = '##tempAkunPusatDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempAkunPusatDetail, function ($table) {
@@ -1450,6 +1567,8 @@ class LaporanNeraca extends MyModel
                 ->groupBy('d.coa')
                 ->groupBy('d.keterangancoa');
             // ->having(DB::raw('sum(d.nominal)'), '<>', 0);
+
+            // dd($query2->tosql());
 
             DB::table($tempquery2)->insertUsing([
                 'tipemaster',
