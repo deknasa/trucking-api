@@ -125,6 +125,7 @@ class PengeluaranStokDetail extends MyModel
                 "$this->table.pengeluaranstokheader_id",
                 "$this->table.nobukti",
                 "$this->table.stok_id",
+                "satuan.satuan as satuan",
                 db::raw("trim(stok.namastok)+
                 (case when isnull(stok.kelompok_id,0)=1 then ' ( VULKANISIR KE-'+format(isnull(d1.vulkan,0),'#,#0')+', STATUS BAN :'+isnull(statusban.text,'') +' )' 
                 else '' end)
@@ -148,6 +149,7 @@ class PengeluaranStokDetail extends MyModel
             )
                 ->leftJoin("pengeluaranstokheader", "$this->table.pengeluaranstokheader_id", "pengeluaranstokheader.id")
                 ->leftJoin("stok", "$this->table.stok_id", "stok.id")
+                ->leftJoin("satuan", "stok.satuan_id", "satuan.id")
                 ->leftJoin(DB::raw("parameter as statusreuse with (readuncommitted)"), 'stok.statusreuse', 'statusreuse.id')
                 ->leftJoin("parameter", "$this->table.statusoli", "parameter.id")
                 ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
@@ -246,6 +248,7 @@ class PengeluaranStokDetail extends MyModel
             'PengeluaranStokDetail.Pengeluaranstokheader_id',
             'PengeluaranStokDetail.nobukti',
             'stok.namastok as stok',
+            "satuan.satuan as satuan",
             'stok.statusreuse as statusreuse',
             'PengeluaranStokDetail.jumlahhariaki as jlhhari',
             'PengeluaranStokDetail.stok_id',
@@ -262,6 +265,7 @@ class PengeluaranStokDetail extends MyModel
             'PengeluaranStokDetail.modifiedby',
         )
             ->leftJoin('stok', 'PengeluaranStokDetail.stok_id', 'stok.id')
+            ->leftJoin("satuan", "stok.satuan_id", "satuan.id")
             ->leftJoin('parameter', 'PengeluaranStokDetail.statusservicerutin', 'parameter.id');
 
         $data = $query->where("Pengeluaranstokheader_id", $id)->get();

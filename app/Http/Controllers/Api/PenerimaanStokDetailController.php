@@ -228,6 +228,35 @@ class PenerimaanStokDetailController extends Controller
     {
         return true;
     }
+    public function deleterow(Request $request)
+    {
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'detail' => 'required',
+            ],
+            [
+                'detail.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            ],
+            [
+                'detail' => 'stok',
+            ],
+        );
+        if (!$validator->passes()) {
+            return [
+                'error' => true,
+                'errors' => $validator->messages()
+            ];
+        }
+
+        $penerimaanStokDetail = PenerimaanStokDetail::where('id',$request->detail)->first();
+        $validasiSPBMinus = (new PenerimaanStokDetail())->validasiSPBMinus(
+            $penerimaanStokDetail->penerimaanstokheader_id,
+            $penerimaanStokDetail->stok_id,
+            0,
+        );
+        return $validasiSPBMinus;
+    }
 
     public function persediaanDari($stokId, $persediaan, $persediaanId, $qty)
     {
