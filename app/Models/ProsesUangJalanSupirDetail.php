@@ -27,7 +27,8 @@ class ProsesUangJalanSupirDetail extends MyModel
     {
         $status = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS PROSES UANG JALAN')->where('text', 'TRANSFER')->first();
         $query = ProsesUangJalanSupirDetail::from(DB::raw("prosesuangjalansupirdetail with (readuncommitted)"))
-            ->select('prosesuangjalansupirdetail.id as idtransfer', 'prosesuangjalansupirdetail.pengeluarantrucking_nobukti', 'prosesuangjalansupirdetail.pengeluarantrucking_tglbukti', 'prosesuangjalansupirdetail.pengeluarantrucking_bank_id', 'prosesuangjalansupirdetail.keterangan', 'prosesuangjalansupirdetail.nominal', 'bank.namabank as bank')
+            ->select('prosesuangjalansupirdetail.id as idtransfer', 'pengeluarantruckingheader.pengeluaran_nobukti as pengeluarantrucking_nobukti', 'prosesuangjalansupirdetail.pengeluarantrucking_tglbukti', 'prosesuangjalansupirdetail.pengeluarantrucking_bank_id', 'prosesuangjalansupirdetail.keterangan', 'prosesuangjalansupirdetail.nominal', 'bank.namabank as bank')
+            ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'prosesuangjalansupirdetail.pengeluarantrucking_nobukti', 'pengeluarantruckingheader.nobukti')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'prosesuangjalansupirdetail.pengeluarantrucking_bank_id', 'bank.id')
             ->where('prosesuangjalansupirdetail.prosesuangjalansupir_id', $id)
             ->where('prosesuangjalansupirdetail.statusprosesuangjalan', $status->id)
@@ -39,7 +40,8 @@ class ProsesUangJalanSupirDetail extends MyModel
     {
         $status = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS PROSES UANG JALAN')->where('text', 'ADJUST TRANSFER')->first();
         $query = ProsesUangJalanSupirDetail::from(DB::raw("prosesuangjalansupirdetail with (readuncommitted)"))
-            ->select('prosesuangjalansupirdetail.id as idadjust', 'prosesuangjalansupirdetail.penerimaantrucking_nobukti as penerimaan_nobukti', 'prosesuangjalansupirdetail.penerimaantrucking_tglbukti as tgladjust', 'prosesuangjalansupirdetail.penerimaantrucking_bank_id as bank_idadjust', 'prosesuangjalansupirdetail.keterangan as keteranganadjust', 'prosesuangjalansupirdetail.nominal as nilaiadjust', 'bank.namabank as bankadjust')
+            ->select('prosesuangjalansupirdetail.id as idadjust', 'penerimaantruckingheader.penerimaan_nobukti', 'prosesuangjalansupirdetail.penerimaantrucking_tglbukti as tgladjust', 'prosesuangjalansupirdetail.penerimaantrucking_bank_id as bank_idadjust', 'prosesuangjalansupirdetail.keterangan as keteranganadjust', 'prosesuangjalansupirdetail.nominal as nilaiadjust', 'bank.namabank as bankadjust')
+            ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'prosesuangjalansupirdetail.penerimaantrucking_nobukti', 'penerimaantruckingheader.nobukti')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'prosesuangjalansupirdetail.penerimaantrucking_bank_id', 'bank.id')
             ->where('prosesuangjalansupirdetail.prosesuangjalansupir_id', $id)
             ->where('prosesuangjalansupirdetail.statusprosesuangjalan', $status->id)
@@ -51,9 +53,9 @@ class ProsesUangJalanSupirDetail extends MyModel
     {
         $status = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS PROSES UANG JALAN')->where('text', 'DEPOSITO SUPIR')->first();
         $query = ProsesUangJalanSupirDetail::from(DB::raw("prosesuangjalansupirdetail with (readuncommitted)"))
-            ->select('prosesuangjalansupirdetail.id as iddeposit', 'prosesuangjalansupirdetail.penerimaantrucking_nobukti as penerimaandeposit_nobukti', 'prosesuangjalansupirdetail.penerimaantrucking_tglbukti as tgldeposit', 'prosesuangjalansupirdetail.penerimaantrucking_bank_id as bank_iddeposit', 'prosesuangjalansupirdetail.keterangan as keterangandeposit', 'prosesuangjalansupirdetail.nominal as nilaideposit', 'bank.namabank as bankdeposit', 'penerimaantruckingheader.nobukti as nobuktideposit')
+            ->select('prosesuangjalansupirdetail.id as iddeposit', 'penerimaantruckingheader.penerimaan_nobukti as penerimaandeposit_nobukti', 'prosesuangjalansupirdetail.penerimaantrucking_tglbukti as tgldeposit', 'prosesuangjalansupirdetail.penerimaantrucking_bank_id as bank_iddeposit', 'prosesuangjalansupirdetail.keterangan as keterangandeposit', 'prosesuangjalansupirdetail.nominal as nilaideposit', 'bank.namabank as bankdeposit', 'penerimaantruckingheader.nobukti as nobuktideposit')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'prosesuangjalansupirdetail.penerimaantrucking_bank_id', 'bank.id')
-            ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingheader.penerimaan_nobukti', 'prosesuangjalansupirdetail.penerimaantrucking_nobukti')
+            ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingheader.nobukti', 'prosesuangjalansupirdetail.penerimaantrucking_nobukti')
             ->where('prosesuangjalansupirdetail.prosesuangjalansupir_id', $id)
             ->where('prosesuangjalansupirdetail.statusprosesuangjalan', $status->id)
             ->first();
@@ -86,8 +88,9 @@ class ProsesUangJalanSupirDetail extends MyModel
         //         ->whereRaw("isnull($penerimaanTrucking.pengeluarantruckingheader_nobukti,'') != ''")
         //         ->get();
         $bank = ProsesUangJalanSupirDetail::from(DB::raw("prosesuangjalansupirdetail with (readuncommitted)"))
-            ->select('penerimaantrucking_bank_id as bank_idpengembalian', 'bank.namabank as bankpengembalian')
+            ->select('penerimaantrucking_bank_id as bank_idpengembalian', 'bank.namabank as bankpengembalian', 'penerimaantruckingheader.penerimaan_nobukti as penerimaanpengembalian_nobukti')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'prosesuangjalansupirdetail.penerimaantrucking_bank_id', 'bank.id')
+            ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingheader.nobukti', 'prosesuangjalansupirdetail.penerimaantrucking_nobukti')
             ->where('prosesuangjalansupirdetail.prosesuangjalansupir_id', $id)
             ->where('prosesuangjalansupirdetail.statusprosesuangjalan', $status->id)
             ->first();
@@ -129,24 +132,17 @@ class ProsesUangJalanSupirDetail extends MyModel
 
         if (isset(request()->forReport) && request()->forReport) {
             $query->select(
-                $this->table . '.nobukti',
-                'penerimaanbank.namabank as penerimaantrucking_bank_id',
-                DB::raw("(case when year(isnull($this->table.penerimaantrucking_tglbukti,'1900/1/1'))=1900 then null else $this->table.penerimaantrucking_tglbukti end) as penerimaantrucking_tglbukti"),
-                $this->table . '.penerimaantrucking_nobukti',
-                'pengeluaranbank.namabank as pengeluarantrucking_bank_id',
-                DB::raw("(case when year(isnull($this->table.pengeluarantrucking_tglbukti,'1900/1/1'))=1900 then null else $this->table.pengeluarantrucking_tglbukti end) as pengeluarantrucking_tglbukti"),
-                $this->table . '.pengeluarantrucking_nobukti',
-                'pengembalianbank.namabank as pengembaliankasgantung_bank_id',
-                DB::raw("(case when year(isnull($this->table.pengembaliankasgantung_tglbukti,'1900/1/1'))=1900 then null else $this->table.pengembaliankasgantung_tglbukti end) as pengembaliankasgantung_tglbukti"),
-                $this->table . '.pengembaliankasgantung_nobukti',
-                $this->table . '.nominal',
-                $this->table . '.keterangan',
-                'parameter.text as statusprosesuangjalan',
-
+                DB::raw("
+                    (case when isnull(prosesuangjalansupirdetail.penerimaantrucking_nobukti,'') = '' then b.pengeluaran_nobukti else c.penerimaan_nobukti end)
+                    as nobukti_proses, prosesuangjalansupirdetail.nominal, parameter.text as statusproses, prosesuangjalansupirdetail.keterangan,
+                    (case when isnull(bankmasuk.namabank, '') = '' then bankkeluar.namabank else bankmasuk.namabank end)
+                    as bank
+                ")
             )
-                ->leftJoin(DB::raw("bank as penerimaanbank with (readuncommitted)"), 'penerimaanbank.id', '=', $this->table . '.penerimaantrucking_bank_id')
-                ->leftJoin(DB::raw("bank as pengeluaranbank with (readuncommitted)"), 'pengeluaranbank.id', '=', $this->table . '.pengeluarantrucking_bank_id')
-                ->leftJoin(DB::raw("bank as pengembalianbank with (readuncommitted)"), 'pengembalianbank.id', '=', $this->table . '.pengembaliankasgantung_bank_id')
+                ->leftJoin(DB::raw("pengeluarantruckingheader as b with (readuncommitted)"), 'b.nobukti', '=', $this->table . '.pengeluarantrucking_nobukti')
+                ->leftJoin(DB::raw("penerimaantruckingheader as c with (readuncommitted)"), 'c.nobukti', '=', $this->table . '.penerimaantrucking_nobukti')
+                ->leftJoin(DB::raw("bank as bankmasuk with (readuncommitted)"), 'bankmasuk.id', '=', $this->table . '.penerimaantrucking_bank_id')
+                ->leftJoin(DB::raw("bank as bankkeluar with (readuncommitted)"), 'bankkeluar.id', '=', $this->table . '.pengeluarantrucking_bank_id')
                 ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'parameter.id', '=', $this->table . '.statusprosesuangjalan');
 
             $query->where($this->table . '.prosesuangjalansupir_id', '=', request()->prosesuangjalansupir_id);
@@ -178,30 +174,23 @@ class ProsesUangJalanSupirDetail extends MyModel
                 $this->table . '.nobukti',
                 'penerimaanbank.namabank as penerimaantrucking_bank_id',
                 DB::raw("(case when year(isnull($this->table.penerimaantrucking_tglbukti,'1900/1/1'))=1900 then null else $this->table.penerimaantrucking_tglbukti end) as penerimaantrucking_tglbukti"),
-                $this->table . '.penerimaantrucking_nobukti',
+                'penerimaantruckingheader.penerimaan_nobukti as penerimaantrucking_nobukti',
                 'pengeluaranbank.namabank as pengeluarantrucking_bank_id',
                 DB::raw("(case when year(isnull($this->table.pengeluarantrucking_tglbukti,'1900/1/1'))=1900 then null else $this->table.pengeluarantrucking_tglbukti end) as pengeluarantrucking_tglbukti"),
-                $this->table . '.pengeluarantrucking_nobukti',
-                'pengembalianbank.namabank as pengembaliankasgantung_bank_id',
-                DB::raw("(case when year(isnull($this->table.pengembaliankasgantung_tglbukti,'1900/1/1'))=1900 then null else $this->table.pengembaliankasgantung_tglbukti end) as pengembaliankasgantung_tglbukti"),
-                $this->table . '.pengembaliankasgantung_nobukti',
+                'pengeluarantruckingheader.pengeluaran_nobukti as pengeluarantrucking_nobukti',
                 $this->table . '.nominal',
                 $this->table . '.keterangan',
                 'parameter.text as statusprosesuangjalan',
-                db::raw("cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaantruckingheader"),
-                db::raw("cast(cast(format((cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaantruckingheader"), 
-                db::raw("cast((format(pengembaliankasgantungheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengembaliankasgantungheader"),
-                db::raw("cast(cast(format((cast((format(pengembaliankasgantungheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengembaliankasgantungheader"),
-                db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluarantruckingheader"),
-                db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluarantruckingheader"),
+                db::raw("cast((format(penerimaantruckingheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaantruckingheader"),
+                db::raw("cast(cast(format((cast((format(penerimaantruckingheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaantruckingheader"),
+                db::raw("cast((format(pengeluarantruckingheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluarantruckingheader"),
+                db::raw("cast(cast(format((cast((format(pengeluarantruckingheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluarantruckingheader"),
 
             )
-                ->leftJoin(DB::raw("pengeluaranheader with (readuncommitted)"),  $this->table.'.pengeluarantrucking_nobukti', '=','pengeluaranheader.nobukti')
-                ->leftJoin(DB::raw("penerimaanheader with (readuncommitted)"),  $this->table.'.penerimaantrucking_nobukti', '=','penerimaanheader.nobukti')
-                ->leftJoin(DB::raw("pengembaliankasgantungheader with (readuncommitted)"),  $this->table.'.pengembaliankasgantung_nobukti', '=','pengembaliankasgantungheader.nobukti')
+                ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"),  $this->table . '.pengeluarantrucking_nobukti', '=', 'pengeluarantruckingheader.nobukti')
+                ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"),  $this->table . '.penerimaantrucking_nobukti', '=', 'penerimaantruckingheader.nobukti')
                 ->leftJoin(DB::raw("bank as penerimaanbank with (readuncommitted)"), 'penerimaanbank.id', '=', $this->table . '.penerimaantrucking_bank_id')
                 ->leftJoin(DB::raw("bank as pengeluaranbank with (readuncommitted)"), 'pengeluaranbank.id', '=', $this->table . '.pengeluarantrucking_bank_id')
-                ->leftJoin(DB::raw("bank as pengembalianbank with (readuncommitted)"), 'pengembalianbank.id', '=', $this->table . '.pengembaliankasgantung_bank_id')
                 ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'parameter.id', '=', $this->table . '.statusprosesuangjalan');
 
             $this->sort($query);
@@ -246,6 +235,10 @@ class ProsesUangJalanSupirDetail extends MyModel
                                 $query = $query->where('pengeluaranbank.namabank', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'pengembaliankasgantung_bank_id') {
                                 $query = $query->where('pengembalianbank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'penerimaantrucking_nobukti') {
+                                $query = $query->where('penerimaantruckingheader.penerimaan_nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'pengeluarantrucking_nobukti') {
+                                $query = $query->where('pengeluarantruckingheader.pengeluaran_nobukti', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statusprosesuangjalan') {
                                 $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
@@ -270,6 +263,10 @@ class ProsesUangJalanSupirDetail extends MyModel
                                 $query = $query->orWhere('pengembalianbank.namabank', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statusprosesuangjalan') {
                                 $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'penerimaantrucking_nobukti') {
+                                $query = $query->orWhere('penerimaantruckingheader.penerimaan_nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'pengeluarantrucking_nobukti') {
+                                $query = $query->orWhere('pengeluarantruckingheader.pengeluaran_nobukti', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
                                 $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'penerimaantrucking_tglbukti' || $filters['field'] == 'pengeluarantrucking_tglbukti' || $filters['field'] == 'pengembaliankasgantung_tglbukti') {

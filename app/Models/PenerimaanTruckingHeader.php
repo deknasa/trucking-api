@@ -1290,6 +1290,8 @@ class PenerimaanTruckingHeader extends MyModel
             $data['coa'] = $fetchFormat->coapostingkredit;
         } else if ($fetchFormat->kodepenerimaan == 'PBT') {
             $data['coa'] = $fetchFormat->coapostingkredit;
+        }else if ($fetchFormat->kodepenerimaan == 'ATS') {
+            $data['coa'] = $fetchFormat->coapostingkredit;
         }
 
         $statusformat = $fetchFormat->format;
