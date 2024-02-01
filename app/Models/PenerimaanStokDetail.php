@@ -229,6 +229,7 @@ class PenerimaanStokDetail extends MyModel
                 "$this->table.nobukti",
                 "$this->table.stok_id",
                 "stok.namastok as stok",
+                "satuan.satuan as satuan",
                 "$this->table.qty",
                 "$this->table.harga",
                 "$this->table.persentasediscount",
@@ -248,6 +249,7 @@ class PenerimaanStokDetail extends MyModel
                 ->leftJoin(db::raw($tempvulkan . " d1"), "$this->table.stok_id", "d1.stok_id")
                 ->leftJoin("penerimaanstokheader", "$this->table.penerimaanstokheader_id", "penerimaanstokheader.id")
                 ->leftJoin("stok", "$this->table.stok_id", "stok.id")
+                ->leftJoin("satuan", "stok.satuan_id", "satuan.id")
                 ->leftJoin('parameter as statusban', 'stok.statusban', 'statusban.id');
 
             if (request()->penerimaanstok_id == $spbp->id) {
@@ -388,9 +390,11 @@ class PenerimaanStokDetail extends MyModel
     {
         $query = DB::table("PenerimaanStokDetail");
         $query = $query->select(
+            "PenerimaanStokDetail.id",
             "PenerimaanStokDetail.penerimaanstokheader_id",
             "PenerimaanStokDetail.nobukti",
             "stok.namastok as stok",
+            "satuan.satuan as satuan",
             "PenerimaanStokDetail.stok_id",
             "PenerimaanStokDetail.qty",
             "PenerimaanStokDetail.harga",
@@ -402,7 +406,8 @@ class PenerimaanStokDetail extends MyModel
             "PenerimaanStokDetail.vulkanisirke",
             "PenerimaanStokDetail.modifiedby",
         )
-            ->leftJoin("stok", "penerimaanstokdetail.stok_id", "stok.id");
+            ->leftJoin("stok", "penerimaanstokdetail.stok_id", "stok.id")
+            ->leftJoin("satuan", "stok.satuan_id", "satuan.id");
 
         $data = $query->where("penerimaanstokheader_id", $id)->get();
 
@@ -807,7 +812,7 @@ class PenerimaanStokDetail extends MyModel
             if ($ks) {
                 $hasilAkhir = $ks->qty + $qtyInput;
                 if ($hasilAkhir < 0 ) {
-                    throw ValidationException::withMessages(["qty" => "$penerimaanStokDetail->stok Sudah terpakai"]);
+                    throw ValidationException::withMessages(["qty" => "Qty $penerimaanStokDetail->stok stok terakhir minus, proses tidak bisa dilanjutkan"]);
                 }
             }
 

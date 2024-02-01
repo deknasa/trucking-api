@@ -1621,10 +1621,22 @@ class PenerimaanStokHeader extends MyModel
 
         if (($data['penerimaanstok_id'] === $spb->text)) {
             for ($i = 0; $i < count($data['detail_harga']); $i++) {
+                $detail_stok_id = $data['detail_stok_id'][$i];
+                $detail_qty = $data['detail_qty'][$i];
+                if (array_key_exists('detail_stok_id_old',$data)) {
+                    if (array_key_exists($i, $data['detail_stok_id'])) {
+                        if($data['detail_stok_id'][$i] != $data['detail_stok_id_old'][$i]){
+                            $detail_stok_id = $data['detail_stok_id_old'][$i];
+                            $detail_qty = 0;
+                        }
+                    }
+                }
+                
+                // detail_stok_id_old
                 (new PenerimaanStokDetail())->validasiSPBMinus(
                     $penerimaanStokHeader->id,
-                    $data['detail_stok_id'][$i],
-                    $data['detail_qty'][$i]
+                    $detail_stok_id,
+                    $detail_qty,
                 );
                     
             }

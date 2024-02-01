@@ -253,6 +253,7 @@ use App\Http\Controllers\Api\ExportLaporanKasGantungController;
 use App\Http\Controllers\Api\ExportPengeluaranBarangController;
 use App\Http\Controllers\Api\LaporanDepositoKaryawanController;
 use App\Http\Controllers\Api\LaporanRekapTitipanEmklController;
+use App\Http\Controllers\Api\LaporanApprovalStokReuseController;
 use App\Http\Controllers\Api\LaporanPenyesuaianBarangController;
 use App\Http\Controllers\Api\PenerimaanTruckingDetailController;
 use App\Http\Controllers\Api\PenerimaanTruckingHeaderController;
@@ -1018,6 +1019,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
 
     Route::post('penerimaanstokheader/addrow', [PenerimaanStokDetailController::class, 'addrow']);
+    Route::post('penerimaanstokheader/deleterow', [PenerimaanStokDetailController::class, 'deleterow']);
     Route::get('penerimaanstokheader/field_length', [PenerimaanStokHeaderController::class, 'fieldLength']);
     Route::get('penerimaanstokheader/{id}/printreport', [PenerimaanStokHeaderController::class, 'printReport'])->whereNumber('id');
     Route::post('penerimaanstokheader/{id}/cekvalidasi', [PenerimaanStokHeaderController::class, 'cekValidasi'])->name('penerimaanstokheader.cekValidasi')->whereNumber('id');

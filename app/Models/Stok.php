@@ -92,6 +92,7 @@ class Stok extends MyModel
         $aktif = request()->aktif ?? '$spb->text == $penerimaanstok_id';
         $statusreuse = request()->statusreuse ?? '';
         $dari = request()->dari ?? '';
+        $approveReuse = request()->approveReuse ?? false;
         $kelompok = request()->kelompok_id ?? '';
         $penerimaanstok_id = request()->penerimaanstok_id ?? '';
         $pengeluaranstok_id = request()->pengeluaranstok_id ?? '';
@@ -201,6 +202,7 @@ class Stok extends MyModel
                 $table->double('totalvulkanisir',15,2)->nullable();
                 $table->double('vulkanisirawal',15,2)->nullable();
                 $table->string('jenistrado',3000)->nullable();
+                $table->string('satuan',3000)->nullable();
                 $table->string('kelompok',3000)->nullable();
                 $table->string('subkelompok',3000)->nullable();
                 $table->string('kategori',3000)->nullable();
@@ -248,6 +250,7 @@ class Stok extends MyModel
                 'stok.totalvulkanisir',
                 'stok.vulkanisirawal',
                 'jenistrado.keterangan as jenistrado',
+                'satuan.satuan as satuan',
                 'kelompok.kodekelompok as kelompok',
                 'subkelompok.kodesubkelompok as subkelompok',
                 'kategori.kodekategori as kategori',
@@ -271,6 +274,7 @@ class Stok extends MyModel
     
             )
                ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
+                ->leftJoin('satuan', 'stok.satuan_id', 'satuan.id')
                 ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
                 ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
                 ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
@@ -303,6 +307,7 @@ class Stok extends MyModel
                 'stok.totalvulkanisir',
                 'stok.vulkanisirawal',
                 'jenistrado.keterangan as jenistrado',
+                'satuan.satuan as satuan',
                 'kelompok.kodekelompok as kelompok',
                 'subkelompok.kodesubkelompok as subkelompok',
                 'kategori.kodekategori as kategori',
@@ -325,6 +330,7 @@ class Stok extends MyModel
                 
             )
                 ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
+                ->leftJoin('satuan', 'stok.satuan_id', 'satuan.id')
                 ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
                 ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
                 ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
@@ -404,6 +410,7 @@ class Stok extends MyModel
                 'totalvulkanisir',
                 'vulkanisirawal',
                 'jenistrado',
+                'satuan',
                 'kelompok',
                 'subkelompok',
                 'kategori',
@@ -471,6 +478,7 @@ class Stok extends MyModel
                 'stok.totalvulkanisir',
                 'stok.vulkanisirawal',
                 'stok.jenistrado',
+                'stok.satuan',
                 'stok.kelompok',
                 'stok.subkelompok',
                 'stok.kategori',
@@ -526,6 +534,9 @@ class Stok extends MyModel
 
         if (($dari != 'index') &&($po->text != $penerimaanstok_id)) {
             $query->whereNotNull('stok.namaterpusat');
+        }
+        if ($approveReuse) {
+            $query->join('approvalstokreuse', 'stok.id', 'approvalstokreuse.stok_id');
         }
 
         if ($kelompok != '') {

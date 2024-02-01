@@ -174,6 +174,7 @@ class PenerimaanStokHeaderController extends Controller
                 "sortname" => $request->sortname ?? null,
                 "sortorder" => $request->sortorder ?? null,
                 "detail_stok_id" => $request->detail_stok_id ?? [],
+                "detail_stok_id_old" => $request->detail_stok_id_old ?? [],
                 "detail_vulkanisirke" => $request->detail_vulkanisirke ?? [],
                 "detail_keterangan" => $request->detail_keterangan ?? [],
                 "detail_qty" => $request->detail_qty ?? [],

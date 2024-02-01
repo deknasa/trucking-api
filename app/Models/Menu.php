@@ -649,6 +649,7 @@ class Menu extends MyModel
                                 'nama' => $value['name'],
                                 'keterangan' => $value['keterangan'],
                                 'modifiedby' => auth('api')->user()->user,
+                                'idheader' => 0,
                             ]);
                         }
                     } else {
