@@ -8,6 +8,7 @@ use App\Rules\CekBankTransferProsesUangJalan;
 use App\Rules\CekMinusSisaPinjamanProsesUangJalan;
 use App\Rules\CekNomAdjustProsesUangJalan;
 use App\Rules\CekNomPinjamanProsesUangJalan;
+use App\Rules\DateTutupBuku;
 use App\Rules\ExistBank;
 use App\Rules\ExistBankProsesUangJalan;
 use App\Rules\ExistBankTransferProsesUangJalan;
@@ -46,6 +47,11 @@ class StoreProsesUangJalanSupirDetailRequest extends FormRequest
         $rulesDeposito = [];
         if (request()->nilaideposit > 0 || request()->keterangandeposit != '' || request()->bankdeposit != '') {
             $rulesDeposito = [
+
+                'tgldeposit' =>  [
+                    "required", 'date_format:d-m-Y',
+                    new DateTutupBuku(),
+                ],
                 'nilaideposit' => ['required', 'numeric', 'min:0'],
                 'keterangandeposit' => 'required',
                 'bankdeposit' => 'required'
@@ -81,11 +87,20 @@ class StoreProsesUangJalanSupirDetailRequest extends FormRequest
             'totalAll' => new CekAllTotalProsesUangJalan()
         ];
         $rules = [
+
+            'tgltransfer.*' =>  [
+                "required", 'date_format:d-m-Y',
+                new DateTutupBuku(),
+            ],
             'keterangantransfer.*' => 'required',
             'nilaitransfer.*' => ['required', 'gt:0', 'numeric'],
             'banktransfer.*' => 'required',
             'bank_idtransfer.*' => [new CekBankTransferProsesUangJalan(), new ExistBankTransferProsesUangJalan()],
-            'nilaiadjust' => ['required', 'gt:0', 'numeric', new CekNomAdjustProsesUangJalan()],
+            'tgladjust' =>  [
+                "required", 'date_format:d-m-Y',
+                new DateTutupBuku(),
+            ],
+            'nilaiadjust' => ['required', 'gt:0', 'numeric'],
             'keteranganadjust' => 'required',
             'bankadjust' => 'required',
         ];
@@ -103,8 +118,10 @@ class StoreProsesUangJalanSupirDetailRequest extends FormRequest
         return $rules;
     }
 
-    public function attributes() {
+    public function attributes()
+    {
         return [
+            'tgltransfer.*' => 'tgl transfer',
             'bankadjust_id' => 'bank adjust',
             'nilaideposit' => 'nilai deposit',
             'keterangandeposit' => 'keterangan deposit',
@@ -125,7 +142,4 @@ class StoreProsesUangJalanSupirDetailRequest extends FormRequest
             'bankadjust' => 'bank adjust',
         ];
     }
-
-    
-
 }

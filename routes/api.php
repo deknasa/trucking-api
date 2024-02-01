@@ -477,6 +477,9 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('supir/approvalblacklist', [SupirController::class, 'approvalBlackListSupir'])->whereNumber('id');
     Route::post('supir/approvalluarkota', [SupirController::class, 'approvalSupirLuarKota'])->whereNumber('id');
     Route::post('supir/approvalnonaktif', [SupirController::class, 'approvalnonaktif']);
+
+    Route::post('prosesuangjalansupirheader/approval', [ProsesUangJalanSupirHeaderController::class, 'approval']);
+    
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
