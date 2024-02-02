@@ -248,14 +248,21 @@ class PenerimaanStokDetailController extends Controller
                 'errors' => $validator->messages()
             ];
         }
+        $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
 
-        $penerimaanStokDetail = PenerimaanStokDetail::where('id',$request->detail)->first();
-        $validasiSPBMinus = (new PenerimaanStokDetail())->validasiSPBMinus(
-            $penerimaanStokDetail->penerimaanstokheader_id,
-            $penerimaanStokDetail->stok_id,
-            0,
-        );
-        return $validasiSPBMinus;
+        $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokdetail.id',$request->detail)
+        ->select('penerimaanstokheader.nobukti','penerimaanstokheader.penerimaanstok_id')
+        ->leftJoin('penerimaanstokheader', 'penerimaanstokdetail.penerimaanstokheader_id', 'penerimaanstokheader.id')
+        ->first();
+        if ($penerimaanStokDetail->penerimaanstok_id == $spb->text) {
+            $validasiSPBMinus = (new PenerimaanStokDetail())->validasiSPBMinus(
+                $penerimaanStokDetail->penerimaanstokheader_id,
+                $penerimaanStokDetail->stok_id,
+                0,
+            );
+            return $validasiSPBMinus;
+        }
+        return true;
     }
 
     public function persediaanDari($stokId, $persediaan, $persediaanId, $qty)

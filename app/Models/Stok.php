@@ -94,6 +94,7 @@ class Stok extends MyModel
         $dari = request()->dari ?? '';
         $approveReuse = request()->approveReuse ?? false;
         $kelompok = request()->kelompok_id ?? '';
+        $KelompokId_stok = request()->KelompokId ?? '';//dari lookup
         $penerimaanstok_id = request()->penerimaanstok_id ?? '';
         $pengeluaranstok_id = request()->pengeluaranstok_id ?? '';
         $penerimaanstokheader_nobukti = request()->penerimaanstokheader_nobukti ?? '';
@@ -495,6 +496,7 @@ class Stok extends MyModel
                 'stok.penerimaanstokdetail_qty',
                 'stok.penerimaanstokdetail_harga',
                 'stok.penerimaanstokdetail_total',
+                'stok.kelompok_id',
             );
 
 
@@ -541,6 +543,9 @@ class Stok extends MyModel
 
         if ($kelompok != '') {
             $query->where('stok.kelompok_id', '=', $kelompok);
+        }
+        if ($KelompokId_stok != '') {
+            $query->where('stok.kelompok_id', '=', $KelompokId_stok);
         }
         if ($penerimaanstokheader_nobukti) {
     
