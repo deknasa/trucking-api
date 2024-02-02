@@ -57,7 +57,7 @@ class TarifDiscountHarga extends MyModel
                 'tarifdiscountharga.modifiedby',
                 'tarifdiscountharga.created_at',
                 'tarifdiscountharga.updated_at',
-                DB::raw("'Laporan Container' as judulLaporan"),
+                DB::raw("'Laporan Tarif Discount Harga' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
@@ -232,11 +232,11 @@ class TarifDiscountHarga extends MyModel
                         } else if ($filters['field'] == 'statuscabang') {
                             $query = $query->where('parameter.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'container') {
-                            $query = $query->where('container.keterangan', '=', "$filters[data]");
+                            $query = $query->where('container.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'tujuan') {
-                            $query = $query->where('tarif.tujuan', '=', "$filters[data]");
+                            $query = $query->where('tarif.tujuan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'penyesuaian') {
-                            $query = $query->where('tarif.penyesuaian', '=', "$filters[data]");
+                            $query = $query->where('tarif.penyesuaian', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
@@ -255,11 +255,11 @@ class TarifDiscountHarga extends MyModel
                             } else if ($filters['field'] == 'statuscabang') {
                                 $query = $query->orWhere('parameter.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'container') {
-                                $query = $query->orWhere('container.keterangan', '=', "$filters[data]");
+                                $query = $query->orWhere('container.keterangan','LIKE', "%$filters[data]%");;
                             } else if ($filters['field'] == 'tujuan') {
-                                $query = $query->orWhere('tarif.tujuan', '=', "$filters[data]");
+                                $query = $query->orWhere('tarif.tujuan','LIKE', "%$filters[data]%");;
                             } else if ($filters['field'] == 'penyesuaian') {
-                                $query = $query->orWhere('tarif.penyesuaian', '=', "$filters[data]");
+                                $query = $query->orWhere('tarif.penyesuaian','LIKE', "%$filters[data]%");;
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {

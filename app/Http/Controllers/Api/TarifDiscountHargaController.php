@@ -21,8 +21,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Http;
 use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\GetUpahSupirRangeRequest;
-
-
+use App\Http\Requests\RangeExportReportRequest;
 
 class TarifDiscountHargaController extends Controller
 {
@@ -177,7 +176,7 @@ class TarifDiscountHargaController extends Controller
     public function fieldLength()
     {
         $data = [];
-        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('orderantrucking')->getColumns();
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('tarifdiscountharga')->getColumns();
 
         foreach ($columns as $index => $column) {
             $data[$index] = $column->getLength();
@@ -199,21 +198,98 @@ class TarifDiscountHargaController extends Controller
      * @ClassName 
      * @Keterangan EXPORT KE EXCEL
      */
-    public function export(GetUpahSupirRangeRequest $request)
+    public function export(RangeExportReportRequest $request)
     {
-        $dari = date('Y-m-d', strtotime($request->dari));
-        $sampai = date('Y-m-d', strtotime($request->sampai));
-        $tarifDiscountHarga = new TarifDiscountHarga();
-        return response([
-            'data' => $tarifDiscountHarga->getExport($dari, $sampai),
-        ]);
+        if (request()->cekExport) {
+
+            if (request()->offset == "-1" && request()->limit == '1') {
+
+                return response([
+                    'errors' => [
+                        "export" => app(ErrorController::class)->geterror('DTA')->keterangan
+                    ],
+                    'status' => false,
+                    'message' => "The given data was invalid."
+                ], 422);
+            } else {
+                return response([
+                    'status' => true,
+                ]);
+            }
+        } else {
+
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $tarifs = $decodedResponse['data'];
+            $judulLaporan = $tarifs[0]['judulLaporan'];
+
+            $i = 0;
+            foreach ($tarifs as $index => $params) {
+
+                $statusaktif = $params['statusaktif'];
+                $statuscabang = $params['statuscabang'];
+
+                $result = json_decode($statusaktif, true);
+                $resultcabang = json_decode($statuscabang, true);
+
+                $statusaktif = $result['MEMO'];
+                $statuscabang = $resultcabang['MEMO'];
+
+
+                $tarifs[$i]['statusaktif'] = $statusaktif;
+                $tarifs[$i]['statuscabang'] = $statuscabang;
+
+
+                $i++;
+            }
+            
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Tujuan',
+                    'index' => 'tujuan',
+                ],
+                [
+                    'label' => 'Penyesuaian',
+                    'index' => 'penyesuaian',
+                ],
+                [
+                    'label' => 'Lokasi Dooring',
+                    'index' => 'lokasidooring',
+                ],
+                [
+                    'label' => 'Container',
+                    'index' => 'container',
+                ],
+                [
+                    'label' => 'Shipper',
+                    'index' => 'shipper',
+                ],
+                [
+                    'label' => 'Nominal',
+                    'index' => 'nominal',
+                ],
+                [
+                    'label' => 'Status Cabang',
+                    'index' => 'statuscabang',
+                ],
+                [
+                    'label' => 'Status',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $tarifs, $columns);
+        }
     }
     public function combo(Request $request)
     {
 
         // dd($request->all());
 
-        
+
         // $pilih = $request->status ?? '';
         // $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         // $temp1 = '##temp1' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
