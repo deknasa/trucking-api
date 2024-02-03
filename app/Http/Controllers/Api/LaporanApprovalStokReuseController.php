@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\ApprovalStokReuse;
+use App\Http\Controllers\Controller;
 
 class LaporanApprovalStokReuseController extends Controller
 {
@@ -42,11 +43,12 @@ class LaporanApprovalStokReuseController extends Controller
      */
     public function export(Request $request)
     {
-        $supir_id = $request->supir_id ?? 0;
+        
+        $stok_id = $request->stok_id ?? 0;
 
-        $laporan = new LaporanHistoryTradoMilikSupir();
+        $laporan = new ApprovalStokReuse();
         return response([
-            'data' => $laporan->getReport($supir_id)
+            'data' => $laporan->getReport($stok_id)
         ]);
     }
 }
