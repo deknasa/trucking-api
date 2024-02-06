@@ -27,34 +27,38 @@ class StoreCabangRequest extends FormRequest
      */
     public function rules()
     {
-        $parameter = new Parameter();
-        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
-        $data = json_decode($data, true);
-        foreach ($data as $item) {
-            $status[] = $item['id'];
-        }
-        $statusaktif = $this->statusaktif;
-        $rulesStatusAktif = [];
-        if ($statusaktif != null) {
-            $rulesStatusAktif = [
-                'statusaktif' => ['required', Rule::in($status)]
-            ];
-        } else if ($statusaktif == null && $this->statusaktifnama != '') {
-            $rulesStatusAktif = [
-                'statusaktif' => ['required', Rule::in($status)]
-            ];
-        }
+        if (request()->from == 'tas') {
+            return [];
+        } else {
+            $parameter = new Parameter();
+            $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+            $data = json_decode($data, true);
+            foreach ($data as $item) {
+                $status[] = $item['id'];
+            }
+            $statusaktif = $this->statusaktif;
+            $rulesStatusAktif = [];
+            if ($statusaktif != null) {
+                $rulesStatusAktif = [
+                    'statusaktif' => ['required', Rule::in($status)]
+                ];
+            } else if ($statusaktif == null && $this->statusaktifnama != '') {
+                $rulesStatusAktif = [
+                    'statusaktif' => ['required', Rule::in($status)]
+                ];
+            }
 
-        $rules = [
-            'kodecabang' => ['required', 'string', 'unique:cabang'],
-            'namacabang' => ['required', 'string', 'unique:cabang'],
-            'statusaktifnama' => ['required'],
-        ];
-        $rules = array_merge(
-            $rules,
-            $rulesStatusAktif,
-        );
-        return $rules;
+            $rules = [
+                'kodecabang' => ['required', 'string', 'unique:cabang'],
+                'namacabang' => ['required', 'string', 'unique:cabang'],
+                'statusaktifnama' => ['required'],
+            ];
+            $rules = array_merge(
+                $rules,
+                $rulesStatusAktif,
+            );
+            return $rules;
+        }
     }
 
     public function attributes()

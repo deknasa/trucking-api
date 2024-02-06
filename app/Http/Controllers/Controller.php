@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\UpdateExportProgress;
 use App\Helpers\App as AppHelper;
+use App\Models\Cabang;
 use App\Models\Parameter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
@@ -14,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
@@ -155,13 +157,13 @@ class Controller extends BaseController
         $sheet->getStyle("A1")->getFont()->setSize(12);
         $sheet->getStyle("A1")->getFont()->setBold(true);
         $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
-        $sheet->mergeCells('A1:' . $alphabets[count($columns)-1] . '1');
+        $sheet->mergeCells('A1:' . $alphabets[count($columns) - 1] . '1');
 
         $sheet->setCellValue('A2', $Laporan);
         $sheet->getStyle("A2")->getFont()->setSize(12);
         $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
         $sheet->getStyle("A2")->getFont()->setBold(true);
-        $sheet->mergeCells('A2:' . $alphabets[count($columns)-1] . '2');
+        $sheet->mergeCells('A2:' . $alphabets[count($columns) - 1] . '2');
 
         $i = 0;
         foreach ($columns as &$kolom) {
@@ -345,7 +347,7 @@ class Controller extends BaseController
 
     function get_client_ip()
     {
-   
+
 
         $ipaddress = '';
         if (getenv('HTTP_CLIENT_IP'))
@@ -362,9 +364,9 @@ class Controller extends BaseController
             $ipaddress = getenv('REMOTE_ADDR');
         else
             $ipaddress = 'IP tidak dikenali';
-            if ($ipaddress=='::1' ) {
-                $ipaddress= gethostbyname(env('APP_HOSTNAME'));
-            }
+        if ($ipaddress == '::1') {
+            $ipaddress = gethostbyname(env('APP_HOSTNAME'));
+        }
         return $ipaddress;
     }
 
@@ -374,17 +376,116 @@ class Controller extends BaseController
         // $ipaddress = gethostbyname(strtolower($query->text));
         $ipaddress = gethostbyname(env('APP_HOSTNAME'));
         // $ipaddress = file_get_contents('https://api.ipify.org');
-        
+
         return $ipaddress;
     }
 
     function ipToCheck($ipRequest)
     {
         $ipArray = [
-			env('LOCAL_IP_LIST_1'),
-			env('LOCAL_IP_LIST_2'),
-			env('LOCAL_IP_LIST_3'),
-		];
+            env('LOCAL_IP_LIST_1'),
+            env('LOCAL_IP_LIST_2'),
+            env('LOCAL_IP_LIST_3'),
+        ];
         return in_array($ipRequest, $ipArray);
+    }
+
+    public function saveToTnl($table, $aksi, $data)
+    {
+        $server = config('app.api_tnl');
+
+        $data['from'] = 'tas';
+        $data['aksi'] = $aksi;
+        $data['table'] = $table;
+        $getToken = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+        ])
+            ->post($server . 'token', [
+                'user' => 'ADMIN',
+                'password' => getenv('PASSWORD_TNL'),
+                'ipclient' => '',
+                'ipserver' => '',
+                'latitude' => '',
+                'longitude' => '',
+                'browser' => '',
+                'os' => '',
+            ]);
+
+        if ($getToken->getStatusCode() == '404') {
+            throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
+        } else if ($getToken->getStatusCode() == '200') {
+            $access_token = json_decode($getToken, TRUE)['access_token'];
+            if ($aksi == 'add') {
+
+                $posting = Http::withHeaders([
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                    'Authorization' => 'Bearer ' . $access_token
+                ])->post($server . $table, $data);
+            } else {
+                $getIdTnl = Http::withHeaders([
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                    'Authorization' => 'Bearer ' . $access_token
+                ])->post($server . 'getidtnl', $data);
+                $respIdTnl = $getIdTnl->toPsrResponse();
+                if ($respIdTnl->getStatusCode() == 200 && $getIdTnl->json() != '') {
+                    $id = $getIdTnl->json();
+                    if ($aksi == 'edit') {
+
+                        $posting = Http::withHeaders([
+                            'Content-Type' => 'application/json',
+                            'Accept' => 'application/json',
+                            'Authorization' => 'Bearer ' . $access_token
+                        ])->patch($server . $table . '/' . $id, $data);
+                    }
+                    if ($aksi == 'delete') {
+
+                        $posting = Http::withHeaders([
+                            'Content-Type' => 'application/json',
+                            'Accept' => 'application/json',
+                            'Authorization' => 'Bearer ' . $access_token
+                        ])->delete($server . $table . '/' . $id, $data);
+                    }
+                }
+            }
+
+            $tesResp = $posting->toPsrResponse();
+            $response = [
+                'statuscode' => $tesResp->getStatusCode(),
+                'data' => $posting->json(),
+            ];
+
+            $dataResp = $posting->json();
+            if ($tesResp->getStatusCode() != 201 && $tesResp->getStatusCode() != 200) {
+                throw new \Exception($dataResp['message']);
+            }
+            return $response;
+        } else {
+            throw new \Exception("server tidak bisa diakses");
+        }
+    }
+
+    public function getIdTnl(Request $request)
+    {
+        $backSlash = " \ ";
+        $controller = 'App\Http\Controllers\Api'. trim($backSlash) . $request->table.'Controller';
+        $model = 'App\Models' . trim($backSlash) . $request->table;
+        $models = app($model)->where('tas_id',$request->tas_id)->first();
+
+        return $models->id;
+        // if($request->aksi == 'edit')
+        // {
+        //     $requests = 'App\Http\Requests'. trim($backSlash) . 'Update'.$request->table.'Request';
+        //     $process = app($controller)->update(app($requests), $models);
+        //     return $process;
+        // }
+        // if($request->aksi == 'delete'){
+        //     $requests = 'App\Http\Requests'. trim($backSlash) . 'Destroy'.$request->table.'Request';
+        //     $process = app($controller)->destroy(app($requests), $models->id);
+        //     return $process;
+        // }
+
     }
 }
