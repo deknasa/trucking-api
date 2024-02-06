@@ -403,7 +403,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('jenisemkl', JenisEmklController::class)->whereNumber('jenisemkl');
     Route::resource('jenistrado', JenisTradoController::class)->whereNumber('jenistrado');
     Route::resource('akunpusat', AkunPusatController::class)->parameters(['akunpusat' => 'akunPusat'])->whereNumber('akunPusat');
-    Route::resource('kodeperkiraanpusat', MainAkunPusatController::class)->whereNumber('kodeperkiraanpusat');
+    Route::resource('mainakunpusat', MainAkunPusatController::class)->whereNumber('mainakunpusat');
     Route::resource('error', ErrorController::class)->whereNumber('error');
     Route::resource('user', UserController::class)->whereNumber('user');
     Route::resource('menu', MenuController::class)->whereNumber('menu')->whereNumber('menu');
