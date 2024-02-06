@@ -148,7 +148,8 @@ class Karyawan extends MyModel
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id','text'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
@@ -159,14 +160,15 @@ class Karyawan extends MyModel
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id','text'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS STAFF')
             ->where('subgrp', '=', 'STATUS STAFF')
             ->where('default', '=', 'YA')
             ->first();
 
-        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id,"statusaktifnama" => $statusaktif->text, "statusstaff" => $statusstaff->id, "statusstaffnama" => $statusstaff->text]);
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id, "statusaktifnama" => $statusaktif->text, "statusstaff" => $statusstaff->id, "statusstaffnama" => $statusstaff->text]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
@@ -295,15 +297,17 @@ class Karyawan extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('statusaktif.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statusstaff') {
-                            $query = $query->where('statusstaff.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->where('statusaktif.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statusstaff') {
+                                $query = $query->where('statusstaff.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -311,15 +315,17 @@ class Karyawan extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusaktif') {
-                                $query = $query->orWhere('statusaktif.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'statusstaff') {
-                                $query = $query->orWhere('statusstaff.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
-                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusaktif') {
+                                    $query = $query->orWhere('statusaktif.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'statusstaff') {
+                                    $query = $query->orWhere('statusstaff.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
                     });
@@ -412,5 +418,33 @@ class Karyawan extends MyModel
         ]);
 
         return $karyawan;
+    }
+
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $Karyawan = Karyawan::find($data['Id'][$i]);
+
+            $Karyawan->statusaktif = $statusnonaktif->id;
+            $aksi = $statusnonaktif->text;
+
+            if ($Karyawan->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($Karyawan->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF KARYAWAN',
+                    'idtrans' => $Karyawan->id,
+                    'nobuktitrans' => $Karyawan->id,
+                    'aksi' => $aksi,
+                    'datajson' => $Karyawan->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+
+        return $Karyawan;
     }
 }

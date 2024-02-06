@@ -1,29 +1,32 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+
 use App\Models\ReminderEmail;
 
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Services\ReminderEmailService;
 use App\DataTransferObject\ReminderEmailDTO;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\StoreReminderEmailRequest;
 use App\Http\Requests\UpdateReminderEmailRequest;
 
 class ReminderEmailController extends Controller
 {
-    protected $service;    
-    function __construct(ReminderEmailService $service) {
+    protected $service;
+    function __construct(ReminderEmailService $service)
+    {
         $this->service = $service;
     }
-    
-   /**
+
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
-        
+
         $reminderEmail = new ReminderEmail();
         return response([
             'data' => $reminderEmail->get(),
@@ -46,7 +49,7 @@ class ReminderEmailController extends Controller
                 ReminderEmailDTO::dataRequest($request)
             );
             $reminderEmail->position = $this->getPosition($reminderEmail, $reminderEmail->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $reminderEmail->page = ceil($reminderEmail->position / (10));
             } else {
                 $reminderEmail->page = ceil($reminderEmail->position / ($request->limit ?? 10));
@@ -63,7 +66,6 @@ class ReminderEmailController extends Controller
             DB::rollBack();
             throw $th;
         }
-
     }
 
     /**
@@ -90,7 +92,7 @@ class ReminderEmailController extends Controller
                 ReminderEmailDTO::dataRequest($request)
             );
             $reminderEmail->position = $this->getPosition($reminderEmail, $reminderEmail->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $reminderEmail->page = ceil($reminderEmail->position / (10));
             } else {
                 $reminderEmail->page = ceil($reminderEmail->position / ($request->limit ?? 10));
@@ -118,10 +120,10 @@ class ReminderEmailController extends Controller
         DB::beginTransaction();
 
         try {
-          
+
             $reminderemail = (new ReminderEmail())->processDestroy($reminderemail);
             $reminderemail->position = $this->getPosition($reminderemail, $reminderemail->getTable())->position;
-            if (request()->limit==0) {
+            if (request()->limit == 0) {
                 $reminderemail->page = ceil($reminderemail->position / (10));
             } else {
                 $reminderemail->page = ceil($reminderemail->position / (request()->limit ?? 10));
@@ -134,6 +136,29 @@ class ReminderEmailController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $reminderemail
             ], 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new ReminderEmail())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

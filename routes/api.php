@@ -403,7 +403,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('jenisemkl', JenisEmklController::class)->whereNumber('jenisemkl');
     Route::resource('jenistrado', JenisTradoController::class)->whereNumber('jenistrado');
     Route::resource('akunpusat', AkunPusatController::class)->parameters(['akunpusat' => 'akunPusat'])->whereNumber('akunPusat');
-    Route::resource('mainakunpusat', MainAkunPusatController::class)->whereNumber('mainakunpusat');
+    Route::resource('kodeperkiraanpusat', MainAkunPusatController::class)->whereNumber('kodeperkiraanpusat');
     Route::resource('error', ErrorController::class)->whereNumber('error');
     Route::resource('user', UserController::class)->whereNumber('user');
     Route::resource('menu', MenuController::class)->whereNumber('menu')->whereNumber('menu');
@@ -481,7 +481,10 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('supir/approvalnonaktif', [SupirController::class, 'approvalnonaktif']);
 
     Route::post('prosesuangjalansupirheader/approval', [ProsesUangJalanSupirHeaderController::class, 'approval']);
-    
+    Route::post('getidtnl', [Controller::class, 'getIdTnl'])->name('getidtnl');
+    Route::post('karyawan/approvalnonaktif', [KaryawanController::class, 'approvalnonaktif']);
+    Route::post('reminderemail/approvalnonaktif', [ReminderEmailController::class, 'approvalnonaktif']);
+    Route::post('toemail/approvalnonaktif', [ToEmailController::class, 'approvalnonaktif']);
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
@@ -826,11 +829,11 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('akunpusat/checkCoa', [AkunPusatController::class, 'checkCoa']);
     Route::get('akunpusat/{id}/cekValidasi', [AkunPusatController::class, 'cekValidasi'])->name('akunpusat.cekValidasi')->whereNumber('id');
 
-    Route::get('mainakunpusat/field_length', [MainAkunPusatController::class, 'fieldLength']);
-    Route::get('mainakunpusat/default', [MainAkunPusatController::class, 'default']);
-    Route::get('mainakunpusat/export', [MainAkunPusatController::class, 'export']);
-    Route::get('mainakunpusat/report', [MainAkunPusatController::class, 'report']);
-    Route::get('mainakunpusat/{id}/cekValidasi', [MainAkunPusatController::class, 'cekValidasi'])->name('mainakunpusat.cekValidasi')->whereNumber('id');
+    Route::get('kodeperkiraanpusat/field_length', [MainAkunPusatController::class, 'fieldLength']);
+    Route::get('kodeperkiraanpusat/default', [MainAkunPusatController::class, 'default']);
+    Route::get('kodeperkiraanpusat/export', [MainAkunPusatController::class, 'export']);
+    Route::get('kodeperkiraanpusat/report', [MainAkunPusatController::class, 'report']);
+    Route::get('kodeperkiraanpusat/{id}/cekValidasi', [MainAkunPusatController::class, 'cekValidasi'])->whereNumber('id');
 
     Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
 

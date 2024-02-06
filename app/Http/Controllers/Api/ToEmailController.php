@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
-
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Models\ToEmail;
 use App\Http\Requests\StoreToEmailRequest;
 use App\Http\Requests\UpdateToEmailRequest;
@@ -63,9 +63,6 @@ class ToEmailController extends Controller
         }
     }
 
-    /**
-     * @ClassName 
-     */
     public function show(ToEmail $toemail)
     {
         return response([
@@ -136,6 +133,29 @@ class ToEmailController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $toEmail
             ], 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new ToEmail())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
