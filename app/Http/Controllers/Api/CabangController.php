@@ -10,13 +10,14 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyCabangRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 
 class CabangController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -64,6 +65,7 @@ class CabangController extends Controller
             'kodecabang' => $request->kodecabang,
             'namacabang' => $request->namacabang,
             'statusaktif' => $request->statusaktif,
+            'tas_id' => $request->tas_id ?? '',
             "key" => $request->key,
             "value" => $request->value,
         ];
@@ -71,11 +73,20 @@ class CabangController extends Controller
 
         try {
             $cabang = (new Cabang())->processStore($data);
-            $cabang->position = $this->getPosition($cabang, $cabang->getTable())->position;
-            if ($request->limit==0) {
-                $cabang->page = ceil($cabang->position / (10));
-            } else {
-                $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $cabang->position = $this->getPosition($cabang, $cabang->getTable())->position;
+                if ($request->limit == 0) {
+                    $cabang->page = ceil($cabang->position / (10));
+                } else {
+                    $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
+                }
+            }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $cabang->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('cabang', 'add', $data);
             }
 
             DB::commit();
@@ -118,11 +129,20 @@ class CabangController extends Controller
 
         try {
             $cabang = (new Cabang())->processUpdate($cabang, $data);
-            $cabang->position = $this->getPosition($cabang, $cabang->getTable())->position;
-            if ($request->limit==0) {
-                $cabang->page = ceil($cabang->position / (10));
-            } else {
-                $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $cabang->position = $this->getPosition($cabang, $cabang->getTable())->position;
+                if ($request->limit == 0) {
+                    $cabang->page = ceil($cabang->position / (10));
+                } else {
+                    $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
+                }
+            }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $cabang->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('cabang', 'edit', $data);
             }
 
             DB::commit();
@@ -149,15 +169,24 @@ class CabangController extends Controller
 
         try {
             $cabang = (new Cabang())->processDestroy($id);
-            $selected = $this->getPosition($cabang, $cabang->getTable(), true);
-            $cabang->position = $selected->position;
-            $cabang->id = $selected->id;
-            if ($request->limit==0) {
-                $cabang->page = ceil($cabang->position / (10));
-            } else {
-                $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
+
+            if ($request->from == '') {
+                $selected = $this->getPosition($cabang, $cabang->getTable(), true);
+                $cabang->position = $selected->position;
+                $cabang->id = $selected->id;
+                if ($request->limit == 0) {
+                    $cabang->page = ceil($cabang->position / (10));
+                } else {
+                    $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
+                }
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('cabang', 'delete', $data);
+            }
             DB::commit();
 
             return response()->json([
@@ -191,7 +220,7 @@ class CabangController extends Controller
             throw $th;
         }
     }
- 
+
 
 
     /**
@@ -203,7 +232,7 @@ class CabangController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan
