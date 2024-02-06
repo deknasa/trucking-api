@@ -125,8 +125,8 @@ class PencairanGiroPengeluaranHeader extends MyModel
                 'pengeluaranheader.created_at',
                 'pengeluaranheader.updated_at',
                 db::raw("cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
-                db::raw("cast(cast(format((cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"), 
-            ])            
+                db::raw("cast(cast(format((cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
+            ])
             ->leftJoin(DB::raw("pengeluaranheader as pengeluaran with (readuncommitted)"), 'pengeluaranheader.pengeluaran_nobukti', '=', 'pengeluaran.nobukti');
 
 
@@ -257,6 +257,8 @@ class PencairanGiroPengeluaranHeader extends MyModel
                             $query = $query->whereRaw("format($table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'tglbukti') {
+                            $query->whereRaw("format($table.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -284,6 +286,8 @@ class PencairanGiroPengeluaranHeader extends MyModel
                             $query = $query->orWhereRaw("format($table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->orWhereRaw("format(" . $table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'tglbukti') {
+                            $query->orWhereRaw("format($table.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->orWhere($this->anotherTable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->OrwhereRaw($table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");

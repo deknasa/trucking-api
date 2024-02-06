@@ -31,6 +31,7 @@ class AbsensiSupirDetail extends MyModel
         if (request()->absensi_id != '') {
 
             $getAbsen = request()->getabsen ?? false;
+            $isProsesUangjalan = request()->isProsesUangjalan ?? false;
             $tempsp = '##tempsp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempsp, function ($table) {
                 $table->unsignedBigInteger('absensi_id')->nullable();
@@ -211,9 +212,14 @@ class AbsensiSupirDetail extends MyModel
                     })
                     ->where('trado.statusabsensisupir', $statusabsensi);
                 if ($getAbsen) {
+                    $mandor = DB::table('mandor')->from(DB::raw("mandor with (readuncommitted)"))->where('user_id', auth('api')->user()->id)->first();
                     $query->addSelect(DB::raw("(trim(trado.kodetrado)+' - '+trim(supir.namasupir)) as tradosupir"))
                         ->where("$this->table.supir_id", '!=', 0)
+                        ->where('trado.mandor_id', $mandor->id)
                         ->whereRaw("absentrado.kodeabsen is null");
+                }
+                if( $isProsesUangjalan == true){
+                    $query->where('absensisupirdetail.uangjalan', '!=', 0);
                 }
                 $this->totalRows = $query->count();
                 $this->totalNominal = $query->sum('uangjalan');

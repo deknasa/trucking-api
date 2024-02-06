@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalProsesUangJalanSupirRequest;
 use App\Http\Requests\DestroyPenerimaanTruckingHeaderRequest;
 use App\Http\Requests\DestroyPengeluaranTruckingHeaderRequest;
 use App\Http\Requests\DestroyPengembalianKasGantungHeaderRequest;
@@ -78,6 +79,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
                 'supir_id' => $request->supir_id,
                 'supir' => $request->supir,
                 'trado_id' => $request->trado_id,
+                'uangjalan' => $request->uangjalan,
                 'tgltransfer' => $request->tgltransfer,
                 'keterangantransfer' => $request->keterangantransfer,
                 'nilaitransfer' => $request->nilaitransfer,
@@ -115,7 +117,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
             }
             $prosesUangJalanSupir->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $prosesUangJalanSupir->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -200,7 +202,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
             }
             $prosesUangJalanSupir->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $prosesUangJalanSupir->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -233,7 +235,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
             }
             $prosesUangJalanSupir->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $prosesUangJalanSupir->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -270,10 +272,13 @@ class ProsesUangJalanSupirHeaderController extends Controller
         $status = $pengeluaran->statusapproval;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusdatacetak = $pengeluaran->statuscetak;
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
-
-        if ($status == $statusApproval->id) {
-            $query = Error::from(DB::raw("error as (readuncommitted)"))
+        $aksi = request()->aksi;
+        if ($status == $statusApproval->id && ($aksi == 'EDIT' || $aksi == 'DELETE')) {
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SAP')
                 ->get();
@@ -281,6 +286,20 @@ class ProsesUangJalanSupirHeaderController extends Controller
             $data = [
                 'message' => $keterangan,
                 'errors' => 'sudah approve',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else if ($statusdatacetak == $statusCetak->id) {
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SDC')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
                 'kodestatus' => '1',
                 'kodenobukti' => '1'
             ];
@@ -354,5 +373,34 @@ class ProsesUangJalanSupirHeaderController extends Controller
         return response([
             'data' => $prosesUangJalanSupir->getExport($id)
         ]);
+    }
+    /**
+     * @ClassName 
+     * @Keterangan APPROVAL DATA
+     */
+    public function approval(ApprovalProsesUangJalanSupirRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'prosesId' => $request->prosesId
+            ];
+            $prosesUangJalan = (new ProsesUangJalanSupirHeader())->processApproval($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+    /**
+     * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
+     */
+    public function approvalbukacetak()
+    {
     }
 }

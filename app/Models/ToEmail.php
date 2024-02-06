@@ -27,11 +27,11 @@ class ToEmail extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-       
+
         $query = DB::table($this->table)->from(
             DB::raw("toemail with (readuncommitted)")
         );
-        
+
         $query = $this->selectColumns($query);
 
         $this->totalRows = $query->count();
@@ -52,7 +52,7 @@ class ToEmail extends MyModel
         $query = DB::table($this->table)->from(
             DB::raw("toemail with (readuncommitted)")
         );
-        
+
         $query = $this->selectColumns($query);
         $query->where('toemail.id', $id);
 
@@ -79,7 +79,7 @@ class ToEmail extends MyModel
             'toemail.updated_at'
 
         )
-        ->leftJoin(DB::raw("parameter as statusaktif with (readuncommitted)"), 'toemail.statusaktif', 'statusaktif.id')
+            ->leftJoin(DB::raw("parameter as statusaktif with (readuncommitted)"), 'toemail.statusaktif', 'statusaktif.id')
             ->leftJoin(DB::raw("karyawan with (readuncommitted)"), 'toemail.karyawan_id', 'karyawan.id')
             ->leftJoin(DB::raw("reminderemail with (readuncommitted)"), 'toemail.reminderemail_id', 'reminderemail.id');
     }
@@ -103,14 +103,14 @@ class ToEmail extends MyModel
 
             $table->increments('position');
         });
-       
+
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
-       
+
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nama','email','statusaktif','statusaktif_memo','karyawan_id','namakaryawan','reminderemail_id','reminderemail','modifiedby','created_at','updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nama', 'email', 'statusaktif', 'statusaktif_memo', 'karyawan_id', 'namakaryawan', 'reminderemail_id', 'reminderemail', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -131,15 +131,18 @@ class ToEmail extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'namakaryawan') {
-                            $query = $query->where('karyawan.namakaryawan', '=', $filters['data']);
-                        } else if ($filters['field'] == 'reminderemail') {
-                            $query = $query->where('reminderemail.keterangan', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statusaktif_memo') {
-                            $query = $query->where('statusaktif.text', '=', $filters['data']);
-                        } else {
-                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'namakaryawan') {
+                                $query = $query->where('karyawan.namakaryawan', '=', $filters['data']);
+                            } else if ($filters['field'] == 'reminderemail') {
+                                $query = $query->where('reminderemail.keterangan', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statusaktif_memo') {
+                                $query = $query->where('statusaktif.text', '=', $filters['data']);
+                            } else {
+                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -147,15 +150,18 @@ class ToEmail extends MyModel
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'namakaryawan') {
-                                $query = $query->orWhere('karyawan.namakaryawan', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'reminderemail') {
-                                $query = $query->orWhere('reminderemail.keterangan', '=', $filters['data']);
-                            } else if ($filters['field'] == 'statusaktif_memo') {
-                                $query = $query->orWhere('statusaktif.text', '=', $filters['data']);
-                            } else {
-                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'namakaryawan') {
+                                    $query = $query->orWhere('karyawan.namakaryawan', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'reminderemail') {
+                                    $query = $query->orWhere('reminderemail.keterangan', '=', $filters['data']);
+                                } else if ($filters['field'] == 'statusaktif_memo') {
+                                    $query = $query->orWhere('statusaktif.text', '=', $filters['data']);
+                                } else {
+                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
                     });
@@ -169,7 +175,7 @@ class ToEmail extends MyModel
             $this->totalRows = $query->count();
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
-        
+
         return $query;
     }
 
@@ -249,4 +255,31 @@ class ToEmail extends MyModel
         return $toEmail;
     }
 
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $toEmail = ToEmail::find($data['Id'][$i]);
+
+            $toEmail->statusaktif = $statusnonaktif->id;
+            $aksi = $statusnonaktif->text;
+
+            if ($toEmail->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($toEmail->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF TO EMAIL',
+                    'idtrans' => $toEmail->id,
+                    'nobuktitrans' => $toEmail->id,
+                    'aksi' => $aksi,
+                    'datajson' => $toEmail->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+
+        return $toEmail;
+    }
 }

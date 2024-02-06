@@ -495,7 +495,7 @@ class PenerimaanHeader extends MyModel
                     "$this->table.id,
             $this->table.nobukti,
             $this->table.tglbukti,
-            pelanggan.namapelanggan as pelanggan_id,
+            agen.namaagen as agen_id,
             bank.namabank as bank_id,
             $this->table.postingdari,
             $this->table.diterimadari,
@@ -512,7 +512,7 @@ class PenerimaanHeader extends MyModel
             $this->table.updated_at"
                 )
             )
-            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaanheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaanheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaanheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaanheader.statuscetak', 'statuscetak.id');
@@ -525,7 +525,7 @@ class PenerimaanHeader extends MyModel
             $table->bigInteger('id')->nullable();
             $table->string('nobukti', 1000)->nullable();
             $table->date('tglbukti', 1000)->nullable();
-            $table->string('pelanggan_id', 1000)->nullable()->nullable();
+            $table->string('agen_id', 1000)->nullable()->nullable();
             $table->string('bank_id', 1000)->nullable();
             $table->string('postingdari', 1000)->nullable();
             $table->string('diterimadari', 1000)->nullable();
@@ -553,7 +553,7 @@ class PenerimaanHeader extends MyModel
         $models = $this->filter($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])->where($this->table . '.bank_id', request()->bankheader);
         DB::table($temp)->insertUsing([
-            'id', 'nobukti', 'tglbukti', 'pelanggan_id', 'bank_id', 'postingdari', 'diterimadari', 'tgllunas',  'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'
+            'id', 'nobukti', 'tglbukti', 'agen_id', 'bank_id', 'postingdari', 'diterimadari', 'tgllunas',  'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'
         ], $models);
 
 

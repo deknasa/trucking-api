@@ -71,16 +71,27 @@ class AbsensiSupirDetailController extends Controller
     public function getDetailAbsensi(Request $request)
     {
         $tglbukti = date('Y-m-d', strtotime($request->tgltrip));
-        $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti', $tglbukti)->first();
-        if (!$absensiSupirHeader) {
-            return response([
-                'data' => [],
-                'total' => 0,
-                "records" => 0,
-            ]);
+        $id = '';
+        if ($request->absensi_id != '') {
+            $id = $request->absensi_id;
+            if ($request->isProsesUangjalan == true) {
+                $request->request->add(['isProsesUangjalan' => true]);
+            }
+        } else {
+
+            $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti', $tglbukti)->first();
+            if (!$absensiSupirHeader) {
+                return response([
+                    'data' => [],
+                    'total' => 0,
+                    "records" => 0,
+                ]);
+            } else {
+                $id = $absensiSupirHeader->id;
+                $request->request->add(['getabsen' => true]);
+            }
         }
-        $request->request->add(['absensi_id' => $absensiSupirHeader->id]);
-        $request->request->add(['getabsen' => true]);
+        $request->request->add(['absensi_id' => $id]);
 
         return $this->index($request);
     }

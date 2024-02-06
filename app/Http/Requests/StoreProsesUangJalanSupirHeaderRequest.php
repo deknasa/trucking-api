@@ -80,9 +80,12 @@ class StoreProsesUangJalanSupirHeaderRequest extends FormRequest
     public function attributes()
     {
         $attributes = [
+            'tgltransfer.*' => 'tgl transfer',
             'keterangantransfer.*' => 'keterangan transfer',
             'nilaitransfer.*' => 'nilai transfer',
             'banktransfer.*' => 'bank transfer',
+            'tgladjust' => 'tgl adjust transfer',
+            'tgldeposit' => 'tgl deposito transfer',
             'keteranganadjust' => 'keterangan adjust transfer',
             'nilaiadjust' => 'nilai adjust transfer',
             'bankadjust' => 'bank adjust transfer',

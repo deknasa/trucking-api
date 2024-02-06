@@ -568,6 +568,7 @@ class UpahSupir extends MyModel
             $table->longText('zonasampai_id')->nullable();
             $table->longText('penyesuaian')->nullable();
             $table->longText('jarak')->nullable();
+            $table->longText('jarakfullempty')->nullable();
             $table->longText('zona_id')->nullable()->nullable();
             $table->longText('statusaktif')->nullable();
             $table->longText('statusaktif_text')->nullable();
@@ -615,6 +616,7 @@ class UpahSupir extends MyModel
                 'zonasampai.zona as zonasampai_id',
                 'upahsupir.penyesuaian',
                 DB::raw("CONCAT(upahsupir.jarak, ' KM') as jarak"),
+                DB::raw("CONCAT(upahsupir.jarakfullempty, ' KM') as jarakfullempty"),
                 'zona.keterangan as zona_id',
                 'parameter.memo as statusaktif',
                 'parameter.text as statusaktif_text',
@@ -656,6 +658,7 @@ class UpahSupir extends MyModel
             'zonasampai_id',
             'penyesuaian',
             'jarak',
+            'jarakfullempty',
             'zona_id',
             'statusaktif',
             'statusaktif_text',
@@ -687,6 +690,7 @@ class UpahSupir extends MyModel
                 'a.zonasampai_id',
                 'a.penyesuaian',
                 'a.jarak',
+                'a.jarakfullempty',
                 'a.zona_id',
                 'a.statusaktif',
                 'a.statusupahzona',
@@ -716,6 +720,7 @@ class UpahSupir extends MyModel
             $table->longText('zonasampai_id')->nullable();
             $table->longText('penyesuaian')->nullable();
             $table->longText('jarak')->nullable();
+            $table->longText('jarakfullempty')->nullable();
             $table->longText('zona_id')->nullable()->nullable();
             $table->longText('statusaktif')->nullable();
             $table->longText('statusupahzona')->nullable();
@@ -731,7 +736,7 @@ class UpahSupir extends MyModel
         $this->setRequestParameters();
         $query = $this->selectColumns();
         $this->sort($query);
-        $models = $this->filter($query);  
+        $models = $this->filter($query);
         DB::table($temp)->insertUsing([
             'id',
             'parent_id',
@@ -742,6 +747,7 @@ class UpahSupir extends MyModel
             'zonasampai_id',
             'penyesuaian',
             'jarak',
+            'jarakfullempty',
             'zona_id',
             'statusaktif',
             'statusupahzona',
@@ -824,7 +830,6 @@ class UpahSupir extends MyModel
                             $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'check') {
                             $query = $query->whereRaw('1 = 1');
-
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -861,7 +866,6 @@ class UpahSupir extends MyModel
                                 $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'check') {
                                 $query = $query->whereRaw('1 = 1');
-
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -1441,14 +1445,14 @@ class UpahSupir extends MyModel
         for ($i = 0; $i < count($data['Id']); $i++) {
             $UpahSupir = UpahSupir::find($data['Id'][$i]);
 
-                $UpahSupir->statusaktif = $statusnonaktif->id;
-                $aksi = $statusnonaktif->text;
+            $UpahSupir->statusaktif = $statusnonaktif->id;
+            $aksi = $statusnonaktif->text;
 
-                // dd($UpahSupir);
+            // dd($UpahSupir);
             if ($UpahSupir->save()) {
-                
+
                 (new LogTrail())->processStore([
-                    
+
                     'namatabel' => strtoupper($UpahSupir->getTable()),
                     'postingdari' => 'APPROVAL UpahSupir',
                     'idtrans' => $UpahSupir->id,
@@ -1463,6 +1467,4 @@ class UpahSupir extends MyModel
 
         return $UpahSupir;
     }
-
-    
 }

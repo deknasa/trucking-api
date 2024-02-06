@@ -321,7 +321,7 @@ class PiutangHeaderController extends Controller
 
     /**
      * @ClassName
-     * Keterangan CETAK DATA
+     * @Keterangan CETAK DATA
      */
     public function report()
     {

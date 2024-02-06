@@ -434,7 +434,7 @@ class PendapatanSupirDetail extends MyModel
                     $table->string('kode_trado', 500)->nullable();
                     $table->string('namasupir', 500)->nullable();
                     $table->double('komisi')->nullable();
-                    $table->string('nobuktirincian', 500)->nullable();
+                    // $table->string('nobuktirincian', 500)->nullable();
                 });
 
                 if ($formatCetak->text == 'FORMAT 1') {
@@ -442,29 +442,28 @@ class PendapatanSupirDetail extends MyModel
                     $query = DB::table($tempPendapatan)->from(DB::raw("$tempPendapatan as t1 with (readuncommitted)"))
                         ->select(
                             DB::raw(
-                                "'SUPIR' as jenis,t1.supir_id,max(t1.trado_id) as trado_id,max(trado.kodetrado) as kodetrado,isnull(supir.namasupir,'') as namasupir,
-                                    SUM(t1.nominal) AS komisi,t1.nobuktirincian"
+                                "'SUPIR' as jenis,t1.supir_id,max(t1.trado_id) as trado_id,max(trado.kodetrado) as kode_trado,isnull(supir.namasupir,'') as namasupir,
+                                    SUM(t1.nominal) AS komisi"
                             )
                         )
                         ->leftJoin(DB::raw("trado with (readuncommitted)"), 't1.trado_id', 'trado.id')
                         ->leftJoin(DB::raw("supir with (readuncommitted)"), 't1.supir_id', 'supir.id')
-                        ->groupBy('t1.supir_id', 'supir.namasupir','t1.nobuktirincian');
+                        ->groupBy('t1.supir_id', 'supir.namasupir');
                 } else {
 
                     $query = DB::table($tempPendapatan)->from(DB::raw("$tempPendapatan as t1 with (readuncommitted)"))
                         ->select(
                             DB::raw(
-                                "'SUPIR' as jenis,t1.supir_id,max(t1.trado_id) as trado_id,max(trado.kodetrado) as kodetrado,isnull(supir.namasupir,'') as namasupir,
-                                    SUM(t1.gajikenek) AS komisi,t1.nobuktirincian"
+                                "'SUPIR' as jenis,t1.supir_id,max(t1.trado_id) as trado_id,max(trado.kodetrado) as kode_trado,isnull(supir.namasupir,'') as namasupir,
+                                    SUM(t1.gajikenek) AS komisi"
                             )
                         )
                         ->leftJoin(DB::raw("trado with (readuncommitted)"), 't1.trado_id', 'trado.id')
                         ->leftJoin(DB::raw("supir with (readuncommitted)"), 't1.supir_id', 'supir.id')
-                        ->groupBy('t1.supir_id', 'supir.namasupir','t1.nobuktirincian');
+                        ->groupBy('t1.supir_id', 'supir.namasupir');
                 }
-                // dd($query->get());
 
-                DB::table($tempkomisi)->insertUsing(['jenis', 'supir_id', 'trado_id', 'kode_trado', 'namasupir', 'komisi', 'nobuktirincian'], $query);
+                DB::table($tempkomisi)->insertUsing(['jenis', 'supir_id', 'trado_id', 'kode_trado', 'namasupir', 'komisi'], $query);
 
                 $tempkomisi2 = '##komisi2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                 Schema::create($tempkomisi2, function ($table) {
@@ -477,7 +476,7 @@ class PendapatanSupirDetail extends MyModel
                     $table->integer('urut')->nullable();
                     $table->double('deposito')->nullable();
                     $table->double('pengembalianpinjaman')->nullable();
-                    $table->string('nobuktirincian', 500)->nullable();
+                    // $table->string('nobuktirincian', 500)->nullable();
                 });
 
                 $query = db::table($tempkomisi)->from(db::raw($tempkomisi . " a"))
@@ -491,15 +490,14 @@ class PendapatanSupirDetail extends MyModel
                         DB::raw('ROW_NUMBER() OVER (PARTITION BY A.namasupir ORDER BY A.namasupir,a.kode_trado) as urut'),
                         db::raw(" isnull(b.deposito,0)  as deposito"),
                         db::raw(" isnull(b.pengembalianpinjaman,0)  as pengembalianpinjaman"),
-                        'a.nobuktirincian'
+                        // 'a.nobuktirincian'
                     )
                     ->leftjoin(db::raw($tempdepo . " b"), 'a.supir_id', 'b.supir_id')
                     ->orderBY('a.namasupir', 'asc')
                     ->orderBY('a.kode_trado', 'asc');
 
-                DB::table($tempkomisi2)->insertUsing(['jenis', 'supir_id', 'trado_id', 'kode_trado', 'namasupir', 'komisi', 'urut', 'deposito', 'pengembalianpinjaman','nobuktirincian'], $query);
+                DB::table($tempkomisi2)->insertUsing(['jenis', 'supir_id', 'trado_id', 'kode_trado', 'namasupir', 'komisi', 'urut', 'deposito', 'pengembalianpinjaman'], $query);
 
-                // dd(db::table($tempkomisi2)->get());
 
                 $query = db::table($tempkomisi2)->from(db::raw($tempkomisi2 . " as a"))
                     ->select(
@@ -508,7 +506,7 @@ class PendapatanSupirDetail extends MyModel
                         'a.kode_trado',
                         'a.namasupir',
                         'a.komisi',
-                        'a.nobuktirincian',
+                        // 'a.nobuktirincian',
                         db::raw("(case when a.urut=1 then isnull(a.deposito,0) else 0 end) as deposito"),
                         db::raw("(case when a.urut=1 then isnull(a.pengembalianpinjaman,0) else 0 end) as pengembalianpinjaman"),
                         db::raw("(isnull(a.komisi,0)-isnull(a.deposito,0)-isnull(a.pengembalianpinjaman,0)) as total"),

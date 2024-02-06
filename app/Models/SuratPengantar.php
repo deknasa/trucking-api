@@ -748,6 +748,7 @@ class SuratPengantar extends MyModel
 
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
+            $table->date('tglbukti')->nullable();
             $table->unsignedBigInteger('statuslongtrip')->nullable();
             $table->unsignedBigInteger('statusperalihan')->nullable();
             $table->unsignedBigInteger('statusritasiomset')->nullable();
@@ -758,6 +759,19 @@ class SuratPengantar extends MyModel
             $table->unsignedBigInteger('statuslangsir')->nullable();
         });
 
+        $getFormat = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'INPUT TRIP')->where('subgrp', 'FORMAT BATAS INPUT')->first();
+        if ($getFormat->text == 'FORMAT 2') {
+            $waktu = date('H:i:s');
+
+            $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JAMBATASINPUTTRIP')->where('subgrp', 'JAMBATASINPUTTRIP')->first();
+            if ($waktu < $getBatasInput->text) {
+                $tglbukti =  date('Y-m-d', strtotime('-1 days'));
+            } else {
+                $tglbukti = date('Y-m-d');
+            }
+        } else {
+            $tglbukti = date('Y-m-d');
+        }
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
@@ -871,6 +885,7 @@ class SuratPengantar extends MyModel
 
         DB::table($tempdefault)->insert(
             [
+                "tglbukti" => $tglbukti,
                 "statuslongtrip" => $iddefaultstatuslongtrip,
                 "statusperalihan" => $iddefaultstatusperalihan,
                 "statusritasiomset" => $iddefaultstatusritasi,
@@ -886,6 +901,7 @@ class SuratPengantar extends MyModel
             DB::raw($tempdefault)
         )
             ->select(
+                'tglbukti',
                 'statuslongtrip',
                 'statusperalihan',
                 'statusritasiomset',

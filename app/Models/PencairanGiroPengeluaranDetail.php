@@ -134,6 +134,8 @@ class PencairanGiroPengeluaranDetail extends MyModel
                             //     $query = $query->where('coakredit.keterangancoa', 'LIKE', "%$filters[data]%");
                             if ($filters['field'] == 'nominal') {
                                 $query = $query->whereRaw("format($table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tgljatuhtempo') {
+                                $query->whereRaw("format($table.tgljatuhtempo, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -150,6 +152,8 @@ class PencairanGiroPengeluaranDetail extends MyModel
                             //     $query = $query->orWhere('coakredit.keterangancoa', 'LIKE', "%$filters[data]%");
                             if ($filters['field'] == 'nominal') {
                                 $query = $query->orWhereRaw("format($table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tgljatuhtempo') {
+                                $query->orWhereRaw("format($table.tgljatuhtempo, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

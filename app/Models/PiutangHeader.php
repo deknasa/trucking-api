@@ -76,10 +76,10 @@ class PiutangHeader extends MyModel
             'piutangheader.userbukacetak',
             'agen.namaagen as agen_id',
             db::raw("cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceheader"),
-            db::raw("cast(cast(format((cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceheader"), 
+            db::raw("cast(cast(format((cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceheader"),
             db::raw("cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceextraheader"),
-            db::raw("cast(cast(format((cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceextraheader"), 
-            )
+            db::raw("cast(cast(format((cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceextraheader"),
+        )
             ->leftJoin(DB::raw("invoiceheader as invoice with (readuncommitted)"), 'piutangheader.invoice_nobukti', '=', 'invoice.nobukti')
             ->leftJoin(DB::raw("invoiceextraheader as invoiceextra with (readuncommitted)"), 'piutangheader.invoice_nobukti', '=', 'invoiceextra.nobukti')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'piutangheader.statuscetak', 'parameter.id')
@@ -125,7 +125,7 @@ class PiutangHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pelunasan Piutang '. $pelunasanPiutang->nobukti,
+                'keterangan' => 'Pelunasan Piutang ' . $pelunasanPiutang->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -143,7 +143,7 @@ class PiutangHeader extends MyModel
         if (isset($invoice)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Invoice '. $invoice->nobukti,
+                'keterangan' => 'Invoice ' . $invoice->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -161,7 +161,7 @@ class PiutangHeader extends MyModel
         if (isset($invoiceExtra)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Invoice Extra '. $invoiceExtra->nobukti,
+                'keterangan' => 'Invoice Extra ' . $invoiceExtra->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -179,7 +179,7 @@ class PiutangHeader extends MyModel
         if (isset($invoiceCharge)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Invoice Charge Gandengan '. $invoiceCharge->nobukti,
+                'keterangan' => 'Invoice Charge Gandengan ' . $invoiceCharge->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -197,7 +197,7 @@ class PiutangHeader extends MyModel
         if (isset($jurnalpusat)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal '. $jurnalpusat->nobukti,
+                'keterangan' => 'Approval Jurnal ' . $jurnalpusat->nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
@@ -317,11 +317,20 @@ class PiutangHeader extends MyModel
                  piutangheader.nominal-isnull(c.nominal,0) as sisapiutang,
                  $this->table.invoice_nobukti,
                  'agen.namaagen as agen_id',
+                 'parameter.text as statuscetak',
+                 $this->table.userbukacetak,
+                 $this->table.tglbukacetak,
+                 'debet.text as coadebet',
+                 'kredit.text as coakredit',
                  $this->table.modifiedby,
+                 $this->table.created_at,
                  $this->table.updated_at"
             )
         )
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'piutangheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'piutangheader.statuscetak', 'parameter.id')
+            ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), 'piutangheader.coadebet', 'debet.coa')
+            ->leftJoin(DB::raw("akunpusat as kredit with (readuncommitted)"), 'piutangheader.coakredit', 'kredit.coa')
             ->leftJoin(DB::raw($temppelunasan . " as c"), 'piutangheader.nobukti', 'c.piutang_nobukti');
     }
 
@@ -339,7 +348,13 @@ class PiutangHeader extends MyModel
             $table->float('sisapiutang')->nullable();
             $table->string('invoice_nobukti')->nullable();
             $table->string('agen_id')->nullable();
+            $table->string('statuscetak', 1000)->nullable();
+            $table->string('userbukacetak', 50)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->string('coadebet')->default();
+            $table->string('coakredit')->default();
             $table->string('modifiedby')->default();
+            $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
@@ -354,7 +369,7 @@ class PiutangHeader extends MyModel
         $models = $this->filter($query);
         $models = $query
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'tgljatuhtempo', 'postingdari', 'nominal', 'nominalpelunasan', 'sisapiutang', 'invoice_nobukti', 'agen_id', 'modifiedby', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'tgljatuhtempo', 'postingdari', 'nominal', 'nominalpelunasan', 'sisapiutang', 'invoice_nobukti', 'agen_id', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'coadebet', 'coakredit', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }

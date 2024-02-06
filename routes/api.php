@@ -298,6 +298,7 @@ use App\Http\Controllers\Api\SuratPengantarApprovalInputTripController;
 use App\Http\Controllers\Api\ApprovalBukaTanggalSuratPengantarController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
+use App\Http\Controllers\Api\TarifHargaTertentuController;
 
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
@@ -368,6 +369,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('statuscontainer', StatusContainerController::class)->parameters(['statuscontainer' => 'statusContainer'])->whereNumber('statusContainer');
     Route::resource('container', ContainerController::class)->whereNumber('container');
     Route::resource('tarifdiscountharga', TarifDiscountHargaController::class)->whereNumber('tarifdiscountharga');
+    Route::resource('tarifhargatertentu', TarifHargaTertentuController::class)->whereNumber('tarifhargatertentu');
     Route::resource('shipper', ShipperController::class)->whereNumber('shipper');
     Route::get('upahsupirrincian/get', [UpahSupirRincianController::class, 'get']);
     Route::get('absensisupirdetail/get', [AbsensiSupirDetailController::class, 'getDetailAbsensi']);
@@ -477,6 +479,12 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('supir/approvalblacklist', [SupirController::class, 'approvalBlackListSupir'])->whereNumber('id');
     Route::post('supir/approvalluarkota', [SupirController::class, 'approvalSupirLuarKota'])->whereNumber('id');
     Route::post('supir/approvalnonaktif', [SupirController::class, 'approvalnonaktif']);
+
+    Route::post('prosesuangjalansupirheader/approval', [ProsesUangJalanSupirHeaderController::class, 'approval']);
+    Route::post('getidtnl', [Controller::class, 'getIdTnl'])->name('getidtnl');
+    Route::post('karyawan/approvalnonaktif', [KaryawanController::class, 'approvalnonaktif']);
+    Route::post('reminderemail/approvalnonaktif', [ReminderEmailController::class, 'approvalnonaktif']);
+    Route::post('toemail/approvalnonaktif', [ToEmailController::class, 'approvalnonaktif']);
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
@@ -761,6 +769,15 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('tarifdiscountharga/combo', [TarifDiscountHargaController::class, 'combo']);
     Route::get('tarifdiscountharga/export', [TarifDiscountHargaController::class, 'export']);
     Route::get('tarifdiscountharga/report', [TarifDiscountHargaController::class, 'report']);
+    
+    Route::get('tarifhargatertentu/field_length', [TarifHargaTertentuController::class, 'fieldLength']);
+    Route::get('tarifhargatertentu/combostatus', [TarifHargaTertentuController::class, 'combostatus']);
+    Route::get('tarifhargatertentu/getPosition2', [TarifHargaTertentuController::class, 'getPosition2']);
+    Route::get('tarifhargatertentu/default', [TarifHargaTertentuController::class, 'default']);
+    Route::post('tarifhargatertentu/{id}/cekValidasi', [TarifHargaTertentuController::class, 'cekValidasi'])->name('tarifhargatertentu.cekValidasi')->whereNumber('id');
+    Route::get('tarifhargatertentu/combo', [TarifHargaTertentuController::class, 'combo']);
+    Route::get('tarifhargatertentu/export', [TarifHargaTertentuController::class, 'export']);
+    Route::get('tarifhargatertentu/report', [TarifHargaTertentuController::class, 'report']);
 
     Route::get('bank/combo', [BankController::class, 'combo']);
     Route::get('bank/field_length', [BankController::class, 'fieldLength']);
@@ -816,7 +833,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('mainakunpusat/default', [MainAkunPusatController::class, 'default']);
     Route::get('mainakunpusat/export', [MainAkunPusatController::class, 'export']);
     Route::get('mainakunpusat/report', [MainAkunPusatController::class, 'report']);
-    Route::get('mainakunpusat/{id}/cekValidasi', [MainAkunPusatController::class, 'cekValidasi'])->name('mainakunpusat.cekValidasi')->whereNumber('id');
+    Route::get('mainakunpusat/{id}/cekValidasi', [MainAkunPusatController::class, 'cekValidasi'])->whereNumber('id');
 
     Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
 

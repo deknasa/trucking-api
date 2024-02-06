@@ -125,13 +125,14 @@ class PengembalianKasGantungHeaderController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdatePengembalianKasGantungHeaderRequest $request, PengembalianKasGantungHeader $pengembalianKasGantungHeader, $id)
+    public function update(UpdatePengembalianKasGantungHeaderRequest $request, $id)
     {
         DB::beginTransaction();
         try {
 
             /* Store header */
             $pengembalianKasGantungHeader = PengembalianKasGantungHeader::findOrFail($id);
+            
             $pengembalianKasGantungHeader = (new PengembalianKasGantungHeader())->processUpdate($pengembalianKasGantungHeader, [
                 "tanpaprosesnobukti" => $request->tanpaprosesnobukti ?? null,
                 "tglbukti" => $request->tglbukti ?? null,

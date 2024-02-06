@@ -217,6 +217,8 @@ class Supir extends MyModel
 
         $aktif = request()->aktif ?? '';
         $supir_id = request()->supir_id ?? '';
+        $isProsesUangjalan = request()->isProsesUangjalan ?? '';
+        $absensi_id = request()->absensi_id ?? '';
         $tgltrip = request()->tgltrip ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
@@ -302,6 +304,14 @@ class Supir extends MyModel
                 $query->whereRaw("supir.id in (select supir_id from absensisupirdetail where absensi_id=$absensiSupirHeader->id)");
             }
         }
+        if($isProsesUangjalan == true)
+        {
+            $query->addSelect(DB::raw("absensisupirdetail.uangjalan"))
+            ->join(DB::raw("absensisupirdetail with (readuncommitted)"), 'absensisupirdetail.supir_id','supir.id')
+            ->where('absensisupirdetail.absensi_id', $absensi_id)
+            ->where('absensisupirdetail.uangjalan', '!=', 0);
+        }
+
         if ($supir_id != '') {
             $query->where('supir.id', $supir_id);
         }

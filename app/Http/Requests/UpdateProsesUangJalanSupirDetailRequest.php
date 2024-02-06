@@ -79,7 +79,7 @@ class UpdateProsesUangJalanSupirDetailRequest extends FormRequest
             'nilaitransfer.*' => ['required', 'gt:0', 'numeric', new CekTransferProsesUangJalanEdit()],
             'banktransfer.*' => 'required',
             'bank_idtransfer.*' => ['required', 'numeric', 'min:1', new CekBankTransferProsesUangJalanEdit(), new ExistBankProsesUangJalan()],
-            'nilaiadjust' => ['required', 'gt:0', 'numeric', new CekNomAdjustProsesUangJalan()],
+            'nilaiadjust' => ['required', 'gt:0', 'numeric'],
             'keteranganadjust' => 'required',
             'bankadjust' => 'required',
             'bank_idadjust' => ['required', 'numeric', 'min:1', new CekBankAdjustProsesUangJalanEdit(), new ExistBankProsesUangJalan()]

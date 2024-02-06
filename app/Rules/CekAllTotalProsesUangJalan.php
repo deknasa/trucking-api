@@ -31,11 +31,12 @@ class CekAllTotalProsesUangJalan implements Rule
         $nilaiDeposit = request()->nilaideposit ?? 0;
         $nilaiPinjaman = (request()->pjt_id) ? array_sum(request()->nombayar) : 0;
 
-        $total = $nilaiTransfer - $nilaiDeposit - $nilaiPinjaman;
+        $total = $nilaiTransfer + $nilaiDeposit + $nilaiPinjaman;
         $prosesUang = new ProsesUangJalanSupirHeader();
-        $getNominal = $prosesUang->getNominalAbsensi(request()->absensisupir);
+        $getNominal = $prosesUang->getNominalAbsensi(request()->absensisupir, request()->supir_id, request()->trado_id);
+
         if ($getNominal != null) {
-            if ($getNominal->nominal != $total) {
+            if ($getNominal->uangjalan != $total) {
                 return false;
             } else {
                 return true;
@@ -52,6 +53,6 @@ class CekAllTotalProsesUangJalan implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('NTC')->keterangan . ' (adjust dengan transfer)';
+        return app(ErrorController::class)->geterror('NTC')->keterangan . ' dengan uang jalan';
     }
 }
