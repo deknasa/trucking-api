@@ -829,11 +829,11 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('akunpusat/checkCoa', [AkunPusatController::class, 'checkCoa']);
     Route::get('akunpusat/{id}/cekValidasi', [AkunPusatController::class, 'cekValidasi'])->name('akunpusat.cekValidasi')->whereNumber('id');
 
-    Route::get('kodeperkiraanpusat/field_length', [MainAkunPusatController::class, 'fieldLength']);
-    Route::get('kodeperkiraanpusat/default', [MainAkunPusatController::class, 'default']);
-    Route::get('kodeperkiraanpusat/export', [MainAkunPusatController::class, 'export']);
-    Route::get('kodeperkiraanpusat/report', [MainAkunPusatController::class, 'report']);
-    Route::get('kodeperkiraanpusat/{id}/cekValidasi', [MainAkunPusatController::class, 'cekValidasi'])->whereNumber('id');
+    Route::get('mainakunpusat/field_length', [MainAkunPusatController::class, 'fieldLength']);
+    Route::get('mainakunpusat/default', [MainAkunPusatController::class, 'default']);
+    Route::get('mainakunpusat/export', [MainAkunPusatController::class, 'export']);
+    Route::get('mainakunpusat/report', [MainAkunPusatController::class, 'report']);
+    Route::get('mainakunpusat/{id}/cekValidasi', [MainAkunPusatController::class, 'cekValidasi'])->whereNumber('id');
 
     Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
 
