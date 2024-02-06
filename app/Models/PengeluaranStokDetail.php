@@ -248,6 +248,7 @@ class PengeluaranStokDetail extends MyModel
             'PengeluaranStokDetail.Pengeluaranstokheader_id',
             'PengeluaranStokDetail.nobukti',
             'stok.namastok as stok',
+            "stok.kelompok_id as kelompok_id",
             "satuan.satuan as satuan",
             'stok.statusreuse as statusreuse',
             'PengeluaranStokDetail.jumlahhariaki as jlhhari',

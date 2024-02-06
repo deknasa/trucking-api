@@ -394,6 +394,7 @@ class PenerimaanStokDetail extends MyModel
             "PenerimaanStokDetail.penerimaanstokheader_id",
             "PenerimaanStokDetail.nobukti",
             "stok.namastok as stok",
+            "stok.kelompok_id as kelompok_id",
             "satuan.satuan as satuan",
             "PenerimaanStokDetail.stok_id",
             "PenerimaanStokDetail.qty",

@@ -35,4 +35,16 @@ class ApprovalStokReuse extends Model
 
     }
 
+    public function getReport($stok_id) {
+        $pengeluaranStok = new PengeluaranStokDetail();
+//         select pengeluaranstokdetail.nobukti,pengeluaranstokdetail.stok_id,pengeluaranstokheader.tglbukti,pengeluaranstokheader.gudang_id,pengeluaranstokheader.trado_id,pengeluaranstokheader.gandengan_id from pengeluaranstokdetail 
+// left join pengeluaranstokheader on pengeluaranstokdetail.pengeluaranstokheader_id = pengeluaranstokheader.id
+// where pengeluaranstokheader.pengeluaranstok_id = 1 
+        $checkStok = $pengeluaranStok->where('stok_id',$stok_id)->get();
+        if ($checkStok) {
+            # code...
+        }
+        return $checkStok;
+    }
+
 }
