@@ -615,7 +615,6 @@ class UpahSupirController extends Controller
         try {
             $data = [
                 'Id' => $request->Id,
-                'nama' => $request->nama
             ];
             (new UpahSupir())->processApprovalnonaktif($data);
 

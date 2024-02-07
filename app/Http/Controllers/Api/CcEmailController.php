@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
-
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Models\CcEmail;
 use App\Http\Requests\StoreCcEmailRequest;
 use App\Http\Requests\UpdateCcEmailRequest;
@@ -63,9 +63,6 @@ class CcEmailController extends Controller
         }
     }
 
-    /**
-     * @ClassName 
-     */
     public function show(CcEmail $ccemail)
     {
         return response([
@@ -136,6 +133,29 @@ class CcEmailController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $ccEmail
             ], 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new CcEmail())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

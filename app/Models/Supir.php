@@ -1572,7 +1572,7 @@ class Supir extends MyModel
                 (new LogTrail())->processStore([
                     
                     'namatabel' => strtoupper($Supir->getTable()),
-                    'postingdari' => 'APPROVAL Supir',
+                    'postingdari' => 'APPROVAL SUPIR',
                     'idtrans' => $Supir->id,
                     'nobuktitrans' => $Supir->id,
                     'aksi' => $aksi,

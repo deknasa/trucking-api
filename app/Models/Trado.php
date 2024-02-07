@@ -1434,7 +1434,7 @@ class Trado extends MyModel
                 (new LogTrail())->processStore([
 
                     'namatabel' => strtoupper($Trado->getTable()),
-                    'postingdari' => 'APPROVAL Trado',
+                    'postingdari' => 'APPROVAL TRADO',
                     'idtrans' => $Trado->id,
                     'nobuktitrans' => $Trado->id,
                     'aksi' => $aksi,

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
-
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Models\BccEmail;
 use App\Http\Requests\StoreBccEmailRequest;
 use App\Http\Requests\UpdateBccEmailRequest;
@@ -62,9 +62,6 @@ class BccEmailController extends Controller
         }
     }
 
-    /**
-     * @ClassName 
-     */
     public function show(BccEmail $bccemail)
     {
         return response([
@@ -135,6 +132,29 @@ class BccEmailController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $bccEmail
             ], 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new BccEmail())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\GetUpahSupirRangeRequest;
 use App\Models\UpahRitasi;
 use App\Models\UpahRitasiRincian;
@@ -109,7 +110,7 @@ class UpahRitasiController extends Controller
             ];
             $upahritasi = (new upahritasi())->processStore($data);
             $upahritasi->position = $this->getPosition($upahritasi, $upahritasi->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $upahritasi->page = ceil($upahritasi->position / (10));
             } else {
                 $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
@@ -166,7 +167,7 @@ class UpahRitasiController extends Controller
 
             $upahritasi = (new UpahRitasi())->processUpdate($upahritasi, $data);
             $upahritasi->position = $this->getPosition($upahritasi, $upahritasi->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $upahritasi->page = ceil($upahritasi->position / (10));
             } else {
                 $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
@@ -200,7 +201,7 @@ class UpahRitasiController extends Controller
             $selected = $this->getPosition($upahritasi, $upahritasi->getTable(), true);
             $upahritasi->position = $selected->position;
             $upahritasi->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $upahritasi->page = ceil($upahritasi->position / (10));
             } else {
                 $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
@@ -387,7 +388,7 @@ class UpahRitasiController extends Controller
     {
     }
 
-    
+
     public function cekValidasi($id)
     {
         $upahRitasi = new UpahRitasi();
@@ -417,5 +418,27 @@ class UpahRitasiController extends Controller
             return response($data);
         }
     }
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
 
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new UpahRitasi())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
 }

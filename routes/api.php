@@ -492,6 +492,10 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('statuscontainer/approvalnonaktif', [StatusContainerController::class, 'approvalnonaktif']);
     Route::post('kota/approvalnonaktif', [KotaController::class, 'approvalnonaktif']);
     Route::post('zona/approvalnonaktif', [ZonaController::class, 'approvalnonaktif']);
+    Route::post('ccemail/approvalnonaktif', [CcEmailController::class, 'approvalnonaktif']);
+    Route::post('bccemail/approvalnonaktif', [BccEmailController::class, 'approvalnonaktif']);
+    Route::post('upahritasi/approvalnonaktif', [UpahRitasiController::class, 'approvalnonaktif']);
+    Route::post('cabang/approvalnonaktif', [CabangController::class, 'approvalnonaktif']);
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {

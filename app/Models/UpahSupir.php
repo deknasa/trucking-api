@@ -1454,7 +1454,7 @@ class UpahSupir extends MyModel
                 (new LogTrail())->processStore([
 
                     'namatabel' => strtoupper($UpahSupir->getTable()),
-                    'postingdari' => 'APPROVAL UpahSupir',
+                    'postingdari' => 'APPROVAL UPAH SUPIR',
                     'idtrans' => $UpahSupir->id,
                     'nobuktitrans' => $UpahSupir->id,
                     'aksi' => $aksi,

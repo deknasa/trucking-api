@@ -32,7 +32,7 @@ use Illuminate\Support\Js;
 
 class SupirController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -73,8 +73,6 @@ class SupirController extends Controller
             DB::rollBack();
             throw $th;
         }
-
-        
     }
 
 
@@ -782,7 +780,7 @@ class SupirController extends Controller
         DB::beginTransaction();
 
         try {
-          
+
             $data = [
                 'id' => $request->id,
                 'mandorbaru_id' => $request->mandorbaru_id,
@@ -804,22 +802,22 @@ class SupirController extends Controller
             throw $th;
         }
     }
-    
+
     public function getHistoryMandor($id)
-    {        
+    {
         return response([
             'data' => (new Supir())->getHistoryMandor($id),
         ]);
     }
-    
+
     public function getListHistoryMandor($id)
-    {        
+    {
         return response([
             'data' => (new HistorySupirMilikMandor())->get($id)
         ]);
     }
 
-         /**
+    /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
      */
@@ -829,8 +827,7 @@ class SupirController extends Controller
 
         try {
             $data = [
-                'Id' => $request->Id,
-                'nama' => $request->nama
+                'Id' => $request->Id
             ];
             (new Supir())->processApprovalnonaktif($data);
 
@@ -844,4 +841,19 @@ class SupirController extends Controller
         }
     }
 
+    /**
+     * @ClassName 
+     * @Keterangan APPROVAL SUPIR TANPA KETERANGAN
+     */
+    public function approvalsupirketerangan()
+    {
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APPROVAL SUPIR TANPA GAMBAR
+     */
+    public function approvalsupirgambar()
+    {
+    }
 }
