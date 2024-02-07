@@ -44,7 +44,7 @@ class Mandor extends MyModel
                 DB::raw("'Laporan Mandor' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'mandor.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("[user] with (readuncommitted)"), 'mandor.user_id', '=', 'user.id');
@@ -73,8 +73,9 @@ class Mandor extends MyModel
         return $data;
     }
 
-    function findAll($id){
-       return $query = DB::table($this->table)->from(DB::raw("mandor with (readuncommitted)"))
+    function findAll($id)
+    {
+        return $query = DB::table($this->table)->from(DB::raw("mandor with (readuncommitted)"))
             ->select(
                 'mandor.id',
                 'mandor.namamandor',
@@ -88,9 +89,8 @@ class Mandor extends MyModel
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'mandor.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("[user] with (readuncommitted)"), 'mandor.user_id', '=', 'user.id')
-            ->where('mandor.id',$id)
+            ->where('mandor.id', $id)
             ->first();
-        
     }
     public function cekvalidasihapus($id)
     {
@@ -210,13 +210,15 @@ class Mandor extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->where('mandor.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw('mandor' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->where('parameter.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->where('mandor.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw('mandor' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -224,13 +226,15 @@ class Mandor extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusaktif') {
-                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
-                                // $query = $query->orWhere('mandor.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw('mandor' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusaktif') {
+                                    $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $query = $query->orWhere('mandor.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw('mandor' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
                     });
@@ -290,7 +294,7 @@ class Mandor extends MyModel
         $mandor->modifiedby = auth('api')->user()->user;
         $mandor->info = html_entity_decode(request()->info);
 
-        
+
         if (!$mandor->save()) {
 
             throw new \Exception('Error updating mandor.');
@@ -323,6 +327,34 @@ class Mandor extends MyModel
             'datajson' => $mandor->toArray(),
             'modifiedby' => auth('api')->user()->user
         ]);
+
+        return $mandor;
+    }
+
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $mandor = Mandor::find($data['Id'][$i]);
+
+            $mandor->statusaktif = $statusnonaktif->id;
+            $aksi = $statusnonaktif->text;
+
+            if ($mandor->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($mandor->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF MANDOR',
+                    'idtrans' => $mandor->id,
+                    'nobuktitrans' => $mandor->id,
+                    'aksi' => $aksi,
+                    'datajson' => $mandor->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
 
         return $mandor;
     }

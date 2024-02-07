@@ -10,6 +10,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Parameter;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -20,7 +21,7 @@ use Illuminate\Database\QueryException;
 
 class MandorController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -97,7 +98,7 @@ class MandorController extends Controller
             ];
             $mandor = (new Mandor())->processStore($data);
             $mandor->position = $this->getPosition($mandor, $mandor->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $mandor->page = ceil($mandor->position / (10));
             } else {
                 $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
@@ -139,7 +140,7 @@ class MandorController extends Controller
             ];
             $mandor = (new Mandor())->processUpdate($mandor, $data);
             $mandor->position = $this->getPosition($mandor, $mandor->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $mandor->page = ceil($mandor->position / (10));
             } else {
                 $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
@@ -169,7 +170,7 @@ class MandorController extends Controller
             $selected = $this->getPosition($mandor, $mandor->getTable(), true);
             $mandor->position = $selected->position;
             $mandor->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $mandor->page = ceil($mandor->position / (10));
             } else {
                 $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
@@ -222,7 +223,7 @@ class MandorController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan
@@ -287,5 +288,28 @@ class MandorController extends Controller
      */
     public function report()
     {
+    }
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new Mandor())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 }

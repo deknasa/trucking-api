@@ -69,10 +69,10 @@ class Zona extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $aktif = request()->aktif ?? '';
 
@@ -88,7 +88,7 @@ class Zona extends MyModel
                 DB::raw("'Laporan Zona' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'zona.statusaktif', '=', 'parameter.id');
 
@@ -206,14 +206,15 @@ class Zona extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->where('zona.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw('zona' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->where('parameter.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->where('zona.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw('zona' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -221,14 +222,15 @@ class Zona extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusaktif') {
-                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
-                                // $query = $query->orWhere('zona.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw('zona' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusaktif') {
+                                    $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $query = $query->orWhere('zona.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw('zona' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
                     });
@@ -317,6 +319,33 @@ class Zona extends MyModel
             'datajson' => $zona->toArray(),
             'modifiedby' => auth('api')->user()->user
         ]);
+
+        return $zona;
+    }
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $zona = Zona::find($data['Id'][$i]);
+
+            $zona->statusaktif = $statusnonaktif->id;
+            $aksi = $statusnonaktif->text;
+
+            if ($zona->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($zona->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF ZONA',
+                    'idtrans' => $zona->id,
+                    'nobuktitrans' => $zona->id,
+                    'aksi' => $aksi,
+                    'datajson' => $zona->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
 
         return $zona;
     }

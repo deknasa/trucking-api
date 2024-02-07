@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use Illuminate\Database\QueryException;
 
 class ContainerController extends Controller
@@ -329,6 +330,29 @@ class ContainerController extends Controller
             ];
 
             $this->toExcel($judulLaporan, $containers, $columns);
+        }
+    }
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new Container())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
         }
     }
 }
