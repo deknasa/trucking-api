@@ -11,6 +11,7 @@ use App\Models\Parameter;
 use App\Models\Zona;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use Carbon\Carbon;
 use Hamcrest\Type\IsDouble;
@@ -303,6 +304,29 @@ class KotaController extends Controller
             ];
 
             $this->toExcel($judulLaporan, $kotas, $columns);
+        }
+    }
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new Kota())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
         }
     }
 }

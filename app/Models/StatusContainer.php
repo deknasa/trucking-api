@@ -87,7 +87,7 @@ class StatusContainer extends MyModel
                 DB::raw("'Laporan Status Container' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'statuscontainer.statusaktif', '=', 'parameter.id');
 
@@ -192,13 +192,15 @@ class StatusContainer extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->where('parameter.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -206,13 +208,15 @@ class StatusContainer extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusaktif') {
-                                $query = $query->orWhere('parameter.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
-                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusaktif') {
+                                    $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
                     });
@@ -238,13 +242,13 @@ class StatusContainer extends MyModel
     public function processStore(array $data): StatusContainer
     {
         $statusContainer = new StatusContainer();
-            $statusContainer->kodestatuscontainer = $data['kodestatuscontainer'];
-            $statusContainer->keterangan = $data['keterangan'] ?? '';
-            $statusContainer->statusaktif = $data['statusaktif'];
-            $statusContainer->modifiedby = auth('api')->user()->USER;
-            $statusContainer->info = html_entity_decode(request()->info);
-            $data['sortname'] = $data['sortname'] ?? 'id';
-            $data['sortorder'] = $data['sortorder'] ?? 'asc';
+        $statusContainer->kodestatuscontainer = $data['kodestatuscontainer'];
+        $statusContainer->keterangan = $data['keterangan'] ?? '';
+        $statusContainer->statusaktif = $data['statusaktif'];
+        $statusContainer->modifiedby = auth('api')->user()->USER;
+        $statusContainer->info = html_entity_decode(request()->info);
+        $data['sortname'] = $data['sortname'] ?? 'id';
+        $data['sortorder'] = $data['sortorder'] ?? 'asc';
 
         if (!$statusContainer->save()) {
             throw new \Exception('Error storing status container.');
@@ -301,8 +305,36 @@ class StatusContainer extends MyModel
             'aksi' => 'DELETE',
             'datajson' => $statusContainer->toArray(),
             'modifiedby' => auth('api')->user()->user
-    ]);
+        ]);
 
         return $statusContainer;
+    }
+    
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $container = StatusContainer::find($data['Id'][$i]);
+
+            $container->statusaktif = $statusnonaktif->id;
+            $aksi = $statusnonaktif->text;
+
+            if ($container->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($container->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF STATUS CONTAINER',
+                    'idtrans' => $container->id,
+                    'nobuktitrans' => $container->id,
+                    'aksi' => $aksi,
+                    'datajson' => $container->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+
+        return $container;
     }
 }

@@ -59,10 +59,10 @@ class JenisTrado extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $aktif = request()->aktif ?? '';
 
@@ -78,7 +78,7 @@ class JenisTrado extends MyModel
                 DB::raw("'Laporan Jenis Trado' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jenistrado.statusaktif', '=', 'parameter.id');
 
@@ -196,14 +196,15 @@ class JenisTrado extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->where('jenistrado.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw('jenistrado' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->where('parameter.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->where('jenistrado.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw('jenistrado' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -211,14 +212,15 @@ class JenisTrado extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusaktif') {
-                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
-                                // $query = $query->orWhere('jenistrado.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw('jenistrado' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusaktif') {
+                                    $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $query = $query->orWhere('jenistrado.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw('jenistrado' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
                     });
@@ -248,7 +250,7 @@ class JenisTrado extends MyModel
         $jenistrado->keterangan = $data['keterangan'] ?? '';
         $jenistrado->modifiedby = auth('api')->user()->name;
         $jenistrado->info = html_entity_decode(request()->info);
-        $data['sortname'] = $data['sortname']?? 'id';
+        $data['sortname'] = $data['sortname'] ?? 'id';
         $data['sortorder'] = $data['sortorder'] ?? 'asc';
 
         TOP:
@@ -300,14 +302,42 @@ class JenisTrado extends MyModel
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($jenistrado->getTable()),
-                'postingdari' => 'DELETE JENIS TRADO',
-                'idtrans' => $jenistrado->id,
-                'nobuktitrans' => $jenistrado->id,
-                'aksi' => 'DELETE',
-                'datajson' => $jenistrado->toArray(),
-                'modifiedby' => auth('api')->user()->user
+            'postingdari' => 'DELETE JENIS TRADO',
+            'idtrans' => $jenistrado->id,
+            'nobuktitrans' => $jenistrado->id,
+            'aksi' => 'DELETE',
+            'datajson' => $jenistrado->toArray(),
+            'modifiedby' => auth('api')->user()->user
         ]);
 
         return $jenistrado;
+    }
+
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $jenisTrado = JenisTrado::find($data['Id'][$i]);
+
+            $jenisTrado->statusaktif = $statusnonaktif->id;
+            $aksi = $statusnonaktif->text;
+
+            if ($jenisTrado->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($jenisTrado->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF JENIS TRADO',
+                    'idtrans' => $jenisTrado->id,
+                    'nobuktitrans' => $jenisTrado->id,
+                    'aksi' => $aksi,
+                    'datajson' => $jenisTrado->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+
+        return $jenisTrado;
     }
 }

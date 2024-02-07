@@ -442,7 +442,7 @@ class Gandengan extends MyModel
                             $query = $query->where('jumlahbanserap', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'check') {
+                        } else if ($filters['field'] == '') {
                             $query = $query->whereRaw('1 = 1');
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -466,7 +466,7 @@ class Gandengan extends MyModel
                                 $query = $query->orWhere('jumlahbanserap', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'check') {
+                            } else if ($filters['field'] == '') {
                                 $query = $query->whereRaw('1 = 1');
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");

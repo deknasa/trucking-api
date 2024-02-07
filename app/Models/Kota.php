@@ -167,16 +167,16 @@ class Kota extends MyModel
             $ritasiPulang = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS RITASI')->where('text', 'PULANG RANGKA')->first();
             $ritasiTurun = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS RITASI')->where('text', 'TURUN RANGKA')->first();
             if ($dataRitasiId == $ritasiPulang->id) {
-                if($ritasiDariKe == 'dari') {
-                    $query->where("kodekota",'BELAWAN RANGKA')->first();
-                }else{
-                    $query->where("kodekota",'KIM (KANDANG)')->first();
+                if ($ritasiDariKe == 'dari') {
+                    $query->where("kodekota", 'BELAWAN RANGKA')->first();
+                } else {
+                    $query->where("kodekota", 'KIM (KANDANG)')->first();
                 }
-            }else if($dataRitasiId == $ritasiTurun->id){
-                if($ritasiDariKe == 'dari') {
-                    $query->where("kodekota",'KIM (KANDANG)')->first();
-                }else{
-                    $query->where("kodekota",'BELAWAN RANGKA')->first();
+            } else if ($dataRitasiId == $ritasiTurun->id) {
+                if ($ritasiDariKe == 'dari') {
+                    $query->where("kodekota", 'KIM (KANDANG)')->first();
+                } else {
+                    $query->where("kodekota", 'BELAWAN RANGKA')->first();
                 }
             }
         }
@@ -296,15 +296,17 @@ class Kota extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'zona_id') {
-                            $query = $query->where('zona.zona', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->where('kota.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw('kota' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->where('parameter.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'zona_id') {
+                                $query = $query->where('zona.zona', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->where('kota.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw('kota' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -312,15 +314,17 @@ class Kota extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusaktif') {
-                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'zona_id') {
-                                $query = $query->orWhere('zona.zona', 'LIKE', "%$filters[data]%");
-                            } else {
-                                // $query = $query->orWhere('kota.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw('kota' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusaktif') {
+                                    $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'zona_id') {
+                                    $query = $query->orWhere('zona.zona', 'LIKE', "%$filters[data]%");
+                                } else {
+                                    // $query = $query->orWhere('kota.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw('kota' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
                     });
@@ -411,6 +415,33 @@ class Kota extends MyModel
             'datajson' => $kota->toArray(),
             'modifiedby' => auth('api')->user()->user
         ]);
+
+        return $kota;
+    }
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $kota = Kota::find($data['Id'][$i]);
+
+            $kota->statusaktif = $statusnonaktif->id;
+            $aksi = $statusnonaktif->text;
+
+            if ($kota->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($kota->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF KOTA',
+                    'idtrans' => $kota->id,
+                    'nobuktitrans' => $kota->id,
+                    'aksi' => $aksi,
+                    'datajson' => $kota->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
 
         return $kota;
     }

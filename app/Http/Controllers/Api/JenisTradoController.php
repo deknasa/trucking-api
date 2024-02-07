@@ -10,6 +10,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Parameter;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -20,7 +21,7 @@ use Illuminate\Database\QueryException;
 
 class JenisTradoController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -95,7 +96,7 @@ class JenisTradoController extends Controller
             ];
             $jenistrado = (new JenisTrado())->processStore($data);
             $jenistrado->position = $this->getPosition($jenistrado, $jenistrado->getTable())->position;
-           if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $jenistrado->page = ceil($jenistrado->position / (10));
             } else {
                 $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
@@ -138,7 +139,7 @@ class JenisTradoController extends Controller
             ];
             $jenistrado = (new JenisTrado())->processUpdate($jenistrado, $data);
             $jenistrado->position = $this->getPosition($jenistrado, $jenistrado->getTable())->position;
-           if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $jenistrado->page = ceil($jenistrado->position / (10));
             } else {
                 $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
@@ -170,7 +171,7 @@ class JenisTradoController extends Controller
             $selected = $this->getPosition($jenistrado, $jenistrado->getTable(), true);
             $jenistrado->position = $selected->position;
             $jenistrado->id = $selected->id;
-           if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $jenistrado->page = ceil($jenistrado->position / (10));
             } else {
                 $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
@@ -232,7 +233,7 @@ class JenisTradoController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan
@@ -287,6 +288,29 @@ class JenisTradoController extends Controller
             ];
 
             $this->toExcel($judulLaporan, $jenisTrados, $columns);
+        }
+    }
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new JenisTrado())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
         }
     }
 }

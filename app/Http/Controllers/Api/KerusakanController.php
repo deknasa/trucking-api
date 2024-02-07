@@ -11,6 +11,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Parameter;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -22,7 +23,7 @@ use Illuminate\Database\QueryException;
 class KerusakanController extends Controller
 {
 
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -98,7 +99,7 @@ class KerusakanController extends Controller
             ];
             $kerusakan = (new Kerusakan())->processStore($data);
             $kerusakan->position = $this->getPosition($kerusakan, $kerusakan->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $kerusakan->page = ceil($kerusakan->position / (10));
             } else {
                 $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
@@ -138,7 +139,7 @@ class KerusakanController extends Controller
             ];
             $kerusakan = (new Kerusakan())->processUpdate($kerusakan, $data);
             $kerusakan->position = $this->getPosition($kerusakan, $kerusakan->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $kerusakan->page = ceil($kerusakan->position / (10));
             } else {
                 $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
@@ -169,7 +170,7 @@ class KerusakanController extends Controller
             $selected = $this->getPosition($kerusakan, $kerusakan->getTable(), true);
             $kerusakan->position = $selected->position;
             $kerusakan->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $kerusakan->page = ceil($kerusakan->position / (10));
             } else {
                 $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
@@ -221,7 +222,7 @@ class KerusakanController extends Controller
     public function report()
     {
     }
-    
+
     /**
      * @ClassName 
      * @Keterangan EXPORT KE EXCEL
@@ -231,7 +232,7 @@ class KerusakanController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan
@@ -283,6 +284,30 @@ class KerusakanController extends Controller
             ];
 
             $this->toExcel($judulLaporan, $kerusakans, $columns);
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new Kerusakan())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
         }
     }
 }
