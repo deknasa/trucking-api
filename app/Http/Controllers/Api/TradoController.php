@@ -249,7 +249,6 @@ class TradoController extends Controller
         try {
             $data = [
                 'Id' => $request->Id,
-                'nama' => $request->nama
             ];
             (new Trado())->processApprovalnonaktif($data);
 

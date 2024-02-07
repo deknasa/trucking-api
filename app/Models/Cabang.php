@@ -45,7 +45,7 @@ class Cabang extends MyModel
                 DB::raw("'Laporan Cabang' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter as statuskoneksi with (readuncommitted)"), 'cabang.statuskoneksi', 'statuskoneksi.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'cabang.statusaktif', 'parameter.id');
@@ -120,7 +120,8 @@ class Cabang extends MyModel
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id','text'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
@@ -148,17 +149,17 @@ class Cabang extends MyModel
     public function findAll($id)
     {
         $query = DB::table("cabang")->from(DB::raw("cabang with (readuncommitted)"))
-        ->select(
-            'cabang.id',
-            'cabang.kodecabang',
-            'cabang.namacabang',
-            'cabang.statusaktif',
-            'cabang.memo',
-            'parameter.text as statusaktifnama',
-        )
-        ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'cabang.statusaktif', 'parameter.id')
-        ->where('cabang.id', $id)
-        ->first();
+            ->select(
+                'cabang.id',
+                'cabang.kodecabang',
+                'cabang.namacabang',
+                'cabang.statusaktif',
+                'cabang.memo',
+                'parameter.text as statusaktifnama',
+            )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'cabang.statusaktif', 'parameter.id')
+            ->where('cabang.id', $id)
+            ->first();
 
         return $query;
     }
@@ -240,15 +241,17 @@ class Cabang extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statuskoneksi_memo') {
-                            $query = $query->where('statuskoneksi.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%' escape '|'");
-                        } else {
-                            // $query = $query->whereRaw($this->table . ".".  $filters['field'] ." LIKE '%".str_replace($filters['data'],'[','|[') ."%' escape '|'");
-                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->where('parameter.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statuskoneksi_memo') {
+                                $query = $query->where('statuskoneksi.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%' escape '|'");
+                            } else {
+                                // $query = $query->whereRaw($this->table . ".".  $filters['field'] ." LIKE '%".str_replace($filters['data'],'[','|[') ."%' escape '|'");
+                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -256,16 +259,18 @@ class Cabang extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusaktif') {
-                                $query = $query->orWhere('parameter.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'statuskoneksi_memo') {
-                                $query = $query->orWhereRaw('statuskoneksi.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
-                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-                                // $query = $query->OrwhereRaw($this->table . ".".  $filters['field'] ." LIKE '%".str_replace($filters['data'],'[','|[') ."%' escape '|'");
-                                // $query = $query->orWhereRaw($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusaktif') {
+                                    $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'statuskoneksi_memo') {
+                                    $query = $query->orWhereRaw('statuskoneksi.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else {
+                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                    // $query = $query->OrwhereRaw($this->table . ".".  $filters['field'] ." LIKE '%".str_replace($filters['data'],'[','|[') ."%' escape '|'");
+                                    // $query = $query->orWhereRaw($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                }
                             }
                         }
                     });
@@ -373,7 +378,8 @@ class Cabang extends MyModel
         return $cabang;
     }
 
-    public function procesApprovalKonensi(Cabang $cabang) : Cabang {
+    public function procesApprovalKonensi(Cabang $cabang): Cabang
+    {
         $statusOnLine = Parameter::where('grp', '=', 'STATUS KONEKSI')->where('text', '=', 'ONLINE')->first();
         $statusOffLine = Parameter::where('grp', '=', 'STATUS KONEKSI')->where('text', '=', 'OFFLINE')->first();
 
@@ -395,6 +401,33 @@ class Cabang extends MyModel
             'datajson' => $cabang->toArray(),
             'modifiedby' => auth('api')->user()->name,
         ]);
+        return $cabang;
+    }
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $cabang = Cabang::find($data['Id'][$i]);
+
+            $cabang->statusaktif = $statusnonaktif->id;
+            $aksi = $statusnonaktif->text;
+
+            if ($cabang->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($cabang->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF CABANG',
+                    'idtrans' => $cabang->id,
+                    'nobuktitrans' => $cabang->id,
+                    'aksi' => $aksi,
+                    'datajson' => $cabang->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+
         return $cabang;
     }
 }

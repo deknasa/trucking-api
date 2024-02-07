@@ -525,7 +525,6 @@ class TarifController extends Controller
         try {
             $data = [
                 'Id' => $request->Id,
-                'nama' => $request->nama
             ];
             (new Tarif())->processApprovalnonaktif($data);
 

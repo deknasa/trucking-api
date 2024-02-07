@@ -33,7 +33,7 @@ class UpahRitasi extends MyModel
     public function cekValidasi($id)
     {
         $upahRitasi = DB::table("upahritasi")->from(DB::raw("upahritasi with (readuncommitted)"))->where('id', $id)->first();
-        
+
         $rekap = DB::table('ritasi')
             ->from(
                 DB::raw("ritasi as a with (readuncommitted)")
@@ -257,26 +257,27 @@ class UpahRitasi extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', '=', $filters['data']);
-                            // } elseif ($filters['field'] == 'statusluarkota') {
-                            //     $query = $query->where('statusluarkota.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'kotadari_id') {
-                            $query = $query->where('kotadari.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'kotasampai_id') {
-                            $query = $query->where('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
-                            // } else if ($filters['field'] == 'zona_id') {
-                            //     $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'jarak') {
-                            $query = $query->whereRaw("format($this->table.jarak, '#,#0.00') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'tglmulaiberlaku') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->where('parameter.text', '=', $filters['data']);
+                                // } elseif ($filters['field'] == 'statusluarkota') {
+                                //     $query = $query->where('statusluarkota.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'kotadari_id') {
+                                $query = $query->where('kotadari.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'kotasampai_id') {
+                                $query = $query->where('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
+                                // } else if ($filters['field'] == 'zona_id') {
+                                //     $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'jarak') {
+                                $query = $query->whereRaw("format($this->table.jarak, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglmulaiberlaku') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -284,26 +285,27 @@ class UpahRitasi extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusaktif') {
-                                $query = $query->orWhere('parameter.text', '=', $filters['data']);
-                                // } elseif ($filters['field'] == 'statusluarkota') {
-                                // $query = $query->orWhere('statusluarkota.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'kotadari_id') {
-                                $query = $query->orWhere('kotadari.keterangan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'kotasampai_id') {
-                                $query = $query->orWhere('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
-                                // } else if ($filters['field'] == 'zona_id') {
-                                //     $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'jarak') {
-                                $query = $query->orWhereRaw("format($this->table.jarak, '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'tglmulaiberlaku') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
-                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusaktif') {
+                                    $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                                    // } elseif ($filters['field'] == 'statusluarkota') {
+                                    // $query = $query->orWhere('statusluarkota.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'kotadari_id') {
+                                    $query = $query->orWhere('kotadari.keterangan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'kotasampai_id') {
+                                    $query = $query->orWhere('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
+                                    // } else if ($filters['field'] == 'zona_id') {
+                                    //     $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'jarak') {
+                                    $query = $query->orWhereRaw("format($this->table.jarak, '#,#0.00') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'tglmulaiberlaku') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
                     });
@@ -353,7 +355,7 @@ class UpahRitasi extends MyModel
         ]);
 
         $detaillog = [];
-        
+
         for ($i = 0; $i < count($data['container_id']); $i++) {
 
             $upahritasiDetail = (new UpahRitasiRincian())->processStore($upahritasi, [
@@ -455,6 +457,33 @@ class UpahRitasi extends MyModel
             'datajson' => $getDetail->toArray(),
             'modifiedby' => auth('api')->user()->name
         ]);
+        return $upahRitasi;
+    }
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $upahRitasi = UpahRitasi::find($data['Id'][$i]);
+
+            $upahRitasi->statusaktif = $statusnonaktif->id;
+            $aksi = $statusnonaktif->text;
+
+            if ($upahRitasi->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($upahRitasi->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF UPAH RITASI',
+                    'idtrans' => $upahRitasi->id,
+                    'nobuktitrans' => $upahRitasi->id,
+                    'aksi' => $aksi,
+                    'datajson' => $upahRitasi->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+
         return $upahRitasi;
     }
 }

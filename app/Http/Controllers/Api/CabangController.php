@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\DestroyCabangRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use Illuminate\Database\QueryException;
@@ -202,6 +203,7 @@ class CabangController extends Controller
 
     /**
      * @ClassName
+     * @Keterangan APPROVAL KONEKSI
      */
     public function approvalKonensi(Request $request, Cabang $cabang)
     {
@@ -222,6 +224,29 @@ class CabangController extends Controller
     }
 
 
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new Cabang())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
 
     /**
      * @ClassName 

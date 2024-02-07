@@ -24,7 +24,7 @@ class ContainerController extends Controller
 {
 
 
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -102,7 +102,7 @@ class ContainerController extends Controller
 
             $container = (new container())->processStore($data);
             $container->position = $this->getPosition($container, $container->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $container->page = ceil($container->position / (10));
             } else {
                 $container->page = ceil($container->position / ($request->limit ?? 10));
@@ -148,7 +148,7 @@ class ContainerController extends Controller
 
             $container = (new Container())->processUpdate($container, $data);
             $container->position = $this->getPosition($container, $container->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $container->page = ceil($container->position / (10));
             } else {
                 $container->page = ceil($container->position / ($request->limit ?? 10));
@@ -179,7 +179,7 @@ class ContainerController extends Controller
             $selected = $this->getPosition($container, $container->getTable(), true);
             $container->position = $selected->position;
             $container->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $container->page = ceil($container->position / (10));
             } else {
                 $container->page = ceil($container->position / ($request->limit ?? 10));
@@ -273,7 +273,7 @@ class ContainerController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan
@@ -354,5 +354,32 @@ class ContainerController extends Controller
             DB::rollBack();
             throw $th;
         }
+    }
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $container = Container::find($data['Id'][$i]);
+
+            $container->statusaktif = $statusnonaktif->id;
+            $aksi = $statusnonaktif->text;
+
+            if ($container->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($container->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF CONTAINER',
+                    'idtrans' => $container->id,
+                    'nobuktitrans' => $container->id,
+                    'aksi' => $aksi,
+                    'datajson' => $container->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+
+        return $container;
     }
 }
