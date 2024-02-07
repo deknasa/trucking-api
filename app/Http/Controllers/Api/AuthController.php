@@ -72,6 +72,17 @@ class AuthController extends Controller
         }
 
         $ipserver = $this->get_server_ip();
+        if (env('APP_HOSTNAME') != request()->getHost()) {
+            return response([
+                'data' => [
+                    'status' => true,
+                    'message' => 'test',
+                    'errors' => '',
+                    'ipclient' => $ipclient,
+                    'ipserver' =>  $ipserver,
+                ]
+            ]);
+        }
         if ($this->ipToCheck($request->ipclient)) {
             $data = [
                 'status' => true,
