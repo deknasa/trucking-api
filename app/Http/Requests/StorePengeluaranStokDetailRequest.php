@@ -122,7 +122,6 @@ class StorePengeluaranStokDetailRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             $kelompok = $this->input('detail_stok_kelompok');
-            dd($kelompok);
             // Check if all values in kelompok are the same
             if (count(array_unique($kelompok)) > 1) {
                 $validator->errors()->add('detail_stok_kelompok', 'Semua Stok harus dalam kelompok yang sama.');
