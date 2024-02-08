@@ -69,7 +69,9 @@ class CabangController extends Controller
             'tas_id' => $request->tas_id ?? '',
             "key" => $request->key,
             "value" => $request->value,
+            "accessTokenTnl" => $request->accessTokenTnl ?? '',
         ];
+        // dd($data);
         DB::beginTransaction();
 
         try {
