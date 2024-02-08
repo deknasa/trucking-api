@@ -39,6 +39,8 @@ class Controller extends BaseController
         $this->appHelper = new AppHelper();
     }
 
+
+
     public function getRunningNumber(Request $request)
     {
         $request->validate([
@@ -412,12 +414,18 @@ class Controller extends BaseController
                 'os' => '',
             ]);
 
-        if ($getToken->getStatusCode() == '404') {
-            throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
-        } else if ($getToken->getStatusCode() == '200') {
-            $access_token = json_decode($getToken, TRUE)['access_token'];
+        // if ($getToken->getStatusCode() == '404') {
+        //     throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
+        // } else if ($getToken->getStatusCode() == '200') {
+        $accessTokenTnl = $data['accessTokenTnl'] ?? '';
+        $access_token =$accessTokenTnl;
+        if ($accessTokenTnl != '') {
+            // $access_token = json_decode($getToken, TRUE)['access_token'];
+           
             if ($aksi == 'add') {
-
+                // dump($server);
+                // dump($table);
+                // dd($access_token);
                 $posting = Http::withHeaders([
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json',
@@ -432,25 +440,34 @@ class Controller extends BaseController
                 $respIdTnl = $getIdTnl->toPsrResponse();
                 if ($respIdTnl->getStatusCode() == 200 && $getIdTnl->json() != '') {
                     $id = $getIdTnl->json();
-                    if ($aksi == 'edit') {
 
+                    if ($id == 0) {
                         $posting = Http::withHeaders([
                             'Content-Type' => 'application/json',
                             'Accept' => 'application/json',
                             'Authorization' => 'Bearer ' . $access_token
-                        ])->patch($server . $table . '/' . $id, $data);
-                    }
-                    if ($aksi == 'delete') {
+                        ])->post($server . $table, $data);
+                    } else {
+                        if ($aksi == 'edit') {
 
-                        $posting = Http::withHeaders([
-                            'Content-Type' => 'application/json',
-                            'Accept' => 'application/json',
-                            'Authorization' => 'Bearer ' . $access_token
-                        ])->delete($server . $table . '/' . $id, $data);
+                            $posting = Http::withHeaders([
+                                'Content-Type' => 'application/json',
+                                'Accept' => 'application/json',
+                                'Authorization' => 'Bearer ' . $access_token
+                            ])->patch($server . $table . '/' . $id, $data);
+                        }
+                        if ($aksi == 'delete') {
+
+                            $posting = Http::withHeaders([
+                                'Content-Type' => 'application/json',
+                                'Accept' => 'application/json',
+                                'Authorization' => 'Bearer ' . $access_token
+                            ])->delete($server . $table . '/' . $id, $data);
+                        }
                     }
                 }
             }
-
+            // dd($posting);
             $tesResp = $posting->toPsrResponse();
             $response = [
                 'statuscode' => $tesResp->getStatusCode(),
@@ -470,9 +487,9 @@ class Controller extends BaseController
     public function getIdTnl(Request $request)
     {
         $backSlash = " \ ";
-        $controller = 'App\Http\Controllers\Api'. trim($backSlash) . $request->table.'Controller';
+        $controller = 'App\Http\Controllers\Api' . trim($backSlash) . $request->table . 'Controller';
         $model = 'App\Models' . trim($backSlash) . $request->table;
-        $models = app($model)->where('tas_id',$request->tas_id)->first();
+        $models = app($model)->where('tas_id', $request->tas_id)->first() ?? 0;
 
         return $models->id;
         // if($request->aksi == 'edit')
