@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ApprovalStokReuse extends Model
 {
@@ -36,14 +37,36 @@ class ApprovalStokReuse extends Model
     }
 
     public function getReport($stok_id) {
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+        $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
         $pengeluaranStok = new PengeluaranStokDetail();
-//         select pengeluaranstokdetail.nobukti,pengeluaranstokdetail.stok_id,pengeluaranstokheader.tglbukti,pengeluaranstokheader.gudang_id,pengeluaranstokheader.trado_id,pengeluaranstokheader.gandengan_id from pengeluaranstokdetail 
-// left join pengeluaranstokheader on pengeluaranstokdetail.pengeluaranstokheader_id = pengeluaranstokheader.id
-// where pengeluaranstokheader.pengeluaranstok_id = 1 
-        $checkStok = $pengeluaranStok->where('stok_id',$stok_id)->get();
-        if ($checkStok) {
-            # code...
-        }
+        $checkStok = $pengeluaranStok->select(
+            "pengeluaranstokdetail.nobukti",
+            "pengeluaranstokdetail.stok_id",
+            "stok.namastok",
+            "pengeluaranstokheader.tglbukti",
+            "pengeluaranstokheader.gudang_id",
+            "gudang.gudang",
+            "pengeluaranstokheader.trado_id",
+            "trado.kodetrado",
+            "pengeluaranstokheader.gandengan_id",
+            "gandengan.kodegandengan",
+            DB::raw("'" . $getJudul->text . "' as judul"),
+            DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+            DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+        )
+        ->leftJoin(DB::raw("pengeluaranstokheader with (readuncommitted)"), 'pengeluaranstokdetail.pengeluaranstokheader_id', 'pengeluaranstokheader.id')
+        ->leftJoin(DB::raw("stok with (readuncommitted)"), 'pengeluaranstokdetail.stok_id', 'stok.id')
+        ->leftJoin(DB::raw("gudang with (readuncommitted)"), 'pengeluaranstokheader.gudang_id', 'gudang.id')
+        ->leftJoin(DB::raw("trado with (readuncommitted)"), 'pengeluaranstokheader.trado_id', 'trado.id')
+        ->leftJoin(DB::raw("gandengan with (readuncommitted)"), 'pengeluaranstokheader.gandengan_id', 'gandengan.id')
+        ->where("pengeluaranstokdetail.stok_id",$stok_id)
+        ->where("pengeluaranstokheader.pengeluaranstok_id",$spk->text)->get();
+        
         return $checkStok;
     }
 
