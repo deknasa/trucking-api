@@ -613,7 +613,7 @@ class Supplier extends MyModel
 
     public function postingTnl($data)
     {
-        $server = config('app.server_jkt');
+        $server = config('app.server_tnl');
         $getToken = Http::withHeaders([
             'Content-Type' => 'application/json',
             'Accept' => 'application/json'
@@ -633,12 +633,18 @@ class Supplier extends MyModel
             throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
         } else if ($getToken->getStatusCode() == '200') {
             $data['from'] = 'jkt';
+          
             $access_token = json_decode($getToken, TRUE)['access_token'];
+            // dump($access_token);
+            // dump(json_encode($data));
+            // dd($server . 'truckingtnl-api/public/api/supplier');
             $transferTarif = Http::withHeaders([
                 'Content-Type' => 'application/json',
                 'Accept' => 'application/json',
                 'Authorization' => 'Bearer ' . $access_token
             ])->post($server . 'truckingtnl-api/public/api/supplier', $data);
+            // dd($data);
+            // dd($transferTarif);
             $tesResp = $transferTarif->toPsrResponse();
             $response = [
                 'statuscode' => $tesResp->getStatusCode(),
@@ -653,6 +659,7 @@ class Supplier extends MyModel
                 }
             }
             return $response;
+            // return true;
         } else {
             throw new \Exception("server tidak bisa diakses");
         }

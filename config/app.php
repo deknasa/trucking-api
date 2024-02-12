@@ -271,6 +271,7 @@ return [
     'server_sby' => env('SBY_SERVER', "http://tassby.kozow.com:8074/"),
     'server_mks' => env('MKS_SERVER', "http://tasmks.kozow.com:8074/"),
     'server_btg' => env('BTG_SERVER', "http://tasbtg.kozow.com:8074/"),
+    'server_tnl' => env('TNL_SERVER', "http://localhost/"),
     'user_api' => env('USER_API', "ADMIN"),
     'pass_api' => env('PASSWORD_API', "RFV$*)123wsx"),
     'password_tnl' => env('PASSWORD_TNL', "RFV$*)123wsx"),
