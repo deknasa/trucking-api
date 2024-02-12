@@ -431,6 +431,15 @@ class Controller extends BaseController
                     'Accept' => 'application/json',
                     'Authorization' => 'Bearer ' . $access_token
                 ])->post($server . $table, $data);
+                // dd('test');
+                // $posting = $this->postData($server . $table, 'POST', $access_token, $data);
+                // dd($posting);
+                // $posting = json_decode($posting, TRUE);
+                // if (array_key_exists('status', $posting)) {
+                //     goto selesai;
+                // } else {
+                //     throw new \Exception($posting['message']);
+                // }
             } else {
                 $getIdTnl = Http::withHeaders([
                     'Content-Type' => 'application/json',
@@ -482,6 +491,45 @@ class Controller extends BaseController
         } else {
             throw new \Exception("server tidak bisa diakses");
         }
+        // selesai:
+        // return true;
+    }
+
+    public function postData($server, $method, $accessToken, $data)
+    {
+        $send = $this->http_request(
+            $server,
+            $method,
+            [
+                'Authorization: Bearer ' . $accessToken,
+                'Accept: application/json',
+                'Content-Type: application/json'
+            ],
+            $data
+        );
+        return $send;
+    }
+
+    public function http_request(string $url, string $method = 'GET', array $headers = null, array $body = null): string
+    {
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        if (!empty($body)) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array_merge($headers, ['Content-Type: application/json']));
+        }
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+
+        $output = curl_exec($ch);
+        curl_close($ch);
+
+        return $output;
     }
 
     public function getIdTnl(Request $request)
