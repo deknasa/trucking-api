@@ -28,12 +28,17 @@ class LaporanApprovalStokReuseController extends Controller
      */
     public function report(Request $request)
     {
-        $supir_id = $request->supir_id ?? 0;
+        $stok_id = $request->stok_id ?? 0;
+        $dataHeader = [
+            'stok_id' => $request->stok_id,
+            'stok' => $request->stok,
+        ];
 
-
-        $laporan = new LaporanHistoryTradoMilikSupir();
+        $laporan = new ApprovalStokReuse();
         return response([
-            'data' => $laporan->getReport($supir_id)
+            'data' => $laporan->getReport($stok_id),
+            'dataheader' => $dataHeader
+           
         ]);
     }
 
