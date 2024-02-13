@@ -56,6 +56,7 @@ class ApprovalStokReuse extends Model
             "pengeluaranstokheader.gandengan_id",
             "gandengan.kodegandengan",
             DB::raw("'" . $getJudul->text . "' as judul"),
+            DB::raw("'Laporan Approval Stok Reuse' as judulLaporan"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
             DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
         )
