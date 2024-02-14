@@ -614,6 +614,7 @@ class Supplier extends MyModel
     public function postingTnl($data)
     {
         $server = config('app.server_tnl');
+        // dd($server . 'truckingtnl-api/public/api/token');
         $getToken = Http::withHeaders([
             'Content-Type' => 'application/json',
             'Accept' => 'application/json'

@@ -88,9 +88,9 @@ class CabangController extends Controller
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
             $data['tas_id'] = $cabang->id;
 
-            // if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-            //     $this->saveToTnl('cabang', 'add', $data);
-            // }
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('cabang', 'add', $data);
+            }
 
             DB::commit();
 
