@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistAbsensiApproval;
 use App\Rules\ValidasiNominalAbsensiSupir;
 use Illuminate\Support\Facades\DB;
 
@@ -31,7 +32,8 @@ class StoreAbsensiSupirApprovalHeaderRequest extends FormRequest
         return [
             // "keterangan"=>"required",
             "absensisupir_nobukti"=>['required',
-            new ValidasiNominalAbsensiSupir()
+            new ValidasiNominalAbsensiSupir(),
+            new ExistAbsensiApproval()
         ],
             'tglbukti' => [
                 'required','date_format:d-m-Y',
