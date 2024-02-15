@@ -63,12 +63,12 @@ class ReminderEmailController extends Controller
                 $reminderEmail->page = ceil($reminderEmail->position / ($request->limit ?? 10));
             }
 
-            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-            // $data['tas_id'] = $reminderEmail->id;
+            // $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            // // $data['tas_id'] = $reminderEmail->id;
 
-            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('reminderemail', 'add', ReminderEmailDTO::dataRequest($request));
-            }
+            // if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            //     $this->saveToTnl('reminderemail', 'add', ReminderEmailDTO::dataRequest($request));
+            // }
 
             DB::commit();
 

@@ -7,14 +7,14 @@ class ReminderEmailDTO
 {
     public string $keterangan;
     public string $statusaktif;
-    public string $accessTokenTnl;
-    public int $tas_id;
+    public ? string $accessTokenTnl;
+    public ? int $tas_id;
 
     public function __construct(
         string $keterangan,
         string $statusaktif,
-        string $accessTokenTnl,
-        string $tas_id
+        ? string $accessTokenTnl,
+        ? int $tas_id
     ){
         $this->keterangan = $keterangan;
         $this->statusaktif = $statusaktif;
