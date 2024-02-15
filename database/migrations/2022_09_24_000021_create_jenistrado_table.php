@@ -21,6 +21,7 @@ class CreateJenistradoTable extends Migration
             $table->string('kodejenistrado',50)->nullable();
             $table->longtext('keterangan',100)->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
+            $table->unsignedBigInteger('tas_id')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();

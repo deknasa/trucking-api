@@ -43,6 +43,7 @@ class CreateStokTable extends Migration
             $table->string('userapprovaltanpaklaim', 50)->nullable();
             $table->date('tglapprovaltanpaklaim')->nullable();
             $table->longText('info')->nullable();
+            $table->unsignedBigInteger('tas_id')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->integer('statuspembulatanlebih2decimal')->Length(11)->nullable();           
             $table->timestamps();

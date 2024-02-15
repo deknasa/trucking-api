@@ -24,6 +24,7 @@ class CreateUpahritasirincianTable extends Migration
             $table->unsignedBigInteger('container_id')->nullable();
             $table->double('nominalsupir',15,2)->nullable();
             $table->double('liter',15,2)->nullable();
+            $table->unsignedBigInteger('tas_id')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
