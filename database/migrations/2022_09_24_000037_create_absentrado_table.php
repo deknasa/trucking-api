@@ -22,6 +22,7 @@ class CreateabsentradoTable extends Migration
             $table->longText('keterangan')->nullable();
             $table->integer('statusaktif')->length(11);
             $table->longText('memo')->nullable();
+            $table->unsignedBigInteger('tas_id')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 30)->nullable();
             $table->timestamps();

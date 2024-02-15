@@ -29,6 +29,7 @@ class CreateMainakunpusatTable extends Migration
             $table->integer('statusneraca')->length(11)->nullable();
             $table->integer('statuslabarugi')->length(11)->nullable();
             $table->string('coamain', 30)->nullable();
+            $table->unsignedBigInteger('tas_id')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 30)->nullable();            
             $table->timestamps();

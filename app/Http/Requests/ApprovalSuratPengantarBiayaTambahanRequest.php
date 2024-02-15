@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use App\Rules\ValidasiApprovalSuratPengantarBiayaTambahan;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -25,7 +26,15 @@ class ApprovalSuratPengantarBiayaTambahanRequest extends FormRequest
     public function rules()
     {
         return [
-            'id.*' => new ValidasiApprovalSuratPengantarBiayaTambahan()
+            'id' => 'required',
+            'id.*' => ['required', new ValidasiApprovalSuratPengantarBiayaTambahan()]
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'id.required' => 'biaya tambahan '.app(ErrorController::class)->geterror('WP')->keterangan,
         ];
     }
 }

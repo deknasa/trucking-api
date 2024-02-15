@@ -240,6 +240,8 @@ class ProsesGajiSupirHeader extends MyModel
             ], $querytempdetail);
 
             $this->tableTotal = $this->createTempTotal();
+            $totalTable = $this->tableTotal;
+
             $querytemp = DB::table($this->table)->from(DB::raw("prosesgajisupirheader with (readuncommitted)"))
 
                 ->select(
@@ -263,15 +265,17 @@ class ProsesGajiSupirHeader extends MyModel
                     'prosesgajisupirheader.updated_at',
                     DB::raw("(case when (year(prosesgajisupirheader.tglapproval) <= 2000) then null else prosesgajisupirheader.tglapproval end ) as tglapproval"),
                     DB::raw("(case when (year(prosesgajisupirheader.tglbukacetak) <= 2000) then null else prosesgajisupirheader.tglbukacetak end ) as tglbukacetak"),
-                    db::raw("(" . $this->tableTotal . ".total+isnull(c.komisisupir,0)+isnull(c.gajikenek,0) ) as total"),
-                    $this->tableTotal . '.totalposting',
-                    $this->tableTotal . '.uangjalan',
-                    $this->tableTotal . '.bbm',
-                    $this->tableTotal . '.uangmakanharian',
-                    $this->tableTotal . '.uangmakanberjenjang',
-                    $this->tableTotal . '.potonganpinjaman',
-                    $this->tableTotal . '.potonganpinjamansemua',
-                    $this->tableTotal . '.deposito',
+                    // db::raw("(d.total+isnull(c.komisisupir,0)+isnull(c.gajikenek,0) ) as total"),
+                    DB::raw("(case when (select text from parameter where grp='PROSES GAJI SUPIR' and subgrp='PISAH GAJI KENEK')= 'YA' then d.totalposting else (d.total+isnull(c.komisisupir,0)+isnull(c.gajikenek,0) ) end) as total"),
+                    DB::raw("(case when (select text from parameter where grp='PROSES GAJI SUPIR' and subgrp='PISAH GAJI KENEK')= 'YA' then (d.totalposting-isnull(c.gajikenek,0)) else d.totalposting end) as totalposting"),
+                    // 'd.totalposting',
+                    'd.uangjalan',
+                    'd.bbm',
+                    'd.uangmakanharian',
+                    'd.uangmakanberjenjang',
+                    'd.potonganpinjaman',
+                    'd.potonganpinjamansemua',
+                    'd.deposito',
                     db::raw("isnull(c.komisisupir,0) as komisisupir"),
                     db::raw("isnull(c.gajisupir,0) as gajisupir"),
                     db::raw("isnull(c.gajikenek,0) as gajikenek"),
@@ -284,7 +288,7 @@ class ProsesGajiSupirHeader extends MyModel
                 ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'prosesgajisupirheader.statuscetak', 'statuscetak.id')
                 ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'prosesgajisupirheader.statusapproval', 'statusapproval.id')
                 ->leftJoin(DB::raw("pengeluaranheader as pengeluaran with (readuncommitted)"), 'prosesgajisupirheader.pengeluaran_nobukti', '=', 'pengeluaran.nobukti')
-                ->leftJoin($this->tableTotal, $this->tableTotal . '.nobukti', 'prosesgajisupirheader.nobukti')
+                ->leftJoin(DB::raw("$totalTable as d"), 'd.nobukti', 'prosesgajisupirheader.nobukti')
                 ->leftJoin(DB::raw($tempgajidetail . " c"), 'prosesgajisupirheader.nobukti', 'c.nobukti');
 
             if (request()->tgldari && request()->tglsampai) {
@@ -454,10 +458,10 @@ class ProsesGajiSupirHeader extends MyModel
         $fetch = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))
             ->select(
                 DB::raw("distinct(prosesgajisupirheader.nobukti),
-                (SELECT SUM(isnull(gajisupirheader.total, 0)+isnull(gajisupirheader.uangmakanharian, 0))
+                (SELECT SUM(isnull(gajisupirheader.total, 0)+isnull(gajisupirheader.uangmakanharian, 0)+isnull(gajisupirheader.uangmakanberjenjang, 0))
                 FROM gajisupirheader 
                 WHERE gajisupirheader.nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupirheader.id = prosesgajisupirdetail.prosesgajisupir_id)) AS total,
-            (SELECT SUM(gajisupirheader.total)
+                (SELECT SUM(gajisupirheader.total)
                 FROM gajisupirheader 
                 WHERE gajisupirheader.nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupirheader.id = prosesgajisupirdetail.prosesgajisupir_id)) AS totalposting,
                 (SELECT SUM(gajisupirheader.uangjalan)
@@ -1736,6 +1740,8 @@ class ProsesGajiSupirHeader extends MyModel
                             $query = $query->whereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'check') {
+                            $query = $query->whereRaw('1 = 1');
                         } else {
                             $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -1753,6 +1759,8 @@ class ProsesGajiSupirHeader extends MyModel
                                 $query = $query->orWhereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'check') {
+                                $query = $query->whereRaw('1 = 1');
                             } else {
                                 $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -1983,10 +1991,10 @@ class ProsesGajiSupirHeader extends MyModel
                 'keterangan' => '',
             ]);
             $prosesGajiSupirDetails[] = $prosesGajiSupirDetail->toArray();
-            
-            if($isPisahGajiKenek == 'YA'){
+
+            if ($isPisahGajiKenek == 'YA') {
                 $totalKBT = $totalKBT + ($data['totalborongan'][$i] - $data['gajikenek'][$i]);
-            }else{
+            } else {
                 $totalKBT = $totalKBT + $data['totalborongan'][$i];
             }
         }
@@ -2754,10 +2762,10 @@ class ProsesGajiSupirHeader extends MyModel
 
             $prosesGajiSupirDetails[] = $prosesGajiSupirDetail->toArray();
             // DATA DETAIL PENGELUARAN
-            
-            if($isPisahGajiKenek == 'YA'){
+
+            if ($isPisahGajiKenek == 'YA') {
                 $totalKBT = $totalKBT + ($data['totalborongan'][$i] - $data['gajikenek'][$i]);
-            }else{
+            } else {
                 $totalKBT = $totalKBT + $data['totalborongan'][$i];
             }
 

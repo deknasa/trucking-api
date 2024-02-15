@@ -43,6 +43,14 @@ class ReminderEmailController extends Controller
      */
     public function store(StoreReminderEmailRequest $request)
     {
+        // $data = [
+        //     'id' => $request->id,
+        //     'keterangan' => $request->keterangan,
+        //     'statusaktif' => $request->statusaktif,
+        //     'tas_id' => $request->tas_id ?? '',
+        //     "accessTokenTnl" => $request->accessTokenTnl ?? '',
+        // ];
+
         DB::beginTransaction();
         try {
             $reminderEmail = $this->service->store(
@@ -53,6 +61,13 @@ class ReminderEmailController extends Controller
                 $reminderEmail->page = ceil($reminderEmail->position / (10));
             } else {
                 $reminderEmail->page = ceil($reminderEmail->position / ($request->limit ?? 10));
+            }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            // $data['tas_id'] = $reminderEmail->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('reminderemail', 'add', ReminderEmailDTO::dataRequest($request));
             }
 
             DB::commit();
@@ -85,6 +100,13 @@ class ReminderEmailController extends Controller
      */
     public function update(StoreReminderEmailRequest $request, ReminderEmail $reminderemail)
     {
+        // $data = [
+        //     'id' => $request->id,
+        //     'keterangan' => $request->keterangan,
+        //     'statusaktif' => $request->statusaktif,
+        //     "accessTokenTnl" => $request->accessTokenTnl ?? '',
+        // ];
+
         DB::beginTransaction();
         try {
             $reminderEmail = $this->service->update(
@@ -96,6 +118,13 @@ class ReminderEmailController extends Controller
                 $reminderEmail->page = ceil($reminderEmail->position / (10));
             } else {
                 $reminderEmail->page = ceil($reminderEmail->position / ($request->limit ?? 10));
+            }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            // $data['tas_id'] = $reminderEmail->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('reminderemail', 'edit',ReminderEmailDTO::dataRequest($request));
             }
 
             DB::commit();
@@ -129,6 +158,15 @@ class ReminderEmailController extends Controller
                 $reminderemail->page = ceil($reminderemail->position / (request()->limit ?? 10));
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $reminderemail;
+
+            $data["accessTokenTnl"] = request()->accessTokenTnl ?? '';
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('reminderemail', 'delete', $data);
+            }
+            
             DB::commit();
 
             return response()->json([

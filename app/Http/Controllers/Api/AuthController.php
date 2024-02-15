@@ -23,9 +23,10 @@ class AuthController extends Controller
         ];
 
         $info = $this->infoLocation($request->all());
-
+// dd($info);
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
+            // dd($user);
             return response([
                 'user' => $user,
                 'access_token' => $user->createToken('Access Token')->accessToken,

@@ -30,6 +30,7 @@ class CreatePengeluarantruckingTable extends Migration
             $table->unsignedBigInteger('aco_id')->nullable();          
             $table->unsignedBigInteger('cabang_id')->nullable();          
             $table->integer('statusaktif')->length(11)->nullable();
+            $table->unsignedBigInteger('tas_id')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();              
             $table->timestamps();

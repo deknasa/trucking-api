@@ -55,13 +55,30 @@ class BukaAbsensi extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'tglabsensi') {
+                                $query = $query->whereRaw("format(bukaabsensi." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at' || $filters['field'] == 'tglbatas') {
+                                $query = $query->whereRaw("format(bukaabsensi." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else{
+
+                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
                     }
 
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'tglabsensi') {
+                                $query = $query->orWhereRaw("format(bukaabsensi." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at' || $filters['field'] == 'tglbatas') {
+                                $query = $query->orWhereRaw("format(bukaabsensi." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            }else {
+                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
                     }
 
                     break;
@@ -132,8 +149,8 @@ class BukaAbsensi extends MyModel
     {
         $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'BATAS JAM EDIT ABSENSI')->where('subgrp', '=', 'BATAS JAM EDIT ABSENSI')->first();
         $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
-        if (strtotime('now')>strtotime($tglbatas)) {
-            $tglbatas = date('Y-m-d',strtotime('tomorrow')). ' ' . $jambatas->text ?? '00:00:00';
+        if (strtotime('now') > strtotime($tglbatas)) {
+            $tglbatas = date('Y-m-d', strtotime('tomorrow')) . ' ' . $jambatas->text ?? '00:00:00';
         }
         $bukaAbsensi = new BukaAbsensi();
         $bukaAbsensi->tglabsensi = date('Y-m-d', strtotime($data['tglabsensi']));
@@ -141,7 +158,7 @@ class BukaAbsensi extends MyModel
         $bukaAbsensi->modifiedby = auth('api')->user()->name;
         $bukaAbsensi->info = html_entity_decode(request()->info);
 
-        $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti',$bukaAbsensi->tglabsensi)->first();
+        $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti', $bukaAbsensi->tglabsensi)->first();
         if ($absensiSupirHeader) {
             $absensiSupirHeader->tglbataseditabsensi = $tglbatas;
             $absensiSupirHeader->modifiedby = auth('api')->user()->name;
@@ -194,7 +211,7 @@ class BukaAbsensi extends MyModel
         $bukaAbsensi = BukaAbsensi::findOrFail($id);
         $dataHeader =  $bukaAbsensi->toArray();
 
-        $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti',$bukaAbsensi->tglabsensi)->first();
+        $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti', $bukaAbsensi->tglabsensi)->first();
         $tglbatas = $bukaAbsensi->tglabsensi . ' ' . $jambatas->text ?? '00:00:00';
         if ($absensiSupirHeader) {
             $absensiSupirHeader->tglbataseditabsensi = $tglbatas;
@@ -217,24 +234,40 @@ class BukaAbsensi extends MyModel
         return $bukaAbsensi;
     }
 
-    public function processTanggalBatasUpdate($id)
+    public function processTanggalBatasUpdate(array $data)
     {
         $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'BATAS JAM EDIT ABSENSI')->where('subgrp', '=', 'BATAS JAM EDIT ABSENSI')->first();
         $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
-        
-        if (strtotime('now')>strtotime($tglbatas)) {
-            $tglbatas = date('Y-m-d',strtotime('tomorrow')). ' ' . $jambatas->text ?? '00:00:00';
+
+        if (strtotime('now') > strtotime($tglbatas)) {
+            $tglbatas = date('Y-m-d', strtotime('tomorrow')) . ' ' . $jambatas->text ?? '00:00:00';
         }
-        $bukaAbsensi = BukaAbsensi::where('id',$id)->first();
-        $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti',$bukaAbsensi->tglabsensi)->first();
-        if ($absensiSupirHeader) {
-            $absensiSupirHeader->tglbataseditabsensi = $tglbatas;
-            $absensiSupirHeader->modifiedby = auth('api')->user()->name;
-            $absensiSupirHeader->save();
+        for ($i = 0; $i < count($data['id']); $i++) {
+            $bukaAbsensi = BukaAbsensi::where('id', $data['id'][$i])->first();
+            $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti', $bukaAbsensi->tglabsensi)->first();
+            if ($absensiSupirHeader) {
+                $absensiSupirHeader->tglbataseditabsensi = $tglbatas;
+                $absensiSupirHeader->statusapprovaleditabsensi = 248;
+                $absensiSupirHeader->tglapprovaleditabsensi = date('Y-m-d H:i:s');
+                $absensiSupirHeader->userapprovaleditabsensi = auth('api')->user()->name;
+                $absensiSupirHeader->modifiedby = auth('api')->user()->name;
+                $absensiSupirHeader->save();
+            }
+            $bukaAbsensi->tglbatas = $tglbatas;
+            $bukaAbsensi->modifiedby = auth('api')->user()->name;
+            $bukaAbsensi->save();
+
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($bukaAbsensi->getTable()),
+                'postingdari' =>  "UPDATE TANGGAL BATAS ABSENSI",
+                'idtrans' => $bukaAbsensi->id,
+                'nobuktitrans' => $bukaAbsensi->nobukti,
+                'aksi' => 'UPDATE TANGGAL BATAS',
+                'datajson' => $bukaAbsensi->toArray(),
+                'modifiedby' => auth('api')->user()->user
+            ]);
         }
-        $bukaAbsensi->tglbatas = $tglbatas;
-        $bukaAbsensi->modifiedby = auth('api')->user()->name;
-        $bukaAbsensi->save();
+
         return $bukaAbsensi;
     }
 }

@@ -39,6 +39,8 @@ class Controller extends BaseController
         $this->appHelper = new AppHelper();
     }
 
+
+
     public function getRunningNumber(Request $request)
     {
         $request->validate([
@@ -397,32 +399,19 @@ class Controller extends BaseController
         $data['from'] = 'tas';
         $data['aksi'] = $aksi;
         $data['table'] = $table;
-        $getToken = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Accept' => 'application/json'
-        ])
-            ->post($server . 'token', [
-                'user' => 'ADMIN',
-                'password' => getenv('PASSWORD_TNL'),
-                'ipclient' => '',
-                'ipserver' => '',
-                'latitude' => '',
-                'longitude' => '',
-                'browser' => '',
-                'os' => '',
-            ]);
-
-        if ($getToken->getStatusCode() == '404') {
-            throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
-        } else if ($getToken->getStatusCode() == '200') {
-            $access_token = json_decode($getToken, TRUE)['access_token'];
+        
+        $accessTokenTnl = $data['accessTokenTnl'] ?? '';
+        $access_token =$accessTokenTnl;
+        
+        if ($accessTokenTnl != '') {
             if ($aksi == 'add') {
-
                 $posting = Http::withHeaders([
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json',
                     'Authorization' => 'Bearer ' . $access_token
                 ])->post($server . $table, $data);
+
+                // dd($posting->json());
             } else {
                 $getIdTnl = Http::withHeaders([
                     'Content-Type' => 'application/json',
@@ -432,31 +421,42 @@ class Controller extends BaseController
                 $respIdTnl = $getIdTnl->toPsrResponse();
                 if ($respIdTnl->getStatusCode() == 200 && $getIdTnl->json() != '') {
                     $id = $getIdTnl->json();
-                    if ($aksi == 'edit') {
 
+                    if ($id == 0) {
                         $posting = Http::withHeaders([
                             'Content-Type' => 'application/json',
                             'Accept' => 'application/json',
                             'Authorization' => 'Bearer ' . $access_token
-                        ])->patch($server . $table . '/' . $id, $data);
-                    }
-                    if ($aksi == 'delete') {
+                        ])->post($server . $table, $data);
+                    } else {
+                        if ($aksi == 'edit') {
 
-                        $posting = Http::withHeaders([
-                            'Content-Type' => 'application/json',
-                            'Accept' => 'application/json',
-                            'Authorization' => 'Bearer ' . $access_token
-                        ])->delete($server . $table . '/' . $id, $data);
+                            $posting = Http::withHeaders([
+                                'Content-Type' => 'application/json',
+                                'Accept' => 'application/json',
+                                'Authorization' => 'Bearer ' . $access_token
+                            ])->patch($server . $table . '/' . $id, $data);
+                        }
+                        if ($aksi == 'delete') {
+
+                            $posting = Http::withHeaders([
+                                'Content-Type' => 'application/json',
+                                'Accept' => 'application/json',
+                                'Authorization' => 'Bearer ' . $access_token
+                            ])->delete($server . $table . '/' . $id, $data);
+                        }
                     }
                 }
             }
 
+       
             $tesResp = $posting->toPsrResponse();
             $response = [
                 'statuscode' => $tesResp->getStatusCode(),
                 'data' => $posting->json(),
             ];
 
+            // dd($response);
             $dataResp = $posting->json();
             if ($tesResp->getStatusCode() != 201 && $tesResp->getStatusCode() != 200) {
                 throw new \Exception($dataResp['message']);
@@ -465,14 +465,53 @@ class Controller extends BaseController
         } else {
             throw new \Exception("server tidak bisa diakses");
         }
+        // selesai:
+        // return true;
+    }
+
+    public function postData($server, $method, $accessToken, $data)
+    {
+        $send = $this->http_request(
+            $server,
+            $method,
+            [
+                'Authorization: Bearer ' . $accessToken,
+                'Accept: application/json',
+                'Content-Type: application/json'
+            ],
+            $data
+        );
+        return $send;
+    }
+
+    public function http_request(string $url, string $method = 'GET', array $headers = null, array $body = null): string
+    {
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        if (!empty($body)) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array_merge($headers, ['Content-Type: application/json']));
+        }
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+
+        $output = curl_exec($ch);
+        curl_close($ch);
+
+        return $output;
     }
 
     public function getIdTnl(Request $request)
     {
         $backSlash = " \ ";
-        $controller = 'App\Http\Controllers\Api'. trim($backSlash) . $request->table.'Controller';
+        $controller = 'App\Http\Controllers\Api' . trim($backSlash) . $request->table . 'Controller';
         $model = 'App\Models' . trim($backSlash) . $request->table;
-        $models = app($model)->where('tas_id',$request->tas_id)->first();
+        $models = app($model)->where('tas_id', $request->tas_id)->first() ?? 0;
 
         return $models->id;
         // if($request->aksi == 'edit')

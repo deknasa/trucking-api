@@ -136,7 +136,6 @@ class GajiSupirHeader extends MyModel
                 $table->double('potonganpinjamansemua', 15, 2)->nullable();
                 $table->double('uangmakanberjenjang', 15, 2)->nullable();
                 $table->double('uangmakanharian', 15, 2)->nullable();
-                $table->double('uangJalantidakterhitung', 15, 2)->nullable();
                 $table->longText('statuscetak')->nullable();
                 $table->longText('statuscetak_text')->nullable();
                 $table->string('userbukacetak', 1000)->nullable();
@@ -213,7 +212,6 @@ class GajiSupirHeader extends MyModel
                     'gajisupirheader.potonganpinjamansemua',
                     DB::raw("(case when gajisupirheader.uangmakanberjenjang IS NULL then 0 else gajisupirheader.uangmakanberjenjang end) as uangmakanberjenjang"),
                     'gajisupirheader.uangmakanharian',
-                    'gajisupirheader.uangJalantidakterhitung',
                     'parameter.memo as statuscetak',
                     "parameter.text as statuscetak_text",
                     'gajisupirheader.userbukacetak',
@@ -223,7 +221,7 @@ class GajiSupirHeader extends MyModel
                     'gajisupirheader.created_at',
                     'gajisupirheader.updated_at',
                     DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then gajisupirheader.nominal else (gajisupirheader.total+isnull(C.komisisupir,0)+isnull(C.gajikenek,0)) end) as nominal"),
-                    DB::raw('(total + uangmakanharian + isnull(uangmakanberjenjang,0) - uangJalantidakterhitung - uangjalan - potonganpinjaman - potonganpinjamansemua - deposito - bbm) as sisa')
+                    DB::raw('(total + uangmakanharian + isnull(uangmakanberjenjang,0) - uangjalan - potonganpinjaman - potonganpinjamansemua - deposito - bbm) as sisa')
                 )
 
                 ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gajisupirheader.statuscetak', 'parameter.id')
@@ -261,7 +259,6 @@ class GajiSupirHeader extends MyModel
                 'potonganpinjamansemua',
                 'uangmakanberjenjang',
                 'uangmakanharian',
-                'uangJalantidakterhitung',
                 'statuscetak',
                 'statuscetak_text',
                 'userbukacetak',
@@ -310,7 +307,6 @@ class GajiSupirHeader extends MyModel
                 'a.potonganpinjamansemua',
                 'a.uangmakanberjenjang',
                 'a.uangmakanharian',
-                'a.uangJalantidakterhitung',
                 'a.statuscetak',
                 'a.statuscetak_text',
                 'a.userbukacetak',
@@ -361,7 +357,6 @@ class GajiSupirHeader extends MyModel
                 db::raw("sum(a.potonganpinjamansemua) as potonganpinjamansemua"),
                 db::raw("sum(a.uangmakanberjenjang) as uangmakanberjenjang"),
                 db::raw("sum(a.uangmakanharian) as uangmakanharian"),
-                db::raw("sum(a.uangJalantidakterhitung) as uangJalantidakterhitung"),
                 db::raw("sum(a.sisa) as sisa"),
                 db::raw("sum(a.gajisupir) as gajisupir"),
             )
@@ -399,7 +394,6 @@ class GajiSupirHeader extends MyModel
                 'supir.namasupir as supir',
                 'gajisupirheader.tgldari',
                 'gajisupirheader.tglsampai',
-                'gajisupirheader.uangJalantidakterhitung as uangjalantidakterhitung',
                 'gajisupirheader.uangmakanberjenjang as berjenjanguangmakan',
                 'gajisupirheader.uangmakanharian',
                 'gajisupirheader.deposito',
@@ -801,7 +795,6 @@ class GajiSupirHeader extends MyModel
             $table->double('potonganpinjamansemua', 15, 2)->nullable();
             $table->double('uangmakanberjenjang', 15, 2)->nullable();
             $table->double('uangmakanharian', 15, 2)->nullable();
-            $table->double('uangJalantidakterhitung', 15, 2)->nullable();
             $table->longText('statuscetak')->nullable();
             $table->longText('statuscetak_text')->nullable();
             $table->string('userbukacetak', 1000)->nullable();
@@ -866,7 +859,6 @@ class GajiSupirHeader extends MyModel
                 'gajisupirheader.potonganpinjamansemua',
                 DB::raw("(case when gajisupirheader.uangmakanberjenjang IS NULL then 0 else gajisupirheader.uangmakanberjenjang end) as uangmakanberjenjang"),
                 'gajisupirheader.uangmakanharian',
-                'gajisupirheader.uangJalantidakterhitung',
                 'parameter.memo as statuscetak',
                 "parameter.text as statuscetak_text",
                 'gajisupirheader.userbukacetak',
@@ -876,7 +868,7 @@ class GajiSupirHeader extends MyModel
                 'gajisupirheader.created_at',
                 'gajisupirheader.updated_at',
                 DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then gajisupirheader.nominal else (gajisupirheader.total+isnull(C.komisisupir,0)+isnull(C.gajikenek,0)) end) as nominal"),
-                DB::raw('(total + uangmakanharian + isnull(uangmakanberjenjang,0) - uangJalantidakterhitung - uangjalan - potonganpinjaman - potonganpinjamansemua - deposito - bbm) as sisa')
+                DB::raw('(total + uangmakanharian + isnull(uangmakanberjenjang,0) - uangjalan - potonganpinjaman - potonganpinjamansemua - deposito - bbm) as sisa')
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gajisupirheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
@@ -901,7 +893,6 @@ class GajiSupirHeader extends MyModel
             'potonganpinjamansemua',
             'uangmakanberjenjang',
             'uangmakanharian',
-            'uangJalantidakterhitung',
             'statuscetak',
             'statuscetak_text',
             'userbukacetak',
@@ -934,7 +925,6 @@ class GajiSupirHeader extends MyModel
                 'a.potonganpinjamansemua',
                 'a.uangmakanberjenjang',
                 'a.uangmakanharian',
-                'a.uangJalantidakterhitung',
                 'a.statuscetak',
                 'a.statuscetak_text',
                 'a.userbukacetak',
@@ -971,7 +961,6 @@ class GajiSupirHeader extends MyModel
             $table->double('potonganpinjamansemua', 15, 2)->nullable();
             $table->double('uangmakanberjenjang', 15, 2)->nullable();
             $table->double('uangmakanharian', 15, 2)->nullable();
-            $table->double('uangJalantidakterhitung', 15, 2)->nullable();
             $table->longText('statuscetak')->nullable();
             $table->longText('statuscetak_text')->nullable();
             $table->string('userbukacetak', 1000)->nullable();
@@ -1015,7 +1004,6 @@ class GajiSupirHeader extends MyModel
             'potonganpinjamansemua',
             'uangmakanberjenjang',
             'uangmakanharian',
-            'uangJalantidakterhitung',
             'statuscetak',
             'statuscetak_text',
             'userbukacetak',
@@ -1552,6 +1540,8 @@ class GajiSupirHeader extends MyModel
                             $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'check') {
+                            $query = $query->whereRaw('1 = 1');
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -1570,6 +1560,8 @@ class GajiSupirHeader extends MyModel
                                 $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'check') {
+                                $query = $query->whereRaw('1 = 1');
                             } else {
                                 // $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -1831,8 +1823,7 @@ class GajiSupirHeader extends MyModel
                 'gajisupirheader.potonganpinjamansemua',
                 'gajisupirheader.uangmakanharian',
                 'gajisupirheader.uangmakanberjenjang',
-                'gajisupirheader.uangJalantidakterhitung',
-                DB::raw('(total + uangmakanharian + uangmakanberjenjang - uangJalantidakterhitung - uangjalan - potonganpinjaman - potonganpinjamansemua - deposito - bbm) as sisa'),
+                DB::raw('(total + uangmakanharian + uangmakanberjenjang - uangjalan - potonganpinjaman - potonganpinjamansemua - deposito - bbm) as sisa'),
                 DB::raw('(case when (year(gajisupirheader.tglbukacetak) <= 2000) then null else gajisupirheader.tglbukacetak end ) as tglbukacetak'),
                 DB::raw("'Laporan Rincian Gaji Supir' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
@@ -1879,7 +1870,7 @@ class GajiSupirHeader extends MyModel
         $gajiSupirHeader->uangmakanberjenjang = $data['uangmakanberjenjang'] ?? 0;
         $gajiSupirHeader->pinjamanpribadi = 0;
         $gajiSupirHeader->gajiminus = 0;
-        $gajiSupirHeader->uangJalantidakterhitung = $data['uangjalantidakterhitung'] ?? 0;
+        $gajiSupirHeader->uangJalantidakterhitung = 0;
         $gajiSupirHeader->statusformat = $format->id;
         $gajiSupirHeader->statuscetak = $statusCetak->id;
         $gajiSupirHeader->modifiedby = auth('api')->user()->user;
@@ -2200,7 +2191,7 @@ class GajiSupirHeader extends MyModel
         $gajiSupirHeader->uangmakanberjenjang = $data['uangmakanberjenjang'] ?? 0;
         $gajiSupirHeader->pinjamanpribadi = 0;
         $gajiSupirHeader->gajiminus = 0;
-        $gajiSupirHeader->uangJalantidakterhitung = $data['uangjalantidakterhitung'] ?? 0;
+        $gajiSupirHeader->uangJalantidakterhitung = 0;
 
         $gajiSupirHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $gajiSupirHeader->nobukti = $nobukti;

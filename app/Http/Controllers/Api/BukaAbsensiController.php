@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Models\BukaAbsensi;
 use App\Http\Requests\StoreBukaAbsensiRequest;
 use App\Http\Requests\StoreLogTrailRequest;
@@ -114,23 +115,20 @@ class BukaAbsensiController extends Controller
      * @ClassName
      * @Keterangan PERBARUI BATAS TANGGAL
      */
-    public function updateTanggalBatas($id)
+    public function updateTanggalBatas(ApprovalKaryawanRequest $request)
     {
         DB::beginTransaction();
         try {
-            $bukaAbsensi = (new BukaAbsensi())->processTanggalBatasUpdate($id);
-            /* Set position and page */
-            $bukaAbsensi->position = $this->getPosition($bukaAbsensi, $bukaAbsensi->getTable())->position;
-            $bukaAbsensi->page = ceil($bukaAbsensi->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
-                $bukaAbsensi->page = ceil($bukaAbsensi->position / ($request->limit ?? 10));
-            }
-
+            $data = [
+                'id' => $request->Id
+            ];
+            $bukaAbsensi = (new BukaAbsensi())->processTanggalBatasUpdate($data);
+        
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $bukaAbsensi
-            ], 201);    
+            ], 200);    
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
