@@ -7,20 +7,28 @@ class ReminderEmailDTO
 {
     public string $keterangan;
     public string $statusaktif;
+    public string $accessTokenTnl;
+    public string $tas_id;
 
     public function __construct(
         string $keterangan,
-        string $statusaktif
+        string $statusaktif,
+        string $accessTokenTnl,
+        string $tas_id
     ){
         $this->keterangan = $keterangan;
         $this->statusaktif = $statusaktif;
+        $this->accessTokenTnl = $accessTokenTnl;
+        $this->tas_id = $tas_id;
     }
 
 
     public static function dataRequest(StoreReminderEmailRequest $request){
         return new self(
             $request->input('keterangan'),
-            $request->input('statusaktif')
+            $request->input('statusaktif'),
+            $request->input('accessTokenTnl'),
+            $request->input('tas_id')
         );
     }
 }
