@@ -36,6 +36,15 @@ class KaryawanController extends Controller
     {
         $karyawan = new Karyawan();
         $cekdata = $karyawan->cekvalidasihapus($id);
+
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $karyawan->id;
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            $cektnl=$this->CekValidasiToTnl("karyawan/" . $id . "/cekValidasi");
+            return response($cektnl);
+        }
+
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
                 ->select(
@@ -44,6 +53,7 @@ class KaryawanController extends Controller
                 ->where('kodeerror', '=', 'SATL')
                 ->get();
             $keterangan = $query['0'];
+
 
             $data = [
                 'status' => false,
