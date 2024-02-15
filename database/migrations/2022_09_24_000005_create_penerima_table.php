@@ -23,6 +23,7 @@ class CreatePenerimaTable extends Migration
             $table->string('noktp',50)->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
             $table->integer('statuskaryawan')->length(11)->nullable();
+            $table->unsignedBigInteger('tas_id')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();

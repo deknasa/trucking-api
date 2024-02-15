@@ -83,6 +83,7 @@ class CreateTradoTable extends Migration
             $table->dateTime('tglbatasremindersaringanhawa')->nullable();            
             $table->dateTime('tglberlakumilikmandor')->nullable();            
             $table->dateTime('tglberlakumiliksupir')->nullable();            
+            $table->unsignedBigInteger('tas_id')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 30)->nullable();
             $table->timestamps();

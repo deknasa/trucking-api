@@ -18,6 +18,7 @@ class CreateDataritasiTable extends Migration
             $table->integer('statusritasi')->nullable();            
             $table->double('nominal',15,2)->nullable();
             $table->integer('statusaktif')->nullable();  
+            $table->unsignedBigInteger('tas_id')->nullable();
             $table->longText('info')->nullable();          
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();

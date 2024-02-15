@@ -20,6 +20,7 @@ class CreateKaryawanTable extends Migration
             $table->longText('jabatan')->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
             $table->integer('statusstaff')->length(11)->nullable();
+            $table->unsignedBigInteger('tas_id')->nullable();
             $table->longText('info')->nullable();            
             $table->string('modifiedby', 30)->nullable();            
             $table->timestamps();

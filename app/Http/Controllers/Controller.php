@@ -399,50 +399,19 @@ class Controller extends BaseController
         $data['from'] = 'tas';
         $data['aksi'] = $aksi;
         $data['table'] = $table;
-        // $getToken = Http::withHeaders([
-        //     'Content-Type' => 'application/json',
-        //     'Accept' => 'application/json'
-        // ])
-        //     ->post($server . 'token', [
-        //         'user' => 'ADMIN',
-        //         'password' => getenv('PASSWORD_TNL'),
-        //         'ipclient' => '',
-        //         'ipserver' => '',
-        //         'latitude' => '',
-        //         'longitude' => '',
-        //         'browser' => '',
-        //         'os' => '',
-        //     ]);
-
-        // if ($getToken->getStatusCode() == '404') {
-        //     throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
-        // } else if ($getToken->getStatusCode() == '200') {
-            // $accessTokenTnl ='eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiZmFjYjVjYTEzODg1YTc3MDUwOTgwMjZjODdlMTUzMzMzZjFiNDNhN2RkODE2ODI4NzlmOTBlN2M1YWQyZjRmNDFhYWJjZmU3NzY2MmM3ZGQiLCJpYXQiOjE3MDc4MDkzNjQsIm5iZiI6MTcwNzgwOTM2NCwiZXhwIjoxNzM5NDMxNzY0LCJzdWIiOiIxOCIsInNjb3BlcyI6W119.PKNN10wntFWOfsXA4EwsfyyNk-QcOZWyFhbfDD8Xw2ERDVxcWZMtD6TJ-Xxa1D1NCCbpqHHsi1krfRn1GJY9tC8tTTYan6upnzY_emLCqpmGmr5389ZGCfzK4-MCTofnxYXVHcmdUvbs-9mYP0nBOl5ZYp-iRZwOEvj4v18C-MpALpGCOefmH_Q-QMSOnRZzhHXCekj_iZZC5i77MFWq_BH4GWDYk6Y-T3nDOezSC9jgymKy9_52nPPp8KIKMcHMzl0J211OFsJtgnk_kiUNL7grU0r1c11WzJjbb67qGLNHgtcsPizXBfyf2uWcrraY7xzzbJeEYOTNWdvlRvkeqk8zVT3wYVn55W-wD1FoE26XkP4UwH3ELTX_bOkmQyHpf2QbQSK6sjdxiuv00wsJf1MkTFpdznNWabVQXZXYEjZ5vhPjAWymaGefuPiYG0MsWi2rq6lbggp9BwkFBkNSjnUkHIEES-PKc1aWtptzkmK-XdEEl9f09Tna6VO1jA3q4aTBYMEeOm9sMHJhUA3FYJjueihnT0hs_J_NNQHPsJJzm5ZrK6QtEFUSlQqTXBODnfdcGKUO9hJLQVHnupSL4Bw5GPh6YpZQFzPq5REWFIPnsElfSK3eGvH8KNgakhnI69SIMPIuWfn66g8tpTOnfZSba97Xg-v_RJjLD3JihEY';
+        
         $accessTokenTnl = $data['accessTokenTnl'] ?? '';
         $access_token =$accessTokenTnl;
         
         if ($accessTokenTnl != '') {
-            // $access_token = json_decode($getToken, TRUE)['access_token'];
-           
             if ($aksi == 'add') {
-                // dump($server . $table);
-                // dd(json_encode($data));
-                // dd($access_token);
                 $posting = Http::withHeaders([
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json',
                     'Authorization' => 'Bearer ' . $access_token
                 ])->post($server . $table, $data);
-                // dd('test');
-                // $posting = $this->postData($server . $table, 'POST', $access_token, $data);
-                // dd($posting);
-                // $posting = json_decode($posting, TRUE);
-                // if (array_key_exists('status', $posting)) {
-                //     goto selesai;
-                // } else {
-                //     throw new \Exception($posting['message']);
-                // }
-                // dd($posting->json());
+
+                dd($posting->json());
             } else {
                 $getIdTnl = Http::withHeaders([
                     'Content-Type' => 'application/json',
