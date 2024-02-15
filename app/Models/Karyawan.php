@@ -355,6 +355,7 @@ class Karyawan extends MyModel
         $karyawan->statusaktif = $data['statusaktif'];
         $karyawan->statusstaff = $data['statusstaff'];
         $karyawan->jabatan = $data['jabatan'] ?? '';
+        $karyawan->tas_id = $data['tas_id'] ?? '';
         $karyawan->modifiedby = auth('api')->user()->user;
         $karyawan->info = html_entity_decode(request()->info);
 

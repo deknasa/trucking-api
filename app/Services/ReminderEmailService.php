@@ -13,6 +13,7 @@ class ReminderEmailService
         $reminderEmail = new ReminderEmail();
         $reminderEmail->keterangan = $dto['keterangan'];
         $reminderEmail->statusaktif = $dto['statusaktif'];
+        $reminderEmail->tas_id = $dto['tas_id'];
         $reminderEmail->modifiedby = auth('api')->user()->name;
         $reminderEmail->info = html_entity_decode(request()->info);
 
