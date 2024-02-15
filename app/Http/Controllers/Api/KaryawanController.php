@@ -35,6 +35,12 @@ class KaryawanController extends Controller
     public function cekValidasi(Request $request,$id)
     {
         $karyawan = new Karyawan();
+        if ($request->from=='tas') {
+            $id=db::table('karyawan')->from(db::raw("karyawan a with (readuncommitted)"))
+            ->select('a.id')
+            ->where('a.tas_id',$id)->first()->id ?? 0;
+            
+        }
         $cekdata = $karyawan->cekvalidasihapus($id);
 
         $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();

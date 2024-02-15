@@ -478,19 +478,21 @@ class Controller extends BaseController
         
         $accessTokenTnl = $data['accessTokenTnl'] ?? '';
         $access_token =$accessTokenTnl;
+        dd($server . $table);
         
         if ($accessTokenTnl != '') {
                 $posting = Http::withHeaders([
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json',
                     'Authorization' => 'Bearer ' . $access_token
-                ])->get($server . $table);
+                ])->Post($server . $table,$data);
 
        
             $tesResp = $posting->toPsrResponse();
+            // dd($posting->json());
             $response = [
                 'statuscode' => $tesResp->getStatusCode(),
-                'data' => $posting->json(),
+                // 'data' => $posting->json(),
             ];
 
             // dd($response);
