@@ -88,6 +88,7 @@ class KaryawanController extends Controller
                 'statusaktif' => $request->statusaktif,
                 'statusstaff' => $request->statusstaff,
                 'jabatan' => $request->jabatan,
+                'tas_id' => $request->tas_id,
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
 
             ];
