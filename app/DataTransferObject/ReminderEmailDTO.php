@@ -19,7 +19,7 @@ class ReminderEmailDTO
         $this->keterangan = $keterangan;
         $this->statusaktif = $statusaktif;
         $this->tas_id = $tas_id;
-        $this->tas_id = $accessTokenTnl;
+        $this->accessTokenTnl = $accessTokenTnl;
     }
 
 
