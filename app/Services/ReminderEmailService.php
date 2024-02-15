@@ -7,12 +7,12 @@ use App\DataTransferObject\ReminderEmailDTO;
 
 class ReminderEmailService
 {
-    public function store(ReminderEmailDTO $dto) : ReminderEmail
+    public function store(array $dto) : ReminderEmail
     {
 
         $reminderEmail = new ReminderEmail();
-        $reminderEmail->keterangan = $dto->keterangan;
-        $reminderEmail->statusaktif = $dto->statusaktif;
+        $reminderEmail->keterangan = $dto['keterangan'];
+        $reminderEmail->statusaktif = $dto['statusaktif'];
         $reminderEmail->modifiedby = auth('api')->user()->name;
         $reminderEmail->info = html_entity_decode(request()->info);
 
@@ -33,9 +33,9 @@ class ReminderEmailService
         return $reminderEmail;
     }
 
-    function update(ReminderEmail $reminderEmail, ReminderEmailDTO $dto) : ReminderEmail{
-        $reminderEmail->keterangan = $dto->keterangan;
-        $reminderEmail->statusaktif = $dto->statusaktif;
+    function update(ReminderEmail $reminderEmail, array $dto) : ReminderEmail{
+        $reminderEmail->keterangan = $dto['keterangan'];
+        $reminderEmail->statusaktif = $dto['statusaktif'];
         $reminderEmail->modifiedby = auth('api')->user()->name;
         $reminderEmail->info = html_entity_decode(request()->info);
 

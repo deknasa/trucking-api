@@ -154,6 +154,39 @@ class PenerimaanStokHeader extends MyModel
             $rtb = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
             $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
 
+            
+            $temtabelPg = '##temppg' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+            Schema::create($temtabelPg, function (Blueprint $table) {
+                $table->integer('id')->nullable();
+                $table->string('nobukti', 1000)->nullable();
+                $table->integer('stok_id')->nullable();
+                $table->integer('kelompok_id')->nullable();
+            });
+            $queryPg=DB::table($this->table)->select(
+                DB::raw("'' as id"),
+                DB::raw("'' as nobukti"),
+                DB::raw("'' as stok_id"),
+                DB::raw("'' as kelompok_id"),
+            )->take(1);
+            
+            if (request()->pengeluaranstok_id == $spk->text) {
+                $queryPg = DB::table($this->table)->leftJoin(DB::raw('(SELECT *, ROW_NUMBER() OVER (PARTITION BY penerimaanstokheader_id ORDER BY id) AS row_num FROM penerimaanstokdetail) AS penerimaanstokdetail'), function($join) {
+                    $join->on('penerimaanstokheader.id', '=', 'penerimaanstokdetail.penerimaanstokheader_id')
+                    ->where('penerimaanstokdetail.row_num', '=', 1);
+                })
+                ->leftJoin('stok', 'penerimaanstokdetail.stok_id', '=', 'stok.id')
+                ->leftJoin('kelompok', 'stok.kelompok_id', '=', 'kelompok.id')
+                ->where('penerimaanstokheader.penerimaanstok_id', '=', $pg->text)
+                ->select('penerimaanstokheader.id', 'penerimaanstokheader.nobukti', 'penerimaanstokdetail.stok_id', 'stok.kelompok_id');
+            }
+            DB::table($temtabelPg)->insertUsing([
+                'id',
+                'nobukti',
+                'stok_id',
+                'kelompok_id',
+            ], $queryPg);
+            $queryTemtabelPg = DB::table($temtabelPg);
+                      
             $query = DB::table($this->table);
             $query = $this->selectColumns($query)
 
@@ -175,6 +208,7 @@ class PenerimaanStokHeader extends MyModel
                 ->leftJoin('pengeluaranstokheader as pengeluaranstok', 'penerimaanstokheader.pengeluaranstok_nobukti', 'pengeluaranstok.nobukti')
                 ->leftJoin('penerimaanstokheader as nobuktipenerimaanstok', 'nobuktipenerimaanstok.nobukti', 'penerimaanstokheader.penerimaanstok_nobukti')
                 ->leftJoin('penerimaanstokheader as nobuktispb', 'penerimaanstokheader.nobukti', 'nobuktispb.penerimaanstok_nobukti')
+                ->leftJoin(db::raw($temtabelPg . " d1"), "penerimaanstokheader.id", "d1.id")
                 ->leftJoin('supplier', 'penerimaanstokheader.supplier_id', 'supplier.id');
                 // ->join(db::raw($temprole . " d "), 'penerimaanstok.aco_id', 'd.aco_id');
 
@@ -627,7 +661,7 @@ class PenerimaanStokHeader extends MyModel
             db::raw("cast(cast(format((cast((format(hutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderhutangheader"),
             db::raw("cast((format(pengeluaranstok.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranstok"),
             db::raw("cast(cast(format((cast((format(pengeluaranstok.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranstok"),
-
+            db::raw("d1.kelompok_id as kelompok_id"),
             DB::raw("'" . $getJudul->text . "' as judul")
         );
     }

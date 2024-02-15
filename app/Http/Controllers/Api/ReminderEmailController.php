@@ -54,7 +54,12 @@ class ReminderEmailController extends Controller
         DB::beginTransaction();
         try {
             $reminderEmail = $this->service->store(
-                ReminderEmailDTO::dataRequest($request)
+                [
+                    "keterangan" => $request->input('keterangan'),
+                    "statusaktif" => $request->input('statusaktif'),
+                    "tas_id" => $request->input('tas_id'),
+                    "accessTokenTnl" => $request->input('accessTokenTnl')
+                ]
             );
             $reminderEmail->position = $this->getPosition($reminderEmail, $reminderEmail->getTable())->position;
             if ($request->limit == 0) {
@@ -111,7 +116,12 @@ class ReminderEmailController extends Controller
         try {
             $reminderEmail = $this->service->update(
                 $reminderemail,
-                ReminderEmailDTO::dataRequest($request)
+                [
+                    "keterangan" => $request->input('keterangan'),
+                    "statusaktif" => $request->input('statusaktif'),
+                    "tas_id" => $request->input('tas_id'),
+                    "accessTokenTnl" => $request->input('accessTokenTnl')
+                ]
             );
             $reminderEmail->position = $this->getPosition($reminderEmail, $reminderEmail->getTable())->position;
             if ($request->limit == 0) {
