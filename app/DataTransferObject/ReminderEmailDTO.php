@@ -8,7 +8,7 @@ class ReminderEmailDTO
     public string $keterangan;
     public string $statusaktif;
     public string $accessTokenTnl;
-    public string $tas_id;
+    public int $tas_id;
 
     public function __construct(
         string $keterangan,
