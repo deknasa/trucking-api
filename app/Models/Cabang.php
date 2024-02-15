@@ -324,6 +324,13 @@ class Cabang extends MyModel
             'modifiedby' => auth('api')->user()->name
         ]);
 
+        // $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        // $data['tas_id'] = $cabang->id;
+
+        // if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+        //     $this->saveToTnl('cabang', 'add', $data);
+        // }
+
         return $cabang;
     }
 

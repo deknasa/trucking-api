@@ -88,7 +88,10 @@ class KaryawanController extends Controller
                 'statusaktif' => $request->statusaktif,
                 'statusstaff' => $request->statusstaff,
                 'jabatan' => $request->jabatan,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
+
             ];
+            // dd($data);
             $karyawan = (new Karyawan())->processStore($data);
             $karyawan->position = $this->getPosition($karyawan, $karyawan->getTable())->position;
             if ($request->limit==0) {
@@ -96,6 +99,13 @@ class KaryawanController extends Controller
             } else {
                 $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
             }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $karyawan->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('karyawan', 'add', $data);
+            }
+
 
             DB::commit();
 
@@ -133,6 +143,7 @@ class KaryawanController extends Controller
                 'statusaktif' => $request->statusaktif,
                 'statusstaff' => $request->statusstaff,
                 'jabatan' => $request->jabatan,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',       
             ];
             $karyawan = (new Karyawan())->processUpdate($karyawan, $data);
             $karyawan->position = $this->getPosition($karyawan, $karyawan->getTable())->position;
@@ -140,6 +151,13 @@ class KaryawanController extends Controller
                 $karyawan->page = ceil($karyawan->position / (10));
             } else {
                 $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
+            }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $karyawan->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('karyawan', 'edit', $data);
             }
 
             DB::commit();
@@ -172,6 +190,15 @@ class KaryawanController extends Controller
                 $karyawan->page = ceil($karyawan->position / (10));
             } else {
                 $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
+            }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
+
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('karyawan', 'delete', $data);
             }
 
             DB::commit();

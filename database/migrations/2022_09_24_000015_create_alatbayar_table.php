@@ -29,6 +29,7 @@ class CreatealatbayarTable extends Migration
             $table->integer('statusaktif')->length(11)->nullable();                
             $table->string('tipe', 50)->nullable();
             $table->longText('info')->nullable();
+            $table->unsignedBigInteger('tas_id')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
 

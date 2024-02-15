@@ -69,7 +69,9 @@ class CabangController extends Controller
             'tas_id' => $request->tas_id ?? '',
             "key" => $request->key,
             "value" => $request->value,
+            "accessTokenTnl" => $request->accessTokenTnl ?? '',
         ];
+        // dd($data);
         DB::beginTransaction();
 
         try {
@@ -125,6 +127,7 @@ class CabangController extends Controller
             'statusaktif' => $request->statusaktif,
             "key" => $request->key,
             "value" => $request->value,
+            "accessTokenTnl" => $request->accessTokenTnl ?? '',
         ];
         DB::beginTransaction();
 
@@ -184,6 +187,8 @@ class CabangController extends Controller
 
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
             $data['tas_id'] = $id;
+
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
                 $this->saveToTnl('cabang', 'delete', $data);

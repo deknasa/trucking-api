@@ -1652,55 +1652,57 @@ class SuratPengantar extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'pelanggan_id') {
-                            $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'dari_id') {
-                            $query = $query->where('kotadari.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'sampai_id') {
-                            $query = $query->where('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'statuscontainer_id') {
-                            $query = $query->where('statuscontainer.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'container_id') {
-                            $query = $query->where('container.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'trado_id') {
-                            $query = $query->where('trado.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'supir_id') {
-                            $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'agen_id') {
-                            $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'gandengan_id') {
-                            $query = $query->where('gandengan.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'jenisorder_id') {
-                            $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'tarif_id') {
-                            $query = $query->where('tarif.tujuan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'mandortrado_id') {
-                            $query = $query->where('mandortrado.namamandor', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'mandorsupir_id') {
-                            $query = $query->where('mandorsupir.namamandor', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'statuslongtrip') {
-                            $query = $query->where('statuslongtrip.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statusperalihan') {
-                            $query = $query->where('statusperalihan.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statusritasiomset') {
-                            $query = $query->where('statusritasiomset.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statusgudangsama') {
-                            $query = $query->where('statusgudangsama.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statusbatalmuat') {
-                            $query = $query->where('statusbatalmuat.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statusapprovaleditsuratpengantar') {
-                            $query = $query->where('statusapprovaleditsuratpengantar.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statusapprovalbiayatitipanemkl') {
-                            $query = $query->where('statusapprovalbiayatitipanemkl.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak' || $filters['field'] == 'omset' || $filters['field'] == 'nominalperalihan' || $filters['field'] == 'totalomset') {
-                            $query = $query->whereRaw("format(suratpengantar." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglsp') {
-                            $query = $query->whereRaw("format(suratpengantar." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(suratpengantar." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw("suratpengantar.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'pelanggan_id') {
+                                $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'dari_id') {
+                                $query = $query->where('kotadari.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'sampai_id') {
+                                $query = $query->where('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'statuscontainer_id') {
+                                $query = $query->where('statuscontainer.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'container_id') {
+                                $query = $query->where('container.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'trado_id') {
+                                $query = $query->where('trado.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'supir_id') {
+                                $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'agen_id') {
+                                $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'gandengan_id') {
+                                $query = $query->where('gandengan.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'jenisorder_id') {
+                                $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tarif_id') {
+                                $query = $query->where('tarif.tujuan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'mandortrado_id') {
+                                $query = $query->where('mandortrado.namamandor', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'mandorsupir_id') {
+                                $query = $query->where('mandorsupir.namamandor', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'statuslongtrip') {
+                                $query = $query->where('statuslongtrip.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusperalihan') {
+                                $query = $query->where('statusperalihan.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusritasiomset') {
+                                $query = $query->where('statusritasiomset.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusgudangsama') {
+                                $query = $query->where('statusgudangsama.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusbatalmuat') {
+                                $query = $query->where('statusbatalmuat.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusapprovaleditsuratpengantar') {
+                                $query = $query->where('statusapprovaleditsuratpengantar.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusapprovalbiayatitipanemkl') {
+                                $query = $query->where('statusapprovalbiayatitipanemkl.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak' || $filters['field'] == 'omset' || $filters['field'] == 'nominalperalihan' || $filters['field'] == 'totalomset') {
+                                $query = $query->whereRaw("format(suratpengantar." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglsp') {
+                                $query = $query->whereRaw("format(suratpengantar." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(suratpengantar." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw("suratpengantar.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -1708,55 +1710,57 @@ class SuratPengantar extends MyModel
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'pelanggan_id') {
-                                $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'dari_id') {
-                                $query = $query->orWhere('kotadari.keterangan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'sampai_id') {
-                                $query = $query->orWhere('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'statuscontainer_id') {
-                                $query = $query->orWhere('statuscontainer.keterangan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'container_id') {
-                                $query = $query->orWhere('container.keterangan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'trado_id') {
-                                $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'supir_id') {
-                                $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'agen_id') {
-                                $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'gandengan_id') {
-                                $query = $query->orWhere('gandengan.keterangan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'jenisorder_id') {
-                                $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'tarif_id') {
-                                $query = $query->orWhere('tarif.tujuan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'mandortrado_id') {
-                                $query = $query->orWhere('mandortrado.namamandor', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'mandorsupir_id') {
-                                $query = $query->orWhere('mandorsupir.namamandor', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'statuslongtrip') {
-                                $query = $query->orWhere('statuslongtrip.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'statusperalihan') {
-                                $query = $query->orWhere('statusperalihan.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'statusritasiomset') {
-                                $query = $query->orWhere('statusritasiomset.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'statusgudangsama') {
-                                $query = $query->orWhere('statusgudangsama.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'statusbatalmuat') {
-                                $query = $query->orWhere('statusbatalmuat.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'statusapprovaleditsuratpengantar') {
-                                $query = $query->orWhere('statusapprovaleditsuratpengantar.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'statusapprovalbiayatitipanemkl') {
-                                $query = $query->orWhere('statusapprovalbiayatitipanemkl.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak' || $filters['field'] == 'omset' || $filters['field'] == 'nominalperalihan' || $filters['field'] == 'totalomset') {
-                                $query = $query->orWhereRaw("format(suratpengantar." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglsp') {
-                                $query = $query->orWhereRaw("format(suratpengantar." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(suratpengantar." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
-                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw("suratpengantar.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'pelanggan_id') {
+                                    $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'dari_id') {
+                                    $query = $query->orWhere('kotadari.keterangan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'sampai_id') {
+                                    $query = $query->orWhere('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'statuscontainer_id') {
+                                    $query = $query->orWhere('statuscontainer.keterangan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'container_id') {
+                                    $query = $query->orWhere('container.keterangan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'trado_id') {
+                                    $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'supir_id') {
+                                    $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'agen_id') {
+                                    $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'gandengan_id') {
+                                    $query = $query->orWhere('gandengan.keterangan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'jenisorder_id') {
+                                    $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'tarif_id') {
+                                    $query = $query->orWhere('tarif.tujuan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'mandortrado_id') {
+                                    $query = $query->orWhere('mandortrado.namamandor', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'mandorsupir_id') {
+                                    $query = $query->orWhere('mandorsupir.namamandor', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'statuslongtrip') {
+                                    $query = $query->orWhere('statuslongtrip.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusperalihan') {
+                                    $query = $query->orWhere('statusperalihan.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusritasiomset') {
+                                    $query = $query->orWhere('statusritasiomset.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusgudangsama') {
+                                    $query = $query->orWhere('statusgudangsama.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusbatalmuat') {
+                                    $query = $query->orWhere('statusbatalmuat.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusapprovaleditsuratpengantar') {
+                                    $query = $query->orWhere('statusapprovaleditsuratpengantar.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusapprovalbiayatitipanemkl') {
+                                    $query = $query->orWhere('statusapprovalbiayatitipanemkl.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak' || $filters['field'] == 'omset' || $filters['field'] == 'nominalperalihan' || $filters['field'] == 'totalomset') {
+                                    $query = $query->orWhereRaw("format(suratpengantar." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglsp') {
+                                    $query = $query->orWhereRaw("format(suratpengantar." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(suratpengantar." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw("suratpengantar.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
                     });
@@ -2369,5 +2373,251 @@ class SuratPengantar extends MyModel
             ->groupBy('agen.namaagen');
 
         return $query->get();
+    }
+
+    public function approvalTitipanEmkl(array $data)
+    {
+
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+        $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
+        $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
+
+        for ($i = 0; $i < count($data['nobukti']); $i++) {
+
+            $nobukti = $data['nobukti'][$i] ?? '';
+            $querysuratpengantar = DB::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+                ->select(
+                    'a.id'
+                )->where('a.nobukti', $nobukti)
+                ->first();
+
+            if (isset($querysuratpengantar)) {
+                $id = $querysuratpengantar->id ?? 0;
+                $suratPengantar = SuratPengantar::lockForUpdate()->findOrFail($id);
+
+                if ($suratPengantar->statusapprovalbiayatitipanemkl == $statusApproval->id) {
+                    $suratPengantar->statusapprovalbiayatitipanemkl = $statusNonApproval->id;
+                    $suratPengantar->tglapprovalbiayatitipanemkl = date('Y-m-d', strtotime("1900-01-01"));
+                    $suratPengantar->tglbatasbiayatitipanemkl = '';
+                    $suratPengantar->userapprovalbiayatitipanemkl = '';
+                    $aksi = $statusNonApproval->text;
+                } else {
+                    $suratPengantar->statusapprovalbiayatitipanemkl = $statusApproval->id;
+                    $suratPengantar->tglapprovalbiayatitipanemkl = date('Y-m-d H:i:s');
+                    $suratPengantar->tglbatasbiayatitipanemkl = $tglbatas;
+                    $suratPengantar->userapprovalbiayatitipanemkl = auth('api')->user()->name;
+                    $aksi = $statusApproval->text;
+                }
+                if ($suratPengantar->save()) {
+                    (new LogTrail())->processStore([
+                        'namatabel' => strtoupper($suratPengantar->getTable()),
+                        'postingdari' =>  "$aksi TITIPAN EMKL SURAT PENGANTAR",
+                        'idtrans' => $suratPengantar->id,
+                        'nobuktitrans' => $suratPengantar->nobukti,
+                        'aksi' => $aksi,
+                        'datajson' => $suratPengantar->toArray(),
+                        'modifiedby' => auth('api')->user()->user
+                    ]);
+                }
+            } else {
+                $querysuratpengantar = DB::table("saldosuratpengantar")->from(db::raw("saldosuratpengantar a with (readuncommitted)"))
+                    ->select(
+                        'a.id'
+                    )->where('a.nobukti', $nobukti)
+                    ->first();
+                $id = $querysuratpengantar->id ?? 0;
+
+                $saldosuratPengantar = SaldoSuratPengantar::lockForUpdate()->findOrFail($id);
+
+                if ($saldosuratPengantar->statusapprovalbiayatitipanemkl == $statusApproval->id) {
+                    $saldosuratPengantar->statusapprovalbiayatitipanemkl = $statusNonApproval->id;
+                    $saldosuratPengantar->tglapprovalbiayatitipanemkl = date('Y-m-d', strtotime("1900-01-01"));
+                    $saldosuratPengantar->tglbatasbiayatitipanemkl = '';
+                    $saldosuratPengantar->userapprovalbiayatitipanemkl = '';
+                    $aksi = $statusNonApproval->text;
+                } else {
+                    $saldosuratPengantar->statusapprovalbiayatitipanemkl = $statusApproval->id;
+                    $saldosuratPengantar->tglapprovalbiayatitipanemkl = date('Y-m-d H:i:s');
+                    $saldosuratPengantar->tglbatasbiayatitipanemkl = $tglbatas;
+                    $saldosuratPengantar->userapprovalbiayatitipanemkl = auth('api')->user()->name;
+                    $aksi = $statusApproval->text;
+                };
+                if ($saldosuratPengantar->save()) {
+                    (new LogTrail())->processStore([
+                        'namatabel' => strtoupper('saldosuratpengantar'),
+                        'postingdari' =>  "$aksi TITIPAN EMKL SURAT PENGANTAR",
+                        'idtrans' => $saldosuratPengantar->id,
+                        'nobuktitrans' => $saldosuratPengantar->nobukti,
+                        'aksi' => $aksi,
+                        'datajson' => $saldosuratPengantar->toArray(),
+                        'modifiedby' => auth('api')->user()->user
+                    ]);
+                }
+            }
+        }
+
+
+        return $data;
+    }
+
+    public function approvalEditTujuan(array $data)
+    {
+
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+        $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
+        $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
+
+        for ($i = 0; $i < count($data['nobukti']); $i++) {
+
+            $nobukti = $data['nobukti'][$i] ?? '';
+            $querysuratpengantar = DB::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+                ->select(
+                    'a.id'
+                )->where('a.nobukti', $nobukti)
+                ->first();
+
+            if (isset($querysuratpengantar)) {
+                $id = $querysuratpengantar->id ?? 0;
+                $suratPengantar = SuratPengantar::lockForUpdate()->findOrFail($id);
+
+                if ($suratPengantar->statusapprovaleditsuratpengantar == $statusApproval->id) {
+                    $suratPengantar->statusapprovaleditsuratpengantar = $statusNonApproval->id;
+                    $suratPengantar->tglapprovaleditsuratpengantar = date('Y-m-d', strtotime("1900-01-01"));
+                    $suratPengantar->tglbataseditsuratpengantar = '';
+                    $suratPengantar->userapprovaleditsuratpengantar = '';
+                    $aksi = $statusNonApproval->text;
+                } else {
+                    $suratPengantar->statusapprovaleditsuratpengantar = $statusApproval->id;
+                    $suratPengantar->tglapprovaleditsuratpengantar = date('Y-m-d H:i:s');
+                    $suratPengantar->tglbataseditsuratpengantar = $tglbatas;
+                    $suratPengantar->userapprovaleditsuratpengantar = auth('api')->user()->name;
+                    $aksi = $statusApproval->text;
+                }
+                if ($suratPengantar->save()) {
+                    (new LogTrail())->processStore([
+                        'namatabel' => strtoupper($suratPengantar->getTable()),
+                        'postingdari' =>  "$aksi EDIT SURAT PENGANTAR",
+                        'idtrans' => $suratPengantar->id,
+                        'nobuktitrans' => $suratPengantar->nobukti,
+                        'aksi' => $aksi,
+                        'datajson' => $suratPengantar->toArray(),
+                        'modifiedby' => auth('api')->user()->user
+                    ]);
+                }
+            } else {
+                $querysuratpengantar = DB::table("saldosuratpengantar")->from(db::raw("saldosuratpengantar a with (readuncommitted)"))
+                    ->select(
+                        'a.id'
+                    )->where('a.nobukti', $nobukti)
+                    ->first();
+                $id = $querysuratpengantar->id ?? 0;
+
+                $saldosuratPengantar = SaldoSuratPengantar::lockForUpdate()->findOrFail($id);
+
+                if ($saldosuratPengantar->statusapprovaleditsuratpengantar == $statusApproval->id) {
+                    $saldosuratPengantar->statusapprovaleditsuratpengantar = $statusNonApproval->id;
+                    $saldosuratPengantar->tglapprovaleditsuratpengantar = date('Y-m-d', strtotime("1900-01-01"));
+                    $saldosuratPengantar->tglbataseditsuratpengantar = '';
+                    $saldosuratPengantar->userapprovaleditsuratpengantar = '';
+                    $aksi = $statusNonApproval->text;
+                } else {
+                    $saldosuratPengantar->statusapprovaleditsuratpengantar = $statusApproval->id;
+                    $saldosuratPengantar->tglapprovaleditsuratpengantar = date('Y-m-d H:i:s');
+                    $saldosuratPengantar->tglbataseditsuratpengantar = $tglbatas;
+                    $saldosuratPengantar->userapprovaleditsuratpengantar = auth('api')->user()->name;
+                    $aksi = $statusApproval->text;
+                };
+                if ($saldosuratPengantar->save()) {
+                    (new LogTrail())->processStore([
+                        'namatabel' => strtoupper('saldosuratpengantar'),
+                        'postingdari' =>  "$aksi EDIT SURAT PENGANTAR",
+                        'idtrans' => $saldosuratPengantar->id,
+                        'nobuktitrans' => $saldosuratPengantar->nobukti,
+                        'aksi' => $aksi,
+                        'datajson' => $saldosuratPengantar->toArray(),
+                        'modifiedby' => auth('api')->user()->user
+                    ]);
+                }
+            }
+        }
+
+
+        return $data;
+    }
+
+    public function approvalBatalMuat(array $data)
+    {
+
+        $statusBatalMuat = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS BATAL MUAT')->where('text', '=', 'BATAL MUAT')->first();
+        $statusBukanBatalMuat = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS BATAL MUAT')->where('text', '=', 'BUKAN BATAL MUAT')->first();
+
+        for ($i = 0; $i < count($data['nobukti']); $i++) {
+
+            $nobukti = $data['nobukti'][$i] ?? '';
+            $querysuratpengantar = DB::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+                ->select(
+                    'a.id'
+                )->where('a.nobukti', $nobukti)
+                ->first();
+
+            if (isset($querysuratpengantar)) {
+                $id = $querysuratpengantar->id ?? 0;
+                $suratPengantar = SuratPengantar::lockForUpdate()->findOrFail($id);
+
+                if ($suratPengantar->statusbatalmuat == $statusBatalMuat->id) {
+                    $suratPengantar->statusbatalmuat = $statusBukanBatalMuat->id;
+                    $aksi = $statusBukanBatalMuat->text;
+                } else {
+                    $suratPengantar->statusbatalmuat = $statusBatalMuat->id;
+                    $aksi = $statusBatalMuat->text;
+                }
+                if ($suratPengantar->save()) {
+                    (new LogTrail())->processStore([
+                        'namatabel' => strtoupper($suratPengantar->getTable()),
+                        'postingdari' =>  "$aksi BATAL MUAT",
+                        'idtrans' => $suratPengantar->id,
+                        'nobuktitrans' => $suratPengantar->nobukti,
+                        'aksi' => $aksi,
+                        'datajson' => $suratPengantar->toArray(),
+                        'modifiedby' => auth('api')->user()->user
+                    ]);
+                }
+            } else {
+                $querysuratpengantar = DB::table("saldosuratpengantar")->from(db::raw("saldosuratpengantar a with (readuncommitted)"))
+                    ->select(
+                        'a.id'
+                    )->where('a.nobukti', $nobukti)
+                    ->first();
+                $id = $querysuratpengantar->id ?? 0;
+
+                $saldosuratPengantar = SaldoSuratPengantar::lockForUpdate()->findOrFail($id);
+
+                if ($saldosuratPengantar->statusbatalmuat == $statusBatalMuat->id) {
+                    $saldosuratPengantar->statusbatalmuat = $statusBukanBatalMuat->id;
+                    $aksi = $statusBukanBatalMuat->text;
+                } else {
+                    $saldosuratPengantar->statusbatalmuat = $statusBatalMuat->id;
+                    $aksi = $statusBatalMuat->text;
+                }
+                if ($saldosuratPengantar->save()) {
+                    (new LogTrail())->processStore([
+                        'namatabel' => strtoupper('saldosuratpengantar'),
+                        'postingdari' =>  "$aksi BATAL MUAT",
+                        'idtrans' => $saldosuratPengantar->id,
+                        'nobuktitrans' => $saldosuratPengantar->nobukti,
+                        'aksi' => $aksi,
+                        'datajson' => $saldosuratPengantar->toArray(),
+                        'modifiedby' => auth('api')->user()->user
+                    ]);
+                }
+            }
+        }
+
+
+        return $data;
     }
 }

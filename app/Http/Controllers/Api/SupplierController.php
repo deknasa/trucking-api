@@ -149,14 +149,25 @@ class SupplierController extends Controller
                 }
             }
 
-            $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
-            if ($data['statuspostingtnl'] == $statusTnl->id) {
+            $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->where('default', 'YA')->first();
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
                 $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
                 // posting ke tnl
                 $data['statuspostingtnl'] = $statusBukanTnl->id;
     
                 $postingTNL = (new Supplier())->postingTnl($data);
             }
+            // if ($data['statuspostingtnl'] == $statusTnl->id) {
+            //     $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
+            //     // posting ke tnl
+            //     $data['statuspostingtnl'] = $statusBukanTnl->id;
+    
+            //     $postingTNL = (new Supplier())->postingTnl($data);
+            // }
             DB::commit();
 
             return response()->json([

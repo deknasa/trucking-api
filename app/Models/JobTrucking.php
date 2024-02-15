@@ -103,7 +103,7 @@ class JobTrucking extends MyModel
                 ->where('a.jenisorder_id', '=', request()->jenisorder_id)
                 ->where('a.gandengan_id', '=', request()->gandengan_id)
                 ->where('a.pelanggan_id', '=', request()->pelanggan_id)
-                // ->where('a.tarif_id', '=', request()->tarif_id)
+                ->where('a.tarif_id', '=', request()->tarif_id)
                 ->whereRaw("isnull(a.jobtrucking,'')<>''")
                 ->whereRaw("a.sampai_id=" . $pelabuhan->text . " and isnull(B.statusapprovalbukatrip,4)=4");
             // ->where('a.sampai_id', '=', $pelabuhan->text);
@@ -222,7 +222,13 @@ class JobTrucking extends MyModel
                 ->leftjoin(DB::raw("trado as c with(readuncommitted)"), 'a.trado_id', 'c.id')
                 ->leftjoin(DB::raw("kota as kotadr with(readuncommitted)"), 'a.dari_id', 'kotadr.id')
                 ->leftjoin(DB::raw("kota as kotasd with(readuncommitted)"), 'a.sampai_id', 'kotasd.id')
-                ->leftjoin(DB::raw($tempselesai . " as d"), 'a.jobtrucking', 'd.jobtrucking');
+                ->leftjoin(DB::raw($tempselesai . " as d"), 'a.jobtrucking', 'd.jobtrucking')
+
+                ->where('a.container_id', '=', request()->container_id)
+                ->where('a.jenisorder_id', '=', request()->jenisorder_id)
+                ->where('a.gandengan_id', '=', request()->gandengan_id)
+                ->where('a.pelanggan_id', '=', request()->pelanggan_id)
+                ->where('a.tarif_id', '=', request()->tarif_id);
         } else {
             // dd('test');
             $queryjob = DB::table('suratpengantar')->from(
@@ -234,6 +240,7 @@ class JobTrucking extends MyModel
                 ->where('a.container_id', '=', request()->container_id)
                 ->where('a.jenisorder_id', '=', request()->jenisorder_id)
                 ->where('a.pelanggan_id', '=', request()->pelanggan_id)
+                ->where('a.tarif_id', '=', request()->tarif_id)
                 ->whereRaw("isnull(a.jobtrucking,'')<>''")
                 ->where('a.sampai_id', '=', $pelabuhan->text);
 
@@ -368,7 +375,11 @@ class JobTrucking extends MyModel
                 ->leftjoin(DB::raw("trado as c with(readuncommitted)"), 'a.trado_id', 'c.id')
                 ->leftjoin(DB::raw("kota as kotadr with(readuncommitted)"), 'a.dari_id', 'kotadr.id')
                 ->leftjoin(DB::raw("kota as kotasd with(readuncommitted)"), 'a.sampai_id', 'kotasd.id')
-                ->leftjoin(DB::raw($tempselesai . " as d"), 'a.jobtrucking', 'd.jobtrucking');
+                ->leftjoin(DB::raw($tempselesai . " as d"), 'a.jobtrucking', 'd.jobtrucking')
+                ->where('a.container_id', '=', request()->container_id)
+                ->where('a.jenisorder_id', '=', request()->jenisorder_id)
+                ->where('a.pelanggan_id', '=', request()->pelanggan_id)
+                ->where('a.tarif_id', '=', request()->tarif_id);
         }
 
 

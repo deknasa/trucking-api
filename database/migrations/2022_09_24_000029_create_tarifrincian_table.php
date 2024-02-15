@@ -21,6 +21,7 @@ class CreateTarifrincianTable extends Migration
             $table->unsignedBigInteger('tarif_id')->nullable();
             $table->unsignedBigInteger('container_id')->nullable();
             $table->double('nominal',15,2)->nullable();
+            $table->unsignedBigInteger('tas_id')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();                 
             $table->timestamps();

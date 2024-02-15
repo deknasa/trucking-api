@@ -30,6 +30,9 @@ class ApprovalBukaCetak implements Rule
     public function passes($attribute, $value)
     {
         $table = request()->table;
+        if($table == 'PEMUTIHANSUPIR'){
+            $table = 'PEMUTIHANSUPIRHEADER';
+        }
         $allowed = false;
         $tutupBuku = Parameter::where('grp', 'TUTUP BUKU')->where('subgrp', 'TUTUP BUKU')->first();
         $tutupBukuDate = date('Y-m-d', strtotime($tutupBuku->text));

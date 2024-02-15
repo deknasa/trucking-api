@@ -27,8 +27,10 @@ class CreateUpahsupirrincianTable extends Migration
             $table->double('nominalkomisi',15,2)->nullable();
             $table->double('nominaltol',15,2)->nullable();
             $table->double('liter',15,2)->nullable();
+            $table->unsignedBigInteger('tas_id')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();            
+            
             $table->timestamps();
 
             $table->foreign('upahsupir_id', 'upahsupirrincian_upahsupir_upahsupir_id_foreign')->references('id')->on('upahsupir')->onDelete('cascade');
