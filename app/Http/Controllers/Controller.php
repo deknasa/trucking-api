@@ -469,7 +469,7 @@ class Controller extends BaseController
         // return true;
     }
 
-    public function CekValidasiToTnl($table)
+    public function CekValidasiToTnl($table,$data)
     {
         $server = config('app.api_tnl');
 
