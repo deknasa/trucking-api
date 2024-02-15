@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Models\TarifDiscountHarga;
 use App\Http\Requests\StoreTarifDiscountHargaRequest;
 use App\Http\Requests\UpdateTarifDiscountHargaRequest;
@@ -359,4 +359,29 @@ class TarifDiscountHargaController extends Controller
             'data' => $data
         ]);
     }
+
+    /**
+    * @ClassName 
+    * @Keterangan APRROVAL NON AKTIF
+    */
+   public function approvalnonaktif(ApprovalKaryawanRequest $request)
+   {
+       DB::beginTransaction();
+
+       try {
+           $data = [
+               'Id' => $request->Id,
+           ];
+           (new TarifDiscountHarga())->processApprovalnonaktif($data);
+
+           DB::commit();
+           return response([
+               'message' => 'Berhasil'
+           ]);
+       } catch (\Throwable $th) {
+           DB::rollBack();
+           throw $th;
+       }
+   }
+
 }

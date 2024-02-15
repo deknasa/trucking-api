@@ -542,6 +542,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('pendapatansupirheader/{id}/cekvalidasi', [PendapatanSupirHeaderController::class, 'cekvalidasi'])->name('pendapatansupirheader.cekvalidasi')->whereNumber('id');
     Route::post('pendapatansupirheader/{id}/cekValidasiAksi', [PendapatanSupirHeaderController::class, 'cekValidasiAksi'])->name('pendapatansupirheader.cekValidasiAksi')->whereNumber('id');
     Route::post('prosesuangjalansupirheader/{id}/cekvalidasi', [ProsesUangJalanSupirHeaderController::class, 'cekvalidasi'])->name('prosesuangjalansupirheader.cekvalidasi')->whereNumber('id');
+    Route::post('tarifdiscountharga/approvalnonaktif', [TarifDiscountHargaController::class, 'approvalnonaktif']);
+    Route::post('tarifhargatertentu/approvalnonaktif', [TarifHargaTertentuController::class, 'approvalnonaktif']);
     
 });
 
