@@ -93,6 +93,7 @@ class PenerimaanStokHeader extends MyModel
                 $table->integer('statusformat')->nullable();
                 $table->string('coa', 200)->nullable();
                 $table->longText('keterangan')->nullable();
+                $table->integer('kelompok_id')->nullable();
                 $table->string('modifiedby', 200)->nullable();
                 $table->dateTime('created_at')->nullable();
                 $table->dateTime('updated_at')->nullable();
@@ -314,6 +315,7 @@ class PenerimaanStokHeader extends MyModel
                     'statusformat' => $item['statusformat'],
                     'coa' => $item[                    'coa'],
                     'keterangan' => $item['keterangan'],
+                    'kelompok_id' => $item['kelompok_id'],
                     'modifiedby' => $item['modifiedby'],
                     'created_at' => $item['created_at'],
                     'updated_at' => $item['updated_at'],
@@ -433,6 +435,7 @@ class PenerimaanStokHeader extends MyModel
                 'a.statusformat',
                 'a.coa',
                 'a.keterangan',
+                'a.kelompok_id',
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at',
@@ -955,7 +958,28 @@ class PenerimaanStokHeader extends MyModel
     public function find($id)
     {
         $this->setRequestParameters();
+        $temtabelPg = '##temppg' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+        Schema::create($temtabelPg, function (Blueprint $table) {
+            $table->integer('id')->nullable();
+            $table->string('nobukti', 1000)->nullable();
+            $table->integer('stok_id')->nullable();
+            $table->integer('kelompok_id')->nullable();
+        });
+        $queryPg=DB::table($this->table)->select(
+            DB::raw("'' as id"),
+            DB::raw("'' as nobukti"),
+            DB::raw("'' as stok_id"),
+            DB::raw("'' as kelompok_id"),
+            )->take(1);
 
+        DB::table($temtabelPg)->insertUsing([
+            'id',
+            'nobukti',
+            'stok_id',
+            'kelompok_id',
+        ], $queryPg);
+        $queryTemtabelPg = DB::table($temtabelPg);
+        
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
             ->leftJoin('gudang as gudangs', 'penerimaanstokheader.gudang_id', 'gudangs.id')
@@ -976,6 +1000,7 @@ class PenerimaanStokHeader extends MyModel
             ->leftJoin('pengeluaranstokheader as pengeluaranstok', 'penerimaanstokheader.pengeluaranstok_nobukti', 'pengeluaranstok.nobukti')
             ->leftJoin('penerimaanstokheader as nobuktipenerimaanstok', 'nobuktipenerimaanstok.nobukti', 'penerimaanstokheader.penerimaanstok_nobukti')
             ->leftJoin('penerimaanstokheader as nobuktispb', 'penerimaanstokheader.nobukti', 'nobuktispb.penerimaanstok_nobukti')
+            ->leftJoin(db::raw($temtabelPg . " d1"), "penerimaanstokheader.id", "d1.id")
 
             ->leftJoin('supplier', 'penerimaanstokheader.supplier_id', 'supplier.id');
         $data = $query->where("$this->table.id", $id)->first();
