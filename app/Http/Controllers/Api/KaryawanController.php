@@ -39,7 +39,7 @@ class KaryawanController extends Controller
             $id=db::table('karyawan')->from(db::raw("karyawan a with (readuncommitted)"))
             ->select('a.id')
             ->where('a.tas_id',$id)->first()->id ?? 0;
-            
+            dd($id);
         }
         $cekdata = $karyawan->cekvalidasihapus($id);
 
