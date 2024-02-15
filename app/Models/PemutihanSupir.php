@@ -566,7 +566,7 @@ class PemutihanSupir extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'supir','bank', 'pengeluaransupir', 'penerimaan_nobukti','coa','penerimaantruckingposting_nobukti', 'penerimaantruckingnonposting_nobukti', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'supir', 'bank', 'pengeluaransupir', 'penerimaan_nobukti', 'coa', 'penerimaantruckingposting_nobukti', 'penerimaantruckingnonposting_nobukti', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -632,61 +632,64 @@ class PemutihanSupir extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statuscetak') {
-                            $query = $query->where('statuscetak.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'supir') {
-                            $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'bank') {
-                            $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'coa') {
-                            $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'nobukti_posting' || $filters['field'] == 'nobukti_nonposting') {
-                            $query = $query->where('pengeluarantruckingheader.nobukti', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'tglbukti_posting' || $filters['field'] == 'tglbukti_nonposting') {
-                            $query = $query->where('pengeluarantruckingheader.tglbukti', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'pengeluaran_posting' || $filters['field'] == 'pengeluaran_nonposting') {
-                            $query = $query->where('pengeluarantruckingheader.pengeluaran_nobukti', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'nominal_posting' || $filters['field'] == 'nominal_nonposting') {
-                            $query = $query->where('c.nominal', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'sisa_posting' || $filters['field'] == 'sisa_nonposting') {
-                            $query = $query->where('c.sisa', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'keterangan_posting' || $filters['field'] == 'keterangan_nonposting') {
-                            $query = $query->where('c.keterangan', 'LIKE', "%$filters[data]%");
-                        } else {
-                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statuscetak') {
+                                $query = $query->where('statuscetak.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'supir') {
+                                $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'bank') {
+                                $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'coa') {
+                                $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nobukti_posting' || $filters['field'] == 'nobukti_nonposting') {
+                                $query = $query->where('pengeluarantruckingheader.nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tglbukti_posting' || $filters['field'] == 'tglbukti_nonposting') {
+                                $query = $query->where('pengeluarantruckingheader.tglbukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'pengeluaran_posting' || $filters['field'] == 'pengeluaran_nonposting') {
+                                $query = $query->where('pengeluarantruckingheader.pengeluaran_nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal_posting' || $filters['field'] == 'nominal_nonposting') {
+                                $query = $query->where('c.nominal', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'sisa_posting' || $filters['field'] == 'sisa_nonposting') {
+                                $query = $query->where('c.sisa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'keterangan_posting' || $filters['field'] == 'keterangan_nonposting') {
+                                $query = $query->where('c.keterangan', 'LIKE', "%$filters[data]%");
+                            } else {
+                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statuscetak') {
-                            $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'supir') {
-                            $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'bank') {
-                            $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'coa') {
-                            $query = $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'nobukti_posting' || $filters['field'] == 'nobukti_nonposting') {
-                            $query = $query->orWhere('pengeluarantruckingheader.nobukti', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'tglbukti_posting' || $filters['field'] == 'tglbukti_nonposting') {
-                            $query = $query->orWhere('pengeluarantruckingheader.tglbukti', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'pengeluaran_posting' || $filters['field'] == 'pengeluaran_nonposting') {
-                            $query = $query->orWhere('pengeluarantruckingheader.pengeluaran_nobukti', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'nominal_posting' || $filters['field'] == 'nominal_nonposting') {
-                            $query = $query->orWhere('c.nominal', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'sisa_posting' || $filters['field'] == 'sisa_nonposting') {
-                            $query = $query->orWhere('c.sisa', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'keterangan_posting' || $filters['field'] == 'keterangan_nonposting') {
-                            $query = $query->orWhere('c.keterangan', 'LIKE', "%$filters[data]%");
-                        } else {
-                            // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statuscetak') {
+                                $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'supir') {
+                                $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'bank') {
+                                $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'coa') {
+                                $query = $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nobukti_posting' || $filters['field'] == 'nobukti_nonposting') {
+                                $query = $query->orWhere('pengeluarantruckingheader.nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tglbukti_posting' || $filters['field'] == 'tglbukti_nonposting') {
+                                $query = $query->orWhere('pengeluarantruckingheader.tglbukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'pengeluaran_posting' || $filters['field'] == 'pengeluaran_nonposting') {
+                                $query = $query->orWhere('pengeluarantruckingheader.pengeluaran_nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal_posting' || $filters['field'] == 'nominal_nonposting') {
+                                $query = $query->orWhere('c.nominal', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'sisa_posting' || $filters['field'] == 'sisa_nonposting') {
+                                $query = $query->orWhere('c.sisa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'keterangan_posting' || $filters['field'] == 'keterangan_nonposting') {
+                                $query = $query->orWhere('c.keterangan', 'LIKE', "%$filters[data]%");
+                            } else {
+                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
-
                     break;
                 default:
 

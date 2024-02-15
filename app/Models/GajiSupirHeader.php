@@ -1540,6 +1540,8 @@ class GajiSupirHeader extends MyModel
                             $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'check') {
+                            $query = $query->whereRaw('1 = 1');
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -1558,6 +1560,8 @@ class GajiSupirHeader extends MyModel
                                 $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'check') {
+                                $query = $query->whereRaw('1 = 1');
                             } else {
                                 // $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
