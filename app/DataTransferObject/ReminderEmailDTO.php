@@ -7,19 +7,20 @@ class ReminderEmailDTO
 {
     public string $keterangan;
     public string $statusaktif;
-    public string $accessTokenTnl;
-    public int $tas_id;
+    public ?string $tas_id;
+    public ?string $accessTokenTnl;
+
 
     public function __construct(
         string $keterangan,
         string $statusaktif,
-        string $accessTokenTnl,
-        string $tas_id
+        ?string $tas_id,
+        ?string $accessTokenTnl
     ){
         $this->keterangan = $keterangan;
         $this->statusaktif = $statusaktif;
-        $this->accessTokenTnl = $accessTokenTnl;
         $this->tas_id = $tas_id;
+        $this->accessTokenTnl = $accessTokenTnl;
     }
 
 
@@ -27,8 +28,8 @@ class ReminderEmailDTO
         return new self(
             $request->input('keterangan'),
             $request->input('statusaktif'),
-            $request->input('accessTokenTnl'),
-            $request->input('tas_id')
+            $request->input('tas_id'),
+            $request->input('accessTokenTnl')
         );
     }
 }
