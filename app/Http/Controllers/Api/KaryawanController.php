@@ -32,7 +32,7 @@ class KaryawanController extends Controller
         ]);
     }
 
-    public function cekValidasi($id)
+    public function cekValidasi(Request $request,$id)
     {
         $karyawan = new Karyawan();
         $cekdata = $karyawan->cekvalidasihapus($id);
@@ -41,7 +41,10 @@ class KaryawanController extends Controller
         $data['tas_id'] = $karyawan->id;
 
         if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-            $cektnl=$this->CekValidasiToTnl("karyawan/" . $id . "/cekValidasi");
+            $data=[
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
+            ];
+            $cektnl=$this->CekValidasiToTnl("karyawan/" . $id . "/cekValidasi",$data);
             return response($cektnl);
         }
 
