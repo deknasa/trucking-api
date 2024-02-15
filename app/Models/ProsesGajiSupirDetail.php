@@ -31,13 +31,10 @@ class ProsesGajiSupirDetail extends MyModel
             $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
 
             $query->select(
-                $this->table . '.nominal',
-                $this->table . '.keterangan as keterangan_detail',
-                'prosesgajisupirheader.keterangan',
+                DB::raw("sum(prosesgajisupirdetail.nominal) as nominal, max(prosesgajisupirheader.keterangan) as keterangan")
             )
                 ->leftJoin(DB::raw("prosesgajisupirheader with (readuncommitted)"), $this->table . '.prosesgajisupir_id', 'prosesgajisupirheader.id');
             $query->where($this->table . '.prosesgajisupir_id', '=', request()->prosesgajisupir_id);
-
             return $query->get();
         } else {
 

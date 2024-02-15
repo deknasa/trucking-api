@@ -1578,8 +1578,6 @@ class OrderanTrucking extends MyModel
                 $aksi = $statusApproval->text;
             }
 
-            $orderanTrucking->tglapprovaledit = date('Y-m-d H:i:s');
-            $orderanTrucking->userapprovaledit = auth('api')->user()->name;
             $orderanTrucking->info = html_entity_decode(request()->info);
 
             if (!$orderanTrucking->save()) {

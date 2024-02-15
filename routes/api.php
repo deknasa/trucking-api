@@ -704,7 +704,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('absensisupirheader/{id}/approvalEditAbsensi', [AbsensiSupirHeaderController::class, 'approvalEditAbsensi'])->whereNumber('id');
 
     Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
-    Route::post('bukaabsensi/{id}/updatetanggalbatas', [BukaAbsensiController::class, 'updateTanggalBatas']);
+    Route::post('bukaabsensi/updatetanggalbatas', [BukaAbsensiController::class, 'updateTanggalBatas']);
     Route::resource('bukaabsensi', BukaAbsensiController::class)->whereNumber('bukaabsensi');
 
     Route::get('approvalsupirgambar/default', [ApprovalSupirGambarController::class, 'default']);
@@ -1328,8 +1328,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('suratpengantar/addrow', [SuratPengantarController::class, 'addrow']);
     Route::get('suratpengantar/export', [SuratPengantarController::class, 'export']);
     Route::get('suratpengantar/{id}/getTarifOmset', [SuratPengantarController::class, 'getTarifOmset'])->whereNumber('id');
-    Route::post('suratpengantar/{id}/batalmuat', [SuratPengantarController::class, 'approvalBatalMuat'])->whereNumber('id');
-    Route::post('suratpengantar/{id}/edittujuan', [SuratPengantarController::class, 'approvalEditTujuan'])->whereNumber('id');
+    Route::post('suratpengantar/batalmuat', [SuratPengantarController::class, 'approvalBatalMuat'])->whereNumber('id');
+    Route::post('suratpengantar/edittujuan', [SuratPengantarController::class, 'approvalEditTujuan'])->whereNumber('id');
     Route::post('suratpengantar/titipanemkl', [SuratPengantarController::class, 'approvalTitipanEmkl']);
     Route::get('suratpengantar/{id}/getOrderanTrucking', [SuratPengantarController::class, 'getOrderanTrucking'])->whereNumber('id');
     Route::get('suratpengantar/getGaji/{dari}/{sampai}/{container}/{statuscontainer}', [SuratPengantarController::class, 'getGaji']);
@@ -1691,7 +1691,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('pemutihansupir/getPost', [PemutihanSupirController::class, 'getPost']);
     Route::get('pemutihansupir/getNonPost', [PemutihanSupirController::class, 'getNonPost']);
-    Route::get('pemutihansupir/{id}/printreport', [PemutihanSupirController::class, 'printpemutihansupirReport'])->whereNumber('id');
+    Route::get('pemutihansupir/{id}/printreport', [PemutihanSupirController::class, 'printreport'])->whereNumber('id');
     Route::get('pemutihansupir/{id}/export', [PemutihanSupirController::class, 'export'])->name('pemutihansupir.export')->whereNumber('id');
     Route::get('pemutihansupir/{pemutihanId}/getEditPost', [PemutihanSupirController::class, 'getEditPost'])->whereNumber('pemutihanId');
     Route::get('pemutihansupir/{pemutihanId}/getEditNonPost', [PemutihanSupirController::class, 'getEditNonPost'])->whereNumber('pemutihanId');
