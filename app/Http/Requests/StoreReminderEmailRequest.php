@@ -23,6 +23,10 @@ class StoreReminderEmailRequest extends FormRequest
      */
     public function rules()
     {
+        if (request()->from == 'tas') {
+            return [];
+        }
+        
         return [
             "keterangan" => ['required'],
             "statusaktif" => ['required'],
