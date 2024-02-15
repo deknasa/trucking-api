@@ -28,6 +28,9 @@ class BukaCetakSatuArah implements Rule
     public function passes($attribute, $value)
     {
         $table = request()->table;
+        if($table == 'PEMUTIHANSUPIR'){
+            $table = 'PEMUTIHANSUPIRHEADER';
+        }
         $allowed = false;
         $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
 
