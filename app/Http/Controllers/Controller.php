@@ -411,7 +411,7 @@ class Controller extends BaseController
                     'Authorization' => 'Bearer ' . $access_token
                 ])->post($server . $table, $data);
 
-                dd($posting->json());
+                // dd($posting->json());
             } else {
                 $getIdTnl = Http::withHeaders([
                     'Content-Type' => 'application/json',
