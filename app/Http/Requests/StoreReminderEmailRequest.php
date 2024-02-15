@@ -26,6 +26,8 @@ class StoreReminderEmailRequest extends FormRequest
         return [
             "keterangan" => ['required'],
             "statusaktif" => ['required'],
+            "tas_id" => [],
+            // "accessTokenTnl" => [],
         ];
     }
 }
