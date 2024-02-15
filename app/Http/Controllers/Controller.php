@@ -469,6 +469,43 @@ class Controller extends BaseController
         // return true;
     }
 
+    public function CekValidasiToTnl($table)
+    {
+        $server = config('app.api_tnl');
+
+        $data['from'] = 'tas';
+        $data['table'] = $table;
+        
+        $accessTokenTnl = $data['accessTokenTnl'] ?? '';
+        $access_token =$accessTokenTnl;
+        
+        if ($accessTokenTnl != '') {
+                $posting = Http::withHeaders([
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                    'Authorization' => 'Bearer ' . $access_token
+                ])->get($server . $table);
+
+       
+            $tesResp = $posting->toPsrResponse();
+            $response = [
+                'statuscode' => $tesResp->getStatusCode(),
+                'data' => $posting->json(),
+            ];
+
+            // dd($response);
+            $dataResp = $posting->json();
+            if ($tesResp->getStatusCode() != 201 && $tesResp->getStatusCode() != 200) {
+                throw new \Exception($dataResp['message']);
+            }
+            return $response;
+        } else {
+            throw new \Exception("server tidak bisa diakses");
+        }
+        // selesai:
+        // return true;
+    }
+
     public function postData($server, $method, $accessToken, $data)
     {
         $send = $this->http_request(
