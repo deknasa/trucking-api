@@ -189,6 +189,7 @@ class BccEmail extends MyModel
         $bccEmail->email = $data['email'];
         $bccEmail->statusaktif = $data['statusaktif'];
         $bccEmail->reminderemail_id = $data['reminderemail_id'];
+        $bccEmail->tas_id = $data['tas_id'] ?? '';
         $bccEmail->modifiedby = auth('api')->user()->name;
         $bccEmail->info = html_entity_decode(request()->info);
 

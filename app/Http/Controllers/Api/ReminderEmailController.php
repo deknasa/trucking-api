@@ -62,12 +62,13 @@ class ReminderEmailController extends Controller
                     "accessTokenTnl" => $request->input('accessTokenTnl')
                 ]
             );
-
-            $reminderEmail->position = $this->getPosition($reminderEmail, $reminderEmail->getTable())->position;
-            if ($request->limit == 0) {
-                $reminderEmail->page = ceil($reminderEmail->position / (10));
-            } else {
-                $reminderEmail->page = ceil($reminderEmail->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $reminderEmail->position = $this->getPosition($reminderEmail, $reminderEmail->getTable())->position;
+                if ($request->limit == 0) {
+                    $reminderEmail->page = ceil($reminderEmail->position / (10));
+                } else {
+                    $reminderEmail->page = ceil($reminderEmail->position / ($request->limit ?? 10));
+                }
             }
 
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
@@ -132,11 +133,14 @@ class ReminderEmailController extends Controller
                     "accessTokenTnl" => $request->input('accessTokenTnl')
                 ]
             );
-            $reminderEmail->position = $this->getPosition($reminderEmail, $reminderEmail->getTable())->position;
-            if ($request->limit == 0) {
-                $reminderEmail->page = ceil($reminderEmail->position / (10));
-            } else {
-                $reminderEmail->page = ceil($reminderEmail->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $reminderEmail->position = $this->getPosition($reminderEmail, $reminderEmail->getTable())->position;
+
+                if ($request->limit == 0) {
+                    $reminderEmail->page = ceil($reminderEmail->position / (10));
+                } else {
+                    $reminderEmail->page = ceil($reminderEmail->position / ($request->limit ?? 10));
+                }
             }
 
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
@@ -176,11 +180,13 @@ class ReminderEmailController extends Controller
         try {
 
             $reminderemail = (new ReminderEmail())->processDestroy($reminderemail);
-            $reminderemail->position = $this->getPosition($reminderemail, $reminderemail->getTable())->position;
-            if (request()->limit == 0) {
-                $reminderemail->page = ceil($reminderemail->position / (10));
-            } else {
-                $reminderemail->page = ceil($reminderemail->position / (request()->limit ?? 10));
+            if (request()->from == '') {
+                $reminderemail->position = $this->getPosition($reminderemail, $reminderemail->getTable())->position;
+                if (request()->limit == 0) {
+                    $reminderemail->page = ceil($reminderemail->position / (10));
+                } else {
+                    $reminderemail->page = ceil($reminderemail->position / (request()->limit ?? 10));
+                }
             }
 
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
