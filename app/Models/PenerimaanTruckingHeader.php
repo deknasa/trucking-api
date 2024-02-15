@@ -2436,7 +2436,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($gajiSupirBBM)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Rincian Gaji Supir ' . $gajiSupirDeposito->gajisupir_nobukti,
+                'keterangan' => 'Rincian Gaji Supir ' . $gajiSupirBBM->gajisupir_nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -2455,7 +2455,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($gajiSupirPelunasan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Rincian Gaji Supir ' . $gajiSupirDeposito->gajisupir_nobukti,
+                'keterangan' => 'Rincian Gaji Supir ' . $gajiSupirPelunasan->gajisupir_nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
