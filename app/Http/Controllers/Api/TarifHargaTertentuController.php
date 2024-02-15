@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use App\Models\TarifHargaTertentu;
 use App\Http\Requests\StoreTarifHargaTertentuRequest;
@@ -28,7 +29,7 @@ class TarifHargaTertentuController extends Controller
             ]
         ]);
     }
-    
+
     public function default()
     {
         $tarifHargaTertentu = new TarifHargaTertentu();
@@ -137,7 +138,7 @@ class TarifHargaTertentuController extends Controller
      */
     public function destroy(Request $request, $id): JsonResponse
     {
-        
+
         DB::beginTransaction();
 
         try {
@@ -162,7 +163,7 @@ class TarifHargaTertentuController extends Controller
             throw $th;
         }
     }
-    
+
     public function fieldLength()
     {
         $data = [];
@@ -272,6 +273,29 @@ class TarifHargaTertentuController extends Controller
             ];
 
             $this->toExcel($judulLaporan, $tarifs, $columns);
+        }
+    }
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new TarifHargaTertentu())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
         }
     }
 }
