@@ -79,7 +79,7 @@ class ReminderEmailController extends Controller
             ];
             $data['tas_id'] = $reminderEmail->id;
 
-            dd($data);
+            // dd($data);
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
                 $this->saveToTnl('reminderemail', 'add',   $data);
             }
