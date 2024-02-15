@@ -192,6 +192,7 @@ class ToEmail extends MyModel
         $toEmail->email = $data['email'];
         $toEmail->statusaktif = $data['statusaktif'];
         $toEmail->reminderemail_id = $data['reminderemail_id'];
+        $toEmail->tas_id = $data['tas_id'] ?? '';
         $toEmail->modifiedby = auth('api')->user()->name;
         $toEmail->info = html_entity_decode(request()->info);
 

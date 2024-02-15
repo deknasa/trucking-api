@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Models\CcEmail;
@@ -10,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class CcEmailController extends Controller
 {
-  /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -40,15 +41,26 @@ class CcEmailController extends Controller
                 'email' => $request->email,
                 'statusaktif' => $request->statusaktif,
                 'reminderemail_id' => $request->reminderemail_id,
+                'tas_id' => $request->tas_id ?? '',
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
 
             $ccEmail = (new CcEmail())->processStore($data);
-            $ccEmail->position = $this->getPosition($ccEmail, $ccEmail->getTable())->position;
-            if ($request->limit==0) {
-                $ccEmail->page = ceil($ccEmail->position / (10));
-            } else {
-                $ccEmail->page = ceil($ccEmail->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $ccEmail->position = $this->getPosition($ccEmail, $ccEmail->getTable())->position;
+                if ($request->limit == 0) {
+                    $ccEmail->page = ceil($ccEmail->position / (10));
+                } else {
+                    $ccEmail->page = ceil($ccEmail->position / ($request->limit ?? 10));
+                }
             }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $ccEmail->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('ccemail', 'add', $data);
+            }
+
 
             DB::commit();
 
@@ -85,14 +97,23 @@ class CcEmailController extends Controller
                 'email' => $request->email,
                 'statusaktif' => $request->statusaktif,
                 'reminderemail_id' => $request->reminderemail_id,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
 
             $ccEmail = (new CcEmail())->processUpdate($ccemail, $data);
-            $ccEmail->position = $this->getPosition($ccEmail, $ccEmail->getTable())->position;
-            if ($request->limit==0) {
-                $ccEmail->page = ceil($ccEmail->position / (10));
-            } else {
-                $ccEmail->page = ceil($ccEmail->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $ccEmail->position = $this->getPosition($ccEmail, $ccEmail->getTable())->position;
+                if ($request->limit == 0) {
+                    $ccEmail->page = ceil($ccEmail->position / (10));
+                } else {
+                    $ccEmail->page = ceil($ccEmail->position / ($request->limit ?? 10));
+                }
+            }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $ccEmail->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('ccemail', 'edit', $data);
             }
 
             DB::commit();
@@ -117,13 +138,23 @@ class CcEmailController extends Controller
         DB::beginTransaction();
 
         try {
-          
+
             $ccEmail = (new CcEmail())->processDestroy($ccemail);
-            $ccEmail->position = $this->getPosition($ccEmail, $ccEmail->getTable())->position;
-            if (request()->limit==0) {
-                $ccEmail->page = ceil($ccEmail->position / (10));
-            } else {
-                $ccEmail->page = ceil($ccEmail->position / (request()->limit ?? 10));
+            if (request()->from == '') {
+                $ccEmail->position = $this->getPosition($ccEmail, $ccEmail->getTable())->position;
+                if (request()->limit == 0) {
+                    $ccEmail->page = ceil($ccEmail->position / (10));
+                } else {
+                    $ccEmail->page = ceil($ccEmail->position / (request()->limit ?? 10));
+                }
+            }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $ccemail;
+
+            $data["accessTokenTnl"] = request()->accessTokenTnl ?? '';
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('ccemail', 'delete', $data);
             }
 
             DB::commit();

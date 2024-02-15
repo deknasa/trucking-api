@@ -15,7 +15,7 @@ use Illuminate\Http\JsonResponse;
 
 class KaryawanController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -94,11 +94,13 @@ class KaryawanController extends Controller
             ];
             // dd($data);
             $karyawan = (new Karyawan())->processStore($data);
-            $karyawan->position = $this->getPosition($karyawan, $karyawan->getTable())->position;
-            if ($request->limit==0) {
-                $karyawan->page = ceil($karyawan->position / (10));
-            } else {
-                $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $karyawan->position = $this->getPosition($karyawan, $karyawan->getTable())->position;
+                if ($request->limit == 0) {
+                    $karyawan->page = ceil($karyawan->position / (10));
+                } else {
+                    $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
+                }
             }
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
             $data['tas_id'] = $karyawan->id;
@@ -144,16 +146,17 @@ class KaryawanController extends Controller
                 'statusaktif' => $request->statusaktif,
                 'statusstaff' => $request->statusstaff,
                 'jabatan' => $request->jabatan,
-                "accessTokenTnl" => $request->accessTokenTnl ?? '',       
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
             $karyawan = (new Karyawan())->processUpdate($karyawan, $data);
-            $karyawan->position = $this->getPosition($karyawan, $karyawan->getTable())->position;
-            if ($request->limit==0) {
-                $karyawan->page = ceil($karyawan->position / (10));
-            } else {
-                $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $karyawan->position = $this->getPosition($karyawan, $karyawan->getTable())->position;
+                if ($request->limit == 0) {
+                    $karyawan->page = ceil($karyawan->position / (10));
+                } else {
+                    $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
+                }
             }
-
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
             $data['tas_id'] = $karyawan->id;
 
@@ -184,13 +187,15 @@ class KaryawanController extends Controller
 
         try {
             $karyawan = (new Karyawan())->processDestroy($id);
-            $selected = $this->getPosition($karyawan, $karyawan->getTable(), true);
-            $karyawan->position = $selected->position;
-            $karyawan->id = $selected->id;
-            if ($request->limit==0) {
-                $karyawan->page = ceil($karyawan->position / (10));
-            } else {
-                $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($karyawan, $karyawan->getTable(), true);
+                $karyawan->position = $selected->position;
+                $karyawan->id = $selected->id;
+                if ($request->limit == 0) {
+                    $karyawan->page = ceil($karyawan->position / (10));
+                } else {
+                    $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
+                }
             }
 
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
@@ -229,8 +234,8 @@ class KaryawanController extends Controller
             'data' => $data
         ]);
     }
-    
-     /**
+
+    /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
      */
@@ -271,7 +276,7 @@ class KaryawanController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan

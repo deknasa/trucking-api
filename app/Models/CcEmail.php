@@ -191,6 +191,7 @@ class CcEmail extends MyModel
         $ccEmail->email = $data['email'];
         $ccEmail->statusaktif = $data['statusaktif'];
         $ccEmail->reminderemail_id = $data['reminderemail_id'];
+        $ccEmail->tas_id = $data['tas_id'] ?? '';
         $ccEmail->modifiedby = auth('api')->user()->name;
         $ccEmail->info = html_entity_decode(request()->info);
 

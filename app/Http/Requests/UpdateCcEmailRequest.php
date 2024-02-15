@@ -23,6 +23,10 @@ class UpdateCcEmailRequest extends FormRequest
      */
     public function rules()
     {
+        if (request()->from == 'tas') {
+            return [];
+        }
+        
         return [
             'nama' => ['required'],
             'email' => ['required','email'],
