@@ -478,7 +478,7 @@ class Controller extends BaseController
         
         $accessTokenTnl = $data['accessTokenTnl'] ?? '';
         $access_token =$accessTokenTnl;
-        dd($server . $table);
+        // dd($server . $table);
         
         if ($accessTokenTnl != '') {
                 $posting = Http::withHeaders([
