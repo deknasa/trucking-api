@@ -39,7 +39,6 @@ class KaryawanController extends Controller
             $id=db::table('karyawan')->from(db::raw("karyawan a with (readuncommitted)"))
             ->select('a.id')
             ->where('a.tas_id',$id)->first()->id ?? 0;
-            dd($id);
         }
         $cekdata = $karyawan->cekvalidasihapus($id);
 
@@ -51,7 +50,7 @@ class KaryawanController extends Controller
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
             $cektnl=$this->CekValidasiToTnl("karyawan/" . $id . "/cekValidasi",$data);
-            return response($cektnl);
+            return response($cektnl['data']);
         }
 
         if ($cekdata['kondisi'] == true) {

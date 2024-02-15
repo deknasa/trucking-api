@@ -492,7 +492,7 @@ class Controller extends BaseController
             // dd($posting->json());
             $response = [
                 'statuscode' => $tesResp->getStatusCode(),
-                // 'data' => $posting->json(),
+                 'data' => $posting->json(),
             ];
 
             // dd($response);
