@@ -1132,40 +1132,42 @@ class Trado extends MyModel
         $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
         $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
         // dd($tglbatas);
-        $trado = Trado::find($data['tradoId']);
-        if ($trado->statusapprovalreminderolimesin == $statusApproval->id) {
-            $trado->statusapprovalreminderolimesin = $statusNonApproval->id;
-            $trado->tglapprovalreminderolimesin = '';
-            $trado->userapprovalreminderolimesin = '';
-            $trado->tglbatasreminderolimesin = '';
-            $aksi = $statusNonApproval->text;
-        } else {
-            $trado->statusapprovalreminderolimesin = $statusApproval->id;
+        for ($i = 0; $i < count($data['tradoId']); $i++) {
+
+            $trado = Trado::find($data['tradoId'][$i]);
+            if ($trado->statusapprovalreminderolimesin == $statusApproval->id) {
+                $trado->statusapprovalreminderolimesin = $statusNonApproval->id;
+                $trado->tglapprovalreminderolimesin = '';
+                $trado->userapprovalreminderolimesin = '';
+                $trado->tglbatasreminderolimesin = '';
+                $aksi = $statusNonApproval->text;
+            } else {
+                $trado->statusapprovalreminderolimesin = $statusApproval->id;
+                $trado->tglapprovalreminderolimesin = date('Y-m-d H:i:s');
+                $trado->userapprovalreminderolimesin = auth('api')->user()->name;
+                $trado->tglbatasreminderolimesin = $tglbatas;
+                $aksi = $statusApproval->text;
+            }
+
             $trado->tglapprovalreminderolimesin = date('Y-m-d H:i:s');
             $trado->userapprovalreminderolimesin = auth('api')->user()->name;
-            $trado->tglbatasreminderolimesin = $tglbatas;
-            $aksi = $statusApproval->text;
+            $trado->info = html_entity_decode(request()->info);
+
+            if (!$trado->save()) {
+                throw new \Exception('Error Un/approval Reminder Oli Mesin.');
+            }
+
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($trado->getTable()),
+                'postingdari' => "UN/APPROVAL Reminder Oli Mesin",
+                'idtrans' => $trado->id,
+                'nobuktitrans' => $trado->nobukti,
+                'aksi' => $aksi,
+                'datajson' => $trado->toArray(),
+                'modifiedby' => auth('api')->user()->name,
+            ]);
+            $result[] = $trado;
         }
-
-        $trado->tglapprovalreminderolimesin = date('Y-m-d H:i:s');
-        $trado->userapprovalreminderolimesin = auth('api')->user()->name;
-        $trado->info = html_entity_decode(request()->info);
-
-        if (!$trado->save()) {
-            throw new \Exception('Error Un/approval Reminder Oli Mesin.');
-        }
-
-        (new LogTrail())->processStore([
-            'namatabel' => strtoupper($trado->getTable()),
-            'postingdari' => "UN/APPROVAL Reminder Oli Mesin",
-            'idtrans' => $trado->id,
-            'nobuktitrans' => $trado->nobukti,
-            'aksi' => $aksi,
-            'datajson' => $trado->toArray(),
-            'modifiedby' => auth('api')->user()->name,
-        ]);
-        $result[] = $trado;
-
 
         return $result;
     }
@@ -1179,40 +1181,42 @@ class Trado extends MyModel
 
         $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
         $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
-        $trado = Trado::find($data['tradoId']);
-        if ($trado->statusapprovalreminderolipersneling == $statusApproval->id) {
-            $trado->statusapprovalreminderolipersneling = $statusNonApproval->id;
-            $trado->tglapprovalreminderolipersneling = '';
-            $trado->userapprovalreminderolipersneling = '';
-            $trado->tglbatasreminderolipersneling = '';
-            $aksi = $statusNonApproval->text;
-        } else {
-            $trado->statusapprovalreminderolipersneling = $statusApproval->id;
+        for ($i = 0; $i < count($data['tradoId']); $i++) {
+
+            $trado = Trado::find($data['tradoId'][$i]);
+            if ($trado->statusapprovalreminderolipersneling == $statusApproval->id) {
+                $trado->statusapprovalreminderolipersneling = $statusNonApproval->id;
+                $trado->tglapprovalreminderolipersneling = '';
+                $trado->userapprovalreminderolipersneling = '';
+                $trado->tglbatasreminderolipersneling = '';
+                $aksi = $statusNonApproval->text;
+            } else {
+                $trado->statusapprovalreminderolipersneling = $statusApproval->id;
+                $trado->tglapprovalreminderolipersneling = date('Y-m-d H:i:s');
+                $trado->userapprovalreminderolipersneling = auth('api')->user()->name;
+                $trado->tglbatasreminderolipersneling = $tglbatas;
+                $aksi = $statusApproval->text;
+            }
+
             $trado->tglapprovalreminderolipersneling = date('Y-m-d H:i:s');
             $trado->userapprovalreminderolipersneling = auth('api')->user()->name;
-            $trado->tglbatasreminderolipersneling = $tglbatas;
-            $aksi = $statusApproval->text;
+            $trado->info = html_entity_decode(request()->info);
+
+            if (!$trado->save()) {
+                throw new \Exception('Error Un/approval Reminder Oli persneling.');
+            }
+
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($trado->getTable()),
+                'postingdari' => "UN/APPROVAL Reminder Oli persneling",
+                'idtrans' => $trado->id,
+                'nobuktitrans' => $trado->nobukti,
+                'aksi' => $aksi,
+                'datajson' => $trado->toArray(),
+                'modifiedby' => auth('api')->user()->name,
+            ]);
+            $result[] = $trado;
         }
-
-        $trado->tglapprovalreminderolipersneling = date('Y-m-d H:i:s');
-        $trado->userapprovalreminderolipersneling = auth('api')->user()->name;
-        $trado->info = html_entity_decode(request()->info);
-
-        if (!$trado->save()) {
-            throw new \Exception('Error Un/approval Reminder Oli persneling.');
-        }
-
-        (new LogTrail())->processStore([
-            'namatabel' => strtoupper($trado->getTable()),
-            'postingdari' => "UN/APPROVAL Reminder Oli persneling",
-            'idtrans' => $trado->id,
-            'nobuktitrans' => $trado->nobukti,
-            'aksi' => $aksi,
-            'datajson' => $trado->toArray(),
-            'modifiedby' => auth('api')->user()->name,
-        ]);
-        $result[] = $trado;
-
 
         return $result;
     }
@@ -1226,41 +1230,42 @@ class Trado extends MyModel
 
         $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
         $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
-        $trado = Trado::find($data['tradoId']);
-        if ($trado->statusapprovalreminderoligardan == $statusApproval->id) {
-            $trado->statusapprovalreminderoligardan = $statusNonApproval->id;
-            $trado->tglapprovalreminderoligardan = '';
-            $trado->userapprovalreminderoligardan = '';
-            $trado->tglbatasreminderoligardan = '';
-            $aksi = $statusNonApproval->text;
-        } else {
-            $trado->statusapprovalreminderoligardan = $statusApproval->id;
+        for ($i = 0; $i < count($data['tradoId']); $i++) {
+
+            $trado = Trado::find($data['tradoId'][$i]);
+            if ($trado->statusapprovalreminderoligardan == $statusApproval->id) {
+                $trado->statusapprovalreminderoligardan = $statusNonApproval->id;
+                $trado->tglapprovalreminderoligardan = '';
+                $trado->userapprovalreminderoligardan = '';
+                $trado->tglbatasreminderoligardan = '';
+                $aksi = $statusNonApproval->text;
+            } else {
+                $trado->statusapprovalreminderoligardan = $statusApproval->id;
+                $trado->tglapprovalreminderoligardan = date('Y-m-d H:i:s');
+                $trado->userapprovalreminderoligardan = auth('api')->user()->name;
+                $trado->tglbatasreminderoligardan = $tglbatas;
+                $aksi = $statusApproval->text;
+            }
+
             $trado->tglapprovalreminderoligardan = date('Y-m-d H:i:s');
             $trado->userapprovalreminderoligardan = auth('api')->user()->name;
-            $trado->tglbatasreminderoligardan = $tglbatas;
-            $aksi = $statusApproval->text;
+            $trado->info = html_entity_decode(request()->info);
+
+            if (!$trado->save()) {
+                throw new \Exception('Error Un/approval Reminder Oli gardan.');
+            }
+
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($trado->getTable()),
+                'postingdari' => "UN/APPROVAL Reminder Oli gardan",
+                'idtrans' => $trado->id,
+                'nobuktitrans' => $trado->nobukti,
+                'aksi' => $aksi,
+                'datajson' => $trado->toArray(),
+                'modifiedby' => auth('api')->user()->name,
+            ]);
+            $result[] = $trado;
         }
-
-        $trado->tglapprovalreminderoligardan = date('Y-m-d H:i:s');
-        $trado->userapprovalreminderoligardan = auth('api')->user()->name;
-        $trado->info = html_entity_decode(request()->info);
-
-        if (!$trado->save()) {
-            throw new \Exception('Error Un/approval Reminder Oli gardan.');
-        }
-
-        (new LogTrail())->processStore([
-            'namatabel' => strtoupper($trado->getTable()),
-            'postingdari' => "UN/APPROVAL Reminder Oli gardan",
-            'idtrans' => $trado->id,
-            'nobuktitrans' => $trado->nobukti,
-            'aksi' => $aksi,
-            'datajson' => $trado->toArray(),
-            'modifiedby' => auth('api')->user()->name,
-        ]);
-        $result[] = $trado;
-
-
         return $result;
     }
 
@@ -1273,40 +1278,42 @@ class Trado extends MyModel
 
         $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
         $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
-        $trado = Trado::find($data['tradoId']);
-        if ($trado->statusapprovalremindersaringanhawa == $statusApproval->id) {
-            $trado->statusapprovalremindersaringanhawa = $statusNonApproval->id;
-            $trado->tglapprovalremindersaringanhawa = '';
-            $trado->userapprovalremindersaringanhawa = '';
-            $trado->tglbatasremindersaringanhawa = '';
-            $aksi = $statusNonApproval->text;
-        } else {
-            $trado->statusapprovalremindersaringanhawa = $statusApproval->id;
+        for ($i = 0; $i < count($data['tradoId']); $i++) {
+
+            $trado = Trado::find($data['tradoId'][$i]);
+            if ($trado->statusapprovalremindersaringanhawa == $statusApproval->id) {
+                $trado->statusapprovalremindersaringanhawa = $statusNonApproval->id;
+                $trado->tglapprovalremindersaringanhawa = '';
+                $trado->userapprovalremindersaringanhawa = '';
+                $trado->tglbatasremindersaringanhawa = '';
+                $aksi = $statusNonApproval->text;
+            } else {
+                $trado->statusapprovalremindersaringanhawa = $statusApproval->id;
+                $trado->tglapprovalremindersaringanhawa = date('Y-m-d H:i:s');
+                $trado->userapprovalremindersaringanhawa = auth('api')->user()->name;
+                $trado->tglbatasremindersaringanhawa = $tglbatas;
+                $aksi = $statusApproval->text;
+            }
+
             $trado->tglapprovalremindersaringanhawa = date('Y-m-d H:i:s');
             $trado->userapprovalremindersaringanhawa = auth('api')->user()->name;
-            $trado->tglbatasremindersaringanhawa = $tglbatas;
-            $aksi = $statusApproval->text;
+            $trado->info = html_entity_decode(request()->info);
+
+            if (!$trado->save()) {
+                throw new \Exception('Error Un/approval Reminder Saringan Hawa.');
+            }
+
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($trado->getTable()),
+                'postingdari' => "UN/APPROVAL Reminder Saringan Hawa",
+                'idtrans' => $trado->id,
+                'nobuktitrans' => $trado->nobukti,
+                'aksi' => $aksi,
+                'datajson' => $trado->toArray(),
+                'modifiedby' => auth('api')->user()->name,
+            ]);
+            $result[] = $trado;
         }
-
-        $trado->tglapprovalremindersaringanhawa = date('Y-m-d H:i:s');
-        $trado->userapprovalremindersaringanhawa = auth('api')->user()->name;
-        $trado->info = html_entity_decode(request()->info);
-
-        if (!$trado->save()) {
-            throw new \Exception('Error Un/approval Reminder Saringan Hawa.');
-        }
-
-        (new LogTrail())->processStore([
-            'namatabel' => strtoupper($trado->getTable()),
-            'postingdari' => "UN/APPROVAL Reminder Saringan Hawa",
-            'idtrans' => $trado->id,
-            'nobuktitrans' => $trado->nobukti,
-            'aksi' => $aksi,
-            'datajson' => $trado->toArray(),
-            'modifiedby' => auth('api')->user()->name,
-        ]);
-        $result[] = $trado;
-
 
         return $result;
     }

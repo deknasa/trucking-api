@@ -6,6 +6,7 @@ use App\Helpers\App;
 use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\StoreTradoRequest;
 use App\Http\Requests\DestroyTradoRequest;
 use App\Http\Requests\HistoryTradoMilikMandorRequest;
@@ -658,12 +659,15 @@ class TradoController extends Controller
      * @ClassName
      * @Keterangan APPROVAL REMINDER OLI MESIN
      */
-    public function approvalmesin(Request $request)
+    public function approvalmesin(ApprovalKaryawanRequest $request)
     {
         DB::beginTransaction();
         // dd($request->all());
         try {
-            $trado = (new Trado())->processApprovalMesin($request->all());
+            $data = [
+                'tradoId' => $request->Id
+            ];
+            $trado = (new Trado())->processApprovalMesin($data);
 
             DB::commit();
             return response()->json([
@@ -679,12 +683,15 @@ class TradoController extends Controller
      * @ClassName
      * @Keterangan APPROVAL REMINDER OLI PESNELING
      */
-    public function approvalpersneling(Request $request)
+    public function approvalpersneling(ApprovalKaryawanRequest $request)
     {
         DB::beginTransaction();
 
         try {
-            $trado = (new Trado())->processApprovalPersneling($request->all());
+            $data = [
+                'tradoId' => $request->Id
+            ];
+            $trado = (new Trado())->processApprovalPersneling($data);
 
             DB::commit();
             return response()->json([
@@ -700,12 +707,15 @@ class TradoController extends Controller
      * @ClassName
      * @Keterangan APPROVAL REMINDER OLI GARDAN
      */
-    public function approvalgardan(Request $request)
+    public function approvalgardan(ApprovalKaryawanRequest $request)
     {
         DB::beginTransaction();
 
         try {
-            $trado = (new Trado())->processApprovalGardan($request->all());
+            $data = [
+                'tradoId' => $request->Id
+            ];
+            $trado = (new Trado())->processApprovalGardan($data);
 
             DB::commit();
             return response()->json([
@@ -721,12 +731,15 @@ class TradoController extends Controller
      * @ClassName
      * @Keterangan APPROVAL REMINDER SARINGAN HAWA
      */
-    public function approvalsaringanhawa(Request $request)
+    public function approvalsaringanhawa(ApprovalKaryawanRequest $request)
     {
         DB::beginTransaction();
 
         try {
-            $trado = (new Trado())->processApprovalSaringanHawa($request->all());
+            $data = [
+                'tradoId' => $request->Id
+            ];
+            $trado = (new Trado())->processApprovalSaringanHawa($data);
 
             DB::commit();
             return response()->json([
@@ -829,4 +842,18 @@ class TradoController extends Controller
             'data' => (new HistoryTradoMilikSupir())->get($id)
         ]);
     }
+    /**
+     * @ClassName 
+     * @Keterangan APPROVAL TRADO TANPA GAMBAR
+     */
+    public function approvaltradogambar()
+    {}
+    
+    /**
+     * @ClassName 
+     * @Keterangan APPROVAL TRADO TANPA KETERANGAN
+     */
+    public function approvaltradoketerangan()
+    {}
+    
 }
