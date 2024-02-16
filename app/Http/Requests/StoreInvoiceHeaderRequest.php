@@ -9,6 +9,7 @@ use App\Rules\ExistAgen;
 use App\Rules\ExistJenisOrder;
 use App\Rules\ValidasiDetail;
 use App\Rules\ValidasiHutangList;
+use App\Rules\validasiTripInvoice;
 
 class StoreInvoiceHeaderRequest extends FormRequest
 {
@@ -68,6 +69,7 @@ class StoreInvoiceHeaderRequest extends FormRequest
                 'agen' => [
                     new ExistAgen(),
                     new ValidasiDetail($jumlahdetail),
+                    new validasiTripInvoice()
                 ]
             ];
         } else if ($agen_id != null) {

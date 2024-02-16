@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
-class ValidasiTripGajiSupir implements Rule
+class validasiTripInvoice implements Rule
 {
     /**
      * Create a new rule instance.
@@ -28,18 +28,20 @@ class ValidasiTripGajiSupir implements Rule
      */
     public function passes($attribute, $value)
     {
-        $dataTrip = request()->rincian_nobukti;
+        $detail = json_decode(request()->detail, true);
         $empty = 0;
         $listTrip = '';
-        for ($i = 0; $i < count($dataTrip); $i++) {
-            $cekTripExist = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-                ->where('nobukti', $dataTrip[$i])->first();
-            if ($cekTripExist == '') {
+        for ($i = 0; $i < count($detail['jobtrucking']); $i++) 
+        {
+            $jobtrucking = $detail['jobtrucking'][$i];
+            
+            $cekRic = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $jobtrucking)->first();
+            if($cekRic == ''){
                 $empty++;
                 if($listTrip == ''){
-                    $listTrip = $dataTrip[$i];
+                    $listTrip = $jobtrucking;
                 }else{
-                    $listTrip = $listTrip . ', ' . $dataTrip[$i];
+                    $listTrip = $listTrip . ', ' . $jobtrucking;
                 }
             }
         }

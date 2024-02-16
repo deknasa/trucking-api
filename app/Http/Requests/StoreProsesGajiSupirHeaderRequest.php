@@ -8,6 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\ExistBank;
 use App\Rules\ValidasiHutangList;
+use App\Rules\validasiRicProsesGajiSupir;
 
 class StoreProsesGajiSupirHeaderRequest extends FormRequest
 {
@@ -41,7 +42,7 @@ class StoreProsesGajiSupirHeaderRequest extends FormRequest
                 'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
             ];
         }
-        
+
         $jumlahdetail = $this->jumlahdetail ?? 0;
         // First day of the month.
         $awalPeriode = date('Y-m-01', strtotime(request()->tgldari));
@@ -49,6 +50,8 @@ class StoreProsesGajiSupirHeaderRequest extends FormRequest
 
             'bank' => [
                 'required',
+                new ValidasiHutangList($jumlahdetail),
+                new validasiRicProsesGajiSupir()
             ],
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
@@ -65,9 +68,9 @@ class StoreProsesGajiSupirHeaderRequest extends FormRequest
                 'before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
-            'rincianId' => [new ValidasiHutangList($jumlahdetail)],
         ];
 
+        // dd($rules);
         $relatedRequests = [
             StoreProsesGajiSupirDetailRequest::class
         ];
@@ -89,7 +92,7 @@ class StoreProsesGajiSupirHeaderRequest extends FormRequest
             'tglsampai' => 'Tanggal Sampai',
             'tglbukti' => 'Tanggal Bukti',
             'rincianId' => 'rincian',
-            'nomPR' => 'nominal rekap ric'
+            'nomPR' => 'nominal posting rincian'
         ];
     }
     public function messages()

@@ -10,6 +10,7 @@ use App\Rules\ExistBank;
 use App\Rules\ExistSupir;
 use App\Rules\ValidasiHutangList;
 use App\Rules\ValidasiPendapatanSupir;
+use App\Rules\validasiTripKomisi;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -78,7 +79,8 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
                 'before:' . $tglbatasakhir,
                 new DateTutupBuku(),
                 new ValidasiHutangList($jumlahdetail),
-                new ValidasiPendapatanSupir()
+                new ValidasiPendapatanSupir(),
+                new validasiTripKomisi()
             ],
             'tglsampai' => [
                 'required', 'date_format:d-m-Y',

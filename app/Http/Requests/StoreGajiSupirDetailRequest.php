@@ -59,7 +59,7 @@ class StoreGajiSupirDetailRequest extends FormRequest
             ];
         }
         $rules = [
-            'rincianId' => ['required', new ValidasiTripGajiSupir()]
+            'rincianId' => ['required']
         ];
 
         $rules = array_merge(

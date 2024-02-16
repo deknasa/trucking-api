@@ -9,6 +9,7 @@ use App\Rules\CekPendapatanKeRic;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\ExistSupir;
+use App\Rules\ValidasiTripGajiSupir;
 
 class StoreGajiSupirHeaderRequest extends FormRequest
 {
@@ -47,7 +48,7 @@ class StoreGajiSupirHeaderRequest extends FormRequest
 
         $rules = [
             //
-            'supir' => 'required',
+            'supir' => ['required', new ValidasiTripGajiSupir()],
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
                 'before:' . $tglbatasakhir,
