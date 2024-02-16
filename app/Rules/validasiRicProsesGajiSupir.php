@@ -2,11 +2,11 @@
 
 namespace App\Rules;
 
-use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Contracts\Validation\Rule;
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Support\Facades\DB;
 
-class ValidasiTripGajiSupir implements Rule
+class validasiRicProsesGajiSupir implements Rule
 {
     /**
      * Create a new rule instance.
@@ -14,6 +14,7 @@ class ValidasiTripGajiSupir implements Rule
      * @return void
      */
     public $trip;
+
     public function __construct()
     {
         //
@@ -28,18 +29,20 @@ class ValidasiTripGajiSupir implements Rule
      */
     public function passes($attribute, $value)
     {
-        $dataTrip = request()->rincian_nobukti;
+        $dataric = json_decode(request()->dataric, true);
         $empty = 0;
         $listTrip = '';
-        for ($i = 0; $i < count($dataTrip); $i++) {
-            $cekTripExist = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-                ->where('nobukti', $dataTrip[$i])->first();
-            if ($cekTripExist == '') {
+
+        for ($i = 0; $i < count($dataric['nobuktiRIC']); $i++) 
+        {
+            $ric = $dataric['nobuktiRIC'][$i];
+            $cekRic = DB::table("gajisupirheader")->from(DB::raw("gajisupirheader with (readuncommitted)"))->where('nobukti', $ric)->first();
+            if($cekRic == ''){
                 $empty++;
                 if($listTrip == ''){
-                    $listTrip = $dataTrip[$i];
+                    $listTrip = $ric;
                 }else{
-                    $listTrip = $listTrip . ', ' . $dataTrip[$i];
+                    $listTrip = $listTrip . ', ' . $ric;
                 }
             }
         }

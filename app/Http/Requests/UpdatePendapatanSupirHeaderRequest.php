@@ -14,6 +14,7 @@ use App\Rules\ValidasiHutangList;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use App\Rules\ValidasiPendapatanSupir;
+use App\Rules\validasiTripKomisi;
 
 class UpdatePendapatanSupirHeaderRequest extends FormRequest
 {
@@ -81,7 +82,8 @@ class UpdatePendapatanSupirHeaderRequest extends FormRequest
                 'required', 'date_format:d-m-Y',
                 'before_or_equal:' . date('Y-m-t'),                
                 new ValidasiHutangList($jumlahdetail),
-                new ValidasiPendapatanSupir()
+                new ValidasiPendapatanSupir(),
+                new validasiTripKomisi()
             ],
             'tglsampai' => [
                 'required', 'date_format:d-m-Y',
