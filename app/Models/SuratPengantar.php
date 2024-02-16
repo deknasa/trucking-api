@@ -112,6 +112,20 @@ class SuratPengantar extends MyModel
 
                 goto selesai;
             }
+
+            $cekSP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('dari_id', 'jobtrucking')->where('nobukti', $nobukti)->first();
+            if ($cekSP->dari_id == 1) {
+                $cekJob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', $cekSP->jobtrucking)->where('nobukti', '<>', $nobukti)->first();
+                if ($cekJob != '') {
+                    $data = [
+                        'kondisi' => true,
+                        'keterangan' => 'trip ' . $cekJob->nobukti,
+                    ];
+
+
+                    goto selesai;
+                }
+            }
         }
         $tempinvdetail = '##tempinvdetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempinvdetail, function ($table) {
@@ -2264,6 +2278,11 @@ class SuratPengantar extends MyModel
         $suratPengantar = new SuratPengantar();
         $suratPengantar = $suratPengantar->lockAndDestroy($id);
 
+        if ($suratPengantar->dari_id == 1) {
+
+            $cekSP = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $suratPengantar->jobtrucking)->first();
+            (new OrderanTrucking())->processDestroy($cekSP->id);
+        }
         $suratPengantarLogTrail = (new LogTrail())->processStore([
             'namatabel' => $suratPengantar->getTable(),
             'postingdari' => 'DELETE SURAT PENGANTAR',

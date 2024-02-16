@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidasiTripGajiSupir;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateGajiSupirDetailRequest extends FormRequest
@@ -55,7 +56,7 @@ class UpdateGajiSupirDetailRequest extends FormRequest
         }
         
         $rules = [
-            'rincianId' => 'required'
+            'rincianId' => ['required',  new ValidasiTripGajiSupir()]
         ];
 
         $rules = array_merge(
