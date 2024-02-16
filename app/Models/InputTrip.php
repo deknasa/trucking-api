@@ -128,7 +128,7 @@ class InputTrip extends MyModel
         // if ($komisi_gajisupir == 'YA') {
         //     $nominalSupir = $upahsupirRincian->nominalsupir - $upahsupirRincian->nominalkenek;
         // } else {
-            $nominalSupir = $upahsupirRincian->nominalsupir;
+        $nominalSupir = $upahsupirRincian->nominalsupir;
         // }
         $dataSP = [
 
@@ -278,15 +278,15 @@ class InputTrip extends MyModel
                 'km',
                 'kmperjalanan',
                 'statusbatas'
-            ], (new ReminderOli())->getdata());
-
+            ], (new ReminderOli())->getdata2($trado_id));
             $query = DB::table($temtabel)->from(DB::raw("$temtabel as a with (readuncommitted)"))
                 ->select(
                     DB::raw("REPLACE(a.status, 'PENGGANTIAN', '') as status"),
                     DB::raw("CONCAT(CAST(a.kmperjalanan AS DECIMAL(10, 2)),'(+$jarak)') as kmperjalanan"),
-                    DB::raw(" CAST(ROUND((a.kmperjalanan + $jarak), 2, 1) AS DECIMAL(10, 2)) as kmtotal")
-                )
-                ->where('a.nopol', $getTrado->kodetrado)->get();
+                    DB::raw(" CAST(ROUND((a.kmperjalanan + $jarak), 2, 1) AS DECIMAL(10, 2)) as kmtotal"),
+                    DB::raw("a.statusbatas"),
+                    DB::raw("CAST(ROUND(($jarak), 2, 1) AS DECIMAL(10, 2)) as jarak")
+                )->get();
             return $query;
         }
     }

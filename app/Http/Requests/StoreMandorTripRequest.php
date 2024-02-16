@@ -248,20 +248,23 @@ class StoreMandorTripRequest extends FormRequest
             'km',
             'kmperjalanan',
             'statusbatas',
-        ], (new ReminderOli())->getdata());
+        ], (new ReminderOli())->getdata2(request()->trado_id));
 
-        $trado_id = request()->trado_id ?? 0;
-        DB::delete(DB::raw("delete " . $tempreminderoli . " where trado_id not in(" . $trado_id . ")"));
-
+        for ($i = 0; $i < count(request()->namastatus); $i++) {
+            $namaStatus = 'Penggantian ' . request()->namastatus[$i];
+            $jarak = floatval(request()->jarak[$i]);
+            DB::update(DB::raw("UPDATE " . $tempreminderoli . " SET kmperjalanan=(kmperjalanan + $jarak) where status='$namaStatus'"));
+        }
+        // dd(DB::table($tempreminderoli)->get());
         // olimesin
-        $statusbatas = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
-            ->select(
-                'a.id'
-            )
-            ->where('a.grp', 'STATUS PERGANTIAN')
-            ->where('a.subgrp', 'STATUS PERGANTIAN')
-            ->where('a.text', 'SUDAH MELEWATI BATAS')
-            ->first()->id ?? 0;
+        // $statusbatas = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+        //     ->select(
+        //         'a.id'
+        //     )
+        //     ->where('a.grp', 'STATUS PERGANTIAN')
+        //     ->where('a.subgrp', 'STATUS PERGANTIAN')
+        //     ->where('a.text', 'SUDAH MELEWATI BATAS')
+        //     ->first()->id ?? 0;
 
         $statusapproval = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
             ->select(
@@ -277,10 +280,10 @@ class StoreMandorTripRequest extends FormRequest
         // pergantian oli mesin
         $query = db::table($tempreminderoli)->from(db::raw($tempreminderoli . " a"))
             ->select(
-                'a.statusbatas'
+                'a.km',
+                'a.kmperjalanan'
             )
             ->where('a.status', 'Penggantian Oli Mesin')
-            ->where('a.statusbatas', $statusbatas)
             ->first();
 
         if (isset($query)) {
@@ -290,8 +293,13 @@ class StoreMandorTripRequest extends FormRequest
                 ->whereraw("tglbatasreminderolimesin>=getdate()")
                 ->first();
             if (!isset($trado)) {
-                $validasireminderolimesin = true;
-                $keteranganvalidasireminderolimesin = "OLI MESIN SUDAH MELEWATI BATAS YANG DITENTUKAN";
+                if ($query->kmperjalanan >= $query->km) {
+                    $validasireminderolimesin = true;
+                    $keteranganvalidasireminderolimesin = "OLI MESIN SUDAH MELEWATI BATAS YANG DITENTUKAN";
+                } else {
+                    $validasireminderolimesin = false;
+                    $keteranganvalidasireminderolimesin = "";
+                }
             } else {
                 $validasireminderolimesin = false;
                 $keteranganvalidasireminderolimesin = "";
@@ -304,10 +312,10 @@ class StoreMandorTripRequest extends FormRequest
         // pergantian oli persneling
         $query = db::table($tempreminderoli)->from(db::raw($tempreminderoli . " a"))
             ->select(
-                'a.statusbatas'
+                'a.km',
+                'a.kmperjalanan'
             )
             ->where('a.status', 'Penggantian Oli Persneling')
-            ->where('a.statusbatas', $statusbatas)
             ->first();
 
         if (isset($query)) {
@@ -317,8 +325,13 @@ class StoreMandorTripRequest extends FormRequest
                 ->whereraw("tglbatasreminderolipersneling>=getdate()")
                 ->first();
             if (!isset($trado)) {
-                $validasireminderolipersneling = true;
-                $keteranganvalidasireminderolipersneling = "OLI PERSNELING SUDAH MELEWATI BATAS YANG DITENTUKAN";
+                if ($query->kmperjalanan >= $query->km) {
+                    $validasireminderolipersneling = true;
+                    $keteranganvalidasireminderolipersneling = "OLI PERSNELING SUDAH MELEWATI BATAS YANG DITENTUKAN";
+                } else {
+                    $validasireminderolipersneling = false;
+                    $keteranganvalidasireminderolipersneling = "";
+                }
             } else {
                 $validasireminderolipersneling = false;
                 $keteranganvalidasireminderolipersneling = "";
@@ -331,10 +344,10 @@ class StoreMandorTripRequest extends FormRequest
         // pergantian oli GARDAN
         $query = db::table($tempreminderoli)->from(db::raw($tempreminderoli . " a"))
             ->select(
-                'a.statusbatas'
+                'a.km',
+                'a.kmperjalanan'
             )
             ->where('a.status', 'Penggantian Oli Gardan')
-            ->where('a.statusbatas', $statusbatas)
             ->first();
 
         if (isset($query)) {
@@ -344,8 +357,13 @@ class StoreMandorTripRequest extends FormRequest
                 ->whereraw("tglbatasreminderoligardan>=getdate()")
                 ->first();
             if (!isset($trado)) {
-                $validasireminderoligardan = true;
-                $keteranganvalidasireminderoligardan = "OLI GARDAN SUDAH MELEWATI BATAS YANG DITENTUKAN";
+                if ($query->kmperjalanan >= $query->km) {
+                    $validasireminderoligardan = true;
+                    $keteranganvalidasireminderoligardan = "OLI GARDAN SUDAH MELEWATI BATAS YANG DITENTUKAN";
+                } else {
+                    $validasireminderoligardan = false;
+                    $keteranganvalidasireminderoligardan = "";
+                }
             } else {
                 $validasireminderoligardan = false;
                 $keteranganvalidasireminderoligardan = "";
@@ -358,10 +376,10 @@ class StoreMandorTripRequest extends FormRequest
         // pergantian SARINGAN HAWA
         $query = db::table($tempreminderoli)->from(db::raw($tempreminderoli . " a"))
             ->select(
-                'a.statusbatas'
+                'a.km',
+                'a.kmperjalanan'
             )
             ->where('a.status', 'Penggantian Saringan Hawa')
-            ->where('a.statusbatas', $statusbatas)
             ->first();
 
         if (isset($query)) {
@@ -371,8 +389,13 @@ class StoreMandorTripRequest extends FormRequest
                 ->whereraw("tglbatasremindersaringanhawa>=getdate()")
                 ->first();
             if (!isset($trado)) {
-                $validasiremindersaringanhawa = true;
-                $keteranganvalidasiremindersaringanhawa = "SARINGAN HAWA SUDAH MELEWATI BATAS YANG DITENTUKAN";
+                if ($query->kmperjalanan >= $query->km) {
+                    $validasiremindersaringanhawa = true;
+                    $keteranganvalidasiremindersaringanhawa = "SARINGAN HAWA SUDAH MELEWATI BATAS YANG DITENTUKAN";
+                } else {
+                    $validasiremindersaringanhawa = false;
+                    $keteranganvalidasiremindersaringanhawa = "";
+                }
             } else {
                 $validasiremindersaringanhawa = false;
                 $keteranganvalidasiremindersaringanhawa = "";
@@ -386,11 +409,9 @@ class StoreMandorTripRequest extends FormRequest
         $rulesTrado_id = [];
         if ($this->trado != '') {
             $rulesTrado_id = [
-                'trado_id' => ['required', 'numeric', 'min:1', new ExistTrado(),new ValidasiReminderOli($validasireminderolimesin,$keteranganvalidasireminderolimesin)
-                ,new ValidasiReminderOliPersneling($validasireminderolipersneling,$keteranganvalidasireminderolipersneling)
-                ,new ValidasiReminderOliGardan($validasireminderoligardan,$keteranganvalidasireminderoligardan)
-                ,new ValidasiReminderSaringanHawa($validasiremindersaringanhawa,$keteranganvalidasiremindersaringanhawa)
-            ],
+                'trado_id' => [
+                    'required', 'numeric', 'min:1', new ExistTrado(), new ValidasiReminderOli($validasireminderolimesin, $keteranganvalidasireminderolimesin), new ValidasiReminderOliPersneling($validasireminderolipersneling, $keteranganvalidasireminderolipersneling), new ValidasiReminderOliGardan($validasireminderoligardan, $keteranganvalidasireminderoligardan), new ValidasiReminderSaringanHawa($validasiremindersaringanhawa, $keteranganvalidasiremindersaringanhawa)
+                ],
                 'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()],
                 'absensidetail_id' => ['required', 'numeric', 'min:1', new ExistAbsensiSupirDetail()],
             ];
