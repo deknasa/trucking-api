@@ -342,4 +342,31 @@ class SubKelompok extends MyModel
 
         return $subKelompok;
     }
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $subKelompok = SubKelompok::find($data['Id'][$i]);
+
+            $subKelompok->statusaktif = $statusnonaktif->id;
+            $subKelompok->modifiedby = auth('api')->user()->name;
+            $subKelompok->info = html_entity_decode(request()->info);
+            $aksi = $statusnonaktif->text;
+
+            if ($subKelompok->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($subKelompok->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF SUB KELOMPOK',
+                    'idtrans' => $subKelompok->id,
+                    'nobuktitrans' => $subKelompok->id,
+                    'aksi' => $aksi,
+                    'datajson' => $subKelompok->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+        return $subKelompok;
+    }
 }

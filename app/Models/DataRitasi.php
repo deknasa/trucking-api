@@ -273,4 +273,34 @@ class DataRitasi extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $dataRitasi = DataRitasi::find($data['Id'][$i]);
+
+            $dataRitasi->statusaktif = $statusnonaktif->id;
+            $dataRitasi->modifiedby = auth('api')->user()->name;
+            $dataRitasi->info = html_entity_decode(request()->info);
+            $aksi = $statusnonaktif->text;
+
+            if ($dataRitasi->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($dataRitasi->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF DATA RITASI',
+                    'idtrans' => $dataRitasi->id,
+                    'nobuktitrans' => $dataRitasi->id,
+                    'aksi' => $aksi,
+                    'datajson' => $dataRitasi->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+
+        return $dataRitasi;
+    }
 }

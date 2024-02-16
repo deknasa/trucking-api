@@ -612,4 +612,31 @@ class Gudang extends MyModel
 
         return $gudang;
     }
+
+    public function processApprovalnonaktif(array $data)
+    {
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $gudang = Gudang::find($data['Id'][$i]);
+
+            $gudang->statusaktif = $statusnonaktif->id;
+            $gudang->modifiedby = auth('api')->user()->name;
+            $gudang->info = html_entity_decode(request()->info);
+            $aksi = $statusnonaktif->text;
+
+            if ($gudang->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($gudang->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF GUDANG',
+                    'idtrans' => $gudang->id,
+                    'nobuktitrans' => $gudang->id,
+                    'aksi' => $aksi,
+                    'datajson' => $gudang->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+        return $gudang;
+    }
 }

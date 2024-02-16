@@ -2,21 +2,22 @@
 
 namespace App\Http\Controllers\Api;
 
+use Carbon\Carbon;
 use App\Models\Satuan;
+use App\Models\Parameter;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
 use App\Http\Requests\StoreSatuanRequest;
 use App\Http\Requests\UpdateSatuanRequest;
 use App\Http\Requests\StoreLogTrailRequest;
-use App\Models\Parameter;
-
-use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\RangeExportReportRequest;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\JsonResponse;
 
 class SatuanController extends Controller
 {
@@ -164,6 +165,30 @@ class SatuanController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
 
+            throw $th;
+        }
+    }
+
+     /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new Satuan())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }

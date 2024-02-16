@@ -292,4 +292,32 @@ class Satuan extends MyModel
 
         return $satuan;
     }
+
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $satuan = Satuan::find($data['Id'][$i]);
+
+            $satuan->statusaktif = $statusnonaktif->id;
+            $satuan->modifiedby = auth('api')->user()->name;
+            $satuan->info = html_entity_decode(request()->info);
+            $aksi = $statusnonaktif->text;
+
+            if ($satuan->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($satuan->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF SATUAN',
+                    'idtrans' => $satuan->id,
+                    'nobuktitrans' => $satuan->id,
+                    'aksi' => $aksi,
+                    'datajson' => $satuan->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+        return $satuan;
+    }
 }

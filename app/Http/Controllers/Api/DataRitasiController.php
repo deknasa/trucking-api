@@ -2,24 +2,25 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Requests\StoreDataRitasiRequest;
-use App\Http\Requests\UpdateDataRitasiRequest;
-use App\Http\Requests\DestroyDataRitasiRequest;
-use App\Http\Requests\StoreLogTrailRequest;
-
-use App\Models\DataRitasi;
 use App\Models\LogTrail;
 use App\Models\Parameter;
+use App\Models\DataRitasi;
+use Illuminate\Http\Request;
+
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cache;
 
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
-
-use App\Http\Controllers\Controller;
-use App\Http\Requests\RangeExportReportRequest;
-
 use Illuminate\Database\QueryException;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\StoreDataRitasiRequest;
+
+use App\Http\Requests\ApprovalKaryawanRequest;
+use App\Http\Requests\UpdateDataRitasiRequest;
+
+use App\Http\Requests\DestroyDataRitasiRequest;
+use App\Http\Requests\RangeExportReportRequest;
 
 class DataRitasiController extends Controller
 {
@@ -217,6 +218,30 @@ class DataRitasiController extends Controller
                 'status' => false,
                 'message' => 'Gagal dihapus'
             ]);
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new DataRitasi())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
         }
     }
 

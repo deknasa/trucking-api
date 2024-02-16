@@ -562,6 +562,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('kota/export', [KotaController::class, 'export']);
     Route::get('kota/report', [KotaController::class, 'report']);
 
+    Route::post('gudang/approvalnonaktif', [GudangController::class, 'approvalnonaktif']);
     Route::get('gudang/combo', [GudangController::class, 'combo']);
     Route::get('gudang/field_length', [GudangController::class, 'fieldLength']);
     Route::get('gudang/default', [GudangController::class, 'default']);
@@ -569,6 +570,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('gudang/export', [GudangController::class, 'export']);
     Route::get('gudang/report', [GudangController::class, 'report']);
 
+    Route::post('kategori/approvalnonaktif', [KategoriController::class, 'approvalnonaktif']);
     Route::get('kategori/combo', [KategoriController::class, 'combo']);
     Route::get('kategori/field_length', [KategoriController::class, 'fieldLength']);
     Route::get('kategori/default', [KategoriController::class, 'default']);
@@ -576,6 +578,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('kategori/export', [KategoriController::class, 'export']);
     Route::get('kategori/report', [KategoriController::class, 'report']);
 
+    Route::post('kelompok/approvalnonaktif', [KelompokController::class, 'approvalnonaktif']);
     Route::get('kelompok/combo', [KelompokController::class, 'combo']);
     Route::get('kelompok/field_length', [KelompokController::class, 'fieldLength']);
     Route::get('kelompok/default', [KelompokController::class, 'default']);
@@ -596,6 +599,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('mandor/export', [MandorController::class, 'export']);
     Route::get('mandor/report', [MandorController::class, 'report']);
 
+    Route::post('merk/approvalnonaktif', [MerkController::class, 'approvalnonaktif']);
     Route::get('merk/combo', [MerkController::class, 'combo']);
     Route::get('merk/field_length', [MerkController::class, 'fieldLength']);
     Route::get('merk/default', [MerkController::class, 'default']);
@@ -603,6 +607,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('merk/export', [MerkController::class, 'export']);
     Route::get('merk/report', [MerkController::class, 'report']);
 
+    Route::post('satuan/approvalnonaktif', [SatuanController::class, 'approvalnonaktif']);
     Route::get('satuan/combo', [SatuanController::class, 'combo']);
     Route::get('satuan/field_length', [SatuanController::class, 'fieldLength']);
     Route::get('satuan/default', [SatuanController::class, 'default']);
@@ -964,6 +969,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('supir/export', [SupirController::class, 'export']);
     Route::get('supir/report', [SupirController::class, 'report']);
 
+    Route::post('subkelompok/approvalnonaktif', [SubKelompokController::class, 'approvalnonaktif']);
     Route::get('subkelompok/export', [SubKelompokController::class, 'export']);
     Route::get('subkelompok/field_length', [SubKelompokController::class, 'fieldLength']);
     Route::get('subkelompok/default', [SubKelompokController::class, 'default']);
@@ -1083,6 +1089,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('bukapengeluaranstok/{id}/updatetanggalbatas', [BukaPengeluaranStokController::class, 'updateTanggalBatas']);
     Route::apiResource('bukapengeluaranstok', BukaPengeluaranStokController::class)->whereNumber('bukapengeluaranstok');
 
+    Route::post('penerimaanstok/approvalnonaktif', [PenerimaanStokController::class, 'approvalnonaktif']);
     Route::get('penerimaanstok/field_length', [PenerimaanStokController::class, 'fieldLength']);
     Route::get('penerimaanstok/export', [PenerimaanStokController::class, 'export']);
     Route::get('penerimaanstok/default', [PenerimaanStokController::class, 'default']);
@@ -1735,6 +1742,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
 
     Route::get('dataritasi/field_length', [DataRitasiController::class, 'fieldLength']);
+    Route::post('dataritasi/approvalnonaktif', [DataRitasiController::class, 'approvalnonaktif']);
     Route::get('dataritasi/combostatus', [DataRitasiController::class, 'combostatus']);
     Route::get('dataritasi/default', [DataRitasiController::class, 'default']);
     Route::get('dataritasi/report', [DataRitasiController::class, 'report']);

@@ -2,22 +2,23 @@
 
 namespace App\Http\Controllers\Api;
 
+use Carbon\Carbon;
 use App\Models\Merk;
+use App\Models\Parameter;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use App\Http\Requests\StoreMerkRequest;
+use Illuminate\Database\QueryException;
 use App\Http\Requests\UpdateMerkRequest;
 use App\Http\Requests\DestroyMerkRequest;
 use App\Http\Requests\StoreLogTrailRequest;
-use App\Models\Parameter;
-
-use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\RangeExportReportRequest;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\JsonResponse;
 
 class MerkController extends Controller
 {
@@ -185,6 +186,30 @@ class MerkController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
 
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new Merk())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }
