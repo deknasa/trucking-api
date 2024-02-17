@@ -73,6 +73,7 @@ class StatusContainer extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
+        $aktif = request()->aktif ?? '';
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'statuscontainer.id',
@@ -94,8 +95,18 @@ class StatusContainer extends MyModel
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->sort($query);
         $this->filter($query);
+        if ($aktif == 'AKTIF') {
+            $statusaktif = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS AKTIF')
+                ->where('text', '=', 'AKTIF')
+                ->first();
+
+            $query->where('statuscontainer.statusaktif', '=', $statusaktif->id);
+        }
+        $this->sort($query);
         $this->paginate($query);
 
         $data = $query->get();
@@ -309,7 +320,7 @@ class StatusContainer extends MyModel
 
         return $statusContainer;
     }
-    
+
     public function processApprovalnonaktif(array $data)
     {
 

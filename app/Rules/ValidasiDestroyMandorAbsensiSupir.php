@@ -12,11 +12,13 @@ class ValidasiDestroyMandorAbsensiSupir implements Rule
      *
      * @return void
      */
-    public function __construct($param)
+    public function __construct($param, $keterangan)
     {
         $this->kondisi = $param;
+        $this->keterangan = $keterangan;
     }
     public $kondisi;
+    public $keterangan;
     /**
      * Determine if the validation rule passes.
      *
@@ -41,6 +43,6 @@ class ValidasiDestroyMandorAbsensiSupir implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('SATL')->keterangan;
+        return app(ErrorController::class)->geterror('SATL')->keterangan.' ('.$this->keterangan.')';
     }
 }
