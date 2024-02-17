@@ -27,7 +27,7 @@ use Illuminate\Http\JsonResponse;
 
 class GandenganController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -108,14 +108,25 @@ class GandenganController extends Controller
                 'jumlahroda' => $request->jumlahroda,
                 'jumlahbanserap' => $request->jumlahbanserap,
                 'statusaktif' => $request->statusaktif,
+                'tas_id' => $request->tas_id ?? '',
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
             $gandengan = (new Gandengan())->processStore($data);
-            $selected = $this->getPosition($gandengan, $gandengan->getTable());
-            $gandengan->position = $selected->position;
-           if ($request->limit==0) {
-                $gandengan->page = ceil($gandengan->position / (10));
-            } else {
-                $gandengan->page = ceil($gandengan->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($gandengan, $gandengan->getTable());
+                $gandengan->position = $selected->position;
+                if ($request->limit == 0) {
+                    $gandengan->page = ceil($gandengan->position / (10));
+                } else {
+                    $gandengan->page = ceil($gandengan->position / ($request->limit ?? 10));
+                }
+            }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $gandengan->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('gandengan', 'add', $data);
             }
 
             DB::commit();
@@ -165,14 +176,25 @@ class GandenganController extends Controller
                 'jumlahroda' => $request->jumlahroda,
                 'jumlahbanserap' => $request->jumlahbanserap,
                 'statusaktif' => $request->statusaktif,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
             $gandengan = (new Gandengan())->processUpdate($gandengan, $data);
-            $gandengan->position = $this->getPosition($gandengan, $gandengan->getTable())->position;
-           if ($request->limit==0) {
-                $gandengan->page = ceil($gandengan->position / (10));
-            } else {
-                $gandengan->page = ceil($gandengan->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $gandengan->position = $this->getPosition($gandengan, $gandengan->getTable())->position;
+                if ($request->limit == 0) {
+                    $gandengan->page = ceil($gandengan->position / (10));
+                } else {
+                    $gandengan->page = ceil($gandengan->position / ($request->limit ?? 10));
+                }
             }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $gandengan->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('gandengan', 'edit', $data);
+            }
+
 
             DB::commit();
 
@@ -198,13 +220,24 @@ class GandenganController extends Controller
 
         try {
             $gandengan = (new Gandengan())->processDestroy($id);
-            $selected = $this->getPosition($gandengan, $gandengan->getTable(), true);
-            $gandengan->position = $selected->position;
-            $gandengan->id = $selected->id;
-           if ($request->limit==0) {
-                $gandengan->page = ceil($gandengan->position / (10));
-            } else {
-                $gandengan->page = ceil($gandengan->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($gandengan, $gandengan->getTable(), true);
+                $gandengan->position = $selected->position;
+                $gandengan->id = $selected->id;
+                if ($request->limit == 0) {
+                    $gandengan->page = ceil($gandengan->position / (10));
+                } else {
+                    $gandengan->page = ceil($gandengan->position / ($request->limit ?? 10));
+                }
+            }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
+
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('gandengan', 'delete', $data);
             }
 
             DB::commit();
@@ -230,7 +263,7 @@ class GandenganController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan
@@ -302,7 +335,7 @@ class GandenganController extends Controller
         }
     }
 
-     /**
+    /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
      */
