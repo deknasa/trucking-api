@@ -2,23 +2,24 @@
 
 namespace App\Http\Controllers\Api;
 
+use Carbon\Carbon;
+use App\Models\Stok;
 use App\Models\Gudang;
+use App\Models\Parameter;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
 use App\Http\Requests\StoreGudangRequest;
 use App\Http\Requests\UpdateGudangRequest;
 use App\Http\Requests\DestroyGudangRequest;
 use App\Http\Requests\StoreLogTrailRequest;
-use App\Models\Parameter;
-use App\Models\Stok;
-
-use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\RangeExportReportRequest;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\JsonResponse;
 
 class GudangController extends Controller
 {
@@ -186,6 +187,30 @@ class GudangController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
 
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new Gudang())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }

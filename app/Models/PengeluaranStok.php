@@ -115,6 +115,9 @@ class PengeluaranStok extends MyModel
             'parameterstatushitungstok.memo as statushitungstok',
             'parameterstatushitungstok.text as statushitungstoktext',
             'parameterstatushitungstok.id as statushitungstokid',
+            'parameterstatusaktif.memo as statusaktif',
+            'parameterstatusaktif.text as statusaktiftext',
+            'parameterstatusaktif.id as statusaktifid',
             'pengeluaranstok.modifiedby',
             'pengeluaranstok.created_at',
             'pengeluaranstok.updated_at',
@@ -125,6 +128,7 @@ class PengeluaranStok extends MyModel
         )
             ->leftJoin('akunpusat', 'pengeluaranstok.coa', '=', 'akunpusat.coa')
             ->leftJoin('parameter as parameterformat', 'pengeluaranstok.format', '=', 'parameterformat.id')
+            ->leftJoin('parameter as parameterstatusaktif', 'pengeluaranstok.statusaktif', '=', 'parameterstatusaktif.id')
             ->leftJoin('parameter as parameterstatushitungstok', 'pengeluaranstok.statushitungstok', '=', 'parameterstatushitungstok.id');
 
         $this->filter($query);
@@ -224,9 +228,11 @@ class PengeluaranStok extends MyModel
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statushitungstok')->nullable();
             $table->string('statushitungstoknama')->nullable();
+            $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama')->nullable();
         });
 
-        $statusaktif = Parameter::from(
+        $statushitungstok = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
@@ -237,14 +243,28 @@ class PengeluaranStok extends MyModel
             ->where('subgrp', '=', 'STATUS HITUNG STOK')
             ->where('default', '=', 'YA')
             ->first();
-        DB::table($tempdefault)->insert(["statushitungstok" => $statusaktif->id,"statushitungstoknama" => $statusaktif->text]);
+        $statusaktif = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id',
+                'text'
+            )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('subgrp', '=', 'STATUS AKTIF')
+            ->where('default', '=', 'YA')
+            ->first();
+        
+        DB::table($tempdefault)->insert(["statushitungstok" => $statushitungstok->id, "statushitungstoknama" => $statushitungstok->text,"statusaktif" => $statusaktif->id, "statusaktifnama" => $statusaktif->text]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
             ->select(
                 'statushitungstok',
-                'statushitungstoknama'
+                'statushitungstoknama',
+                'statusaktif',
+                'statusaktifnama',
             );
 
         $data = $query->first();
@@ -264,6 +284,7 @@ class PengeluaranStok extends MyModel
             $table->string('coa', 50)->nullable();
             $table->unsignedBigInteger('format')->nullable();
             $table->integer('statushitungstok')->length(11)->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->increments('position');
             $table->dateTime('created_at')->nullable();
@@ -272,7 +293,8 @@ class PengeluaranStok extends MyModel
 
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
-
+        $query->leftJoin('parameter as parameterstatusaktif', 'pengeluaranstok.statusaktif', '=', 'parameterstatusaktif.id')
+        ->leftJoin('parameter as parameterstatushitungstok', 'pengeluaranstok.statushitungstok', '=', 'parameterstatushitungstok.id');
         $query = $this->sort($query);
         $models = $this->filter($query);
 
@@ -283,6 +305,7 @@ class PengeluaranStok extends MyModel
             'coa',
             'format',
             'statushitungstok',
+            'statusaktif',
             'modifiedby',
             'created_at',
             'updated_at',
@@ -300,6 +323,7 @@ class PengeluaranStok extends MyModel
             "$this->table.coa",
             "$this->table.format",
             "$this->table.statushitungstok",
+            "$this->table.statusaktif",
             "$this->table.modifiedby",
             "$this->table.created_at",
             "$this->table.updated_at"
@@ -329,16 +353,18 @@ class PengeluaranStok extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statushitungstok') {
-                            $query = $query->orWhere('parameterstatushitungstok.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statushitungstok') {
+                                $query = $query->orWhere('parameterstatushitungstok.text', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:
@@ -367,16 +393,19 @@ class PengeluaranStok extends MyModel
                 "$this->table.keterangan",
                 "$this->table.coa",
                 "$this->table.format",
+                "$this->table.statusaktif",
                 "$this->table.statushitungstok",
                 "$this->table.modifiedby",
                 "$this->table.created_at",
                 "$this->table.updated_at",
                 "akunpusat.keterangancoa",
                 'format.text as formatnama',
+                'statusaktif.text as statusaktifnama',
                 'statushitungstok.text as statushitungstoknama'
             )
             ->leftJoin('parameter as format', 'pengeluaranstok.format', '=', 'format.id')
             ->leftJoin('parameter as statushitungstok', 'pengeluaranstok.statushitungstok', '=', 'statushitungstok.id')
+            ->leftJoin('parameter as statusaktif', 'pengeluaranstok.statusaktif', '=', 'statusaktif.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluaranstok.coa', 'akunpusat.coa');
         $data = $query->where("$this->table.id", $id)->first();
         return $data;
@@ -395,6 +424,7 @@ class PengeluaranStok extends MyModel
         $pengeluaranStok->coa = $data['coa'];
         $pengeluaranStok->format = $data['format'];
         $pengeluaranStok->statushitungstok = $data['statushitungstok'];
+        $pengeluaranStok->statusaktif = $data['statusaktif'];
         $pengeluaranStok->modifiedby = auth('api')->user()->name;
         $pengeluaranStok->info = html_entity_decode(request()->info);
 
@@ -422,6 +452,7 @@ class PengeluaranStok extends MyModel
         $pengeluaranStok->coa = $data['coa'];
         $pengeluaranStok->format = $data['format'];
         $pengeluaranStok->statushitungstok = $data['statushitungstok'];
+        $pengeluaranStok->statusaktif = $data['statusaktif'];
         $pengeluaranStok->modifiedby = auth('api')->user()->name;
         $pengeluaranStok->info = html_entity_decode(request()->info);
 
@@ -459,5 +490,34 @@ class PengeluaranStok extends MyModel
         ]);
 
         return $pengeluaranStok;
+    }
+
+    public function processApprovalnonaktif(array $data)
+    {
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $penerimaanStok = $this->where('id',$data['Id'][$i])->first();
+
+            $penerimaanStok->statusaktif = $statusnonaktif->id;
+            $penerimaanStok->modifiedby = auth('api')->user()->name;
+            $penerimaanStok->info = html_entity_decode(request()->info);
+            $aksi = $statusnonaktif->text;
+
+            if (!$penerimaanStok->save()) {
+                throw new \Exception("Error update service in header.");
+            }
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($penerimaanStok->getTable()),
+                'postingdari' => 'APPROVAL NON AKTIF PENEIRMAAN STOK',
+                'idtrans' => $penerimaanStok->id,
+                'nobuktitrans' => $penerimaanStok->id,
+                'aksi' => $aksi,
+                'datajson' => $penerimaanStok->toArray(),
+                'modifiedby' => auth('api')->user()->user
+            ]);
+
+        }
+        return $penerimaanStok;
     }
 }

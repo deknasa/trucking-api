@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\UpdateStokRequest;
 use App\Http\Requests\ApprovalSupirRequest;
 use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use Intervention\Image\ImageManagerStatic as Image;
 
@@ -285,6 +286,30 @@ class StokController extends Controller
             ];
             $stok = new Stok();
             $stok->processApprovalReuse($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new Stok())->processApprovalnonaktif($data);
 
             DB::commit();
             return response([

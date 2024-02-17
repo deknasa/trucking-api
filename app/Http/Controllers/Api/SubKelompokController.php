@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\SubKelompok;
-use App\Http\Requests\StoreSubKelompokRequest;
-use App\Http\Requests\UpdateSubKelompokRequest;
-use App\Http\Requests\DestroySubKelompokRequest;
-use App\Http\Requests\RangeExportReportRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
-use Illuminate\Http\JsonResponse;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\ApprovalKaryawanRequest;
+use App\Http\Requests\StoreSubKelompokRequest;
+use App\Http\Requests\RangeExportReportRequest;
+use App\Http\Requests\UpdateSubKelompokRequest;
+use App\Http\Requests\DestroySubKelompokRequest;
 
 class SubKelompokController extends Controller
 {
@@ -186,6 +187,31 @@ class SubKelompokController extends Controller
             throw $th;
         }
     }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new SubKelompok())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+ 
 
 
     /**
