@@ -546,6 +546,14 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('tarifhargatertentu/approvalnonaktif', [TarifHargaTertentuController::class, 'approvalnonaktif']);
     Route::post('pengeluarantrucking/approvalnonaktif', [PengeluaranTruckingController::class, 'approvalnonaktif']);
     Route::post('penerimaantrucking/approvalnonaktif', [PenerimaanTruckingController::class, 'approvalnonaktif']);
+    Route::post('tarif/approvalnonaktif', [TarifController::class, 'approvalnonaktif']);
+    Route::post('upahsupir/approvalnonaktif', [UpahSupirController::class, 'approvalnonaktif']);
+    Route::post('customer/approvalnonaktif', [CustomerController::class, 'approvalnonaktif']);
+    Route::post('gandengan/approvalnonaktif', [GandenganController::class, 'approvalnonaktif']);
+    Route::post('trado/approvalnonaktif', [TradoController::class, 'approvalnonaktif']);
+    Route::post('supplier/approvalnonaktif', [SupplierController::class, 'approvalnonaktif']);
+    Route::post('shipper/approvalnonaktif', [ShipperController::class, 'approvalnonaktif']);
+    Route::post('orderantrucking/{id}/{aksi}/cekValidasi', [OrderanTruckingController::class, 'cekValidasi'])->name('orderantrucking.cekValidasi')->whereNumber('id');
     
 });
 
@@ -631,7 +639,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('tarif/import', [TarifController::class, 'import']);
     Route::get('tarif/export', [TarifController::class, 'export']);
     Route::get('tarif/report', [TarifController::class, 'report']);
-    Route::post('tarif/approvalnonaktif', [TarifController::class, 'approvalnonaktif']);
     Route::post('tarif/{id}/cekValidasi', [TarifController::class, 'cekValidasi'])->name('tarif.cekValidasi')->whereNumber('id');
 
     Route::get('tarifrincian/setuprow', [TarifRincianController::class, 'setUpRow']);
@@ -642,7 +649,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('orderantrucking/combo', [OrderanTruckingController::class, 'combo']);
     Route::get('orderantrucking/field_length', [OrderanTruckingController::class, 'fieldLength']);
     Route::get('orderantrucking/default', [OrderanTruckingController::class, 'default']);
-    Route::post('orderantrucking/{id}/{aksi}/cekValidasi', [OrderanTruckingController::class, 'cekValidasi'])->name('orderantrucking.cekValidasi')->whereNumber('id');
     Route::get('orderantrucking/{id}/getagentas', [OrderanTruckingController::class, 'getagentas'])->whereNumber('id');
     Route::get('orderantrucking/{id}/getcont', [OrderanTruckingController::class, 'getcont'])->whereNumber('id');
     Route::get('orderantrucking/export', [OrderanTruckingController::class, 'export']);
@@ -682,7 +688,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('upahsupir/default', [UpahSupirController::class, 'default']);
     Route::get('upahsupir/export', [UpahSupirController::class, 'export']);
     Route::post('upahsupir/import', [UpahSupirController::class, 'import']);
-    Route::post('upahsupir/approvalnonaktif', [UpahSupirController::class, 'approvalnonaktif']);
     Route::post('upahsupir/{id}/cekValidasi', [UpahSupirController::class, 'cekValidasi'])->name('upahsupir.cekValidasi')->whereNumber('id');
 
     Route::get('upahsupirrincian/setuprow', [UpahSupirRincianController::class, 'setUpRow']);
@@ -761,7 +766,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('customer/{id}/cekValidasi', [CustomerController::class, 'cekValidasi'])->name('customer.cekValidasi')->whereNumber('id');
     Route::get('customer/export', [CustomerController::class, 'export']);
     Route::get('customer/report', [CustomerController::class, 'report']);
-    Route::post('customer/approvalnonaktif', [CustomerController::class, 'approvalnonaktif']);
     Route::post('customer/approval', [CustomerController::class, 'approval']);
 
 
@@ -776,7 +780,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('gandengan/default', [GandenganController::class, 'default']);
     Route::get('gandengan/report', [GandenganController::class, 'report']);
     Route::get('gandengan/export', [GandenganController::class, 'export']);
-    Route::post('gandengan/approvalnonaktif', [GandenganController::class, 'approvalnonaktif']);
     Route::post('gandengan/{id}/cekValidasi', [GandenganController::class, 'cekValidasi'])->name('gandengan.cekValidasi')->whereNumber('id');
 
 
@@ -805,7 +808,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('trado/approvalpersneling', [TradoController::class, 'approvalpersneling']);
     Route::post('trado/approvalgardan', [TradoController::class, 'approvalgardan']);
     Route::post('trado/approvalsaringanhawa', [TradoController::class, 'approvalsaringanhawa']);
-    Route::post('trado/approvalnonaktif', [TradoController::class, 'approvalnonaktif']);
 
 
 
@@ -983,7 +985,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('supplier/{id}/cekValidasi', [SupplierController::class, 'cekValidasi'])->name('supplier.cekValidasi')->whereNumber('id');
     Route::get('supplier/export', [SupplierController::class, 'export']);
     Route::post('supplier/approval', [SupplierController::class, 'approval']);
-    Route::post('supplier/approvalnonaktif', [SupplierController::class, 'approvalnonaktif']);
     Route::post('supplier/approvalTNL', [SupplierController::class, 'approvalTNL']);
     Route::get('supplier/report', [SupplierController::class, 'report']);
 
@@ -1008,7 +1009,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('shipper/export', [ShipperController::class, 'export']);
     Route::get('shipper/field_length', [ShipperController::class, 'fieldLength']);
     Route::get('shipper/default', [ShipperController::class, 'default']);
-    Route::post('shipper/approvalnonaktif', [ShipperController::class, 'approvalnonaktif']);
     Route::post('shipper/{id}/cekValidasi', [ShipperController::class, 'cekValidasi'])->name('shipper.cekValidasi')->whereNumber('id');
 
 

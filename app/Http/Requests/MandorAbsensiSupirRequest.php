@@ -142,7 +142,7 @@ class MandorAbsensiSupirRequest extends FormRequest
                 $cekdata = $mandorabsensisupir->cekvalidasihapus($this->trado_id, $this->supir_id, date('Y-m-d', strtotime($this->tglbukti)));
                 $rulesBeda = [
                     'supir' => 'nullable',
-                    'trado' => [new ValidasiDestroyMandorAbsensiSupir($cekdata['kondisi'])],
+                    'trado' => [new ValidasiDestroyMandorAbsensiSupir($cekdata['kondisi'], $cekdata['keterangan'])],
                 ];
             } else {
                 $rulesBeda = [
