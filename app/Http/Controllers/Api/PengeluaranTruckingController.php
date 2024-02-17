@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Models\PengeluaranTrucking;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePengeluaranTruckingRequest;
@@ -31,6 +32,15 @@ class PengeluaranTruckingController extends Controller
                 'totalRows' => $pengeluaranTrucking->totalRows,
                 'totalPages' => $pengeluaranTrucking->totalPages
             ]
+        ]);
+    }
+
+    public function default()
+    {
+        $pengeluaranTrucking = new PengeluaranTrucking();
+        return response([
+            'status' => true,
+            'data' => $pengeluaranTrucking->default()
         ]);
     }
 
@@ -83,7 +93,7 @@ class PengeluaranTruckingController extends Controller
                 'coakredit' => $request->coakredit ?? '',
                 'coapostingdebet' => $request->coapostingdebet ?? '',
                 'coapostingkredit' => $request->coapostingkredit ?? '',
-                'statusaktif' => $request->statusaktif ?? 1,
+                'statusaktif' => $request->statusaktif,
                 'format' => $request->format
             ];
             $pengeluaranTrucking = (new PengeluaranTrucking())->processStore($data);
@@ -132,7 +142,7 @@ class PengeluaranTruckingController extends Controller
                 'coakredit' => $request->coakredit ?? '',
                 'coapostingdebet' => $request->coapostingdebet ?? '',
                 'coapostingkredit' => $request->coapostingkredit ?? '',
-                'statusaktif' => $request->statusaktif ?? 1,
+                'statusaktif' => $request->statusaktif,
                 'format' => $request->format
             ];
 
@@ -423,5 +433,28 @@ class PengeluaranTruckingController extends Controller
 
         $data = $querydata->first();
         return $data;
+    }
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new PengeluaranTrucking())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 }

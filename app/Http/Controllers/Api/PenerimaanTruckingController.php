@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Models\PenerimaanTrucking;
 
 use App\Http\Requests\StoreLogTrailRequest;
@@ -33,6 +34,14 @@ class PenerimaanTruckingController extends Controller
                 'totalRows' => $penerimaanTrucking->totalRows,
                 'totalPages' => $penerimaanTrucking->totalPages
             ]
+        ]);
+    }
+    public function default()
+    {
+        $penerimaanTrucking = new PenerimaanTrucking();
+        return response([
+            'status' => true,
+            'data' => $penerimaanTrucking->default()
         ]);
     }
     public function cekValidasi($id)
@@ -84,7 +93,7 @@ class PenerimaanTruckingController extends Controller
                 'coakredit' => $request->coakredit ?? '',
                 'coapostingdebet' => $request->coapostingdebet ?? '',
                 'coapostingkredit' => $request->coapostingkredit ?? '',
-                'statusaktif' => $request->statusaktif ?? 1,
+                'statusaktif' => $request->statusaktif,
                 'format' => $request->format
             ];
             $penerimaanTrucking = (new PenerimaanTrucking())->processStore($data);
@@ -133,7 +142,7 @@ class PenerimaanTruckingController extends Controller
                 'coakredit' => $request->coakredit ?? '',
                 'coapostingdebet' => $request->coapostingdebet ?? '',
                 'coapostingkredit' => $request->coapostingkredit ?? '',
-                'statusaktif' => $request->statusaktif ?? 1,
+                'statusaktif' => $request->statusaktif,
                 'format' => $request->format
             ];
 
@@ -427,5 +436,28 @@ class PenerimaanTruckingController extends Controller
 
         $data = $querydata->first();
         return $data;
+    }
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new PenerimaanTrucking())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 }

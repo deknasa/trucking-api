@@ -56,6 +56,39 @@ class PengeluaranTrucking extends MyModel
         return $data;
     }
 
+    public function default()
+    {
+
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('statusaktif')->nullable();
+        });
+
+        $statusaktif = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'memo',
+                'id'
+            )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('subgrp', '=', 'STATUS AKTIF')
+            ->where('default', '=', 'YA')
+            ->first();
+
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'statusaktif'
+            );
+
+        $data = $query->first();
+        // dd($data);
+        return $data;
+    }
+
     public function get()
     {
         $this->setRequestParameters();
@@ -164,7 +197,7 @@ class PengeluaranTrucking extends MyModel
 
             DB::table($temprole)->insertUsing(['aco_id'], $queryrole);
             $query
-                ->join($temprole, 'pengeluarantrucking.aco_id', $temprole.'.aco_id');
+                ->join($temprole, 'pengeluarantrucking.aco_id', $temprole . '.aco_id');
         }
         // if ($roleinput != '') {
         //     $query->join(db::raw($temprole ." d "), 'pengeluarantrucking.aco_id', 'd.aco_id');
@@ -240,7 +273,8 @@ class PengeluaranTrucking extends MyModel
                 'postingdebet.keterangancoa as coapostingdebetKeterangan',
                 'pengeluarantrucking.coapostingkredit',
                 'postingkredit.keterangancoa as coapostingkreditKeterangan',
-                'pengeluarantrucking.format'
+                'pengeluarantrucking.format',
+                'pengeluarantrucking.statusaktif'
             )
             ->leftJoin(DB::raw("akunpusat as debet  with (readuncommitted)"), "pengeluarantrucking.coadebet", "debet.coa")
             ->leftJoin(DB::raw("akunpusat as kredit  with (readuncommitted)"), "pengeluarantrucking.coakredit", "kredit.coa")
@@ -257,16 +291,23 @@ class PengeluaranTrucking extends MyModel
                 "$this->table.id,
                  $this->table.kodepengeluaran,
                  $this->table.keterangan,
-                 $this->table.coadebet,
-                 $this->table.coakredit,
-                 $this->table.coapostingdebet,
-                 $this->table.coapostingkredit,
+                 debet.keterangancoa as coadebet_keterangan,
+                 kredit.keterangancoa as coakredit_keterangan,
+                 postingdebet.keterangancoa as coapostingdebet_keterangan,
+                 postingkredit.keterangancoa as coapostingkredit_keterangan,
                  parameter.text as format,
+                 statusaktif.text as statusaktif,
                  $this->table.modifiedby,
                  $this->table.created_at,
                  $this->table.updated_at"
             )
-        )->join('parameter', 'pengeluarantrucking.format', 'parameter.id');
+        )->join('parameter', 'pengeluarantrucking.format', 'parameter.id')
+
+            ->leftJoin(DB::raw("akunpusat as debet  with (readuncommitted)"), "pengeluarantrucking.coadebet", "debet.coa")
+            ->leftJoin(DB::raw("akunpusat as kredit  with (readuncommitted)"), "pengeluarantrucking.coakredit", "kredit.coa")
+            ->leftJoin(DB::raw("akunpusat as postingdebet  with (readuncommitted)"), "pengeluarantrucking.coapostingdebet", "postingdebet.coa")
+            ->leftJoin(DB::raw("akunpusat as postingkredit  with (readuncommitted)"), "pengeluarantrucking.coapostingkredit", "postingkredit.coa")
+            ->leftJoin(DB::raw("parameter as statusaktif with (readuncommitted)"), 'pengeluarantrucking.statusaktif', '=', 'statusaktif.id');
     }
 
     public function createTemp(string $modelTable)
@@ -276,11 +317,12 @@ class PengeluaranTrucking extends MyModel
             $table->bigInteger('id')->nullable();
             $table->string('kodepengeluaran', 1000)->nullable();
             $table->string('keterangan', 1000)->nullable();
-            $table->string('coadebet', 1000)->nullable();
-            $table->string('coakredit', 1000)->nullable();
-            $table->string('coapostingdebet', 1000)->nullable();
-            $table->string('coapostingkredit', 1000)->nullable();
+            $table->string('coadebet_keterangan', 1000)->nullable();
+            $table->string('coakredit_keterangan', 1000)->nullable();
+            $table->string('coapostingdebet_keterangan', 1000)->nullable();
+            $table->string('coapostingkredit_keterangan', 1000)->nullable();
             $table->string('format', 1000)->nullable();
+            $table->string('statusaktif', 1000)->nullable();
             $table->string('modifiedby', 1000)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -292,7 +334,7 @@ class PengeluaranTrucking extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'kodepengeluaran', 'keterangan', 'coadebet', 'coakredit', 'coapostingdebet', 'coapostingkredit', 'format', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'kodepengeluaran', 'keterangan', 'coadebet_keterangan', 'coakredit_keterangan', 'coapostingdebet_keterangan', 'coapostingkredit_keterangan', 'format', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -319,23 +361,25 @@ class PengeluaranTrucking extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
 
-                        if ($filters['field'] == 'format') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'coadebet_keterangan') {
-                            $query = $query->where('debet.keterangancoa', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'coakredit_keterangan') {
-                            $query = $query->where('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'coapostingdebet_keterangan') {
-                            $query = $query->where('postingdebet.keterangancoa', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'coapostingkredit_keterangan') {
-                            $query = $query->where('postingkredit.keterangancoa', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'format') {
+                                $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'coadebet_keterangan') {
+                                $query = $query->where('debet.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'coakredit_keterangan') {
+                                $query = $query->where('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'coapostingdebet_keterangan') {
+                                $query = $query->where('postingdebet.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'coapostingkredit_keterangan') {
+                                $query = $query->where('postingkredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'statusaktif') {
+                                $query = $query->where('statusaktif.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -343,23 +387,25 @@ class PengeluaranTrucking extends MyModel
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'format') {
-                                $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'coadebet_keterangan') {
-                                $query->orWhere('debet.keterangancoa', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'coakredit_keterangan') {
-                                $query->orWhere('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'coapostingdebet_keterangan') {
-                                $query->orWhere('postingdebet.keterangancoa', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'coapostingkredit_keterangan') {
-                                $query->orWhere('postingkredit.keterangancoa', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'statusaktif') {
-                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
-                                // $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'format') {
+                                    $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'coadebet_keterangan') {
+                                    $query->orWhere('debet.keterangancoa', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'coakredit_keterangan') {
+                                    $query->orWhere('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'coapostingdebet_keterangan') {
+                                    $query->orWhere('postingdebet.keterangancoa', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'coapostingkredit_keterangan') {
+                                    $query->orWhere('postingkredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'statusaktif') {
+                                    $query = $query->orWhere('statusaktif.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
                     });
@@ -461,6 +507,33 @@ class PengeluaranTrucking extends MyModel
             'datajson' => $pengeluaranTrucking->toArray(),
             'modifiedby' => auth('api')->user()->name
         ]);
+
+        return $pengeluaranTrucking;
+    }
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $pengeluaranTrucking = PengeluaranTrucking::find($data['Id'][$i]);
+
+            $pengeluaranTrucking->statusaktif = $statusnonaktif->id;
+            $aksi = $statusnonaktif->text;
+
+            if ($pengeluaranTrucking->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($pengeluaranTrucking->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF PENGELUARAN TRUCKING',
+                    'idtrans' => $pengeluaranTrucking->id,
+                    'nobuktitrans' => $pengeluaranTrucking->id,
+                    'aksi' => $aksi,
+                    'datajson' => $pengeluaranTrucking->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
 
         return $pengeluaranTrucking;
     }
