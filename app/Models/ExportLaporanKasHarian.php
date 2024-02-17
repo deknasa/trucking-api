@@ -401,8 +401,10 @@ class ExportLaporanKasHarian extends MyModel
                 'a.nobukti',
                 DB::raw("isnull(C.keterangancoa,'') as perkiraan"),
                 'a.keterangan',
-                db::raw("(case when nominal>0 then (nominal) else 0 end) as debet"),
-                DB::raw("(case when nominal<0 then abs(nominal) else 0 end) as kredit"),
+                // db::raw("(case when nominal>0 then (nominal) else 0 end) as debet"),
+                // DB::raw("(case when nominal<0 then abs(nominal) else 0 end) as kredit"),
+                db::raw("nominal as debet"),
+                DB::raw("0  as kredit"),
                 DB::raw("0 as saldo"),
 
             )
@@ -468,8 +470,10 @@ class ExportLaporanKasHarian extends MyModel
                 'a.nobukti',
                 DB::raw("isnull(C.keterangancoa,'') as perkiraan"),
                 'a.keterangan',
-                DB::raw("(case when nominal<0 then abs(nominal) else 0 end) as debet"),
-                DB::raw("(case when nominal>0 then nominal else 0 end) as kredit"),
+                // DB::raw("(case when nominal<0 then abs(nominal) else 0 end) as debet"),
+                // DB::raw("(case when nominal>0 then nominal else 0 end) as kredit"),
+                DB::raw("0  as debet"),
+                DB::raw("nominal  as kredit"),
                 DB::raw("0 as saldo"),
             )
             ->join(DB::raw("pengeluaranheader as b "), 'a.nobukti', 'b.nobukti')
@@ -548,8 +552,10 @@ class ExportLaporanKasHarian extends MyModel
                     'a.nobukti',
                     DB::raw("isnull(C.keterangancoa,'') as perkiraan"),
                     'a.keterangan',
-                    DB::raw("(case when nominal<0 then abs(nominal) else 0 end) as debet"),
-                    DB::raw("(case when nominal>0 then nominal else 0 end) as kredit"),
+                    // DB::raw("(case when nominal<0 then abs(nominal) else 0 end) as debet"),
+                    // DB::raw("(case when nominal>0 then nominal else 0 end) as kredit"),
+                    DB::raw("0 as debet"),
+                    DB::raw("nominal as kredit"),
                     DB::raw("0 as saldo"),
                 )
                 ->join(DB::raw("pengeluaranheader as b "), 'a.nobukti', 'b.nobukti')
