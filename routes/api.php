@@ -985,6 +985,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('supplier/approvalTNL', [SupplierController::class, 'approvalTNL']);
     Route::get('supplier/report', [SupplierController::class, 'report']);
 
+    Route::post('stok/approvalnonaktif', [StokController::class, 'approvalnonaktif']);
     Route::get('stok/default', [StokController::class, 'default']);
     Route::get('stok/field_length', [StokController::class, 'fieldLength']);
     Route::post('stok/approvalklaim', [StokController::class, 'approvalklaim']);
@@ -1109,6 +1110,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('penerimaanstokdetail/hutang', [PenerimaanStokDetailController::class, 'hutang']);
     Route::apiResource('penerimaanstokdetail', PenerimaanStokDetailController::class)->whereNumber('penerimaanstokdetail');
 
+    Route::post('pengeluaranstok/approvalnonaktif', [PengeluaranStokController::class, 'approvalnonaktif']);
     Route::get('pengeluaranstok/field_length', [PengeluaranStokController::class, 'fieldLength']);
     Route::get('pengeluaranstok/export', [PengeluaranStokController::class, 'export']);
     Route::get('pengeluaranstok/default', [PengeluaranStokController::class, 'default']);

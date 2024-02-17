@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Requests\StoreLogTrailRequest;
-use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use App\Models\PengeluaranStok;
+use Illuminate\Http\JsonResponse;
 
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\ApprovalKaryawanRequest;
+use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\StorePengeluaranStokRequest;
 use App\Http\Requests\UpdatePengeluaranStokRequest;
 use App\Http\Requests\DestroyPengeluaranStokRequest;
-use App\Http\Requests\RangeExportReportRequest;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\JsonResponse;
 
 class PengeluaranStokController extends Controller
 {
@@ -209,6 +210,30 @@ class PengeluaranStokController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
 
+            throw $th;
+        }
+    }
+
+     /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new PengeluaranStok())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }
