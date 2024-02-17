@@ -3,18 +3,19 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Parameter;
+use Illuminate\Http\Request;
+use App\Models\TypeAkuntansi;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
+use App\Http\Requests\ApprovalKaryawanRequest;
+use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\StoreTypeAkuntansiRequest;
 use App\Http\Requests\UpdateTypeAkuntansiRequest;
 use App\Http\Requests\DestroyTypeAkuntansiRequest;
-use App\Models\TypeAkuntansi;
-use App\Models\Parameter;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\RangeExportReportRequest;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\JsonResponse;
 
 
 
@@ -170,6 +171,31 @@ class TypeAkuntansiController extends Controller
             throw $th;
         }
     }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new TypeAkuntansi())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
 
     /**
      * @ClassName 

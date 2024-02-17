@@ -338,4 +338,32 @@ class TypeAkuntansi extends MyModel
 
         return $typeakuntansi;
     }
+
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $typeakuntansi = TypeAkuntansi::find($data['Id'][$i]);
+
+            $typeakuntansi->statusaktif = $statusnonaktif->id;
+            $typeakuntansi->modifiedby = auth('api')->user()->name;
+            $typeakuntansi->info = html_entity_decode(request()->info);
+            $aksi = $statusnonaktif->text;
+
+            if ($typeakuntansi->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($typeakuntansi->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF type akuntansi',
+                    'idtrans' => $typeakuntansi->id,
+                    'nobuktitrans' => $typeakuntansi->id,
+                    'aksi' => $aksi,
+                    'datajson' => $typeakuntansi->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+        return $typeakuntansi;
+    }
 }

@@ -399,17 +399,17 @@ class Stok extends MyModel
             $temtabel = $querydata->namatabel;
         }
 
-        $querydata = DB::table('listtemporarytabel')->from(
-            DB::raw("listtemporarytabel with (readuncommitted)")
-        )
-            ->select(
-                'namatabel',
-            )
-            ->where('class', '=', $class)
-            ->where('modifiedby', '=', $user)
-            ->first();
+        // $querydata = DB::table('listtemporarytabel')->from(
+        //     DB::raw("listtemporarytabel with (readuncommitted)")
+        // )
+        //     ->select(
+        //         'namatabel',
+        //     )
+        //     ->where('class', '=', $class)
+        //     ->where('modifiedby', '=', $user)
+        //     ->first();
 
-        $temtabel = $querydata->namatabel;
+        // $temtabel = $querydata->namatabel;
         $query = DB::table(DB::raw($temtabel))->from(
             DB::raw(DB::raw($temtabel) . " stok with (readuncommitted)")
         )

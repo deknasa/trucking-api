@@ -564,6 +564,12 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('penerimaanstok/approvalnonaktif', [PenerimaanStokController::class, 'approvalnonaktif']);
     Route::post('pengeluaranstok/approvalnonaktif', [PengeluaranStokController::class, 'approvalnonaktif']);
     Route::post('dataritasi/approvalnonaktif', [DataRitasiController::class, 'approvalnonaktif']);
+    Route::post('akuntansi/approvalnonaktif', [AkuntansiController::class, 'approvalnonaktif']);
+    Route::post('typeakuntansi/approvalnonaktif', [TypeAkuntansiController::class, 'approvalnonaktif']);
+    Route::post('maintypeakuntansi/approvalnonaktif', [MainTypeAkuntansiController::class, 'approvalnonaktif']);
+    Route::post('mainakunpusat/approvalnonaktif', [MainAkunPusatController::class, 'approvalnonaktif']);
+    Route::post('akunpusat/approvalnonaktif', [AkunPusatController::class, 'approvalnonaktif']);
+
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {

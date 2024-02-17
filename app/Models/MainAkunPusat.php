@@ -557,4 +557,32 @@ class MainAkunPusat extends MyModel
 
         return $mainAkunPusat;
     }
+
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $mainakunpusat = MainAkunPusat::find($data['Id'][$i]);
+
+            $mainakunpusat->statusaktif = $statusnonaktif->id;
+            $mainakunpusat->modifiedby = auth('api')->user()->name;
+            $mainakunpusat->info = html_entity_decode(request()->info);
+            $aksi = $statusnonaktif->text;
+
+            if ($mainakunpusat->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($mainakunpusat->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF KODE PERKIRAAN PUSAT',
+                    'idtrans' => $mainakunpusat->id,
+                    'nobuktitrans' => $mainakunpusat->id,
+                    'aksi' => $aksi,
+                    'datajson' => $mainakunpusat->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+        return $mainakunpusat;
+    }
 }

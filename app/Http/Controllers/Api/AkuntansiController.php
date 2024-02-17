@@ -3,17 +3,18 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Requests\StoreAkuntansiRequest;
-use App\Http\Requests\UpdateAkuntansiRequest;
 use App\Models\Akuntansi;
 use App\Models\Parameter;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\RangeExportReportRequest;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
-use Illuminate\Http\JsonResponse;
+use App\Http\Requests\StoreAkuntansiRequest;
+use App\Http\Requests\UpdateAkuntansiRequest;
+use App\Http\Requests\ApprovalKaryawanRequest;
+use App\Http\Requests\RangeExportReportRequest;
 
 
 
@@ -170,7 +171,29 @@ class AkuntansiController extends Controller
         }
     }
 
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
 
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new Akuntansi())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
 
     /**
      * @ClassName 
