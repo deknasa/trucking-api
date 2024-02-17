@@ -93,14 +93,27 @@ class JenisTradoController extends Controller
                 'kodejenistrado' => $request->kodejenistrado,
                 'statusaktif' => $request->statusaktif,
                 'keterangan' => $request->keterangan ?? '',
+                'tas_id' => $request->tas_id ?? '',
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
             $jenistrado = (new JenisTrado())->processStore($data);
-            $jenistrado->position = $this->getPosition($jenistrado, $jenistrado->getTable())->position;
-            if ($request->limit == 0) {
-                $jenistrado->page = ceil($jenistrado->position / (10));
-            } else {
-                $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $jenistrado->position = $this->getPosition($jenistrado, $jenistrado->getTable())->position;
+                if ($request->limit == 0) {
+                    $jenistrado->page = ceil($jenistrado->position / (10));
+                } else {
+                    $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
+                }
             }
+
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $jenistrado->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('jenistrado', 'add', $data);
+            }
+
 
             DB::commit();
 
@@ -136,14 +149,25 @@ class JenisTradoController extends Controller
                 'kodejenistrado' => $request->kodejenistrado,
                 'statusaktif' => $request->statusaktif,
                 'keterangan' => $request->keterangan ?? '',
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
             $jenistrado = (new JenisTrado())->processUpdate($jenistrado, $data);
-            $jenistrado->position = $this->getPosition($jenistrado, $jenistrado->getTable())->position;
-            if ($request->limit == 0) {
-                $jenistrado->page = ceil($jenistrado->position / (10));
-            } else {
-                $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $jenistrado->position = $this->getPosition($jenistrado, $jenistrado->getTable())->position;
+                if ($request->limit == 0) {
+                    $jenistrado->page = ceil($jenistrado->position / (10));
+                } else {
+                    $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
+                }
             }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $jenistrado->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('jenistrado', 'edit', $data);
+            }
+
             DB::commit();
 
             return response([
@@ -168,13 +192,24 @@ class JenisTradoController extends Controller
 
         try {
             $jenistrado = (new JenisTrado())->processDestroy($id);
-            $selected = $this->getPosition($jenistrado, $jenistrado->getTable(), true);
-            $jenistrado->position = $selected->position;
-            $jenistrado->id = $selected->id;
-            if ($request->limit == 0) {
-                $jenistrado->page = ceil($jenistrado->position / (10));
-            } else {
-                $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($jenistrado, $jenistrado->getTable(), true);
+                $jenistrado->position = $selected->position;
+                $jenistrado->id = $selected->id;
+                if ($request->limit == 0) {
+                    $jenistrado->page = ceil($jenistrado->position / (10));
+                } else {
+                    $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
+                }
+            }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
+
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('jenistrado', 'delete', $data);
             }
 
             DB::commit();

@@ -30,7 +30,9 @@ class DestroyGandenganRequest extends FormRequest
     public function rules()
     {
 
-
+        if (request()->from == 'tas') {
+            return [];
+        } 
         $gandengan = new Gandengan();
         $cekdata = $gandengan->cekValidasihapus($this->id);
     

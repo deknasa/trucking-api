@@ -95,14 +95,26 @@ class KerusakanController extends Controller
         try {
             $data = [
                 'keterangan' => $request->keterangan ?? '',
-                'statusaktif' => $request->statusaktif
+                'statusaktif' => $request->statusaktif,
+                'tas_id' => $request->tas_id ?? '',
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
+
             ];
             $kerusakan = (new Kerusakan())->processStore($data);
-            $kerusakan->position = $this->getPosition($kerusakan, $kerusakan->getTable())->position;
-            if ($request->limit == 0) {
-                $kerusakan->page = ceil($kerusakan->position / (10));
-            } else {
-                $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $kerusakan->position = $this->getPosition($kerusakan, $kerusakan->getTable())->position;
+                if ($request->limit == 0) {
+                    $kerusakan->page = ceil($kerusakan->position / (10));
+                } else {
+                    $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
+                }
+            }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $kerusakan->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('kerusakan', 'add', $data);
             }
 
             DB::commit();
@@ -135,14 +147,25 @@ class KerusakanController extends Controller
         try {
             $data = [
                 'keterangan' => $request->keterangan ?? '',
-                'statusaktif' => $request->statusaktif
+                'statusaktif' => $request->statusaktif,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
+
             ];
             $kerusakan = (new Kerusakan())->processUpdate($kerusakan, $data);
-            $kerusakan->position = $this->getPosition($kerusakan, $kerusakan->getTable())->position;
-            if ($request->limit == 0) {
-                $kerusakan->page = ceil($kerusakan->position / (10));
-            } else {
-                $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $kerusakan->position = $this->getPosition($kerusakan, $kerusakan->getTable())->position;
+                if ($request->limit == 0) {
+                    $kerusakan->page = ceil($kerusakan->position / (10));
+                } else {
+                    $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
+                }
+            }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $kerusakan->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('kerusakan', 'edit', $data);
             }
 
             DB::commit();
@@ -167,13 +190,24 @@ class KerusakanController extends Controller
 
         try {
             $kerusakan = (new Kerusakan())->processDestroy($id);
-            $selected = $this->getPosition($kerusakan, $kerusakan->getTable(), true);
-            $kerusakan->position = $selected->position;
-            $kerusakan->id = $selected->id;
-            if ($request->limit == 0) {
-                $kerusakan->page = ceil($kerusakan->position / (10));
-            } else {
-                $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($kerusakan, $kerusakan->getTable(), true);
+                $kerusakan->position = $selected->position;
+                $kerusakan->id = $selected->id;
+                if ($request->limit == 0) {
+                    $kerusakan->page = ceil($kerusakan->position / (10));
+                } else {
+                    $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
+                }
+            }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
+
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('kerusakan', 'delete', $data);
             }
 
             DB::commit();
