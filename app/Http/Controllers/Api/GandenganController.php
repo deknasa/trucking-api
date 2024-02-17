@@ -178,6 +178,7 @@ class GandenganController extends Controller
                 'statusaktif' => $request->statusaktif,
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
+            
             $gandengan = (new Gandengan())->processUpdate($gandengan, $data);
             if ($request->from == '') {
                 $gandengan->position = $this->getPosition($gandengan, $gandengan->getTable())->position;

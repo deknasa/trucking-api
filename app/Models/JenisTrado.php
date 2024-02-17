@@ -250,8 +250,10 @@ class JenisTrado extends MyModel
         $jenistrado->keterangan = $data['keterangan'] ?? '';
         $jenistrado->modifiedby = auth('api')->user()->name;
         $jenistrado->info = html_entity_decode(request()->info);
+        $jenistrado->tas_id = $data['tas_id'] ?? '';
         $data['sortname'] = $data['sortname'] ?? 'id';
         $data['sortorder'] = $data['sortorder'] ?? 'asc';
+        
 
         TOP:
         if (!$jenistrado->save()) {
