@@ -504,6 +504,7 @@ class Gandengan extends MyModel
         $gandengan->jumlahbanserap = $data['jumlahbanserap'];
         $gandengan->statusaktif = $data['statusaktif'];
         $gandengan->modifiedby = auth('api')->user()->name;
+        $gandengan->tas_id = $data['tas_id'] ?? '';
         $gandengan->info = html_entity_decode(request()->info);
 
         if (!$gandengan->save()) {
