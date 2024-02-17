@@ -544,6 +544,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('prosesuangjalansupirheader/{id}/cekvalidasi', [ProsesUangJalanSupirHeaderController::class, 'cekvalidasi'])->name('prosesuangjalansupirheader.cekvalidasi')->whereNumber('id');
     Route::post('tarifdiscountharga/approvalnonaktif', [TarifDiscountHargaController::class, 'approvalnonaktif']);
     Route::post('tarifhargatertentu/approvalnonaktif', [TarifHargaTertentuController::class, 'approvalnonaktif']);
+    Route::post('pengeluarantrucking/approvalnonaktif', [PengeluaranTruckingController::class, 'approvalnonaktif']);
+    Route::post('penerimaantrucking/approvalnonaktif', [PenerimaanTruckingController::class, 'approvalnonaktif']);
     
 });
 
@@ -1010,12 +1012,14 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('penerimaantrucking/export', [PenerimaanTruckingController::class, 'export']);
     Route::get('penerimaantrucking/field_length', [PenerimaanTruckingController::class, 'fieldLength']);
+    Route::get('penerimaantrucking/default', [PenerimaanTruckingController::class, 'default']);
     Route::post('penerimaantrucking/{id}/cekValidasi', [PenerimaanTruckingController::class, 'cekValidasi'])->name('penerimaantrucking.cekValidasi')->whereNumber('id');
     Route::get('penerimaantrucking/export', [PenerimaanTruckingController::class, 'export']);
     Route::get('penerimaantrucking/report', [PenerimaanTruckingController::class, 'report']);
 
     Route::get('pengeluarantrucking/export', [PengeluaranTruckingController::class, 'export']);
     Route::get('pengeluarantrucking/field_length', [PengeluaranTruckingController::class, 'fieldLength']);
+    Route::get('pengeluarantrucking/default', [PengeluaranTruckingController::class, 'default']);
     Route::post('pengeluarantrucking/{id}/cekValidasi', [PengeluaranTruckingController::class, 'cekValidasi'])->name('pengeluarantrucking.cekValidasi')->whereNumber('id');
     Route::get('pengeluarantrucking/export', [PengeluaranTruckingController::class, 'export']);
     Route::get('pengeluarantrucking/report', [PengeluaranTruckingController::class, 'report']);
