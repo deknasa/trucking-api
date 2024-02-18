@@ -29,10 +29,14 @@ class UpdatePenerimaanDetailRequest extends FormRequest
      */
     public function rules()
     {
+        $datequals = '';
+        if(request()->penerimaangiro_nobukti == ''){
+            $datequals = 'date_equals:'.request()->tglbukti;
+        }
         $rules = [
             'ketcoakredit.*' => 'required',
             'coakredit.*' =>  [new CoaKreditPenerimaanDetail, new AkunPusatPenerimaanDetail()],
-            'tgljatuhtempo.*' => ['required','date_format:d-m-Y','date_equals:'.request()->tglbukti],
+            'tgljatuhtempo.*' => ['required','date_format:d-m-Y',$datequals],
             'nominal_detail.*' => ['required', 'numeric', new validasiNominalDetail()],
             'keterangan_detail.*' => 'required',
             'bankpelanggan.*' => [new BankPelangganPenerimaanDetail()],

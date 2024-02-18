@@ -2284,15 +2284,24 @@ class PenerimaanTruckingHeader extends MyModel
 
     public function isUangJalanProcessed($nobukti)
     {
-        $prosesUangJalan = DB::table('prosesuangjalansupirdetail')->from(DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)"))->select('a.penerimaantrucking_nobukti')
+        $prosesUangJalan = DB::table('prosesuangjalansupirdetail')->from(DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)"))->select('a.penerimaantrucking_nobukti', 'a.nobukti')
             ->where('a.penerimaantrucking_nobukti', '=', $nobukti)
             ->first();
 
         if (isset($prosesUangJalan)) {
             //jika uang jalan ada maka true
-            return true;
+            $data = [
+                'kondisi' => true,
+                'nobukti' => $prosesUangJalan->nobukti
+            ];
+            return $data;
         }
-        return false;
+        
+        $data = [
+            'kondisi' => false,
+            'nobukti' => ''
+        ];
+        return $data;
     }
     public function isUangOut($nobukti)
     {

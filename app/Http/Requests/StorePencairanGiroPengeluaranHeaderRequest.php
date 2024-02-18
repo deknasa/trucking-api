@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Rules\validasiPencairanGiro;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StorePencairanGiroPengeluaranHeaderRequest extends FormRequest
@@ -27,7 +28,8 @@ class StorePencairanGiroPengeluaranHeaderRequest extends FormRequest
         return [
             'pengeluaranId' => 'required|array',
             'pengeluaranId.*' => 'required',
-            'periode' => 'required'
+            'periode' => 'required',
+            'nobukti'=> new validasiPencairanGiro()
         ];
     }
 

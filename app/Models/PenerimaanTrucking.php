@@ -329,7 +329,7 @@ class PenerimaanTrucking extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'kodepenerimaan', 'keterangan', 'coadebet_keterangan', 'coakredit_keterangan', 'coapostingdebet_keterangan', 'coapostingkredit_keterangan', 'format','statusaktif', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'kodepenerimaan', 'keterangan', 'coadebet_keterangan', 'coakredit_keterangan', 'coapostingdebet_keterangan', 'coapostingkredit_keterangan', 'format', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -379,29 +379,30 @@ class PenerimaanTrucking extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] != '') {
-                            if ($filters['field'] == 'format') {
-                                $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'statusaktif') {
-                                $query = $query->orWhere('statusaktif.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'coadebet_keterangan') {
-                                $query = $query->orWhere('debet.keterangancoa', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'coakredit_keterangan') {
-                                $query = $query->orWhere('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'coapostingdebet_keterangan') {
-                                $query = $query->orWhere('postingdebet.keterangancoa', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'coapostingkredit_keterangan') {
-                                $query = $query->orWhere('postingkredit.keterangancoa', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
-                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'format') {
+                                    $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'statusaktif') {
+                                    $query = $query->orWhere('statusaktif.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'coadebet_keterangan') {
+                                    $query = $query->orWhere('debet.keterangancoa', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'coakredit_keterangan') {
+                                    $query = $query->orWhere('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'coapostingdebet_keterangan') {
+                                    $query = $query->orWhere('postingdebet.keterangancoa', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'coapostingkredit_keterangan') {
+                                    $query = $query->orWhere('postingkredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
-                    }
-
+                    });
                     break;
                 default:
 

@@ -47,7 +47,7 @@ class Mandor extends MyModel
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'mandor.statusaktif', '=', 'parameter.id')
-            ->leftJoin(DB::raw("[user] with (readuncommitted)"), 'mandor.user_id', '=', 'user.id');
+            ->leftJoin(DB::raw("[user] with (readuncommitted)"), 'mandor.user_id', '=', db::raw("[user].id"));
 
 
 
@@ -164,14 +164,17 @@ class Mandor extends MyModel
                 DB::raw(
                     "$this->table.id,
             $this->table.namamandor,
-            $this->table.keterangan,
+            $this->table.keterangan,            
+            'user.name as user',
             'parameter.text as statusaktif',
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
                 )
             )
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'mandor.statusaktif', '=', 'parameter.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'mandor.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("[user] with (readuncommitted)"), 'mandor.user_id', '=', db::raw("[user].id"));
+
     }
 
     public function createTemp(string $modelTable)
@@ -181,6 +184,7 @@ class Mandor extends MyModel
             $table->bigInteger('id')->nullable();
             $table->string('namamandor', 1000)->nullable();
             $table->string('keterangan', 1000)->nullable();
+            $table->string('user', 1000)->nullable();
             $table->string('statusaktif', 1000)->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
@@ -193,7 +197,7 @@ class Mandor extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'namamandor', 'keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'namamandor', 'keterangan','user', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -215,7 +219,9 @@ class Mandor extends MyModel
                                 $query = $query->where('parameter.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
+                            } else  if ($filters['field'] == 'user') { 
+                                $query = $query->whereRaw("[user].[name] LIKE '%$filters[data]%'");                               
+                            }else {
                                 // $query = $query->where('mandor.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->whereRaw('mandor' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                             }
@@ -231,7 +237,9 @@ class Mandor extends MyModel
                                     $query = $query->orWhere('parameter.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                                } else {
+                                } else  if ($filters['field'] == 'user') { 
+                                    $query = $query->orWhereRaw("[user].[name] LIKE '%$filters[data]%'");                               
+                                }else {
                                     // $query = $query->orWhere('mandor.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                     $query = $query->OrwhereRaw('mandor' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                                 }

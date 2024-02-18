@@ -393,7 +393,7 @@ class Bank extends MyModel
                     "$this->table.id,
             $this->table.kodebank,
             $this->table.namabank,
-            $this->table.coa,
+            'akunpusat.keterangancoa as coa',
             $this->table.tipe,
             parameter.text as statusaktif,
             formatpenerimaan.text as formatpenerimaan,
@@ -403,6 +403,7 @@ class Bank extends MyModel
             $this->table.updated_at"
                 )
             )
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'bank.coa', '=', 'akunpusat.coa')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'bank.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("parameter as formatpenerimaan with (readuncommitted)"), 'bank.formatpenerimaan', '=', 'formatpenerimaan.id')
             ->leftJoin(DB::raw("parameter as formatpengeluaran with (readuncommitted)"), 'bank.formatpengeluaran', '=', 'formatpengeluaran.id');

@@ -189,12 +189,13 @@ class Kelompok extends MyModel
                     "   $this->table.id,
                 $this->table.kodekelompok,
                 $this->table.keterangan,
-                $this->table.statusaktif,
+                'parameter.text as statusaktif',
                 $this->table.modifiedby,
                 $this->table.created_at,
                 $this->table.updated_at"
                 )
-            );
+            ) ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kelompok.statusaktif', '=', 'parameter.id');
+
     }
 
     public function createTemp(string $modelTable)
@@ -204,7 +205,7 @@ class Kelompok extends MyModel
             $table->bigInteger('id')->nullable();
             $table->string('kodekelompok', 1000)->nullable();
             $table->string('keterangan', 1000)->nullable();
-            $table->bigInteger('statusaktif')->nullable();
+            $table->string('statusaktif')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();

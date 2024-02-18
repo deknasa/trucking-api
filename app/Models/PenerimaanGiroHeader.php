@@ -657,6 +657,7 @@ class PenerimaanGiroHeader extends MyModel
 
         /*STORE JURNAL*/
         $jurnalRequest = [
+            'tanpaprosesnobukti' => 1,
             'nobukti' => $penerimaanGiroHeader->nobukti,
             'tglbukti' => $penerimaanGiroHeader->tglbukti,
             'postingdari' => $data['postingdari'] ?? 'EDIT PENERIMAAN GIRO DETAIL',
@@ -787,6 +788,7 @@ class PenerimaanGiroHeader extends MyModel
     public function editingAt($id, $btn)
     {
         $penerimaanGiro = PenerimaanGiroHeader::find($id);
+        $oldUser = $penerimaanGiro->editing_by;
         if ($btn == 'EDIT') {
             $penerimaanGiro->editing_by = auth('api')->user()->name;
             $penerimaanGiro->editing_at = date('Y-m-d H:i:s');
@@ -800,7 +802,7 @@ class PenerimaanGiroHeader extends MyModel
             throw new \Exception("Error Update penerimaan giro header.");
         }
 
-
+        $penerimaanGiro->oldeditingby = $oldUser;
         return $penerimaanGiro;
     }
 }

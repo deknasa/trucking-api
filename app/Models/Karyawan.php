@@ -214,7 +214,7 @@ class Karyawan extends MyModel
                 DB::raw("serviceindetail as a with (readuncommitted)")
             )
             ->select(
-                'a.karyawan_id'
+                'a.karyawan_id',
             )
             ->where('a.karyawan_id', '=', $id)
             ->first();
@@ -222,6 +222,82 @@ class Karyawan extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'Service In',
+            ];
+
+
+            goto selesai;
+        }
+
+        $penerimaantruckingheader = DB::table('penerimaantruckingheader')
+            ->from(
+                DB::raw("penerimaantruckingheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.karyawan_id'
+            )
+            ->where('a.karyawan_id', '=', $id)
+            ->first();
+        if (isset($penerimaantruckingheader)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Trucking DPOK',
+            ];
+
+
+            goto selesai;
+        }
+
+        $penerimaantruckingdetail = DB::table('penerimaantruckingdetail')
+            ->from(
+                DB::raw("penerimaantruckingdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.karyawan_id'
+            )
+            ->where('a.karyawan_id', '=', $id)
+            ->first();
+        if (isset($penerimaantruckingdetail)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Trucking DPOK',
+            ];
+
+
+            goto selesai;
+        }
+
+        $pengeluarantruckingheader = DB::table('pengeluarantruckingheader')
+            ->from(
+                DB::raw("pengeluarantruckingheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.karyawan_id'
+            )
+            ->where('a.karyawan_id', '=', $id)
+            ->first();
+        if (isset($pengeluarantruckingheader)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'pengeluaran Trucking TDEK',
+            ];
+
+
+            goto selesai;
+        }
+
+        $pengeluarantruckingdetail = DB::table('pengeluarantruckingdetail')
+            ->from(
+                DB::raw("pengeluarantruckingdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.karyawan_id'
+            )
+            ->where('a.karyawan_id', '=', $id)
+            ->first();
+        if (isset($pengeluarantruckingdetail)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'pengeluaran Trucking TDEK',
             ];
 
 
@@ -247,7 +323,7 @@ class Karyawan extends MyModel
                 "$this->table.id,
                 $this->table.namakaryawan,
                 $this->table.keterangan,
-                'parameter.text as statusaktif',
+                'statusaktif.text as statusaktif',
                 'statusstaff.text as statusstaff',
                 $this->table.jabatan,
                 $this->table.modifiedby,
@@ -255,8 +331,8 @@ class Karyawan extends MyModel
                 $this->table.updated_at"
             )
         )
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'karyawan.statusaktif', '=', 'parameter.id')
-            ->leftJoin(DB::raw("parameter as statusstaff with (readuncommitted)"), 'karyawan.statusstaff', '=', 'parameter.id');
+        ->leftJoin(DB::raw("parameter as statusaktif with (readuncommitted)"), 'karyawan.statusaktif', 'statusaktif.id')
+        ->leftJoin(DB::raw("parameter as statusstaff with (readuncommitted)"), 'karyawan.statusstaff', '=', 'statusstaff.id');
     }
 
     public function createTemp(string $modelTable)

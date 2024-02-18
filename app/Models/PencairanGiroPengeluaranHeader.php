@@ -150,54 +150,135 @@ class PencairanGiroPengeluaranHeader extends MyModel
     }
 
 
-    public function selectColumns($query)
+    public function selectColumns()
     {
-        return $query->from(
-            DB::raw($this->table . " with (readuncommitted)")
-        )
+        $periode = request()->periode ?? date('m-Y');
+        $month = substr($periode, 0, 2);
+        $year = substr($periode, 3);
+
+        $alatBayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'GIRO')->first();
+        $query1 = DB::table($this->anotherTable)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
             ->select(
-                DB::raw(
-                    "pencairangiropengeluaranheader.id,
-            pencairangiropengeluaranheader.nobukti,
-            pencairangiropengeluaranheader.tglbukti,
-            pencairangiropengeluaranheader.keterangan,
-            pencairangiropengeluaranheader.pengeluaran_nobukti,
-            statusapproval.text as statusapproval,
-            pencairangiropengeluaranheader.userapproval,
-            pencairangiropengeluaranheader.tglapproval,
-            pencairangiropengeluaranheader.modifiedby,
-            pencairangiropengeluaranheader.created_at,
-            pencairangiropengeluaranheader.updated_at"
-                )
+                DB::raw("pengeluaranheader.nobukti as pengeluaran_nobukti,pengeluaranheader.id, 
+                pengeluaranheader.dibayarke, bank.namabank as bank_id, pengeluaranheader.transferkeac, 
+                pengeluaranheader.modifiedby, pengeluaranheader.created_at,pengeluaranheader.updated_at, alatbayar.namaalatbayar as alatbayar_id, pgp.nobukti, pgp.tglbukti, parameter.memo as statusapproval, (SELECT (SUM(pengeluarandetail.nominal)) FROM pengeluarandetail 
+        WHERE pengeluarandetail.nobukti= pengeluaranheader.nobukti and pengeluaranheader.alatbayar_id=$alatBayar->id) as nominal")
             )
-            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'pencairangiropengeluaranheader.statusapproval', 'statusapproval.id');
+            ->distinct('pengeluaranheader.nobukti')
+            ->leftJoin(DB::raw("pengeluarandetail with (readuncommitted)"), 'pengeluarandetail.nobukti', 'pengeluaranheader.nobukti')
+            ->leftJoin(DB::raw("pencairangiropengeluaranheader as pgp with (readuncommitted)"), 'pgp.pengeluaran_nobukti', 'pengeluaranheader.nobukti')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pgp.statusapproval', 'parameter.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pengeluaranheader.alatbayar_id', 'alatbayar.id')
+            ->whereRaw("MONTH(pengeluaranheader.tglbukti) = $month")
+            ->whereRaw("YEAR(pengeluaranheader.tglbukti) = $year")
+            ->where('pengeluaranheader.alatbayar_id', $alatBayar->id);
+
+        $query2 = DB::table($this->anotherTable)->from(DB::raw("saldopengeluaranheader as pengeluaranheader with (readuncommitted) "))
+            ->select(
+                DB::raw("pengeluaranheader.nobukti as pengeluaran_nobukti,pengeluaranheader.id, pengeluaranheader.dibayarke, bank.namabank as bank_id, pengeluaranheader.transferkeac, pengeluaranheader.modifiedby, pengeluaranheader.created_at,pengeluaranheader.updated_at, alatbayar.namaalatbayar as alatbayar_id, pgp.nobukti, pgp.tglbukti, parameter.memo as statusapproval, (SELECT (SUM(pengeluarandetail.nominal)) FROM saldopengeluarandetail as pengeluarandetail
+        WHERE pengeluarandetail.nobukti= pengeluaranheader.nobukti and pengeluaranheader.alatbayar_id=$alatBayar->id) as nominal")
+            )
+            ->distinct('pengeluaranheader.nobukti')
+            ->leftJoin(DB::raw("saldopengeluarandetail as pengeluarandetail with (readuncommitted)"), 'pengeluarandetail.nobukti', 'pengeluaranheader.nobukti')
+            ->leftJoin(DB::raw("pencairangiropengeluaranheader as pgp with (readuncommitted)"), 'pgp.pengeluaran_nobukti', 'pengeluaranheader.nobukti')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pgp.statusapproval', 'parameter.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pengeluaranheader.alatbayar_id', 'alatbayar.id')
+            ->whereRaw("MONTH(pengeluaranheader.tglbukti) = $month")
+            ->whereRaw("YEAR(pengeluaranheader.tglbukti) = $year")
+            ->where('pengeluaranheader.alatbayar_id', $alatBayar->id);
+
+
+
+        $query3 = DB::table(DB::raw("({$query1->toSql()} UNION ALL {$query2->toSql()}) as V"))
+            ->mergeBindings($query1)
+            ->mergeBindings($query2);
+
+
+
+        $templist = '##templist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($templist, function ($table) {
+            $table->string('pengeluaran_nobukti', 300)->nullable();
+            $table->integer('id')->nullable();
+            $table->longText('dibayarke')->nullable();
+            $table->longText('bank_id')->nullable();
+            $table->longText('transferkeac')->nullable();
+            $table->longText('alatbayar_id')->nullable();
+            $table->longText('nobukti')->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->longText('statusapproval')->nullable();
+            $table->double('nominal')->nullable();
+            $table->longText('modifiedby')->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
+        });
+
+
+
+        DB::table($templist)->insertUsing([
+            'pengeluaran_nobukti',
+            'id',
+            'dibayarke',
+            'bank_id',
+            'transferkeac',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+            'alatbayar_id',
+            'nobukti',
+            'tglbukti',
+            'statusapproval',
+            'nominal',
+
+        ], $query3);
+
+        $query = DB::table($templist)->from(DB::raw($templist . " AS pengeluaranheader "))
+            ->select([
+                'pengeluaranheader.pengeluaran_nobukti',
+                'pengeluaranheader.id',
+                'pengeluaranheader.dibayarke',
+                'pengeluaranheader.bank_id',
+                'pengeluaranheader.transferkeac',
+                'pengeluaranheader.alatbayar_id',
+                'pengeluaranheader.nobukti',
+                'pengeluaranheader.tglbukti',
+                'pengeluaranheader.statusapproval',
+                'pengeluaranheader.nominal',
+                'pengeluaranheader.modifiedby',
+                'pengeluaranheader.created_at',
+                'pengeluaranheader.updated_at',
+            ]);
+
+        return $query;
     }
 
     public function createTemp(string $modelTable)
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->nullable();
-            $table->string('nobukti', 1000)->nullable();
-            $table->date('tglbukti', 1000)->nullable();
-            $table->string('keterangan', 1000)->nullable();
-            $table->string('pengeluaran_nobukti', 1000)->nullable();
-            $table->string('statusapproval', 1000)->nullable();
-            $table->string('userapproval', 1000)->nullable();
-            $table->dateTime('tglapproval')->nullable();
-            $table->string('modifiedby', 50)->nullable();
+            $table->string('pengeluaran_nobukti', 300)->nullable();
+            $table->integer('id')->nullable();
+            $table->longText('dibayarke')->nullable();
+            $table->longText('bank_id')->nullable();
+            $table->longText('transferkeac')->nullable();
+            $table->longText('alatbayar_id')->nullable();
+            $table->longText('nobukti')->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->longText('statusapproval')->nullable();
+            $table->double('nominal')->nullable();
+            $table->longText('modifiedby')->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 
         $this->setRequestParameters();
-        $query = DB::table($modelTable);
-        $query = $this->selectColumns($query);
-        $this->sort($query, 'pencairangiropengeluaranheader');
-        $models = $this->filter($query, 'pencairangiropengeluaranheader');
+        $query = $this->selectColumns();
+        $this->sort($query, 'pengeluaranheader');
+        $models = $this->filter($query, 'pengeluaranheader');
         DB::table($temp)->insertUsing([
-            'id', 'nobukti', 'tglbukti', 'keterangan', 'pengeluaran_nobukti', 'statusapproval', 'userapproval', 'tglapproval', 'modifiedby', 'created_at', 'updated_at'
+            'pengeluaran_nobukti','id','dibayarke', 'bank_id', 'transferkeac', 'alatbayar_id', 'nobukti', 'tglbukti', 'statusapproval','nominal', 'modifiedby', 'created_at', 'updated_at'
         ], $models);
 
 
@@ -546,5 +627,34 @@ class PencairanGiroPengeluaranHeader extends MyModel
         ]);
 
         return $pencairanGiro;
+    }
+
+    public function cekValidasi($nobukti)
+    {
+        
+        $jurnalpusat = DB::table('jurnalumumpusatheader')
+            ->from(
+                DB::raw("jurnalumumpusatheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.nobukti', '=', $nobukti)
+            ->first();
+        if (isset($jurnalpusat)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Approval Jurnal ' . $jurnalpusat->nobukti,
+                'kodeerror' => 'SAP'
+            ];
+            goto selesai;
+        }
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
     }
 }
