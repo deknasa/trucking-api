@@ -3,23 +3,24 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Bank;
-use App\Models\AkunPusat;
-use App\Http\Requests\StoreBankRequest;
-use App\Http\Requests\UpdateBankRequest;
-use App\Http\Requests\StoreLogTrailRequest;
-
-use App\Http\Controllers\Controller;
-use App\Http\Requests\DestroyBankRequest;
-use App\Http\Requests\RangeExportReportRequest;
 use App\Models\LogTrail;
+use App\Models\AkunPusat;
 use App\Models\Parameter;
-
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\QueryException;
+
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
+
+use App\Http\Requests\StoreBankRequest;
+use Illuminate\Database\QueryException;
+use App\Http\Requests\UpdateBankRequest;
+use App\Http\Requests\DestroyBankRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\ApprovalKaryawanRequest;
+use App\Http\Requests\RangeExportReportRequest;
 
 class BankController extends Controller
 {
@@ -197,6 +198,30 @@ class BankController extends Controller
         }
     }
 
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new Bank())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+    
     public function combo(Request $request)
     {
         $data = [

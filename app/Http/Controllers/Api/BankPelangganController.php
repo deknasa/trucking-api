@@ -2,23 +2,24 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\BankPelanggan;
-use App\Http\Requests\StoreBankPelangganRequest;
-use App\Http\Requests\UpdateBankPelangganRequest;
-use App\Http\Requests\StoreLogTrailRequest;
-
-use App\Http\Controllers\Controller;
-use App\Http\Requests\DestroyBankPelangganRequest;
-use App\Http\Requests\RangeExportReportRequest;
 use App\Models\LogTrail;
 use App\Models\Parameter;
-
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\QueryException;
+use App\Models\BankPelanggan;
+
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
+
+use Illuminate\Database\QueryException;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\ApprovalKaryawanRequest;
+use App\Http\Requests\RangeExportReportRequest;
+use App\Http\Requests\StoreBankPelangganRequest;
+use App\Http\Requests\UpdateBankPelangganRequest;
+use App\Http\Requests\DestroyBankPelangganRequest;
 
 class BankPelangganController extends Controller
 {
@@ -188,6 +189,30 @@ class BankPelangganController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
 
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new BankPelanggan())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }

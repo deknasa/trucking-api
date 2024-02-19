@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\DestroyPenerimaRequest;
-use App\Http\Requests\RangeExportReportRequest;
-use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Penerima;
-use App\Http\Requests\StorePenerimaRequest;
-use App\Http\Requests\UpdatePenerimaRequest;
 use App\Models\Parameter;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
-use Illuminate\Http\JsonResponse;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\StorePenerimaRequest;
+use App\Http\Requests\UpdatePenerimaRequest;
+use App\Http\Requests\DestroyPenerimaRequest;
+use App\Http\Requests\ApprovalKaryawanRequest;
+use App\Http\Requests\RangeExportReportRequest;
 
 class PenerimaController extends Controller
 {
@@ -189,6 +190,30 @@ class PenerimaController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
 
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new Penerima())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }
