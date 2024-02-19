@@ -1108,11 +1108,13 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('pengeluarantruckingheader', PengeluaranTruckingHeaderController::class)->whereNumber('pengeluarantruckingheader');
 
 
-    Route::post('bukapenerimaanstok/{id}/updatetanggalbatas', [BukaPenerimaanStokController::class, 'updateTanggalBatas']);
+    // Route::post('bukapenerimaanstok/{id}/updatetanggalbatas', [BukaPenerimaanStokController::class, 'updateTanggalBatas']);
+    Route::post('bukapenerimaanstok/updatetanggalbatas', [BukaPenerimaanStokController::class, 'updateTanggalBatas']);
     Route::apiResource('bukapenerimaanstok', BukaPenerimaanStokController::class)->whereNumber('bukapenerimaanstok');
 
 
-    Route::post('bukapengeluaranstok/{id}/updatetanggalbatas', [BukaPengeluaranStokController::class, 'updateTanggalBatas']);
+    // Route::post('bukapengeluaranstok/{id}/updatetanggalbatas', [BukaPengeluaranStokController::class, 'updateTanggalBatas']);
+    Route::post('bukapengeluaranstok/updatetanggalbatas', [BukaPengeluaranStokController::class, 'updateTanggalBatas']);
     Route::apiResource('bukapengeluaranstok', BukaPengeluaranStokController::class)->whereNumber('bukapengeluaranstok');
 
     
@@ -1856,8 +1858,9 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('opnameheader/getstok', [OpnameHeaderController::class, 'getStok']);
     Route::get('opnameheader/{id}/getEdit', [OpnameHeaderController::class, 'getEdit'])->whereNumber('id');
     Route::get('opnameheader/{id}/export', [OpnameHeaderController::class, 'export'])->name('opnameheader.export')->whereNumber('id');
+    Route::post('opnameheader/approval', [OpnameHeaderController::class, 'approval']);
     Route::post('opnameheader/{id}/cekvalidasi', [OpnameHeaderController::class, 'cekvalidasi'])->name('opnameheader.cekvalidasi')->whereNumber('id');
-    Route::post('opnameheader/{id}/approval', [OpnameHeaderController::class, 'approval'])->name('opnameheader.approval')->whereNumber('id');
+    // Route::post('opnameheader/{id}/approval', [OpnameHeaderController::class, 'approval'])->name('opnameheader.approval')->whereNumber('id');
     Route::resource('opnameheader', OpnameHeaderController::class)->whereNumber('opnameheader');
     Route::resource('opnamedetail', OpnameDetailController::class)->whereNumber('opnamedetail');
 

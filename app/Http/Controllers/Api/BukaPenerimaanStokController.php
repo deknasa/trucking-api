@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 
 use App\Models\BukaPenerimaanStok;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\StoreBukaPenerimaanStokRequest;
 use App\Http\Requests\UpdateBukaPenerimaanStokRequest;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
 
 class BukaPenerimaanStokController extends Controller
 {
@@ -81,17 +82,19 @@ class BukaPenerimaanStokController extends Controller
      * @ClassName
      * @Keterangan PERBARUI BATAS TANGGAL
      */
-    public function updateTanggalBatas($id)
+    public function updateTanggalBatas(ApprovalKaryawanRequest $request)
     {
         DB::beginTransaction();
         try {
-            $bukaPenerimaanStok = (new BukaPenerimaanStok())->processTanggalBatasUpdate($id);
-            /* Set position and page */
-            $bukaPenerimaanStok->position = $this->getPosition($bukaPenerimaanStok, $bukaPenerimaanStok->getTable())->position;
-            $bukaPenerimaanStok->page = ceil($bukaPenerimaanStok->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
-                $bukaPenerimaanStok->page = ceil($bukaPenerimaanStok->position / ($request->limit ?? 10));
+            foreach ($request->Id as $id) {
+                $bukaPenerimaanStok = (new BukaPenerimaanStok())->processTanggalBatasUpdate($id);
             }
+            // /* Set position and page */
+            // $bukaPenerimaanStok->position = $this->getPosition($bukaPenerimaanStok, $bukaPenerimaanStok->getTable())->position;
+            // $bukaPenerimaanStok->page = ceil($bukaPenerimaanStok->position / ($request->limit ?? 10));
+            // if (isset($request->limit)) {
+            //     $bukaPenerimaanStok->page = ceil($bukaPenerimaanStok->position / ($request->limit ?? 10));
+            // }
 
             DB::commit();
             return response()->json([
@@ -103,6 +106,28 @@ class BukaPenerimaanStokController extends Controller
             throw $th;
         }
     }
+    // public function updateTanggalBatas($id)
+    // {
+    //     DB::beginTransaction();
+    //     try {
+    //         $bukaPenerimaanStok = (new BukaPenerimaanStok())->processTanggalBatasUpdate($id);
+    //         /* Set position and page */
+    //         $bukaPenerimaanStok->position = $this->getPosition($bukaPenerimaanStok, $bukaPenerimaanStok->getTable())->position;
+    //         $bukaPenerimaanStok->page = ceil($bukaPenerimaanStok->position / ($request->limit ?? 10));
+    //         if (isset($request->limit)) {
+    //             $bukaPenerimaanStok->page = ceil($bukaPenerimaanStok->position / ($request->limit ?? 10));
+    //         }
+
+    //         DB::commit();
+    //         return response()->json([
+    //             'message' => 'Berhasil disimpan',
+    //             'data' => $bukaPenerimaanStok
+    //         ], 201);    
+    //     } catch (\Throwable $th) {
+    //         DB::rollBack();
+    //         throw $th;
+    //     }
+    // }
 
     /**
      * @ClassName 
