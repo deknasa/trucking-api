@@ -569,6 +569,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('maintypeakuntansi/approvalnonaktif', [MainTypeAkuntansiController::class, 'approvalnonaktif']);
     Route::post('mainakunpusat/approvalnonaktif', [MainAkunPusatController::class, 'approvalnonaktif']);
     Route::post('akunpusat/approvalnonaktif', [AkunPusatController::class, 'approvalnonaktif']);
+    Route::post('jenisorder/approvalnonaktif', [JenisOrderController::class, 'approvalnonaktif']);
+    Route::post('absentrado/approvalnonaktif', [AbsenTradoController::class, 'approvalnonaktif']);
 
 });
 
