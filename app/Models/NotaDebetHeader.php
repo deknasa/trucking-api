@@ -891,7 +891,8 @@ class NotaDebetHeader extends MyModel
             } else {
 
                 /*STORE JURNAL*/
-                $jurnalRequest = [
+                $jurnalRequest = [                    
+                    'tanpaprosesnobukti' => 1,
                     'nobukti' => $notaDebetHeader->nobukti,
                     'tglbukti' => $notaDebetHeader->tglbukti,
                     'postingdari' => $data['postingdari'],

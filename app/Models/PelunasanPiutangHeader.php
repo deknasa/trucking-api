@@ -128,7 +128,7 @@ class PelunasanPiutangHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal '. $pelunasanPiutang->penerimaan_nobukti,
+                'keterangan' => 'Approval Jurnal ' . $pelunasanPiutang->penerimaan_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
@@ -148,7 +148,7 @@ class PelunasanPiutangHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal '. $pelunasanPiutang->penerimaangiro_nobukti,
+                'keterangan' => 'Approval Jurnal ' . $pelunasanPiutang->penerimaangiro_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
@@ -168,7 +168,7 @@ class PelunasanPiutangHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal '. $pelunasanPiutang->notadebet_nobukti,
+                'keterangan' => 'Approval Jurnal ' . $pelunasanPiutang->notadebet_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
@@ -188,7 +188,7 @@ class PelunasanPiutangHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal '. $pelunasanPiutang->notakredit_nobukti,
+                'keterangan' => 'Approval Jurnal ' . $pelunasanPiutang->notakredit_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
@@ -504,7 +504,7 @@ class PelunasanPiutangHeader extends MyModel
             DB::raw($this->table . " with (readuncommitted)")
         )
             ->select(
-               
+
                 'pelunasanpiutangheader.id',
                 'pelunasanpiutangheader.nobukti',
                 'pelunasanpiutangheader.tglbukti',
@@ -525,7 +525,6 @@ class PelunasanPiutangHeader extends MyModel
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pelunasanpiutangheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'pelunasanpiutangheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pelunasanpiutangheader.alatbayar_id', 'alatbayar.id');
-
     }
 
     public function createTemp(string $modelTable)
@@ -556,7 +555,7 @@ class PelunasanPiutangHeader extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti','pengeluaran_nobukti','penerimaan_nobukti','penerimaangiro_nobukti','notadebet_nobukti', 'notakredit_nobukti', 'statuscetak', 'bank_id', 'agen_id', 'alatbayar_id','modifiedby','created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pengeluaran_nobukti', 'penerimaan_nobukti', 'penerimaangiro_nobukti', 'notadebet_nobukti', 'notakredit_nobukti', 'statuscetak', 'bank_id', 'agen_id', 'alatbayar_id', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -580,21 +579,23 @@ class PelunasanPiutangHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statuscetak') {
-                            $query = $query->where('statuscetak.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'bank_id') {
-                            $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'agen_id') {
-                            $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'alatbayar_id') {
-                            $query = $query->where('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'tglbukti') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statuscetak') {
+                                $query = $query->where('statuscetak.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'bank_id') {
+                                $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'agen_id') {
+                                $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'alatbayar_id') {
+                                $query = $query->where('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tglbukti') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -602,21 +603,23 @@ class PelunasanPiutangHeader extends MyModel
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statuscetak') {
-                                $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'bank_id') {
-                                $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'agen_id') {
-                                $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'alatbayar_id') {
-                                $query = $query->orWhere('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'tglbukti') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
-                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statuscetak') {
+                                    $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'bank_id') {
+                                    $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'agen_id') {
+                                    $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'alatbayar_id') {
+                                    $query = $query->orWhere('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'tglbukti') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
                     });
@@ -752,14 +755,30 @@ class PelunasanPiutangHeader extends MyModel
         $memoJurnalPengeluaran = json_decode($getJurnalPengeluaran->memo, true);
 
         if ($notadebet ==  true) {
-            $getNotaDebetCoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->select('memo')
-                ->where('id', $data['statusnotadebet'][0])->first();
-            $memoNotaDebetCoa = json_decode($getNotaDebetCoa->memo, true);
+            $notadebetCoaMemo = [];
+            for ($i = 0; $i < count($data['statusnotadebet']); $i++) {
+                if ($data['statusnotadebet'][$i] != '') {
+
+                    $getNotaDebetCoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->select('memo')
+                        ->where('id', $data['statusnotadebet'][$i])->first();
+                    $notadebetCoaMemo = json_decode($getNotaDebetCoa->memo, true);
+                    break;
+                }
+            }
+            $memoNotaDebetCoa = $notadebetCoaMemo;
         }
+
         if ($notakredit ==  true) {
-            $getNotaKreditCoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->select('memo')
-                ->where('id', $data['statusnotakredit'][0])->first();
-            $memoNotaKreditCoa = json_decode($getNotaKreditCoa->memo, true);
+            $notakreditCoaMemo = [];
+            for ($i = 0; $i < count($data['statusnotakredit']); $i++) {
+                if ($data['statusnotakredit'][$i] != '') {
+                    $getNotaKreditCoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->select('memo')
+                        ->where('id', $data['statusnotakredit'][$i])->first();
+                    $notakreditCoaMemo = json_decode($getNotaKreditCoa->memo, true);
+                    break;
+                }
+            }
+            $memoNotaKreditCoa = $notakreditCoaMemo;
         }
 
         $nominal = 0;
@@ -1062,14 +1081,29 @@ class PelunasanPiutangHeader extends MyModel
 
         $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'])->first();
         if ($notadebet ==  true) {
-            $getNotaDebetCoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->select('memo')
-                ->where('id', $data['statusnotadebet'][0])->first();
-            $memoNotaDebetCoa = json_decode($getNotaDebetCoa->memo, true);
+            $notadebetCoaMemo = [];
+            for ($i = 0; $i < count($data['statusnotadebet']); $i++) {
+                if ($data['statusnotadebet'][$i] != '' && $data['statusnotadebet'][$i] != 0) {
+                    $getNotaDebetCoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->select('memo')
+                        ->where('id', $data['statusnotadebet'][$i])->first();
+                    $notadebetCoaMemo = json_decode($getNotaDebetCoa->memo, true);
+                    break;
+                }
+            }
+            $memoNotaDebetCoa = $notadebetCoaMemo;
         }
+
         if ($notakredit ==  true) {
-            $getNotaKreditCoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->select('memo')
-                ->where('id', $data['statusnotakredit'][0])->first();
-            $memoNotaKreditCoa = json_decode($getNotaKreditCoa->memo, true);
+            $notakreditCoaMemo = [];
+            for ($i = 0; $i < count($data['statusnotakredit']); $i++) {
+                if ($data['statusnotakredit'][$i] != '' && $data['statusnotakredit'][$i] != 0) {
+                    $getNotaKreditCoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->select('memo')
+                        ->where('id', $data['statusnotakredit'][$i])->first();
+                    $notakreditCoaMemo = json_decode($getNotaKreditCoa->memo, true);
+                    break;
+                }
+            }
+            $memoNotaKreditCoa = $notakreditCoaMemo;
         }
 
         // dd($getcoadebetnk);
@@ -1092,6 +1126,7 @@ class PelunasanPiutangHeader extends MyModel
                 $getCoaPotongan = $memoNotaKreditCoa['JURNAL'];
                 $nominalPiutangNK[] = $piutang->nominal;
                 $invoiceNobuktiNK[] = $piutang->invoice_nobukti ?? '';
+                $keteranganPotongan[] = $data['keteranganpotongan'][$i];
                 $nominalBayarNK[] = $data['bayar'][$i];
                 $nominalPotongan[] = $potongan;
                 $coaPotongan[] = $memoNotaKreditCoa['JURNAL'] ?? '';
@@ -1213,12 +1248,12 @@ class PelunasanPiutangHeader extends MyModel
                     'potongan' => $nominalPotongan,
                     'coakredit' => $coaKreditNotaKredit,
                     'coadebet' => $coaPotongan,
-                    'keteranganpotongan' => $keteranganDetail,
+                    'keteranganpotongan' => $keteranganPotongan,
                     'cekcoadebet' => $memoNotaKreditCoa['JURNAL']
                 ];
 
                 // dd($notaKreditRequest);
-
+                
                 $newNotaKredit = new NotaKreditHeader();
                 $newNotaKredit = $newNotaKredit->findAll($get->id);
                 $getNotaKredit = (new NotaKreditHeader())->processUpdate($newNotaKredit, $notaKreditRequest);
