@@ -9,6 +9,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Parameter;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -283,6 +284,29 @@ class JenisOrderController extends Controller
             ];
 
             $this->toExcel($judulLaporan, $jenisorders, $columns);
+        }
+    }
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new JenisOrder())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
         }
     }
 }

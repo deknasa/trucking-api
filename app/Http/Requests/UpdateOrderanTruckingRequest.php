@@ -18,6 +18,7 @@ use App\Rules\ExistJenisOrder;
 use App\Rules\ExistPelanggan;
 use App\Rules\ExistTarifRincian;
 use App\Models\Parameter;
+use App\Rules\validationTarifOrderemkl;
 use Illuminate\Support\Facades\DB;
 
 
@@ -100,7 +101,6 @@ class UpdateOrderanTruckingRequest extends FormRequest
             $kondisiukuran = false;
         }
 
-
         $rules = [
             'id'=>[new DateAllowedOrderanTrucking()],
             'tglbukti' => [
@@ -131,6 +131,7 @@ class UpdateOrderanTruckingRequest extends FormRequest
             $rulescontainer_id = [
                 'container' => [
                     new ExistContainer(),
+                    new validationTarifOrderemkl()
                 ]
             ];
         } else if ($container_id == '' && $this->container == '') {
@@ -138,6 +139,7 @@ class UpdateOrderanTruckingRequest extends FormRequest
                 'container' => [
                     'required',
                     new ExistContainer(),
+                    new validationTarifOrderemkl()
                 ]
             ];
         } else if ($container_id != null) {
@@ -160,6 +162,7 @@ class UpdateOrderanTruckingRequest extends FormRequest
                         'container' => [
                             'required',
                             new ExistContainer(),
+                            new validationTarifOrderemkl()
                         ]
                     ];
                 }
@@ -171,6 +174,7 @@ class UpdateOrderanTruckingRequest extends FormRequest
                     'numeric',
                     'min:1',
                     new ExistContainer(),
+                    new validationTarifOrderemkl()
                 ]
             ];
         } else {
@@ -180,6 +184,7 @@ class UpdateOrderanTruckingRequest extends FormRequest
                     'numeric',
                     'min:1',
                     new ExistContainer(),
+                    new validationTarifOrderemkl()
                 ]
             ];
         }

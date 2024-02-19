@@ -242,6 +242,7 @@ class Kerusakan extends MyModel
         $kerusakan->keterangan = $data['keterangan'] ?? '';
         $kerusakan->statusaktif = $data['statusaktif'];
         $kerusakan->modifiedby = auth('api')->user()->user;
+        $kerusakan->tas_id = $data['tas_id'] ?? '';
         $kerusakan->info = html_entity_decode(request()->info);
         $data['sortname'] = $data['sortname'] ?? 'id';
         $data['sortorder'] = $data['sortorder'] ?? 'asc';

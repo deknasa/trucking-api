@@ -251,10 +251,10 @@ class NotaDebetHeader extends MyModel
             $table->string('alatbayar', 50)->nullable();
             $table->string('penerimaan_nobukti', 50)->nullable();
             $table->string('postingdari', 50)->nullable();
-            $table->integer('statusapproval')->length(11)->nullable();
+            $table->string('statusapproval_memo')->nullable();
             $table->string('userapproval', 50)->nullable();
             $table->date('tglapproval')->nullable();
-            $table->integer('statuscetak')->length(11)->nullable();
+            $table->string('statuscetak_memo')->nullable();
             $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
             $table->string('modifiedby', 50)->nullable();
@@ -286,10 +286,10 @@ class NotaDebetHeader extends MyModel
             "alatbayar",
             "penerimaan_nobukti",
             "postingdari",
-            "statusapproval",
+            "statusapproval_memo",
             "userapproval",
             "tglapproval",
-            "statuscetak",
+            "statuscetak_memo",
             "userbukacetak",
             "tglbukacetak",
             "modifiedby",
@@ -315,10 +315,10 @@ class NotaDebetHeader extends MyModel
                 'alatbayar.namaalatbayar as alatbayar',
                 "$this->table.penerimaan_nobukti",
                 "$this->table.postingdari",
-                "$this->table.statusapproval",
+                "parameter.text as  statusapproval_memo",
                 "$this->table.userapproval",
                 DB::raw('(case when (year(notadebetheader.tglapproval) <= 2000) then null else notadebetheader.tglapproval end ) as tglapproval'),
-                "$this->table.statuscetak",
+                "statuscetak.text as statuscetak_memo",
                 "$this->table.userbukacetak",
                 DB::raw('(case when (year(notadebetheader.tglbukacetak) <= 2000) then null else notadebetheader.tglbukacetak end ) as tglbukacetak'),
                 "$this->table.modifiedby",
@@ -328,7 +328,10 @@ class NotaDebetHeader extends MyModel
 
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'notadebetheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'notadebetheader.agen_id', 'agen.id')
-            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'notadebetheader.alatbayar_id', 'alatbayar.id');
+            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'notadebetheader.alatbayar_id', 'alatbayar.id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'notadebetheader.statusapproval', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'notadebetheader.statuscetak', 'statuscetak.id');
+        
     }
 
 
@@ -888,7 +891,8 @@ class NotaDebetHeader extends MyModel
             } else {
 
                 /*STORE JURNAL*/
-                $jurnalRequest = [
+                $jurnalRequest = [                    
+                    'tanpaprosesnobukti' => 1,
                     'nobukti' => $notaDebetHeader->nobukti,
                     'tglbukti' => $notaDebetHeader->tglbukti,
                     'postingdari' => $data['postingdari'],

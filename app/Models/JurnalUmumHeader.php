@@ -360,6 +360,24 @@ class JurnalUmumHeader extends MyModel
             goto selesai;
         }
 
+        $pencairanGiropengeluaran = DB::table('pencairangiropengeluaranheader')
+            ->from(
+                DB::raw("pencairangiropengeluaranheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.nobukti', '=', $nobukti)
+            ->first();
+        if (isset($pencairanGiropengeluaran)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pencairan Giro Pengeluaran',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+
 
         $data = [
             'kondisi' => false,

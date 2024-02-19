@@ -329,10 +329,11 @@ class AkunPusat extends MyModel
                 $this->table.id,
                 $this->table.coa,
                 $this->table.keterangancoa,
-                $this->table.type,
+                'typeakuntansi.kodetype as type',
                 $this->table.level,
                 'parameter_statusaktif.text as statusaktif',
                 $this->table.parent,
+                'akuntansi.kodeakuntansi as akuntansi',
                 'parameter_statusparent.text as statusparent',
                 'parameter_statusneraca.text as statusneraca',
                 'parameter_statuslabarugi.text as statuslabarugi',
@@ -342,6 +343,8 @@ class AkunPusat extends MyModel
                 $this->table.updated_at
             ")
             )
+            ->leftJoin(DB::raw("typeakuntansi with (readuncommitted)"), 'akunpusat.type_id', 'typeakuntansi.id')
+            ->leftJoin(DB::raw("akuntansi with (readuncommitted)"), 'akunpusat.akuntansi_id', 'akuntansi.id')
             ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'akunpusat.statusaktif', '=', 'parameter_statusaktif.id')
             ->leftJoin(DB::raw("parameter as parameter_statusparent with (readuncommitted)"), 'akunpusat.statusparent', '=', 'parameter_statusparent.id')
             ->leftJoin(DB::raw("parameter as parameter_statusneraca with (readuncommitted)"), 'akunpusat.statusneraca', '=', 'parameter_statusneraca.id')
@@ -359,6 +362,7 @@ class AkunPusat extends MyModel
             $table->bigInteger('level')->nullable();
             $table->string('statusaktif', 1000)->nullable();
             $table->string('parent', 1000)->nullable();
+            $table->string('akuntansi', 1000)->nullable();
             $table->string('statusparent', 1000)->nullable();
             $table->string('statusneraca', 1000)->nullable();
             $table->string('statuslabarugi', 1000)->nullable();
@@ -374,7 +378,7 @@ class AkunPusat extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'coa', 'keterangancoa', 'type', 'level', 'statusaktif', 'parent', 'statusparent', 'statusneraca', 'statuslabarugi', 'coamain', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'coa', 'keterangancoa', 'type', 'level', 'statusaktif', 'parent', 'akuntansi', 'statusparent', 'statusneraca', 'statuslabarugi', 'coamain', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }

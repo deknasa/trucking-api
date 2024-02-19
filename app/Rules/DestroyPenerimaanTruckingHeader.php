@@ -40,7 +40,7 @@ class DestroyPenerimaanTruckingHeader implements Rule
             return false;
         }
         $isUangJalanProcessed = $penerimaan->isUangJalanProcessed($PenerimaanTruckingHeader->nobukti);
-        if ($isUangJalanProcessed) {
+        if ($isUangJalanProcessed['kondisi']) {
             $this->message = 'TDT';
             return false;
         }

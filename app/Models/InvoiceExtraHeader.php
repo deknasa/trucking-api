@@ -127,13 +127,15 @@ class InvoiceExtraHeader extends MyModel
             $table->string('nobukti', 50)->unique();
             $table->date('tglbukti')->nullable();
             $table->date('tgljatuhtempo')->nullable();
-            $table->unsignedBigInteger('pelanggan_id')->nullable();
-            $table->unsignedBigInteger('agen_id')->nullable();
+            $table->string('agen')->nullable();
             $table->double('nominal')->nullable();
-            $table->integer('statusapproval')->length(11)->nullable();
+            $table->string('piutang_nobukti')->nullable();
+            $table->string('statusapproval')->nullable();
             $table->string('userapproval', 50)->nullable();
             $table->dateTime('tglapproval')->nullable();
-            $table->unsignedBigInteger('statusformat')->nullable();
+            $table->string('statuscetak')->nullable();
+            $table->string('userbukacetak', 50)->nullable();
+            $table->dateTime('tglbukacetak')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -149,15 +151,21 @@ class InvoiceExtraHeader extends MyModel
                 "$this->table.nobukti",
                 "$this->table.tglbukti",
                 "$this->table.tgljatuhtempo",
-                "$this->table.pelanggan_id",
-                "$this->table.agen_id",
+                "agen.namaagen as  agen",
                 "$this->table.nominal",
-                "$this->table.statusapproval",
+                "$this->table.piutang_nobukti",
+                'parameter.text as statusapproval',
                 "$this->table.userapproval",
-                "$this->table.tglapproval",
-                "$this->table.statusformat",
-                "$this->table.modifiedby"
-            );
+                DB::raw('(case when (year(invoiceextraheader.tglapproval) <= 2000) then null else invoiceextraheader.tglapproval end ) as tglapproval'),
+                "cetak.text as statuscetak",
+                "$this->table.userbukacetak",
+                DB::raw('(case when (year(invoiceextraheader.tglbukacetak) <= 2000) then null else invoiceextraheader.tglbukacetak end ) as tglbukacetak'),
+                "$this->table.modifiedby",
+                "$this->table.created_at",
+                "$this->table.updated_at"
+            ) ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoiceextraheader.statusapproval', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as cetak with (readuncommitted)"), 'invoiceextraheader.statuscetak', 'cetak.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceextraheader.agen_id', 'agen.id');
 
         if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
             request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
@@ -172,14 +180,18 @@ class InvoiceExtraHeader extends MyModel
             'nobukti',
             'tglbukti',
             'tgljatuhtempo',
-            'pelanggan_id',
-            'agen_id',
+            'agen',
             'nominal',
+            'piutang_nobukti',
             'statusapproval',
             'userapproval',
             'tglapproval',
-            'statusformat',
-            'modifiedby'
+            'statuscetak',
+            'userbukacetak',
+            'tglbukacetak',
+            'modifiedby',
+            'created_at',
+            'updated_at'
         ], $models);
 
         return $temp;

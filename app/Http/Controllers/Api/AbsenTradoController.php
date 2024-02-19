@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\StoreAbsenTradoRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateAbsenTradoRequest;
@@ -338,5 +339,28 @@ class AbsenTradoController extends Controller
         return response([
             'data' => $absenTrado->getRekapAbsenTrado($id),
         ]);
+    }
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new AbsenTrado())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 }

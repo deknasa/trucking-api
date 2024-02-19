@@ -52,7 +52,7 @@ class Cabang extends MyModel
 
 
 
-        $this->filter($query);
+            $this->filter($query);
 
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
@@ -173,10 +173,13 @@ class Cabang extends MyModel
             "$this->table.kodecabang",
             "$this->table.namacabang",
             "parameter.text as statusaktif",
+            'statuskoneksi.memo as statuskoneksi_memo',
             "$this->table.modifiedby",
             "$this->table.created_at",
             "$this->table.updated_at",
-        )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'cabang.statusaktif', '=', 'parameter.id');
+        )
+        ->leftJoin(DB::raw("parameter as statuskoneksi with (readuncommitted)"), 'cabang.statuskoneksi', 'statuskoneksi.id')
+        ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'cabang.statusaktif', '=', 'parameter.id');
     }
 
     public function createTemp(string $modelTable)
@@ -185,32 +188,18 @@ class Cabang extends MyModel
 
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
-
-        DB::statement('select * into ' . $temp . ' from cabang where 1 = 0');
-
-        Schema::table($temp, function ($table) {
-            $table->dropColumn('id');
-            $table->dropColumn('statusaktif');
-        });
-
-
-        Schema::table($temp, function ($table) {
+        Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
-            $table->string('statusaktif', 500)->nullable();
+            $table->string('kodecabang')->nullable();
+            $table->string('namacabang')->nullable();
+            $table->string('statusaktif')->nullable();
+            $table->string('statuskoneksi_memo')->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 
-
-        // Schema::create($temp, function ($table) {
-        //     $table->bigInteger('id')->nullable();
-        //     $table->string('grp', 500)->nullable();
-        //     $table->string('subgrp', 250)->nullable();
-        //     $table->string('statusaktif', 500)->nullable();
-        //     $table->string('modifiedby', 50)->nullable();
-        //     $table->dateTime('created_at')->nullable();
-        //     $table->dateTime('updated_at')->nullable();
-        //     $table->increments('position');
-        // });
 
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
@@ -222,6 +211,7 @@ class Cabang extends MyModel
             'kodecabang',
             'namacabang',
             'statusaktif',
+            'statuskoneksi_memo',
             'modifiedby',
             'created_at',
             'updated_at'
@@ -247,7 +237,7 @@ class Cabang extends MyModel
                             } else if ($filters['field'] == 'statuskoneksi_memo') {
                                 $query = $query->where('statuskoneksi.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%' escape '|'");
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->whereRaw($this->table . ".".  $filters['field'] ." LIKE '%".str_replace($filters['data'],'[','|[') ."%' escape '|'");
                                 $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -263,11 +253,12 @@ class Cabang extends MyModel
                                 if ($filters['field'] == 'statusaktif') {
                                     $query = $query->orWhere('parameter.text', '=', $filters['data']);
                                 } else if ($filters['field'] == 'statuskoneksi_memo') {
-                                    $query = $query->orWhereRaw('statuskoneksi.text', '=', $filters['data']);
+                                    $query = $query->orWhere('statuskoneksi.text', '=', $filters['data']);
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                                 } else {
-                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                    $query = $query->OrwhereRaw('cabang' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                               
                                     // $query = $query->OrwhereRaw($this->table . ".".  $filters['field'] ." LIKE '%".str_replace($filters['data'],'[','|[') ."%' escape '|'");
                                     // $query = $query->orWhereRaw($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 }

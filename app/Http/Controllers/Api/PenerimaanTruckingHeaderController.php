@@ -412,8 +412,8 @@ class PenerimaanTruckingHeaderController extends Controller
         $PenerimaanTruckingHeader = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader"))->where('id', $id)->first();
 
         $isUangJalanProcessed = $penerimaan->isUangJalanProcessed($PenerimaanTruckingHeader->nobukti);
-        if ($isUangJalanProcessed) {
-            $query = DB::table('error')->select(DB::raw("ltrim(rtrim(keterangan))+' (Proses Uang Jalan Supir )' as keterangan"))->where('kodeerror', '=', 'TDT')->first();
+        if ($isUangJalanProcessed['kondisi'] == true) {
+            $query = DB::table('error')->select(DB::raw("ltrim(rtrim(keterangan))+' (Proses Uang Jalan Supir ".$isUangJalanProcessed['nobukti'].")' as keterangan"))->where('kodeerror', '=', 'TDT')->first();
             $data = [
                 'error' => true,
                 'message' => $query->keterangan,

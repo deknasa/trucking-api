@@ -92,10 +92,10 @@ class JenisOrder extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $aktif = request()->aktif ?? '';
 
@@ -111,7 +111,7 @@ class JenisOrder extends MyModel
                 DB::raw("'Laporan Jenis Order' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jenisorder.statusaktif', '=', 'parameter.id');
 
@@ -141,7 +141,8 @@ class JenisOrder extends MyModel
         return $data;
     }
 
-    public function findAll($id)  {
+    public function findAll($id)
+    {
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'jenisorder.id',
@@ -153,7 +154,7 @@ class JenisOrder extends MyModel
                 'jenisorder.created_at',
                 'jenisorder.updated_at',
             )
-            ->where('jenisorder.id',$id)
+            ->where('jenisorder.id', $id)
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jenisorder.statusaktif', '=', 'parameter.id');
         return $query->first();
     }
@@ -179,7 +180,7 @@ class JenisOrder extends MyModel
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
-            DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id,"statusaktifnama" => $statusaktif->text]);
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id, "statusaktifnama" => $statusaktif->text]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
@@ -252,14 +253,15 @@ class JenisOrder extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->where('jenisorder.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw('jenisorder' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->where('parameter.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->where('jenisorder.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw('jenisorder' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -267,14 +269,15 @@ class JenisOrder extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusaktif') {
-                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
-                                // $query = $query->orWhere('jenisorder.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw('jenisorder' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusaktif') {
+                                    $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $query = $query->orWhere('jenisorder.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw('jenisorder' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
                     });
@@ -326,10 +329,10 @@ class JenisOrder extends MyModel
     }
 
     public function processUpdate(JenisOrder $jenisorder, array $data): JenisOrder
-    {   
+    {
         $jenisorder->kodejenisorder = $data['kodejenisorder'];
         $jenisorder->keterangan = $data['keterangan'] ?? '';
-        $jenisorder->statusaktif =$data['statusaktif'];
+        $jenisorder->statusaktif = $data['statusaktif'];
         $jenisorder->modifiedby = auth('api')->user()->name;
         $jenisorder->info = html_entity_decode(request()->info);
 
@@ -366,5 +369,33 @@ class JenisOrder extends MyModel
         ]);
 
         return $jenisOrder;
+    }
+
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $jenisorder = JenisOrder::find($data['Id'][$i]);
+
+            $jenisorder->statusaktif = $statusnonaktif->id;
+            $aksi = $statusnonaktif->text;
+
+            if ($jenisorder->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($jenisorder->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF JENIS ORDER',
+                    'idtrans' => $jenisorder->id,
+                    'nobuktitrans' => $jenisorder->id,
+                    'aksi' => $aksi,
+                    'datajson' => $jenisorder->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+
+        return $jenisorder;
     }
 }

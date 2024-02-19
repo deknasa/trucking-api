@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Models\JenisTrado;
 use Illuminate\Validation\Rule;
-use App\Rules\ValidasiDestroyJenisTrado ;
+use App\Rules\ValidasiDestroyJenisTrado;
 
 class DestroyJenisTradoRequest extends FormRequest
 {
@@ -26,11 +26,15 @@ class DestroyJenisTradoRequest extends FormRequest
      */
     public function rules()
     {
+        if (request()->from == 'tas') {
+            return [];
+        }
+
         $jenistrado = new JenisTrado();
         $cekdata = $jenistrado->cekValidasihapus($this->id);
-    
+
         return [
-            'id' => [ new ValidasiDestroyJenisTrado($cekdata['kondisi'])],
+            'id' => [new ValidasiDestroyJenisTrado($cekdata['kondisi'])],
         ];
     }
 }

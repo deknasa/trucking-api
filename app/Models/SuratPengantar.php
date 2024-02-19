@@ -2207,8 +2207,43 @@ class SuratPengantar extends MyModel
                 }
             }
         } else {
+            $jenisorderanmuatan = DB::table('parameter')->from(db::raw("parameter a  with (readuncommitted)"))->select('a.text as id')
+                ->where('a.grp', 'JENIS ORDERAN MUATAN')
+                ->where('a.subgrp', 'JENIS ORDERAN MUATAN')
+                ->first()->id;
+
+            $jenisorderanbongkaran = DB::table('parameter')->from(db::raw("parameter a  with (readuncommitted)"))->select('a.text as id')
+                ->where('a.grp', 'JENIS ORDERAN BONGKARAN')
+                ->where('a.subgrp', 'JENIS ORDERAN BONGKARAN')
+                ->first()->id;
+
+            $jenisorderanimport = DB::table('parameter')->from(db::raw("parameter a  with (readuncommitted)"))->select('a.text as id')
+                ->where('a.grp', 'JENIS ORDERAN IMPORT')
+                ->where('a.subgrp', 'JENIS ORDERAN IMPORT')
+                ->first()->id;
+
+            $jenisorderanexport = DB::table('parameter')->from(db::raw("parameter a  with (readuncommitted)"))->select('a.text as id')
+                ->where('a.grp', 'JENIS ORDERAN EXPORT')
+                ->where('a.subgrp', 'JENIS ORDERAN EXPORT')
+                ->first()->id;
+
+            $getTarif = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
+                ->select(db::raw("(case when isnull(tarifmuatan.id,0)<>0 and " . $jenisorderanmuatan . "=" . $data['jenisorder_id']  . " then isnull(tarifmuatan.id,0)  
+            when isnull(tarifbongkaran.id,0)<>0 and " . $jenisorderanbongkaran . "=" . $data['jenisorder_id']  . "then isnull(tarifbongkaran.id,0)  
+            when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $data['jenisorder_id']  . " then isnull(tarifimport.id,0)  
+            when isnull(tarifexport.id,0)<>0 and " . $jenisorderanexport . "=" . $data['jenisorder_id']  . " then isnull(tarifexport.id,0)  
+            else  isnull(tarif.id,0) end) as tarif_id"))
+
+                ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
+                ->leftJoin(DB::raw("tarif as tarifmuatan with (readuncommitted)"), 'upahsupir.tarifmuatan_id', 'tarifmuatan.id')
+                ->leftJoin(DB::raw("tarif as tarifbongkaran with (readuncommitted)"), 'upahsupir.tarifbongkaran_id', 'tarifbongkaran.id')
+                ->leftJoin(DB::raw("tarif as tarifimport with (readuncommitted)"), 'upahsupir.tarifimport_id', 'tarifimport.id')
+                ->leftJoin(DB::raw("tarif as tarifexport with (readuncommitted)"), 'upahsupir.tarifexport_id', 'tarifexport.id')
+                ->where('upahsupir.id', $suratPengantar->upah_id)
+                ->first();
+
             $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $suratPengantar->upah_id)->where('container_id', $data['container_id'])->where('statuscontainer_id', $suratPengantar->statuscontainer_id)->first();
-            $tarif = TarifRincian::where('tarif_id', $suratPengantar->tarifrincian_id)->where('container_id', $data['container_id'])->first();
+            $tarif = TarifRincian::where('tarif_id', $getTarif->tarif_id)->where('container_id', $data['container_id'])->first();
             $params = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'GAJI KENEK')->first();
             $komisi_gajisupir = $params->text;
             // if ($komisi_gajisupir == 'YA') {
@@ -2224,6 +2259,7 @@ class SuratPengantar extends MyModel
 
             $suratPengantar->pelanggan_id = $data['pelanggan_id'];
             $suratPengantar->container_id = $data['container_id'];
+            $suratPengantar->tarif_id = $getTarif->tarif_id;
             $suratPengantar->nojob = $data['nojob'];
             $suratPengantar->nojob2 = $data['nojob2'] ?? '';
             $suratPengantar->nocont = $data['nocont'] ?? '';
