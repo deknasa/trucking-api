@@ -630,7 +630,6 @@ class Stok extends MyModel
             $row['vulkan'] = intval($row['vulkan']);
             $row['kelompok_id'] = intval($row['kelompok_id']);
             DB::table($temtabel)->insert($row);
-            DB::table($temtabel)->insert($row);
         }
 
         return $temtabel;
