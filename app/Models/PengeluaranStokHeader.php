@@ -1404,7 +1404,13 @@ class PengeluaranStokHeader extends MyModel
                     // ->groupBy('stok_id')
                     // ->first();
                     $statusafkir = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS KONDISI BAN')->where('subgrp', 'STATUS KONDISI BAN')->where('text', 'AFKIR')->first();
+                    $statusNonAktif = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'NON AKTIF')->first();
+                    $kelompokAKI = DB::table('kelompok')->from(DB::raw("kelompok with (readuncommitted)"))->where('kodekelompok', 'AKI')->first();
+                    $kelompokBAN = DB::table('kelompok')->from(DB::raw("kelompok with (readuncommitted)"))->where('kodekelompok', 'BAN')->first();
                     $stok = (new Stok())->find($data['detail_stok_id'][$i]);
+                    if (($kelompokAKI->id == $stok->kelompok_id) || ($kelompokBAN->id == $stok->kelompok_id)) {
+                        $stok->statusaktif = $statusNonAktif->id;
+                    }
                     $stok->statusban = $statusafkir->id;
                     $stok->save();
                     $data['detail_qty'][$i] = 0;
@@ -2101,8 +2107,14 @@ class PengeluaranStokHeader extends MyModel
                     // ->groupBy('stok_id')
                     // ->first();
                     $statusafkir = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS KONDISI BAN')->where('subgrp', 'STATUS KONDISI BAN')->where('text', 'AFKIR')->first();
+                    $statusNonAktif = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'NON AKTIF')->first();
+                    $kelompokAKI = DB::table('kelompok')->from(DB::raw("kelompok with (readuncommitted)"))->where('kodekelompok', 'AKI')->first();
+                    $kelompokBAN = DB::table('kelompok')->from(DB::raw("kelompok with (readuncommitted)"))->where('kodekelompok', 'BAN')->first();
                     $stok = (new Stok())->find($data['detail_stok_id'][$i]);
                     $stok->statusban = $statusafkir->id;
+                    if (($kelompokAKI->id == $stok->kelompok_id) || ($kelompokBAN->id == $stok->kelompok_id)) {
+                        $stok->statusaktif = $statusNonAktif->id;
+                    }
                     $stok->save();
                     $data['detail_qty'][$i] = 0;
             }

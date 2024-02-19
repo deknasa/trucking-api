@@ -627,6 +627,33 @@ class AkunPusat extends MyModel
 
         return $akunPusat;
     }
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $akunpusat = AkunPusat::find($data['Id'][$i]);
+
+            $akunpusat->statusaktif = $statusnonaktif->id;
+            $akunpusat->modifiedby = auth('api')->user()->name;
+            $akunpusat->info = html_entity_decode(request()->info);
+            $aksi = $statusnonaktif->text;
+
+            if ($akunpusat->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($akunpusat->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF KODE PERKIRAAN ',
+                    'idtrans' => $akunpusat->id,
+                    'nobuktitrans' => $akunpusat->id,
+                    'aksi' => $aksi,
+                    'datajson' => $akunpusat->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+        return $akunpusat;
+    }
     public function processDeleteCoa($coa): AkunPusat
     {
         $akunPusat = new AkunPusat();

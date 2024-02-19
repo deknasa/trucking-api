@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers\Api;
 
+use Illuminate\Http\Request;
+use App\Models\MainAkunPusat;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\DestroyMainAkunPusatRequest;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\StoreMainAkunPusatRequest;
 use App\Http\Requests\UpdateMainAkunPusatRequest;
-use App\Models\MainAkunPusat;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\JsonResponse;
+use App\Http\Requests\DestroyMainAkunPusatRequest;
 
 class MainAkunPusatController extends Controller
 {
@@ -164,6 +165,30 @@ class MainAkunPusatController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
 
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalnonaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new MainAkunPusat())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }
