@@ -367,4 +367,32 @@ class JenisOrder extends MyModel
 
         return $jenisOrder;
     }
+    
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $jenisorder = JenisOrder::find($data['Id'][$i]);
+
+            $jenisorder->statusaktif = $statusnonaktif->id;
+            $aksi = $statusnonaktif->text;
+
+            if ($jenisorder->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($jenisorder->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF JENIS ORDER',
+                    'idtrans' => $jenisorder->id,
+                    'nobuktitrans' => $jenisorder->id,
+                    'aksi' => $aksi,
+                    'datajson' => $jenisorder->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+
+        return $jenisorder;
+    }
 }
