@@ -346,4 +346,32 @@ class Penerima extends MyModel
 
         return $penerima;
     }
+
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $penerima = $this->where('id',$data['Id'][$i])->first();
+
+            $penerima->statusaktif = $statusnonaktif->id;
+            $penerima->modifiedby = auth('api')->user()->name;
+            $penerima->info = html_entity_decode(request()->info);
+            $aksi = $statusnonaktif->text;
+
+            if ($penerima->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($penerima->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF Penerima ',
+                    'idtrans' => $penerima->id,
+                    'nobuktitrans' => $penerima->id,
+                    'aksi' => $aksi,
+                    'datajson' => $penerima->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+        return $penerima;
+    }
 }

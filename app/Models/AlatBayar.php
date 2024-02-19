@@ -536,4 +536,32 @@ class AlatBayar extends MyModel
 
         return $alatBayar;
     }
+
+    public function processApprovalnonaktif(array $data)
+    {
+
+        $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $alatBayar = $this->where('id',$data['Id'][$i])->first();
+
+            $alatBayar->statusaktif = $statusnonaktif->id;
+            $alatBayar->modifiedby = auth('api')->user()->name;
+            $alatBayar->info = html_entity_decode(request()->info);
+            $aksi = $statusnonaktif->text;
+
+            if ($alatBayar->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($alatBayar->getTable()),
+                    'postingdari' => 'APPROVAL NON AKTIF Alat Bayar ',
+                    'idtrans' => $alatBayar->id,
+                    'nobuktitrans' => $alatBayar->id,
+                    'aksi' => $aksi,
+                    'datajson' => $alatBayar->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+        return $alatBayar;
+    }
 }
