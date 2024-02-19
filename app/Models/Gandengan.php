@@ -269,6 +269,7 @@ class Gandengan extends MyModel
             $table->string('kodegandengan', 300)->nullable();
             $table->string('keterangan', 300)->nullable();
             $table->string('trado', 300)->nullable();
+            $table->string('container', 300)->nullable();
             $table->integer('jumlahroda')->length(11)->nullable();
             $table->integer('jumlahbanserap')->length(11)->nullable();
             $table->string('statusaktif', 300)->nullable();
