@@ -590,6 +590,7 @@ class Stok extends MyModel
             $table->longText('keterangan')->nullable();
             $table->longText('gambar')->nullable();
             $table->longText('namaterpusat')->nullable();
+            $table->integer('statusapprovaltanpaklaim')->nullable();
             $table->string('statusban', 300)->nullable();
             $table->integer('statusban_id')->nullable();
             $table->string('statusreuse', 300)->nullable();
@@ -597,6 +598,7 @@ class Stok extends MyModel
             $table->double('totalvulkanisir', 15, 2)->nullable();
             $table->double('vulkanisirawal', 15, 2)->nullable();
             $table->string('jenistrado', 300)->nullable();
+            $table->string('satuan', 300)->nullable();
             $table->string('kelompok', 300)->nullable();
             $table->string('subkelompok', 300)->nullable();
             $table->string('kategori', 300)->nullable();
@@ -605,6 +607,7 @@ class Stok extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->integer('umuraki')->nullable();
             $table->integer('vulkan')->nullable();
+            $table->integer('kelompok_id')->nullable();
         });
 
         foreach ($data as $row) {
@@ -617,6 +620,16 @@ class Stok extends MyModel
             unset($row['penerimaanstokdetail_qty']);
             unset($row['penerimaanstokdetail_harga']);
             unset($row['penerimaanstokdetail_total']);
+            $row['qtymin'] = floatval($row['qtymin']);
+            $row['qtymax'] = floatval($row['qtymax']);
+            $row['totalvulkanisir'] = floatval($row['totalvulkanisir']);
+            $row['vulkanisirawal'] = floatval($row['vulkanisirawal']);
+            $row['statusapprovaltanpaklaim'] = intval($row['statusapprovaltanpaklaim']);
+            $row['statusban_id'] = intval($row['statusban_id']);
+            $row['umuraki'] = intval($row['umuraki']);
+            $row['vulkan'] = intval($row['vulkan']);
+            $row['kelompok_id'] = intval($row['kelompok_id']);
+            DB::table($temtabel)->insert($row);
             DB::table($temtabel)->insert($row);
         }
 

@@ -675,6 +675,7 @@ class PengeluaranStokHeader extends MyModel
             $table->string('servicein_nobukti', 50)->nullable();
             $table->integer('kerusakan_id')->length(11)->nullable();
             $table->string('statuscetak', 1500)->nullable();
+            $table->integer('statuscetak_id')->length(11)->nullable();
             $table->integer('statusformat')->length(11)->nullable();
             $table->integer('statuspotongretur')->length(11)->nullable();
             $table->integer('bank_id')->length(11)->nullable();

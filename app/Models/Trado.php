@@ -383,6 +383,7 @@ class Trado extends MyModel
             $table->integer('jumlahbanserap')->length(11)->nullable();
             $table->string('mandor_id', 1500)->nullable();
             $table->string('supir_id', 1500)->nullable();
+            $table->string('supirid', 1500)->nullable();
             $table->dateTime('updated_at')->nullable();
         });
 

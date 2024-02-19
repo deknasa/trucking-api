@@ -559,6 +559,7 @@ class PenerimaanStokHeader extends MyModel
             $table->string('gudangke', 50)->nullable();
             $table->string('coa', 50)->nullable();
             $table->longText('keterangan')->nullable();
+            $table->integer('kelompok_id')->length(11)->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
