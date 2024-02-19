@@ -118,27 +118,29 @@ class RekapPenerimaanHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusapproval') {
-                            $query = $query->where('statusapproval.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statuscetak') {
-                            $query = $query->where('statuscetak.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'bank') {
-                            $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tgltransaksi') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'tglbukti_penerimaan') {
-                            $query = $query->whereRaw("format(rekappenerimaandetail.tgltransaksi, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'nobukti_penerimaan') {
-                            $query = $query->where('rekappenerimaandetail.penerimaan_nobukti', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'keterangan_detail') {
-                            $query = $query->where('rekappenerimaandetail.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'nominal_detail') {
-                            $query = $query->whereRaw("format(rekappenerimaandetail.nominal, '#,#0.00') LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusapproval') {
+                                $query = $query->where('statusapproval.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statuscetak') {
+                                $query = $query->where('statuscetak.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'bank') {
+                                $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tgltransaksi') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglbukti_penerimaan') {
+                                $query = $query->whereRaw("format(rekappenerimaandetail.tgltransaksi, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'nobukti_penerimaan') {
+                                $query = $query->where('rekappenerimaandetail.penerimaan_nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'keterangan_detail') {
+                                $query = $query->where('rekappenerimaandetail.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal_detail') {
+                                $query = $query->whereRaw("format(rekappenerimaandetail.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -146,27 +148,29 @@ class RekapPenerimaanHeader extends MyModel
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusapproval') {
-                                $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'statuscetak') {
-                                $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'bank') {
-                                $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tgltransaksi') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'tglbukti_penerimaan') {
-                                $query = $query->orWhereRaw("format(rekappenerimaandetail.tgltransaksi, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'nobukti_penerimaan') {
-                                $query = $query->orWhere('rekappenerimaandetail.penerimaan_nobukti', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'keterangan_detail') {
-                                $query = $query->orWhere('rekappenerimaandetail.keterangan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'nominal_detail') {
-                                $query = $query->orWhereRaw("format(rekappenerimaandetail.nominal, '#,#0.00') LIKE '%$filters[data]%'");
-                            } else {
-                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusapproval') {
+                                    $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'statuscetak') {
+                                    $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'bank') {
+                                    $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tgltransaksi') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'tglbukti_penerimaan') {
+                                    $query = $query->orWhereRaw("format(rekappenerimaandetail.tgltransaksi, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'nobukti_penerimaan') {
+                                    $query = $query->orWhere('rekappenerimaandetail.penerimaan_nobukti', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'keterangan_detail') {
+                                    $query = $query->orWhere('rekappenerimaandetail.keterangan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'nominal_detail') {
+                                    $query = $query->orWhereRaw("format(rekappenerimaandetail.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
                     });
@@ -199,12 +203,12 @@ class RekapPenerimaanHeader extends MyModel
             $table->bigInteger('id')->nullable();
             $table->string('nobukti', 50)->unique();
             $table->date('tglbukti')->nullable();
-            $table->string('bank',100)->nullable();
+            $table->string('bank', 100)->nullable();
             $table->date('tgltransaksi')->nullable();
-            $table->string('statusapproval',100)->nullable();
+            $table->string('statusapproval', 100)->nullable();
             $table->string('userapproval', 50)->nullable();
             $table->date('tglapproval')->nullable();
-            $table->string('statuscetak',100)->nullable();
+            $table->string('statuscetak', 100)->nullable();
             $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
             $table->string('modifiedby', 50)->nullable();
@@ -235,10 +239,10 @@ class RekapPenerimaanHeader extends MyModel
             "$this->table.updated_at",
 
         )
-        ->leftJoin('parameter as statusapproval', 'rekappenerimaanheader.statusapproval', 'statusapproval.id')
-        ->leftJoin('parameter as statuscetak', 'rekappenerimaanheader.statuscetak', 'statuscetak.id')
-        ->leftJoin('bank', 'rekappenerimaanheader.bank_id', 'bank.id');;
-        $query->whereBetween($this->table.'.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+            ->leftJoin('parameter as statusapproval', 'rekappenerimaanheader.statusapproval', 'statusapproval.id')
+            ->leftJoin('parameter as statuscetak', 'rekappenerimaanheader.statuscetak', 'statuscetak.id')
+            ->leftJoin('bank', 'rekappenerimaanheader.bank_id', 'bank.id');;
+        $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
 
         $this->sort($query);
         $models = $this->filter($query);
@@ -556,7 +560,7 @@ class RekapPenerimaanHeader extends MyModel
                 $aksi = $statusApproval->text;
             }
 
-                $rekapPenerimaanHeader->save();
+            $rekapPenerimaanHeader->save();
             (new LogTrail())->processStore([
                 'namatabel' => strtoupper($rekapPenerimaanHeader->getTable()),
                 'postingdari' => 'APPROVAL REKAP PENERIMAAN',

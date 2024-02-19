@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Rules\ValidasiApprovalHutang;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ApprovalHutangHeaderRequest extends FormRequest
@@ -25,7 +26,7 @@ class ApprovalHutangHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            'hutangId' => 'required'
+            'hutangId' => ['required', new ValidasiApprovalHutang()],
         ];
     }
     public function messages()

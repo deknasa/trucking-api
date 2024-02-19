@@ -671,4 +671,13 @@ class JurnalUmumHeaderController extends Controller
             'data' => $jurnalumum->getExport($id)
         ]);
     }
+    
+    /**
+     * @ClassName 
+     * @Keterangan APPROVAL BUKA CETAK
+     */
+    public function approvalbukacetak()
+    {
+    }
+
 }
