@@ -221,6 +221,9 @@ class Supir extends MyModel
         $absensi_id = request()->absensi_id ?? '';
         $tgltrip = request()->tgltrip ?? '';
 
+        $isMandor = auth()->user()->isMandor();
+        $isAdmin = auth()->user()->isAdmin();
+        
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'supir.id',
@@ -280,7 +283,11 @@ class Supir extends MyModel
             ->leftJoin(DB::raw("mandor as b with (readuncommitted)"), 'supir.mandor_id', '=', 'b.id');
 
 
-
+            if (!$isAdmin) {
+                if ($isMandor) {
+                    $query->where('supir.mandor_id', $isMandor->mandor_id);
+                }
+            }
 
         $this->filter($query);
         if ($aktif == 'AKTIF') {
@@ -934,7 +941,10 @@ class Supir extends MyModel
             $statusLuarKota = DB::table('parameter')->where('grp', 'STATUS LUAR KOTA')->where('default', 'YA')->first();
             $statusZonaTertentu = DB::table('parameter')->where('grp', 'ZONA TERTENTU')->where('default', 'YA')->first();
             $statusBlackList = DB::table('parameter')->where('grp', 'BLACKLIST SUPIR')->where('default', 'YA')->first();
-
+            $isMandor = auth()->user()->isMandor();
+            if ($isMandor) {
+                $data['mandor_id'] = $isMandor->mandor_id;
+            }
             $supir = new Supir();
 
 
@@ -956,6 +966,7 @@ class Supir extends MyModel
             $supir->keterangan = $data['keterangan'] ?? '';
             $supir->noktp = $data['noktp'];
             $supir->nokk = $data['nokk'];
+            $supir->mandor_id = $data['mandor_id']??'';
             $supir->angsuranpinjaman = str_replace(',', '', $data['angsuranpinjaman']) ?? 0;
             $supir->plafondeposito = str_replace(',', '', $data['plafondeposito']) ?? 0;
             $supir->tgllahir = date('Y-m-d', strtotime($data['tgllahir']));
@@ -1072,6 +1083,10 @@ class Supir extends MyModel
     public function processUpdate(Supir $supir, array $data): Supir
     {
         try {
+            $isMandor = auth()->user()->isMandor();
+            if ($isMandor) {
+                $data['mandor_id'] = $isMandor->mandor_id;
+            }
             $depositke = str_replace(',', '', $data['depositke'] ?? '');
             $supir->namasupir = $data['namasupir'];
             $supir->namaalias = $data['namaalias'];
@@ -1090,6 +1105,7 @@ class Supir extends MyModel
             $supir->keterangan = $data['keterangan'] ?? '';
             $supir->noktp = $data['noktp'];
             $supir->nokk = $data['nokk'];
+            $supir->mandor_id = $data['mandor_id']?? '';
             $supir->angsuranpinjaman = str_replace(',', '', $data['angsuranpinjaman']) ?? 0;
             $supir->plafondeposito = str_replace(',', '', $data['plafondeposito']) ?? 0;
             $supir->tgllahir = date('Y-m-d', strtotime($data['tgllahir']));
