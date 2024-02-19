@@ -829,6 +829,10 @@ class Trado extends MyModel
             $statusMobStoring = DB::table('parameter')->where('grp', 'STATUS MOBIL STORING')->where('default', 'YA')->first();
             $statusAppeditban = DB::table('parameter')->where('grp', 'STATUS APPROVAL EDIT BAN')->where('default', 'YA')->first();
             $statusLewatValidasi = DB::table('parameter')->where('grp', 'STATUS LEWAT VALIDASI')->where('default', 'YA')->first();
+            $isMandor = auth()->user()->isMandor();
+            if ($isMandor) {
+                $data['mandor_id'] = $isMandor->mandor_id;
+            }
 
             $trado = new Trado();
             $trado->keterangan = $data['keterangan'] ?? '';
@@ -955,6 +959,11 @@ class Trado extends MyModel
     public function processUpdate(Trado $trado, array $data): Trado
     {
         try {
+            $isMandor = auth()->user()->isMandor();
+            if ($isMandor) {
+                $data['mandor_id'] = $isMandor->mandor_id;
+            }
+            
             $trado->keterangan = $data['keterangan'] ?? '';
             $trado->kodetrado = $data['kodetrado'];
             $trado->statusaktif = $data['statusaktif'];
