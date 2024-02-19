@@ -368,14 +368,18 @@ class Gandengan extends MyModel
                 "$this->table.id",
                 "$this->table.kodegandengan",
                 "$this->table.keterangan",
-                "$this->table.trado_id",
+                'trado.kodetrado as trado',
+                'container.kodecontainer as container',
                 "$this->table.jumlahroda",
                 "$this->table.jumlahbanserap",
                 "parameter.text as statusaktif",
                 "$this->table.modifiedby",
                 "$this->table.created_at",
                 "$this->table.updated_at",
-            )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gandengan.statusaktif', '=', 'parameter.id');
+            )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gandengan.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("container with (readuncommitted)"), 'gandengan.container_id', '=', 'container.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'gandengan.trado_id', '=', 'trado.id');
+        
     }
 
     public function createTemp(string $modelTable)
@@ -388,7 +392,8 @@ class Gandengan extends MyModel
             $table->bigInteger('id')->nullable();
             $table->string('kodegandengan', 500)->nullable();
             $table->string('keterangan', 500)->nullable();
-            $table->unsignedBigInteger('trado_id')->nullable();
+            $table->string('trado')->nullable();
+            $table->string('container')->nullable();
             $table->integer('jumlahroda')->length(11)->nullable();
             $table->integer('jumlahbanserap')->length(11)->nullable();
             $table->string('statusaktif', 500)->nullable();
@@ -407,7 +412,8 @@ class Gandengan extends MyModel
             'id',
             'kodegandengan',
             'keterangan',
-            'trado_id',
+            'trado',
+            'container',
             'jumlahroda',
             'jumlahbanserap',
             'statusaktif',

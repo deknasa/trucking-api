@@ -136,6 +136,7 @@ class InvoiceDetail extends MyModel
                 'kota.keterangan as tujuan',
                 'suratpengantar.nocont',
                 'container.kodecontainer as ukcont',
+                // DB::raw("(case when isnull(suratpengantar.spfullempty, '')='' then CONCAT(ISNULL(suratpengantar.spfull, ''), ' / ', ISNULL(suratpengantar.spempty, '')) else suratpengantar.spfullempty end) as fullEmpty"),
                 DB::raw("suratpengantar.spfull as [full]"),
                 DB::raw("suratpengantar.spempty as empty"),
                 DB::raw("suratpengantar.spfullempty as fullEmpty"),

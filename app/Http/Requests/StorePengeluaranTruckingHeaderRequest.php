@@ -40,18 +40,18 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
 
         if (!request()->pengeluarantrucking_id) {
-            return ["pengeluarantrucking_id"=>['required']];
+            return ["pengeluarantrucking" => ['required']];
         }
         $requiredTglPriode = Rule::requiredIf(function () {
-            
+
             $bst = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
-                ->where('kodepengeluaran',"BST")
+                ->where('kodepengeluaran', "BST")
                 ->first();
             $kbbm = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
-                ->where('kodepengeluaran',"KBBM")
+                ->where('kodepengeluaran', "KBBM")
                 ->first();
-                
-            if (($bst->id ==request()->pengeluarantrucking_id)|| ($kbbm->id ==request()->pengeluarantrucking_id)) {
+
+            if (($bst->id == request()->pengeluarantrucking_id) || ($kbbm->id == request()->pengeluarantrucking_id)) {
                 return true;
             }
             return false;
@@ -89,26 +89,26 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                 // ->where('id',$this->pengeluarantrucking_id)
                 ->where('kodepengeluaran', "PJT")
                 ->first();
-                
-                if ($this->pengeluarantrucking_id) {
-                    if ($pjt) {
-                        if ($pjt->id !=  $this->pengeluarantrucking_id) {
-                            return false;
-                        }
+
+            if ($this->pengeluarantrucking_id) {
+                if ($pjt) {
+                    if ($pjt->id !=  $this->pengeluarantrucking_id) {
+                        return false;
                     }
                 }
+            }
             return true;
         });
         $bank_id = $this->bank_id;
 
 
-        $rulseKlaim=[];
-        
+        $rulseKlaim = [];
+
         if ($this->pengeluarantrucking_id) {
             $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
-                    // ->where('id',$this->pengeluarantrucking_id)
-                    ->where('keterangan','LIKE', "%klaim%")
-                    ->first();
+                // ->where('id',$this->pengeluarantrucking_id)
+                ->where('keterangan', 'LIKE', "%klaim%")
+                ->first();
             if ($klaim) {
 
                 // dd(
@@ -116,31 +116,31 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                 //     $this->input('gandenganheader_id')
                 // );
                 if ($klaim->id ==  $this->pengeluarantrucking_id) {
-                    
-                    $salahSatuDari = Rule::requiredIf(function ()  {
-                        if ( empty($this->input('tradoheader_id')) && empty($this->input('gandenganheader_id')) ) {
+
+                    $salahSatuDari = Rule::requiredIf(function () {
+                        if (empty($this->input('tradoheader_id')) && empty($this->input('gandenganheader_id'))) {
                             return true;
                         }
                         return false;
                     });
-                    $rulseKlaim =[
-                        "supirheader_id" =>"required",
-                        "supirheader" =>"required",
-                        "tradoheader_id" =>$salahSatuDari,
-                        "gandenganheader_id" =>$salahSatuDari,
-                        "trado" =>$salahSatuDari,
-                        "gandengan" =>$salahSatuDari,
+                    $rulseKlaim = [
+                        "supirheader_id" => "required",
+                        "supirheader" => "required",
+                        "tradoheader_id" => $salahSatuDari,
+                        "gandenganheader_id" => $salahSatuDari,
+                        "trado" => $salahSatuDari,
+                        "gandengan" => $salahSatuDari,
                         // "postingpinjaman" =>"required",
-                        "statuscabang" =>"required",
-                    ];    
+                        "statuscabang" => "required",
+                    ];
                     $getListTampilan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'UBAH TAMPILAN')->where('text', 'PENGELUARAN TRUCKING HEADER')->first();
 
                     $getListTampilan = json_decode($getListTampilan->memo);
                     if ($getListTampilan->INPUT != '') {
                         $getListTampilan = (explode(",", $getListTampilan->INPUT));
                         foreach ($getListTampilan as $value) {
-                            if ($value =="CABANG") {
-                                $value ='statuscabang';
+                            if ($value == "CABANG") {
+                                $value = 'statuscabang';
                             }
                             if (array_key_exists(trim(strtolower($value)), $rulseKlaim) == true) {
                                 unset($rulseKlaim[trim(strtolower($value))]);
@@ -165,21 +165,21 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
         $rules = [
             "tglbukti" => [
                 "required", 'date_format:d-m-Y',
-                'before_or_equal:'.date('d-m-Y'),
+                'before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
-            'pengeluarantrucking' => 'required','numeric', 'min:1',
+            'pengeluarantrucking' => 'required', 'numeric', 'min:1',
             'statusposting' => [$ruleStatusPosting],
             'bank' => [$ruleBank],
             'tgldari' => [
                 $requiredTglPriode, 'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
-                'after_or_equal:'.$tglbatasawal,
+                'before:' . $tglbatasakhir,
+                'after_or_equal:' . $tglbatasawal,
             ],
             'tglsampai' => [
                 $requiredTglPriode, 'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
-                'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
+                'before:' . $tglbatasakhir,
+                'after_or_equal:' . date('Y-m-d', strtotime($this->tgldari))
             ],
             // 'keterangancoa' => 'required',
         ];
@@ -187,64 +187,70 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
         $rulespengeluaran_id = [];
 
         $pengeluaranTrucking = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
-                ->whereRaw("id = ".$pengeluarantrucking_id)
-                ->first();
+            ->whereRaw("id = " . $pengeluarantrucking_id)
+            ->first();
 
         $kodepengeluaran    = $pengeluaranTrucking->kodepengeluaran;
 
         $rulesSupir_id = [];
 
-        if($kodepengeluaran == 'KBBM' ){
+        $rulesbiaya = '';
+        if ($kodepengeluaran == 'BLL' || $kodepengeluaran == 'BLN' || $kodepengeluaran == 'BTU' || $kodepengeluaran == 'BPT' || $kodepengeluaran == 'BGS' || $kodepengeluaran == 'BIT' || $kodepengeluaran == 'BSM') {
+            
+            $jumlahdetail = $this->jumlahdetail ?? 0;
+            $rulesbiaya = new ValidasiDetail($jumlahdetail);
+        }
+        if ($kodepengeluaran == 'KBBM') {
             $rules = [
                 "tglbukti" => [
                     "required", 'date_format:d-m-Y',
-                    'before_or_equal:'.date('d-m-Y'),
+                    'before_or_equal:' . date('d-m-Y'),
                     new DateTutupBuku()
                 ],
-                'pengeluarantrucking' => 'required','numeric', 'min:1',
+                'pengeluarantrucking' => 'required', 'numeric', 'min:1',
                 'bank' => [$ruleBank],
                 'tgldari' => [
                     'required', 'date_format:d-m-Y',
-                    'before:'.$tglbatasakhir,
-                    'after_or_equal:'.$tglbatasawal,
+                    'before:' . $tglbatasakhir,
+                    'after_or_equal:' . $tglbatasawal,
                 ],
                 'tglsampai' => [
                     'required', 'date_format:d-m-Y',
-                    'before:'.$tglbatasakhir,
-                    'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
+                    'before:' . $tglbatasakhir,
+                    'after_or_equal:' . date('Y-m-d', strtotime($this->tgldari))
                 ],
                 // 'keterangancoa' => 'required',
             ];
-        }elseif($kodepengeluaran == 'BST'){
+        } elseif ($kodepengeluaran == 'BST') {
             $rules = [
                 "tglbukti" => [
                     "required", 'date_format:d-m-Y',
-                    'before_or_equal:'.date('d-m-Y'),
+                    'before_or_equal:' . date('d-m-Y'),
                     new DateTutupBuku()
                 ],
-                'pengeluarantrucking' => 'required','numeric', 'min:1',
+                'pengeluarantrucking' => 'required', 'numeric', 'min:1',
                 'bank' => [$ruleBank],
                 'tgldari' => [
                     'required', 'date_format:d-m-Y',
-                    'before:'.$tglbatasakhir,
-                    'after_or_equal:'.$tglbatasawal,
+                    'before:' . $tglbatasakhir,
+                    'after_or_equal:' . $tglbatasawal,
                 ],
                 'tglsampai' => [
                     'required', 'date_format:d-m-Y',
-                    'before:'.$tglbatasakhir,
-                    'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
+                    'before:' . $tglbatasakhir,
+                    'after_or_equal:' . date('Y-m-d', strtotime($this->tgldari))
                 ],
                 // 'keterangancoa' => 'required',
             ];
-        }elseif($kodepengeluaran == 'OTOL' || $kodepengeluaran == 'OTOK'){
+        } elseif ($kodepengeluaran == 'OTOL' || $kodepengeluaran == 'OTOK') {
             $jumlahdetail = $this->jumlahdetail ?? 0;
             $rules = [
                 "tglbukti" => [
                     "required", 'date_format:d-m-Y',
-                    'before_or_equal:'.date('d-m-Y'),
+                    'before_or_equal:' . date('d-m-Y'),
                     new DateTutupBuku()
                 ],
-                'pengeluarantrucking' => 'required','numeric', 'min:1',
+                'pengeluarantrucking' => 'required', 'numeric', 'min:1',
                 'agen' => ['required', new ValidasiDetail($jumlahdetail)],
                 'containerheader' => 'required',
                 'bank' => [$ruleBank],
@@ -253,11 +259,11 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                 ],
                 'tglsampai' => [
                     'required', 'date_format:d-m-Y',
-                    'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
+                    'after_or_equal:' . date('Y-m-d', strtotime($this->tgldari))
                 ],
                 // 'keterangancoa' => 'required',
             ];
-        }elseif($kodepengeluaran == 'TDE'){
+        } elseif ($kodepengeluaran == 'TDE') {
             $supirheader_id = $this->supirheader_id;
             if ($supirheader_id != null) {
                 $rulesSupir_id = [
@@ -272,15 +278,15 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
             $rules = [
                 "tglbukti" => [
                     "required", 'date_format:d-m-Y',
-                    'before_or_equal:'.date('d-m-Y'),
+                    'before_or_equal:' . date('d-m-Y'),
                     new DateTutupBuku()
                 ],
-                'pengeluarantrucking' => 'required','numeric', 'min:1',
+                'pengeluarantrucking' => 'required', 'numeric', 'min:1',
                 'bank' => [$ruleBank],
                 'supirheader' => ['required',  new ValidasiDetail($jumlahdetail)],
                 // 'keterangancoa' => 'required',
             ];
-        }else if($kodepengeluaran == 'TDEK'){
+        } else if ($kodepengeluaran == 'TDEK') {
             $karyawanheader_id = $this->karyawanheader_id;
             if ($karyawanheader_id != null) {
                 $rulesSupir_id = [
@@ -295,35 +301,35 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
             $rules = [
                 "tglbukti" => [
                     "required", 'date_format:d-m-Y',
-                    'before_or_equal:'.date('d-m-Y'),
+                    'before_or_equal:' . date('d-m-Y'),
                     new DateTutupBuku()
                 ],
-                'pengeluarantrucking' => 'required','numeric', 'min:1',
+                'pengeluarantrucking' => 'required', 'numeric', 'min:1',
                 'bank' => [$ruleBank],
                 'karyawanheader' => ['required',  new ValidasiDetail($jumlahdetail)],
                 // 'keterangancoa' => 'required',
             ];
-        }elseif($kodepengeluaran == 'BBT'){
-           
+        } elseif ($kodepengeluaran == 'BBT') {
+
             $rules = [
                 "tglbukti" => [
                     "required", 'date_format:d-m-Y',
-                    'before_or_equal:'.date('d-m-Y'),
+                    'before_or_equal:' . date('d-m-Y'),
                     new DateTutupBuku()
                 ],
-                'pengeluarantrucking' => 'required','numeric', 'min:1',
+                'pengeluarantrucking' => 'required', 'numeric', 'min:1',
                 'bank' => [$ruleBank],
                 'jenisorderan' => ['required', new validasiJenisOrderanPengeluaranTrucking()]
                 // 'keterangancoa' => 'required',
             ];
-        }else{
+        } else {
             $rules = [
                 "tglbukti" => [
                     "required", 'date_format:d-m-Y',
-                    'before_or_equal:'.date('d-m-Y'),
+                    'before_or_equal:' . date('d-m-Y'),
                     new DateTutupBuku()
                 ],
-                'pengeluarantrucking' => 'required','numeric', 'min:1',
+                'pengeluarantrucking' => ['required', $rulesbiaya],
                 'statusposting' => [$ruleStatusPosting],
                 'bank' => [$ruleBank],
                 // 'tgldari' => [
@@ -340,7 +346,7 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
             ];
         }
 
-       
+
         $relatedRequests = [
             StorePengeluaranTruckingDetailRequest::class
         ];

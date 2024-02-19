@@ -25,10 +25,10 @@ class DataRitasi extends MyModel
         $aktif = request()->aktif ?? '';
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -46,9 +46,9 @@ class DataRitasi extends MyModel
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'dataritasi.statusaktif', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statusritasi with (readuncommitted)"), 'dataritasi.statusritasi', 'statusritasi.id');
 
-            
-            $this->filter($query);
-            
+
+        $this->filter($query);
+
 
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
@@ -63,7 +63,7 @@ class DataRitasi extends MyModel
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-        
+
 
         $this->sort($query);
         $this->paginate($query);
@@ -71,7 +71,8 @@ class DataRitasi extends MyModel
         return $data;
     }
 
-    public function findAll($id)  {
+    public function findAll($id)
+    {
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'dataritasi.id',
@@ -85,14 +86,13 @@ class DataRitasi extends MyModel
                 'dataritasi.created_at',
                 'dataritasi.updated_at',
             )
-            ->where('dataritasi.id',$id)
+            ->where('dataritasi.id', $id)
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'dataritasi.statusaktif', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statusritasi with (readuncommitted)"), 'dataritasi.statusritasi', 'statusritasi.id');
-            return $query->first();
-
+        return $query->first();
     }
 
-   
+
     public function default()
     {
 
@@ -143,7 +143,7 @@ class DataRitasi extends MyModel
             ->where('DEFAULT', '=', 'YA')
             ->first();
 
-            DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id,"statusaktifnama" => $statusaktif->text]);
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id, "statusaktifnama" => $statusaktif->text]);
 
 
 
@@ -167,13 +167,14 @@ class DataRitasi extends MyModel
             DB::raw($this->table . " with (readuncommitted)")
         )->select(
             "$this->table.id",
-            "$this->table.statusritasi",
+            'statusritasi.text as statusritasi',
             "$this->table.nominal",
             "parameter.text as statusaktif",
             "$this->table.modifiedby",
             "$this->table.created_at",
             "$this->table.updated_at",
-        )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'dataritasi.statusaktif', '=', 'parameter.id');
+        )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'dataritasi.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statusritasi with (readuncommitted)"), 'dataritasi.statusritasi', 'statusritasi.id');
     }
 
     public function createTemp(string $modelTable)
@@ -184,14 +185,13 @@ class DataRitasi extends MyModel
 
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
-            $table->integer('statusritasi')->nullable(); 
-            $table->double('nominal',15,2)->nullable();
+            $table->string('statusritasi')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
             $table->string('statusaktif', 500)->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
-          
         });
 
         $query = DB::table($modelTable);
@@ -247,7 +247,7 @@ class DataRitasi extends MyModel
                                 $query = $query->orWhere('statusritasi.text', 'LIKE', "%$filters[data]%");
                             } elseif ($filters['field'] == 'dataritasi') {
                                 $query = $query->orWhere('nominal', 'LIKE', "%$filters[data]%");
-                            }else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -268,7 +268,7 @@ class DataRitasi extends MyModel
 
         return $query;
     }
-    
+
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);

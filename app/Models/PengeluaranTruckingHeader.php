@@ -1565,12 +1565,13 @@ class PengeluaranTruckingHeader extends MyModel
             DB::table($temp)->insertUsing(['id', 'supirbiaya'], $get2);
 
             $query = DB::table("$temp")->from(DB::raw("$temp with (readuncommitted)"))
+                ->select(DB::raw("row_number() Over(Order By supirbiaya) as id, id as supir_id, supirbiaya, nominal, keteranganbll"))
                 ->orderBy('supirbiaya')
                 ->get();
         } else {
 
             $query = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))
-                ->select('id', 'namasupir as supirbiaya')
+                ->select(DB::raw("row_number() Over(Order By namasupir) as id, id as supir_id, namasupir as supirbiaya"))
                 ->where('supir.statusaktif', '=', $statusaktif->id)
                 ->orderBy('namasupir')
                 ->get();
@@ -1878,7 +1879,7 @@ class PengeluaranTruckingHeader extends MyModel
                     $nowarkat[] = "";
                     $tglkasmasuk[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
                     $nominal_detail[] = $nominalBiaya;
-                    if ($fetchFormat->kodepengeluaran == 'BST' || $fetchFormat->kodepengeluaran == 'OTOK' || $fetchFormat->kodepengeluaran == 'OTOL') {
+                    if ($fetchFormat->kodepengeluaran == 'BST' || $fetchFormat->kodepengeluaran == 'OTOK' || $fetchFormat->kodepengeluaran == 'OTOL' || $fetchFormat->kodepengeluaran == 'BSM') {
                         $keterangan_detail[] = "$fetchFormat->keterangan " . $data['tgldari'] . " s/d " . $data['tglsampai'] . " $pengeluaranTruckingHeader->nobukti";
                     } else if ($fetchFormat->kodepengeluaran == 'BBT') {
                         $keterangan_detail[] = $data['keterangan'][0];
@@ -2190,7 +2191,7 @@ class PengeluaranTruckingHeader extends MyModel
                         $nowarkat[] = "";
                         $tglkasmasuk[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
                         $nominal_detail[] = $nominalBiaya;
-                        if ($fetchFormat->kodepengeluaran == 'BST' || $fetchFormat->kodepengeluaran == 'OTOK' || $fetchFormat->kodepengeluaran == 'OTOL') {
+                        if ($fetchFormat->kodepengeluaran == 'BST' || $fetchFormat->kodepengeluaran == 'OTOK' || $fetchFormat->kodepengeluaran == 'OTOL' || $fetchFormat->kodepengeluaran == 'BSM') {
                             $keterangan_detail[] = "$fetchFormat->keterangan " . $data['tgldari'] . " s/d " . $data['tglsampai'] . " $pengeluaranTruckingHeader->nobukti";
                         } else if ($fetchFormat->kodepengeluaran == 'BBT') {
                             $keterangan_detail[] = $data['keterangan'][0];

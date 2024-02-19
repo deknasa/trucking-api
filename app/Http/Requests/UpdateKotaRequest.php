@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Models\Parameter;
+use App\Rules\ExistZona;
 
 class UpdateKotaRequest extends FormRequest
 {
@@ -35,24 +36,15 @@ class UpdateKotaRequest extends FormRequest
 
         $zona_id = $this->zona_id;
         $rulesZona_id = [];
-        if ($zona_id != null) {
-            if ($zona_id == 0) {
-                $rulesZona_id = [
-                    'zona_id' => ['required', 'numeric', 'min:1']
-                ];
-            } else {
-                if ($this->zona == '') {
-                    $rulesZona_id = [
-                        'zona' => ['required']
-                    ];
-                }
-            }
+        if ($zona_id != null && $zona_id !=0) {
+            $rulesZona_id = [
+                'zona_id' => ['required', 'numeric', 'min:1', new ExistZona()]
+            ];
         } else if ($zona_id == null && $this->zona != '') {
             $rulesZona_id = [
-                'zona_id' => ['required', 'numeric', 'min:1']
+                'zona_id' => ['required', 'numeric', 'min:1', new ExistZona()]
             ];
         }
-
         $rules =  [
             'kodekota' => ['required',Rule::unique('kota')->whereNotIn('id', [$this->id])],
             'keterangan' => 'nullable',

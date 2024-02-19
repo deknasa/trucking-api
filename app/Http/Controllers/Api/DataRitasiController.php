@@ -87,9 +87,8 @@ class DataRitasiController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                DB::commit();
             }
-
+            
             /* Set position and page */
             $selected = $this->getPosition($dataritasi, $dataritasi->getTable());
             $dataritasi->position = $selected->position;
@@ -98,7 +97,8 @@ class DataRitasiController extends Controller
             } else {
                 $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
             }
-
+            
+            DB::commit();
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',

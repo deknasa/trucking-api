@@ -522,9 +522,11 @@ class PemutihanSupir extends MyModel
                 $this->table.tglbukti,
                 'supir.namasupir as supir',
                 'bank.namabank as bank',
-                $this->table.pengeluaransupir,
                 $this->table.penerimaan_nobukti,
                 'akunpusat.keterangancoa as coa',
+                'statuscetak.memo as statuscetak',
+                $this->table.pengeluaransupir,
+                $this->table.penerimaansupir,
                 $this->table.penerimaantruckingposting_nobukti,
                 $this->table.penerimaantruckingnonposting_nobukti,
                 $this->table.modifiedby,
@@ -533,6 +535,7 @@ class PemutihanSupir extends MyModel
             ")
         )
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pemutihansupirheader.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pemutihansupirheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pemutihansupirheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pemutihansupirheader.bank_id', 'bank.id');
     }
@@ -546,9 +549,11 @@ class PemutihanSupir extends MyModel
             $table->date('tglbukti')->nullable();
             $table->string('supir', 1000)->nullable();
             $table->string('bank', 1000)->nullable();
-            $table->float('pengeluaransupir')->nullable();
             $table->string('penerimaan_nobukti')->nullable();
             $table->string('coa')->nullable();
+            $table->string('statuscetak')->nullable();
+            $table->float('pengeluaransupir')->nullable();
+            $table->float('penerimaansupir')->nullable();
             $table->string('penerimaantruckingposting_nobukti')->nullable();
             $table->string('penerimaantruckingnonposting_nobukti')->nullable();
             $table->string('modifiedby')->default();
@@ -566,7 +571,7 @@ class PemutihanSupir extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'supir', 'bank', 'pengeluaransupir', 'penerimaan_nobukti', 'coa', 'penerimaantruckingposting_nobukti', 'penerimaantruckingnonposting_nobukti', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'supir', 'bank',  'penerimaan_nobukti', 'coa', 'statuscetak', 'pengeluaransupir', 'penerimaansupir','penerimaantruckingposting_nobukti', 'penerimaantruckingnonposting_nobukti', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
