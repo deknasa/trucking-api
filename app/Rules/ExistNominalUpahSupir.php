@@ -13,6 +13,8 @@ class ExistNominalUpahSupir implements Rule
      *
      * @return void
      */
+
+    public $error;
     public function __construct()
     {
         //
@@ -29,12 +31,17 @@ class ExistNominalUpahSupir implements Rule
     {
         $upahRincian = new UpahSupirRincian();
         $nominal = $upahRincian->getExistNominalUpahSupir(request()->container_id, request()->statuscontainer_id, request()->upah_id);
-
-        if($nominal->nominalsupir == null || $nominal->nominalsupir == 0){
+        if ($nominal['status'] == false) {
+            $this->error = $nominal['error'];
             return false;
-        }else{
-            return true;
         }
+
+        return true;
+        // if($nominal->nominalsupir == null || $nominal->nominalsupir == 0){
+        //     return false;
+        // }else{
+        //     return true;
+        // }
     }
 
     /**
@@ -45,6 +52,6 @@ class ExistNominalUpahSupir implements Rule
     public function message()
     {
         $controller = new ErrorController;
-        return $controller->geterror('USBA')->keterangan;
+        return $controller->geterror('USBA')->keterangan . '. (' . $this->error . ')';
     }
 }

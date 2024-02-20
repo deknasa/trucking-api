@@ -765,11 +765,11 @@ class UpdateSuratPengantarRequest extends FormRequest
         $rulesUpah_id = [];
         if ($upah_id != null) {
             $rulesUpah_id = [
-                'upah_id' => ['required', 'numeric', 'min:1', new ExistUpahSupirRincianSuratPengantar()]
+                'upah_id' => ['required', 'numeric', 'min:1']
             ];
         } else if ($upah_id == null && request()->upah != '') {
             $rulesUpah_id = [
-                'upah_id' => ['required', 'numeric', 'min:1', new ExistUpahSupirRincianSuratPengantar()]
+                'upah_id' => ['required', 'numeric', 'min:1']
             ];
         }
         $relatedRequests = [

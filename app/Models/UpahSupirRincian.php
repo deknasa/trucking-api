@@ -1074,10 +1074,34 @@ class UpahSupirRincian extends MyModel
             ->join(DB::raw("upahsupirrincian with (readuncommitted)"), 'upahsupir.id', 'upahsupirrincian.upahsupir_id')
             ->whereRaw("upahsupir.id in ($id)")
             ->where('upahsupirrincian.container_id', '=', $container_id)
-            ->where('upahsupirrincian.statuscontainer_id', '=', $statuscontainer_id)
-            ->where('upahsupir.statusaktif', '=', $statusaktif->id);
+            ->where('upahsupirrincian.statuscontainer_id', '=', $statuscontainer_id);
+            $cekNominal = $query->first();
+        if($cekNominal != ''){
+            if($cekNominal->nominalsupir == null || $cekNominal->nominalsupir == 0){
+                return [
+                    'status' => false,
+                    'error' => 'gaji supir kosong'
+                ];
+            }
+            $query->where('upahsupir.statusaktif', '=', $statusaktif->id);
+            $cekstatus = $query->first();
+            if($cekstatus == '') {
+                return [
+                    'status' => false,
+                    'error' => 'status non aktif'
+                ];
+            }
 
-        return $query->first();
+        }else{
+            return [
+                'status' => false,
+                'error' => 'tarif tidak ada'
+            ];
+        }
+
+        return [
+            'status' => true
+        ];
     }
 
 
