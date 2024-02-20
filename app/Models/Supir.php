@@ -223,6 +223,7 @@ class Supir extends MyModel
 
         $isMandor = auth()->user()->isMandor();
         $isAdmin = auth()->user()->isAdmin();
+        $formatCabang = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'MANDOR SUPIR')->where('subgrp', 'MANDOR SUPIR')->first();
         
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -283,7 +284,7 @@ class Supir extends MyModel
             ->leftJoin(DB::raw("mandor as b with (readuncommitted)"), 'supir.mandor_id', '=', 'b.id');
 
 
-            if (!$isAdmin) {
+            if (!$isAdmin && ($formatCabang->text == 'FORMAT 1')) {
                 if ($isMandor) {
                     $query->where('supir.mandor_id', $isMandor->mandor_id);
                 }
