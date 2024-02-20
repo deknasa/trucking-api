@@ -176,6 +176,8 @@ class User extends Authenticatable
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('karyawan_id')->nullable();
+            $table->unsignedBigInteger('cabang_id')->nullable();
+            $table->string('cabang')->nullable();
             $table->unsignedBigInteger('statusaktif')->nullable();
             $table->string('statusaktifnama', 255)->nullable();
             $table->unsignedBigInteger('statusakses')->nullable();
@@ -194,6 +196,20 @@ class User extends Authenticatable
             ->first();
 
         $iddefaultstatuskaryawan = $status->id ?? 0;
+        
+        $status = Cabang::from(
+            db::Raw("cabang with (readuncommitted)")
+        )
+            ->select(
+                'cabang.id',
+                'cabang.namacabang'
+            )
+            ->join(DB::raw("parameter with (readuncommitted)"), 'cabang.id', 'parameter.text')
+            ->where('grp', '=', 'ID CABANG')
+            ->first();
+
+        $iddefaultcabangid = $status->id ?? 0;
+        $iddefaultcabang = $status->namacabang ?? '';
 
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
@@ -227,7 +243,7 @@ class User extends Authenticatable
 
 
         DB::table($tempdefault)->insert(
-            ["karyawan_id" => $iddefaultstatuskaryawan, "statusaktif" => $iddefaultstatusaktif, "statusaktifnama" => $defaultstatusaktif, "statusakses" => $iddefaultstatusakses, "statusaksesnama" => $defaultstatusakses]
+            ["karyawan_id" => $iddefaultstatuskaryawan, "cabang_id" => $iddefaultcabangid,"cabang" => $iddefaultcabang, "statusaktif" => $iddefaultstatusaktif, "statusaktifnama" => $defaultstatusaktif, "statusakses" => $iddefaultstatusakses, "statusaksesnama" => $defaultstatusakses]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -235,6 +251,8 @@ class User extends Authenticatable
         )
             ->select(
                 'karyawan_id',
+                'cabang_id',
+                'cabang',
                 'statusaktif',
                 'statusaktifnama',
                 'statusaksesnama',
