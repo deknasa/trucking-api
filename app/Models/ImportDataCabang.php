@@ -18,6 +18,11 @@ class ImportDataCabang extends Model
         ini_set('memory_limit', '-1');
         set_time_limit(0);
 
+        $bulan=substr($data['periode'],0,2);
+        $datasaldo='00-'.substr($data['periode'],-4);
+        // dump($bulan);
+        // dd($datasaldo);
+
         $cabang = Cabang::where('id', $data['cabang'])->first();
         $statusImportTimpa = Parameter::where('grp', 'STATUSIMPORT')->where('text', 'HAPUS DAN TIMPA DATA JIKA SUDAH ADA')->first();
         $statusImportSisip = Parameter::where('grp', 'STATUSIMPORT')->where('text', 'HANYA TAMBAHKAN DATA YANG BELUM DATA ADA SAJA')->first();
@@ -74,7 +79,12 @@ class ImportDataCabang extends Model
             // dd($singkatan);
             DB::delete(DB::raw("delete AkunPusatDetail 
             WHERE isnull(cabang_id,0)=" . $cabang->id . " and bulan<>0 and bulan=cast(left('" . $data['periode'] . "',2) as integer) and tahun=cast(right('" . $data['periode'] . "',4) as integer)"));
-    
+
+
+            if ($bulan=='01') {
+                DB::delete(DB::raw("delete AkunPusatDetail 
+                WHERE isnull(cabang_id,0)=" . $cabang->id . " and bulan=0 and tahun=cast(right('" . $data['periode'] . "',4) as integer)"));
+                }
 
             if (!$cabangMemo) {
                 throw ValidationException::withMessages(["message" => "Cabang Tidak Compatible Unutk di impor"]);
@@ -229,77 +239,7 @@ class ImportDataCabang extends Model
             }
 
 
-            // $saldoakunpusatdetail = Http::withHeaders([
-            //     'Accept' => 'application/json',
-            //     'Authorization' => 'Bearer ' . $access_token,
-            //     'Content-Type' => 'application/json',
-            // ])
-            //     // ->get($urlCabang . "saldoakunpusatdetail/importdatacabang?periode=" . $data['periode'] . "&tahun=" . $itemtahun2['tahun'] . "&bulan=" . $itembulan2['bulan']);
-            //     ->get($urlCabang . "saldoakunpusatdetail/importdatacabang?periode=" . $data['periode']);
-
-            // $konsolidasisaldoakunpusatdetail = $saldoakunpusatdetail->json()['data'];
-            // if (!count($konsolidasisaldoakunpusatdetail)) {
-            //     throw ValidationException::withMessages(["message" => "data tidak ada"]);
-            // }
-
-            // foreach ($konsolidasisaldoakunpusatdetail as $item2) {
-
-            //     $saldoAkunpusatdetail = new SaldoAkunPusatDetail();
-            //     $saldoAkunpusatdetail->coa = $item2['coa'];
-            //     $saldoAkunpusatdetail->bulan = $item2['bulan'];
-            //     $saldoAkunpusatdetail->tahun = $item2['tahun'];
-            //     $saldoAkunpusatdetail->nominal = $item2['nominal'];
-            //     $saldoAkunpusatdetail->info = $item2['info'];
-            //     $saldoAkunpusatdetail->tglbukti = $item2['tglbukti'];
-            //     $saldoAkunpusatdetail->modifiedby = $item2['modifiedby'];
-            //     $saldoAkunpusatdetail->created_at = $item2['created_at'];
-            //     $saldoAkunpusatdetail->updated_at = $item2['updated_at'];
-            //     $saldoAkunpusatdetail->cabang_id = $data['cabang'];
-
-
-            //     if (!$saldoAkunpusatdetail->save()) {
-            //         throw new \Exception("Error storing saldo akun pusat detail.");
-            //     }
-            // }
-
-            // // saldoawalbukubesar
-
-            // $saldoawalbukubesar = Http::withHeaders([
-            //     'Accept' => 'application/json',
-            //     'Authorization' => 'Bearer ' . $access_token,
-            //     'Content-Type' => 'application/json',
-            // ])
-            //     // ->get($urlCabang . "saldoakunpusatdetail/importdatacabang?periode=" . $data['periode'] . "&tahun=" . $itemtahun2['tahun'] . "&bulan=" . $itembulan2['bulan']);
-            //     ->get($urlCabang . "saldoawalbukubesar/importdatacabang?periode=" . $data['periode']);
-
-            // $konsolidasisaldoawalbukubesar = $saldoawalbukubesar->json()['data'];
-            // if (!count($konsolidasisaldoawalbukubesar)) {
-            //     throw ValidationException::withMessages(["message" => "data tidak ada"]);
-            // }
-
-            // foreach ($konsolidasisaldoawalbukubesar as $item4) {
-
-            //     $saldoAwalbukubesar = new SaldoAwalBukuBesar();
-            //     $saldoAwalbukubesar->coa = $item4['coa'];
-            //     $saldoAwalbukubesar->bulan = $item4['bulan'];
-            //     $saldoAwalbukubesar->nominal = $item4['nominal'];
-            //     $saldoAwalbukubesar->info = $item4['info'];
-            //     $saldoAwalbukubesar->tglbukti = $item4['tglbukti'];
-            //     $saldoAwalbukubesar->modifiedby = $item4['modifiedby'];
-            //     $saldoAwalbukubesar->created_at = $item4['created_at'];
-            //     $saldoAwalbukubesar->updated_at = $item4['updated_at'];
-            //     $saldoAwalbukubesar->cabang_id = $data['cabang'];
-
-
-            //     if (!$saldoAwalbukubesar->save()) {
-            //         throw new \Exception("Error storing saldo awal buku besar.");
-            //     }
-            // }
-
-
-
-
-            // 
+           
 
 
 
@@ -339,11 +279,148 @@ class ImportDataCabang extends Model
                     throw new \Exception("Error storing  akun pusat detail.");
                 }
             }
+        
+            if ($bulan=='01') {
+
+              
+                $akunpusatdetail = Http::withHeaders([
+                    'Accept' => 'application/json',
+                    'Authorization' => 'Bearer ' . $access_token,
+                    'Content-Type' => 'application/json',
+                ])
+                    ->get($urlCabang . "akunpusatdetail/importdatacabang?periode=" . $datasaldo);
+    
+                $konsolidasiakunpusatdetail = $akunpusatdetail->json()['data'];
+                if (!count($konsolidasiakunpusatdetail)) {
+                    throw ValidationException::withMessages(["message" => "data tidak ada"]);
+                }
+    
+                foreach ($konsolidasiakunpusatdetail as $item3) {
+                    $Akunpusatdetail = new AkunPusatDetail();
+                    $Akunpusatdetail->coa = $item3['coa'];
+                    if ($item3['coa']=='05.03.01.02' || $item3['coa']=='05.03.01.07' || $item3['coa']=='05.03.01.01' || $item3['coa']=='05.03.01.03' || $item3['coa']=='05.03.01.04' || $item3['coa']=='05.03.01.05') {
+                        $Akunpusatdetail->coagroup ='05.03.01.01';
+                    } else {
+                        $Akunpusatdetail->coagroup ='';
+                    }
+    
+                    $Akunpusatdetail->bulan = $item3['bulan'];
+                    $Akunpusatdetail->tahun = $item3['tahun'];
+                    $Akunpusatdetail->nominal = $item3['nominal'];
+                    $Akunpusatdetail->info = $item3['info'];
+                    $Akunpusatdetail->modifiedby = $item3['modifiedby'];
+                    $Akunpusatdetail->created_at = $item3['created_at'];
+                    $Akunpusatdetail->updated_at = $item3['updated_at'];
+                    $Akunpusatdetail->cabang_id = $data['cabang'];
+    
+    
+                    if (!$Akunpusatdetail->save()) {
+                        throw new \Exception("Error storing  akun pusat detail.");
+                    }
+                }  
+            }
+            
+            // ambil saldo akhir tahun
+
         } else {
             // proses dari database lama
             $month = substr($data['periode'], 0, 2);
             $year = substr($data['periode'], -4);
             $aptgl = '2023-10-01';
+      
+            if ($singkatan=='PST') {
+                $queryloopcoa = DB::connection('sqlsrv2')->table("coamain")->from(db::raw("coamain a with (readuncommitted)"))
+                ->select(
+                    'a.fcoa as coa',
+                    'a.fketcoa as keterangancoa',
+                    db::raw("isnull(c.id,0) as type_id"),
+                    'a.ftype as type',
+                    db::raw("1 as statusaktif"),
+                    'a.fparent as parent',
+                    db::raw("63 as statuscoa"),
+                    db::raw("35 as statusaccountpayable"),
+                    db::raw("0 as statusparent"),
+                    db::raw("isnull(c.akuntansi_id ,0) as akuntansi_id"),
+                    db::raw("36 as statusneraca"),
+                    db::raw("38 as statuslabarugi"),
+                    'a.fcoa as coamain',
+                    db::raw("'' as info"),
+                    db::raw("'ADMIN' as modifiedby"),
+                    db::raw("getdate() as created_at"),
+                    db::raw("getdate() as updated_at")
+                )
+                ->leftjoin(db::raw("trucking.dbo.mainakunpusat b with (readuncommitted)"), 'a.fcoa', 'b.coa')
+                ->leftjoin(db::raw("trucking.dbo.maintypeakuntansi c with (readuncommitted)"), 'a.ftype', 'c.kodetype')
+                ->whereRaw("isnull(b.coa,'')=''")
+                ->get();
+
+                $queryloopcoa = json_encode($queryloopcoa, JSON_INVALID_UTF8_SUBSTITUTE);
+                $konsolidasicoa = json_decode($queryloopcoa, true);
+                // dd('test');
+    
+                $jurnal1Request = [];
+                foreach ($konsolidasicoa as $item) {
+                    // Membuat array baru untuk setiap entri header
+    
+    
+
+                                $mainakunpusat = new MainAkunPusat();
+                                $mainakunpusat->coa = mb_convert_encoding($item['coa'],  $encode, 'UTF-8');
+                                $mainakunpusat->keterangancoa = mb_convert_encoding($item['keterangancoa'],  $encode, 'UTF-8');
+                                $mainakunpusat->type_id = mb_convert_encoding($item['type_id'],  $encode, 'UTF-8');
+                                $mainakunpusat->type = mb_convert_encoding($item['type'],  $encode, 'UTF-8');
+                                $mainakunpusat->statusaktif = mb_convert_encoding($item['statusaktif'],  $encode, 'UTF-8');
+                                $mainakunpusat->parent = mb_convert_encoding($item['parent'],  $encode, 'UTF-8');
+                                $mainakunpusat->statuscoa = mb_convert_encoding($item['statuscoa'],  $encode, 'UTF-8');
+                                $mainakunpusat->statusaccountpayable = mb_convert_encoding($item['statusaccountpayable'],  $encode, 'UTF-8');
+                                $mainakunpusat->statusparent = mb_convert_encoding($item['statusparent'],  $encode, 'UTF-8');
+                                $mainakunpusat->akuntansi_id = mb_convert_encoding($item['akuntansi_id'],  $encode, 'UTF-8');
+                                $mainakunpusat->statusneraca = mb_convert_encoding($item['statusneraca'],  $encode, 'UTF-8');
+                                $mainakunpusat->statuslabarugi = mb_convert_encoding($item['statuslabarugi'],  $encode, 'UTF-8');
+                                $mainakunpusat->coamain = mb_convert_encoding($item['coamain'],  $encode, 'UTF-8');
+                                $mainakunpusat->info = mb_convert_encoding($item['info'],  $encode, 'UTF-8');
+                                $mainakunpusat->modifiedby = mb_convert_encoding($item['modifiedby'],  $encode, 'UTF-8');
+                                $mainakunpusat->created_at = mb_convert_encoding($item['created_at'],  $encode, 'UTF-8');
+                                $mainakunpusat->updated_at = mb_convert_encoding($item['updated_at'],  $encode, 'UTF-8');
+    
+    
+                                if (!$mainakunpusat->save()) {
+                                    throw new \Exception("Error storing main akun pusat .");
+                                }
+                  
+
+                                // 
+                                $akunpusat = new AkunPusat();
+                                $akunpusat->coa = mb_convert_encoding($item['coa'],  $encode, 'UTF-8');
+                                $akunpusat->keterangancoa = mb_convert_encoding($item['keterangancoa'],  $encode, 'UTF-8');
+                                $akunpusat->type_id = mb_convert_encoding($item['type_id'],  $encode, 'UTF-8');
+                                $akunpusat->type = mb_convert_encoding($item['type'],  $encode, 'UTF-8');
+                                $akunpusat->statusaktif = mb_convert_encoding($item['statusaktif'],  $encode, 'UTF-8');
+                                $akunpusat->parent = mb_convert_encoding($item['parent'],  $encode, 'UTF-8');
+                                $akunpusat->statuscoa = mb_convert_encoding($item['statuscoa'],  $encode, 'UTF-8');
+                                $akunpusat->statusaccountpayable = mb_convert_encoding($item['statusaccountpayable'],  $encode, 'UTF-8');
+                                $akunpusat->statusparent = mb_convert_encoding($item['statusparent'],  $encode, 'UTF-8');
+                                $akunpusat->akuntansi_id = mb_convert_encoding($item['akuntansi_id'],  $encode, 'UTF-8');
+                                $akunpusat->statusneraca = mb_convert_encoding($item['statusneraca'],  $encode, 'UTF-8');
+                                $akunpusat->statuslabarugi = mb_convert_encoding($item['statuslabarugi'],  $encode, 'UTF-8');
+                                $akunpusat->coamain = mb_convert_encoding($item['coamain'],  $encode, 'UTF-8');
+                                $akunpusat->info = mb_convert_encoding($item['info'],  $encode, 'UTF-8');
+                                $akunpusat->modifiedby = mb_convert_encoding($item['modifiedby'],  $encode, 'UTF-8');
+                                $akunpusat->created_at = mb_convert_encoding($item['created_at'],  $encode, 'UTF-8');
+                                $akunpusat->updated_at = mb_convert_encoding($item['updated_at'],  $encode, 'UTF-8');
+    
+    
+                                if (!$akunpusat->save()) {
+                                    throw new \Exception("Error storing  akun pusat .");
+                                }
+                                      
+                   
+                        
+                    
+                }
+
+                // 
+            } 
 
             if ($singkatan=='PST') {
                 $queryloop = DB::connection('sqlsrv2')->table("j_happ")->from(db::raw("j_happ a with (readuncommitted)"))
@@ -611,6 +688,13 @@ class ImportDataCabang extends Model
                 ->whereRaw("cast(trim(str(" . $tahun . "))+'/'+trim(str(" . $bulan . "))+'/1' as datetime)>='" . $ptgl . "'")
                 ->delete();
 
+                if ($bulan=='01') {
+                    DB::table('akunpusatdetail')
+                    ->whereRaw("bulan = 0")
+                    ->whereRaw("tahun = " . $tahun)
+                    ->whereRaw("cabang_id=" . $cabang_id)
+                    ->delete();
+                }                
 
 
             // $subquery1 = DB::table('jurnalumumpusatheader as J')
@@ -698,6 +782,47 @@ class ImportDataCabang extends Model
                 if (!$akunPusatDetail->save()) {
                     throw new \Exception("Error storing Akun Puat Detail");
                 }
+            }
+
+            if ($bulan=='01') {
+                $RecalKdPerkiraan = DB::connection('sqlsrv2')->table("coa_r")->from(db::raw("coa_r a with (readuncommitted)"))
+                ->select(
+                    'a.fcoa as coa',
+                    'a.fthn as tahun',
+                    'a.fbln as bulan',
+                    db::raw($cabang_id . " as cabang_id"),
+                    'a.fnominal as nominal',
+                )
+                ->whereRaw("a.fbln = 0")
+                ->whereRaw("a.fthn = " . $tahun)
+                ->whereRaw("a.FKcabang='" . $singkatan . "'")
+                ->get();
+
+
+            $RecalKdPerkiraan = json_encode($RecalKdPerkiraan, JSON_INVALID_UTF8_SUBSTITUTE);
+            $konsolidasicoar = json_decode($RecalKdPerkiraan, true);
+            // dd('test');
+
+            foreach ($konsolidasicoar as $item2) {
+                $akunPusatDetail = new AkunPusatDetail();
+                $akunPusatDetail->coa = mb_convert_encoding($item2['coa'],  $encode, 'UTF-8');
+ 
+                if ($item2['coa']=='05.03.01.02' || $item2['coa']=='05.03.01.07' || $item2['coa']=='05.03.01.01' || $item2['coa']=='05.03.01.03' || $item2['coa']=='05.03.01.04' || $item2['coa']=='05.03.01.05') {
+                    $akunPusatDetail->coagroup ='05.03.01.01';
+                } else {
+                    $akunPusatDetail->coagroup ='';
+                }
+                
+                $akunPusatDetail->tahun = mb_convert_encoding($item2['tahun'],  $encode, 'UTF-8');
+                $akunPusatDetail->bulan = mb_convert_encoding($item2['bulan'],  $encode, 'UTF-8');
+                $akunPusatDetail->cabang_id = $data['cabang'];
+                $akunPusatDetail->nominal = mb_convert_encoding($item2['nominal'],  $encode, 'UTF-8');
+
+
+                if (!$akunPusatDetail->save()) {
+                    throw new \Exception("Error storing Akun Puat Detail");
+                }
+            }  
             }
             // DB::table('akunpusatdetail')->insertUsing([
             //     'coa',
