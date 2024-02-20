@@ -58,7 +58,7 @@ class KasGantungHeader extends MyModel
         if (isset($absensiSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Absensi Supir '. $absensiSupir->nobukti,
+                'keterangan' => 'Absensi Supir ' . $absensiSupir->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -76,7 +76,7 @@ class KasGantungHeader extends MyModel
         if (isset($pengembalianKasgantung)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pengembalian Kas Gantung '. $pengembalianKasgantung->nobukti,
+                'keterangan' => 'Pengembalian Kas Gantung ' . $pengembalianKasgantung->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -97,7 +97,7 @@ class KasGantungHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal '. $jurnal->pengeluaran_nobukti,
+                'keterangan' => 'Approval Jurnal ' . $jurnal->pengeluaran_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
@@ -176,7 +176,7 @@ class KasGantungHeader extends MyModel
                 'kasgantungheader.created_at',
                 'kasgantungheader.updated_at',
                 db::raw("cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
-                db::raw("cast(cast(format((cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"), 
+                db::raw("cast(cast(format((cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
             )
 
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kasgantungheader.statuscetak', 'parameter.id')
@@ -346,7 +346,7 @@ class KasGantungHeader extends MyModel
             ->groupBy('kasgantungdetail.nobukti', 'kasgantungheader.tglbukti')
             ->orderBy('kasgantungheader.tglbukti', 'asc')
             ->orderBy('kasgantungdetail.nobukti', 'asc');
-        
+
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
             $table->date('tglbukti');
@@ -354,7 +354,7 @@ class KasGantungHeader extends MyModel
             $table->longText('keterangan')->nullabble();
         });
 
-        $tes = DB::table($temp)->insertUsing(['nobukti', 'tglbukti', 'sisa','keterangan'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'tglbukti', 'sisa', 'keterangan'], $fetch);
         //dd($tes);
         return $temp;
     }
@@ -376,19 +376,21 @@ class KasGantungHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statuscetak') {
-                            $query = $query->where('statuscetak.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'penerima_id') {
-                            $query = $query->where('penerima.namapenerima', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'bank_id') {
-                            $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statuscetak') {
+                                $query = $query->where('statuscetak.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'penerima_id') {
+                                $query = $query->where('penerima.namapenerima', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'bank_id') {
+                                $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -396,19 +398,21 @@ class KasGantungHeader extends MyModel
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statuscetak') {
-                                $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'penerima_id') {
-                                $query = $query->orWhere('penerima.namapenerima', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'bank_id') {
-                                $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
-                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statuscetak') {
+                                    $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'penerima_id') {
+                                    $query = $query->orWhere('penerima.namapenerima', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'bank_id') {
+                                    $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
                     });

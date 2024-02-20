@@ -484,12 +484,4 @@ class PenerimaanGiroHeaderController extends Controller
         ]);
     }
 
-    
-    /**
-     * @ClassName 
-     * @Keterangan TEST
-     */
-    public function cobamethod()
-    {
-    }
 }
