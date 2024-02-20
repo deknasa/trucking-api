@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 
+use Illuminate\Support\Facades\DB;
 use App\Models\BukaPengeluaranStok;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\StoreBukaPengeluaranStokRequest;
 use App\Http\Requests\UpdateBukaPengeluaranStokRequest;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
 
 class BukaPengeluaranStokController extends Controller
 {
@@ -81,17 +82,20 @@ class BukaPengeluaranStokController extends Controller
      * @ClassName
      * @Keterangan PERBARUI BATAS TANGGAL
      */
-    public function updateTanggalBatas($id)
+    public function updateTanggalBatas(ApprovalKaryawanRequest $request)
     {
         DB::beginTransaction();
         try {
-            $bukaPengeluaranStok = (new BukaPengeluaranStok())->processTanggalBatasUpdate($id);
-            /* Set position and page */
-            $bukaPengeluaranStok->position = $this->getPosition($bukaPengeluaranStok, $bukaPengeluaranStok->getTable())->position;
-            $bukaPengeluaranStok->page = ceil($bukaPengeluaranStok->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
-                $bukaPengeluaranStok->page = ceil($bukaPengeluaranStok->position / ($request->limit ?? 10));
+            
+            foreach ($request->Id as $id) {
+                $bukaPengeluaranStok = (new BukaPengeluaranStok())->processTanggalBatasUpdate($id);
             }
+            // /* Set position and page */
+            // $bukaPengeluaranStok->position = $this->getPosition($bukaPengeluaranStok, $bukaPengeluaranStok->getTable())->position;
+            // $bukaPengeluaranStok->page = ceil($bukaPengeluaranStok->position / ($request->limit ?? 10));
+            // if (isset($request->limit)) {
+            //     $bukaPengeluaranStok->page = ceil($bukaPengeluaranStok->position / ($request->limit ?? 10));
+            // }
 
             DB::commit();
             return response()->json([

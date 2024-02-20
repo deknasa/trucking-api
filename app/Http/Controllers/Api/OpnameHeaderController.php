@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\DestroyOpnameHeaderRequest;
-use App\Http\Requests\StoreLogTrailRequest;
+use App\Models\Parameter;
+use App\Models\OpnameDetail;
 use App\Models\OpnameHeader;
+use App\Rules\DateTutupBuku;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Models\LaporanSaldoInventory;
+use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\StoreOpnameHeaderRequest;
 use App\Http\Requests\UpdateOpnameHeaderRequest;
-use App\Models\LaporanSaldoInventory;
-use App\Models\OpnameDetail;
-use App\Models\Parameter;
-use App\Rules\DateTutupBuku;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\DestroyOpnameHeaderRequest;
 
 class OpnameHeaderController extends Controller
 {
@@ -302,16 +303,37 @@ class OpnameHeaderController extends Controller
         }
     }
 
+    // /**
+    //  * @ClassName
+    //  * @Keterangan APPROVAL DATA
+    //  */
+    // public function approval(OpnameHeader $id)
+    // {
+    //     DB::beginTransaction();
+    //     try {
+    //         $opnameHeader =$id;
+    //         $opnameHeader = (new OpnameHeader())->processApprove($opnameHeader);
+
+    //         DB::commit();
+    //         return response([
+    //             'message' => 'Berhasil'
+    //         ]);
+    //     } catch (\Throwable $th) {
+    //         throw $th;
+    //     }
+    // }
     /**
      * @ClassName
      * @Keterangan APPROVAL DATA
      */
-    public function approval(OpnameHeader $id)
+    public function approval(ApprovalKaryawanRequest $request)
     {
         DB::beginTransaction();
         try {
-            $opnameHeader =$id;
-            $opnameHeader = (new OpnameHeader())->processApprove($opnameHeader);
+            foreach ($request->Id as $id) {
+                $opnameHeader =OpnameHeader::find($id);
+                $opnameHeader = (new OpnameHeader())->processApprove($opnameHeader);
+            }
 
             DB::commit();
             return response([
