@@ -313,6 +313,7 @@ class PenerimaanStokHeaderController extends Controller
 
         $penerimaanStokHeader  = new PenerimaanStokHeader();
         $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
+        $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
 
         $aksi = request()->aksi ?? '';
         $peneimaan = $penerimaanStokHeader->findOrFail($id);
@@ -440,8 +441,10 @@ class PenerimaanStokHeaderController extends Controller
             $isPOUsed = $penerimaanStokHeader->isPOUsed($id);
             if ($isPOUsed) {
                 $query = Error::from(DB::raw("error with (readuncommitted)"))
-                    ->select('keterangan')
-                    ->whereRaw("kodeerror = 'SATL'")
+                    ->select(db::raw("'$msg <br>'+keterangan +' <br>(" . $isPOUsed[1] . ")' as keterangan"))
+                    ->whereRaw("kodeerror = 'SATL2'")
+                    // ->select('keterangan')
+                    // ->whereRaw("kodeerror = 'SATL'")
                     ->get();
                 $keterangan = $query['0'];
                 $dataUsed = [
@@ -535,7 +538,13 @@ class PenerimaanStokHeaderController extends Controller
             if (($todayValidation || (($isEditAble || $isKeteranganEditAble) && !$printValidation))) {
                 if ($spb->text == $peneimaan->penerimaanstok_id) {
                     //ika sudah digunakan di eth, jurnal, dan po
-                    if ($isEhtUsed || $isEHTApprovedJurnal || $isPOUsed) {
+                    if ($isEhtUsed || $isEHTApprovedJurnal) {
+                        return response($dataUsed);
+                    }
+                }
+                if ($po->text == $peneimaan->penerimaanstok_id) {
+                    //ika sudah digunakan di spb
+                    if ($isPOUsed) {
                         return response($dataUsed);
                     }
                 }
