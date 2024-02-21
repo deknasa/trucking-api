@@ -94,6 +94,7 @@ class MandorController extends Controller
                 'namamandor' => $request->namamandor,
                 'keterangan' => $request->keterangan ?? '',
                 'statusaktif' => $request->statusaktif,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
                 'user_id' => $request->user_id
             ];
             $mandor = (new Mandor())->processStore($data);
@@ -103,6 +104,14 @@ class MandorController extends Controller
             } else {
                 $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
             }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $mandor->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('mandor', 'add', $data);
+            }
+
             DB::commit();
 
             return response([
@@ -136,6 +145,7 @@ class MandorController extends Controller
                 'namamandor' => $request->namamandor,
                 'keterangan' => $request->keterangan ?? '',
                 'statusaktif' => $request->statusaktif,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
                 'user_id' => $request->user_id
             ];
             $mandor = (new Mandor())->processUpdate($mandor, $data);
@@ -144,6 +154,13 @@ class MandorController extends Controller
                 $mandor->page = ceil($mandor->position / (10));
             } else {
                 $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
+            }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $mandor->id;
+            
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('mandor', 'edit', $data);
             }
             DB::commit();
 
@@ -174,6 +191,19 @@ class MandorController extends Controller
                 $mandor->page = ceil($mandor->position / (10));
             } else {
                 $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
+            }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            
+            $data = [
+                'namamandor' => $request->namamandor,
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
+                'user_id' => $request->user_id,
+            ];
+            $data['tas_id'] = $id;
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('mandor', 'delete', $data);
             }
             DB::commit();
 
