@@ -271,6 +271,7 @@ class Mandor extends MyModel
         $mandor->keterangan = $data['keterangan'] ?? '';
         $mandor->statusaktif = $data['statusaktif'];
         $mandor->user_id = $data['user_id'];
+        $mandor->tas_id = $data['tas_id'] ?? '';
         $mandor->modifiedby = auth('api')->user()->user;
         $mandor->info = html_entity_decode(request()->info);
         $data['sortname'] = $data['sortname'] ?? 'id';

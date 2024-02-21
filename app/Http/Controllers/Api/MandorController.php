@@ -95,6 +95,7 @@ class MandorController extends Controller
                 'keterangan' => $request->keterangan ?? '',
                 'statusaktif' => $request->statusaktif,
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
+                'tas_id' => $request->tas_id,
                 'user_id' => $request->user_id
             ];
             $mandor = (new Mandor())->processStore($data);
