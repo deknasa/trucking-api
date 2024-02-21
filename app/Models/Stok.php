@@ -98,6 +98,7 @@ class Stok extends MyModel
         $penerimaanstok_id = request()->penerimaanstok_id ?? '';
         $pengeluaranstok_id = request()->pengeluaranstok_id ?? '';
         $penerimaanstokheader_nobukti = request()->penerimaanstokheader_nobukti ?? '';
+        $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
         $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
         $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
         $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
@@ -498,7 +499,9 @@ class Stok extends MyModel
             $query->where('stok.kelompok_id', '=', $kelompok);
         }
         if ($KelompokId_stok != '') {
-            $query->where('stok.kelompok_id', '=', $KelompokId_stok);
+            if (($pg->text == $penerimaanstok_id) || ($spk->text == $pengeluaranstok_id)) {
+                $query->where('stok.kelompok_id', '=', $KelompokId_stok);
+            }
         }
         if ($penerimaanstokheader_nobukti) {
     
