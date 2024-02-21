@@ -251,7 +251,7 @@ class PenerimaanStokDetailController extends Controller
         $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
 
         $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokdetail.id',$request->detail)
-        ->select('penerimaanstokheader.nobukti','penerimaanstokheader.penerimaanstok_id')
+        ->select('penerimaanstokheader.nobukti','penerimaanstokheader.penerimaanstok_id','penerimaanstokdetail.penerimaanstokheader_id','penerimaanstokdetail.stok_id')
         ->leftJoin('penerimaanstokheader', 'penerimaanstokdetail.penerimaanstokheader_id', 'penerimaanstokheader.id')
         ->first();
         if ($penerimaanStokDetail->penerimaanstok_id == $spb->text) {

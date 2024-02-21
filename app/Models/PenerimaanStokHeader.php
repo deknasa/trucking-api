@@ -2380,6 +2380,7 @@ class PenerimaanStokHeader extends MyModel
     public function isPOUsed($id)
     {
         $query = DB::table($this->table)->from($this->table)
+            ->select('penerimaanstokheader.id',db::raw("nobuktispb.nobukti  as nobukti"),)
             ->where('penerimaanstokheader.id', $id)
             ->leftJoin('penerimaanstokheader as nobuktispb', 'penerimaanstokheader.nobukti', 'nobuktispb.penerimaanstok_nobukti');
         $data = $query->first();
@@ -2387,7 +2388,7 @@ class PenerimaanStokHeader extends MyModel
             # code...
             return [
                 true,
-                $data->penerimaanstok_nobukti
+                $data->nobukti
             ];
         }
         return false;
