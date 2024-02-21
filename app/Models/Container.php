@@ -334,6 +334,7 @@ class Container extends MyModel
         $container->keterangan = strtoupper($data['keterangan']) ?? '';
         $container->nominalsumbangan = $data['nominalsumbangan'];
         $container->statusaktif = $data['statusaktif'];
+        $container->tas_id = $data['tas_id'] ?? '';
         $container->modifiedby = auth('api')->user()->user;
         $container->info = html_entity_decode(request()->info);
 
