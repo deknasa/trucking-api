@@ -284,11 +284,11 @@ class Supir extends MyModel
             ->leftJoin(DB::raw("mandor as b with (readuncommitted)"), 'supir.mandor_id', '=', 'b.id');
 
 
-            if (!$isAdmin && ($formatCabang->text == 'FORMAT 2')) {
-                if ($isMandor) {
-                    $query->where('supir.mandor_id', $isMandor->mandor_id);
-                }
-            }
+            // if (!$isAdmin && ($formatCabang->text == 'FORMAT 2')) {
+            //     if ($isMandor) {
+            //         $query->where('supir.mandor_id', $isMandor->mandor_id);
+            //     }
+            // }
 
         $this->filter($query);
         if ($aktif == 'AKTIF') {
