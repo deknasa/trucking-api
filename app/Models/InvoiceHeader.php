@@ -233,6 +233,14 @@ class InvoiceHeader extends MyModel
     public function getSpSearch($request)
     {
 
+        $statusbatalmuat = db::table('parameter')->from(db::raw("parameter with (readuncommitted)"))
+        ->select('id')
+        ->where('grp', 'STATUS BATAL MUAT')
+        ->where('subgrp', 'STATUS BATAL MUAT')
+        ->where('text', 'BATAL MUAT')
+        ->first()->id ?? 0;
+
+
         $kotapelabuhan = DB::table('parameter')->from(
             db::raw("parameter a with (readuncommitted)")
         )
@@ -415,7 +423,7 @@ class InvoiceHeader extends MyModel
                 ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
                 ->where('a.agen_id', $request->agen_id)
                 ->where('a.jenisorder_id', $request->jenisorder_id)
-                ->whereRaw("a.statuscontainer_id in(" . $fullempty . ")")
+                ->whereRaw("(a.statuscontainer_id in(" . $fullempty . ") or a.statusbatalmuat=" . $statusbatalmuat . ")")
                 ->groupBy('a.jobtrucking');
 
             // dd($querykepelabuhan->toSql());
@@ -459,7 +467,7 @@ class InvoiceHeader extends MyModel
                     db::raw("max(a.totalomset) as nominal"),
                     db::raw("max(a.nobukti) as suratpengantar_nobukti")
                 )
-                ->whereRaw("(a.sampai_id=" . $kotapelabuhanid . " or a.statuslangsir=" . $statuslangsir->id . ")")
+                ->whereRaw("(a.sampai_id=" . $kotapelabuhanid . " or a.statuslangsir=" . $statuslangsir->id . "  or a.statusbatalmuat=" . $statusbatalmuat . ")")
                 ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "'")
                 ->where('a.agen_id', $request->agen_id)
                 ->where('a.jenisorder_id', $request->jenisorder_id)
@@ -1032,7 +1040,7 @@ class InvoiceHeader extends MyModel
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $this->totalNominal = $query->sum('a.nominal_detail');
-        
+
         $this->filterGetInvoice($query);
         if (request()->limit != 0) {
             $query->skip($this->params['offset'])->take($this->params['limit']);
