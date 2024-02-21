@@ -41,14 +41,40 @@ class ContainerController extends Controller
         ]);
     }
 
-    public function cekValidasi($id)
+    public function cekValidasi(Request $request, $id)
     {
         $container = new Container();
+        $server = '';
+        if ($request->from == 'tas') {
+            $id = db::table('container')->from(db::raw("container a with (readuncommitted)"))
+                ->select('a.id')
+                ->where('a.tas_id', $id)->first()->id ?? 0;
+            $server = ' tnl';
+        }
         $cekdata = $container->cekvalidasihapus($id);
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+
+        if ($cekdata['kondisi'] == true) {
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $server = ' tas';
+            }
+            goto selesai;
+        }
+
+        $data['tas_id'] = $id;
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            $data = [
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
+            ];
+            $cektnl = $this->CekValidasiToTnl("container/" . $id . "/cekValidasi", $data);
+            return response($cektnl['data']);
+        }
+
+        selesai:
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
                 ->select(
-                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . "$server)' as keterangan")
                 )
                 ->where('kodeerror', '=', 'SATL')
                 ->get();
@@ -98,16 +124,26 @@ class ContainerController extends Controller
                 'keterangan' => strtoupper($request->keterangan) ?? '',
                 'nominalsumbangan' => $request->nominalsumbangan,
                 'statusaktif' => $request->statusaktif,
+                'tas_id' => $request->tas_id,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
 
             $container = (new container())->processStore($data);
-            $container->position = $this->getPosition($container, $container->getTable())->position;
-            if ($request->limit == 0) {
-                $container->page = ceil($container->position / (10));
-            } else {
-                $container->page = ceil($container->position / ($request->limit ?? 10));
-            }
 
+            if ($request->from == '') {
+                $container->position = $this->getPosition($container, $container->getTable())->position;
+                if ($request->limit == 0) {
+                    $container->page = ceil($container->position / (10));
+                } else {
+                    $container->page = ceil($container->position / ($request->limit ?? 10));
+                }
+            }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $container->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('container', 'add', $data);
+            }
             DB::commit();
 
             return response([
@@ -144,16 +180,24 @@ class ContainerController extends Controller
                 'keterangan' => strtoupper($request->keterangan) ?? '',
                 'nominalsumbangan' => $request->nominalsumbangan,
                 'statusaktif' => $request->statusaktif,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
 
             $container = (new Container())->processUpdate($container, $data);
-            $container->position = $this->getPosition($container, $container->getTable())->position;
-            if ($request->limit == 0) {
-                $container->page = ceil($container->position / (10));
-            } else {
-                $container->page = ceil($container->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $container->position = $this->getPosition($container, $container->getTable())->position;
+                if ($request->limit == 0) {
+                    $container->page = ceil($container->position / (10));
+                } else {
+                    $container->page = ceil($container->position / ($request->limit ?? 10));
+                }
             }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $container->id;
 
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('container', 'edit', $data);
+            }
             DB::commit();
 
             return response([
@@ -176,13 +220,23 @@ class ContainerController extends Controller
         DB::beginTransaction();
         try {
             $container = (new container())->processDestroy($id);
-            $selected = $this->getPosition($container, $container->getTable(), true);
-            $container->position = $selected->position;
-            $container->id = $selected->id;
-            if ($request->limit == 0) {
-                $container->page = ceil($container->position / (10));
-            } else {
-                $container->page = ceil($container->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($container, $container->getTable(), true);
+                $container->position = $selected->position;
+                $container->id = $selected->id;
+                if ($request->limit == 0) {
+                    $container->page = ceil($container->position / (10));
+                } else {
+                    $container->page = ceil($container->position / ($request->limit ?? 10));
+                }
+            }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
+
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('container', 'delete', $data);
             }
 
             DB::commit();
