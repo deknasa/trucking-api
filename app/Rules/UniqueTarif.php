@@ -28,7 +28,8 @@ class UniqueTarif implements Rule
     public function passes($attribute, $value)
     {
                   
-
+        $penyesuaian = request()->penyesuaian ?? '';
+        $jenisorder = request()->jenisorder_id ?? 0;
         $query = DB::table('tarif')
             ->from(
                 DB::raw("tarif as a with (readuncommitted)")
@@ -37,10 +38,9 @@ class UniqueTarif implements Rule
                 'a.id'
             )
              ->where('a.tujuan', '=', (request()->tujuan))
-             ->where('a.penyesuaian', '=', (request()->penyesuaian))
-             ->where('a.jenisorder_id', '=', (request()->jenisorder_id))
+             ->where('a.penyesuaian', '=', $penyesuaian)
+             ->where('a.jenisorder_id', '=', $jenisorder)
             ->first();
-
 
          
         if (isset($query))  {
