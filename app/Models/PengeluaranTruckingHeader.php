@@ -1604,7 +1604,7 @@ class PengeluaranTruckingHeader extends MyModel
                 'bank.namabank as bank_id',
                 'agen.namaagen as agen_id',
                 'container.keterangan as containerheader_id',
-                'trado.keterangan as trado',
+                'trado.kodetrado as trado',
                 'supir.namasupir as supir',
                 'pengeluarantruckingheader.pengeluarantrucking_nobukti',
                 'pengeluarantruckingheader.periodedari',
