@@ -94,6 +94,7 @@ class MandorController extends Controller
                 'namamandor' => $request->namamandor,
                 'keterangan' => $request->keterangan ?? '',
                 'statusaktif' => $request->statusaktif,
+                'tas_id' => $request->tas_id,
                 'user_id' => $request->user_id
             ];
             $mandor = (new Mandor())->processStore($data);
