@@ -120,11 +120,14 @@ class StorePengeluaranStokDetailRequest extends FormRequest
     }
     protected function withValidator($validator)
     {
-        $validator->after(function ($validator) {
+        $spk = DB::table('parameter')->where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
+        $validator->after(function ($validator) use ($spk) {
             $kelompok = $this->input('detail_stok_kelompok');
             // Check if all values in kelompok are the same
-            if (count(array_unique($kelompok)) > 1) {
-                $validator->errors()->add('detail_stok_kelompok', 'Semua Stok harus dalam kelompok yang sama.');
+            if($this->input('pengeluaranstok_id') ==$spk->text){
+                if (count(array_unique($kelompok)) > 1) {
+                    $validator->errors()->add('detail_stok_kelompok', 'Semua Stok harus dalam kelompok yang sama.');
+                }
             }
         });
     }
