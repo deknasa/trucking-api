@@ -102,7 +102,54 @@ class InputTrip extends MyModel
             $orderanTrucking = (new OrderanTrucking())->processStore($orderan);
             $nobuktiorderantrucking = $orderanTrucking->nobukti;
         } else {
-            $nobuktiorderantrucking = $jobtrucking;
+            if ($data['statusgudangsama'] == 204) {
+
+                $orderan = [
+                    'tglbukti' => $tglbukti,
+                    'container_id' => $data['container_id'],
+                    'agen_id' => $data['agen_id'],
+                    'jenisorder_id' => $data['jenisorder_id'],
+                    'pelanggan_id' => $data['pelanggan_id'],
+                    'tarifrincian_id' => $data['tarifrincian_id'],
+                    'nojobemkl' => $data['nojobemkl'] ?? '',
+                    'nocont' => $data['nocont'] ?? '',
+                    'noseal' => $data['noseal'] ?? '',
+                    'nojobemkl2' => $data['nojobemkl2'] ?? '',
+                    'nocont2' => $data['nocont2'] ?? '',
+                    'noseal2' => $data['noseal2'] ?? '',
+                    'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
+                    'statusperalihan' => $statusperalihan->id,
+                    'tglbataseditorderantrucking' => $tglBatasEdit,
+                    'inputtripmandor' =>  '1',
+                ];
+                $orderanTrucking = (new OrderanTrucking())->processStore($orderan);
+                $nobuktiorderantrucking = $orderanTrucking->nobukti;
+            } else if ($data['statuslongtrip'] != 66) {
+
+                $orderan = [
+                    'tglbukti' => $tglbukti,
+                    'container_id' => $data['container_id'],
+                    'agen_id' => $data['agen_id'],
+                    'jenisorder_id' => $data['jenisorder_id'],
+                    'pelanggan_id' => $data['pelanggan_id'],
+                    'tarifrincian_id' => $data['tarifrincian_id'],
+                    'nojobemkl' => $data['nojobemkl'] ?? '',
+                    'nocont' => $data['nocont'] ?? '',
+                    'noseal' => $data['noseal'] ?? '',
+                    'nojobemkl2' => $data['nojobemkl2'] ?? '',
+                    'nocont2' => $data['nocont2'] ?? '',
+                    'noseal2' => $data['noseal2'] ?? '',
+                    'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
+                    'statusperalihan' => $statusperalihan->id,
+                    'tglbataseditorderantrucking' => $tglBatasEdit,
+                    'inputtripmandor' =>  '1',
+                ];
+                $orderanTrucking = (new OrderanTrucking())->processStore($orderan);
+                $nobuktiorderantrucking = $orderanTrucking->nobukti;
+            } else {
+
+                $nobuktiorderantrucking = $jobtrucking;
+            }
         }
 
         $bukaTrip = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip with (readuncommitted)"))

@@ -200,6 +200,7 @@ class SuratPengantar extends MyModel
         $tglabsensi = request()->tglabsensi ?? '';
         $trado_id = request()->trado_id ?? '';
         $supir_id = request()->supir_id ?? '';
+        $isTripAsal = request()->isTripAsal ?? '';
 
         $tempsuratpengantar = '##tempsuratpengantar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsuratpengantar, function ($table) {
@@ -734,6 +735,9 @@ class SuratPengantar extends MyModel
         // }
         if (request()->jenisorder_id != null) {
             $query->where('suratpengantar.jenisorder_id', request()->jenisorder_id);
+        }
+        if($isTripAsal == 'true'){
+            $query->where('suratpengantar.statuslongtrip','!=',66);
         }
         if ($tglabsensi != '') {
             $query->where('suratpengantar.tglbukti', date('Y-m-d', strtotime($tglabsensi)));
