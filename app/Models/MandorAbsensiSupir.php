@@ -216,24 +216,24 @@ class MandorAbsensiSupir extends MyModel
             ->where('e.tglabsensi', date('Y-m-d', strtotime($date)))
             ->where('e.statusapproval', 3)
             ->leftJoin(DB::raw($tempAbsensi ." as b "), function ($join) {
-                $join->on('a.id', '=', 'b.trado_id');
-                $join->on(db::raw("isnull(a.supir_id,0)"), '=', db::raw("isnull(b.supir_id,0)"));
+                // $join->on('e.trado_id', '=', 'b.trado_id');
+                $join->on(db::raw("isnull(e.supirserap_id,0)"), '=', db::raw("isnull(b.supir_id,0)"));
             })
 
             // ->whereRaw("e.supirserap_id not in (select supirold_id from absensisupirdetail join absensisupirheader on absensisupirheader.nobukti = absensisupirdetail.nobukti where absensisupirheader.tglbukti='$tgl' and absensisupirdetail.trado_id = e.trado_id)")
             ->whereRaw("isnull(b.id,0)=0");
             // ->whereRaw("e.supirserap_id not in (select supir_id from absensisupirdetail join absensisupirheader on absensisupirheader.nobukti = absensisupirdetail.nobukti where absensisupirheader.tglbukti='$tgl')");
-        if (!$isAdmin) {
-            if ($isMandor) {
-                $trado->where('a.mandor_id',$isMandor->mandor_id);
-            // }else{
-            //     $trado->where('a.id',0);
-            }
-        }
+        // if (!$isAdmin) {
+        //     if ($isMandor) {
+        //         $trado->where('a.mandor_id',$isMandor->mandor_id);
+        //     // }else{
+        //     //     $trado->where('a.id',0);
+        //     }
+        // }
 
-        if ($tradoMilikSupir->text == 'YA') {
-            $trado->where('a.supir_id', '!=', 0);
-        }
+        // if ($tradoMilikSupir->text == 'YA') {
+        //     $trado->where('a.supir_id', '!=', 0);
+        // }
 
         DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id','namasupir_old','supir_id_old'], $trado);
 

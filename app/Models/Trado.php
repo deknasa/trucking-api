@@ -165,6 +165,7 @@ class Trado extends MyModel
         $aktif = request()->aktif ?? '';
         $trado_id = request()->trado_id ?? '';
         $supirserap = request()->supirserap ?? false;
+        $tglabsensi = date('Y-m-d',strtotime(request()->tglabsensi)) ?? '';
         $cabang = request()->cabang ?? 'TAS';
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
@@ -264,12 +265,15 @@ class Trado extends MyModel
             }
         }
 
+        if ($supirserap) {
+            $absensiId =  DB::table('absensisupirheader')->from(
+                DB::raw("absensisupirheader a with (readuncommitted)")
+            )->where('tglbukti', $tglabsensi)->first()->id;
+        }
+
         if ($absensiId != '') {
             $query->join('absensisupirdetail', 'trado.id', '=', 'absensisupirdetail.trado_id')
                 ->where('absensisupirdetail.absensi_id', '=', $absensiId);
-        }
-        if ($supirserap) {
-            $query->where('trado.supir_id', '!=', 0);
         }
 
         $this->filter($query);
