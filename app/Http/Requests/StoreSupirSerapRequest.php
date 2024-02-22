@@ -36,7 +36,7 @@ class StoreSupirSerapRequest extends FormRequest
                 new ValidasiTglSupirSerap()
             ],
             'trado' => 'required',
-            'supir' => 'required',
+            'supir' => '',
             'supirserap' => ['required', new ValidasiSupirSerap()],
         ];
 
@@ -56,11 +56,11 @@ class StoreSupirSerapRequest extends FormRequest
         $rulesSupir_id = [];
         if ($supir_id != null) {
             $rulesSupir_id = [
-                'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
+                'supir_id' => [ 'numeric', 'min:1', new ExistSupir()]
             ];
         } else if ($supir_id == null && $this->supir != '') {
             $rulesSupir_id = [
-                'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
+                'supir_id' => [ 'numeric', 'min:1', new ExistSupir()]
             ];
         }
 
