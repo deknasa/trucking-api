@@ -38,14 +38,35 @@ class MandorController extends Controller
         ]);
     }
 
-    public function cekValidasi($id)
+    public function cekValidasi(Request $request, $id)
     {
         $mandor = new Mandor();
+        $server = '';
         $cekdata = $mandor->cekvalidasihapus($id);
+
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+
+        if ($cekdata['kondisi'] == true) {
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $server = ' tas';
+            }
+            goto selesai;
+        }
+
+        $data['tas_id'] = $id;
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            $data = [
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
+            ];
+            $cektnl = $this->CekValidasiToTnl("mandor/" . $id . "/cekValidasi", $data);
+            return response($cektnl['data']);
+        }
+        selesai:
+
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
                 ->select(
-                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . "$server)' as keterangan")
                 )
                 ->where('kodeerror', '=', 'SATL')
                 ->get();
