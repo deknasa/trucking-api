@@ -24,6 +24,8 @@ use App\Http\Requests\DestroySuratPengantarRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalBatalMuatRequest;
+use App\Http\Requests\ApprovalEditTujuanRequest;
 use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\GetIndexRangeRequest;
 use App\Models\OrderanTrucking;
@@ -450,7 +452,7 @@ class SuratPengantarController extends Controller
      * @ClassName 
      * @Keterangan APPROVAL BATAL MUAT
      */
-    public function approvalBatalMuat(ApprovalKaryawanRequest $request)
+    public function approvalBatalMuat(ApprovalBatalMuatRequest $request)
     {
         DB::beginTransaction();
         try {
@@ -472,7 +474,7 @@ class SuratPengantarController extends Controller
      * @ClassName 
      * @Keterangan APPROVAL EDIT TUJUAN
      */
-    public function approvalEditTujuan(ApprovalKaryawanRequest $request)
+    public function approvalEditTujuan(ApprovalEditTujuanRequest $request)
     {
         DB::beginTransaction();
         try {
