@@ -55,7 +55,7 @@ class UpdateTradoRequest extends FormRequest
                 ->where('text', 'NON ABSENSI SUPIR')
                 ->first()->id ?? 0;
             if ($nonAktif->id == request()->statusaktif) {
-                $requiredDefault = false;
+                return false;
             }
             if ($cekValidasi != '') {
                 if ($cekValidasi->statusapproval == $nonApp->id) {
