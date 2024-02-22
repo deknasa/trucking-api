@@ -95,7 +95,7 @@ class StoreTradoRequest extends FormRequest
                 ->first()->id ?? 0;
 
             if ($nonAktif->id == request()->statusaktif) {
-                $requiredDefault = false;
+                return false;
             }
 
             if ($cekValidasi != '') {
