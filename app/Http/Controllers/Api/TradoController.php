@@ -138,6 +138,7 @@ class TradoController extends Controller
                 'photostnk' => ($request->photostnk) ? $this->storeFiles($request->photostnk, 'stnk') : '',
                 'photobpkb' => ($request->photobpkb) ? $this->storeFiles($request->photobpkb, 'bpkb') : '',
                 'phototrado' => ($request->phototrado) ? $this->storeFiles($request->phototrado, 'trado') : '',
+                'tas_id' => $request->tas_id,
             ];
 
 
