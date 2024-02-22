@@ -424,6 +424,8 @@ class InvoiceHeader extends MyModel
                 ->where('a.agen_id', $request->agen_id)
                 ->where('a.jenisorder_id', $request->jenisorder_id)
                 ->whereRaw("(a.statuscontainer_id in(" . $fullempty . ") or a.statusbatalmuat=" . $statusbatalmuat . ")")
+                ->leftjoin(DB::raw($tempkepelabuhan . " g"), 'a.jobtrucking', 'g.jobtrucking')
+                ->whereRaw("isnull(g.jobtrucking,'')=''")
                 ->groupBy('a.jobtrucking');
 
             // dd($querykepelabuhan->toSql());
