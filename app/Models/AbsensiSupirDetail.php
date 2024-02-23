@@ -130,6 +130,22 @@ class AbsensiSupirDetail extends MyModel
             ], $queryspgroup);
 
             $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
+            $userid = auth('api')->user()->id;
+            // dd($userid);
+    
+            $querymandor = db::table("mandordetail")->from(db::raw("mandordetail a with (readuncommitted)"))
+                ->select('a.mandor_id')
+                ->where('a.user_id', $userid);
+    
+            $tempmandordetail = '##tempmandordetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempmandordetail, function ($table) {
+                $table->id();
+                $table->unsignedBigInteger('mandor_id')->nullable();
+            });
+    
+            DB::table($tempmandordetail)->insertUsing([
+                'mandor_id',
+            ],  $querymandor);
 
 
             $params = [
@@ -215,15 +231,18 @@ class AbsensiSupirDetail extends MyModel
 
                     $isMandor = auth()->user()->isMandor();
                     $isAdmin = auth()->user()->isAdmin();
-                    $query->addSelect(DB::raw("(trim(trado.kodetrado)+' - '+trim(supir.namasupir)) as tradosupir"))
-                        ->where("$this->table.supir_id", '!=', 0)
-                        ->whereRaw("absentrado.kodeabsen is null");
 
                     if (!$isAdmin) {
                         if ($isMandor) {
-                            $query->where('trado.mandor_id', $isMandor->mandor_id);
+                            // $query->where('trado.mandor_id', $isMandor->mandor_id);
+                            $query->Join(DB::raw($tempmandordetail . " as mandordetail"), 'trado.mandor_id', 'mandordetail.mandor_id');
+
                         }
                     }
+                    $query->addSelect(DB::raw("(trim(trado.kodetrado)+' - '+trim(supir.namasupir)) as tradosupir"))
+                    ->where("$this->table.supir_id", '!=', 0)
+                    ->whereRaw("absentrado.kodeabsen is null");
+
                 }
                 if ($isProsesUangjalan == true) {
                     $query->where('absensisupirdetail.uangjalan', '!=', 0);

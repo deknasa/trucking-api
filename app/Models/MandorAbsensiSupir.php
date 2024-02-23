@@ -21,6 +21,25 @@ class MandorAbsensiSupir extends MyModel
         $isMandor = auth()->user()->isMandor();
         $isAdmin = auth()->user()->isAdmin();
 
+        $userid = auth('api')->user()->id;
+        // dd($userid);
+
+        $querymandor = db::table("mandordetail")->from(db::raw("mandordetail a with (readuncommitted)"))
+            ->select('a.mandor_id')
+            ->where('a.user_id', $userid);
+
+        $tempmandordetail = '##tempmandordetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempmandordetail, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('mandor_id')->nullable();
+        });
+
+        DB::table($tempmandordetail)->insertUsing([
+            'mandor_id',
+        ],  $querymandor);
+
+
+
         $statusaktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
         $statusabsensisupir = DB::table('parameter')->where('grp', 'STATUS ABSENSI SUPIR')->where('subgrp', 'STATUS ABSENSI SUPIR')->where('text', 'ABSENSI SUPIR')->first();
         $tradoMilikSupir = DB::table('parameter')->where('grp', 'ABSENSI SUPIR')->where('subgrp', 'TRADO MILIK SUPIR')->first();
@@ -99,7 +118,9 @@ class MandorAbsensiSupir extends MyModel
 
         if (!$isAdmin) {
             if ($isMandor) {
-                $absensisupirdetail->where('trado.mandor_id',$isMandor->mandor_id);
+                $absensisupirdetail->Join(DB::raw($tempmandordetail . " as mandordetail"), 'trado.mandor_id', 'mandordetail.mandor_id');
+
+                // $absensisupirdetail->where('trado.mandor_id',$isMandor->mandor_id);
             }
         }
         DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id','namasupir_old','supir_id_old'], $absensisupirdetail);
@@ -129,7 +150,9 @@ class MandorAbsensiSupir extends MyModel
          ->leftJoin(DB::raw("supir as d with (readuncommitted)"), 'absensisupirdetail.supirold_id', 'd.id');
      if (!$isAdmin) {
          if ($isMandor) {
-             $absensisupirdetail->where('trado.mandor_id',$isMandor->mandor_id);
+            $absensisupirdetail->Join(DB::raw($tempmandordetail . " as mandordetail"), 'trado.mandor_id', 'mandordetail.mandor_id');
+
+            //  $absensisupirdetail->where('trado.mandor_id',$isMandor->mandor_id);
          }
      }
 
@@ -169,7 +192,8 @@ class MandorAbsensiSupir extends MyModel
             // ->whereRaw("a.id not in (select trado_id from $tempMandor)");
         if (!$isAdmin) {
             if ($isMandor) {
-                $trados->where('a.mandor_id',$isMandor->mandor_id);
+                $trados->Join(DB::raw($tempmandordetail . " as mandordetail"), 'trado.mandor_id', 'mandordetail.mandor_id');
+                // $trados->where('a.mandor_id',$isMandor->mandor_id);
             // }else{
             //     $trado->where('a.id',0);
             }
