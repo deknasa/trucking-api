@@ -174,7 +174,6 @@ class Mandor extends MyModel
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'mandor.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("[user] with (readuncommitted)"), 'mandor.user_id', '=', db::raw("[user].id"));
-
     }
 
     public function createTemp(string $modelTable)
@@ -197,7 +196,7 @@ class Mandor extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'namamandor', 'keterangan','user', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'namamandor', 'keterangan', 'user', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -219,9 +218,9 @@ class Mandor extends MyModel
                                 $query = $query->where('parameter.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else  if ($filters['field'] == 'user') { 
-                                $query = $query->whereRaw("[user].[name] LIKE '%$filters[data]%'");                               
-                            }else {
+                            } else  if ($filters['field'] == 'user') {
+                                $query = $query->whereRaw("[user].[name] LIKE '%$filters[data]%'");
+                            } else {
                                 // $query = $query->where('mandor.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->whereRaw('mandor' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                             }
@@ -237,9 +236,9 @@ class Mandor extends MyModel
                                     $query = $query->orWhere('parameter.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                                } else  if ($filters['field'] == 'user') { 
-                                    $query = $query->orWhereRaw("[user].[name] LIKE '%$filters[data]%'");                               
-                                }else {
+                                } else  if ($filters['field'] == 'user') {
+                                    $query = $query->orWhereRaw("[user].[name] LIKE '%$filters[data]%'");
+                                } else {
                                     // $query = $query->orWhere('mandor.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                     $query = $query->OrwhereRaw('mandor' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                                 }
@@ -270,7 +269,6 @@ class Mandor extends MyModel
         $mandor->namamandor = $data['namamandor'];
         $mandor->keterangan = $data['keterangan'] ?? '';
         $mandor->statusaktif = $data['statusaktif'];
-        $mandor->user_id = $data['user_id'];
         $mandor->tas_id = $data['tas_id'] ?? '';
         $mandor->modifiedby = auth('api')->user()->user;
         $mandor->info = html_entity_decode(request()->info);
@@ -281,7 +279,7 @@ class Mandor extends MyModel
             throw new \Exception('Error storing mandor.');
         }
 
-        (new LogTrail())->processStore([
+        $mandorLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($mandor->getTable()),
             'postingdari' => 'ENTRY MANDOR',
             'idtrans' => $mandor->id,
@@ -291,6 +289,28 @@ class Mandor extends MyModel
             'modifiedby' => $mandor->modifiedby
         ]);
 
+        if (is_iterable($data['users'])) {
+            $mandorDetails = [];
+            for ($i = 0; $i < count($data['users']); $i++) {
+                $mandorDetail = (new MandorDetail())->processStore($mandor, [
+                    'user_id' => $data['users'][$i],
+                    'tas_id' => $data['tas_id'] ?? ''
+                ]);
+
+                $mandorDetails[] = $mandorDetail->toArray();
+            }
+
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($mandorDetail->getTable()),
+                'postingdari' => 'ENTRY MANDOR DETAIL',
+                'idtrans' =>  $mandorLogTrail->id,
+                'nobuktitrans' => $mandor->id,
+                'aksi' => 'ENTRY',
+                'datajson' => $mandorDetails,
+                'modifiedby' => auth('api')->user()->user,
+            ]);
+        }
+
         return $mandor;
     }
 
@@ -299,7 +319,6 @@ class Mandor extends MyModel
         $mandor->namamandor = $data['namamandor'];
         $mandor->keterangan = $data['keterangan'] ?? '';
         $mandor->statusaktif = $data['statusaktif'];
-        $mandor->user_id = $data['user_id'];
         $mandor->modifiedby = auth('api')->user()->user;
         $mandor->info = html_entity_decode(request()->info);
 
@@ -309,7 +328,7 @@ class Mandor extends MyModel
             throw new \Exception('Error updating mandor.');
         }
 
-        (new LogTrail())->processStore([
+        $mandorLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($mandor->getTable()),
             'postingdari' => 'EDIT MANDOR',
             'idtrans' => $mandor->id,
@@ -319,15 +338,57 @@ class Mandor extends MyModel
             'modifiedby' => $mandor->modifiedby
         ]);
 
+
+        if (is_iterable($data['users'])) {
+            MandorDetail::where('mandor_id', $mandor->id)->delete();
+            $mandorDetails = [];
+            for ($i = 0; $i < count($data['users']); $i++) {
+                $mandorDetail = (new MandorDetail())->processStore($mandor, [
+                    'user_id' => $data['users'][$i],
+                    'tas_id' => $data['tas_id'] ?? ''
+                ]);
+
+                $mandorDetails[] = $mandorDetail->toArray();
+            }
+
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($mandorDetail->getTable()),
+                'postingdari' => 'EDIT MANDOR DETAIL',
+                'idtrans' =>  $mandorLogTrail->id,
+                'nobuktitrans' => $mandor->id,
+                'aksi' => 'EDIT',
+                'datajson' => $mandorDetails,
+                'modifiedby' => auth('api')->user()->user,
+            ]);
+        } else {
+            $checkDetailExist = DB::table('mandordetail')->from(DB::raw("mandordetail with (readuncommitted)"))->where('mandor_id', $mandor->id)->first();
+            if ($checkDetailExist != '') {
+                $mandorDetail = DB::table('mandordetail')->from(DB::raw("mandordetail with (readuncommitted)"))->where('mandor_id', $mandor->id)->get();
+                MandorDetail::where('mandor_id', $mandor->id)->delete();
+
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper('mandordetail'),
+                    'postingdari' => 'EDIT MANDOR DELETE DETAIL',
+                    'idtrans' =>  $mandorLogTrail->id,
+                    'nobuktitrans' => $mandor->id,
+                    'aksi' => 'EDIT',
+                    'datajson' => $mandorDetail->toArray(),
+                    'modifiedby' => auth('api')->user()->user,
+                ]);
+            }
+        }
+
         return $mandor;
     }
 
     public function processDestroy($id): Mandor
     {
+
+        $mandorDetails = MandorDetail::lockForUpdate()->where('mandor_id', $id)->get();
         $mandor = new Mandor();
         $mandor = $mandor->lockAndDestroy($id);
 
-        (new LogTrail())->processStore([
+        $mandorLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($mandor->getTable()),
             'postingdari' => 'DELETE MANDOR',
             'idtrans' => $mandor->id,
@@ -335,6 +396,16 @@ class Mandor extends MyModel
             'aksi' => 'DELETE',
             'datajson' => $mandor->toArray(),
             'modifiedby' => auth('api')->user()->user
+        ]);
+
+        (new LogTrail())->processStore([
+            'namatabel' => 'MANDORDETAIL',
+            'postingdari' => 'DELETE MANDOR DETAIL',
+            'idtrans' => $mandorLogTrail['id'],
+            'nobuktitrans' => $mandor->id,
+            'aksi' => 'DELETE',
+            'datajson' => $mandorDetails->toArray(),
+            'modifiedby' => auth('api')->user()->name
         ]);
 
         return $mandor;

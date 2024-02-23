@@ -12,6 +12,7 @@ use App\Models\Parameter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\RangeExportReportRequest;
+use App\Models\MandorDetail;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -121,6 +122,7 @@ class MandorController extends Controller
                 'namamandor' => $request->namamandor,
                 'keterangan' => $request->keterangan ?? '',
                 'statusaktif' => $request->statusaktif,
+                'users' => $request->users,
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
                 'tas_id' => $request->tas_id,
                 'user_id' => $request->user_id
@@ -157,7 +159,8 @@ class MandorController extends Controller
     {
         return response([
             'status' => true,
-            'data' => $mandor->findAll($mandor->id)
+            'data' => $mandor->findAll($mandor->id),
+            'detail' => (new MandorDetail())->findAll($mandor->id)
         ]);
     }
 
@@ -173,6 +176,7 @@ class MandorController extends Controller
                 'namamandor' => $request->namamandor,
                 'keterangan' => $request->keterangan ?? '',
                 'statusaktif' => $request->statusaktif,
+                'users' => $request->users,
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
                 'user_id' => $request->user_id
             ];
