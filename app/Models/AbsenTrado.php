@@ -55,6 +55,10 @@ class AbsenTrado extends MyModel
             ->first();
 
         $aktif = request()->aktif ?? '';
+        $trado_id = request()->trado_id ?? '';
+        $supir_id = request()->supir_id ?? '';
+        $tglabsensi = request()->tglabsensi ?? '';
+        $dari = request()->dari ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -87,6 +91,23 @@ class AbsenTrado extends MyModel
                 ->first();
 
             $query->where('absentrado.statusaktif', '=', $statusaktif->id);
+        }
+
+        if ($dari == 'mandorabsensisupir') {
+            $isSupirSerap = (new SupirSerap())->isSupirSerap($trado_id,$supir_id,date('Y-m-d',strtotime($tglabsensi)));
+            if ($isSupirSerap) {
+                $parameter = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->select('text')
+                    ->where('grp', '=', 'ABSENSI SUPIR SERAP')
+                    ->get();
+                
+                $query->whereNotIn('absentrado.id', $parameter->toArray());
+            }
+            $isUsedTrip = (new SuratPengantar())->isUsedTrip($trado_id,$supir_id,date('Y-m-d',strtotime($tglabsensi)));
+            if ($isUsedTrip) {
+                $query->where('absentrado.id', 0);
+            }
+
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
