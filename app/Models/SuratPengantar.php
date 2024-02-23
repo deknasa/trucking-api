@@ -1553,7 +1553,7 @@ class SuratPengantar extends MyModel
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
-            $table->string('nobukti', 50)->unique();
+            $table->string('nobukti', 50)->nullable();
             $table->string('jobtrucking', 50)->nullable();
             $table->date('tglbukti')->nullable();
             $table->string('nosp', 50)->nullable();
