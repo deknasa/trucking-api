@@ -165,10 +165,27 @@ class Trado extends MyModel
         $aktif = request()->aktif ?? '';
         $trado_id = request()->trado_id ?? '';
         $supirserap = request()->supirserap ?? false;
-        $tglabsensi = date('Y-m-d',strtotime(request()->tglabsensi)) ?? '';
+        $tglabsensi = date('Y-m-d', strtotime(request()->tglabsensi)) ?? '';
         $cabang = request()->cabang ?? 'TAS';
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
+        $userid = auth('api')->user()->id;
+        // dd($userid);
+
+        $querymandor = db::table("mandordetail")->from(db::raw("mandordetail a with (readuncommitted)"))
+            ->select('a.mandor_id')
+            ->where('a.user_id', $userid);
+
+        $tempmandordetail = '##tempmandordetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempmandordetail, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('mandor_id')->nullable();
+        });
+
+        DB::table($tempmandordetail)->insertUsing([
+            'mandor_id',
+        ],  $querymandor);
+
 
         $isMandor = auth()->user()->isMandor();
         $isAdmin = auth()->user()->isAdmin();
@@ -249,6 +266,14 @@ class Trado extends MyModel
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'trado.supir_id', 'supir.id');
         // ->where("trado.id" ,"=","37");
 
+        if (!$isAdmin) {
+            if ($isMandor) {
+             $query->Join(DB::raw($tempmandordetail . " as mandordetail"), 'trado.mandor_id', 'mandordetail.mandor_id');
+
+                // $query->where('trado.mandor_id', $isMandor->mandor_id);
+            }
+        }
+
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
@@ -259,11 +284,7 @@ class Trado extends MyModel
 
             $query->where('trado.statusaktif', '=', $statusaktif->id);
         }
-        if (!$isAdmin) {
-            if ($isMandor) {
-                $query->where('trado.mandor_id', $isMandor->mandor_id);
-            }
-        }
+
 
         if ($supirserap) {
             $absensiId =  DB::table('absensisupirheader')->from(
@@ -968,7 +989,7 @@ class Trado extends MyModel
             if ($isMandor) {
                 $data['mandor_id'] = $isMandor->mandor_id;
             }
-            
+
             $trado->keterangan = $data['keterangan'] ?? '';
             $trado->kodetrado = $data['kodetrado'];
             $trado->statusaktif = $data['statusaktif'];
