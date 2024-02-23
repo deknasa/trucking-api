@@ -689,4 +689,22 @@ class AbsensiSupirDetail extends MyModel
         }
         return $absensiSupirDetail;
     }
+    public function processUpdate(AbsensiSupirDetail $absensiSupirDetail, array $data): AbsensiSupirDetail
+    {
+        $absensiSupirDetail->absensi_id = $data['absensi_id'] ?? '';
+        $absensiSupirDetail->nobukti = $data['nobukti'] ?? '';
+        $absensiSupirDetail->trado_id = $data['trado_id'] ?? '';
+        $absensiSupirDetail->absen_id = $data['absen_id'] ?? '';
+        $absensiSupirDetail->supir_id = $data['supir_id'] ?? '';
+        $absensiSupirDetail->supirold_id = $data['supirold_id'] ?? '';
+        $absensiSupirDetail->jam = $data['jam'] ?? '';
+        $absensiSupirDetail->uangjalan = $data['uangjalan'] ?? '';
+        $absensiSupirDetail->keterangan = $data['keterangan'] ?? '';
+        $absensiSupirDetail->modifiedby = $data['modifiedby'] ?? '';
+
+        if (!$absensiSupirDetail->save()) {
+            throw new \Exception("Gagal menyimpan absensi supir detail.");
+        }
+        return $absensiSupirDetail;
+    }
 }

@@ -613,7 +613,18 @@ class MandorAbsensiSupir extends MyModel
         }
         if ($absensiSupirDetail) {
             $jam = $absensiSupirDetail->jam;
-            $absensiSupirDetail->delete();
+            return $this->processUpdate($absensiSupirDetail,  [
+                'absensi_id' => $AbsensiSupirHeader->id,
+                'nobukti' => $AbsensiSupirHeader->nobukti,
+                'trado_id' => $data['trado_id'],
+                'supir_id' => $data['supir_id'],
+                'supirold_id' => $data['supirold_id'],
+                'keterangan' => $data['keterangan'],
+                'absen_id' => $data['absen_id'] ?? '',
+                'jam' => $jam,
+                'modifiedby' => $AbsensiSupirHeader->modifiedby,
+            ]);
+            // $absensiSupirDetail->delete();
         }
 
         $absensiSupirDetail = AbsensiSupirDetail::processStore($AbsensiSupirHeader, [
@@ -652,19 +663,19 @@ class MandorAbsensiSupir extends MyModel
     public function processUpdate(AbsensiSupirDetail $AbsensiSupirDetail, array $data)
     {
         $AbsensiSupirHeader = AbsensiSupirHeader::where('id', $AbsensiSupirDetail->absensi_id)->first();
-        $AbsensiSupirDetail = AbsensiSupirDetail::where('id', $AbsensiSupirDetail->id)->lockForUpdate()->first();
-        $AbsensiSupirDetail->delete();
-        $tidakadasupir = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'TIDAK ADA SUPIR')->where('subgrp', 'TIDAK ADA SUPIR')->first();
-        if ($tidakadasupir->text == $data['absen_id']) {
-            $data['supir_id'] = "";
-        }
+        $AbsensiSupirData = AbsensiSupirDetail::where('id', $AbsensiSupirDetail->id)->lockForUpdate()->first();
+        // $AbsensiSupirDetail->delete();
+        // $tidakadasupir = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'TIDAK ADA SUPIR')->where('subgrp', 'TIDAK ADA SUPIR')->first();
+        // if ($tidakadasupir->text == $data['absen_id']) {
+        //     $data['supir_id'] = "";
+        // }
         // dd($AbsensiSupirDetail);
-
-        $absensiSupirDetail = AbsensiSupirDetail::processStore($AbsensiSupirHeader, [
+        $absensiSupirDetail = AbsensiSupirDetail::processUpdate($AbsensiSupirData, [
             'absensi_id' => $AbsensiSupirHeader->id,
             'nobukti' => $AbsensiSupirHeader->nobukti,
             'trado_id' => $data['trado_id'],
             'supir_id' => $data['supir_id'],
+            'supirold_id' => $data['supirold_id'],
             'keterangan' => $data['keterangan'],
             'absen_id' => $data['absen_id'] ?? '',
             'jam' => $data['jam'],
