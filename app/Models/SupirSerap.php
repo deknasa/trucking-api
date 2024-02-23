@@ -298,9 +298,9 @@ class SupirSerap extends MyModel
             DB::raw("parameter with (readuncommitted)")
         )->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
-        for ($i = 0; $i < count($data['serapId']); $i++) {
+        
 
-            $supirSerap = SupirSerap::find($data['serapId'][$i]);
+            $supirSerap = SupirSerap::find($data['serapId']);
             if ($supirSerap->statusapproval == $statusApproval->id) {
                 $supirSerap->statusapproval = $statusNonApproval->id;
                 $supirSerap->tglapproval = date('Y-m-d', strtotime("1900-01-01"));
@@ -323,8 +323,69 @@ class SupirSerap extends MyModel
                 'datajson' => $supirSerap->toArray(),
                 'modifiedby' => auth('api')->user()->user
             ]);
-        }
+        
 
         return $supirSerap;
+    }
+
+    function processStoreToAbsensi(SupirSerap $supirSerap) {
+        
+        $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti',$supirSerap->tglabsensi)->first();
+        $jam = date('H:i',strtotime('now'));
+
+        $absensiSupirDetail = AbsensiSupirDetail::processStore($absensiSupirHeader, [
+            'absensi_id' => $absensiSupirHeader->id,
+            'nobukti' => $absensiSupirHeader->nobukti,
+            'trado_id' => $supirSerap->trado_id,
+            'supir_id' => $supirSerap->supirserap_id,
+            'supirold_id' => $supirSerap->supirserap_id,
+            'keterangan' => '',
+            'absen_id' => '',
+            'jam' => $jam,
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        (new LogTrail())->processStore([
+            'namatabel' => $this->table,
+            'postingdari' => strtoupper('ENTRY ABSENSI SUPIR Detail'),
+            'idtrans' => $absensiSupirDetail->id,
+            'nobuktitrans' => $absensiSupirHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $absensiSupirDetail->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $absensiSupirDetail;
+    
+    }
+    function processDestroyToAbsensi(SupirSerap $supirSerap) {
+        
+        $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti',$supirSerap->tglabsensi)->first();
+        $jam = date('H:i',strtotime('now'));
+        $detailLog='';
+        $detailLog='';
+        $absensiSupirDetail = (new AbsensiSupirDetail())->from(DB::raw("absensisupirdetail as detail with (readuncommitted)"))
+            ->select('detail.id','header.nobukti','detail.uangjalan')
+            ->whereRaw("detail.trado_id = $supirSerap->trado_id and header.tglbukti = '$supirSerap->tglabsensi' and (detail.supir_id = $supirSerap->supirserap_id or detail.supirold_id = $supirSerap->supirserap_id)")
+            ->leftJoin(DB::raw("absensisupirheader as header with (readuncommitted)"), 'header.id', 'detail.absensi_id')
+            ->first();
+        if ($absensiSupirDetail) {
+            $detailLog = $absensiSupirDetail->toArray();
+            $absensiSupirDetail->delete();
+        }
+
+
+        (new LogTrail())->processStore([
+            'namatabel' => $this->table,
+            'postingdari' => strtoupper('delete ABSENSI SUPIR Detail'),
+            'idtrans' => $absensiSupirDetail->id ?? 0,
+            'nobuktitrans' => $absensiSupirDetail->nobukti ?? '',
+            'aksi' => 'ENTRY',
+            'datajson' => $detailLog,
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $absensiSupirDetail;
+    
     }
 }
