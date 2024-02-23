@@ -18,6 +18,7 @@ class ValidasiSupirSerapApproval implements Rule
     public $trado;
     public $tglabsen;
     public $nobukti;
+    public $tbl_dari;
 
     public function __construct()
     {
@@ -45,13 +46,24 @@ class ValidasiSupirSerapApproval implements Rule
         $this->trado = $supirSerap->kodetrado;
         $this->tglabsen = $supirSerap->tglabsensi;
         $query = DB::table('absensisupirdetail')->from(DB::raw("absensisupirdetail as detail with (readuncommitted)"))
-            ->select('header.nobukti')
+            ->select('header.nobukti','detail.uangjalan')
             ->whereRaw("detail.trado_id = $supirSerap->trado_id and header.tglbukti = '$supirSerap->tglabsensi' and (detail.supir_id = $supirSerap->supirserap_id or detail.supirold_id = $supirSerap->supirserap_id)")
             ->leftJoin(DB::raw("absensisupirheader as header with (readuncommitted)"), 'header.id', 'detail.absensi_id')
             ->first();
+            
+        if(is_null($query)){
+            return true;
+        }
+        $absensiApproval = DB::table('absensisupirapprovalheader')->from(DB::raw("absensisupirapprovalheader as detail with (readuncommitted)"))->where('absensisupir_nobukti',$query->nobukti)->first();
+        if ($absensiApproval) {
+            $this->nobukti = $absensiApproval->pengeluaran_nobukti;
+            $this->tbl_dari = "PENGELUARAN";
+            return false;
+        }
 
-        if ($query != '') {
+        if (intval($query->uangjalan)) {
             $this->nobukti = $query->nobukti;
+            $this->tbl_dari = "ABSENSI";
             return false;
         }
 
@@ -65,6 +77,6 @@ class ValidasiSupirSerapApproval implements Rule
      */
     public function message()
     {
-        return 'supir serap '. $this->supir .' di trado '.$this->trado.' tgl '. date('d-m-Y',strtotime($this->tglabsen)) .' SUDAH DIINPUT DI ABSENSI '.$this->nobukti;
+        return 'supir serap '. $this->supir .' di trado '.$this->trado.' tgl '. date('d-m-Y',strtotime($this->tglabsen)) .' SUDAH DIINPUT DI '.$this->tbl_dari.' '.$this->nobukti;
     }
 }

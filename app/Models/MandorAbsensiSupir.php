@@ -194,48 +194,48 @@ class MandorAbsensiSupir extends MyModel
 
         //supir serap yang belum diisi
         $tgl = date('Y-m-d', strtotime($date));
-        $trado = DB::table('trado as a')
-            ->select(
-                // DB::raw('isnull(b.id,null) as id'),
-                'a.id as trado_id',
-                'a.kodetrado as kodetrado',
-                'c.namasupir as namasupir',
-                DB::raw('null as keterangan'),
-                DB::raw('null as absentrado'),
-                DB::raw('null as absen_id'),
-                DB::raw("null as jam"),
-                DB::raw("null as tglbukti"),
-                'c.id as supir_id',
-                'c.namasupir as namasupir_old',
-                'c.id as supir_id_old',
-            )
-            ->where('a.statusaktif', $statusaktif->id)
-            ->where('a.statusabsensisupir', $statusabsensisupir->id)
-             ->Join('supirserap as e', 'e.trado_id', 'a.id')
-            ->leftJoin('supir as c', 'e.supirserap_id', 'c.id')
-            ->where('e.tglabsensi', date('Y-m-d', strtotime($date)))
-            ->where('e.statusapproval', 3)
-            ->leftJoin(DB::raw($tempAbsensi ." as b "), function ($join) {
-                // $join->on('e.trado_id', '=', 'b.trado_id');
-                $join->on(db::raw("isnull(e.supirserap_id,0)"), '=', db::raw("isnull(b.supir_id,0)"));
-            })
+        // $trado = DB::table('trado as a')
+        //     ->select(
+        //         // DB::raw('isnull(b.id,null) as id'),
+        //         'a.id as trado_id',
+        //         'a.kodetrado as kodetrado',
+        //         'c.namasupir as namasupir',
+        //         DB::raw('null as keterangan'),
+        //         DB::raw('null as absentrado'),
+        //         DB::raw('null as absen_id'),
+        //         DB::raw("null as jam"),
+        //         DB::raw("null as tglbukti"),
+        //         'c.id as supir_id',
+        //         'c.namasupir as namasupir_old',
+        //         'c.id as supir_id_old',
+        //     )
+        //     ->where('a.statusaktif', $statusaktif->id)
+        //     ->where('a.statusabsensisupir', $statusabsensisupir->id)
+        //      ->Join('supirserap as e', 'e.trado_id', 'a.id')
+        //     ->leftJoin('supir as c', 'e.supirserap_id', 'c.id')
+        //     ->where('e.tglabsensi', date('Y-m-d', strtotime($date)))
+        //     ->where('e.statusapproval', 3)
+        //     ->leftJoin(DB::raw($tempAbsensi ." as b "), function ($join) {
+        //         // $join->on('e.trado_id', '=', 'b.trado_id');
+        //         $join->on(db::raw("isnull(e.supirserap_id,0)"), '=', db::raw("isnull(b.supir_id,0)"));
+        //     })
 
-            // ->whereRaw("e.supirserap_id not in (select supirold_id from absensisupirdetail join absensisupirheader on absensisupirheader.nobukti = absensisupirdetail.nobukti where absensisupirheader.tglbukti='$tgl' and absensisupirdetail.trado_id = e.trado_id)")
-            ->whereRaw("isnull(b.id,0)=0");
-            // ->whereRaw("e.supirserap_id not in (select supir_id from absensisupirdetail join absensisupirheader on absensisupirheader.nobukti = absensisupirdetail.nobukti where absensisupirheader.tglbukti='$tgl')");
-        // if (!$isAdmin) {
-        //     if ($isMandor) {
-        //         $trado->where('a.mandor_id',$isMandor->mandor_id);
-        //     // }else{
-        //     //     $trado->where('a.id',0);
-        //     }
-        // }
+        //     // ->whereRaw("e.supirserap_id not in (select supirold_id from absensisupirdetail join absensisupirheader on absensisupirheader.nobukti = absensisupirdetail.nobukti where absensisupirheader.tglbukti='$tgl' and absensisupirdetail.trado_id = e.trado_id)")
+        //     ->whereRaw("isnull(b.id,0)=0");
+        //     // ->whereRaw("e.supirserap_id not in (select supir_id from absensisupirdetail join absensisupirheader on absensisupirheader.nobukti = absensisupirdetail.nobukti where absensisupirheader.tglbukti='$tgl')");
+        // // if (!$isAdmin) {
+        // //     if ($isMandor) {
+        // //         $trado->where('a.mandor_id',$isMandor->mandor_id);
+        // //     // }else{
+        // //     //     $trado->where('a.id',0);
+        // //     }
+        // // }
 
-        // if ($tradoMilikSupir->text == 'YA') {
-        //     $trado->where('a.supir_id', '!=', 0);
-        // }
+        // // if ($tradoMilikSupir->text == 'YA') {
+        // //     $trado->where('a.supir_id', '!=', 0);
+        // // }
 
-        DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id','namasupir_old','supir_id_old'], $trado);
+        // DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id','namasupir_old','supir_id_old'], $trado);
 
         $query = DB::table($tempMandor)->from(DB::raw("$tempMandor as a"))
             ->select(

@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\ApprovalSupirSerapRequest;
+use Throwable;
+use App\Models\Error;
+use App\Models\Parameter;
 use App\Models\SupirSerap;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSupirSerapRequest;
 use App\Http\Requests\UpdateSupirSerapRequest;
-use App\Models\Error;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Throwable;
+use App\Http\Requests\ApprovalSupirSerapRequest;
 
 class SupirSerapController extends Controller
 {
@@ -152,7 +153,19 @@ class SupirSerapController extends Controller
             $data = [
                 'serapId' => $request->serapId
             ];
-            $supirSerap = (new SupirSerap())->processApproval($data);
+            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+            for ($i = 0; $i < count($data['serapId']); $i++) {
+                $supirSerap = (new SupirSerap())->processApproval(["serapId"=>$data['serapId'][$i]]);
+                if ($supirSerap) {
+                    if ($supirSerap->statusapproval == $statusApproval->id) {
+                        (new SupirSerap())->processStoreToAbsensi($supirSerap);
+                    }else{
+                        (new SupirSerap())->processDestroyToAbsensi($supirSerap);
+                    }
+                }
+            }
 
             DB::commit();
             return response([
