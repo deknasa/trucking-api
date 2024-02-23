@@ -30,6 +30,50 @@ class Mandor extends MyModel
 
         $aktif = request()->aktif ?? '';
 
+        $querymandor = db::table("mandordetail")->from(db::raw("mandordetail a with (readuncommitted)"))
+            ->select(
+                'a.mandor_id',
+                'b.user as name'
+                )
+                ->join(db::raw("[user] b with (readuncommitted)"),'a.user_id','b.id')
+                ->orderBy('a.mandor_id','asc');
+
+        $tempmandordetail = '##tempmandordetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempmandordetail, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('mandor_id')->nullable();
+            $table->longText('name')->nullable();
+        });
+
+        DB::table($tempmandordetail)->insertUsing([
+            'mandor_id',
+            'name',
+        ],  $querymandor);
+
+        $tempmandordetailrekap = '##tempmandordetailrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempmandordetailrekap, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('mandor_id')->nullable();
+            $table->longText('name')->nullable();
+        });
+
+        $querylist=db::table($tempmandordetail)->from(db::raw($tempmandordetail . " b"))
+        ->select(
+            db::raw("
+             distinct b.mandor_id,Stuff((SELECT DISTINCT ', ' + a.name
+              FROM ".$tempmandordetail ." a
+              WHERE  a.mandor_id=B.mandor_id
+              FOR XML PATH('')), 1, 2, '') AS name
+            ")
+        );
+
+        DB::table($tempmandordetailrekap)->insertUsing([
+            'mandor_id',
+            'name',
+        ],  $querylist);
+
+
+
         $query = DB::table($this->table)->from(DB::raw("mandor with (readuncommitted)"))
             ->select(
                 'mandor.id',
@@ -47,7 +91,8 @@ class Mandor extends MyModel
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'mandor.statusaktif', '=', 'parameter.id')
-            ->leftJoin(DB::raw("[user] with (readuncommitted)"), 'mandor.user_id', '=', db::raw("[user].id"));
+            // ->leftJoin(DB::raw("[user] with (readuncommitted)"), 'mandor.user_id', '=', db::raw("[user].id"));
+            ->leftJoin(DB::raw($tempmandordetailrekap . " as [user]"), 'mandor.id', db::raw("[user].mandor_id"));
 
 
 
