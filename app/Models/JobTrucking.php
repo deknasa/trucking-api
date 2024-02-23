@@ -89,6 +89,21 @@ class JobTrucking extends MyModel
             $table->string('jobtrucking', 1000)->nullable();
         });
 
+        $isGandengan = DB::table('parameter')->from(
+            DB::raw("parameter as a with (readuncommitted)")
+        )
+            ->select(
+                'a.id',
+                'a.text'
+            )
+            ->where('a.grp', '=', 'JOBTRUCKING')
+            ->where('a.subgrp', '=', 'GANDENGAN')
+            ->first();
+
+        if ($isGandengan->text == 'TIDAK') {
+            goto tidakgandengan;
+        }
+
         if (isset($query)) {
 
 
@@ -231,6 +246,7 @@ class JobTrucking extends MyModel
                 ->where('a.tarif_id', '=', request()->tarif_id);
         } else {
             // dd('test');
+            tidakgandengan:
             $queryjob = DB::table('suratpengantar')->from(
                 DB::raw("suratpengantar as a with(readuncommitted)")
             )
@@ -399,6 +415,10 @@ class JobTrucking extends MyModel
         $edit = request()->edit ?? false;
         $idtrip = request()->idtrip ?? '';
 
+        if ($isGandengan->text == 'TIDAK') {
+            goto tidakgandengan2;
+        }
+
         if (isset($querygerobak)) {
 
             // dd(request()->gandengan_id);
@@ -449,6 +469,7 @@ class JobTrucking extends MyModel
                 }
             }
         } else {
+            tidakgandengan2:
             // $querydata->where('a.trado_id', '=', request()->trado_id);
             //  dd($querydata->get());
             $querydata->where('a.pelanggan_id', '=', request()->pelanggan_id);
