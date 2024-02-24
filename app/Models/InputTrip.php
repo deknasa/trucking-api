@@ -153,8 +153,9 @@ class InputTrip extends MyModel
         }
 
         $bukaTrip = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip with (readuncommitted)"))
-            ->where('tglbukti', date('Y-m-d', strtotime($data['tglbukti'])))
-            ->first();
+        ->where('tglbukti', date('Y-m-d', strtotime($data['tglbukti'])))
+        ->whereRaw("tglbatas>=getdate()")
+        ->first();
 
         $approvalId = '';
         if ($bukaTrip != null) {

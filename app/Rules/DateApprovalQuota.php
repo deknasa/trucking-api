@@ -38,8 +38,9 @@ class DateApprovalQuota implements Rule
         $allowed = false;
         $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JAMBATASINPUTTRIP')->where('subgrp', 'JAMBATASINPUTTRIP')->first();
         $getFormat = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'INPUT TRIP')->where('subgrp', 'FORMAT BATAS INPUT')->first();
-
+        $getapproval = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->first();
         $bukaAbsensi = SuratPengantarApprovalInputTrip::where('tglbukti', '=', $date)
+            ->where('statusapproval',$getapproval)
             ->sum('jumlahtrip');
         if ($date == $today) {
             $allowed = true;
