@@ -2679,4 +2679,9 @@ class SuratPengantar extends MyModel
 
         return $data;
     }
+
+    public function isUsedTrip($trado_id, $supir_id, $tglabsensi) {
+        $query = $this->where('supir_id',$supir_id)->where('trado_id',$trado_id)->where('tglbukti',$tglabsensi);
+        return $query->first();
+    }
 }

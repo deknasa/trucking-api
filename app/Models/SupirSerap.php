@@ -217,6 +217,13 @@ class SupirSerap extends MyModel
         return $query->first();
     }
 
+    public function isSupirSerap($trado_id,$supir_id,$tglabsensi) {
+        $query = $this
+        ->where('supirserap_id',$supir_id)
+        ->where('tglabsensi',$tglabsensi);
+        return $query->count();
+    }
+
     public function processStore(array $data): SupirSerap
     {
         $supirSerap = new SupirSerap();
