@@ -192,7 +192,7 @@ class MandorAbsensiSupir extends MyModel
             // ->whereRaw("a.id not in (select trado_id from $tempMandor)");
         if (!$isAdmin) {
             if ($isMandor) {
-                $trados->Join(DB::raw($tempmandordetail . " as mandordetail"), 'trado.mandor_id', 'mandordetail.mandor_id');
+                $trados->Join(DB::raw($tempmandordetail . " as mandordetail"), 'a.mandor_id', 'mandordetail.mandor_id');
                 // $trados->where('a.mandor_id',$isMandor->mandor_id);
             // }else{
             //     $trado->where('a.id',0);
