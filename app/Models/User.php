@@ -68,7 +68,7 @@ class User extends Authenticatable
 
         if ($userMandor->count()) {
             //check user has mandor
-            return $this->select('mandor.id as mandor_id')->rightJoin(DB::raw("mandor with (readuncommitted)"), 'mandor.user_id', 'user.id')->where('mandor.user_id', $this->id)->first();
+            return $this->select('mandor.id as mandor_id')->rightJoin(DB::raw("mandordetail as mandor  with (readuncommitted)"), 'mandor.user_id', 'user.id')->where('mandor.user_id', $this->id)->first();
         }
         return false;
     }

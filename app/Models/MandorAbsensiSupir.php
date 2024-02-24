@@ -21,6 +21,7 @@ class MandorAbsensiSupir extends MyModel
         $isMandor = auth()->user()->isMandor();
         $isAdmin = auth()->user()->isAdmin();
 
+        // dd($isMandor);
         $userid = auth('api')->user()->id;
         // dd($userid);
 
@@ -39,6 +40,7 @@ class MandorAbsensiSupir extends MyModel
         ],  $querymandor);
 
 
+        // dd(db::table($tempmandordetail)->get());
 
         $statusaktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
         $statusabsensisupir = DB::table('parameter')->where('grp', 'STATUS ABSENSI SUPIR')->where('subgrp', 'STATUS ABSENSI SUPIR')->where('text', 'ABSENSI SUPIR')->first();
@@ -189,6 +191,7 @@ class MandorAbsensiSupir extends MyModel
             ->where('a.statusabsensisupir', $statusabsensisupir->id)
             ->whereRaw("isnull(b.id,0)=0");
             
+
             // ->whereRaw("a.id not in (select trado_id from $tempMandor)");
         if (!$isAdmin) {
             if ($isMandor) {
