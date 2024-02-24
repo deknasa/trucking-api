@@ -128,11 +128,14 @@ class MandorController extends Controller
                 'user_id' => $request->user_id
             ];
             $mandor = (new Mandor())->processStore($data);
-            $mandor->position = $this->getPosition($mandor, $mandor->getTable())->position;
-            if ($request->limit == 0) {
-                $mandor->page = ceil($mandor->position / (10));
-            } else {
-                $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
+
+            if ($request->from == '') {
+                $mandor->position = $this->getPosition($mandor, $mandor->getTable())->position;
+                if ($request->limit == 0) {
+                    $mandor->page = ceil($mandor->position / (10));
+                } else {
+                    $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
+                }
             }
 
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
@@ -178,19 +181,23 @@ class MandorController extends Controller
                 'statusaktif' => $request->statusaktif,
                 'users' => $request->users,
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
+                'tas_id' => $request->tas_id,
                 'user_id' => $request->user_id
             ];
             $mandor = (new Mandor())->processUpdate($mandor, $data);
-            $mandor->position = $this->getPosition($mandor, $mandor->getTable())->position;
-            if ($request->limit == 0) {
-                $mandor->page = ceil($mandor->position / (10));
-            } else {
-                $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
+
+            if ($request->from == '') {
+                $mandor->position = $this->getPosition($mandor, $mandor->getTable())->position;
+                if ($request->limit == 0) {
+                    $mandor->page = ceil($mandor->position / (10));
+                } else {
+                    $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
+                }
             }
 
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
             $data['tas_id'] = $mandor->id;
-            
+
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
                 $this->saveToTnl('mandor', 'edit', $data);
             }
@@ -216,16 +223,18 @@ class MandorController extends Controller
 
         try {
             $mandor = (new Mandor())->processDestroy($id);
-            $selected = $this->getPosition($mandor, $mandor->getTable(), true);
-            $mandor->position = $selected->position;
-            $mandor->id = $selected->id;
-            if ($request->limit == 0) {
-                $mandor->page = ceil($mandor->position / (10));
-            } else {
-                $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($mandor, $mandor->getTable(), true);
+                $mandor->position = $selected->position;
+                $mandor->id = $selected->id;
+                if ($request->limit == 0) {
+                    $mandor->page = ceil($mandor->position / (10));
+                } else {
+                    $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
+                }
             }
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-            
+
             $data = [
                 'namamandor' => $request->namamandor,
                 'keterangan' => $request->keterangan ?? '',
