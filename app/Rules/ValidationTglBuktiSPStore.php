@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\ApprovalBukaTanggalSuratPengantar;
 use App\Models\SuratPengantarApprovalInputTrip;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class ValidationTglBuktiSPStore implements Rule
 {
@@ -29,9 +30,41 @@ class ValidationTglBuktiSPStore implements Rule
     public function passes($attribute, $value)
     {
         $check = (new SuratPengantarApprovalInputTrip())->storeTglValidation($value);
-        if($check != null){
-            return false;
-        }else{
+        if ($check != null) {
+            $queryTrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar as a with (readuncommitted)"))
+                ->select('b.tglbukti', DB::raw("isnull(count(a.nobukti), 0) as jumlahtrip"))
+                ->join(DB::raw("suratpengantarapprovalinputtrip as b with (readuncommitted)"), 'a.approvalbukatanggal_id', 'b.id')
+                ->where("b.tglbukti", date('Y-m-d', strtotime($value)))
+                ->groupBy('b.tglbukti')
+                ->first();
+            $jumlahtrip = 0;
+            if ($queryTrip != '') {
+                $jumlahtrip = $queryTrip->jumlahtrip;
+            }
+
+            $cekStatus =  DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip as a with (readuncommitted)"))
+                ->where('a.tglbukti', date('Y-m-d', strtotime($value)))
+                ->orderBy('a.id', 'desc')
+                ->first();
+
+            if ($cekStatus != '') {
+                $now = date('Y-m-d H:i:s');
+                if ($now > $cekStatus->tglbatas) {
+                    return true;
+                } else {
+
+                    $queryQuota = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip as a with (readuncommitted)"))
+                        ->select('a.tglbukti', DB::raw("sum(a.jumlahtrip) as quotatrip"))
+                        ->where("a.tglbukti", date('Y-m-d', strtotime($value)))
+                        ->groupBy('a.tglbukti')
+                        ->first();
+
+                    if ($queryQuota->quotatrip < $jumlahtrip) {
+                        return false;
+                    }
+                }
+            }
+        } else {
             return true;
         }
     }

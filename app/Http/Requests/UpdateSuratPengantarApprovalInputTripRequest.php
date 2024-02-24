@@ -6,8 +6,11 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use App\Rules\DateTutupBuku;
+use App\Rules\validasiStatusApprovalBukaTanggalTrip;
+use App\Rules\validasiTglApprovalBukaTanggalTrip;
 use App\Rules\ValidationJumlahTripApproval;
 use App\Rules\ValidationTglBuktiSPUpdate;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class UpdateSuratPengantarApprovalInputTripRequest extends FormRequest
@@ -36,10 +39,13 @@ class UpdateSuratPengantarApprovalInputTripRequest extends FormRequest
             $status[] = $item['id'];
         }
 
+        $query = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip with (readuncommitted)"))
+        ->where('id', $this->id)
+        ->first();
         return [
-            'tglbukti' => ['required','date_format:d-m-Y', 'before:'. date('d-m-Y'), new ValidationTglBuktiSPUpdate(), new DateTutupBuku()],
+            'tglbukti' => ['required','date_format:d-m-Y', 'before:'. date('d-m-Y'), new validasiTglApprovalBukaTanggalTrip($query->tglbukti), new DateTutupBuku()],
             'jumlahtrip' => ['required','numeric','min:1', new ValidationJumlahTripApproval()],
-            'statusapproval' => ['required', Rule::in($status)]
+            'statusapproval' => ['required', Rule::in($status), new validasiStatusApprovalBukaTanggalTrip($query->statusapproval)]
         ];
     }
 }
