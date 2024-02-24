@@ -186,6 +186,12 @@ class Trado extends MyModel
             'mandor_id',
         ],  $querymandor);
 
+        $temptrado = '##temptrado' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temptrado, function ($table) {
+            $table->id();
+            $table->integer('trado_id')->nullable();
+        });
+
 
         $isMandor = auth()->user()->isMandor();
         $isAdmin = auth()->user()->isAdmin();
@@ -293,8 +299,18 @@ class Trado extends MyModel
         }
 
         if ($absensiId != '') {
-            $query->join('absensisupirdetail', 'trado.id', '=', 'absensisupirdetail.trado_id')
-                ->where('absensisupirdetail.absensi_id', '=', $absensiId);
+            $querytradoabsen = db::table("absensisupirdetail")->from(db::raw("absensisupirdetail a with (readuncommitted)"))
+            ->select('a.trado_id')
+            ->where('a.absensi_id', '=', $absensiId)
+            ->groupBy('a.trado_id');
+
+            // dd($querytradoabsen ->get());
+            DB::table($temptrado)->insertUsing([
+                'trado_id',
+            ],  $querytradoabsen);
+
+            
+            $query->join(db::raw($temptrado). ' as absensisupirdetail', 'trado.id', '=', 'absensisupirdetail.trado_id');
         }
 
         $this->filter($query);
