@@ -192,8 +192,9 @@ class SuratPengantarApprovalInputTripController extends Controller
     
     public function cekvalidasi($id)
     {
+        $aksi = request()->aksi;
         $approvalBukaTanggal = new SuratPengantarApprovalInputTrip();
-        $cekdata = $approvalBukaTanggal->cekvalidasiaksi($id);
+        $cekdata = $approvalBukaTanggal->cekvalidasiaksi($id, $aksi);
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
                 ->select(

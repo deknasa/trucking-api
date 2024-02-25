@@ -40,7 +40,7 @@ class DateApprovalQuota implements Rule
         $getFormat = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'INPUT TRIP')->where('subgrp', 'FORMAT BATAS INPUT')->first();
         $getapproval = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->first();
         $bukaAbsensi = SuratPengantarApprovalInputTrip::where('tglbukti', '=', $date)
-            ->where('statusapproval',$getapproval)
+            ->where('statusapproval',$getapproval->id)
             ->sum('jumlahtrip');
         if ($date == $today) {
             $allowed = true;

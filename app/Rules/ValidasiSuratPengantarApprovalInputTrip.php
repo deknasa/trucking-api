@@ -27,7 +27,7 @@ class ValidasiSuratPengantarApprovalInputTrip implements Rule
      */
     public function passes($attribute, $value)
     {
-        $check = (new SuratPengantarApprovalInputTrip())->cekvalidasiaksi(request()->id);
+        $check = (new SuratPengantarApprovalInputTrip())->cekvalidasiaksi(request()->id, 'DELETE');
         if($check['kondisi'] == true){
             return false;
         }else{

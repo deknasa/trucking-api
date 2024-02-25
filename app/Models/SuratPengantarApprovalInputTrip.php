@@ -33,6 +33,7 @@ class SuratPengantarApprovalInputTrip extends MyModel
         )->select(
             "suratpengantarapprovalinputtrip.id",
             "suratpengantarapprovalinputtrip.tglbukti",
+            "suratpengantarapprovalinputtrip.tglbatas",
             "suratpengantarapprovalinputtrip.jumlahtrip",
             'parameter.memo as statusapproval',
             "suratpengantarapprovalinputtrip.modifiedby",
@@ -52,26 +53,58 @@ class SuratPengantarApprovalInputTrip extends MyModel
         return $data;
     }
 
-    public function cekvalidasiaksi($id)
+    public function cekvalidasiaksi($id, $Aksi)
     {
-        $suratPengantar = DB::table('suratpengantar')
-            ->from(
-                DB::raw("suratpengantar as a with (readuncommitted)")
-            )
-            ->select(
-                'a.approvalbukatanggal_id'
-            )
-            ->where('a.approvalbukatanggal_id', '=', $id)
-            ->first();
-        if (isset($suratPengantar)) {
-            $data = [
-                'kondisi' => true,
-                'keterangan' => 'Surat Pengantar',
-                'kodeerror' => 'SATL'
-            ];
-            goto selesai;
-        }
+        if ($Aksi == 'DELETE') {
 
+            $suratPengantar = DB::table('suratpengantar')
+                ->from(
+                    DB::raw("suratpengantar as a with (readuncommitted)")
+                )
+                ->select(
+                    'a.approvalbukatanggal_id'
+                )
+                ->where('a.approvalbukatanggal_id', '=', $id)
+                ->first();
+            if (isset($suratPengantar)) {
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => 'Surat Pengantar',
+                    'kodeerror' => 'SATL'
+                ];
+                goto selesai;
+            }
+        }else{
+            $getTglBukti = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip as a with (readuncommitted)"))->where('id',$id)->first();
+            $cek = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip as a with (readuncommitted)"))
+            ->where('tglbukti', $getTglBukti->tglbukti)
+            ->where('id', '>', $id)
+            ->first();
+
+            if(isset($cek)) {
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => date('d-m-Y', strtotime($getTglBukti->tglbukti)),
+                    'kodeerror' => 'ABTT'
+                ];
+                goto selesai;
+            }
+            
+            $tanggal = date('Y-m-d', strtotime('+1 days')). ' ' . '10:00:00';
+            $cek = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip as a with (readuncommitted)"))
+            ->where('tglbatas','<', $tanggal)
+            ->where('id', $id)
+            ->first();
+
+            if(isset($cek)) {
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => date('d-m-Y H:i:s', strtotime($getTglBukti->tglbatas)),
+                    'kodeerror' => 'TBABT'
+                ];
+                goto selesai;
+            }
+        }
         $data = [
             'kondisi' => false,
             'keterangan' => '',
@@ -263,9 +296,13 @@ class SuratPengantarApprovalInputTrip extends MyModel
     public function processStore(array $data): SuratPengantarApprovalInputTrip
     {
         $approvalBukaTanggal = new SuratPengantarApprovalInputTrip();
+
+        $tanggal = date('Y-m-d', strtotime('+1 days'));
+
         $approvalBukaTanggal->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $approvalBukaTanggal->jumlahtrip = $data['jumlahtrip'];
         $approvalBukaTanggal->statusapproval = $data['statusapproval'];
+        $approvalBukaTanggal->tglbatas = date('Y-m-d', strtotime($tanggal)) . ' ' . '10:00:00';
         $approvalBukaTanggal->modifiedby = auth('api')->user()->user;
         $approvalBukaTanggal->info = html_entity_decode(request()->info);
 
@@ -330,6 +367,7 @@ class SuratPengantarApprovalInputTrip extends MyModel
     {
         $query = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip with (readuncommitted)"))
             ->where('tglbukti', date('Y-m-d', strtotime($tanggal)))
+            ->where('tglbatas', '<=', $tanggal = date('Y-m-d', strtotime('+1 days')) . ' ' . '10:00:00')
             ->first();
 
         return $query;
@@ -360,11 +398,11 @@ class SuratPengantarApprovalInputTrip extends MyModel
         $nonApproval = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where("grp", 'STATUS APPROVAL')->where("text", "NON APPROVAL")->first();
         $query = DB::table("suratpengantarapprovalinputtrip")->whereRaw("CAST(created_at AS DATE) = '$now'")->get();
 
-        foreach($query as $value){
+        foreach ($query as $value) {
             $getSP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-            ->select(DB::raw("COUNT(approvalbukatanggal_id) as jumlah"))
-            ->where('approvalbukatanggal_id', $value->id)
-            ->first();
+                ->select(DB::raw("COUNT(approvalbukatanggal_id) as jumlah"))
+                ->where('approvalbukatanggal_id', $value->id)
+                ->first();
 
             $result = DB::table("suratpengantarapprovalinputtrip")->where('tglbukti', $value->tglbukti)->update([
                 'jumlahtrip' => $getSP->jumlah,
