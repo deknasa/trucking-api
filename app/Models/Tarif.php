@@ -116,7 +116,7 @@ class Tarif extends MyModel
                 'tarif.updated_at',
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
-                DB::raw("(trim(tarif.tujuan)+' - '+trim(tarif.penyesuaian)) as tujuanpenyesuaian"),
+                DB::raw("(trim(tarif.tujuan)+(case when trim(tarif.penyesuaian)='' then '' else ' - ' end)+trim(tarif.penyesuaian)) as tujuanpenyesuaian"),
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'tarif.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
@@ -129,7 +129,7 @@ class Tarif extends MyModel
             ->leftJoin(DB::raw("parameter AS posting with (readuncommitted)"), 'tarif.statuspostingtnl', '=', 'posting.id');
 
 
-
+// dd('test');
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
@@ -426,7 +426,7 @@ class Tarif extends MyModel
                         } elseif ($filters['field'] == 'zona_id') {
                             $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'tujuanpenyesuaian') {
-                            $query = $query->whereRaw("(trim(tarif.tujuan)+' - '+trim(tarif.penyesuaian)) LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("(trim(tarif.tujuan)+(case when trim(tarif.penyesuaian)='' then '' else ' - ' end)+trim(tarif.penyesuaian)) LIKE '%$filters[data]%'");
                         } elseif ($filters['field'] == 'jenisorder') {
                             $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'statuspenyesuaianharga') {
@@ -465,7 +465,7 @@ class Tarif extends MyModel
                             } elseif ($filters['field'] == 'zona_id') {
                                 $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
                             } elseif ($filters['field'] == 'tujuanpenyesuaian') {
-                                $query = $query->orWhereRaw("(trim(tarif.tujuan)+' - '+trim(tarif.penyesuaian)) LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("(trim(tarif.tujuan)+(case when trim(tarif.penyesuaian)='' then '' else ' - ' end)+trim(tarif.penyesuaian)) LIKE '%$filters[data]%'");
                             } elseif ($filters['field'] == 'jenisorder') {
                                 $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
                             } elseif ($filters['field'] == 'statuspenyesuaianharga') {
