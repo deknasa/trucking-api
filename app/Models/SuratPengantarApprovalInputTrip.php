@@ -92,7 +92,7 @@ class SuratPengantarApprovalInputTrip extends MyModel
             
             $tanggal = date('Y-m-d', strtotime('+1 days')). ' ' . '10:00:00';
             $cek = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip as a with (readuncommitted)"))
-            ->where('tglbatas','<', $tanggal)
+            ->whereRaw("a.tglbatas<getdate()")
             ->where('id', $id)
             ->first();
 
@@ -302,7 +302,7 @@ class SuratPengantarApprovalInputTrip extends MyModel
         $approvalBukaTanggal->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $approvalBukaTanggal->jumlahtrip = $data['jumlahtrip'];
         $approvalBukaTanggal->statusapproval = $data['statusapproval'];
-        $approvalBukaTanggal->tglbatas = date('Y-m-d', strtotime($tanggal)) . ' ' . '10:00:00';
+        $approvalBukaTanggal->tglbatas = date('Y-m-d', strtotime($tanggal)) . ' ' . '09:59:59';
         $approvalBukaTanggal->modifiedby = auth('api')->user()->user;
         $approvalBukaTanggal->info = html_entity_decode(request()->info);
 
