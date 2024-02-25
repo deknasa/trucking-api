@@ -13,6 +13,7 @@ use App\Rules\ExistZona;
 use App\Rules\UniqueUpahSupir;
 use App\Rules\UniqueUpahSupirDari;
 use App\Rules\UniqueUpahSupirSampai;
+use App\Rules\UniqueUpahSupirKotaSampai;
 use App\Rules\ValidasiDariSimpanKandangUpahSupir;
 use App\Rules\ValidasiKotaUpahZona;
 use App\Rules\ValidasiPenyesuaianUpahSupir;
@@ -192,7 +193,7 @@ class StoreUpahSupirRequest extends FormRequest
             $tglbatasakhir = (date('Y-m-d', strtotime('+7 days')));
             $rules =  [
                 'kotadari' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiDariSimpanKandangUpahSupir(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
-                'kotasampai' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id)],
+                'kotasampai' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id),new UniqueUpahSupirKotaSampai()],
                 'zonadari' => ['required_if:statusupahzona,=,' . $getUpahZona->id, new ValidasiZonaUpahZona($getUpahZona->id)],
                 'zonasampai' => ['required_if:statusupahzona,=,' . $getUpahZona->id, new ValidasiZonaUpahZona($getUpahZona->id)],
                 'tarif' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id)],

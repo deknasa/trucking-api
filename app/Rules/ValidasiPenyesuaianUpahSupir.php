@@ -26,7 +26,12 @@ class ValidasiPenyesuaianUpahSupir implements Rule
      */
     public function passes($attribute, $value)
     {
-        $penyesuaian = trim(strtoupper(request()->kotasampai)).' - '.trim(strtoupper(request()->penyesuaian));
+        if (request()->penyesuaian=='') {
+            $penyesuaian = trim(strtoupper(request()->kotasampai));
+        } else {
+            $penyesuaian = trim(strtoupper(request()->kotasampai)).' - '.trim(strtoupper(request()->penyesuaian));
+        }
+
         $tarif = request()->tarif;
         $status = true;
 
