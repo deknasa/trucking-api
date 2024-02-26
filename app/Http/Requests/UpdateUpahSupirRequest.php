@@ -11,6 +11,7 @@ use App\Rules\ExistTarif;
 use App\Rules\ExistUpahSupir;
 use App\Rules\ExistZona;
 use App\Rules\SimpanKandangUpahSupir;
+use App\Rules\UniqueUpahSupirKotaSampaiEdit;
 use App\Rules\UniqueUpahSupirSampaiEdit;
 use App\Rules\ValidasiKotaUpahZona;
 use App\Rules\ValidasiPenyesuaianUpahSupir;
@@ -177,7 +178,7 @@ class UpdateUpahSupirRequest extends FormRequest
         $tglBatasAkhir = (date('Y') + 1) . '-01-01';
         $rules =  [
             'kotadari' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id), ($check['kondisi']) ? Rule::in($dataUpahSupir->kotadari) : ''],
-            'kotasampai' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id), ($check['kondisi']) ? Rule::in($dataUpahSupir->kotasampai) : ''],
+            'kotasampai' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id), ($check['kondisi']) ? Rule::in($dataUpahSupir->kotasampai) : '', new UniqueUpahSupirKotaSampaiEdit()],
             'tarif' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id), ($check['kondisi']) ? Rule::in($dataUpahSupir->tarif) : ''],
             'penyesuaian' => [new UniqueUpahSupirSampaiEdit(), new ValidasiPenyesuaianUpahSupir(), new ValidasiKotaUpahZona($getBukanUpahZona->id), ($check['kondisi']) ? Rule::in($dataUpahSupir->penyesuaian) : ''],
             'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
