@@ -461,7 +461,7 @@ class StoreMandorTripRequest extends FormRequest
                     "statuslangsir" => "required",
                     // "lokasibongkarmuat" => "required",
                     "trado" => "required",
-                    "upah" => ["required", new ExistNominalUpahSupir(), new ValidasiTripGudangSama($dataTripAsal)],
+                    "upah" => ["required", new ExistNominalUpahSupir()],
                     'statusupahzona' => ['required', Rule::in($statusUpahZona)],
                 ];
             } else {
@@ -496,7 +496,7 @@ class StoreMandorTripRequest extends FormRequest
                     "statuslangsir" => "required",
                     // "lokasibongkarmuat" => "required",
                     "trado" => "required",
-                    "upah" => ["required", new ExistNominalUpahSupir(), new ValidasiTripGudangSama($dataTripAsal)],
+                    "upah" => ["required", new ExistNominalUpahSupir()],
                     'statusupahzona' => ['required', Rule::in($statusUpahZona)],
                 ];
             }
@@ -537,7 +537,7 @@ class StoreMandorTripRequest extends FormRequest
                     "statuslangsir" => "required",
                     // "lokasibongkarmuat" => "required",
                     "trado" => "required",
-                    "upah" => ["required", new ExistNominalUpahSupir(), new ValidasiTripGudangSama($dataTripAsal)],
+                    "upah" => ["required", new ExistNominalUpahSupir()],
                     'statusupahzona' => ['required', Rule::in($statusUpahZona)],
                 ];
             } else {
@@ -573,7 +573,7 @@ class StoreMandorTripRequest extends FormRequest
                     "statuslangsir" => "required",
                     // "lokasibongkarmuat" => "required",
                     "trado" => "required",
-                    "upah" => ["required", new ExistNominalUpahSupir(), new ValidasiTripGudangSama($dataTripAsal)],
+                    "upah" => ["required", new ExistNominalUpahSupir()],
                     'statusupahzona' => ['required', Rule::in($statusUpahZona)],
                 ];
             }
