@@ -43,7 +43,10 @@ class validasiTglApprovalBukaTanggalTrip implements Rule
                 return false;
             }   
         }
-
+        if(date('Y-m-d',strtotime($value)) == $this->tgl){
+            return true;
+        }
+        
         $cekStatus =  DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip as a with (readuncommitted)"))
         ->where('a.tglbukti', date('Y-m-d', strtotime($value)))
         ->orderBy('a.id', 'desc')

@@ -40,8 +40,9 @@ class DateApprovalQuota implements Rule
         $getFormat = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'INPUT TRIP')->where('subgrp', 'FORMAT BATAS INPUT')->first();
         $getapproval = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->first();
         $bukaAbsensi = SuratPengantarApprovalInputTrip::where('tglbukti', '=', $date)
-            ->where('statusapproval',$getapproval->id)
-            ->sum('jumlahtrip');
+            ->where('statusapproval', $getapproval->id)
+            ->orderBy('id', 'desc')
+            ->first();
         if ($date == $today) {
             $allowed = true;
         }
@@ -50,7 +51,7 @@ class DateApprovalQuota implements Rule
                 $allowed = true;
             }
         }
-        
+
         if (strtolower($getDay) == 'sunday') {
             $allowed = true;
         }
@@ -59,13 +60,26 @@ class DateApprovalQuota implements Rule
         }
         if ($bukaAbsensi) {
             $now = date('Y-m-d');
-            $suratPengantar = SuratPengantar::where('tglbukti', '=', $date)->whereRaw("CONVERT(VARCHAR(10), created_at, 23) = '$now'")->count();
+            $suratPengantar = SuratPengantar::where('tglbukti', '=', $date)->whereRaw("approvalbukatanggal_id = $bukaAbsensi->id")->count();
             $nonApproval = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where("grp", 'STATUS APPROVAL')->where("text", "NON APPROVAL")->first();
-            $cekApproval = SuratPengantarApprovalInputTrip::where('statusapproval', '=', $nonApproval->id)->where('tglbukti', '=', $date)->first();
-            if ($cekApproval) {
+            $cekApproval = SuratPengantarApprovalInputTrip::where('statusapproval', '=', $nonApproval->id)->where('tglbukti', '=', $date)->orderBy('id', 'desc')->first();
+
+            $cekStatus =  DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip as a with (readuncommitted)"))
+                ->where('a.tglbukti', $date)
+                ->orderBy('a.id', 'desc')
+                ->first();
+
+            if ($cekApproval != '') {
                 return false;
+            } else {
+
+                $now = date('Y-m-d H:i:s');
+                if ($now > $cekStatus->tglbatas) {
+                    return false;
+                }
             }
-            if ($bukaAbsensi < ($suratPengantar + 1)) {
+
+            if ($bukaAbsensi->jumlahtrip < ($suratPengantar + 1)) {
                 return false;
             }
             $allowed = true;
