@@ -547,6 +547,7 @@ class LaporanBukuBesar extends MyModel
                 db::raw("(case when '" . $cabang . "'='' then '' else 'Cabang :" . $cabang . "'  end) as Cabang")
 
             )
+            ->orderBy('coa', 'Asc')
             ->orderBy('id', 'Asc');
 
 
