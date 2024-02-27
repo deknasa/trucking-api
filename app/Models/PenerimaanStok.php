@@ -73,6 +73,7 @@ class PenerimaanStok extends MyModel
         ->where('subgrp', 'ID CABANG')
         ->first()->text ?? '';
 
+        $cabang_id = (request()->cabang == "kosong") ? null : $cabang_id;
 
         $queryaco = db::table("useracl")->from(db::raw("useracl a with (readuncommitted)"))
             ->select('a.aco_id')
@@ -344,6 +345,9 @@ class PenerimaanStok extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] =="") {
+                           
+                        }else 
                         if ($filters['field'] == 'statushitungstok') {
                             $query = $query->where('parameterstatushitungstok.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'statusaktif') {
@@ -364,6 +368,9 @@ class PenerimaanStok extends MyModel
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] =="") {
+                               
+                            }else 
                             if ($filters['field'] == 'statushitungstok') {
                                 $query = $query->orWhere('parameterstatushitungstok.text', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statusaktif') {
@@ -527,6 +534,63 @@ class PenerimaanStok extends MyModel
                 'idtrans' => $penerimaanStok->id,
                 'nobuktitrans' => $penerimaanStok->id,
                 'aksi' => $aksi,
+                'datajson' => $penerimaanStok->toArray(),
+                'modifiedby' => auth('api')->user()->user
+            ]);
+            
+        }
+        return $penerimaanStok;
+    }
+    public function processApprovalTidakCabang(array $data)
+    {
+       
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $penerimaanStok = $this->where('id',$data['Id'][$i])->first();
+           
+            $penerimaanStok->cabang_id = null;
+            $penerimaanStok->modifiedby = auth('api')->user()->name;
+            $penerimaanStok->info = html_entity_decode(request()->info);
+
+            if (!$penerimaanStok->save()) {
+                throw new \Exception("Error update service in header.");
+            }
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($penerimaanStok->getTable()),
+                'postingdari' => 'APPROVAL PENEIRMAAN STOK TIDAK BERLAKU DICABANG ',
+                'idtrans' => $penerimaanStok->id,
+                'nobuktitrans' => $penerimaanStok->id,
+                'aksi' => 'APROVAL',
+                'datajson' => $penerimaanStok->toArray(),
+                'modifiedby' => auth('api')->user()->user
+            ]);
+            
+        }
+        return $penerimaanStok;
+    }
+    
+    public function processApprovalBerlakuCabang(array $data)
+    {
+        $cabang_id = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'ID CABANG')
+        ->where('subgrp', 'ID CABANG')
+        ->first()->text ?? '';
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $penerimaanStok = $this->where('id',$data['Id'][$i])->first();
+           
+            $penerimaanStok->cabang_id = $cabang_id;
+            $penerimaanStok->modifiedby = auth('api')->user()->name;
+            $penerimaanStok->info = html_entity_decode(request()->info);
+
+            if (!$penerimaanStok->save()) {
+                throw new \Exception("Error update service in header.");
+            }
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($penerimaanStok->getTable()),
+                'postingdari' => 'APPROVAL PENEIRMAAN STOK TIDAK BERLAKU DICABANG ',
+                'idtrans' => $penerimaanStok->id,
+                'nobuktitrans' => $penerimaanStok->id,
+                'aksi' => 'APROVAL',
                 'datajson' => $penerimaanStok->toArray(),
                 'modifiedby' => auth('api')->user()->user
             ]);
