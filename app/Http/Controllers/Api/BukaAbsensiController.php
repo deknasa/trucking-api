@@ -42,7 +42,8 @@ class BukaAbsensiController extends Controller
 
 
             $data =[
-                'tglabsensi' => date('Y-m-d', strtotime($request->tglabsensi))
+                'tglabsensi' => date('Y-m-d', strtotime($request->tglabsensi)),
+                'user_id' => $request->user_id
             ];
             /* Store header */
             $bukaAbsensi = (new BukaAbsensi())->processStore($data);
@@ -72,7 +73,7 @@ class BukaAbsensiController extends Controller
     {
         $bukaAbsensi = new BukaAbsensi();
         return response([
-            'data' => $bukaAbsensi->findOrFail($id),
+            'data' => $bukaAbsensi->findAll($id),
             'attributes' => [
                 'totalRows' => $bukaAbsensi->totalRows,
                 'totalPages' => $bukaAbsensi->totalPages

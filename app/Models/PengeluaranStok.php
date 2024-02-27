@@ -129,7 +129,8 @@ class PengeluaranStok extends MyModel
             ->leftJoin('akunpusat', 'pengeluaranstok.coa', '=', 'akunpusat.coa')
             ->leftJoin('parameter as parameterformat', 'pengeluaranstok.format', '=', 'parameterformat.id')
             ->leftJoin('parameter as parameterstatusaktif', 'pengeluaranstok.statusaktif', '=', 'parameterstatusaktif.id')
-            ->leftJoin('parameter as parameterstatushitungstok', 'pengeluaranstok.statushitungstok', '=', 'parameterstatushitungstok.id');
+            ->leftJoin('parameter as parameterstatushitungstok', 'pengeluaranstok.statushitungstok', '=', 'parameterstatushitungstok.id')
+            ->where('pengeluaranstok.cabang_id', $cabang_id);
 
         $this->filter($query);
 

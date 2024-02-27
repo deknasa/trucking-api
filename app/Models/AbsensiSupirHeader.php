@@ -369,13 +369,54 @@ class AbsensiSupirHeader extends MyModel
     public function isBukaTanggalValidation($date)
     {
         $date = date('Y-m-d', strtotime($date));
-        $bukaAbsensi = BukaAbsensi::where('tglabsensi', '=', $date)->first();
+        // $bukaAbsensi = BukaAbsensi::where('tglabsensi', '=', $date)->first();
+        
+        //user ada dimandor apa aja
+        $userMandor = DB::table('mandordetail')->select('mandor_id')->where('user_id',auth()->user()->id);
+        //mandor yang dimiliki user login memiliki user apa aja
+        $mandorUser = DB::table('mandordetail')
+        ->select('mandor_id','user_id')
+        ->where(function ($query) use ($userMandor) {
+            $query->whereIn('mandor_id', $userMandor);
+        })
+        ->groupBy('mandor_id','user_id')
+        ->get();
+        $userArray = [];
+        foreach ($mandorUser as $mandor) {
+            $userArray[] = $mandor->user_id;
+        }
+        
+        $bukaAbsensi = BukaAbsensi::where('tglabsensi', '=', $date)
+        ->whereIn('mandor_user_id',$userArray)
+        ->first();
+
         $tglbatas = $bukaAbsensi->tglbatas ?? 0;
         $limit = strtotime($tglbatas);
         $now = strtotime('now');
         // dd( date('Y-m-d H:i:s',$now), date('Y-m-d H:i:s',$limit));
         if ($now < $limit) return true;
         return false;
+    }
+
+    public function isBukaTanggalAbsenMandor($date)
+    {
+        $date = date('Y-m-d', strtotime($date));        
+        //user ada dimandor apa aja
+        $userMandor = DB::table('mandordetail')->select('mandor_id')->where('user_id',auth()->user()->id);
+        //mandor yang dimiliki user login memiliki user apa aja
+        $mandorUser = DB::table('mandordetail')
+        ->select('mandor_id')
+        ->where(function ($query) use ($userMandor) {
+            $query->whereIn('mandor_id', $userMandor);
+        })
+        ->groupBy('mandor_id')
+        ->get();
+        $userArray = [];
+        // foreach ($mandorUser as $mandor) {
+        //     $userArray[] = $mandor->user_id;
+        // }
+        
+       return $mandorUser;
     }
 
 

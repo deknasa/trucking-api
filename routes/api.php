@@ -579,6 +579,8 @@ route::middleware(['auth:api'])->group(function () {
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
+    Route::post('penerimaanstok/approvaltidakcabang', [PenerimaanStokController::class, 'approvalTidakCabang']);
+    Route::post('penerimaanstok/approvalberlakucabang', [PenerimaanStokController::class, 'approvalBerlakuCabang']);
 
     Route::post('importdatacabang', [ImportDataCabangController::class, 'store']);
     Route::resource('toemail', ToEmailController::class);
