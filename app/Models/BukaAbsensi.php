@@ -31,11 +31,14 @@ class BukaAbsensi extends MyModel
         )->select(
             "bukaabsensi.id",
             "bukaabsensi.tglabsensi",
+            "bukaAbsensi.mandor_user_id",
+            'user.name as user',
             "bukaabsensi.tglbatas",
             "bukaabsensi.modifiedby",
             "bukaabsensi.created_at",
             "bukaabsensi.updated_at",
-        );
+        )
+        ->leftJoin(DB::raw("[user]"), 'bukaabsensi.mandor_user_id', db::raw("[user].id"));
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -47,6 +50,22 @@ class BukaAbsensi extends MyModel
         $data = $query->get();
 
         return $data;
+    }
+
+    public function findAll($id){
+        return $query = $this->select(
+            "bukaabsensi.id",
+            "bukaabsensi.tglabsensi",
+            "bukaabsensi.mandor_user_id",
+            'user.name as user',
+            "bukaabsensi.tglbatas",
+            "bukaabsensi.modifiedby",
+            "bukaabsensi.created_at",
+            "bukaabsensi.updated_at",
+        )
+        ->leftJoin(DB::raw("[user]"), 'bukaabsensi.mandor_user_id', db::raw("[user].id"))
+        ->where('bukaabsensi.id',$id)
+        ->first();
     }
 
     public function filter($query, $relationFields = [])
@@ -154,6 +173,7 @@ class BukaAbsensi extends MyModel
         }
         $bukaAbsensi = new BukaAbsensi();
         $bukaAbsensi->tglabsensi = date('Y-m-d', strtotime($data['tglabsensi']));
+        $bukaAbsensi->mandor_user_id = $data['user_id'];
         $bukaAbsensi->tglbatas = $tglbatas;
         $bukaAbsensi->modifiedby = auth('api')->user()->name;
         $bukaAbsensi->info = html_entity_decode(request()->info);
@@ -184,6 +204,7 @@ class BukaAbsensi extends MyModel
     {
         $bukaAbsensi = new BukaAbsensi();
         $bukaAbsensi->tglabsensi = date('Y-m-d', strtotime($data['tglabsensi']));
+        $bukaAbsensi->mandor_user_id = $data['user_id'];
         $bukaAbsensi->modifiedby = auth('api')->user()->name;
         $bukaAbsensi->info = html_entity_decode(request()->info);
 

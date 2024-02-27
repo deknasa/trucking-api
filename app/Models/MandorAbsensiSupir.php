@@ -28,6 +28,38 @@ class MandorAbsensiSupir extends MyModel
         $querymandor = db::table("mandordetail")->from(db::raw("mandordetail a with (readuncommitted)"))
             ->select('a.mandor_id')
             ->where('a.user_id', $userid);
+        $querybukaabsen = db::table("bukaabsensi")->from(db::raw("bukaabsensi a with (readuncommitted)"))
+            ->select('a.mandor_user_id')
+            ->where('a.tglabsensi', date('Y-m-d', strtotime($date)));
+        if ($querybukaabsen->count()) {
+            $tempmandordetaillogin = '##mandordetaillogin' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempmandordetaillogin, function ($table) {
+                $table->id();
+                $table->unsignedBigInteger('mandor_id')->nullable();
+            });
+            DB::table($tempmandordetaillogin)->insertUsing([
+                'mandor_id',
+            ],  $querymandor);
+            
+            $tempmandorbukaabsen = '##mandorbukaabsen' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempmandorbukaabsen, function ($table) {
+                $table->id();
+                $table->unsignedBigInteger('mandor_user_id')->nullable();
+            });
+            
+            DB::table($tempmandorbukaabsen)->insertUsing([
+                'mandor_user_id',
+            ],  $querybukaabsen);
+
+            $querymandor = DB::table('mandordetail as a')
+            ->leftJoin(DB::raw($tempmandordetaillogin.' as b'), 'a.mandor_id', '=', 'b.mandor_id')
+            ->leftJoin(DB::raw($tempmandorbukaabsen.' as c'), 'a.user_id', '=', 'c.mandor_user_id')
+            ->whereRaw('COALESCE(b.mandor_id, 0) <> 0')
+            ->whereRaw('COALESCE(c.mandor_user_id, 0) <> 0')
+            ->select('a.mandor_id');
+            // ->pluck('a.mandor_id');
+            
+        }
 
         $tempmandordetail = '##tempmandordetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempmandordetail, function ($table) {
@@ -120,6 +152,8 @@ class MandorAbsensiSupir extends MyModel
 
         if (!$isAdmin) {
             if ($isMandor) {
+                // dd(AbsensiSupirHeader::isBukaTanggalAbsenMandor($date));
+                
                 $absensisupirdetail->Join(DB::raw($tempmandordetail . " as mandordetail"), 'trado.mandor_id', 'mandordetail.mandor_id');
 
                 // $absensisupirdetail->where('trado.mandor_id',$isMandor->mandor_id);

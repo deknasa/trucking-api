@@ -33,7 +33,8 @@ class StoreBukaAbsensiRequest extends FormRequest
                 'before_or_equal:' . date('d-m-Y'),
                 new UniqueTglBukaAbsensi,
                 new DateTutupBuku(),
-            ]
+            ],
+            "user_id"=>["required"]
         ];
     }
 }

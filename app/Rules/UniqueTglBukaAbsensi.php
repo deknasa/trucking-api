@@ -32,9 +32,11 @@ class UniqueTglBukaAbsensi implements Rule
                 DB::raw("bukaabsensi as a with (readuncommitted)")
             )
             ->select(
-                'a.id'
+                'a.id',
+                'a.mandor_user_id'
             )
              ->where('a.tglabsensi', '=', date('Y-m-d', strtotime(request()->tglabsensi)))
+             ->where('a.mandor_user_id', '=', request()->user_id)
             ->first();
 
 
@@ -55,6 +57,6 @@ class UniqueTglBukaAbsensi implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('SPI')->keterangan;
+        return request()->user.' ' .app(ErrorController::class)->geterror('SPI')->keterangan;
     }
 }
