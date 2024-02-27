@@ -95,6 +95,40 @@ class AbsensiSupirHeader extends MyModel
             $query->whereBetween('absensisupirheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
 
+        $proses=request()->proses ?? '' ;
+
+        if ($proses=='APPROVALSUPIR') {
+            $tempbelumlengkap = '##tempbelumlengkap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+            Schema::create($tempbelumlengkap, function ($table) {
+                $table->string('nobukti', 1000)->nullable();
+            });
+
+                $querybelumlengkap=db::table("absensisupirdetail")->from(db::raw("absensisupirdetail a with (readuncommitted)"))
+                ->select(
+                    'a.nobukti'
+                )
+                ->join(db::raw("absensisupirheader b with (readuncommitted)"),'a.nobukti','b.nobukti')
+                ->leftjoin(DB::raw("suratpengantar as c with(readuncommitted)"), function ($join) {
+                    $join->on('a.supir_id', '=', 'c.supir_id');
+                    $join->on('a.trado_id', '=', 'c.trado_id');
+                    $join->on('b.tglbukti', '=', 'c.tglbukti');
+                })     
+                ->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                ->whereRaw("isnull(a.absen_id,0)=0")
+                ->whereRaw("isnull(c.nobukti,'')=''")
+                ->groupBy('a.nobukti');
+
+                DB::table($tempbelumlengkap)->insertUsing([
+                    'nobukti',
+                ], $querybelumlengkap);
+
+                // dd(db::table($tempbelumlengkap)->get());
+                $query->leftjoin(db::raw($tempbelumlengkap . " as tempbelumlengkap"),'absensisupirheader.nobukti','tempbelumlengkap.nobukti')
+                      ->whereraw("isnull(tempbelumlengkap.nobukti,'')=''");
+
+        }
+
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
