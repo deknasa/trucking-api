@@ -202,6 +202,11 @@ class SuratPengantar extends MyModel
         $supir_id = request()->supir_id ?? '';
         $isTripAsal = request()->isTripAsal ?? '';
 
+        $getSudahbuka = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS SUDAH BUKA')->where('subgrp', 'STATUS SUDAH BUKA')->where('text', 'SUDAH BUKA')->first() ?? 0;
+        $getBelumbuka = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS SUDAH BUKA')->where('subgrp', 'STATUS SUDAH BUKA')->where('text', 'BELUM BUKA')->first() ?? 0;
+
+        
+
         $tempsuratpengantar = '##tempsuratpengantar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsuratpengantar, function ($table) {
             $table->integer('id')->nullable();
@@ -289,8 +294,11 @@ class SuratPengantar extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->string('gajisupir_nobukti', 500)->nullable();
             $table->string('invoice_nobukti', 500)->nullable();
+            $table->unsignedBigInteger('statusgajisupir')->nullable();
+            $table->unsignedBigInteger('statusinvoice')->nullable();
         });
 
+  
         $querysuratpengantar = DB::table('suratpengantar')->from(
             DB::raw("suratpengantar with (readuncommitted)")
         )
@@ -379,11 +387,15 @@ class SuratPengantar extends MyModel
                 'suratpengantar.created_at',
                 'suratpengantar.updated_at',
                 'b.nobukti as gajisupir_nobukti',
-                'c.nobukti as invoice_nobukti'
+                'c.nobukti as invoice_nobukti',
+                db::raw("(case when isnull(b.nobukti,'')='' then ".$getBelumbuka->id." else ".$getSudahbuka->id." end) as statusgajisupir"),
+                db::raw("(case when isnull(c.nobukti,'')='' then ".$getBelumbuka->id." else ".$getSudahbuka->id." end) as statusinvoice"),
             )
             ->leftJoin(DB::raw("gajisupirdetail as b with (readuncommitted)"), 'suratpengantar.nobukti', 'b.suratpengantar_nobukti')
             ->leftJoin(DB::raw("invoicedetail as c with (readuncommitted)"), 'suratpengantar.jobtrucking', 'c.orderantrucking_nobukti')
             ->whereBetween('suratpengantar.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+
+        
 
         DB::table($tempsuratpengantar)->insertUsing([
             'id',
@@ -470,7 +482,10 @@ class SuratPengantar extends MyModel
             'created_at',
             'updated_at',
             'gajisupir_nobukti',
-            'invoice_nobukti'
+            'invoice_nobukti',
+            'statusgajisupir',
+            'statusinvoice',
+
 
         ], $querysuratpengantar);
 
@@ -698,6 +713,8 @@ class SuratPengantar extends MyModel
                 'suratpengantar.updated_at',
                 'suratpengantar.gajisupir_nobukti',
                 'suratpengantar.invoice_nobukti',
+                'statusgajisupir.memo as statusgajisupir',
+                'statusinvoice.memo as statusinvoice',
 
             )
 
@@ -718,6 +735,8 @@ class SuratPengantar extends MyModel
             ->leftJoin('parameter as statusbatalmuat', 'suratpengantar.statusbatalmuat', 'statusbatalmuat.id')
             ->leftJoin('parameter as statusapprovaleditsuratpengantar', 'suratpengantar.statusapprovaleditsuratpengantar', 'statusapprovaleditsuratpengantar.id')
             ->leftJoin('parameter as statusapprovalbiayatitipanemkl', 'suratpengantar.statusapprovalbiayatitipanemkl', 'statusapprovalbiayatitipanemkl.id')
+            ->leftJoin('parameter as statusgajisupir', 'suratpengantar.statusgajisupir', 'statusgajisupir.id')
+            ->leftJoin('parameter as statusinvoice', 'suratpengantar.statusinvoice', 'statusinvoice.id')
             ->leftJoin('mandor as mandortrado', 'suratpengantar.mandortrado_id', 'mandortrado.id')
             ->leftJoin('mandor as mandorsupir', 'suratpengantar.mandorsupir_id', 'mandorsupir.id')
             ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id');
@@ -733,6 +752,8 @@ class SuratPengantar extends MyModel
         //             ->where('pengeluarantruckingdetail.suratpengantar_nobukti', '!=', '');
         //     });
         // }
+
+        
         if (request()->jenisorder_id != null) {
             $query->where('suratpengantar.jenisorder_id', request()->jenisorder_id);
         }
@@ -1707,6 +1728,10 @@ class SuratPengantar extends MyModel
                                 $query = $query->where('statusgudangsama.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statusbatalmuat') {
                                 $query = $query->where('statusbatalmuat.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusgajisupir') {
+                                $query = $query->where('statusgajisupir.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusinvoice') {
+                                $query = $query->where('statusinvoice.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statusapprovaleditsuratpengantar') {
                                 $query = $query->where('statusapprovaleditsuratpengantar.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statusapprovalbiayatitipanemkl') {
@@ -1757,6 +1782,11 @@ class SuratPengantar extends MyModel
                                     $query = $query->orWhere('mandorsupir.namamandor', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'statuslongtrip') {
                                     $query = $query->orWhere('statuslongtrip.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusgajisupir') {
+                                    $query = $query->Orwhere('statusgajisupir.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusinvoice') {
+                                    $query = $query->Orwhere('statusinvoice.text', '=', "$filters[data]");
+    
                                 } else if ($filters['field'] == 'statusperalihan') {
                                     $query = $query->orWhere('statusperalihan.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'statusritasiomset') {
