@@ -293,8 +293,9 @@ class AbsensiSupirHeader extends MyModel
     left join absensisupirapprovalheader  with (readuncommitted)  on absensisupirapprovalheader.absensisupir_nobukti= absensisupirdetail.nobukti
     WHERE absensisupirapprovalheader.absensisupir_nobukti = absensisupirheader.nobukti 
           )")
-            ->where('absensi_id', $id)
-            ->where('trado.statusabsensisupir', $statusabsensi);
+          ->where('absensi_id', $id)
+          ->whereRaw('isnull(absensisupirdetail.uangjalan,0)<>0')
+          ->where('trado.statusabsensisupir', $statusabsensi);
         //     $this->totalRows = $query->count();
         // $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
