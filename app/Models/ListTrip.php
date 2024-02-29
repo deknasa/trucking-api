@@ -13,20 +13,41 @@ class ListTrip extends MyModel
 
     public function cekValidasi($id)
     {
+        $aksi = request()->aksi;
         $trip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-            ->select('nobukti', 'jobtrucking', 'tglbukti')
+            ->select('nobukti', 'jobtrucking', 'tglbukti', DB::raw("isnull(approvalbukatanggal_id,0) as approvalbukatanggal_id"))
             ->where('id', $id)
             ->first();
 
-        if ($trip->tglbukti < date('Y-m-d')) {
-            $data = [
-                'kondisi' => true,
-                'keterangan' => 'TRIP',
-                'kodeerror' => 'ETS',
-            ];
+        if ($trip->approvalbukatanggal_id > 0) {
+            $getTglBatasApproval = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip with (readuncommitted)"))
+                ->where('id', $trip->approvalbukatanggal_id)
+                ->first();
+
+            if (date('Y-m-d H:i:s') > date('Y-m-d H:i:s', strtotime($getTglBatasApproval->tglbatas))) {
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => "BATAS $aksi ".date('d-m-Y H:i:s', strtotime($getTglBatasApproval->tglbatas)),
+                    'kodeerror' => 'LB',
+                ];
+
+                goto selesai;
+            }
+        } else {
+
+            $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JAMBATASINPUTTRIP')->where('subgrp', 'JAMBATASINPUTTRIP')->first()->text;
+            $getBatasHari = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATASHARIINPUTTRIP')->where('subgrp', 'BATASHARIINPUTTRIP')->first()->text;
+            $batas = date('Y-m-d', strtotime($trip->tglbukti . "+$getBatasHari days")) . ' ' . $getBatasInput;
+            if (date('Y-m-d H:i:s') > $batas) {
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' =>  "BATAS $aksi ".date('d-m-Y', strtotime($trip->tglbukti . "+$getBatasHari days")) . ' ' . $getBatasInput,
+                    'kodeerror' => 'LB',
+                ];
 
 
-            goto selesai;
+                goto selesai;
+            }
         }
         $nobukti = $trip->nobukti;
         $jobtrucking = $trip->jobtrucking;
@@ -133,7 +154,7 @@ class ListTrip extends MyModel
             ];
             goto selesai;
         }
-        
+
         $cekSP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('dari_id', 'jobtrucking')->where('nobukti', $nobukti)->first();
         if ($cekSP->dari_id == 1) {
             $cekJob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', $cekSP->jobtrucking)->where('nobukti', '<>', $nobukti)->first();
@@ -141,6 +162,7 @@ class ListTrip extends MyModel
                 $data = [
                     'kondisi' => true,
                     'keterangan' => 'trip ' . $cekJob->nobukti,
+                    'kodeerror' => 'SATL',
                 ];
 
 
@@ -321,20 +343,20 @@ class ListTrip extends MyModel
                     }
                 }
             } else {
-                if($data['dari_id'] != 1){
+                if ($data['dari_id'] != 1) {
 
                     $count = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', $trip->jobtrucking)->count();
-                    if($count == 1){
+                    if ($count == 1) {
                         $getId = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
                         (new OrderanTrucking())->processDestroy($getId->id);
                     }
-                    
+
                     $trip->jobtrucking = $data['jobtrucking'];
                     $isTripPulang = true;
                 }
             }
         }
-        
+
         $statusperalihan = DB::table('parameter')->from(
             DB::raw("parameter as a with (readuncommitted)")
         )
@@ -528,9 +550,9 @@ class ListTrip extends MyModel
     {
         // $suratPengantarBiayaTambahan = SuratPengantarBiayaTambahan::where('suratpengantar_id', $id)->get();
         $cekSP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('suratpengantar.dari_id', 'orderantrucking.id')
-        ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'suratpengantar.jobtrucking', 'orderantrucking.nobukti')->where('suratpengantar.id', $id)->first();
+            ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'suratpengantar.jobtrucking', 'orderantrucking.nobukti')->where('suratpengantar.id', $id)->first();
 
-        if($cekSP->dari_id == 1){
+        if ($cekSP->dari_id == 1) {
             (new OrderanTrucking())->processDestroy($cekSP->id);
         }
 

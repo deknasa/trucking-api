@@ -28,6 +28,30 @@ class SuratPengantarApprovalInputTrip extends MyModel
     {
         $this->setRequestParameters();
 
+        //         select b.approvalbukatanggal_id, count(nobukti) as jumlah from suratpengantar as b
+        // where b.approvalbukatanggal_id != 0
+        // group by b.approvalbukatanggal_id
+        $tempTerpakai = '##tempTerpakai' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempTerpakai, function ($table) {
+            $table->integer('approvalbukatanggal_id')->nullable();
+            $table->integer('terpakai')->nullable();
+        });
+
+        $queryHitungTrip = DB::table('suratpengantar')->from(
+            DB::raw("suratpengantar with (readuncommitted)")
+        )
+            ->select(
+                'approvalbukatanggal_id',
+                DB::raw("count(nobukti) as terpakai")
+            )
+            ->whereRaw("isnull(approvalbukatanggal_id,0) != 0")
+            ->groupby('approvalbukatanggal_id');
+
+        DB::table($tempTerpakai)->insertUsing([
+            'approvalbukatanggal_id',
+            'terpakai',
+        ], $queryHitungTrip);
+
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )->select(
@@ -36,11 +60,15 @@ class SuratPengantarApprovalInputTrip extends MyModel
             "suratpengantarapprovalinputtrip.tglbatas",
             "suratpengantarapprovalinputtrip.jumlahtrip",
             'parameter.memo as statusapproval',
+            DB::raw("[user].[name] as user_id"),
             "suratpengantarapprovalinputtrip.modifiedby",
             "suratpengantarapprovalinputtrip.created_at",
             "suratpengantarapprovalinputtrip.updated_at",
+            DB::raw("isnull(b.terpakai,0) as terpakai")
         )
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'suratpengantarapprovalinputtrip.statusapproval', 'parameter.id');
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'suratpengantarapprovalinputtrip.statusapproval', 'parameter.id')
+            ->leftJoin(DB::raw("$tempTerpakai as b with (readuncommitted)"), 'suratpengantarapprovalinputtrip.id', 'b.approvalbukatanggal_id')
+            ->leftJoin(DB::raw("[user] with (readuncommitted)"), 'suratpengantarapprovalinputtrip.user_id', 'user.id');
 
         $this->sort($query);
         $this->filter($query);
@@ -74,14 +102,15 @@ class SuratPengantarApprovalInputTrip extends MyModel
                 ];
                 goto selesai;
             }
-        }else{
-            $getTglBukti = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip as a with (readuncommitted)"))->where('id',$id)->first();
+        } else {
+            $getTglBukti = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip as a with (readuncommitted)"))->where('id', $id)->first();
             $cek = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip as a with (readuncommitted)"))
-            ->where('tglbukti', $getTglBukti->tglbukti)
-            ->where('id', '>', $id)
-            ->first();
+                ->where('tglbukti', $getTglBukti->tglbukti)
+                ->where('user_id', $getTglBukti->user_id)
+                ->where('id', '>', $id)
+                ->first();
 
-            if(isset($cek)) {
+            if (isset($cek)) {
                 $data = [
                     'kondisi' => true,
                     'keterangan' => date('d-m-Y', strtotime($getTglBukti->tglbukti)),
@@ -89,14 +118,14 @@ class SuratPengantarApprovalInputTrip extends MyModel
                 ];
                 goto selesai;
             }
-            
-            $tanggal = date('Y-m-d', strtotime('+1 days')). ' ' . '10:00:00';
-            $cek = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip as a with (readuncommitted)"))
-            ->whereRaw("a.tglbatas<getdate()")
-            ->where('id', $id)
-            ->first();
 
-            if(isset($cek)) {
+            $tanggal = date('Y-m-d', strtotime('+1 days')) . ' ' . '10:00:00';
+            $cek = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip as a with (readuncommitted)"))
+                ->whereRaw("a.tglbatas<getdate()")
+                ->where('id', $id)
+                ->first();
+
+            if (isset($cek)) {
                 $data = [
                     'kondisi' => true,
                     'keterangan' => date('d-m-Y H:i:s', strtotime($getTglBukti->tglbatas)),
@@ -145,6 +174,23 @@ class SuratPengantarApprovalInputTrip extends MyModel
         return $data;
     }
 
+    public function findAll($id)
+    {
+        $query = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip as a with (readuncommitted)"))
+            ->select(
+                'a.id',
+                'a.tglbukti',
+                'a.jumlahtrip',
+                'a.statusapproval',
+                'a.user_id',
+                DB::raw("[user].[name] as [user]")
+            )
+            ->leftJoin(DB::raw("[user] with (readuncommitted)"), 'a.user_id', 'user.id')
+            ->where('a.id', $id)
+            ->first();
+
+        return $query;
+    }
     public function filter($query, $relationFields = [])
     {
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
@@ -157,6 +203,10 @@ class SuratPengantarApprovalInputTrip extends MyModel
                             $query = $query->where('parameter.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%' escape '|'");
+                        } else if ($filters['field'] == 'user_id') {
+                            $query = $query->where('user.name', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'terpakai') {
+                            $query = $query->whereRaw("isnull(b.terpakai,0) LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -171,6 +221,10 @@ class SuratPengantarApprovalInputTrip extends MyModel
                             $query = $query->orWhere('parameter.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'user_id') {
+                            $query = $query->orWhere('user.name', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'terpakai') {
+                            $query = $query->orWhereRaw("isnull(b.terpakai,0) LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -244,17 +298,43 @@ class SuratPengantarApprovalInputTrip extends MyModel
 
     public function selectColumns($query)
     {
+        $tempTerpakai = '##tempTerpakai' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempTerpakai, function ($table) {
+            $table->integer('approvalbukatanggal_id')->nullable();
+            $table->integer('terpakai')->nullable();
+        });
+
+        $queryHitungTrip = DB::table('suratpengantar')->from(
+            DB::raw("suratpengantar with (readuncommitted)")
+        )
+            ->select(
+                'approvalbukatanggal_id',
+                DB::raw("count(nobukti) as terpakai")
+            )
+            ->whereRaw("isnull(approvalbukatanggal_id,0) != 0")
+            ->groupby('approvalbukatanggal_id');
+
+        DB::table($tempTerpakai)->insertUsing([
+            'approvalbukatanggal_id',
+            'terpakai',
+        ], $queryHitungTrip);
+
         return $query->from(
             DB::raw($this->table . " with (readuncommitted)")
         )->select(
             "$this->table.id",
             "$this->table.tglbukti",
+            "$this->table.tglbatas",
             "$this->table.jumlahtrip",
             "parameter.text as statusapproval",
+            DB::raw("[user].[name] as user_id"),
+            DB::raw("isnull(b.terpakai,0) as terpakai"),
             "$this->table.modifiedby",
             "$this->table.created_at",
             "$this->table.updated_at",
-        )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'suratpengantarapprovalinputtrip.statusapproval', 'parameter.id');
+        )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'suratpengantarapprovalinputtrip.statusapproval', 'parameter.id')
+            ->leftJoin(DB::raw("$tempTerpakai as b with (readuncommitted)"), 'suratpengantarapprovalinputtrip.id', 'b.approvalbukatanggal_id')
+            ->leftJoin(DB::raw("[user] with (readuncommitted)"), 'suratpengantarapprovalinputtrip.user_id', 'user.id');
     }
 
     public function createTemp(string $modelTable)
@@ -266,8 +346,11 @@ class SuratPengantarApprovalInputTrip extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
             $table->date('tglbukti')->nullable();
+            $table->dateTime('tglbatas')->nullable();
             $table->integer('jumlahtrip')->nullable();
             $table->string('statusapproval', 500)->nullable();
+            $table->string('user_id', 500)->nullable();
+            $table->integer('terpakai')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -282,8 +365,11 @@ class SuratPengantarApprovalInputTrip extends MyModel
         DB::table($temp)->insertUsing([
             'id',
             'tglbukti',
+            'tglbatas',
             'jumlahtrip',
             'statusapproval',
+            'user_id',
+            'terpakai',
             'modifiedby',
             'created_at',
             'updated_at'
@@ -297,13 +383,39 @@ class SuratPengantarApprovalInputTrip extends MyModel
     {
         $approvalBukaTanggal = new SuratPengantarApprovalInputTrip();
 
-        $tanggal = date('Y-m-d', strtotime('+1 days'));
+        $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JAMBATASINPUTTRIP')->where('subgrp', 'JAMBATASINPUTTRIP')->first()->text;
+        $getBatasHari = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATASHARIINPUTTRIP')->where('subgrp', 'BATASHARIINPUTTRIP')->first()->text;
+        $tanggal = date('Y-m-d', strtotime("+$getBatasHari days"));
+        $batasHari = $getBatasHari;
+
+        $kondisi = true;
+        if ($getBatasHari != 0) {
+
+            while ($kondisi) {
+                $cekHarilibur = DB::table("harilibur")->from(DB::raw("harilibur with (readuncommitted)"))
+                    ->where('tgl', $tanggal)
+                    ->first();
+
+                $isSunday = date('l', strtotime($tanggal));
+                if ($cekHarilibur == '') {
+                    $kondisi = false;
+                    if (strtolower($isSunday) == 'sunday') {
+                        $kondisi = true;
+                        $batasHari += 1;
+                    }
+                } else {
+                    $batasHari += 1;
+                }
+                $tanggal = date('Y-m-d', strtotime("+$batasHari days"));
+            }
+        }
 
         $approvalBukaTanggal->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $approvalBukaTanggal->jumlahtrip = $data['jumlahtrip'];
         $approvalBukaTanggal->statusapproval = $data['statusapproval'];
-        $approvalBukaTanggal->tglbatas = date('Y-m-d', strtotime($tanggal)) . ' ' . '09:59:59';
-        $approvalBukaTanggal->modifiedby = auth('api')->user()->user;
+        $approvalBukaTanggal->user_id = $data['user_id'];
+        $approvalBukaTanggal->tglbatas = date('Y-m-d', strtotime($tanggal)) . ' ' . $getBatasInput;
+        $approvalBukaTanggal->modifiedby = auth('api')->user()->name;
         $approvalBukaTanggal->info = html_entity_decode(request()->info);
 
         if (!$approvalBukaTanggal->save()) {
@@ -317,6 +429,7 @@ class SuratPengantarApprovalInputTrip extends MyModel
             'nobuktitrans' => $approvalBukaTanggal->id,
             'aksi' => 'ENTRY',
             'datajson' => $approvalBukaTanggal->toArray(),
+            'modifiedby' => auth('api')->user()->name
         ]);
 
         return $approvalBukaTanggal;
@@ -327,7 +440,8 @@ class SuratPengantarApprovalInputTrip extends MyModel
         $approvalBukaTanggal->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $approvalBukaTanggal->jumlahtrip = $data['jumlahtrip'];
         $approvalBukaTanggal->statusapproval = $data['statusapproval'];
-        $approvalBukaTanggal->modifiedby = auth('api')->user()->user;
+        $approvalBukaTanggal->user_id = $data['user_id'];
+        $approvalBukaTanggal->modifiedby = auth('api')->user()->name;
         $approvalBukaTanggal->info = html_entity_decode(request()->info);
 
         if (!$approvalBukaTanggal->save()) {
@@ -341,6 +455,7 @@ class SuratPengantarApprovalInputTrip extends MyModel
             'nobuktitrans' => $approvalBukaTanggal->id,
             'aksi' => 'EDIT',
             'datajson' => $approvalBukaTanggal->toArray(),
+            'modifiedby' => auth('api')->user()->name
         ]);
 
         return $approvalBukaTanggal;
@@ -358,6 +473,7 @@ class SuratPengantarApprovalInputTrip extends MyModel
             'nobuktitrans' => $approvalBukaTanggal->id,
             'aksi' => 'DELETE',
             'datajson' => $approvalBukaTanggal->toArray(),
+            'modifiedby' => auth('api')->user()->name
         ]);
 
         return $approvalBukaTanggal;
