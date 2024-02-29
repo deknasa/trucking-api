@@ -89,110 +89,114 @@ class AbsensiSupirDetailController extends Controller
                 ]);
             } else {
                 $user_id = auth('api')->user()->id;
-                // GET APPROVAL INPUTTRIP
-                $tempApp = '##tempApp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-                Schema::create($tempApp, function ($table) {
-                    $table->unsignedBigInteger('id')->nullable();
-                    $table->date('tglbukti')->nullable();
-                    $table->unsignedBigInteger('jumlahtrip')->nullable();
-                    $table->unsignedBigInteger('statusapproval')->nullable();
-                    $table->unsignedBigInteger('user_id')->nullable();
-                    $table->datetime('tglbatas')->nullable();
-                });
+                $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JAMBATASINPUTTRIP')->where('subgrp', 'JAMBATASINPUTTRIP')->first();
+                $getBatasHari = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATASHARIINPUTTRIP')->where('subgrp', 'BATASHARIINPUTTRIP')->first()->text;
+              
+                if (date('Y-m-d', strtotime($tglbukti . "+$getBatasHari days")) . ' ' . $getBatasInput->text < date('Y-m-d H:i:s')) {
 
-                $querybukaabsen = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip with (readuncommitted)"))
-                    ->select('id', 'tglbukti', 'jumlahtrip', 'statusapproval', 'user_id', 'tglbatas')
-                    ->where('tglbukti', $tglbukti);
-                DB::table($tempApp)->insertUsing([
-                    'id',
-                    'tglbukti',
-                    'jumlahtrip',
-                    'statusapproval',
-                    'user_id',
-                    'tglbatas',
-                ],  $querybukaabsen);
+                    // GET APPROVAL INPUTTRIP
+                    $tempApp = '##tempApp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                    Schema::create($tempApp, function ($table) {
+                        $table->unsignedBigInteger('id')->nullable();
+                        $table->date('tglbukti')->nullable();
+                        $table->unsignedBigInteger('jumlahtrip')->nullable();
+                        $table->unsignedBigInteger('statusapproval')->nullable();
+                        $table->unsignedBigInteger('user_id')->nullable();
+                        $table->datetime('tglbatas')->nullable();
+                    });
 
-                // GET MANDOR DETAIL
-                $tempMandor = '##tempMandor' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-                Schema::create($tempMandor, function ($table) {
-                    $table->id();
-                    $table->unsignedBigInteger('mandor_id')->nullable();
-                });
+                    $querybukaabsen = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip with (readuncommitted)"))
+                        ->select('id', 'tglbukti', 'jumlahtrip', 'statusapproval', 'user_id', 'tglbatas')
+                        ->where('tglbukti', $tglbukti);
+                    DB::table($tempApp)->insertUsing([
+                        'id',
+                        'tglbukti',
+                        'jumlahtrip',
+                        'statusapproval',
+                        'user_id',
+                        'tglbatas',
+                    ],  $querybukaabsen);
 
-                $querymandor = DB::table("mandordetail")->from(DB::raw("mandordetail with (readuncommitted)"))
-                    ->select('mandor_id')->where('user_id', $user_id);
-                DB::table($tempMandor)->insertUsing([
-                    'mandor_id',
-                ],  $querymandor);
+                    // GET MANDOR DETAIL
+                    $tempMandor = '##tempMandor' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                    Schema::create($tempMandor, function ($table) {
+                        $table->id();
+                        $table->unsignedBigInteger('mandor_id')->nullable();
+                    });
 
-                // BUAT TEMPORARY SP GROUP BY TEMPO ID
-                $tempSP = '##tempSP' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-                Schema::create($tempSP, function ($table) {
-                    $table->id();
-                    $table->unsignedBigInteger('approvalbukatanggal_id')->nullable();
-                    $table->unsignedBigInteger('jumlahtrip')->nullable();
-                });
+                    $querymandor = DB::table("mandordetail")->from(DB::raw("mandordetail with (readuncommitted)"))
+                        ->select('mandor_id')->where('user_id', $user_id);
+                    DB::table($tempMandor)->insertUsing([
+                        'mandor_id',
+                    ],  $querymandor);
 
-                $querySP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-                    ->select('approvalbukatanggal_id', DB::raw("count(nobukti) as jumlahtrip"))
-                    ->where('tglbukti', $tglbukti)
-                    ->whereRaw("isnull(approvalbukatanggal_id,0) != 0")
-                    ->groupBy('approvalbukatanggal_id');
+                    // BUAT TEMPORARY SP GROUP BY TEMPO ID
+                    $tempSP = '##tempSP' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                    Schema::create($tempSP, function ($table) {
+                        $table->id();
+                        $table->unsignedBigInteger('approvalbukatanggal_id')->nullable();
+                        $table->unsignedBigInteger('jumlahtrip')->nullable();
+                    });
 
-                DB::table($tempSP)->insertUsing([
-                    'approvalbukatanggal_id',
-                    'jumlahtrip'
-                ],  $querySP);
-                // GET APPROVAL BERDASARKAN MANDOR
+                    $querySP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+                        ->select('approvalbukatanggal_id', DB::raw("count(nobukti) as jumlahtrip"))
+                        ->where('tglbukti', $tglbukti)
+                        ->whereRaw("isnull(approvalbukatanggal_id,0) != 0")
+                        ->groupBy('approvalbukatanggal_id');
 
-                $getAll = DB::table("mandordetail")->from(DB::raw("mandordetail as a"))
-                    ->select('a.mandor_id', 'c.id', 'c.user_id', 'c.statusapproval', 'c.tglbatas', 'c.jumlahtrip')
-                    ->leftJoin(DB::raw("$tempMandor as b with (readuncommitted)"), 'a.mandor_id', 'b.mandor_id')
-                    ->leftJoin(DB::raw("$tempApp as c with (readuncommitted)"), 'a.user_id', 'c.user_id')
-                    ->leftJoin(DB::raw("$tempSP as d with (readuncommitted)"), 'c.id', 'd.approvalbukatanggal_id')
-                    ->whereRaw('COALESCE(b.mandor_id, 0) <> 0')
-                    ->whereRaw('COALESCE(c.user_id, 0) <> 0')
-                    ->whereRaw('d.jumlahtrip < c.jumlahtrip')
-                    ->first();
+                    DB::table($tempSP)->insertUsing([
+                        'approvalbukatanggal_id',
+                        'jumlahtrip'
+                    ],  $querySP);
+                    // GET APPROVAL BERDASARKAN MANDOR
 
-                if ($getAll == '') {
-                    return response([
-                        'data' => [],
-                        'total' => 0,
-                        "records" => 0,
-                    ]);
-                } else {
-                    if ($getAll->statusapproval == 4) {
-
+                    $getAll = DB::table("mandordetail")->from(DB::raw("mandordetail as a"))
+                        ->select('a.mandor_id', 'c.id', 'c.user_id', 'c.statusapproval', 'c.tglbatas', 'c.jumlahtrip')
+                        ->leftJoin(DB::raw("$tempMandor as b with (readuncommitted)"), 'a.mandor_id', 'b.mandor_id')
+                        ->leftJoin(DB::raw("$tempApp as c with (readuncommitted)"), 'a.user_id', 'c.user_id')
+                        ->leftJoin(DB::raw("$tempSP as d with (readuncommitted)"), 'c.id', 'd.approvalbukatanggal_id')
+                        ->whereRaw('COALESCE(b.mandor_id, 0) <> 0')
+                        ->whereRaw('COALESCE(c.user_id, 0) <> 0')
+                        ->whereRaw('d.jumlahtrip < c.jumlahtrip')
+                        ->first();
+                    if ($getAll == '') {
                         return response([
                             'data' => [],
                             'total' => 0,
                             "records" => 0,
                         ]);
-                    }
+                    } else {
+                        if ($getAll->statusapproval == 4) {
 
-                    $suratPengantar = SuratPengantar::where('tglbukti', '=', $tglbukti)->whereRaw("approvalbukatanggal_id = $getAll->id")->count();
+                            return response([
+                                'data' => [],
+                                'total' => 0,
+                                "records" => 0,
+                            ]);
+                        }
 
-                    $now = date('Y-m-d H:i:s');
-                    if ($now > $getAll->tglbatas) {
+                        $suratPengantar = SuratPengantar::where('tglbukti', '=', $tglbukti)->whereRaw("approvalbukatanggal_id = $getAll->id")->count();
 
-                        return response([
-                            'data' => [],
-                            'total' => 0,
-                            "records" => 0,
-                        ]);
-                    }
+                        $now = date('Y-m-d H:i:s');
+                        if ($now > $getAll->tglbatas) {
 
-                    if ($getAll->jumlahtrip < ($suratPengantar + 1)) {
+                            return response([
+                                'data' => [],
+                                'total' => 0,
+                                "records" => 0,
+                            ]);
+                        }
 
-                        return response([
-                            'data' => [],
-                            'total' => 0,
-                            "records" => 0,
-                        ]);
+                        if ($getAll->jumlahtrip < ($suratPengantar + 1)) {
+
+                            return response([
+                                'data' => [],
+                                'total' => 0,
+                                "records" => 0,
+                            ]);
+                        }
                     }
                 }
-
                 $id = $absensiSupirHeader->id;
                 $request->request->add(['getabsen' => true]);
             }
