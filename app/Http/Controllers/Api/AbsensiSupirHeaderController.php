@@ -150,6 +150,7 @@ class AbsensiSupirHeaderController extends Controller
                 "trado_id" => $request->trado_id,
                 "trado" => $request->trado,
                 "supir_id" => $request->supir_id,
+                "supirold_id" => $request->supirold_id,
                 "supir" => $request->supir,
                 "keterangan_detail" => $request->keterangan_detail,
                 "absen_id" => $request->absen_id,

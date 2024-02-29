@@ -32,7 +32,7 @@ class GetAbsensiMandorRule implements Rule
         $todayValidation = AbsensiSupirHeader::todayValidation($date);
         //check apakah tanggal hari ini jika true  maka tidak masuk if
         if(!$todayValidation){
-            $isBukaTanggalValidation = AbsensiSupirHeader::isBukaTanggalValidation($date);
+            $isBukaTanggalValidation = (new AbsensiSupirHeader())->isBukaTanggalValidation($date);
             $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti',$date)->first();
             //check apakah data sudah ada atau tidak, jika tidak masuk kedalam if
             if (!$absensiSupirHeader) {

@@ -401,10 +401,23 @@ class AbsensiSupirHeader extends MyModel
         if ($now < $limit) return true;
         return false;
     }
-    public function isBukaTanggalValidation($date)
+    public function isBukaTanggalValidation($date) :bool
     {
         $date = date('Y-m-d', strtotime($date));
-        // $bukaAbsensi = BukaAbsensi::where('tglabsensi', '=', $date)->first();
+        $bukaAbsensi = $this->cekBukaTanggalValidation($date);
+
+        $tglbatas = $bukaAbsensi->tglbatas ?? 0;
+        $limit = strtotime($tglbatas);
+        $now = strtotime('now');
+        // dd( date('Y-m-d H:i:s',$now), date('Y-m-d H:i:s',$limit));
+        
+        if ($now < $limit) return true;
+        return false;
+    }
+
+    public function cekBukaTanggalValidation($date)
+    {
+        $date = date('Y-m-d', strtotime($date));
         
         //user ada dimandor apa aja
         $userMandor = DB::table('mandordetail')->select('mandor_id')->where('user_id',auth()->user()->id);
@@ -421,16 +434,22 @@ class AbsensiSupirHeader extends MyModel
             $userArray[] = $mandor->user_id;
         }
         
-        $bukaAbsensi = BukaAbsensi::where('tglabsensi', '=', $date)
-        ->whereIn('mandor_user_id',$userArray)
-        ->first();
-
-        $tglbatas = $bukaAbsensi->tglbatas ?? 0;
-        $limit = strtotime($tglbatas);
-        $now = strtotime('now');
-        // dd( date('Y-m-d H:i:s',$now), date('Y-m-d H:i:s',$limit));
-        if ($now < $limit) return true;
-        return false;
+        $bukaAbsensi = BukaAbsensi::where('tglabsensi', '=', $date);
+        $isAdmin = auth()->user()->isAdmin();
+        
+        if (!$isAdmin) {
+            
+            $cekSingle = BukaAbsensi::where('tglabsensi', '=', $date)->where('mandor_user_id',auth()->user()->id)->first();
+            if ($cekSingle) {
+                $tglbatas = $cekSingle->tglbatas ?? 0;
+                $limit = strtotime($tglbatas);
+                $now = strtotime('now');
+                $userArray= ($now < $limit) ? [$cekSingle->mandor_user_id]: $userArray;
+            }
+            $bukaAbsensi = $bukaAbsensi->whereIn('mandor_user_id',$userArray);
+        }
+        $bukaAbsensi = $bukaAbsensi->first();
+        return $bukaAbsensi;
     }
 
     public function isBukaTanggalAbsenMandor($date)
