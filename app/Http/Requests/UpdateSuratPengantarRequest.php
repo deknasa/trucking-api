@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Models\Parameter;
+use App\Models\ReminderOli;
 use App\Models\SuratPengantar;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -23,7 +24,13 @@ use App\Rules\ExistJenisOrder;
 use App\Rules\ExistNominalUpahSupir;
 use App\Rules\ExistTarifRincian;
 use App\Rules\ExistUpahSupirRincianSuratPengantar;
+use App\Rules\ValidasiGajiKenekSP;
 use App\Rules\ValidasiKotaUpahZona;
+use App\Rules\ValidasiReminderOli;
+use App\Rules\ValidasiReminderOliGardan;
+use App\Rules\ValidasiReminderOliPersneling;
+use App\Rules\ValidasiReminderSaringanHawa;
+use Illuminate\Support\Facades\Schema;
 
 class UpdateSuratPengantarRequest extends FormRequest
 {
@@ -49,7 +56,9 @@ class UpdateSuratPengantarRequest extends FormRequest
             ->select(
                 'tglbukti',
                 'nobukti',
-                'statusapprovaleditsuratpengantar'
+                'statusapprovaleditsuratpengantar',
+                'trado_id',
+                'jarak'
             )
             ->where('id', $this->id)
             ->first();
@@ -106,6 +115,8 @@ class UpdateSuratPengantarRequest extends FormRequest
             'nosp' => 'required',
             'upah' => ['required', new ExistNominalUpahSupir()],
             'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+            'gajisupir' => new ValidasiGajiKenekSP('gajisupir'),
+            'gajikenek' => new ValidasiGajiKenekSP('gajikenek')
         ];
 
         $rulesStatusPeralihan = [];
@@ -224,12 +235,195 @@ class UpdateSuratPengantarRequest extends FormRequest
             ];
         }
 
+        $tempreminderoli = '##tempreminderoli' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        if (request()->trado_id != '') {
+
+            // 
+            Schema::create($tempreminderoli, function ($table) {
+                $table->id();
+                $table->longText('nopol')->nullable();
+                $table->integer('trado_id')->nullable();
+                $table->date('tanggal')->nullable();
+                $table->string('status', 100)->nullable();
+                $table->double('km', 15, 2)->nullable();
+                $table->double('kmperjalanan', 15, 2)->nullable();
+                $table->integer('statusbatas')->nullable();
+            });
+            DB::table($tempreminderoli)->insertUsing([
+                'nopol',
+                'trado_id',
+                'tanggal',
+                'status',
+                'km',
+                'kmperjalanan',
+                'statusbatas',
+            ], (new ReminderOli())->getdata2(request()->trado_id));
+            $table = DB::table($tempreminderoli)->get();
+
+
+            for ($i = 1; $i <= count($table); $i++) {
+                $getJarak = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->where('id', request()->upah_id)->first();
+                $jarak = 0;
+                if (request()->statuscontainer_id != '') {
+                    if (request()->statuscontainer_id == 3) {
+                        $jarak = $getJarak->jarakfullempty ?? 0;
+                    } else {
+                        $jarak = $getJarak->jarak ?? 0;
+                    }
+                }
+                if ($query->trado_id == request()->trado_id) {
+                    DB::update(DB::raw("UPDATE " . $tempreminderoli . " SET kmperjalanan=(kmperjalanan + $jarak - $query->jarak) where id='$i'"));
+                } else {
+                    DB::update(DB::raw("UPDATE " . $tempreminderoli . " SET kmperjalanan=(kmperjalanan + $jarak) where id='$i'"));
+                }
+            }
+
+
+            $statusapproval = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                ->select(
+                    'a.id'
+                )
+                ->where('a.grp', 'STATUS APPROVAL')
+                ->where('a.subgrp', 'STATUS APPROVAL')
+                ->where('a.text', 'APPROVAL')
+                ->first()->id ?? 0;
+
+
+
+            // pergantian oli mesin
+            $query = db::table($tempreminderoli)->from(db::raw($tempreminderoli . " a"))
+                ->select(
+                    'a.km',
+                    'a.kmperjalanan'
+                )
+                ->where('a.status', 'Penggantian Oli Mesin')
+                ->first();
+
+            if (isset($query)) {
+                $trado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))
+                    ->where('id', request()->trado_id)
+                    ->where('statusapprovalreminderolimesin', $statusapproval)
+                    ->whereraw("tglbatasreminderolimesin>=getdate()")
+                    ->first();
+                if (!isset($trado)) {
+                    if ($query->kmperjalanan >= $query->km) {
+                        $validasireminderolimesin = true;
+                        $keteranganvalidasireminderolimesin = "OLI MESIN SUDAH MELEWATI BATAS YANG DITENTUKAN";
+                    } else {
+                        $validasireminderolimesin = false;
+                        $keteranganvalidasireminderolimesin = "";
+                    }
+                } else {
+                    $validasireminderolimesin = false;
+                    $keteranganvalidasireminderolimesin = "";
+                }
+            } else {
+                $validasireminderolimesin = false;
+                $keteranganvalidasireminderolimesin = "";
+            }
+
+            // pergantian oli persneling
+            $query = db::table($tempreminderoli)->from(db::raw($tempreminderoli . " a"))
+                ->select(
+                    'a.km',
+                    'a.kmperjalanan'
+                )
+                ->where('a.status', 'Penggantian Oli Persneling')
+                ->first();
+
+            if (isset($query)) {
+                $trado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))
+                    ->where('id', request()->trado_id)
+                    ->where('statusapprovalreminderolipersneling', $statusapproval)
+                    ->whereraw("tglbatasreminderolipersneling>=getdate()")
+                    ->first();
+                if (!isset($trado)) {
+                    if ($query->kmperjalanan >= $query->km) {
+                        $validasireminderolipersneling = true;
+                        $keteranganvalidasireminderolipersneling = "OLI PERSNELING SUDAH MELEWATI BATAS YANG DITENTUKAN";
+                    } else {
+                        $validasireminderolipersneling = false;
+                        $keteranganvalidasireminderolipersneling = "";
+                    }
+                } else {
+                    $validasireminderolipersneling = false;
+                    $keteranganvalidasireminderolipersneling = "";
+                }
+            } else {
+                $validasireminderolipersneling = false;
+                $keteranganvalidasireminderolipersneling = "";
+            }
+
+            // pergantian oli GARDAN
+            $query = db::table($tempreminderoli)->from(db::raw($tempreminderoli . " a"))
+                ->select(
+                    'a.km',
+                    'a.kmperjalanan'
+                )
+                ->where('a.status', 'Penggantian Oli Gardan')
+                ->first();
+
+            if (isset($query)) {
+                $trado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))
+                    ->where('id', request()->trado_id)
+                    ->where('statusapprovalreminderoligardan', $statusapproval)
+                    ->whereraw("tglbatasreminderoligardan>=getdate()")
+                    ->first();
+                if (!isset($trado)) {
+                    if ($query->kmperjalanan >= $query->km) {
+                        $validasireminderoligardan = true;
+                        $keteranganvalidasireminderoligardan = "OLI GARDAN SUDAH MELEWATI BATAS YANG DITENTUKAN";
+                    } else {
+                        $validasireminderoligardan = false;
+                        $keteranganvalidasireminderoligardan = "";
+                    }
+                } else {
+                    $validasireminderoligardan = false;
+                    $keteranganvalidasireminderoligardan = "";
+                }
+            } else {
+                $validasireminderoligardan = false;
+                $keteranganvalidasireminderoligardan = "";
+            }
+
+            // pergantian SARINGAN HAWA
+            $query = db::table($tempreminderoli)->from(db::raw($tempreminderoli . " a"))
+                ->select(
+                    'a.km',
+                    'a.kmperjalanan'
+                )
+                ->where('a.status', 'Penggantian Saringan Hawa')
+                ->first();
+
+            if (isset($query)) {
+                $trado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))
+                    ->where('id', request()->trado_id)
+                    ->where('statusapprovalremindersaringanhawa', $statusapproval)
+                    ->whereraw("tglbatasremindersaringanhawa>=getdate()")
+                    ->first();
+                if (!isset($trado)) {
+                    if ($query->kmperjalanan >= $query->km) {
+                        $validasiremindersaringanhawa = true;
+                        $keteranganvalidasiremindersaringanhawa = "SARINGAN HAWA SUDAH MELEWATI BATAS YANG DITENTUKAN";
+                    } else {
+                        $validasiremindersaringanhawa = false;
+                        $keteranganvalidasiremindersaringanhawa = "";
+                    }
+                } else {
+                    $validasiremindersaringanhawa = false;
+                    $keteranganvalidasiremindersaringanhawa = "";
+                }
+            } else {
+                $validasiremindersaringanhawa = false;
+                $keteranganvalidasiremindersaringanhawa = "";
+            }
+        }
         $trado_id = $this->trado_id;
         $rulestrado_id = [];
         if ($trado_id != '' && $this->trado != '') {
             $rulestrado_id = [
                 'trado' => [
-                    new ExistTrado(),
+                    new ExistTrado(), new ValidasiReminderOli($validasireminderolimesin, $keteranganvalidasireminderolimesin), new ValidasiReminderOliPersneling($validasireminderolipersneling, $keteranganvalidasireminderolipersneling), new ValidasiReminderOliGardan($validasireminderoligardan, $keteranganvalidasireminderoligardan), new ValidasiReminderSaringanHawa($validasiremindersaringanhawa, $keteranganvalidasiremindersaringanhawa)
                 ]
             ];
         } else if ($trado_id != null) {
@@ -251,7 +445,7 @@ class UpdateSuratPengantarRequest extends FormRequest
                     $rulestrado_id = [
                         'trado' => [
                             'required',
-                            new ExistTrado(),
+                            new ExistTrado(), new ValidasiReminderOli($validasireminderolimesin, $keteranganvalidasireminderolimesin), new ValidasiReminderOliPersneling($validasireminderolipersneling, $keteranganvalidasireminderolipersneling), new ValidasiReminderOliGardan($validasireminderoligardan, $keteranganvalidasireminderoligardan), new ValidasiReminderSaringanHawa($validasiremindersaringanhawa, $keteranganvalidasiremindersaringanhawa)
                         ]
                     ];
                 }
@@ -272,7 +466,7 @@ class UpdateSuratPengantarRequest extends FormRequest
                     'required',
                     'numeric',
                     'min:1',
-                    new ExistTrado(),
+                    new ExistTrado(), new ValidasiReminderOli($validasireminderolimesin, $keteranganvalidasireminderolimesin), new ValidasiReminderOliPersneling($validasireminderolipersneling, $keteranganvalidasireminderolipersneling), new ValidasiReminderOliGardan($validasireminderoligardan, $keteranganvalidasireminderoligardan), new ValidasiReminderSaringanHawa($validasiremindersaringanhawa, $keteranganvalidasiremindersaringanhawa)
                 ]
             ];
         }
