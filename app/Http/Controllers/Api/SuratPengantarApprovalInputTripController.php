@@ -55,6 +55,7 @@ class SuratPengantarApprovalInputTripController extends Controller
                 'tglbukti' => $request->tglbukti,
                 'jumlahtrip' => $request->jumlahtrip,
                 'statusapproval' => $request->statusapproval,
+                'user_id' => $request->user_id,
             ];
             $approvalTrip = (new SuratPengantarApprovalInputTrip())->processStore($data);
             $approvalTrip->position = $this->getPosition($approvalTrip, $approvalTrip->getTable())->position;
@@ -76,11 +77,11 @@ class SuratPengantarApprovalInputTripController extends Controller
         }
     }
 
-    public function show(SuratPengantarApprovalInputTrip $suratpengantarapprovalinputtrip)
+    public function show($id)
     {
         return response([
             'status' => true,
-            'data' => $suratpengantarapprovalinputtrip
+            'data' => (new SuratPengantarApprovalInputTrip())->findAll($id)
         ]);
     }
 
@@ -96,6 +97,7 @@ class SuratPengantarApprovalInputTripController extends Controller
                 'tglbukti' => $request->tglbukti,
                 'jumlahtrip' => $request->jumlahtrip,
                 'statusapproval' => $request->statusapproval,
+                'user_id' => $request->user_id,
             ];
             $approvalBukaTanggal = (new SuratPengantarApprovalInputTrip())->processUpdate($suratpengantarapprovalinputtrip, $data);
             $approvalBukaTanggal->position = $this->getPosition($approvalBukaTanggal, $approvalBukaTanggal->getTable())->position;

@@ -152,15 +152,82 @@ class InputTrip extends MyModel
             }
         }
 
-        $bukaTrip = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip with (readuncommitted)"))
-        ->where('tglbukti', date('Y-m-d', strtotime($data['tglbukti'])))
-        ->whereRaw("tglbatas>=getdate()")
-        ->orderBy('id','desc')
+        
+        $date = date('Y-m-d', strtotime($data['tglbukti']));
+        $user_id = auth('api')->user()->id;
+
+        // GET APPROVAL INPUTTRIP
+        $tempApp = '##tempApp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempApp, function ($table) {
+            $table->unsignedBigInteger('id')->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->unsignedBigInteger('jumlahtrip')->nullable();
+            $table->unsignedBigInteger('statusapproval')->nullable();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->datetime('tglbatas')->nullable();
+        });
+
+        $querybukaabsen = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip with (readuncommitted)"))
+        ->select('id', 'tglbukti', 'jumlahtrip','statusapproval','user_id', 'tglbatas')
+        ->where('tglbukti', $date);
+        DB::table($tempApp)->insertUsing([
+            'id',
+            'tglbukti',
+            'jumlahtrip',
+            'statusapproval',
+            'user_id',
+            'tglbatas',
+        ],  $querybukaabsen);
+        
+        // GET MANDOR DETAIL
+        $tempMandor = '##tempMandor' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempMandor, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('mandor_id')->nullable();
+        });
+
+        $querymandor = DB::table("mandordetail")->from(DB::raw("mandordetail with (readuncommitted)"))
+        ->select('mandor_id')->where('user_id', $user_id);
+        DB::table($tempMandor)->insertUsing([
+            'mandor_id',
+        ],  $querymandor);
+
+
+        // BUAT TEMPORARY SP GROUP BY TEMPO ID
+        $tempSP = '##tempSP' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempSP, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('approvalbukatanggal_id')->nullable();
+            $table->unsignedBigInteger('jumlahtrip')->nullable();
+        });
+
+        $querySP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+        ->select('approvalbukatanggal_id',DB::raw("count(nobukti) as jumlahtrip"))
+        ->where('tglbukti', $date)
+        ->whereRaw("isnull(approvalbukatanggal_id,0) != 0")
+        ->groupBy('approvalbukatanggal_id');
+        
+        DB::table($tempSP)->insertUsing([
+            'approvalbukatanggal_id',
+            'jumlahtrip'
+        ],  $querySP);
+
+
+        // GET APPROVAL BERDASARKAN MANDOR
+
+        $getAll = DB::table("mandordetail")->from(DB::raw("mandordetail as a"))
+        ->select('a.mandor_id','c.id', 'c.user_id', 'c.statusapproval','c.tglbatas','c.jumlahtrip')
+        ->leftJoin(DB::raw("$tempMandor as b with (readuncommitted)"), 'a.mandor_id', 'b.mandor_id')
+        ->leftJoin(DB::raw("$tempApp as c with (readuncommitted)"), 'a.user_id', 'c.user_id')
+        ->leftJoin(DB::raw("$tempSP as d with (readuncommitted)"), 'c.id', 'd.approvalbukatanggal_id')
+        ->whereRaw('COALESCE(b.mandor_id, 0) <> 0')
+        ->whereRaw('COALESCE(c.user_id, 0) <> 0')
+        ->whereRaw('d.jumlahtrip < c.jumlahtrip')
         ->first();
         
         $approvalId = '';
-        if ($bukaTrip != null) {
-            $approvalId = $bukaTrip->id;
+        if ($getAll != null) {
+            $approvalId = $getAll->id;
         }
         $getZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
         $upahZona = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->where('id', $data['upah_id'])->first();

@@ -132,21 +132,52 @@ class AbsensiSupirDetail extends MyModel
             $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
             $userid = auth('api')->user()->id;
             // dd($userid);
-    
+
             $querymandor = db::table("mandordetail")->from(db::raw("mandordetail a with (readuncommitted)"))
                 ->select('a.mandor_id')
                 ->where('a.user_id', $userid);
-    
+            $querybukaabsen = db::table("suratpengantarapprovalinputtrip")->from(db::raw("suratpengantarapprovalinputtrip a with (readuncommitted)"))
+                ->select('a.user_id')
+                ->where('a.tglbukti', date('Y-m-d', strtotime(request()->tglbukti)));
+            if ($querybukaabsen->count()) {
+                $tempmandordetaillogin = '##mandordetaillogin' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempmandordetaillogin, function ($table) {
+                    $table->id();
+                    $table->unsignedBigInteger('mandor_id')->nullable();
+                });
+                DB::table($tempmandordetaillogin)->insertUsing([
+                    'mandor_id',
+                ],  $querymandor);
+
+                $tempmandorbukaabsen = '##mandorbukaabsen' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempmandorbukaabsen, function ($table) {
+                    $table->id();
+                    $table->unsignedBigInteger('user_id')->nullable();
+                });
+
+                DB::table($tempmandorbukaabsen)->insertUsing([
+                    'user_id',
+                ],  $querybukaabsen);
+
+                $querymandor = DB::table('mandordetail as a')
+                    ->leftJoin(DB::raw($tempmandordetaillogin . ' as b'), 'a.mandor_id', '=', 'b.mandor_id')
+                    ->leftJoin(DB::raw($tempmandorbukaabsen . ' as c'), 'a.user_id', '=', 'c.user_id')
+                    ->whereRaw('COALESCE(b.mandor_id, 0) <> 0')
+                    ->whereRaw('COALESCE(c.user_id, 0) <> 0')
+                    ->select('a.mandor_id');
+                // ->pluck('a.mandor_id');
+
+            }
             $tempmandordetail = '##tempmandordetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempmandordetail, function ($table) {
                 $table->id();
                 $table->unsignedBigInteger('mandor_id')->nullable();
             });
-    
+
             DB::table($tempmandordetail)->insertUsing([
                 'mandor_id',
             ],  $querymandor);
-
+            // dd( DB::table($tempmandordetail)->get());
 
             $params = [
                 "id" => request()->id,
@@ -236,13 +267,11 @@ class AbsensiSupirDetail extends MyModel
                         if ($isMandor) {
                             // $query->where('trado.mandor_id', $isMandor->mandor_id);
                             $query->Join(DB::raw($tempmandordetail . " as mandordetail"), 'trado.mandor_id', 'mandordetail.mandor_id');
-
                         }
                     }
                     $query->addSelect(DB::raw("(trim(trado.kodetrado)+' - '+trim(supir.namasupir)) as tradosupir"))
                     ->where("$this->table.supir_id", '!=', 0)
                     ->whereRaw("absentrado.kodeabsen is null");
-
                 }
                 if ($isProsesUangjalan == true) {
                     $query->where('absensisupirdetail.uangjalan', '!=', 0);

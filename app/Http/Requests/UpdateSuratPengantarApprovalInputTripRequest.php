@@ -8,6 +8,7 @@ use App\Models\Parameter;
 use App\Rules\DateTutupBuku;
 use App\Rules\validasiStatusApprovalBukaTanggalTrip;
 use App\Rules\validasiTglApprovalBukaTanggalTrip;
+use App\Rules\validasiUserBukaTanggalTrip;
 use App\Rules\ValidationJumlahTripApproval;
 use App\Rules\ValidationTglBuktiSPUpdate;
 use Illuminate\Support\Facades\DB;
@@ -45,7 +46,8 @@ class UpdateSuratPengantarApprovalInputTripRequest extends FormRequest
         return [
             'tglbukti' => ['required','date_format:d-m-Y', 'before:'. date('d-m-Y'), new validasiTglApprovalBukaTanggalTrip($query->tglbukti), new DateTutupBuku()],
             'jumlahtrip' => ['required','numeric','min:1', new ValidationJumlahTripApproval()],
-            'statusapproval' => ['required', Rule::in($status), new validasiStatusApprovalBukaTanggalTrip($query->statusapproval)]
+            'statusapproval' => ['required', Rule::in($status), new validasiStatusApprovalBukaTanggalTrip($query->statusapproval)],
+            'user' => ['required', new validasiUserBukaTanggalTrip($query->user_id)]
         ];
     }
 }

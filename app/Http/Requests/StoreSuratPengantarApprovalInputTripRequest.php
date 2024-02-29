@@ -38,7 +38,8 @@ class StoreSuratPengantarApprovalInputTripRequest extends FormRequest
         $rules = [
             'tglbukti' => ['required', 'date_format:d-m-Y', 'before:'. date('d-m-Y'), new ValidationTglBuktiSPStore(), new DateTutupBuku()],
             'jumlahtrip' => ['required', 'numeric', 'min:1'],
-            'statusapproval' => ['required', Rule::in($status)]
+            'statusapproval' => ['required', Rule::in($status)],
+            'user' => ['required']
         ];
         return $rules;
     }
