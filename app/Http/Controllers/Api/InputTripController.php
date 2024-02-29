@@ -73,8 +73,8 @@ class InputTripController extends Controller
                 'nobukti_tripasal' => $request->nobukti_tripasal ?? '',
             ];
             $inputTrip = (new InputTrip())->processStore($data);
-            $inputTrip->position = $this->getPosition($inputTrip, $inputTrip->getTable())->position;
-            $inputTrip->page = ceil($inputTrip->position / ($request->limit ?? 10));
+            // $inputTrip->position = $this->getPosition($inputTrip, $inputTrip->getTable())->position;
+            // $inputTrip->page = ceil($inputTrip->position / ($request->limit ?? 10));
 
             DB::commit();
 

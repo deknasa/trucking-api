@@ -222,7 +222,7 @@ class InputTrip extends MyModel
         ->leftJoin(DB::raw("$tempSP as d with (readuncommitted)"), 'c.id', 'd.approvalbukatanggal_id')
         ->whereRaw('COALESCE(b.mandor_id, 0) <> 0')
         ->whereRaw('COALESCE(c.user_id, 0) <> 0')
-        ->whereRaw('d.jumlahtrip < c.jumlahtrip')
+        ->whereRaw('isnull(d.jumlahtrip,0) < c.jumlahtrip')
         ->first();
         
         $approvalId = '';

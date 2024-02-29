@@ -604,7 +604,7 @@ class UpahSupirController extends Controller
     {
     }
 
-         /**
+    /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
      */
@@ -628,4 +628,16 @@ class UpahSupirController extends Controller
         }
     }
 
+
+    public function getRincian(Request $request)
+    {
+
+        $upah_id = $request->upah_id ?? '';
+        $container_id = $request->container_id ?? '';
+        $statuscontainer_id = $request->statuscontainer_id ?? '';
+
+        return response([
+            'data' => (new UpahSupir())->getRincian($upah_id, $container_id, $statuscontainer_id)
+        ]);
+    }
 }

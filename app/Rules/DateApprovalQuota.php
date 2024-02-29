@@ -67,15 +67,13 @@ class DateApprovalQuota implements Rule
                 $isSunday = date('l', strtotime($date));
                 if ($cekHarilibur == '') {
                     $kondisi = false;
-                    $allowed = false;
+                    $allowed = true;
                     if (strtolower($isSunday) == 'sunday') {
                         $kondisi = true;
-                        $allowed = true;
                         $batasHari += 1;
                     }
                 } else {
                     $batasHari += 1;
-                    $allowed = true;
                 }
                 $tanggal = date('Y-m-d', strtotime("+$batasHari days"));
             }
@@ -156,7 +154,6 @@ class DateApprovalQuota implements Rule
 
 
             // GET APPROVAL BERDASARKAN MANDOR
-
             $getAll = DB::table("mandordetail")->from(DB::raw("mandordetail as a"))
             ->select('a.mandor_id','c.id', 'c.user_id', 'c.statusapproval','c.tglbatas','c.jumlahtrip')
             ->leftJoin(DB::raw("$tempMandor as b with (readuncommitted)"), 'a.mandor_id', 'b.mandor_id')
@@ -164,9 +161,8 @@ class DateApprovalQuota implements Rule
             ->leftJoin(DB::raw("$tempSP as d with (readuncommitted)"), 'c.id', 'd.approvalbukatanggal_id')
             ->whereRaw('COALESCE(b.mandor_id, 0) <> 0')
             ->whereRaw('COALESCE(c.user_id, 0) <> 0')
-            ->whereRaw('d.jumlahtrip < c.jumlahtrip')
+            ->whereRaw('isnull(d.jumlahtrip,0) < c.jumlahtrip')
             ->first();
-            
 
             if($getAll == ''){
                 return false;

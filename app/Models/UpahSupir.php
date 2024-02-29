@@ -1467,4 +1467,18 @@ class UpahSupir extends MyModel
 
         return $UpahSupir;
     }
+
+    public function getRincian($upah_id, $container_id, $statuscontainer_id){
+        if($statuscontainer_id != '' && $container_id != '' && $upah_id != ''){
+            $query = DB::table("upahsupirrrincian")->from(DB::raw("upahsupirrincian with (readuncommitted)"))
+            ->where('upahsupir_id', $upah_id)
+            ->where('statuscontainer_id', $statuscontainer_id)
+            ->where('container_id', $container_id)
+            ->first();
+            return $query;
+            
+        }else{
+            return [];
+        }
+    }
 }
