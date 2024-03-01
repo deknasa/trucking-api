@@ -17,7 +17,7 @@ class SuratPengantarBiayaTambahanController extends Controller
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
-    public function index(): JsonResponse
+    public function index()
     {
         $suratPengantarBiayaTambahan = new SuratPengantarBiayaTambahan();
 

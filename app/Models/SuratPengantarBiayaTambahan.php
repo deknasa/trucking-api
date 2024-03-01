@@ -223,7 +223,6 @@ class SuratPengantarBiayaTambahan extends MyModel
 
     public function processApproval(array $data)
     {
-        // dd($data);
 
         $statusApproval = Parameter::from(
             DB::raw("parameter with (readuncommitted)")
@@ -234,33 +233,38 @@ class SuratPengantarBiayaTambahan extends MyModel
 
         for ($i = 0; $i < count($data['id']); $i++) {
 
-            $suratPengantarTambahan = SuratPengantarBiayaTambahan::find($data['id'][$i]);
+            $getBiayaTambahan = DB::table("suratpengantarbiayatambahan")->from(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"))
+                ->where('suratpengantar_id', $data['id'][$i])->get();
+            for ($a = 0; $a < count($getBiayaTambahan); $a++) {
+                $suratPengantarTambahan = SuratPengantarBiayaTambahan::find($getBiayaTambahan[$a]->id);
 
-            if ($suratPengantarTambahan->statusapproval == $statusApproval->id) {
-                $suratPengantarTambahan->statusapproval = $statusNonApproval->id;
-                $suratPengantarTambahan->tglapproval = date('Y-m-d', strtotime("1900-01-01"));
-                $suratPengantarTambahan->userapproval = '';
-                $aksi = $statusNonApproval->text;
-            } else {
-                $suratPengantarTambahan->statusapproval = $statusApproval->id;
-                $aksi = $statusApproval->text;
-                $suratPengantarTambahan->tglapproval = date('Y-m-d H:i:s');
-                $suratPengantarTambahan->userapproval = auth('api')->user()->name;
-                $suratPengantarTambahan->info = html_entity_decode(request()->info);
-            }
 
-            if (!$suratPengantarTambahan->save()) {
-                throw new \Exception("Error approval surat pengantar biaya tambahan.");
+                if ($suratPengantarTambahan->statusapproval == $statusApproval->id) {
+                    $suratPengantarTambahan->statusapproval = $statusNonApproval->id;
+                    $suratPengantarTambahan->tglapproval = date('Y-m-d', strtotime("1900-01-01"));
+                    $suratPengantarTambahan->userapproval = '';
+                    $aksi = $statusNonApproval->text;
+                } else {
+                    $suratPengantarTambahan->statusapproval = $statusApproval->id;
+                    $aksi = $statusApproval->text;
+                    $suratPengantarTambahan->tglapproval = date('Y-m-d H:i:s');
+                    $suratPengantarTambahan->userapproval = auth('api')->user()->name;
+                    $suratPengantarTambahan->info = html_entity_decode(request()->info);
+                }
+
+                if (!$suratPengantarTambahan->save()) {
+                    throw new \Exception("Error approval surat pengantar biaya tambahan.");
+                }
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($suratPengantarTambahan->getTable()),
+                    'postingdari' => 'APPROVAL SURAT PENGANTAR BIAYA TAMBAHAN',
+                    'idtrans' => $suratPengantarTambahan->id,
+                    'nobuktitrans' => $suratPengantarTambahan->suratpengantar_id,
+                    'aksi' => $aksi,
+                    'datajson' => $suratPengantarTambahan->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
             }
-            (new LogTrail())->processStore([
-                'namatabel' => strtoupper($suratPengantarTambahan->getTable()),
-                'postingdari' => 'APPROVAL SURAT PENGANTAR BIAYA TAMBAHAN',
-                'idtrans' => $suratPengantarTambahan->id,
-                'nobuktitrans' => $suratPengantarTambahan->suratpengantar_id,
-                'aksi' => $aksi,
-                'datajson' => $suratPengantarTambahan->toArray(),
-                'modifiedby' => auth('api')->user()->user
-            ]);
         }
 
         return $suratPengantarTambahan;
