@@ -15,6 +15,7 @@ use App\Rules\DateApprovalQuota;
 use App\Rules\ExistAbsensiSupirDetail;
 use App\Rules\ExistAgen;
 use App\Rules\ExistContainer;
+use App\Rules\ValidasiSupirBaru;
 use App\Rules\ExistDataRitasi;
 use App\Rules\ExistGandengan;
 use App\Rules\ExistJenisOrder;
@@ -426,6 +427,7 @@ class StoreMandorTripRequest extends FormRequest
         if ($this->trado != '') {
             $rulesTrado_id = [
                 'trado_id' => [
+                    // ,new ValidasiSupirBaru()
                     'required', 'numeric', 'min:1', new ExistTrado(), new ValidasiReminderOli($validasireminderolimesin, $keteranganvalidasireminderolimesin), new ValidasiReminderOliPersneling($validasireminderolipersneling, $keteranganvalidasireminderolipersneling), new ValidasiReminderOliGardan($validasireminderoligardan, $keteranganvalidasireminderoligardan), new ValidasiReminderSaringanHawa($validasiremindersaringanhawa, $keteranganvalidasiremindersaringanhawa)
                 ],
                 'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()],

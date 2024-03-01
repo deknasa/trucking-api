@@ -260,6 +260,7 @@ class Supir extends MyModel
                 'supir.keteranganberhentisupir',
                 'statusblacklist.memo as statusblacklist',
                 'statuspostingtnl.memo as statuspostingtnl',
+                DB::raw('(case when (year(supir.tglmasuk) <= 2000) then null else supir.tglmasuk end ) as tglmasuk'),
                 DB::raw('(case when (year(supir.tglberhentisupir) <= 2000) then null else supir.tglberhentisupir end ) as tglberhentisupir'),
                 db::raw("cast((format(pemutihansupir.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpemutihansupir"),
                 db::raw("cast(cast(format((cast((format(pemutihansupir.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpemutihansupir"),
@@ -717,7 +718,7 @@ class Supir extends MyModel
                             $query = $query->where('b.namamandor', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'tgllahir' || $filters['field'] == 'tglterbitsim' || $filters['field'] == 'tglexpsim' || $filters['field'] == 'tglberhentisupir') {
+                        } else if ($filters['field'] == 'tgllahir' || $filters['field'] == 'tglterbitsim' || $filters['field'] == 'tglexpsim' || $filters['field'] == 'tglmasuk' || $filters['field'] == 'tglberhentisupir') {
                             $query = $query->whereRaw("format((case when year(isnull($this->table." . $filters['field'] . ",'1900/1/1'))<2000 then null else supir." . $filters['field'] . " end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'check') {
                             $query = $query->whereRaw('1 = 1');
@@ -752,7 +753,7 @@ class Supir extends MyModel
                                 $query = $query->orwhere('b.namamandor', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'supirold_id') {
                                 $query = $query->orWhere('supirlama.namasupir', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'tgllahir' || $filters['field'] == 'tglterbitsim' || $filters['field'] == 'tglexpsim' || $filters['field'] == 'tglberhentisupir') {
+                            } else if ($filters['field'] == 'tgllahir' || $filters['field'] == 'tglterbitsim' || $filters['field'] == 'tglexpsim' || $filters['field'] == 'tglmasuk' || $filters['field'] == 'tglberhentisupir') {
                                 $query = $query->orWhereRaw("format((case when year(isnull($this->table." . $filters['field'] . ",'1900/1/1'))<2000 then null else supir." . $filters['field'] . " end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'check') {
                                 $query = $query->whereRaw('1 = 1');
