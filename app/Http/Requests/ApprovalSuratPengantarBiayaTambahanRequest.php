@@ -34,7 +34,7 @@ class ApprovalSuratPengantarBiayaTambahanRequest extends FormRequest
     public function messages()
     {
         return [
-            'id.required' => 'biaya tambahan '.app(ErrorController::class)->geterror('WP')->keterangan,
+            'id.required' => 'surat pengantar '.app(ErrorController::class)->geterror('WP')->keterangan,
         ];
     }
 }

@@ -13,6 +13,7 @@ class ValidasiApprovalSuratPengantarBiayaTambahan implements Rule
      *
      * @return void
      */
+    public $nobukti;
     public function __construct()
     {
         //
@@ -30,7 +31,7 @@ class ValidasiApprovalSuratPengantarBiayaTambahan implements Rule
         $getSP = DB::table("suratpengantarbiayatambahan")->from(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"))
             ->select('suratpengantar.nobukti', 'suratpengantar.jobtrucking', 'suratpengantarbiayatambahan.statusapproval')
             ->join(DB::raw("suratpengantar with (readuncommitted)"), 'suratpengantarbiayatambahan.suratpengantar_id', 'suratpengantar.id')
-            ->where('suratpengantarbiayatambahan.id', $value)
+            ->where('suratpengantar.id', $value)
             ->first();
 
         // cek ric
