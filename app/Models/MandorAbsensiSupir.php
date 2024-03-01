@@ -30,9 +30,10 @@ class MandorAbsensiSupir extends MyModel
         $querymandor = db::table("mandordetail")->from(db::raw("mandordetail a with (readuncommitted)"))
             ->select('a.mandor_id')
             ->where('a.user_id', $userid);
+        $bukaAbsensiid = $bukaAbsensi->id ?? 0;
         $querybukaabsen = db::table("bukaabsensi")->from(db::raw("bukaabsensi a with (readuncommitted)"))
             ->select('a.mandor_user_id')
-            ->where('a.id', $bukaAbsensi->id);
+            ->where('a.id', $bukaAbsensiid);
         if ($querybukaabsen->count()) {
             $tempmandordetaillogin = '##mandordetaillogin' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempmandordetaillogin, function ($table) {
@@ -234,9 +235,10 @@ class MandorAbsensiSupir extends MyModel
 
         //supir serap yang belum diisi
         $tgl = date('Y-m-d', strtotime($date));
+        $tglbatas = $bukaAbsensi->tglbatas ?? '';
         $update->update([
             "tglbukti"=>date('Y-m-d', strtotime($date)),
-            "tglbatas"=>$bukaAbsensi->tglbatas
+            "tglbatas"=>$tglbatas
 
         ]);
         
