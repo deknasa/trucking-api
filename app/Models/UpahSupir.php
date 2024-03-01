@@ -54,6 +54,8 @@ class UpahSupir extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
+            // dd(request()->isParent);
+
         $aktif = request()->aktif ?? '';
         $isParent = request()->isParent ?? false;
 
@@ -263,7 +265,7 @@ class UpahSupir extends MyModel
             );
 
 
-
+// dd($query->get());
 
         $this->filter($query);
 
@@ -277,8 +279,13 @@ class UpahSupir extends MyModel
 
             $query->where('a.statusaktif_id', '=', $statusaktif->id);
         }
+        // dd($isParent);
         if ($isParent == true) {
+            // dump($isParent);
+            // dd($isParent == true);
             $query->where('a.penyesuaian', '');
+        } else {
+            $query->whereRaw("1=1");
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -286,8 +293,6 @@ class UpahSupir extends MyModel
         $this->sort($query);
         $this->paginate($query);
         $data = $query->get();
-
-
         return $data;
     }
     public function findAll($id)

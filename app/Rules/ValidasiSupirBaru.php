@@ -62,9 +62,12 @@ class ValidasiSupirBaru implements Rule
                 as datetime)+" . $hari . ">=getdate()")
             ->whereraw("a.statusluarkota<>".$supirluarkota)
             ->first();
+            // dd($supir);
         if (isset($supir)) {
             if ($jarak>$jarakbatasluarkota ) {
                 return false;
+            } else {
+                return true;
             }
         } else {
             $supirall = DB::table("supir")->from(DB::raw("supir a with (readuncommitted)"))
@@ -74,6 +77,8 @@ class ValidasiSupirBaru implements Rule
             if (isset($supirall)) {
                 if ($jarak>$jarakbatasluarkota ) {
                     return false;
+                } else {
+                    return true;    
                 }
             } else {
                 return true;
@@ -103,6 +108,6 @@ class ValidasiSupirBaru implements Rule
 
         $hari = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATAS SUPIR BARU LUAR KOTA')->where('subgrp', 'BATAS SUPIR BARU LUAR KOTA')->first()->text ?? '0';
 
-        return ':attribute' . ' ' . $controller->geterror('BSBLK')->keterangan . 'adalah ' . $hari . ' hari dari tgl masuk supir, tgl masuk supir (' . $tglmasuk . ')';
+        return ':attribute' . ' ' . $controller->geterror('BSBLK')->keterangan . ' adalah ' . $hari . ' hari dari tgl masuk supir, tgl masuk supir (' . $tglmasuk . ')';
     }
 }

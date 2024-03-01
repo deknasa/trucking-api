@@ -97,18 +97,20 @@ class StoreUpahSupirRequest extends FormRequest
             if ($tarif_id != null) {
                 if ($tarif_id == 0) {
                     $rulesTarif_id = [
-                        'tarif_id' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, 'numeric', 'min:1', new ExistTarif()]
+                        // 'tarif_id' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, 'numeric', 'min:1', new ExistTarif()]
+                        'tarif_id' => ['numeric', 'min:1', new ExistTarif()]
                     ];
                 } else {
                     if ($this->tarif == '') {
                         $rulesTarif_id = [
-                            'tarif' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id]
+                            // 'tarif' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id]
                         ];
                     }
                 }
             } else if ($tarif_id == null && $this->tarif != '') {
                 $rulesTarif_id = [
-                    'tarif_id' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, 'numeric', 'min:1', new ExistTarif()]
+                    // 'tarif_id' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, 'numeric', 'min:1', new ExistTarif()]
+                    'tarif_id' => [ 'numeric', 'min:1', new ExistTarif()]
                 ];
             }
 
@@ -196,7 +198,8 @@ class StoreUpahSupirRequest extends FormRequest
                 'kotasampai' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id),new UniqueUpahSupirKotaSampai()],
                 'zonadari' => ['required_if:statusupahzona,=,' . $getUpahZona->id, new ValidasiZonaUpahZona($getUpahZona->id)],
                 'zonasampai' => ['required_if:statusupahzona,=,' . $getUpahZona->id, new ValidasiZonaUpahZona($getUpahZona->id)],
-                'tarif' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id)],
+                // 'tarif' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id)],
+                'tarif' => [new ValidasiKotaUpahZona($getBukanUpahZona->id)],
                 'penyesuaian' => [new UniqueUpahSupirSampai(), new ValidasiPenyesuaianUpahSupir(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
                 'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
                 'jarakfullempty' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
