@@ -166,11 +166,13 @@ class BukaAbsensi extends MyModel
 
     public function processStore(array $data): BukaAbsensi
     {
-        $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'BATAS JAM EDIT ABSENSI')->where('subgrp', '=', 'BATAS JAM EDIT ABSENSI')->first();
+        // $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'BATAS JAM EDIT ABSENSI')->where('subgrp', '=', 'BATAS JAM EDIT ABSENSI')->first();
+        $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
         $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
-        if (strtotime('now') > strtotime($tglbatas)) {
-            $tglbatas = date('Y-m-d', strtotime('tomorrow')) . ' ' . $jambatas->text ?? '00:00:00';
-        }
+        // if (strtotime('now') > strtotime($tglbatas)) {
+            // $tglbatas = date('Y-m-d', strtotime('tomorrow')) . ' ' . $jambatas->text ?? '00:00:00';
+        // }
+
         $bukaAbsensi = new BukaAbsensi();
         $bukaAbsensi->tglabsensi = date('Y-m-d', strtotime($data['tglabsensi']));
         $bukaAbsensi->mandor_user_id = $data['user_id'];
@@ -257,12 +259,15 @@ class BukaAbsensi extends MyModel
 
     public function processTanggalBatasUpdate(array $data)
     {
-        $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'BATAS JAM EDIT ABSENSI')->where('subgrp', '=', 'BATAS JAM EDIT ABSENSI')->first();
-        $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
+        // $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'BATAS JAM EDIT ABSENSI')->where('subgrp', '=', 'BATAS JAM EDIT ABSENSI')->first();
+        // $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
 
-        if (strtotime('now') > strtotime($tglbatas)) {
-            $tglbatas = date('Y-m-d', strtotime('tomorrow')) . ' ' . $jambatas->text ?? '00:00:00';
-        }
+        // if (strtotime('now') > strtotime($tglbatas)) {
+        //     $tglbatas = date('Y-m-d', strtotime('tomorrow')) . ' ' . $jambatas->text ?? '00:00:00';
+        // }
+                $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
+                $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
+        
         for ($i = 0; $i < count($data['id']); $i++) {
             $bukaAbsensi = BukaAbsensi::where('id', $data['id'][$i])->first();
             $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti', $bukaAbsensi->tglabsensi)->first();
