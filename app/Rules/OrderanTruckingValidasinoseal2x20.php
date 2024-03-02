@@ -54,7 +54,11 @@ class OrderanTruckingValidasinoseal2x20 implements Rule
        
         $noseal = request()->noseal2 ?? '';
         if ($noseal == '' and  request()->container_id==$container2x20->text  )  {
-            $nilai = false;
+            if ($this->kondisi == true){
+                $nilai = true;
+            }else{
+                $nilai = false;
+            }
         } else {
 
             $nilai = true;

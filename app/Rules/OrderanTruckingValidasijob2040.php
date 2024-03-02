@@ -54,7 +54,13 @@ class OrderanTruckingValidasijob2040 implements Rule
         $nojobemkl = request()->nojobemkl ?? '';
 
         if ((isset($query)) and $nojobemkl == '') {
-            $nilai = false;
+            $getOrderan = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('id', request()->id)->first();
+            $currentDate = date('Y-m-d H:i:s');
+            if ($getOrderan->statusapprovaltanpajob == 3 && $currentDate <  date('Y-m-d H:i:s', strtotime($getOrderan->tglbatastanpajoborderantrucking))) {
+                $nilai = true;
+            } else {
+                $nilai = false;
+            }
         } else {
             $nilai = true;
         }
@@ -69,7 +75,7 @@ class OrderanTruckingValidasijob2040 implements Rule
      * @return string
      */
 
- 
+
 
     public function message()
     {

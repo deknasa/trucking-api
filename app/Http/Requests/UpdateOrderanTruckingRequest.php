@@ -39,6 +39,7 @@ class UpdateOrderanTruckingRequest extends FormRequest
      *
      * @return array
      */
+    public $queryimport;
     public function rules()
     {
         $query = DB::table('orderantrucking')->from(DB::raw("orderantrucking with (readuncommitted)"))
@@ -95,6 +96,14 @@ class UpdateOrderanTruckingRequest extends FormRequest
             $kondisi = false;
         }
 
+        $this->queryimport = $queryimport;
+        $requiredSeal = Rule::requiredIf(function () {
+            if ($this->jenisorder_id == $this->queryimport ->text) {
+                return false;
+            } else {
+                return true;
+            }
+        });
         if ($this->container_id == $queryukuran->text) {
             $kondisiukuran = true;
         } else {
@@ -117,9 +126,9 @@ class UpdateOrderanTruckingRequest extends FormRequest
             'nojobemkl' => [new OrderanTruckingValidasijob2040()],
             'nojobemkl2' => [new OrderanTruckingValidasijob2x20()],
             'nocont' => 'required',
-            // 'noseal' => [new OrderanTruckingNoSeal($kondisi)],
-            // 'nocont2' => [new OrderanTruckingValidasinocont2x20()],
-            // 'noseal2' => [new OrderanTruckingValidasinoseal2x20($kondisi,$kondisiukuran)],
+            'noseal' => [$requiredSeal],
+            'nocont2' => [new OrderanTruckingValidasinocont2x20()],
+            'noseal2' => [new OrderanTruckingValidasinoseal2x20($kondisi,$kondisiukuran)],
         ];
 
 
@@ -419,7 +428,7 @@ class UpdateOrderanTruckingRequest extends FormRequest
     {
         return [
             'nojobemkl' => 'no job emkl',
-            'nojobemkl' => 'noj job emkl ke-2',
+            'nojobemkl2' => 'noj job emkl ke-2',
             'nocont' => 'no container',
             'noseal' => 'no seal',
             'nocont2' => 'no container ke-2',

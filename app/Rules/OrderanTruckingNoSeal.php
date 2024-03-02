@@ -26,6 +26,7 @@ class OrderanTruckingNoSeal implements Rule
      */
     public function passes($attribute, $value)
     {
+        dd($this->kondisi);
         if ($this->kondisi == true) {
             // dd('1');
             return true;

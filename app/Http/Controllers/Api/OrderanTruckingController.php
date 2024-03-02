@@ -439,4 +439,28 @@ class OrderanTruckingController extends Controller
             'data' => $orderanTrucking->getExport($dari, $sampai),
         ]);
     }
+    /**
+     * @ClassName
+     * @Keterangan APPROVAL TANPA JOB EMKL
+     */
+    public function approvaltanpajobemkl(ValidasiApprovalOrderanTruckingRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'id' => $request->orderanTruckingId
+            ];
+            $orderanTrucking = (new OrderanTrucking())->processApprovalTanpaJob($data);
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $orderanTrucking
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
 }
