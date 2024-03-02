@@ -7,6 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\ExistAgen;
 use App\Rules\ExistJenisOrder;
+use App\Rules\ValidasiContSPInvoice;
 use App\Rules\ValidasiDestroyInvoiceHeader;
 use App\Rules\ValidasiDetail;
 use App\Rules\ValidasiHutangList;
@@ -98,7 +99,8 @@ class UpdateInvoiceHeaderRequest extends FormRequest
                     new ExistAgen(),
                     new ValidasiDetail($jumlahdetail),
                     Rule::in($query->agen),
-                    new validasiTripInvoice()
+                    new validasiTripInvoice(),
+                    new ValidasiContSPInvoice()
 
                 ]
             ];

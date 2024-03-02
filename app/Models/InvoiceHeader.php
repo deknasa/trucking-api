@@ -516,7 +516,7 @@ class InvoiceHeader extends MyModel
 
         $tempomsettambahan = '##tempomsettambahan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
-        $cekStatus = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'SURAT PENGANTAR BIAYA TAMBAHAN')->first();
+        // $cekStatus = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'SURAT PENGANTAR BIAYA TAMBAHAN')->first();
 
         $fetch = DB::table("suratpengantar")->from(DB::raw("suratpengantar"))
             ->select(
@@ -526,9 +526,9 @@ class InvoiceHeader extends MyModel
             ->join(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"), 'suratpengantar.id', 'suratpengantarbiayatambahan.suratpengantar_id')
             ->join(DB::raw($temphasil . " c"), 'suratpengantar.jobtrucking', 'c.jobtrucking')
             ->groupby('c.jobtrucking');
-        if ($cekStatus->text == 'YA') {
-            $fetch->where('suratpengantarbiayatambahan.statusapproval', 3);
-        }
+        // if ($cekStatus->text == 'YA') {
+        //     $fetch->where('suratpengantarbiayatambahan.statusapproval', 3);
+        // }
         // dd($fetch->get());
         Schema::create($tempomsettambahan, function ($table) {
             $table->string('jobtrucking');
@@ -733,7 +733,9 @@ class InvoiceHeader extends MyModel
                 'agen.namaagen as agen_id',
                 DB::raw("(case when sp.statuslongtrip=" . $statuslongtrip->id . " then 'true' else 'false' end) as statuslongtrip"),
                 DB::raw("(case when sp.statusperalihan=" . $statusperalihan->id . " then 'true' else 'false' end) as statusperalihan"),
-                'sp.nocont as nocont',
+                // 'sp.nocont as nocont',
+                DB::raw("(CASE WHEN sp.container_id = 3 THEN sp.nocont + (CASE WHEN sp.nocont2 != '' then ' / ' else '' end) + sp.nocont2 
+                ELSE sp.nocont end) as nocont"),
                 DB::raw("isnull(tarif.tujuan,'')+(case when isnull(sp.penyesuaian,'')='' then '' else ' ( '+isnull(sp.penyesuaian,'')+' ) '  end) as tarif_id"),
                 DB::raw("isnull(a.nominal,0) as omset"),
                 DB::raw("isnull(c.nominal,0) as nominalextra"),
@@ -808,7 +810,7 @@ class InvoiceHeader extends MyModel
                 'a.nospfullempty',
 
             )
-            ->where('a.nocont', '!=', '')
+            // ->where('a.nocont', '!=', '')
             ->orderBy("a.tglsp");
 
 
