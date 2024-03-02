@@ -678,6 +678,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('orderantrucking/export', [OrderanTruckingController::class, 'export']);
     Route::get('orderantrucking/getorderantrip', [OrderanTruckingController::class, 'getOrderanTrip']);
     Route::post('orderantrucking/approvaledit', [OrderanTruckingController::class, 'approvaledit']);
+    Route::post('orderantrucking/approvaltanpajob', [OrderanTruckingController::class, 'approvaltanpajobemkl']);
     Route::post('orderantrucking/approval', [OrderanTruckingController::class, 'approval']);
 
     Route::get('chargegandengan/export', [ChargeGandenganController::class, 'export']);
