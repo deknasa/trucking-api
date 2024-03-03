@@ -127,6 +127,12 @@ class Controller extends BaseController
         ]);
     }
 
+    function like_match($pattern, $subject)
+{
+    $pattern = str_replace('%', '.*', preg_quote($pattern, '/'));
+    return (bool) preg_match("/^{$pattern}$/i", $subject);
+}
+
     /* Compatible for single table */
     public function toExcel(string $Laporan, array $data, array $columns)
     {
