@@ -142,13 +142,14 @@ class TarifController extends Controller
      */
     public function store(StoreTarifRequest $request): JsonResponse
     {
+        // dd('test');
         DB::beginTransaction();
 
         try {
             $data = [
                 'parent_id' => $request->parent_id ?? '',
                 'parent' => $request->parent ?? '',
-                'upahsupir_id' => $request->upahsupir_id ?? '',
+                'upahsupir_id' => $request->upah_id ?? 0,
                 'tujuan' => $request->tujuan,
                 'penyesuaian' => $request->penyesuaian,
                 'statusaktif' => $request->statusaktif,
@@ -225,11 +226,12 @@ class TarifController extends Controller
      */
     public function update(UpdateTarifRequest $request, Tarif $tarif): JsonResponse
     {
+
         DB::beginTransaction();
         try {
             $data = [
                 'parent_id' => $request->parent_id ?? '',
-                'upahsupir_id' => $request->upahsupir_id ?? '',
+                'upahsupir_id' => $request->upah_id ?? 0,
                 'tujuan' => $request->tujuan,
                 'penyesuaian' => $request->penyesuaian,
                 'statusaktif' => $request->statusaktif,
