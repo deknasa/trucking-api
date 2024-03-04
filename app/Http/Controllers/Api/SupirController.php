@@ -2,33 +2,35 @@
 
 namespace App\Http\Controllers\Api;
 
+use Exception;
 use App\Helpers\App;
-use App\Http\Requests\StoreLogTrailRequest;
-use App\Http\Requests\StoreSupirRequest;
+use App\Models\Zona;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\HistorySupirMilikMandorRequest;
-use App\Http\Requests\RangeExportReportRequest;
-use App\Http\Requests\UpdateSupirRequest;
-use App\Models\HistorySupirMilikMandor;
 use App\Models\Supir;
 use App\Models\LogTrail;
 use App\Models\Parameter;
-use App\Models\PemutihanSupir;
-use App\Models\Zona;
-use Exception;
-use Illuminate\Http\Request;
-use App\Http\Requests\ApprovalSupirRequest;
-
-use Illuminate\Support\Facades\DB;
-use Intervention\Image\ImageManagerStatic as Image;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Js;
+use Illuminate\Http\Request;
+use App\Models\PemutihanSupir;
+use Illuminate\Http\JsonResponse;
+use App\Models\ApprovalSupirTanpa;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
+
+use App\Models\HistorySupirMilikMandor;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Storage;
+use App\Http\Requests\StoreSupirRequest;
+use App\Http\Requests\UpdateSupirRequest;
+use App\Http\Requests\ApprovalSupirRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\RangeExportReportRequest;
+use Intervention\Image\ImageManagerStatic as Image;
+use App\Http\Requests\HistorySupirMilikMandorRequest;
+use App\Http\Requests\StoreApprovalSupirTanpaRequest;
 
 class SupirController extends Controller
 {
@@ -174,6 +176,17 @@ class SupirController extends Controller
     public function cekValidasi($id)
     {
         $supir = new Supir();
+        if (request()->aksi =="ApprovalTanpa") {
+            $approvalSupirTanpa = (new ApprovalSupirTanpa())->cekApproval($supir->find($id));
+            // dd($approvalSupirTanpa);
+            $data = [
+                'error' => (!$approvalSupirTanpa['gambar'] && !$approvalSupirTanpa['keterangan']),
+                'statusapproval' => $approvalSupirTanpa,
+                'message' => '',
+                'statuspesan' => 'success',
+            ];
+            return response($data);
+        }
         $cekdata = $supir->cekvalidasihapus($id);
         if ($cekdata['kondisi'] == true) {
             if (request()->aksi == 'EDIT') {
@@ -841,6 +854,55 @@ class SupirController extends Controller
         }
     }
 
+    /**
+     * @ClassName 
+     * @Keterangan APPROVAL SUPIR TANPA KETERANGAN
+     */
+    public function approvalSupirTanpa()
+    {
+        $approvalSupirTanpa = new ApprovalSupirTanpa();
+
+        if (isset(request()->supir_id)) {
+            $data = $approvalSupirTanpa->firstOrFind(request()->supir_id);
+        }
+        return response([
+            'data' => $data,
+            
+        ]);
+    }
+    /**
+     * @ClassName 
+     * @Keterangan APPROVAL SUPIR TANPA KETERANGAN
+     */
+    public function StoreApprovalSupirTanpa(StoreApprovalSupirTanpaRequest $request)
+    {
+        DB::beginTransaction();
+        try {
+     
+            $data =[
+                "supir_id" => $request->supir_id,
+                "namasupir" => $request->namasupir,
+                "noktp" => $request->noktp,
+                "keterangan_id" => $request->keterangan_id,
+                "keterangan_statusapproval" => $request->keterangan_statusapproval,
+                "gambar_id" => $request->gambar_id,
+                "gambar_statusapproval" => $request->gambar_statusapproval,
+                "tglbatas" => $request->tglbatas,
+            ];
+     
+            $approvalSupirTanpa = (new ApprovalSupirTanpa())->processStore($data);
+     
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $approvalSupirTanpa
+            ], 201);    
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
+    }
     /**
      * @ClassName 
      * @Keterangan APPROVAL SUPIR TANPA KETERANGAN

@@ -576,6 +576,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('penerima/approvalnonaktif', [PenerimaController::class, 'approvalnonaktif']);
     Route::post('jenisorder/approvalnonaktif', [JenisOrderController::class, 'approvalnonaktif']);
     Route::post('absentrado/approvalnonaktif', [AbsenTradoController::class, 'approvalnonaktif']);
+    Route::get('supir/approvalsupirtanpa', [SupirController::class, 'approvalSupirTanpa']);
+
 
 });
 
@@ -983,6 +985,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
 
     Route::post('supir/historymandor', [SupirController::class, 'historySupirMandor']);
+    Route::post('supir/approvalsupirtanpa', [SupirController::class, 'StoreApprovalSupirTanpa']);
     Route::get('supir/{id}/gethistorymandor', [SupirController::class, 'getHistoryMandor']);
     Route::get('supir/{id}/getlisthistorymandor', [SupirController::class, 'getListHistoryMandor']);
     Route::get('supir/combo', [SupirController::class, 'combo']);
