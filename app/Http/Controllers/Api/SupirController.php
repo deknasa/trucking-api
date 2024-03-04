@@ -868,7 +868,7 @@ class SupirController extends Controller
     }
     /**
      * @ClassName 
-     * @Keterangan APPROVAL SUPIR TANPA KETERANGAN
+     * @Keterangan APPROVAL SUPIR TANPA KETERANGAN / GAMBAR
      */
     public function StoreApprovalSupirTanpa(StoreApprovalSupirTanpaRequest $request)
     {
