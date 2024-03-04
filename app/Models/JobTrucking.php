@@ -20,6 +20,7 @@ class JobTrucking extends MyModel
         // dump(request()->container_id);
         // dd(request()->jenisorder_id);
 
+        $edit = request()->edit ?? false;
 
         $statusgerobak = DB::table('parameter')->from(
             DB::raw("parameter as a with (readuncommitted)")
@@ -244,6 +245,10 @@ class JobTrucking extends MyModel
                 ->where('a.gandengan_id', '=', request()->gandengan_id)
                 ->where('a.pelanggan_id', '=', request()->pelanggan_id)
                 ->where('a.tarif_id', '=', request()->tarif_id);
+
+            if ($edit == true) {
+                $querydata->where('a.dari_id', 1);
+            }
         } else {
             // dd('test');
             tidakgandengan:
@@ -396,6 +401,9 @@ class JobTrucking extends MyModel
                 ->where('a.jenisorder_id', '=', request()->jenisorder_id)
                 ->where('a.pelanggan_id', '=', request()->pelanggan_id)
                 ->where('a.tarif_id', '=', request()->tarif_id);
+            if ($edit == true) {
+                $querydata->where('a.dari_id', 1);
+            }
         }
 
 
@@ -412,7 +420,6 @@ class JobTrucking extends MyModel
             ->where('a.id', '=', request()->trado_id)
             ->where('a.statusgerobak', '=', $statusgerobak->id)
             ->first();
-        $edit = request()->edit ?? false;
         $idtrip = request()->idtrip ?? '';
 
         if ($isGandengan->text == 'TIDAK') {
