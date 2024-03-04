@@ -96,8 +96,39 @@ class AbsensiSupirDetailController extends Controller
                     if ($isMandor) {
                         $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JAMBATASINPUTTRIP')->where('subgrp', 'JAMBATASINPUTTRIP')->first();
                         $getBatasHari = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATASHARIINPUTTRIP')->where('subgrp', 'BATASHARIINPUTTRIP')->first()->text;
+                        $kondisi = true;
+                        $batasHari = $getBatasHari;
+                        $tanggal = date('Y-m-d', strtotime($tglbukti));
+                        if ($getBatasHari != 0) {
 
-                        if (date('Y-m-d', strtotime($tglbukti . "+$getBatasHari days")) . ' ' . $getBatasInput->text < date('Y-m-d H:i:s')) {
+                            while ($kondisi) {
+                                $cekHarilibur = DB::table("harilibur")->from(DB::raw("harilibur with (readuncommitted)"))
+                                    ->where('tgl', $tanggal)
+                                    ->first();
+
+                                $todayIsSunday = date('l', strtotime($tanggal));
+                                $tomorrowIsSunday = date('l', strtotime($tanggal . "+1 days"));
+                                if ($cekHarilibur == '') {
+                                    $kondisi = false;
+                                    $allowed = true;
+                                    if (strtolower($todayIsSunday) == 'sunday') {
+                                        $kondisi = true;
+                                        $batasHari += 1;
+                                    }
+                                    if (strtolower($tomorrowIsSunday) == 'sunday') {
+                                        $kondisi = true;
+                                        $batasHari += 1;
+                                    }
+                                } else {
+                                    $batasHari += 1;
+                                }
+                                $tanggal = date('Y-m-d', strtotime($tglbukti . "+$batasHari days"));
+                            }
+                        }else{
+                            $tanggal = date('Y-m-d', strtotime($tglbukti. "+$getBatasHari days"));
+                        }
+
+                        if ($tanggal . ' ' . $getBatasInput->text < date('Y-m-d H:i:s')) {
 
                             // GET APPROVAL INPUTTRIP
                             $tempApp = '##tempApp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));

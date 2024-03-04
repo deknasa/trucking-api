@@ -54,7 +54,7 @@ class DateApprovalQuota implements Rule
         }
         // }
         $batasHari = $getBatasHari;
-        $tanggal = date('Y-m-d', strtotime("+$getBatasHari days"));
+        $tanggal = date('Y-m-d', strtotime($date));
 
         $kondisi = true;
         if ($getBatasHari != 0) {
@@ -63,23 +63,28 @@ class DateApprovalQuota implements Rule
                 $cekHarilibur = DB::table("harilibur")->from(DB::raw("harilibur with (readuncommitted)"))
                     ->where('tgl', $date)
                     ->first();
-
-                $isSunday = date('l', strtotime($date));
+                $todayIsSunday = date('l', strtotime($tanggal));
+                $tomorrowIsSunday = date('l', strtotime($tanggal . "+1 days"));
                 if ($cekHarilibur == '') {
                     $kondisi = false;
                     $allowed = true;
-                    if (strtolower($isSunday) == 'sunday') {
+                    if (strtolower($todayIsSunday) == 'sunday') {
+                        $kondisi = true;
+                        $batasHari += 1;
+                    }
+                    if (strtolower($tomorrowIsSunday) == 'sunday') {
                         $kondisi = true;
                         $batasHari += 1;
                     }
                 } else {
                     $batasHari += 1;
                 }
-                $tanggal = date('Y-m-d', strtotime("+$batasHari days"));
+                $tanggal = date('Y-m-d', strtotime($date . "+$batasHari days"));
             }
         }
-
-
+        if (date('Y-m-d H:i:s') > $tanggal . ' ' . $getBatasInput->text) {
+            $allowed = false;
+        }
         // if (strtolower($getDay) == 'sunday') {
         //     $allowed = true;
         //     $getTomorrowAfterSunday = date('Y-m-d', strtotime(request()->tglbukti . '+2 days'));
@@ -108,8 +113,8 @@ class DateApprovalQuota implements Rule
             });
 
             $querybukaabsen = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip with (readuncommitted)"))
-            ->select('id', 'tglbukti', 'jumlahtrip','statusapproval','user_id', 'tglbatas')
-            ->where('tglbukti', $date);
+                ->select('id', 'tglbukti', 'jumlahtrip', 'statusapproval', 'user_id', 'tglbatas')
+                ->where('tglbukti', $date);
             DB::table($tempApp)->insertUsing([
                 'id',
                 'tglbukti',
@@ -118,7 +123,7 @@ class DateApprovalQuota implements Rule
                 'user_id',
                 'tglbatas',
             ],  $querybukaabsen);
-            
+
             // GET MANDOR DETAIL
             $tempMandor = '##tempMandor' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempMandor, function ($table) {
@@ -127,7 +132,7 @@ class DateApprovalQuota implements Rule
             });
 
             $querymandor = DB::table("mandordetail")->from(DB::raw("mandordetail with (readuncommitted)"))
-            ->select('mandor_id')->where('user_id', $user_id);
+                ->select('mandor_id')->where('user_id', $user_id);
             DB::table($tempMandor)->insertUsing([
                 'mandor_id',
             ],  $querymandor);
@@ -142,11 +147,11 @@ class DateApprovalQuota implements Rule
             });
 
             $querySP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-            ->select('approvalbukatanggal_id',DB::raw("count(nobukti) as jumlahtrip"))
-            ->where('tglbukti', $date)
-            ->whereRaw("isnull(approvalbukatanggal_id,0) != 0")
-            ->groupBy('approvalbukatanggal_id');
-            
+                ->select('approvalbukatanggal_id', DB::raw("count(nobukti) as jumlahtrip"))
+                ->where('tglbukti', $date)
+                ->whereRaw("isnull(approvalbukatanggal_id,0) != 0")
+                ->groupBy('approvalbukatanggal_id');
+
             DB::table($tempSP)->insertUsing([
                 'approvalbukatanggal_id',
                 'jumlahtrip'
@@ -155,16 +160,16 @@ class DateApprovalQuota implements Rule
 
             // GET APPROVAL BERDASARKAN MANDOR
             $getAll = DB::table("mandordetail")->from(DB::raw("mandordetail as a"))
-            ->select('a.mandor_id','c.id', 'c.user_id', 'c.statusapproval','c.tglbatas','c.jumlahtrip')
-            ->leftJoin(DB::raw("$tempMandor as b with (readuncommitted)"), 'a.mandor_id', 'b.mandor_id')
-            ->leftJoin(DB::raw("$tempApp as c with (readuncommitted)"), 'a.user_id', 'c.user_id')
-            ->leftJoin(DB::raw("$tempSP as d with (readuncommitted)"), 'c.id', 'd.approvalbukatanggal_id')
-            ->whereRaw('COALESCE(b.mandor_id, 0) <> 0')
-            ->whereRaw('COALESCE(c.user_id, 0) <> 0')
-            ->whereRaw('isnull(d.jumlahtrip,0) < c.jumlahtrip')
-            ->first();
+                ->select('a.mandor_id', 'c.id', 'c.user_id', 'c.statusapproval', 'c.tglbatas', 'c.jumlahtrip')
+                ->leftJoin(DB::raw("$tempMandor as b with (readuncommitted)"), 'a.mandor_id', 'b.mandor_id')
+                ->leftJoin(DB::raw("$tempApp as c with (readuncommitted)"), 'a.user_id', 'c.user_id')
+                ->leftJoin(DB::raw("$tempSP as d with (readuncommitted)"), 'c.id', 'd.approvalbukatanggal_id')
+                ->whereRaw('COALESCE(b.mandor_id, 0) <> 0')
+                ->whereRaw('COALESCE(c.user_id, 0) <> 0')
+                ->whereRaw('isnull(d.jumlahtrip,0) < c.jumlahtrip')
+                ->first();
 
-            if($getAll == ''){
+            if ($getAll == '') {
                 return false;
             }
 

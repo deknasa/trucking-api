@@ -27,7 +27,7 @@ class ListTrip extends MyModel
             if (date('Y-m-d H:i:s') > date('Y-m-d H:i:s', strtotime($getTglBatasApproval->tglbatas))) {
                 $data = [
                     'kondisi' => true,
-                    'keterangan' => "BATAS $aksi ".date('d-m-Y H:i:s', strtotime($getTglBatasApproval->tglbatas)),
+                    'keterangan' => "BATAS $aksi " . date('d-m-Y H:i:s', strtotime($getTglBatasApproval->tglbatas)),
                     'kodeerror' => 'LB',
                 ];
 
@@ -37,11 +37,40 @@ class ListTrip extends MyModel
 
             $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JAMBATASINPUTTRIP')->where('subgrp', 'JAMBATASINPUTTRIP')->first()->text;
             $getBatasHari = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATASHARIINPUTTRIP')->where('subgrp', 'BATASHARIINPUTTRIP')->first()->text;
-            $batas = date('Y-m-d', strtotime($trip->tglbukti . "+$getBatasHari days")) . ' ' . $getBatasInput;
+            $tanggal = date('Y-m-d', strtotime($trip->tglbukti));
+
+            $batasHari = $getBatasHari;
+            $kondisi = true;
+            if ($getBatasHari != 0) {
+
+                while ($kondisi) {
+                    $cekHarilibur = DB::table("harilibur")->from(DB::raw("harilibur with (readuncommitted)"))
+                        ->where('tgl', $trip->tglbukti)
+                        ->first();
+                    $todayIsSunday = date('l', strtotime($tanggal));
+                    $tomorrowIsSunday = date('l', strtotime($tanggal . "+1 days"));
+                    if ($cekHarilibur == '') {
+                        $kondisi = false;
+                        $allowed = true;
+                        if (strtolower($todayIsSunday) == 'sunday') {
+                            $kondisi = true;
+                            $batasHari += 1;
+                        }
+                        if (strtolower($tomorrowIsSunday) == 'sunday') {
+                            $kondisi = true;
+                            $batasHari += 1;
+                        }
+                    } else {
+                        $batasHari += 1;
+                    }
+                    $tanggal = date('Y-m-d', strtotime($trip->tglbukti . "+$batasHari days"));
+                }
+            }
+            $batas = $tanggal . ' ' . $getBatasInput;
             if (date('Y-m-d H:i:s') > $batas) {
                 $data = [
                     'kondisi' => true,
-                    'keterangan' =>  "BATAS $aksi ".date('d-m-Y', strtotime($trip->tglbukti . "+$getBatasHari days")) . ' ' . $getBatasInput,
+                    'keterangan' =>  "BATAS $aksi " . date('d-m-Y', strtotime($trip->tglbukti . "+$getBatasHari days")) . ' ' . $getBatasInput,
                     'kodeerror' => 'LB',
                 ];
 
