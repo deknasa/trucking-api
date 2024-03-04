@@ -1486,4 +1486,35 @@ class UpahSupir extends MyModel
             return [];
         }
     }
+
+    public function processUpdateTarif( array $data)
+    {
+        // dd($upahsupir);
+        // dd($data['id']);
+        $upahsupir = UpahSupir::find($data['id']);
+        try {
+            $upahsupir->tarif_id = $data['tarif_id'] ?? 0;
+            $upahsupir->modifiedby = auth('api')->user()->user;
+            $upahsupir->info = html_entity_decode(request()->info);
+
+            if (!$upahsupir->save()) {
+                throw new \Exception("Error updating upah supir.");
+            }
+
+            $storedLogTrail = (new LogTrail())->processStore([
+                'namatabel' => strtoupper($upahsupir->getTable()),
+                'postingdari' => 'EDIT TARIF',
+                'idtrans' => $upahsupir->id,
+                'nobuktitrans' => $upahsupir->id,
+                'aksi' => 'EDIT',
+                'datajson' => $upahsupir->toArray(),
+                'modifiedby' => $upahsupir->modifiedby
+            ]);
+
+            return $upahsupir;
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
 }

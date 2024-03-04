@@ -115,7 +115,6 @@ class UpdateTarifRequest extends FormRequest
                 'before_or_equal:' . date('d-m-Y'),
             ],
             'kota' => ['required', ($check['kondisi']) ? Rule::in($dataTarif->kota) : ''],
-            'statuspenyesuaianharga' => ['required', Rule::in($statusPenyesuaian)],
         ];
 
         $relatedRequests = [

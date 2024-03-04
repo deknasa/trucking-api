@@ -9,6 +9,7 @@ use App\Rules\ExistKota;
 use App\Rules\ExistTarif;
 use App\Rules\ExistUpahSupir;
 use App\Rules\ExistZona;
+use App\Rules\ValidasiTujuanKota;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Rules\UniqueTarifEdit;
@@ -112,7 +113,7 @@ class StoreTarifRequest extends FormRequest
             }
 
             $rules = [
-                'tujuan' =>  ['required'],
+                'tujuan' =>  ['required', new ValidasiTujuanKota()],
                 'penyesuaian' => [new UniqueTarif()],
                 'statusaktif' => ['required', Rule::in($statusAktif)],
                 'statussistemton' => ['required', Rule::in($statusTon)],
@@ -122,7 +123,6 @@ class StoreTarifRequest extends FormRequest
                     'before:' . $tglbatasakhir,
                 ],
                 'kota' => 'required',
-                'statuspenyesuaianharga' => ['required', Rule::in($statusPenyesuaian)],
                 'statuspostingtnl' => ['required', Rule::in($statusPostingTnl)],
             ];
             $getListTampilan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'UBAH TAMPILAN')->where('text', 'TARIF')->first();
