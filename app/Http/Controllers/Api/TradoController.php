@@ -736,7 +736,7 @@ class TradoController extends Controller
 
     /**
      * @ClassName 
-     * @Keterangan APPROVAL SUPIR TANPA KETERANGAN / GAMBAR
+     * @Keterangan APPROVAL TRADO TANPA KETERANGAN / GAMBAR
      */
     public function StoreApprovalTradoTanpa(StoreApprovalTradoTanpaRequest $request)
     {
