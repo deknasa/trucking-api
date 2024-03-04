@@ -513,7 +513,7 @@ class GajiSupirHeader extends MyModel
     }
     public function createTempBiayaTambahan($supirId, $tglDari, $tglSampai)
     {
-        $cekStatus = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'SURAT PENGANTAR BIAYA TAMBAHAN')->first();
+        // $cekStatus = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'SURAT PENGANTAR BIAYA TAMBAHAN')->first();
 
         $tempTambahan = '##tempTambahan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $biayaTambahan = DB::table("suratpengantarbiayatambahan")->from(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"))
@@ -524,9 +524,9 @@ class GajiSupirHeader extends MyModel
             ->where('suratpengantar.tglbukti', '<=', $tglSampai)
             ->whereRaw("suratpengantar.nobukti not in(select suratpengantar_nobukti from gajisupirdetail)")
             ->groupBy('suratpengantar_id');
-        if ($cekStatus->text == 'YA') {
-            $biayaTambahan->where('suratpengantarbiayatambahan.statusapproval', 3);
-        }
+        // if ($cekStatus->text == 'YA') {
+        //     $biayaTambahan->where('suratpengantarbiayatambahan.statusapproval', 3);
+        // }
         Schema::create($tempTambahan, function ($table) {
             $table->bigInteger('suratpengantar_id')->nullable();
             $table->string('keteranganbiaya')->nullable();

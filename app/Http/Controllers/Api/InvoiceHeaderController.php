@@ -81,6 +81,7 @@ class InvoiceHeaderController extends Controller
                 'nominalretribusi' => $requestData['nominalretribusi'],
                 'nominalextra' => $requestData['nominalextra'],
                 'omset' => $requestData['omset'],
+                'keterangan' => $requestData['keterangan'],
                 'agen' => $request->agen,
                 'jenisorder' => $request->jenisorder
             ];
@@ -141,6 +142,7 @@ class InvoiceHeaderController extends Controller
                 'nominalretribusi' => $requestData['nominalretribusi'],
                 'nominalextra' => $requestData['nominalextra'],
                 'omset' => $requestData['omset'],
+                'keterangan' => $requestData['keterangan'],
                 'agen' => $request->agen,
                 'jenisorder' => $request->jenisorder
             ];

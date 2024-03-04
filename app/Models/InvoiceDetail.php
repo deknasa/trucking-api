@@ -130,6 +130,28 @@ class InvoiceDetail extends MyModel
                 'sampai_id'
             ], $querysprekap);
 
+            $tempomsettambahan = '##tempomsettambahan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+            // $cekStatus = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'SURAT PENGANTAR BIAYA TAMBAHAN')->first();
+    
+            $fetch = DB::table("suratpengantar")->from(DB::raw("suratpengantar"))
+                ->select(
+                    'c.jobtrucking',
+                    DB::raw("STRING_AGG(suratpengantarbiayatambahan.keteranganbiaya, ', ') AS keterangan"),
+                    DB::raw("sum(suratpengantarbiayatambahan.nominaltagih) as nominal")
+                )
+                ->join(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"), 'suratpengantar.id', 'suratpengantarbiayatambahan.suratpengantar_id')
+                ->join(DB::raw($tempsprekap . " c"), 'suratpengantar.jobtrucking', 'c.jobtrucking')
+                ->groupby('c.jobtrucking');
+            Schema::create($tempomsettambahan, function ($table) {
+                $table->string('jobtrucking');
+                $table->LongText('keterangan')->nullable();
+                $table->double('nominal')->nullable();
+            });
+    
+            DB::table($tempomsettambahan)->insertUsing(['jobtrucking','keterangan', 'nominal'], $fetch);
+
+            
             $query->select(
                 'suratpengantar.tglsp',
                 'pelanggan.namapelanggan as shipper',
@@ -143,9 +165,11 @@ class InvoiceDetail extends MyModel
                 $this->table . '.nominal as omset',
                 DB::raw("({$this->table}.nominalextra + {$this->table}.nominalretribusi) as extra"),
                 $this->table . '.total as jumlah',
-                $this->table . '.keterangan',
+                
+                DB::raw("({$this->table}.keterangan + (CASE WHEN isnull({$this->table}.keterangan, '')='' then '' else '. ' end)  + c.keterangan) as keterangan"),
             )
                 ->where($this->table . '.invoice_id', '=', request()->invoice_id)
+                ->leftjoin(DB::raw($tempomsettambahan . " c"), $this->table . '.orderantrucking_nobukti', 'c.jobtrucking')
                 ->leftJoin(DB::raw($tempsprekap . " as suratpengantar"), $this->table . '.orderantrucking_nobukti', 'suratpengantar.jobtrucking')
                 ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'suratpengantar.pelanggan_id', 'pelanggan.id')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'suratpengantar.container_id', 'container.id')

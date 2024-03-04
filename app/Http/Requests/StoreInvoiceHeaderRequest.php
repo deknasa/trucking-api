@@ -10,6 +10,7 @@ use App\Rules\ExistJenisOrder;
 use App\Rules\ValidasiContSPInvoice;
 use App\Rules\ValidasiDetail;
 use App\Rules\ValidasiHutangList;
+use App\Rules\ValidasiTambahanInvoice;
 use App\Rules\validasiTripInvoice;
 
 class StoreInvoiceHeaderRequest extends FormRequest
@@ -71,7 +72,8 @@ class StoreInvoiceHeaderRequest extends FormRequest
                     new ExistAgen(),
                     new ValidasiDetail($jumlahdetail),
                     new validasiTripInvoice(),
-                    new ValidasiContSPInvoice()
+                    new ValidasiContSPInvoice(),
+                    new ValidasiTambahanInvoice()
                 ]
             ];
         } else if ($agen_id != null) {

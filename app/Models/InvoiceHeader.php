@@ -521,6 +521,7 @@ class InvoiceHeader extends MyModel
         $fetch = DB::table("suratpengantar")->from(DB::raw("suratpengantar"))
             ->select(
                 'c.jobtrucking',
+                DB::raw("STRING_AGG(suratpengantarbiayatambahan.keteranganbiaya, ', ') AS keterangan"),
                 DB::raw("sum(suratpengantarbiayatambahan.nominaltagih) as nominal")
             )
             ->join(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"), 'suratpengantar.id', 'suratpengantarbiayatambahan.suratpengantar_id')
@@ -532,10 +533,11 @@ class InvoiceHeader extends MyModel
         // dd($fetch->get());
         Schema::create($tempomsettambahan, function ($table) {
             $table->string('jobtrucking');
+            $table->LongText('keterangan')->nullable();
             $table->double('nominal')->nullable();
         });
 
-        DB::table($tempomsettambahan)->insertUsing(['jobtrucking', 'nominal'], $fetch);
+        DB::table($tempomsettambahan)->insertUsing(['jobtrucking','keterangan', 'nominal'], $fetch);
 
         $tempsp = '##tempsp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsp, function ($table) {
@@ -658,6 +660,7 @@ class InvoiceHeader extends MyModel
             $table->LongText('nospfull')->nullable();
             $table->LongText('nospempty')->nullable();
             $table->LongText('nospfullempty')->nullable();
+            $table->LongText('keteranganbiaya')->nullable();
         });
 
 
@@ -669,7 +672,7 @@ class InvoiceHeader extends MyModel
                 'a.invoice_id as idinvoice',
                 'a.orderantrucking_nobukti as jobtrucking',
                 'sp.tglbukti as tglsp',
-                'sp.keterangan as keterangan',
+                'a.keterangan as keterangan',
                 'jenisorder.keterangan as jenisorder_id',
                 'agen.namaagen as agen_id',
                 DB::raw("(case when sp.statuslongtrip=" . $statuslongtrip->id . " then 'true' else 'false' end) as statuslongtrip"),
@@ -683,9 +686,11 @@ class InvoiceHeader extends MyModel
                 DB::raw("isnull(e.nospfull,'') as nospfull"),
                 DB::raw("isnull(e.nospempty,'') as nospempty"),
                 DB::raw("isnull(e.nospfullempty,'') as nospfullempty"),
+                'c.keterangan as keteranganbiaya',
 
             )
             ->leftjoin(DB::raw($temphasil . " a1"), 'a.orderantrucking_nobukti', 'a1.jobtrucking')
+            ->leftjoin(DB::raw($tempomsettambahan . " c"), 'a.orderantrucking_nobukti', 'c.jobtrucking')
             ->join(DB::raw("suratpengantar sp with (readuncommitted)"), 'a1.suratpengantar_nobukti', 'sp.nobukti')
             ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'a.orderantrucking_nobukti', 'ot.nobukti')
             ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'sp.tarif_id', 'tarif.id')
@@ -716,6 +721,7 @@ class InvoiceHeader extends MyModel
             'nospfull',
             'nospempty',
             'nospfullempty',
+            'keteranganbiaya',
         ], $query2);
 
         // dd($query2->get());
@@ -728,7 +734,6 @@ class InvoiceHeader extends MyModel
                 DB::raw("null as idinvoice"),
                 'a.jobtrucking',
                 'sp.tglbukti as tglsp',
-                'sp.keterangan as keterangan',
                 'jenisorder.keterangan as jenisorder_id',
                 'agen.namaagen as agen_id',
                 DB::raw("(case when sp.statuslongtrip=" . $statuslongtrip->id . " then 'true' else 'false' end) as statuslongtrip"),
@@ -744,6 +749,7 @@ class InvoiceHeader extends MyModel
                 DB::raw("isnull(e.nospfull,'') as nospfull"),
                 DB::raw("isnull(e.nospempty,'') as nospempty"),
                 DB::raw("isnull(e.nospfullempty,'') as nospfullempty"),
+                'c.keterangan as keteranganbiaya',
 
             )
             ->join(DB::raw("suratpengantar sp with (readuncommitted)"), 'a.suratpengantar_nobukti', 'sp.nobukti')
@@ -765,7 +771,6 @@ class InvoiceHeader extends MyModel
             'idinvoice',
             'jobtrucking',
             'tglsp',
-            'keterangan',
             'jenisorder_id',
             'agen_id',
             'statuslongtrip',
@@ -779,6 +784,7 @@ class InvoiceHeader extends MyModel
             'nospfull',
             'nospempty',
             'nospfullempty',
+            'keteranganbiaya',
         ], $query2);
 
 
@@ -808,6 +814,7 @@ class InvoiceHeader extends MyModel
                 'a.nospfull',
                 'a.nospempty',
                 'a.nospfullempty',
+                'a.keteranganbiaya',
 
             )
             // ->where('a.nocont', '!=', '')
@@ -1571,7 +1578,7 @@ class InvoiceHeader extends MyModel
                 'nominalextra' => $data['nominalextra'][$i],
                 'nominalretribusi' => $data['nominalretribusi'][$i],
                 'total' => $data['omset'][$i] + $data['nominalretribusi'][$i] + $data['nominalextra'][$i],
-                'keterangan' => $SP->keterangan,
+                'keterangan' => $data['keterangan'][$i] ?? '',
                 'orderantrucking_nobukti' => $SP->jobtrucking,
                 'suratpengantar_nobukti' => $allSP
             ]);
@@ -1700,7 +1707,7 @@ class InvoiceHeader extends MyModel
                 'nominalextra' => $data['nominalextra'][$i],
                 'nominalretribusi' => $data['nominalretribusi'][$i],
                 'total' => $data['omset'][$i] + $data['nominalretribusi'][$i] + $data['nominalextra'][$i],
-                'keterangan' => $SP->keterangan,
+                'keterangan' => $data['keterangan'][$i] ?? '',
                 'orderantrucking_nobukti' => $SP->jobtrucking,
                 'suratpengantar_nobukti' => $allSP
             ]);

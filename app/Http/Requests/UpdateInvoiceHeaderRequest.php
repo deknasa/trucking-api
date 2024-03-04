@@ -11,6 +11,7 @@ use App\Rules\ValidasiContSPInvoice;
 use App\Rules\ValidasiDestroyInvoiceHeader;
 use App\Rules\ValidasiDetail;
 use App\Rules\ValidasiHutangList;
+use App\Rules\ValidasiTambahanInvoice;
 use App\Rules\validasiTripInvoice;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -100,7 +101,8 @@ class UpdateInvoiceHeaderRequest extends FormRequest
                     new ValidasiDetail($jumlahdetail),
                     Rule::in($query->agen),
                     new validasiTripInvoice(),
-                    new ValidasiContSPInvoice()
+                    new ValidasiContSPInvoice(),
+                    new ValidasiTambahanInvoice()
 
                 ]
             ];
