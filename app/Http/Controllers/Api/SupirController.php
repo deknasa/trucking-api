@@ -854,10 +854,6 @@ class SupirController extends Controller
         }
     }
 
-    /**
-     * @ClassName 
-     * @Keterangan APPROVAL SUPIR TANPA KETERANGAN
-     */
     public function approvalSupirTanpa()
     {
         $approvalSupirTanpa = new ApprovalSupirTanpa();

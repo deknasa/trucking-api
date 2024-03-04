@@ -2,35 +2,37 @@
 
 namespace App\Http\Controllers\Api;
 
+use stdClass;
 use App\Helpers\App;
-use App\Http\Requests\StoreLogTrailRequest;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\ApprovalKaryawanRequest;
-use App\Http\Requests\StoreTradoRequest;
-use App\Http\Requests\DestroyTradoRequest;
-use App\Http\Requests\HistoryTradoMilikMandorRequest;
-use App\Http\Requests\HistoryTradoMilikSupirRequest;
-use App\Http\Requests\ApprovalTradoRequest;
-use App\Http\Requests\RangeExportReportRequest;
-use App\Http\Requests\TradoRequest;
-use App\Http\Requests\UpdateTradoRequest;
-use App\Models\HistoryTradoMilikMandor;
-use App\Models\HistoryTradoMilikSupir;
+use App\Models\Stok;
 use App\Models\Trado;
 use App\Models\LogTrail;
 use App\Models\Parameter;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
-use App\Models\Stok;
 use App\Models\StokPersediaan;
 use Illuminate\Http\JsonResponse;
+use App\Models\ApprovalTradoTanpa;
 use Illuminate\Support\Facades\DB;
-use Intervention\Image\ImageManagerStatic as Image;
+use App\Http\Requests\TradoRequest;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\File;
+use App\Models\HistoryTradoMilikSupir;
 use Illuminate\Support\Facades\Schema;
+use App\Models\HistoryTradoMilikMandor;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Storage;
-use stdClass;
+use App\Http\Requests\StoreTradoRequest;
+use App\Http\Requests\UpdateTradoRequest;
+use App\Http\Requests\DestroyTradoRequest;
+use App\Http\Requests\ApprovalTradoRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\ApprovalKaryawanRequest;
+use App\Http\Requests\RangeExportReportRequest;
+use Intervention\Image\ImageManagerStatic as Image;
+use App\Http\Requests\HistoryTradoMilikSupirRequest;
+use App\Http\Requests\HistoryTradoMilikMandorRequest;
+use App\Http\Requests\StoreApprovalTradoTanpaRequest;
 
 class TradoController extends Controller
 {
@@ -56,6 +58,19 @@ class TradoController extends Controller
     public function cekValidasi($id)
     {
         $trado = new Trado();
+        
+        if (request()->aksi =="ApprovalTanpa") {
+            $approvalTradoTanpa = (new ApprovalTradoTanpa())->cekApproval($trado->find($id));
+            // dd($approvalTradoTanpa);
+            $data = [
+                'error' => (!$approvalTradoTanpa['gambar'] && !$approvalTradoTanpa['keterangan']),
+                'statusapproval' => $approvalTradoTanpa,
+                'message' => '',
+                'statuspesan' => 'success',
+            ];
+            return response($data);
+        }
+
         $cekdata = $trado->cekvalidasihapus($id);
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
@@ -700,6 +715,54 @@ class TradoController extends Controller
                 'data' => $trado
             ]);
         } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+   
+    public function approvalTradoTanpa()
+    {
+        $approvalTradoTanpa = new ApprovalTradoTanpa();
+
+        if (isset(request()->trado_id)) {
+            $data = $approvalTradoTanpa->firstOrFind(request()->trado_id);
+        }
+        return response([
+            'data' => $data,
+
+        ]);
+    }
+
+
+    /**
+     * @ClassName 
+     * @Keterangan APPROVAL SUPIR TANPA KETERANGAN
+     */
+    public function StoreApprovalTradoTanpa(StoreApprovalTradoTanpaRequest $request)
+    {
+        DB::beginTransaction();
+        try {
+
+            $data =[
+                "trado_id" => $request->trado_id,
+                "kodetrado" => $request->kodetrado,
+                "keterangan_id" => $request->keterangan_id,
+                "keterangan_statusapproval" => $request->keterangan_statusapproval,
+                "gambar_id" => $request->gambar_id,
+                "gambar_statusapproval" => $request->gambar_statusapproval,
+                "tglbatas" => $request->tglbatas,
+            ];
+
+            $approvalTradoTanpa = (new ApprovalTradoTanpa())->processStore($data);
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $approvalTradoTanpa
+            ], 201);    
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
             throw $th;
         }
     }
