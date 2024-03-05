@@ -266,11 +266,18 @@ class StoreMandorTripRequest extends FormRequest
                 'kmperjalanan',
                 'statusbatas',
             ], (new ReminderOli())->getdata2(request()->trado_id));
-
-            for ($i = 0; $i < count(request()->namastatus); $i++) {
-                $namaStatus = 'Penggantian ' . request()->namastatus[$i];
-                $jarak = floatval(request()->jarak[$i]);
-                DB::update(DB::raw("UPDATE " . $tempreminderoli . " SET kmperjalanan=(kmperjalanan + $jarak) where status='$namaStatus'"));
+            $table = DB::table($tempreminderoli)->get();
+            for ($i = 1; $i <= count($table); $i++) {
+                $getJarak = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->where('id', request()->upah_id)->first();
+                $jarak = 0;
+                if (request()->statuscontainer_id != '') {
+                    if (request()->statuscontainer_id == 3) {
+                        $jarak = $getJarak->jarakfullempty ?? 0;
+                    } else {
+                        $jarak = $getJarak->jarak ?? 0;
+                    }
+                }
+                DB::update(DB::raw("UPDATE " . $tempreminderoli . " SET kmperjalanan=(kmperjalanan + $jarak) where id='$i'"));
             }
             // dd(DB::table($tempreminderoli)->get());
             // olimesin
@@ -428,7 +435,7 @@ class StoreMandorTripRequest extends FormRequest
             $rulesTrado_id = [
                 'trado_id' => [
                     // 
-                    'required', 'numeric', 'min:1', new ExistTrado(),new ValidasiSupirBaru(), new ValidasiReminderOli($validasireminderolimesin, $keteranganvalidasireminderolimesin), new ValidasiReminderOliPersneling($validasireminderolipersneling, $keteranganvalidasireminderolipersneling), new ValidasiReminderOliGardan($validasireminderoligardan, $keteranganvalidasireminderoligardan), new ValidasiReminderSaringanHawa($validasiremindersaringanhawa, $keteranganvalidasiremindersaringanhawa)
+                    'required', 'numeric', 'min:1', new ExistTrado(), new ValidasiSupirBaru(), new ValidasiReminderOli($validasireminderolimesin, $keteranganvalidasireminderolimesin), new ValidasiReminderOliPersneling($validasireminderolipersneling, $keteranganvalidasireminderolipersneling), new ValidasiReminderOliGardan($validasireminderoligardan, $keteranganvalidasireminderoligardan), new ValidasiReminderSaringanHawa($validasiremindersaringanhawa, $keteranganvalidasiremindersaringanhawa)
                 ],
                 'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()],
                 'absensidetail_id' => ['required', 'numeric', 'min:1', new ExistAbsensiSupirDetail()],
