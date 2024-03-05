@@ -621,7 +621,7 @@ class Supplier extends MyModel
         ])
             ->post($server . 'truckingtnl-api/public/api/token', [
                 'user' => 'ADMIN',
-                'password' => getenv('PASSWORD_TNL'),
+                'password' => config('app.password_tnl'),
                 'ipclient' => '',
                 'ipserver' => '',
                 'latitude' => '',
