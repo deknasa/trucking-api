@@ -578,6 +578,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('absentrado/approvalnonaktif', [AbsenTradoController::class, 'approvalnonaktif']);
     Route::get('supir/approvalsupirtanpa', [SupirController::class, 'approvalSupirTanpa']);
     Route::get('trado/approvaltradotanpa', [TradoController::class, 'approvalTradoTanpa']);
+    Route::post('jurnalumumheader/approval', [JurnalUmumHeaderController::class, 'approval']);
 
 
 });
@@ -1069,7 +1070,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('jurnalumumheader/combo', [JurnalUmumHeaderController::class, 'combo']);
     Route::post('jurnalumumheader/{id}/cekapproval', [JurnalUmumHeaderController::class, 'cekapproval'])->name('jurnalumumheader.cekapproval')->whereNumber('id');
     Route::get('jurnalumumheader/grid', [JurnalUmumHeaderController::class, 'grid']);
-    Route::post('jurnalumumheader/approval', [JurnalUmumHeaderController::class, 'approval']);
     Route::get('jurnalumumheader/{id}/export', [JurnalUmumHeaderController::class, 'export'])->name('jurnalumumheader.export')->whereNumber('id');
     Route::post('jurnalumumheader/{id}/cekvalidasiaksi', [JurnalUmumHeaderController::class, 'cekvalidasiaksi'])->whereNumber('id');
     Route::post('jurnalumumheader/copy', [JurnalUmumHeaderController::class, 'copy']);
