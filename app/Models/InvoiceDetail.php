@@ -166,7 +166,9 @@ class InvoiceDetail extends MyModel
                 DB::raw("({$this->table}.nominalextra + {$this->table}.nominalretribusi) as extra"),
                 $this->table . '.total as jumlah',
                 
-                DB::raw("({$this->table}.keterangan + (CASE WHEN isnull({$this->table}.keterangan, '')='' then '' else '. ' end)  + c.keterangan) as keterangan"),
+                DB::raw("(CASE WHEN isnull(invoicedetail.nominalextra, 0)=0 then '' 
+                    ELSE 
+                    ({$this->table}.keterangan + (CASE WHEN isnull({$this->table}.keterangan, '')='' then '' else '. ' end)  + c.keterangan) end) as keterangan"),
             )
                 ->where($this->table . '.invoice_id', '=', request()->invoice_id)
                 ->leftjoin(DB::raw($tempomsettambahan . " c"), $this->table . '.orderantrucking_nobukti', 'c.jobtrucking')
