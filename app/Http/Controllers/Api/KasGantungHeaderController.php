@@ -32,6 +32,7 @@ use App\Models\AlatBayar;
 use Illuminate\Database\QueryException;
 use App\Http\Requests\DestroyPengeluaranHeaderRequest;
 use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Api\PengeluaranHeaderController;
 
 class KasGantungHeaderController extends Controller
 {
@@ -307,6 +308,19 @@ class KasGantungHeaderController extends Controller
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
+        $pengeluaran=$kasgantung->pengeluaran_nobukti ?? '';
+        $idpengeluaran=db::table('pengeluaranheader')->from(db::raw("pengeluaranheader a with (readuncommitted)"))
+        ->select(
+            'a.id'
+        )
+        ->where('a.nobukti',$pengeluaran)
+        ->first()->id ?? 0;
+        // $validasipengeluaran=app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
+        // dd($validasipengeluaran );
+        // goto lanjut;
+
+
+        // lanjut:
         if ($statusdatacetak == $statusCetak->id) {
             $query = DB::table('error')
                 ->select('keterangan')
