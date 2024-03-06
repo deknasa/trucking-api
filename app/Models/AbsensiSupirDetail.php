@@ -570,7 +570,7 @@ class AbsensiSupirDetail extends MyModel
                 DB::raw("isnull(a.absentrado,'') as absen"),
                 DB::raw("isnull(a.absen_id,0) as absen_id"),
                 'a.jam',
-                DB::raw("(case when year(isnull(a.tglbukti,'1900/1/1'))=1900 then null else format(a.tglbukti,'dd-MM-yyyy')  end)as tglbukti"),
+                DB::raw("cast((case when year(isnull(a.tglbukti,'1900/1/1'))=1900 then null else format(a.tglbukti,'yyyy/MM/dd')  end)  as datetime )as tglbukti"),
                 'a.supir_id',
                 'a.namasupir_old',
                 'a.supir_id_old',
@@ -716,7 +716,17 @@ class AbsensiSupirDetail extends MyModel
                 'a.supir_id_old',
                 'a.jlhtrip',
                 'a.memo',
-                db::raw("format(isnull(b.tglbatas,a.tglbukti),'dd-MM-yyyy hh:mm:ss')")
+                db::raw("format(cast(isnull(b.tglbatas,
+                    (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '".  date('Y-m-d', strtotime($date)) ." 12:00:00'  else    format(a.tglbukti,'yyyy/MM/dd')+' 12:00:00' end)
+                    ) as datetime),'dd-MM-yyyy HH:mm:ss') as tglbatas"),
+                db::raw("(case when cast(format(cast(isnull(b.tglbatas,
+                    (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '".  date('Y-m-d', strtotime($date)) ." 12:00:00'  else    format(a.tglbukti,'yyyy/MM/dd')+' 12:00:00' end)
+                    ) as datetime),'yyyy/MM/dd HH:mm:ss') as datetime)>=getdate() then 1 else 0 end) 
+                    as berlaku"),
+
+                // db::raw("format(cast(b.tglbatas as datetime),'dd-MM-yyyy HH:mm:ss') as tglbatas1"),
+                // db::raw("format(cast(format(a.tglbukti,'yyyy/MM/dd')+' 12:00:00 as datetime),'dd-MM-yyyy HH:mm:ss') as tglbatas2"),
+                // db::raw("format(cast('".  date('Y-m-d', strtotime($date)) ." 12:00:00' as datetime) ,'dd-MM-yyyy HH:mm:ss') as tglbatas3"),
             )
             ->leftjoin(DB::raw($tempdatahasil . " as b "), function ($join) {
                 $join->on('a.supir_id', '=', 'b.supir_id');
@@ -724,6 +734,8 @@ class AbsensiSupirDetail extends MyModel
             })
             ->orderBy('a.trado','asc')
             ->orderBy('a.supir','asc');
+
+            // dd($query->get());
         // 
 
 
