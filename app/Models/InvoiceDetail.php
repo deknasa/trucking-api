@@ -132,26 +132,44 @@ class InvoiceDetail extends MyModel
 
             $tempomsettambahan = '##tempomsettambahan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
-            // $cekStatus = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'SURAT PENGANTAR BIAYA TAMBAHAN')->first();
-    
-            $fetch = DB::table("suratpengantar")->from(DB::raw("suratpengantar"))
-                ->select(
-                    'c.jobtrucking',
-                    DB::raw("STRING_AGG(suratpengantarbiayatambahan.keteranganbiaya, ', ') AS keterangan"),
-                    DB::raw("sum(suratpengantarbiayatambahan.nominaltagih) as nominal")
-                )
-                ->join(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"), 'suratpengantar.id', 'suratpengantarbiayatambahan.suratpengantar_id')
-                ->join(DB::raw($tempsprekap . " c"), 'suratpengantar.jobtrucking', 'c.jobtrucking')
-                ->groupby('c.jobtrucking');
-            Schema::create($tempomsettambahan, function ($table) {
-                $table->string('jobtrucking');
-                $table->LongText('keterangan')->nullable();
-                $table->double('nominal')->nullable();
-            });
-    
-            DB::table($tempomsettambahan)->insertUsing(['jobtrucking','keterangan', 'nominal'], $fetch);
+            $cekStatus = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS CETAKAN')->where('subgrp', 'INVOICE')->first();
+            if ($cekStatus->text == 'FORMAT 2') {
 
-            
+
+                $fetch = DB::table("suratpengantar")->from(DB::raw("suratpengantar"))
+                    ->select(
+                        'c.jobtrucking',
+                        DB::raw("STRING_AGG(suratpengantarbiayatambahan.keteranganbiaya, ', ') AS keterangan"),
+                        DB::raw("sum(suratpengantarbiayatambahan.nominaltagih) as nominal")
+                    )
+                    ->join(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"), 'suratpengantar.id', 'suratpengantarbiayatambahan.suratpengantar_id')
+                    ->join(DB::raw($tempsprekap . " c"), 'suratpengantar.jobtrucking', 'c.jobtrucking')
+                    ->groupby('c.jobtrucking');
+                Schema::create($tempomsettambahan, function ($table) {
+                    $table->string('jobtrucking');
+                    $table->LongText('keterangan')->nullable();
+                    $table->double('nominal')->nullable();
+                });
+
+                DB::table($tempomsettambahan)->insertUsing(['jobtrucking', 'keterangan', 'nominal'], $fetch);
+            }
+            // else{
+            //     $fetch = DB::table("suratpengantar")->from(DB::raw("suratpengantar"))
+            //         ->select(
+            //             'c.jobtrucking',
+            //             DB::raw("STRING_AGG(suratpengantar.keterangan, ', ') AS keterangan"),
+            //         )
+            //         ->join(DB::raw($tempsprekap . " c"), 'suratpengantar.jobtrucking', 'c.jobtrucking')
+            //         ->groupby('c.jobtrucking');
+            //     Schema::create($tempomsettambahan, function ($table) {
+            //         $table->string('jobtrucking');
+            //         $table->LongText('keterangan')->nullable();
+            //     });
+
+            //     DB::table($tempomsettambahan)->insertUsing(['jobtrucking', 'keterangan'], $fetch);
+            // }
+
+
             $query->select(
                 'suratpengantar.tglsp',
                 'pelanggan.namapelanggan as shipper',
@@ -165,17 +183,26 @@ class InvoiceDetail extends MyModel
                 $this->table . '.nominal as omset',
                 DB::raw("({$this->table}.nominalextra + {$this->table}.nominalretribusi) as extra"),
                 $this->table . '.total as jumlah',
-                
-                DB::raw("(CASE WHEN isnull(invoicedetail.nominalextra, 0)=0 then '' 
-                    ELSE 
-                    ({$this->table}.keterangan + (CASE WHEN isnull({$this->table}.keterangan, '')='' then '' else '. ' end)  + c.keterangan) end) as keterangan"),
             )
                 ->where($this->table . '.invoice_id', '=', request()->invoice_id)
-                ->leftjoin(DB::raw($tempomsettambahan . " c"), $this->table . '.orderantrucking_nobukti', 'c.jobtrucking')
                 ->leftJoin(DB::raw($tempsprekap . " as suratpengantar"), $this->table . '.orderantrucking_nobukti', 'suratpengantar.jobtrucking')
                 ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'suratpengantar.pelanggan_id', 'pelanggan.id')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'suratpengantar.container_id', 'container.id')
                 ->leftJoin(DB::raw("kota with (readuncommitted)"), 'suratpengantar.sampai_id', 'kota.id');
+
+            if ($cekStatus->text == 'FORMAT 2') {
+                $query->addSelect(
+                    DB::raw("(CASE WHEN isnull(invoicedetail.nominalextra, 0)=0 then '' 
+                            ELSE 
+                            ({$this->table}.keterangan + (CASE WHEN isnull({$this->table}.keterangan, '')='' then '' else '. ' end)  + c.keterangan) end) as keterangan")
+                )
+
+                    ->leftjoin(DB::raw($tempomsettambahan . " c"), $this->table . '.orderantrucking_nobukti', 'c.jobtrucking');
+            } else {
+                $query->addSelect(
+                    DB::raw("isnull({$this->table}.keterangan,'') as keterangan")
+                );
+            }
         } else {
             $query->select(
                 $this->table . '.nobukti',
@@ -187,12 +214,12 @@ class InvoiceDetail extends MyModel
                 $this->table . '.orderantrucking_nobukti',
                 $this->table . '.suratpengantar_nobukti',
                 db::raw("cast((format(orderantrucking.tglbukti,'yyyy/MM')+'/1') as date) as tgldariorderantrucking"),
-                db::raw("cast(cast(format((cast((format(orderantrucking.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiorderantrucking"), 
+                db::raw("cast(cast(format((cast((format(orderantrucking.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiorderantrucking"),
                 db::raw("cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as date) as tgldarisuratpengantar"),
-                db::raw("cast(cast(format((cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaisuratpengantar"), 
+                db::raw("cast(cast(format((cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaisuratpengantar"),
             )
-            ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', '=', 'orderantrucking.nobukti')
-            ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'invoicedetail.suratpengantar_nobukti', '=', 'suratpengantar.nobukti');
+                ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', '=', 'orderantrucking.nobukti')
+                ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'invoicedetail.suratpengantar_nobukti', '=', 'suratpengantar.nobukti');
 
             $this->sort($query);
             $query->where($this->table . '.invoice_id', '=', request()->invoice_id);
