@@ -408,13 +408,12 @@ class PengeluaranHeaderController extends Controller
                 db::raw("'No Bukti ".$nobukti ." '+trim(keterangan)+' <br> proses tidak bisa dilanjutkan' as keterangan")
                 )
             ->whereRaw("kodeerror = 'SAP'")
-                ->get();
-            $keterangan = $query['0'];
+                ->first();
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah approve',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'message' => $query->keterangan,
+                'error' => true,
+                'kodeerror' => 'SAP',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
@@ -424,13 +423,12 @@ class PengeluaranHeaderController extends Controller
                     db::raw("'No Bukti ".$nobukti ." '+trim(keterangan)+' <br> proses tidak bisa dilanjutkan' as keterangan")
                     )
                 ->whereRaw("kodeerror = 'SDC'")
-                ->get();
-            $keterangan = $query['0'];
+                ->first();
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah cetak',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'message' => $query->keterangan,
+                'error' => true,
+                'kodeerror' => 'SDC',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
@@ -438,9 +436,8 @@ class PengeluaranHeaderController extends Controller
 
             $data = [
                 'message' => '',
-                'errors' => 'belum approve',
-                'kodestatus' => '0',
-                'kodenobukti' => '1'
+                'error' => false,
+                'statuspesan' => 'success',
             ];
 
             return response($data);

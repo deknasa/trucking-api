@@ -355,6 +355,7 @@ class ProsesGajiSupirHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $prosesgaji = ProsesGajiSupirHeader::find($id);
+        $nobukti=$prosesgaji->nobukti ?? '';
         $status = $prosesgaji->statusapproval;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
@@ -363,6 +364,23 @@ class ProsesGajiSupirHeaderController extends Controller
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
         $aksi = request()->aksi ?? '';
 
+        $pengeluaran=$prosesgaji->pengeluaran_nobukti ?? '';
+        $idpengeluaran=db::table('pengeluaranheader')->from(db::raw("pengeluaranheader a with (readuncommitted)"))
+        ->select(
+            'a.id'
+        )
+        ->where('a.nobukti',$pengeluaran)
+        ->first()->id ?? 0;
+        $validasipengeluaran=app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
+        $msg=json_decode(json_encode($validasipengeluaran),true)['original']['error'] ?? false;
+        // dd($msg);
+        if ($msg==false) {
+            goto lanjut ;
+        } else {
+            return $validasipengeluaran;
+        }
+
+  lanjut:
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
