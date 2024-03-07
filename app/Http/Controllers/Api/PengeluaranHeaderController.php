@@ -392,6 +392,7 @@ class PengeluaranHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $pengeluaran = PengeluaranHeader::find($id);
+        $nobukti=$pengeluaran->nobukti ?? '';
         // $cekdata = $pengeluaran->cekvalidasiaksi($pengeluaran->nobukti);
         $status = $pengeluaran->statusapproval;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
@@ -403,8 +404,10 @@ class PengeluaranHeaderController extends Controller
         $aksi = request()->aksi ?? '';
         if ($status == $statusApproval->id && ($aksi == 'DELETE')) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->whereRaw("kodeerror = 'SAP'")
+            ->select(
+                db::raw("'No Bukti ".$nobukti ." '+trim(keterangan)+' <br> proses tidak bisa dilanjutkan' as keterangan")
+                )
+            ->whereRaw("kodeerror = 'SAP'")
                 ->get();
             $keterangan = $query['0'];
             $data = [
@@ -417,7 +420,9 @@ class PengeluaranHeaderController extends Controller
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
+                ->select(
+                    db::raw("'No Bukti ".$nobukti ." '+trim(keterangan)+' <br> proses tidak bisa dilanjutkan' as keterangan")
+                    )
                 ->whereRaw("kodeerror = 'SDC'")
                 ->get();
             $keterangan = $query['0'];

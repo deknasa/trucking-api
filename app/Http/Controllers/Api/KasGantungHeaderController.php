@@ -304,6 +304,7 @@ class KasGantungHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $kasgantung = KasGantungHeader::find($id);
+        $nobukti=$kasgantung->nobukti ?? '';
         $statusdatacetak = $kasgantung->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
@@ -315,15 +316,23 @@ class KasGantungHeaderController extends Controller
         )
         ->where('a.nobukti',$pengeluaran)
         ->first()->id ?? 0;
-        // $validasipengeluaran=app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
-        // dd($validasipengeluaran );
-        // goto lanjut;
+        $validasipengeluaran=app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
+        $msg=json_decode(json_encode($validasipengeluaran),true)['original']['kodestatus'] ?? 0;
+        if ($msg==0) {
+            goto lanjut ;
+        } else {
+            return $validasipengeluaran;
+        }
+        
+        
 
 
-        // lanjut:
+        lanjut:
         if ($statusdatacetak == $statusCetak->id) {
             $query = DB::table('error')
-                ->select('keterangan')
+            ->select(
+                db::raw("'No Bukti ".$nobukti ." '+trim(keterangan)+' <br> proses tidak bisa dilanjutkan' as keterangan")
+                )
                 ->where('kodeerror', '=', 'SDC')
                 ->get();
             $keterangan = $query['0'];
