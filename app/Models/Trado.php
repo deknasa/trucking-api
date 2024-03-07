@@ -916,6 +916,14 @@ class Trado extends MyModel
             $trado->modifiedby = auth('api')->user()->user;
             $trado->info = html_entity_decode(request()->info);
 
+            
+            if ($data['mandor_id'] != 0) {
+                $trado->tglberlakumilikmandor = date('Y-m-d');
+            }
+            if ($data['supir_id'] != 0) {
+                $trado->tglberlakumiliksupir = date('Y-m-d');
+            }
+
             $trado->photostnk = $data['photostnk'];
             $trado->photobpkb = $data['photobpkb'];
             $trado->phototrado = $data['phototrado'];
@@ -1030,8 +1038,8 @@ class Trado extends MyModel
             $trado->jumlahroda = $data['jumlahroda'];
             $trado->model = $data['model'];
             $trado->nobpkb = $data['nobpkb'];
-            $trado->mandor_id = $data['mandor_id'] ?? 0;
-            $trado->supir_id = $data['supir_id'] ?? 0;
+            // $trado->mandor_id = $data['mandor_id'] ?? 0;
+            // $trado->supir_id = $data['supir_id'] ?? 0;
             $trado->jumlahbanserap = $data['jumlahbanserap'];
             $trado->statusgerobak = $data['statusgerobak'];
             $trado->statusabsensisupir = $data['statusabsensisupir'];
