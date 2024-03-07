@@ -696,17 +696,18 @@ class AbsensiSupirDetail extends MyModel
         $queryhasil = db::table('absensisupirdetail')->from(db::raw("absensisupirdetail a with (readuncommitted)"))
             ->select(
                 'a.trado_id',
-                'a.supir_id',
-                'c.tglbatas',
+                db::raw('max(a.supir_id) as supir_id'),
+                db::raw('max(c.tglbatas) as tglbatas'),
             )
             ->join(db::raw("absensisupirheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(db::raw($tempdatatrado . " c with (readuncommitted)"), 'a.trado_id', 'c.trado_id')
+            ->groupBy('a.trado_id')
             ->where('b.tglbukti', date('Y-m-d', strtotime($date)));
 
         DB::table($tempdatahasil)->insertUsing(['trado_id', 'supir_id', 'tglbatas'], $queryhasil);
 
 
-        // dd(db::table($tempdata)->get());
+        // dd(db::table($tempdatahasil)->get());
         $query = db::table($tempdata)->from(db::raw($tempdata . " a"))
             ->select(
                 'a.id',
