@@ -24,12 +24,20 @@ use App\Rules\ExistJenisOrder;
 use App\Rules\ExistNominalUpahSupir;
 use App\Rules\ExistTarifRincian;
 use App\Rules\ExistUpahSupirRincianSuratPengantar;
+use App\Rules\ValidasiAgenTripGudangSama;
+use App\Rules\ValidasiContainerTripGudangSama;
 use App\Rules\ValidasiGajiKenekSP;
+use App\Rules\ValidasiJenisOrderGudangsama;
+use App\Rules\ValidasiJenisOrderLongtrip;
 use App\Rules\ValidasiKotaUpahZona;
+use App\Rules\ValidasiLongtripGudangsama;
+use App\Rules\ValidasiPelangganTripGudangSama;
 use App\Rules\ValidasiReminderOli;
 use App\Rules\ValidasiReminderOliGardan;
 use App\Rules\ValidasiReminderOliPersneling;
 use App\Rules\ValidasiReminderSaringanHawa;
+use App\Rules\ValidasiTradoTripGudangSama;
+use App\Rules\ValidasiTripGudangSama;
 use Illuminate\Support\Facades\Schema;
 
 class UpdateSuratPengantarRequest extends FormRequest
@@ -95,7 +103,15 @@ class UpdateSuratPengantarRequest extends FormRequest
         $getBukanUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'NON UPAH ZONA')->first();
         $getUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
         $getPeralihan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS PERALIHAN')->where('text', 'PERALIHAN')->first();
-
+        $getGudangSama = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GUDANG SAMA')->where('text', 'GUDANG SAMA')->first();
+        
+        $dataTripAsal = [];
+        if (request()->statusgudangsama == $getGudangSama->id) {
+            if (request()->nobukti_tripasal != '') {
+                $getDataTripAsal = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))->select('upah_id', 'agen_id', 'pelanggan_id', 'container_id', 'trado_id')->where('nobukti', request()->nobukti_tripasal)->first();
+                $dataTripAsal = json_decode(json_encode($getDataTripAsal), true);
+            }
+        }
 
         $rules = [
             'tglbukti' => [
@@ -107,13 +123,14 @@ class UpdateSuratPengantarRequest extends FormRequest
             'nobukti' => [
                 Rule::in($query->nobukti),
             ],
+            "nobukti_tripasal" => 'required_if:statusgudangsama,=,' . $getGudangSama->id,                   
             // "lokasibongkarmuat" => "required",
-            'statuslongtrip' => ['required', Rule::in($statuslongtrip)],
+            'statuslongtrip' => ['required', Rule::in($statuslongtrip),new ValidasiJenisOrderLongtrip()],
             'statusperalihan' => ['required', Rule::in($statusperalihan)],
             'statusbatalmuat' => ['required', Rule::in($statusbatalmuat)],
-            'statusgudangsama' => ['required', Rule::in($statusgudangsama)],
+            'statusgudangsama' => ['required', Rule::in($statusgudangsama),new ValidasiLongtripGudangsama()],
             'nosp' => 'required',
-            'upah' => ['required', new ExistNominalUpahSupir()],
+            'upah' => ['required', new ExistNominalUpahSupir(),new ValidasiTripGudangSama($dataTripAsal)],
             'statusupahzona' => ['required', Rule::in($statusUpahZona)],
             'gajisupir' => new ValidasiGajiKenekSP('gajisupir'),
             'gajikenek' => new ValidasiGajiKenekSP('gajikenek')
@@ -182,6 +199,7 @@ class UpdateSuratPengantarRequest extends FormRequest
             $rulescontainer_id = [
                 'container' => [
                     new ExistContainer(),
+                    new ValidasiContainerTripGudangSama($dataTripAsal)
                 ]
             ];
         } else if ($container_id == '' && $this->container == '') {
@@ -423,7 +441,10 @@ class UpdateSuratPengantarRequest extends FormRequest
         if ($trado_id != '' && $this->trado != '') {
             $rulestrado_id = [
                 'trado' => [
-                    new ExistTrado(), new ValidasiReminderOli($validasireminderolimesin, $keteranganvalidasireminderolimesin), new ValidasiReminderOliPersneling($validasireminderolipersneling, $keteranganvalidasireminderolipersneling), new ValidasiReminderOliGardan($validasireminderoligardan, $keteranganvalidasireminderoligardan), new ValidasiReminderSaringanHawa($validasiremindersaringanhawa, $keteranganvalidasiremindersaringanhawa)
+                    new ExistTrado(), new ValidasiTradoTripGudangSama($dataTripAsal)
+                ],
+                'trado_id' => [
+                    new ValidasiReminderOli($validasireminderolimesin, $keteranganvalidasireminderolimesin), new ValidasiReminderOliPersneling($validasireminderolipersneling, $keteranganvalidasireminderolipersneling), new ValidasiReminderOliGardan($validasireminderoligardan, $keteranganvalidasireminderoligardan), new ValidasiReminderSaringanHawa($validasiremindersaringanhawa, $keteranganvalidasiremindersaringanhawa),
                 ]
             ];
         } else if ($trado_id != null) {
@@ -741,7 +762,8 @@ class UpdateSuratPengantarRequest extends FormRequest
         if ($pelanggan_id != '' && $this->pelanggan != '') {
             $rulespelanggan_id = [
                 'pelanggan' => [
-                    new ExistPelanggan(),
+                    new ExistPelanggan(), 
+                    new ValidasiPelangganTripGudangSama($dataTripAsal)
                 ]
             ];
         } else if ($pelanggan_id != null) {
@@ -794,6 +816,7 @@ class UpdateSuratPengantarRequest extends FormRequest
             $rulesagen_id = [
                 'agen' => [
                     new ExistAgen(),
+                    new ValidasiAgenTripGudangSama($dataTripAsal)
                 ]
             ];
         } else if ($agen_id != null) {
@@ -846,7 +869,7 @@ class UpdateSuratPengantarRequest extends FormRequest
         if ($jenisorder_id != '' && $this->jenisorder != '') {
             $rulesjenisorder_id = [
                 'jenisorder' => [
-                    new ExistJenisOrder(),
+                    new ExistJenisOrder(),new ValidasiJenisOrderGudangsama()
                 ]
             ];
         } else if ($jenisorder_id != null) {
@@ -1021,6 +1044,7 @@ class UpdateSuratPengantarRequest extends FormRequest
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
             'tarifrincian.required_if' => app(ErrorController::class)->geterror('WI')->keterangan,
             'statusapprovaleditsuratpengantar.required' => app(ErrorController::class)->geterror('BAED')->keterangan,
+            'nobukti_tripasal.required_if' => 'TRIP ASAL ' . app(ErrorController::class)->geterror('WI')->keterangan,
         ];
     }
 }
