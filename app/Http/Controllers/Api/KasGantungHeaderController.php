@@ -278,23 +278,22 @@ class KasGantungHeaderController extends Controller
                     DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
                 ->where('kodeerror', '=', $cekdata['kodeerror'])
-                ->get();
-            $keterangan = $query['0'];
+                ->first();
+            
 
             $data = [
-                'status' => false,
-                'message' => $keterangan,
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
+                'error' => true,
+                'message' => $query->keterangan,
+                'kodeerror' => $cekdata['kodeerror'],
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else {
             $data = [
-                'status' => false,
+                'error' => false,
                 'message' => '',
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
+                'statuspesan' => 'success',
             ];
 
             return response($data);
@@ -317,8 +316,8 @@ class KasGantungHeaderController extends Controller
         ->where('a.nobukti',$pengeluaran)
         ->first()->id ?? 0;
         $validasipengeluaran=app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
-        $msg=json_decode(json_encode($validasipengeluaran),true)['original']['kodestatus'] ?? 0;
-        if ($msg==0) {
+        $msg=json_decode(json_encode($validasipengeluaran),true)['original']['error'] ?? false;
+        if ($msg==false) {
             goto lanjut ;
         } else {
             return $validasipengeluaran;
@@ -334,23 +333,21 @@ class KasGantungHeaderController extends Controller
                 db::raw("'No Bukti ".$nobukti ." '+trim(keterangan)+' <br> proses tidak bisa dilanjutkan' as keterangan")
                 )
                 ->where('kodeerror', '=', 'SDC')
-                ->get();
-            $keterangan = $query['0'];
+                ->first();
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah cetak',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' => $query->keterangan,
+                'kodeerror' => 'SDC',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else {
 
             $data = [
+                'error' => false,
                 'message' => '',
-                'errors' => 'belum approve',
-                'kodestatus' => '0',
-                'kodenobukti' => '1'
+                'statuspesan' => 'success',
             ];
 
             return response($data);
