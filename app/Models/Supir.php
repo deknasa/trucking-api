@@ -1107,7 +1107,7 @@ class Supir extends MyModel
             $supir->keterangan = $data['keterangan'] ?? '';
             $supir->noktp = $data['noktp'];
             $supir->nokk = $data['nokk'];
-            $supir->mandor_id = $data['mandor_id']?? '';
+            // $supir->mandor_id = $data['mandor_id']?? '';
             $supir->angsuranpinjaman = str_replace(',', '', $data['angsuranpinjaman']) ?? 0;
             $supir->plafondeposito = str_replace(',', '', $data['plafondeposito']) ?? 0;
             $supir->tgllahir = date('Y-m-d', strtotime($data['tgllahir']));

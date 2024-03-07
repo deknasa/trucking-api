@@ -1030,8 +1030,8 @@ class Trado extends MyModel
             $trado->jumlahroda = $data['jumlahroda'];
             $trado->model = $data['model'];
             $trado->nobpkb = $data['nobpkb'];
-            $trado->mandor_id = $data['mandor_id'] ?? 0;
-            $trado->supir_id = $data['supir_id'] ?? 0;
+            // $trado->mandor_id = $data['mandor_id'] ?? 0;
+            // $trado->supir_id = $data['supir_id'] ?? 0;
             $trado->jumlahbanserap = $data['jumlahbanserap'];
             $trado->statusgerobak = $data['statusgerobak'];
             $trado->statusabsensisupir = $data['statusabsensisupir'];
