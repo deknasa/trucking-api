@@ -372,6 +372,7 @@ class PenerimaanHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $pengeluaran = PenerimaanHeader::find($id);
+        $nobukti=$pengeluaran->nobukti ?? '';
         $status = $pengeluaran->statusapproval;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
@@ -382,24 +383,30 @@ class PenerimaanHeaderController extends Controller
 
         if ($status == $statusApproval->id && ($aksi == 'DELETE')) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SAP')
+            ->select(
+                db::raw("'No Bukti ".$nobukti ." '+trim(keterangan)+' <br> proses tidak bisa dilanjutkan' as keterangan")
+                )
+            ->where('kodeerror', '=', 'SAP')
                 ->first();
             $data = [
                 'error' => true,
                 'message' => $query->keterangan,
+                'kodeerror' => 'SAP',
                 'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SDC')
+            ->select(
+                db::raw("'No Bukti <b>".$nobukti ." </b> <br>'+trim(keterangan)+' <br> proses tidak bisa dilanjutkan' as keterangan")
+                )
+            ->where('kodeerror', '=', 'SDC')
                 ->first();
             $data = [
                 'error' => true,
                 'message' => $query->keterangan,
+                'kodeerror' => 'SDC',
                 'statuspesan' => 'warning',
             ];
 

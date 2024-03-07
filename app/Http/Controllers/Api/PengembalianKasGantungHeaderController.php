@@ -34,6 +34,8 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
 use PhpParser\Node\Stmt\Else_;
 
+use App\Http\Controllers\Api\PenerimaanHeaderController;
+
 class PengembalianKasGantungHeaderController extends Controller
 {
       /**
@@ -300,30 +302,52 @@ class PengembalianKasGantungHeaderController extends Controller
     {
 
         $pengembaliankasgantung = PengembalianKasGantungHeader::find($id);
+        $nobukti=$pengembaliankasgantung->nobukti ?? '';
         $statusdatacetak = $pengembaliankasgantung->statuscetak;
         $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $aksi = request()->aksi ?? '';
+        
+        $penerimaan=$pengembaliankasgantung->penerimaan_nobukti ?? '';
+        $idpenerimaan=db::table('penerimaanheader')->from(db::raw("penerimaanheader a with (readuncommitted)"))
+        ->select(
+            'a.id'
+        )
+        ->where('a.nobukti',$penerimaan)
+        ->first()->id ?? 0;
+        $validasipenerimaan=app(PenerimaanHeaderController::class)->cekvalidasi($idpenerimaan);
+        $msg=json_decode(json_encode($validasipenerimaan),true)['original']['error'] ?? false;
+        if ($msg==false) {
+            goto lanjut ;
+        } else {
+            return $validasipenerimaan;
+        }
+        
+        
+
+
+        lanjut:        
 
         if ($statusdatacetak == $statusCetak->id) {
             $query = DB::table('error')
-                ->select('keterangan')
+            ->select(
+                db::raw("'No Bukti ".$nobukti ." '+trim(keterangan)+' <br> proses tidak bisa dilanjutkan' as keterangan")
+                )
                 ->where('kodeerror', '=', 'SDC')
-                ->get();
-            $keterangan = $query['0'];
+                ->first();
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah cetak',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' => $query->keterangan,
+                'kodeerror' => 'SDC',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else {
 
             $data = [
+                'error' => false,
                 'message' => '',
-                'errors' => 'belum approve',
-                'kodestatus' => '0',
-                'kodenobukti' => '1'
+                'statuspesan' => 'success',
             ];
 
             return response($data);
@@ -342,24 +366,21 @@ class PengembalianKasGantungHeaderController extends Controller
                     DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
                 ->where('kodeerror', '=', $cekdata['kodeerror'])
-                ->get();
-            $keterangan = $query['0'];
-
+                ->first();
             $data = [
-                'status' => false,
-                'message' => $keterangan,
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
+                'error' => true,
+                'message' => $query->keterangan,
+                'kodeerror' => $cekdata['kodeerror'],
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else {
 
             $data = [
-                'status' => false,
+                'error' => false,
                 'message' => '',
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
+                'statuspesan' => 'success',
             ];
 
             return response($data);
