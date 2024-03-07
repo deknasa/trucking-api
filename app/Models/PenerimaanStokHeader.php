@@ -2384,7 +2384,8 @@ class PenerimaanStokHeader extends MyModel
             ->where('penerimaanstokheader.id', $id)
             ->leftJoin('penerimaanstokheader as nobuktispb', 'penerimaanstokheader.nobukti', 'nobuktispb.penerimaanstok_nobukti');
         $data = $query->first();
-        if ($data->id) {
+        // dd($data->nobukti);
+        if ($data->nobukti) {
             # code...
             return [
                 true,

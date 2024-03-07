@@ -35,8 +35,8 @@ class DateAllowedAbsen implements Rule
         $todayValidation = AbsensiSupirHeader::todayValidation($date);
         //check apakah tanggal hari ini jika true  maka tidak masuk if
         if(!$todayValidation){
-            $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti',$date)->first();
-            $isBukaTanggalValidation = AbsensiSupirHeader::isBukaTanggalValidation($date);
+            $absensiSupirHeader = (new AbsensiSupirHeader())->where('tglbukti',$date)->first();
+            $isBukaTanggalValidation = (new AbsensiSupirHeader())->isBukaTanggalValidation($date);
 
             if (!$absensiSupirHeader) {
                 //check tanggal sudah dibuka

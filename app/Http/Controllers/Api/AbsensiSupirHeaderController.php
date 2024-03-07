@@ -436,7 +436,9 @@ class AbsensiSupirHeaderController extends Controller
             if (!$isApproved) {
                 $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
                 $keterangan = $query['0'];
-                $keterangan = ['keterangan' => 'transaksi Sudah di approved']; //$query['0'];
+
+                // dd($keterangan);
+                // $keterangan = ['keterangan' => 'transaksi Sudah di approved']; //$query['0'];
 
                 $data = [
                     'message' => $keterangan,

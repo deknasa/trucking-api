@@ -93,7 +93,7 @@ class AbsenTrado extends MyModel
             $query->where('absentrado.statusaktif', '=', $statusaktif->id);
         }
 
-        if ($dari == 'mandorabsensisupir') {
+        if ($dari == 'mandorabsensisupir' && ($trado_id != 'null' && $supir_id != 'null')) {
             $isSupirSerap = (new SupirSerap())->isSupirSerap($trado_id,$supir_id,date('Y-m-d',strtotime($tglabsensi)));
             if ($isSupirSerap) {
                 $parameter = Parameter::from(DB::raw("parameter with (readuncommitted)"))
