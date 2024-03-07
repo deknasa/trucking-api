@@ -5,16 +5,17 @@ namespace App\Rules;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Contracts\Validation\Rule;
 
-class ValidasiJenisOrderGudangsama implements Rule
+class ValidasiTradoTripGudangSama implements Rule
 {
     /**
      * Create a new rule instance.
      *
      * @return void
      */
-    public function __construct()
+    public $dataTripAsal;
+    public function __construct($tripAsal)
     {
-        //
+        $this->dataTripAsal = $tripAsal;
     }
 
     /**
@@ -26,16 +27,15 @@ class ValidasiJenisOrderGudangsama implements Rule
      */
     public function passes($attribute, $value)
     {
-        
-        $jenisorder_id = request()->jenisorder_id;
-        $statusgudangsama = request()->statusgudangsama;
-        if($statusgudangsama == 204){
-            if($jenisorder_id != 1 && $jenisorder_id != 4){
-                return false;
+        if(count($this->dataTripAsal) > 0){
+            $trado_id = request()->trado_id ?? 0;
+            if($trado_id != 0){
+                if($trado_id != $this->dataTripAsal['trado_id']){
+                    return false;
+                }
             }
-        }
-
-        return true;
+       }
+       return true;
     }
 
     /**
@@ -45,6 +45,6 @@ class ValidasiJenisOrderGudangsama implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('JOGS')->keterangan;
+        return app(ErrorController::class)->geterror('TBD')->keterangan. ' dengan trado trip asal';
     }
 }

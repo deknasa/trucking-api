@@ -367,25 +367,34 @@ class ListTrip extends MyModel
                         $isDifferent = true;
                         $isTripPulang = true;
                     } else {
+                        if ($trip->statusgudangsama != $data['statusgudangsama']) {
+                            if ($data['statusgudangsama'] != 204) {
+                                $getId = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
+                                (new OrderanTrucking())->processDestroy($getId->id);
+                            }
+                        }
                         $trip->jobtrucking = $data['jobtrucking'];
                         $isTripPulang = true;
                     }
                 }
             } else {
+
                 if ($data['dari_id'] != 1) {
 
-                    $count = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', $trip->jobtrucking)->count();
-                    if ($count == 1) {
-                        $getId = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
-                        (new OrderanTrucking())->processDestroy($getId->id);
-                    }
+                    if ($data['statusgudangsama'] != 204) {
 
-                    $trip->jobtrucking = $data['jobtrucking'];
-                    $isTripPulang = true;
+                        $count = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', $trip->jobtrucking)->count();
+                        if ($count == 1) {
+                            $getId = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
+                            (new OrderanTrucking())->processDestroy($getId->id);
+                        }
+
+                        $trip->jobtrucking = $data['jobtrucking'];
+                        $isTripPulang = true;
+                    }
                 }
             }
         }
-
         $statusperalihan = DB::table('parameter')->from(
             DB::raw("parameter as a with (readuncommitted)")
         )
@@ -430,6 +439,14 @@ class ListTrip extends MyModel
                 $orderanTrucking = (new OrderanTrucking())->processUpdate($getJobtrucking, $orderan);
             }
         } else {
+            if ($trip->statusgudangsama != $data['statusgudangsama']) {
+                if (($data['jenisorder_id'] == 3 || $data['jenisorder_id'] == 2) && $data['statuscontainer_id'] == 1) {
+                    $isTripPulang = false;
+                }
+                if (($data['jenisorder_id'] == 1 || $data['jenisorder_id'] == 4) && $data['statuscontainer_id'] == 2) {
+                    $isTripPulang = false;
+                }
+            }
             if (!$isTripPulang) {
 
                 $getJobtrucking = OrderanTrucking::from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
@@ -502,6 +519,7 @@ class ListTrip extends MyModel
         // } else {
         $nominalSupir = $upahsupirRincian->nominalsupir;
         // }
+        // dd($trip->jobtrucking);
         $dataSP = [
 
             'jobtrucking' => $trip->jobtrucking,
@@ -532,7 +550,7 @@ class ListTrip extends MyModel
             'totalomset' => $tarifrincian->nominal ?? 0,
             'tglsp' => $data['tglbukti'],
             'statusbatalmuat' => $trip->statusbatalmuat,
-            'statusgudangsama' => $trip->statusgudangsama,
+            'statusgudangsama' => $data['statusgudangsama'],
             'gudang' => $data['gudang'],
             'lokasibongkarmuat' => $data['lokasibongkarmuat'],
             'tarif_id' => $data['tarifrincian_id'],
@@ -578,10 +596,13 @@ class ListTrip extends MyModel
     public function processDestroy($id): SuratPengantar
     {
         // $suratPengantarBiayaTambahan = SuratPengantarBiayaTambahan::where('suratpengantar_id', $id)->get();
-        $cekSP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('suratpengantar.dari_id', 'orderantrucking.id')
+        $cekSP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('suratpengantar.dari_id', 'orderantrucking.id', 'suratpengantar.statusgudangsama')
             ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'suratpengantar.jobtrucking', 'orderantrucking.nobukti')->where('suratpengantar.id', $id)->first();
 
         if ($cekSP->dari_id == 1) {
+            (new OrderanTrucking())->processDestroy($cekSP->id);
+        }
+        if ($cekSP->statusgudangsama == 204) {
             (new OrderanTrucking())->processDestroy($cekSP->id);
         }
 

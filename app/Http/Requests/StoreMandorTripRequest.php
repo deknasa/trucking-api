@@ -48,6 +48,7 @@ use App\Rules\ValidasiJenisOrderGudangsama;
 use App\Rules\ValidasiJenisOrderLongtrip;
 use App\Rules\ValidasiLongtripGudangsama;
 use App\Rules\ValidasiPelangganTripGudangSama;
+use App\Rules\ValidasiTradoTripGudangSama;
 use App\Rules\ValidasiTripGudangSama;
 
 class StoreMandorTripRequest extends FormRequest
@@ -85,7 +86,7 @@ class StoreMandorTripRequest extends FormRequest
         $dataTripAsal = [];
         if (request()->statusgudangsama == $getGudangSama->id) {
             if (request()->nobukti_tripasal != '') {
-                $getDataTripAsal = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))->select('upah_id', 'agen_id', 'pelanggan_id', 'container_id')->where('nobukti', request()->nobukti_tripasal)->first();
+                $getDataTripAsal = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))->select('upah_id', 'agen_id', 'pelanggan_id', 'container_id', 'trado_id')->where('nobukti', request()->nobukti_tripasal)->first();
                 $dataTripAsal = json_decode(json_encode($getDataTripAsal), true);
             }
         }
@@ -461,16 +462,16 @@ class StoreMandorTripRequest extends FormRequest
                     "container" => ["required", new ValidasiContainerTripGudangSama($dataTripAsal)],
                     "dari" => ["required"],
                     "gudang" => "required",
-                    "jenisorder" => "required",
+                    "jenisorder" => ["required", new ValidasiJenisOrderGudangsama()],
                     "pelanggan" => ["required", new ValidasiPelangganTripGudangSama($dataTripAsal)],
                     "sampai" => ["required"],
                     "statuscontainer" => "required",
-                    "statusgudangsama" => ["required", new ValidasiLongtripGudangsama(), new ValidasiJenisOrderGudangsama()],
+                    "statusgudangsama" => ["required", new ValidasiLongtripGudangsama()],
                     "statuslongtrip" => ["required", new ValidasiJenisOrderLongtrip()],
                     "statuslangsir" => "required",
                     // "lokasibongkarmuat" => "required",
-                    "trado" => "required",
-                    "upah" => ["required", new ExistNominalUpahSupir()],
+                    "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
+                    "upah" => ["required", new ExistNominalUpahSupir(), new ValidasiTripGudangSama($dataTripAsal)],
                     'statusupahzona' => ['required', Rule::in($statusUpahZona)],
                 ];
             } else {
@@ -496,16 +497,16 @@ class StoreMandorTripRequest extends FormRequest
                     "dari" => ["required"],
                     "gandengan" => "required",
                     "gudang" => "required",
-                    "jenisorder" => "required",
+                    "jenisorder" => ["required", new ValidasiJenisOrderGudangsama()],
                     "pelanggan" =>  ["required", new ValidasiPelangganTripGudangSama($dataTripAsal)],
                     "sampai" => ["required"],
                     "statuscontainer" => "required",
-                    "statusgudangsama" => ["required", new ValidasiLongtripGudangsama(), new ValidasiJenisOrderGudangsama()],
+                    "statusgudangsama" => ["required", new ValidasiLongtripGudangsama()],
                     "statuslongtrip" => ["required", new ValidasiJenisOrderLongtrip()],
                     "statuslangsir" => "required",
                     // "lokasibongkarmuat" => "required",
-                    "trado" => "required",
-                    "upah" => ["required", new ExistNominalUpahSupir()],
+                    "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
+                    "upah" => ["required", new ExistNominalUpahSupir(), new ValidasiTripGudangSama($dataTripAsal)],
                     'statusupahzona' => ['required', Rule::in($statusUpahZona)],
                 ];
             }
@@ -537,16 +538,16 @@ class StoreMandorTripRequest extends FormRequest
                     "container" => ["required", new ValidasiContainerTripGudangSama($dataTripAsal)],
                     "dari" => ["required"],
                     "gudang" => "required",
-                    "jenisorder" => "required",
+                    "jenisorder" => ["required", new ValidasiJenisOrderGudangsama()],
                     "pelanggan" =>  ["required", new ValidasiPelangganTripGudangSama($dataTripAsal)],
                     "sampai" => ["required"],
                     "statuscontainer" => "required",
-                    "statusgudangsama" => ["required", new ValidasiLongtripGudangsama(), new ValidasiJenisOrderGudangsama()],
+                    "statusgudangsama" => ["required", new ValidasiLongtripGudangsama()],
                     "statuslongtrip" => ["required", new ValidasiJenisOrderLongtrip()],
                     "statuslangsir" => "required",
                     // "lokasibongkarmuat" => "required",
-                    "trado" => "required",
-                    "upah" => ["required", new ExistNominalUpahSupir()],
+                    "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
+                    "upah" => ["required", new ExistNominalUpahSupir(), new ValidasiTripGudangSama($dataTripAsal)],
                     'statusupahzona' => ['required', Rule::in($statusUpahZona)],
                 ];
             } else {
@@ -573,16 +574,16 @@ class StoreMandorTripRequest extends FormRequest
                     "dari" => ["required"],
                     "gandengan" => ["required", 'nullable'],
                     "gudang" => "required",
-                    "jenisorder" => "required",
+                    "jenisorder" => ["required", new ValidasiJenisOrderGudangsama()],
                     "pelanggan" =>  ["required", new ValidasiPelangganTripGudangSama($dataTripAsal)],
                     "sampai" => ["required"],
                     "statuscontainer" => "required",
-                    "statusgudangsama" => ["required", new ValidasiLongtripGudangsama(), new ValidasiJenisOrderGudangsama()],
+                    "statusgudangsama" => ["required", new ValidasiLongtripGudangsama()],
                     "statuslongtrip" => ["required", new ValidasiJenisOrderLongtrip()],
                     "statuslangsir" => "required",
                     // "lokasibongkarmuat" => "required",
-                    "trado" => "required",
-                    "upah" => ["required", new ExistNominalUpahSupir()],
+                    "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
+                    "upah" => ["required", new ExistNominalUpahSupir(), new ValidasiTripGudangSama($dataTripAsal)],
                     'statusupahzona' => ['required', Rule::in($statusUpahZona)],
                 ];
             }

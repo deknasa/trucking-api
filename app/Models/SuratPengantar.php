@@ -768,7 +768,18 @@ class SuratPengantar extends MyModel
             $query->where('suratpengantar.jenisorder_id', request()->jenisorder_id);
         }
         if ($isTripAsal == 'true') {
-            $query->where('suratpengantar.statuslongtrip', '!=', 66);
+            $container_id = request()->container_id ?? 0;
+            $agen_id = request()->agen_id ?? 0;
+            $upah_id = request()->upah_id ?? 0;
+            $pelanggan_id = request()->pelanggan_id ?? 0;
+            $trado_id = request()->trado_id ?? 0;
+            $supir_id = request()->supir_id ?? 0;
+            $query->whereRaw("suratpengantar.jenisorder_id in (2,3)")
+                ->where('suratpengantar.container_id', $container_id)
+                ->where('suratpengantar.agen_id', $agen_id)
+                ->where('suratpengantar.upah_id', $upah_id)
+                ->where('suratpengantar.trado_id', $trado_id)
+                ->where('suratpengantar.pelanggan_id', $pelanggan_id);
         }
         if ($tglabsensi != '') {
             $query->where('suratpengantar.tglbukti', date('Y-m-d', strtotime($tglabsensi)));
@@ -2392,6 +2403,12 @@ class SuratPengantar extends MyModel
             $cekSP = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $suratPengantar->jobtrucking)->first();
             (new OrderanTrucking())->processDestroy($cekSP->id);
         }
+        
+        if ($suratPengantar->statusgudangsama == 204) {
+            $cekSP = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $suratPengantar->jobtrucking)->first();
+            (new OrderanTrucking())->processDestroy($cekSP->id);
+        }
+        
         $suratPengantarLogTrail = (new LogTrail())->processStore([
             'namatabel' => $suratPengantar->getTable(),
             'postingdari' => 'DELETE SURAT PENGANTAR',
