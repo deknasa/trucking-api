@@ -173,6 +173,7 @@ class Agen extends MyModel
             ->first();
 
         $aktif = request()->aktif ?? '';
+        $invoice = request()->invoice ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -221,6 +222,11 @@ class Agen extends MyModel
 
             $query->where('agen.statusaktif', '=', $statusaktif->id);
         }
+
+        if ($invoice == 'UTAMA') {
+            $query->whereRaw("(isnull(agen.coa,'')<>'' or isnull(agen.coapendapatan,'')<>'' ) ");
+        }
+
         // dd($query->toSql());
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
