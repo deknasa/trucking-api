@@ -282,6 +282,7 @@ class SupirController extends Controller
                 'tgllahir' => $request->tgllahir,
                 'tglterbitsim' => $request->tglterbitsim,
                 'modifiedby' => auth('api')->user()->name,
+                'mandor_id' => $request->mandor_id ?? 0,
 
                 'photosupir' => $request->photosupir ?? [],
                 'photoktp' => $request->photoktp ?? [],

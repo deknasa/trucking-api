@@ -916,6 +916,14 @@ class Trado extends MyModel
             $trado->modifiedby = auth('api')->user()->user;
             $trado->info = html_entity_decode(request()->info);
 
+            
+            if ($data['mandor_id'] != 0) {
+                $trado->tglberlakumilikmandor = date('Y-m-d');
+            }
+            if ($data['supir_id'] != 0) {
+                $trado->tglberlakumiliksupir = date('Y-m-d');
+            }
+
             $trado->photostnk = $data['photostnk'];
             $trado->photobpkb = $data['photobpkb'];
             $trado->phototrado = $data['phototrado'];

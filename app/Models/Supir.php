@@ -224,7 +224,7 @@ class Supir extends MyModel
         $isMandor = auth()->user()->isMandor();
         $isAdmin = auth()->user()->isAdmin();
         $formatCabang = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'MANDOR SUPIR')->where('subgrp', 'MANDOR SUPIR')->first();
-        
+
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'supir.id',
@@ -285,11 +285,11 @@ class Supir extends MyModel
             ->leftJoin(DB::raw("mandor as b with (readuncommitted)"), 'supir.mandor_id', '=', 'b.id');
 
 
-            // if (!$isAdmin && ($formatCabang->text == 'FORMAT 2')) {
-            //     if ($isMandor) {
-            //         $query->where('supir.mandor_id', $isMandor->mandor_id);
-            //     }
-            // }
+        // if (!$isAdmin && ($formatCabang->text == 'FORMAT 2')) {
+        //     if ($isMandor) {
+        //         $query->where('supir.mandor_id', $isMandor->mandor_id);
+        //     }
+        // }
 
         $this->filter($query);
         if ($aktif == 'AKTIF') {
@@ -313,12 +313,11 @@ class Supir extends MyModel
                 $query->whereRaw("supir.id in (select supir_id from absensisupirdetail where absensi_id=$absensiSupirHeader->id)");
             }
         }
-        if($isProsesUangjalan == true)
-        {
+        if ($isProsesUangjalan == true) {
             $query->addSelect(DB::raw("absensisupirdetail.uangjalan"))
-            ->join(DB::raw("absensisupirdetail with (readuncommitted)"), 'absensisupirdetail.supir_id','supir.id')
-            ->where('absensisupirdetail.absensi_id', $absensi_id)
-            ->where('absensisupirdetail.uangjalan', '!=', 0);
+                ->join(DB::raw("absensisupirdetail with (readuncommitted)"), 'absensisupirdetail.supir_id', 'supir.id')
+                ->where('absensisupirdetail.absensi_id', $absensi_id)
+                ->where('absensisupirdetail.uangjalan', '!=', 0);
         }
 
         if ($supir_id != '') {
@@ -524,6 +523,8 @@ class Supir extends MyModel
                 'supir.tglberhentisupir',
                 'supir.tgllahir',
                 'supir.tglterbitsim',
+                'mandor.namamandor as mandor',
+                'supir.mandor_id',
 
                 'supir.modifiedby',
                 'supir.created_at',
@@ -531,6 +532,7 @@ class Supir extends MyModel
             )
 
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'supir.zona_id', 'zona.id')
+            ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'supir.mandor_id', 'mandor.id')
             ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id')
 
             ->where('supir.id', $id)->first();
@@ -722,7 +724,6 @@ class Supir extends MyModel
                             $query = $query->whereRaw("format((case when year(isnull($this->table." . $filters['field'] . ",'1900/1/1'))<2000 then null else supir." . $filters['field'] . " end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'check') {
                             $query = $query->whereRaw('1 = 1');
-
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -757,7 +758,6 @@ class Supir extends MyModel
                                 $query = $query->orWhereRaw("format((case when year(isnull($this->table." . $filters['field'] . ",'1900/1/1'))<2000 then null else supir." . $filters['field'] . " end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'check') {
                                 $query = $query->whereRaw('1 = 1');
-
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -968,7 +968,7 @@ class Supir extends MyModel
             $supir->keterangan = $data['keterangan'] ?? '';
             $supir->noktp = $data['noktp'];
             $supir->nokk = $data['nokk'];
-            $supir->mandor_id = $data['mandor_id']??'';
+            $supir->mandor_id = $data['mandor_id'] ?? '';
             $supir->angsuranpinjaman = str_replace(',', '', $data['angsuranpinjaman']) ?? 0;
             $supir->plafondeposito = str_replace(',', '', $data['plafondeposito']) ?? 0;
             $supir->tgllahir = date('Y-m-d', strtotime($data['tgllahir']));
@@ -976,7 +976,9 @@ class Supir extends MyModel
             $supir->statuspostingtnl = $data['statuspostingtnl'];
             $supir->modifiedby = auth('api')->user()->user;
             $supir->info = html_entity_decode(request()->info);
-
+            if ($data['mandor_id'] != 0) {
+                $supir->tglberlakumilikmandor = date('Y-m-d');
+            }
             $supir->statusadaupdategambar = $statusAdaUpdateGambar->id;
             $supir->statusluarkota = $statusLuarKota->id;
             $supir->statuszonatertentu = $statusZonaTertentu->id;
@@ -1439,7 +1441,7 @@ class Supir extends MyModel
             'tglberlakumilikmandor' => $supir->tglberlakumilikmandor,
 
         ];
-        
+
         (new HistorySupirMilikMandor())->processStore($dataLogtrail);
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($supir->getTable()),
@@ -1450,7 +1452,7 @@ class Supir extends MyModel
             'datajson' => $dataLogtrail,
             'modifiedby' => auth('api')->user()->name
         ]);
-        
+
         DB::table('suratpengantar')
             ->where('supir_id', $supir->id)
             ->where('tglbukti', '>=', $supir->tglberlakumilikmandor)
@@ -1494,7 +1496,7 @@ class Supir extends MyModel
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'a.supir_id', 'supir.id')
             ->leftJoin(DB::raw("mandor as mandorbaru with (readuncommitted)"), 'a.mandorbaru_id', 'mandorbaru.id')
             ->leftJoin(DB::raw("mandor as mandorlama with (readuncommitted)"), 'a.mandorlama_id', 'mandorlama.id');
-            
+
 
         $this->sortHistory($query);
         $this->filterHistory($query);
@@ -1581,14 +1583,14 @@ class Supir extends MyModel
         for ($i = 0; $i < count($data['Id']); $i++) {
             $Supir = Supir::find($data['Id'][$i]);
 
-                $Supir->statusaktif = $statusnonaktif->id;
-                $aksi = $statusnonaktif->text;
+            $Supir->statusaktif = $statusnonaktif->id;
+            $aksi = $statusnonaktif->text;
 
-                // dd($Supir);
+            // dd($Supir);
             if ($Supir->save()) {
-                
+
                 (new LogTrail())->processStore([
-                    
+
                     'namatabel' => strtoupper($Supir->getTable()),
                     'postingdari' => 'APPROVAL SUPIR',
                     'idtrans' => $Supir->id,
@@ -1618,9 +1620,9 @@ class Supir extends MyModel
                 $aksi = $statusLuarKota->text;
             }
 
-                // dd($Supir);
+            // dd($Supir);
             if ($supir->save()) {
-                
+
                 (new LogTrail())->processStore([
                     'namatabel' => strtoupper($supir->getTable()),
                     'postingdari' => 'APPROVED SUPIR LUAR KOTA',
@@ -1636,7 +1638,7 @@ class Supir extends MyModel
 
         return $supir;
     }
-    
+
     public function processApprovalBlackListSupir(array $data)
     {
         $statusBlackList = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'BLACKLIST SUPIR')->where('text', '=', 'SUPIR BLACKLIST')->first();
@@ -1650,11 +1652,11 @@ class Supir extends MyModel
                 $supir->statusblacklist = $statusBlackList->id;
                 $aksi = $statusBlackList->text;
             }
-            
-            
+
+
             // dd($Supir);
             if ($supir->save()) {
-                
+
                 (new LogTrail())->processStore([
                     'namatabel' => strtoupper($supir->getTable()),
                     'postingdari' => 'APPROVED BLACKLIST SUPIR',
@@ -1666,10 +1668,8 @@ class Supir extends MyModel
                 ]);
             }
         }
-        
+
 
         return $supir;
     }
-
-    
 }
