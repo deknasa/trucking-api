@@ -89,6 +89,7 @@ class ApprovalBukaCetakController extends Controller
     
     public function bukaCetak($id, $table)
     {
+        
         DB::beginTransaction();
         try {
             $backSlash = " \ ";

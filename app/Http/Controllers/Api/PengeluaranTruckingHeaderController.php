@@ -473,17 +473,17 @@ class PengeluaranTruckingHeaderController extends Controller
 
     public function cekvalidasi($id)
     {
-        $pengeluaran = PengeluaranTruckingHeader::find($id);
-        $nobukti = $pengeluaran->nobukti ?? '';
-        $status = $pengeluaran->statusapproval;
+        $pengeluarantrucking = PengeluaranTruckingHeader::find($id);
+        $nobukti = $pengeluarantrucking->nobukti ?? '';
+        $status = $pengeluarantrucking->statusapproval;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
-        $statusdatacetak = $pengeluaran->statuscetak;
+        $statusdatacetak = $pengeluarantrucking->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
         $aksi = request()->aksi;
-        $pengeluarantrucking_id = $pengeluaran->pengeluarantrucking_id;
+        $pengeluarantrucking_id = $pengeluarantrucking->pengeluarantrucking_id;
         $aco_id = db::table("pengeluarantrucking")->from(db::raw("pengeluarantrucking a with (readuncommitted)"))
             ->select(
                 'a.aco_id'
@@ -530,6 +530,29 @@ class PengeluaranTruckingHeaderController extends Controller
             }
         }
 
+        $pengeluaran = $pengeluarantrucking->pengeluaran_nobukti ?? '';
+        // dd($pengeluaran);
+        $idpengeluaran = db::table('pengeluaranheader')->from(db::raw("pengeluaranheader a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.nobukti', $pengeluaran)
+            ->first()->id ?? 0;
+        // $aksi = request()->aksi ?? '';
+   
+        $validasipengeluaran = app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
+        $msg = json_decode(json_encode($validasipengeluaran), true)['original']['error'] ?? false;
+        if ($msg == false) {
+            goto lanjut;
+        } else {
+            return $validasipengeluaran;
+        }
+
+
+
+
+        lanjut:
+
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
 
@@ -552,7 +575,7 @@ class PengeluaranTruckingHeaderController extends Controller
             ];
 
             return response($data);
-        } else if ($tgltutup >= $pengeluaran->tglbukti) {
+        } else if ($tgltutup >= $pengeluarantrucking->tglbukti) {
             $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
             $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' )';
             $data = [
