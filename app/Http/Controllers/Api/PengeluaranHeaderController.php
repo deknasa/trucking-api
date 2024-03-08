@@ -450,17 +450,9 @@ class PengeluaranHeaderController extends Controller
         $nobukti = PengeluaranHeader::from(DB::raw("pengeluaranheader"))->where('id', $id)->first();
         $cekdata = $pengeluaranHeader->cekvalidasiaksi($nobukti->nobukti);
         if ($cekdata['kondisi'] == true) {
-            $query = DB::table('error')
-                ->select(
-                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
-                )
-                ->where('kodeerror', '=', $cekdata['kodeerror'])
-                ->first();
-            // $keterangan = $query['0'];
-
             $data = [
                 'error' => true,
-                'message' => $query->keterangan,
+                'message' => $cekdata['keterangan'] ?? '',
                 'statuspesan' => 'warning',
                 'editcoa' => $cekdata['editcoa']
             ];

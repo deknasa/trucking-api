@@ -221,4 +221,18 @@ class Error extends MyModel
 
         return $error;
     }
+
+    public function cekKeteranganError($kode) {
+        $query = DB::table('error')
+        ->select(
+            
+            DB::raw("ltrim(rtrim(keterangan)) as keterangan")
+        )
+        ->where('kodeerror', '=',$kode)
+        ->first();
+
+        $keterangan=$query->keterangan ?? '';
+
+        return $keterangan;
+    }
 }
