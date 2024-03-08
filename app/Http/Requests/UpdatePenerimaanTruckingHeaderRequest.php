@@ -15,6 +15,8 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use App\Rules\ValidasiPenerimaanTrucking;
 use App\Rules\ValidasiSupirDeposito;
+use App\Rules\ValidasiDestroyPenerimaanTruckingHeader;
+
 
 class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
 {
@@ -132,7 +134,8 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
         if ($kodepenerimaan == 'PJP') {
             $jumlahdetail = $this->jumlahdetail ?? 0;
             $rules = [
-                "id" => new DestroyPenerimaanTruckingHeader(),
+                'id' => [ new ValidasiDestroyPenerimaanTruckingHeader()],
+                // "id" => new DestroyPenerimaanTruckingHeader(),
 
                 'nobukti' => [Rule::in($getDataPenerimaan->nobukti)],
                 "tglbukti" => [
@@ -151,7 +154,9 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
             ];
         } elseif ($kodepenerimaan == 'DPO') {
             $rules = [
-                "id" => new DestroyPenerimaanTruckingHeader(),
+                'id' => [ new ValidasiDestroyPenerimaanTruckingHeader()],
+
+                // "id" => new DestroyPenerimaanTruckingHeader(),
 
                 'nobukti' => [Rule::in($getDataPenerimaan->nobukti)],
                 "tglbukti" => [
@@ -170,6 +175,7 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
 
             $jumlahdetail = $this->jumlahdetail ?? 0;
             $rules = [
+                'id' => [ new ValidasiDestroyPenerimaanTruckingHeader()],
                 'tglbukti' => [
                     'required',
                     'date_format:d-m-Y',
@@ -194,7 +200,8 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
             ];
         } else {
             $rules = [
-                "id" => new DestroyPenerimaanTruckingHeader(),
+                'id' => [ new ValidasiDestroyPenerimaanTruckingHeader()],
+                // "id" => new DestroyPenerimaanTruckingHeader(),
 
                 'nobukti' => [Rule::in($getDataPenerimaan->nobukti)],
                 "tglbukti" => [
