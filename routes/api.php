@@ -222,6 +222,7 @@ use App\Http\Controllers\Api\JurnalUmumPusatHeaderController;
 use App\Http\Controllers\Api\LaporanOrderPembelianController;
 use App\Http\Controllers\Api\LaporanRekapSumbanganController;
 use App\Http\Controllers\Api\LaporanSaldoInventoryController;
+use App\Http\Controllers\Api\LaporanSaldoInventoryLamaController;
 use App\Http\Controllers\Api\PelunasanHutangDetailController;
 use App\Http\Controllers\Api\PelunasanHutangHeaderController;
 use App\Http\Controllers\Api\PendapatanSupirDetailController;
@@ -1726,6 +1727,10 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporansaldoinventory/export', [LaporanSaldoInventoryController::class, 'export'])->name('laporansaldoinventory.export');
     Route::get('laporansaldoinventory/report', [LaporanSaldoInventoryController::class, 'report'])->name('laporansaldoinventory.report');
     Route::resource('laporansaldoinventory', LaporanSaldoInventoryController::class)->whereNumber('laporansaldoinventory');
+
+    Route::get('laporansaldoinventorylama/export', [LaporanSaldoInventoryLamaController::class, 'export'])->name('laporansaldoinventorylama.export');
+    Route::get('laporansaldoinventorylama/report', [LaporanSaldoInventoryLamaController::class, 'report'])->name('laporansaldoinventorylama.report');
+    Route::resource('laporansaldoinventorylama', LaporanSaldoInventoryLamaController::class)->whereNumber('laporansaldoinventorylama');
 
     Route::get('exportlaporanstok/export', [ExportLaporanStokController::class, 'export'])->name('exportlaporanstok.export');
     Route::resource('exportlaporanstok', ExportLaporanStokController::class)->whereNumber('exportlaporanstok');
