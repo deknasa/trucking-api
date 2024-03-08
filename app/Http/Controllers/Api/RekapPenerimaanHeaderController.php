@@ -199,6 +199,7 @@ class RekapPenerimaanHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $pengeluaran = RekapPenerimaanHeader::findOrFail($id);
+        $nobukti = $pengeluaran->nobukti ?? '';
         $status = $pengeluaran->statusapproval;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
@@ -207,41 +208,52 @@ class RekapPenerimaanHeaderController extends Controller
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
         $aksi = request()->aksi ?? '';
 
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $parameter = new Parameter();
+
+        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup=date('Y-m-d', strtotime($tgltutup));
+
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->whereRaw("kodeerror = 'SAP'")
-                ->get();
-            $keterangan = $query['0'];
+            $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah approve',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'SAP',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->whereRaw("kodeerror = 'SDC'")
-                ->get();
-            $keterangan = $query['0'];
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah cetak',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'SDC',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
+        } else if ($tgltutup >= $pengeluaran->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' )';
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);            
         } else {
 
             $data = [
+                'error' => false,
                 'message' => '',
-                'errors' => 'belum approve',
-                'kodestatus' => '0',
-                'kodenobukti' => '1'
+                'statuspesan' => 'success',
             ];
 
             return response($data);

@@ -481,4 +481,18 @@ class Parameter extends MyModel
 
         return $parameter;
     }
+
+    public function cekText($grp,$subgrp) {
+        $query = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+        ->select(
+            'a.text as keterangan'
+        )
+        ->where('grp' ,$grp)
+        ->where('subgrp' ,$subgrp)
+        ->first();
+
+        $keterangan=$query->keterangan ?? '';
+
+        return $keterangan;
+    }
 }

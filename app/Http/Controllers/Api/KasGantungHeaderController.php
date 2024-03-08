@@ -324,6 +324,11 @@ class KasGantungHeaderController extends Controller
 
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $parameter = new Parameter();
+
+        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup=date('Y-m-d', strtotime($tgltutup));
+
         if ($statusdatacetak == $statusCetak->id) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
             $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
@@ -336,6 +341,17 @@ class KasGantungHeaderController extends Controller
             ];
 
             return response($data);
+        } else if ($tgltutup >= $kasgantung->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' )';
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);            
         } else {
 
             $data = [

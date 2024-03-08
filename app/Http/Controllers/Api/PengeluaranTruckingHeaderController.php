@@ -474,6 +474,7 @@ class PengeluaranTruckingHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $pengeluaran = PengeluaranTruckingHeader::find($id);
+        $nobukti = $pengeluaran->nobukti ?? '';
         $status = $pengeluaran->statusapproval;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
@@ -515,14 +516,13 @@ class PengeluaranTruckingHeaderController extends Controller
                     $query = DB::table('error')
                         ->select(db::raw("'USER " . $user . " '+keterangan as keterangan"))
                         ->where('kodeerror', '=', 'TPH')
-                        ->get();
-                    $keterangan = $query['0'];
+                        ->first();
 
                     $data = [
-                        'message' => $keterangan,
-                        'errors' => 'sudah cetak',
-                        'kodestatus' => '1',
-                        'kodenobukti' => '1'
+                        'error' => true,
+                        'message' => $query->keterangan,
+                        'kodeerror' => 'TPH',
+                        'statuspesan' => 'warning',
                     ];
                     $passes = false;
                     return response($data);
@@ -530,27 +530,45 @@ class PengeluaranTruckingHeaderController extends Controller
             }
         }
 
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
+        $parameter = new Parameter();
+
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
+
+
         if ($statusdatacetak == $statusCetak->id) {
-            $query = DB::table('error')
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SDC')
-                ->get();
-            $keterangan = $query['0'];
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+
+
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah cetak',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'SDC',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else if ($tgltutup >= $pengeluaran->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' )';
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else {
 
             $data = [
+                'error' => false,
                 'message' => '',
-                'errors' => 'belum approve',
-                'kodestatus' => '0',
-                'kodenobukti' => '1'
+                'statuspesan' => 'success',
             ];
 
             return response($data);
@@ -564,6 +582,24 @@ class PengeluaranTruckingHeaderController extends Controller
         $nobukti = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader"))->where('id', $id)->first();
         // $cekdata = $pengeluaran->cekvalidasiaksi($nobukti->pengeluaran_nobukti);
 
+        $pengeluaran = $nobukti->pengeluaran_nobukti ?? '';
+        $idpengeluaran = db::table('pengeluaranheader')->from(db::raw("pengeluaranheader a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.nobukti', $pengeluaran)
+            ->first()->id ?? 0;
+        // $aksi = request()->aksi ?? '';
+        $validasipengeluaran = app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
+        $msg = json_decode(json_encode($validasipengeluaran), true)['original']['error'] ?? false;
+        if ($msg == false) {
+            goto lanjut;
+        } else {
+            return $validasipengeluaran;
+        }
+
+
+        lanjut:
         $PengeluaranTruckingHeader = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader"))->where('id', $id)->first();
         $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
             ->where('kodepengeluaran', "KLAIM")
@@ -576,31 +612,28 @@ class PengeluaranTruckingHeaderController extends Controller
         // $cekdata = $pengeluaran->cekvalidasiaksi($nobukti->pengeluaran_nobukti);
         // }
 
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
 
         if ($cekdata['kondisi'] == true) {
-            $query = DB::table('error')
-                ->select(
-                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
-                )
-                ->where('kodeerror', '=', $cekdata['kodeerror'])
-                ->get();
-            $keterangan = $query['0'];
+            $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+
 
             $data = [
-                'status' => false,
-                'message' => $keterangan,
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TDT',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else {
 
             $data = [
-                'status' => false,
+                'error' => false,
                 'message' => '',
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
+                'statuspesan' => 'success',
             ];
 
             return response($data);
