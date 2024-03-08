@@ -13,6 +13,7 @@ use App\Rules\ValidasiTotalDetail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
+use App\Rules\ValidasiDestroyPengeluaranHeader ;
 
 class UpdatePengeluaranHeaderRequest extends FormRequest
 {
@@ -49,6 +50,7 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
         // dd($query);
 
         $rules = [
+            'id' => [ new ValidasiDestroyPengeluaranHeader()],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku(),

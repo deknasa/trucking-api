@@ -36,7 +36,7 @@ class ValidasiDestroyPengeluaranHeader implements Rule
         $cekdata = $pengeluaran->cekvalidasiaksi($nobukti->nobukti);
         if ($cekdata['kondisi']) {
             $this->kodeerror = $cekdata['kodeerror'];
-            $this->keterangan = ' (' . $cekdata['keterangan'] . ')';
+            $this->keterangan = $cekdata['keterangan'] ;
             return false;
         }
 
@@ -57,6 +57,6 @@ class ValidasiDestroyPengeluaranHeader implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror($this->kodeerror)->keterangan . $this->keterangan;
+        return $this->keterangan;
     }
 }

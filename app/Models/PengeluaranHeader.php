@@ -413,6 +413,11 @@ class PengeluaranHeader extends MyModel
 
     public function cekvalidasiaksi($nobukti)
     {        
+        $error = new Error();
+        $keteranganerror = $error->cekKeteranganError('SAPP');
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL');
+        // $keterangantambahanerror2 = $error->cekKeteranganError('BD');
+
         $jurnal = DB::table('pengeluaranheader')
             ->from(
                 DB::raw("pengeluaranheader as a with (readuncommitted)")
@@ -426,13 +431,14 @@ class PengeluaranHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal '. $jurnal->nobukti,
-                'kodeerror' => 'SAP',
+                'keterangan' => 'No Bukti <b>'. $jurnal->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror,
+                'kodeerror' => 'SAPP',
                 'editcoa' => false
             ];
             goto selesai;
         }
 
+        $keteranganerror = $error->cekKeteranganError('TDT');
         $pelunasanhutangheader = DB::table('pelunasanhutangheader')
             ->from(
                 DB::raw("pelunasanhutangheader as a with (readuncommitted)")
@@ -446,13 +452,15 @@ class PengeluaranHeader extends MyModel
         if (isset($pelunasanhutangheader)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pelunasan Hutang '. $pelunasanhutangheader->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pelunasan hutang <b>'. $pelunasanhutangheader->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Pelunasan Hutang '. $pelunasanhutangheader->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
             goto selesai;
         }
 
+        $keteranganerror = $error->cekKeteranganError('TDT');
         $kasGantung = DB::table('kasgantungheader')
             ->from(
                 DB::raw("kasgantungheader as a with (readuncommitted)")
@@ -466,12 +474,15 @@ class PengeluaranHeader extends MyModel
         if (isset($kasGantung)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'kas gantung '. $kasGantung->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti kas gantung <b>'. $kasGantung->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'kas gantung '. $kasGantung->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
             goto selesai;
         }
+        $keteranganerror = $error->cekKeteranganError('TDT');
+
         $absensiApproval = DB::table('absensisupirapprovalheader')
             ->from(
                 DB::raw("absensisupirapprovalheader as a with (readuncommitted)")
@@ -485,13 +496,15 @@ class PengeluaranHeader extends MyModel
         if (isset($absensiApproval)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Absensi Supir posting '. $absensiApproval->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti absensi supir posting <b>'. $absensiApproval->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Absensi Supir posting '. $absensiApproval->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
             goto selesai;
         }
 
+        $keteranganerror = $error->cekKeteranganError('TDT');
         $prosesUangjalan = DB::table('prosesuangjalansupirdetail')
             ->from(
                 DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)")
@@ -505,13 +518,15 @@ class PengeluaranHeader extends MyModel
         if (isset($prosesUangjalan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'proses uang jalan supir '. $prosesUangjalan->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti proses uang jalan supir <b>'. $prosesUangjalan->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'proses uang jalan supir '. $prosesUangjalan->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
             goto selesai;
         }
 
+        $keteranganerror = $error->cekKeteranganError('TDT');
         $pelunasanHutangHeader = DB::table('pelunasanhutangheader')
             ->from(
                 DB::raw("pelunasanhutangheader as a with (readuncommitted)")
@@ -525,13 +540,15 @@ class PengeluaranHeader extends MyModel
         if (isset($pelunasanHutangHeader)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'PELUNASAN HUTANG '. $pelunasanHutangHeader->nobukti,
+                // 'keterangan' => 'PELUNASAN HUTANG '. $pelunasanHutangHeader->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pelunasan hutang <b>'. $pelunasanHutangHeader->nobukti .'</b> <br> '.$keterangantambahanerror,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
             goto selesai;
         }
 
+        $keteranganerror = $error->cekKeteranganError('TDT');
         $pengeluaranTrucking = DB::table('pengeluarantruckingheader')
             ->from(
                 DB::raw("pengeluarantruckingheader as a with (readuncommitted)")
@@ -545,13 +562,15 @@ class PengeluaranHeader extends MyModel
         if (isset($pengeluaranTrucking)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'pengeluaran trucking '. $pengeluaranTrucking->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pengeluaran trucking <b>'. $pengeluaranTrucking->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'pengeluaran trucking '. $pengeluaranTrucking->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
             goto selesai;
         }
 
+        $keteranganerror = $error->cekKeteranganError('TDT');
         $pengembalianKasbank = DB::table('pengembaliankasbankheader')
             ->from(
                 DB::raw("pengembaliankasbankheader as a with (readuncommitted)")
@@ -565,12 +584,15 @@ class PengeluaranHeader extends MyModel
         if (isset($pengembalianKasbank)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'pengembalian kas/bank '. $pengembalianKasbank->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pengembalian kas/bank <b>'. $pengembalianKasbank->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'pengembalian kas/bank '. $pengembalianKasbank->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
             goto selesai;
         }
+
+        $keteranganerror = $error->cekKeteranganError('TDT');
         $prosesGajiSupir = DB::table('prosesgajisupirheader')
             ->from(
                 DB::raw("prosesgajisupirheader as a with (readuncommitted)")
@@ -584,12 +606,15 @@ class PengeluaranHeader extends MyModel
         if (isset($prosesGajiSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Proses Gaji Supir '. $prosesGajiSupir->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Proses Gaji Supir <b>'. $prosesGajiSupir->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Proses Gaji Supir '. $prosesGajiSupir->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
             goto selesai;
         }
+
+        $keteranganerror = $error->cekKeteranganError('TDT');
         $pendapatanSupir = DB::table('pendapatansupirheader')
             ->from(
                 DB::raw("pendapatansupirheader as a with (readuncommitted)")
@@ -603,12 +628,15 @@ class PengeluaranHeader extends MyModel
         if (isset($pendapatanSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pendapatan Supir '. $pendapatanSupir->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Komisi Supir <b>'. $pendapatanSupir->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Pendapatan Supir '. $pendapatanSupir->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
             goto selesai;
         }
+
+        $keteranganerror = $error->cekKeteranganError('TDT');
 
         $pelunasanPiutang = DB::table('pelunasanpiutangheader')
             ->from(
@@ -623,13 +651,15 @@ class PengeluaranHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pelunasan Piutang ' . $pelunasanPiutang->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Pelunasan Piutang <b>'. $pelunasanPiutang->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Pelunasan Piutang ' . $pelunasanPiutang->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
             goto selesai;
         }
         
+        $keteranganerror = $error->cekKeteranganError('SATL');
         $rekap = DB::table('rekappengeluarandetail')
             ->from(
                 DB::raw("rekappengeluarandetail as a with (readuncommitted)")
@@ -643,7 +673,8 @@ class PengeluaranHeader extends MyModel
         if (isset($rekap)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Rekap Pengeluaran '. $rekap->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Rekap Pengeluaran <b>'. $rekap->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Rekap Pengeluaran '. $rekap->nobukti,
                 'kodeerror' => 'SATL',
                 'editcoa' => true
             ];
