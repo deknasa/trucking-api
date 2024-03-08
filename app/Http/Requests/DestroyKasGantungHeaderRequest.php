@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Rules\DateTutupBuku;
 use App\Rules\DestroyKasGantung;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\ValidasiDestroyKasGantungHeader ;
 
 class DestroyKasGantungHeaderRequest extends FormRequest
 {
@@ -26,7 +27,8 @@ class DestroyKasGantungHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            'nobukti' => new DestroyKasGantung(),
+            // 'nobukti' => new DestroyKasGantung(),
+            'id' => [ new ValidasiDestroyKasGantungHeader()],
             'tglbukti' => new DateTutupBuku()
         ];
     }

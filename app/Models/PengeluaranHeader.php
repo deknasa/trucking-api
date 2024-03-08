@@ -414,8 +414,8 @@ class PengeluaranHeader extends MyModel
     public function cekvalidasiaksi($nobukti)
     {        
         $error = new Error();
-        $keteranganerror = $error->cekKeteranganError('SAPP');
-        $keterangantambahanerror = $error->cekKeteranganError('PTBL');
+        $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         // $keterangantambahanerror2 = $error->cekKeteranganError('BD');
 
         $jurnal = DB::table('pengeluaranheader')

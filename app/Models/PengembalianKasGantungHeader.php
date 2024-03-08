@@ -28,6 +28,10 @@ class PengembalianKasGantungHeader extends MyModel
     public function cekvalidasiaksi($nobukti)
     {
 
+        $error = new Error();
+        $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
         $prosesUangJalan = DB::table('prosesuangjalansupirdetail')
             ->from(
                 DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)")
@@ -41,12 +45,14 @@ class PengembalianKasGantungHeader extends MyModel
         if (isset($prosesUangJalan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Proses Uang Jalan Supir ' . $prosesUangJalan->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Proses Uang Jalan Supir <b>'. $prosesUangJalan->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Proses Uang Jalan Supir ' . $prosesUangJalan->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
         }
 
+        $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
         $jurnal = DB::table('pengembaliankasgantungheader')
             ->from(
                 DB::raw("pengembaliankasgantungheader as a with (readuncommitted)")
@@ -61,7 +67,8 @@ class PengembalianKasGantungHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal ' . $jurnal->penerimaan_nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Approval Jurnal <b>'. $jurnal->penerimaan_nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Approval Jurnal ' . $jurnal->penerimaan_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;

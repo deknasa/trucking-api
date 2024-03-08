@@ -372,7 +372,7 @@ class PenerimaanHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $pengeluaran = PenerimaanHeader::find($id);
-        $nobukti=$pengeluaran->nobukti ?? '';
+        $nobukti = $pengeluaran->nobukti ?? '';
         $status = $pengeluaran->statusapproval;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
@@ -381,31 +381,27 @@ class PenerimaanHeaderController extends Controller
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
         $aksi = request()->aksi ?? '';
 
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
         if ($status == $statusApproval->id && ($aksi == 'DELETE')) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-            ->select(
-                db::raw("'No Bukti ".$nobukti ." '+trim(keterangan)+' <br> proses tidak bisa dilanjutkan' as keterangan")
-                )
-            ->where('kodeerror', '=', 'SAP')
-                ->first();
+            $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+
             $data = [
                 'error' => true,
-                'message' => $query->keterangan,
+                'message' => $keterror,
                 'kodeerror' => 'SAP',
                 'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-            ->select(
-                db::raw("'No Bukti <b>".$nobukti ." </b> <br>'+trim(keterangan)+' <br> proses tidak bisa dilanjutkan' as keterangan")
-                )
-            ->where('kodeerror', '=', 'SDC')
-                ->first();
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
-                'message' => $query->keterangan,
+                'message' => $keterror,
                 'kodeerror' => 'SDC',
                 'statuspesan' => 'warning',
             ];
@@ -430,16 +426,9 @@ class PenerimaanHeaderController extends Controller
         $nobukti = PenerimaanHeader::from(DB::raw("penerimaanheader"))->where('id', $id)->first();
         $cekdata = $penerimaanHeader->cekvalidasiaksi($nobukti->nobukti);
         if ($cekdata['kondisi'] == true) {
-            $query = DB::table('error')
-                ->select(
-                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
-                )
-                ->where('kodeerror', '=', $cekdata['kodeerror'])
-                ->first();
-
             $data = [
                 'error' => true,
-                'message' => $query->keterangan,
+                'message' => $cekdata['keterangan'] ?? '',
                 'statuspesan' => 'warning',
                 'editcoa' => $cekdata['editcoa']
             ];

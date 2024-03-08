@@ -402,15 +402,13 @@ class PengeluaranHeaderController extends Controller
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
         $aksi = request()->aksi ?? '';
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         if ($status == $statusApproval->id && ($aksi == 'DELETE')) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-            ->select(
-                db::raw("'No Bukti ".$nobukti ." '+trim(keterangan)+' <br> proses tidak bisa dilanjutkan' as keterangan")
-                )
-            ->whereRaw("kodeerror = 'SAP'")
-                ->first();
+            $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
+            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
             $data = [
-                'message' => $query->keterangan,
+                'message' => $keterror,
                 'error' => true,
                 'kodeerror' => 'SAP',
                 'statuspesan' => 'warning',
@@ -418,14 +416,11 @@ class PengeluaranHeaderController extends Controller
 
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select(
-                    db::raw("'No Bukti ".$nobukti ." '+trim(keterangan)+' <br> proses tidak bisa dilanjutkan' as keterangan")
-                    )
-                ->whereRaw("kodeerror = 'SDC'")
-                ->first();
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+
             $data = [
-                'message' => $query->keterangan,
+                'message' => $keterror,
                 'error' => true,
                 'kodeerror' => 'SDC',
                 'statuspesan' => 'warning',
@@ -454,6 +449,7 @@ class PengeluaranHeaderController extends Controller
                 'error' => true,
                 'message' => $cekdata['keterangan'] ?? '',
                 'statuspesan' => 'warning',
+                'kodeerror' => $cekdata['kodeerror'],
                 'editcoa' => $cekdata['editcoa']
             ];
 
