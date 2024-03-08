@@ -404,6 +404,13 @@ class PengeluaranHeaderController extends Controller
         $aksi = request()->aksi ?? '';
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
+        $parameter = new Parameter();
+
+        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup=date('Y-m-d', strtotime($tgltutup));        
+
+        
         if ($status == $statusApproval->id && ($aksi == 'DELETE')) {
             $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
             $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
@@ -427,6 +434,17 @@ class PengeluaranHeaderController extends Controller
             ];
 
             return response($data);
+        } else if ($tgltutup >= $pengeluaran->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' )';
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);            
         } else {
 
             $data = [

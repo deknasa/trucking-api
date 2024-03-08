@@ -60,14 +60,14 @@ class RekapPengeluaranHeaderController extends Controller
             ];
             $rekapPengeluaranHeader = (new RekapPengeluaranHeader())->processStore($data);
             $rekapPengeluaranHeader->position = $this->getPosition($rekapPengeluaranHeader, $rekapPengeluaranHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / (10));
             } else {
                 $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / ($request->limit ?? 10));
             }
             $rekapPengeluaranHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $rekapPengeluaranHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -110,21 +110,20 @@ class RekapPengeluaranHeaderController extends Controller
 
             $rekapPengeluaranHeader = (new RekapPengeluaranHeader())->processUpdate($rekappengeluaranheader, $data);
             $rekapPengeluaranHeader->position = $this->getPosition($rekapPengeluaranHeader, $rekapPengeluaranHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / (10));
             } else {
                 $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / ($request->limit ?? 10));
             }
             $rekapPengeluaranHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $rekapPengeluaranHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
                 'message' => 'Berhasil diubah',
                 'data' =>  $rekapPengeluaranHeader
             ]);
-
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -143,14 +142,14 @@ class RekapPengeluaranHeaderController extends Controller
             $selected = $this->getPosition($rekapPengeluaranHeader, $rekapPengeluaranHeader->getTable(), true);
             $rekapPengeluaranHeader->position = $selected->position;
             $rekapPengeluaranHeader->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / (10));
             } else {
                 $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / ($request->limit ?? 10));
             }
             $rekapPengeluaranHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $rekapPengeluaranHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -163,7 +162,7 @@ class RekapPengeluaranHeaderController extends Controller
             throw $th;
         }
     }
-     /**
+    /**
      * @ClassName 
      * @Keterangan APRROVAL DATA
      */
@@ -191,49 +190,62 @@ class RekapPengeluaranHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $pengeluaran = RekapPengeluaranHeader::findOrFail($id);
+        $nobukti = $pengeluaran->nobukti ?? '';
         $status = $pengeluaran->statusapproval;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
         $statusdatacetak = $pengeluaran->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
-            $aksi = request()->aksi ?? '';
+        $aksi = request()->aksi ?? '';
+
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $parameter = new Parameter();
+
+        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup=date('Y-m-d', strtotime($tgltutup));
 
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->whereRaw("kodeerror = 'SAP'")
-                ->get();
-            $keterangan = $query['0'];
+            $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah approve',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'SAP',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->whereRaw("kodeerror = 'SDC'")
-                ->get();
-            $keterangan = $query['0'];
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah cetak',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'SDC',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else if ($tgltutup >= $pengeluaran->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' )';
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else {
 
             $data = [
+                'error' => false,
                 'message' => '',
-                'errors' => 'belum approve',
-                'kodestatus' => '0',
-                'kodenobukti' => '1'
+                'statuspesan' => 'success',
             ];
 
             return response($data);
@@ -316,9 +328,10 @@ class RekapPengeluaranHeaderController extends Controller
      * @Keterangan CETAK DATA
      */
     public function report()
-    {}
+    {
+    }
 
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */

@@ -28,6 +28,12 @@ class PengeluaranTruckingHeader extends MyModel
     public function cekvalidasiaksi($nobukti)
     {
 
+        $error = new Error();
+        $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
+
+
         $PengeluaranTruckingHeader = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader"))->where('nobukti', $nobukti)->first();
         $nobukti = $PengeluaranTruckingHeader->nobukti;
 
@@ -44,13 +50,13 @@ class PengeluaranTruckingHeader extends MyModel
         if (isset($prosesUangJalan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Proses Uang Jalan Supir ' . $prosesUangJalan->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Proses Uang Jalan Supir <b>'. $prosesUangJalan->nobukti .'</b> <br> '.$keterangantambahanerror,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
         }
 
-
+        $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
         $pengeluaran = DB::table('pengeluarantruckingheader')
             ->from(
                 DB::raw("pengeluarantruckingheader as a with (readuncommitted)")
@@ -64,11 +70,14 @@ class PengeluaranTruckingHeader extends MyModel
 
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'pengeluaran Trucking',
-                'kodeerror' => 'SATL'
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Pengeluaran Trucking <b>'. $pengeluaran->pengeluarantrucking_nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'pengeluaran Trucking',
+                'kodeerror' => 'SATL2'
             ];
             goto selesai;
         }
+
+        $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
         $penerimaanTrucking = DB::table('penerimaantruckingdetail')
             ->from(
                 DB::raw("penerimaantruckingdetail as a with (readuncommitted)")
@@ -82,12 +91,14 @@ class PengeluaranTruckingHeader extends MyModel
         if (isset($penerimaanTrucking)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Penerimaan Trucking ' . $penerimaanTrucking->nobukti,
-                'kodeerror' => 'SATL'
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Penerimaan Trucking <b>'. $penerimaanTrucking->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Penerimaan Trucking ' . $penerimaanTrucking->nobukti,
+                'kodeerror' => 'SATL2'
             ];
             goto selesai;
         }
 
+        $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
         $approvalJurnal = DB::table('pengeluarantruckingheader')
             ->from(
                 DB::raw("pengeluarantruckingheader as a with (readuncommitted)")
@@ -102,7 +113,8 @@ class PengeluaranTruckingHeader extends MyModel
         if (isset($approvalJurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal ' . $approvalJurnal->pengeluaran_nobukti,
+                'keterangan' => 'No Bukti <b>'. $approvalJurnal->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Approval Jurnal ' . $approvalJurnal->pengeluaran_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
@@ -118,6 +130,10 @@ class PengeluaranTruckingHeader extends MyModel
 
     public function cekvalidasiklaim($id)
     {
+        $error = new Error();
+        $keteranganerror = $error->cekKeteranganError('MAX') ?? '';
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
         $pengeluaranTruckingHeader = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader"))->where('id', $id)->first();
 
         $nobuktiPjt = $pengeluaranTruckingHeader->pengeluarantrucking_nobukti;
@@ -133,7 +149,8 @@ class PengeluaranTruckingHeader extends MyModel
         if (isset($penerimaanTrucking)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Penerimaan Trucking',
+                // 'keterangan' => 'Penerimaan Trucking',
+                'keterangan' => 'No Bukti <b>'. $nobuktiPjt . '</b><br>' .$keteranganerror.'<br> No Bukti Proses Uang Jalan Supir <b>'. $penerimaanTrucking->pengeluarantruckingheader_nobukti .'</b> <br> '.$keterangantambahanerror,
                 'kodeerror' => 'MAX'
             ];
             goto selesai;

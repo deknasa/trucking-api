@@ -63,6 +63,12 @@ class RekapPengeluaranHeader extends MyModel
 
     public function cekvalidasiaksi($nobukti)
     {
+
+        $error = new Error();
+        $keteranganerror = $error->cekKeteranganError('SBD') ?? '';
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
+
         $hutangBayar = DB::table('rekappengeluaranheader')
             ->from(
                 DB::raw("rekappengeluaranheader as a with (readuncommitted)")
@@ -77,8 +83,9 @@ class RekapPengeluaranHeader extends MyModel
         if (isset($hutangBayar)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
-                'kodeerror' => 'SATL'
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror,
+                // 'keterangan' => 'Approval Jurnal',
+                'kodeerror' => 'SBD'
             ];
             goto selesai;
         }
