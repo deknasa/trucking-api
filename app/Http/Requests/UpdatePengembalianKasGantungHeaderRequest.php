@@ -9,6 +9,7 @@ use App\Rules\DateTutupBuku;
 use App\Rules\DestroyPengembalianKasGantung;
 use App\Rules\ValidasiDetail;
 use Illuminate\Validation\Rule;
+use App\Rules\ValidasiDestroyPengembalianKasGantungHeader;
 
 class UpdatePengembalianKasGantungHeaderRequest extends FormRequest
 {
@@ -51,7 +52,9 @@ class UpdatePengembalianKasGantungHeaderRequest extends FormRequest
         $tglbataseedit = date('Y-m-01', strtotime($getDataPengembalian->tgldari));
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
         $rules = [
-            'nobukti' => [Rule::in($getDataPengembalian), new DestroyPengembalianKasGantung()],
+            'id' => [ new ValidasiDestroyPengembalianKasGantungHeader()],   
+            'nobukti' => [Rule::in($getDataPengembalian)],
+            // 'nobukti' => [Rule::in($getDataPengembalian), new DestroyPengembalianKasGantung()],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
                 'before_or_equal:' . date('d-m-Y'),

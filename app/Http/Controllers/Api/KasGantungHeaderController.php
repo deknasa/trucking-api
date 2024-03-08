@@ -33,6 +33,7 @@ use Illuminate\Database\QueryException;
 use App\Http\Requests\DestroyPengeluaranHeaderRequest;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Api\PengeluaranHeaderController;
+use App\Models\Error;
 
 class KasGantungHeaderController extends Controller
 {
@@ -273,17 +274,9 @@ class KasGantungHeaderController extends Controller
         $nobukti = KasGantungHeader::from(DB::raw("kasgantungheader"))->where('id', $id)->first();
         $cekdata = $kasgantungHeader->cekvalidasiaksi($nobukti->nobukti);
         if ($cekdata['kondisi'] == true) {
-            $query = DB::table('error')
-                ->select(
-                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
-                )
-                ->where('kodeerror', '=', $cekdata['kodeerror'])
-                ->first();
-            
-
             $data = [
                 'error' => true,
-                'message' => $query->keterangan,
+                'message' => $cekdata['keterangan'] ?? '',
                 'kodeerror' => $cekdata['kodeerror'],
                 'statuspesan' => 'warning',
             ];
@@ -303,40 +296,41 @@ class KasGantungHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $kasgantung = KasGantungHeader::find($id);
-        $nobukti=$kasgantung->nobukti ?? '';
+        $nobukti = $kasgantung->nobukti ?? '';
         $statusdatacetak = $kasgantung->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
-        $pengeluaran=$kasgantung->pengeluaran_nobukti ?? '';
-        $idpengeluaran=db::table('pengeluaranheader')->from(db::raw("pengeluaranheader a with (readuncommitted)"))
-        ->select(
-            'a.id'
-        )
-        ->where('a.nobukti',$pengeluaran)
-        ->first()->id ?? 0;
-        $validasipengeluaran=app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
-        $msg=json_decode(json_encode($validasipengeluaran),true)['original']['error'] ?? false;
-        if ($msg==false) {
-            goto lanjut ;
+        $pengeluaran = $kasgantung->pengeluaran_nobukti ?? '';
+        $idpengeluaran = db::table('pengeluaranheader')->from(db::raw("pengeluaranheader a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.nobukti', $pengeluaran)
+            ->first()->id ?? 0;
+        // $aksi = request()->aksi ?? '';
+        $validasipengeluaran = app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
+        $msg = json_decode(json_encode($validasipengeluaran), true)['original']['error'] ?? false;
+        if ($msg == false) {
+            goto lanjut;
         } else {
             return $validasipengeluaran;
         }
-        
-        
+
+
 
 
         lanjut:
+
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         if ($statusdatacetak == $statusCetak->id) {
-            $query = DB::table('error')
-            ->select(
-                db::raw("'No Bukti ".$nobukti ." '+trim(keterangan)+' <br> proses tidak bisa dilanjutkan' as keterangan")
-                )
-                ->where('kodeerror', '=', 'SDC')
-                ->first();
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+    
             $data = [
                 'error' => true,
-                'message' => $query->keterangan,
+                'message' => $keterror,
                 'kodeerror' => 'SDC',
                 'statuspesan' => 'warning',
             ];

@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Rules\DateTutupBuku;
 use App\Rules\DestroyPenerimaan;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\ValidasiDestroyPenerimaanHeader ;
 
 class DestroyPenerimaanHeaderRequest extends FormRequest
 {
@@ -26,7 +27,8 @@ class DestroyPenerimaanHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            'nobukti' => new DestroyPenerimaan(),
+            // 'nobukti' => new DestroyPenerimaan(),
+            'id' => [ new ValidasiDestroyPenerimaanHeader()],
             'tglbukti' => [
                 'required','date_format:d-m-Y',
                 new DateTutupBuku()

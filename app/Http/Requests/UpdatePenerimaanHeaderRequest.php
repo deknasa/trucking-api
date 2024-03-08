@@ -10,6 +10,7 @@ use App\Rules\DestroyPenerimaan;
 use App\Rules\ExistPelanggan;
 use App\Rules\ValidasiTotalDetail;
 use Illuminate\Validation\Rule;
+use App\Rules\ValidasiDestroyPenerimaanHeader ;
 
 class UpdatePenerimaanHeaderRequest extends FormRequest
 {
@@ -47,7 +48,9 @@ class UpdatePenerimaanHeaderRequest extends FormRequest
             ];
         }
         $rules = [
-            'nobukti' => [Rule::in($getDataPenerimaan->nobukti), new DestroyPenerimaan()],
+            'id' => [ new ValidasiDestroyPenerimaanHeader()],
+            // 'nobukti' => [Rule::in($getDataPenerimaan->nobukti), new DestroyPenerimaan()],
+            'nobukti' => [Rule::in($getDataPenerimaan->nobukti)],
             'tglbukti' => [
                 'required','date_format:d-m-Y',
                 'before_or_equal:'.date('d-m-Y'),

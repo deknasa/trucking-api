@@ -33,6 +33,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
 use PhpParser\Node\Stmt\Else_;
+use App\Models\Error;
 
 use App\Http\Controllers\Api\PenerimaanHeaderController;
 
@@ -326,17 +327,15 @@ class PengembalianKasGantungHeaderController extends Controller
 
 
         lanjut:        
-
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         if ($statusdatacetak == $statusCetak->id) {
-            $query = DB::table('error')
-            ->select(
-                db::raw("'No Bukti ".$nobukti ." '+trim(keterangan)+' <br> proses tidak bisa dilanjutkan' as keterangan")
-                )
-                ->where('kodeerror', '=', 'SDC')
-                ->first();
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+
             $data = [
                 'error' => true,
-                'message' => $query->keterangan,
+                'message' => $keterror,
                 'kodeerror' => 'SDC',
                 'statuspesan' => 'warning',
             ];

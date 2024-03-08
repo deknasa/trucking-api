@@ -5,6 +5,8 @@ namespace App\Http\Requests;
 use App\Rules\DateTutupBuku;
 use App\Rules\DestroyPengembalianKasGantung;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\ValidasiDestroyPengembaliankasGantungHeader ;
+use App\Http\Controllers\Api\PengembaliankasGantungHeaderController;
 
 class DestroyPengembalianKasGantungHeaderRequest extends FormRequest
 {
@@ -26,7 +28,8 @@ class DestroyPengembalianKasGantungHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            'nobukti' => new DestroyPengembalianKasGantung(),
+            // 'nobukti' => new DestroyPengembalianKasGantung(),
+            'id' => [ new ValidasiDestroyPengembalianKasGantungHeader()],            
             'tglbukti' => [
                 'required','date_format:d-m-Y',
                 new DateTutupBuku()
