@@ -455,14 +455,13 @@ class PengeluaranHeaderController extends Controller
                     DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
                 ->where('kodeerror', '=', $cekdata['kodeerror'])
-                ->get();
-            $keterangan = $query['0'];
+                ->first();
+            // $keterangan = $query['0'];
 
             $data = [
-                'status' => false,
-                'message' => $keterangan,
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
+                'error' => true,
+                'message' => $query->keterangan,
+                'statuspesan' => 'warning',
                 'editcoa' => $cekdata['editcoa']
             ];
 
@@ -470,10 +469,9 @@ class PengeluaranHeaderController extends Controller
         } else {
 
             $data = [
-                'status' => false,
+                'error' => false,
                 'message' => '',
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
+                'statuspesan' => 'success',
                 'editcoa' => false
             ];
 
