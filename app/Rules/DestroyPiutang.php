@@ -15,6 +15,8 @@ class DestroyPiutang implements Rule
      *
      * @return void
      */
+    public $kodeerror;
+    public $keterangan;
     public function __construct()
     {
         //
@@ -34,7 +36,7 @@ class DestroyPiutang implements Rule
         $cekdata = $piutang->cekvalidasiaksi($nobukti->nobukti);
         if ($cekdata['kondisi']) {
             $this->kodeerror = $cekdata['kodeerror'];
-            $this->keterangan = ' ('. $cekdata['keterangan'].')';
+            $this->keterangan = ' (' . $cekdata['keterangan'] . ')';
             return false;
         }
 
@@ -55,6 +57,6 @@ class DestroyPiutang implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror($this->kodeerror)->keterangan.$this->keterangan;
+        return app(ErrorController::class)->geterror($this->kodeerror)->keterangan . $this->keterangan;
     }
 }
