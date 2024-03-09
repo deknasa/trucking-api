@@ -325,7 +325,7 @@ class OrderanTrucking extends MyModel
 
         ], $queryorderantrucking);
 
-
+        $from = request()->from ?? '';
 
         $query = DB::table($temporderantrucking)->from(
             DB::raw($temporderantrucking . " as orderantrucking")
@@ -373,6 +373,16 @@ class OrderanTrucking extends MyModel
             ->leftJoin(DB::raw("parameter AS param3 with (readuncommitted)"), 'orderantrucking.statusapprovaledit', '=', 'param3.id')
             ->leftJoin(DB::raw("parameter AS param4 with (readuncommitted)"), 'orderantrucking.statusapprovaltanpajob', '=', 'param4.id');
 
+        if ($from != '') {
+            $jenisorder_id = request()->jenisorder_id ?? 0;
+            $agen_id = request()->agen_id ?? 0;
+            $container_id = request()->container_id ?? 0;
+            $pelanggan_id = request()->pelanggan_id ?? 0;
+            $query->where('orderantrucking.agen_id', $agen_id)
+                ->where('orderantrucking.jenisorder_id', $jenisorder_id)
+                ->where('orderantrucking.container_id', $container_id)
+                ->where('orderantrucking.pelanggan_id', $pelanggan_id);
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -1224,7 +1234,7 @@ class OrderanTrucking extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'container_id', 'agen_id', 'jenisorder_id', 'pelanggan_id', 'nojobemkl', 'nocont', 'noseal', 'nojobemkl2', 'nocont2', 'noseal2','statusapprovalbukatrip', 'statusapprovaledit', 'tglapprovaledit', 'userapprovaledit','tglbataseditorderantrucking', 'statusapprovaltanpajob', 'tglapprovaltanpajob', 'userapprovaltanpajob','tglbatastanpajoborderantrucking','modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'container_id', 'agen_id', 'jenisorder_id', 'pelanggan_id', 'nojobemkl', 'nocont', 'noseal', 'nojobemkl2', 'nocont2', 'noseal2', 'statusapprovalbukatrip', 'statusapprovaledit', 'tglapprovaledit', 'userapprovaledit', 'tglbataseditorderantrucking', 'statusapprovaltanpajob', 'tglapprovaltanpajob', 'userapprovaltanpajob', 'tglbatastanpajoborderantrucking', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -1627,7 +1637,7 @@ class OrderanTrucking extends MyModel
 
     public function processApprovalTanpaJob(array $data)
     {
-        
+
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
         $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
