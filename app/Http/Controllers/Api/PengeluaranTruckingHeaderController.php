@@ -605,12 +605,12 @@ class PengeluaranTruckingHeaderController extends Controller
         $nobukti = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader"))->where('id', $id)->first();
         // $cekdata = $pengeluaran->cekvalidasiaksi($nobukti->pengeluaran_nobukti);
 
-        $pengeluaran = $nobukti->pengeluaran_nobukti ?? '';
+        $pengeluaranNobukti = $nobukti->pengeluaran_nobukti ?? '';
         $idpengeluaran = db::table('pengeluaranheader')->from(db::raw("pengeluaranheader a with (readuncommitted)"))
             ->select(
                 'a.id'
             )
-            ->where('a.nobukti', $pengeluaran)
+            ->where('a.nobukti', $pengeluaranNobukti)
             ->first()->id ?? 0;
         // $aksi = request()->aksi ?? '';
         $validasipengeluaran = app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
