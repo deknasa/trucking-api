@@ -503,29 +503,36 @@ class StokPusat extends MyModel
             $gambarmdn = '';
             if ($data['gambarmdn'] != null) {
                 if ($mdn != null) {
-                    $gbrMedan = json_decode($mdn->gambar)[0];
-                    if (trim($data['gambarmdn']) != trim($gbrMedan)) {
-                        if ($gbrMedan != null) {
-                            Storage::delete("stokpusat/mdn/$gbrMedan");
+                    if($mdn->gambar != '') {
+                        $gbrMedan = json_decode($mdn->gambar)[0];
+                        if (trim($data['gambarmdn']) != trim($gbrMedan)) {
+                            if ($gbrMedan != null) {
+                                Storage::delete("stokpusat/mdn/$gbrMedan");
+                            }
+                            $gambarmdn =  $this->saveFiles('stokpusat/mdn/', config('app.pic_url_mdn'), $data['gambarmdn'], str_replace(' ', '_', $data['namastokmdn']));
+                        } else {
+                            $gambarmdn = $gbrMedan;
                         }
+                    }else{                        
                         $gambarmdn =  $this->saveFiles('stokpusat/mdn/', config('app.pic_url_mdn'), $data['gambarmdn'], str_replace(' ', '_', $data['namastokmdn']));
-                    } else {
-                        $gambarmdn = $gbrMedan;
                     }
+                    
                 } else {
                     $gambarmdn = $this->saveFiles('stokpusat/mdn/', config('app.pic_url_mdn'), $data['gambarmdn'], str_replace(' ', '_', $data['namastokmdn']));
                 }
             } else {
                 if ($mdn != null) {
-                    $gbrMedan = json_decode($mdn->gambar)[0];
-                    if ($gbrMedan != null) {
-                        Storage::delete("stokpusat/mdn/$gbrMedan");
+                    if($mdn->gambar != ''){
+                        $gbrMedan = json_decode($mdn->gambar)[0];
+                        if ($gbrMedan != null) {
+                            Storage::delete("stokpusat/mdn/$gbrMedan");
+                        }
                     }
                 }
             }
 
             StokPusatRincian::where('stokpusat_id', $stokPusat->id)->where('cabang_id', $getCabang->id)->delete();
-            $datadetails = (new StokPusatRincian())->processStore($stokPusat, [
+            $datadetails = (new StokPusatRincian())->processSto1re($stokPusat, [
                 'namastok' => str_replace("''", '"',  strtoupper($data['namastokmdn'])),
                 'kelompok_id' => $data['kelompok_id'],
                 'stok_id' => $data['stok_idmdn'],
@@ -537,8 +544,8 @@ class StokPusat extends MyModel
             $getCabang = DB::table("cabang")->from(DB::raw("cabang with (readuncommitted)"))->where('kodecabang', 'MDN')->first();
             $mdn = (new StokPusatRincian())->findMdn($stokPusat->id);
             if ($mdn != null) {
-                $gbrMedan = json_decode($mdn->gambar)[0];
-                if ($gbrMedan != null) {
+                if ($mdn->gambar != null) {
+                    $gbrMedan = json_decode($mdn->gambar)[0];
                     Storage::delete("stokpusat/mdn/$gbrMedan");
                 }
                 StokPusatRincian::where('stokpusat_id', $stokPusat->id)->where('cabang_id', $getCabang->id)->delete();
@@ -552,10 +559,13 @@ class StokPusat extends MyModel
             $jkt = (new StokPusatRincian())->findJkt($stokPusat->id);
             if ($data['gambarjkt'] != null) {
                 if ($jkt != null) {
-                    $gbrJkt = json_decode($jkt->gambar)[0];
-                    if ($data['gambarjkt'] != $gbrJkt) {
-                        if ($gbrJkt != null) {
-                            Storage::delete("stokpusat/jkt/$gbrJkt");
+                    if($jkt->gambar !=''){
+                        
+                        $gbrJkt = json_decode($jkt->gambar)[0];
+                        if ($data['gambarjkt'] != $gbrJkt) {
+                            if ($gbrJkt != null) {
+                                Storage::delete("stokpusat/jkt/$gbrJkt");
+                            }
                         }
                     }
                 }
@@ -567,10 +577,13 @@ class StokPusat extends MyModel
                 Storage::put($destinationPath . $destinationFileName, $imageData);
             } else {
                 if ($jkt != null) {
+                    if($jkt->gambar != ''){
+                        
                     $gbrJkt = json_decode($jkt->gambar)[0];
                     if ($gbrJkt != null) {
                         Storage::delete("stokpusat/jkt/$gbrJkt");
                     }
+                }
                 }
             }
 
@@ -587,8 +600,8 @@ class StokPusat extends MyModel
             $getCabang = DB::table("cabang")->from(DB::raw("cabang with (readuncommitted)"))->where('kodecabang', 'JKT')->first();
             $jkt = (new StokPusatRincian())->findJkt($stokPusat->id);
             if ($jkt != null) {
-                $gbrJkt = json_decode($jkt->gambar)[0];
-                if ($gbrJkt != null) {
+                if ($jkt->gambar != null) {
+                    $gbrJkt = json_decode($jkt->gambar)[0];
                     Storage::delete("stokpusat/jkt/$gbrJkt");
                 }
                 StokPusatRincian::where('stokpusat_id', $stokPusat->id)->where('cabang_id', $getCabang->id)->delete();
@@ -602,10 +615,13 @@ class StokPusat extends MyModel
             $jkttnl = (new StokPusatRincian())->findJktTnl($stokPusat->id);
             if ($data['gambarjkttnl'] != null) {
                 if ($jkttnl != null) {
+                    if($jkttnl->gambar !=''){
+                        
                     $gbrJktTnl = json_decode($jkttnl->gambar)[0];
-                    if ($data['gambarjkttnl'] != $gbrJktTnl) {
-                        if ($gbrJktTnl != null) {
-                            Storage::delete("stokpusat/jkttnl/$gbrJktTnl");
+                        if ($data['gambarjkttnl'] != $gbrJktTnl) {
+                            if ($gbrJktTnl != null) {
+                                Storage::delete("stokpusat/jkttnl/$gbrJktTnl");
+                            }
                         }
                     }
                 }
@@ -617,10 +633,12 @@ class StokPusat extends MyModel
                 Storage::put($destinationPath . $destinationFileName, $imageData);
             } else {
                 if ($jkttnl != null) {
+                    
+                    if($jkttnl->gambar != ''){
                     $gbrJktTnl = json_decode($jkttnl->gambar)[0];
                     if ($gbrJktTnl != null) {
                         Storage::delete("stokpusat/jkttnl/$gbrJktTnl");
-                    }
+                    }}
                 }
             }
 
@@ -637,8 +655,8 @@ class StokPusat extends MyModel
             $getCabang = DB::table("cabang")->from(DB::raw("cabang with (readuncommitted)"))->where('kodecabang', 'TNL')->first();
             $jkttnl = (new StokPusatRincian())->findJktTnl($stokPusat->id);
             if ($jkttnl != null) {
-                $gbrJktTnl = json_decode($jkttnl->gambar)[0];
-                if ($gbrJktTnl != null) {
+                if ($jkttnl->gambar != null) {
+                    $gbrJktTnl = json_decode($jkttnl->gambar)[0];
                     Storage::delete("stokpusat/jkttnl/$gbrJktTnl");
                 }
                 StokPusatRincian::where('stokpusat_id', $stokPusat->id)->where('cabang_id', $getCabang->id)->delete();
@@ -654,24 +672,30 @@ class StokPusat extends MyModel
             $gambarmks = '';
             if ($data['gambarmks'] != null) {
                 if ($mks != null) {
-                    $gbrMks = json_decode($mks->gambar)[0];
-                    if (trim($data['gambarmks']) != trim($gbrMks)) {
-                        if ($gbrMks != null) {
-                            Storage::delete("stokpusat/mks/$gbrMks");
-                        }
+                    if($mks->gambar != '') {
+                        $gbrMks = json_decode($mks->gambar)[0];
+                        if (trim($data['gambarmks']) != trim($gbrMks)) {
+                            if ($gbrMks != null) {
+                                Storage::delete("stokpusat/mks/$gbrMks");
+                            }
 
+                            $gambarmks = $this->saveFiles('stokpusat/mks/', config('app.pic_url_mks'), $data['gambarmks'], str_replace(' ', '_', $data['namastokmks']));
+                        } else {
+                            $gambarmks = $gbrMks;
+                        }
+                    }else{
                         $gambarmks = $this->saveFiles('stokpusat/mks/', config('app.pic_url_mks'), $data['gambarmks'], str_replace(' ', '_', $data['namastokmks']));
-                    } else {
-                        $gambarmks = $gbrMks;
                     }
                 } else {
                     $gambarmks = $this->saveFiles('stokpusat/mks/', config('app.pic_url_mks'), $data['gambarmks'],  str_replace(' ', '_', $data['namastokmks']));
                 }
             } else {
-                if ($mks != null) {
-                    $gbrMks = json_decode($mks->gambar)[0];
-                    if ($gbrMks != null) {
-                        Storage::delete("stokpusat/mks/$gbrMks");
+                if ($mks != null) {                    
+                    if($mks->gambar != ''){
+                        $gbrMks = json_decode($mks->gambar)[0];
+                        if ($gbrMks != null) {
+                            Storage::delete("stokpusat/mks/$gbrMks");
+                        }
                     }
                 }
             }
@@ -689,8 +713,8 @@ class StokPusat extends MyModel
             $getCabang = DB::table("cabang")->from(DB::raw("cabang with (readuncommitted)"))->where('kodecabang', 'MKS')->first();
             $mks = (new StokPusatRincian())->findMks($stokPusat->id);
             if ($mks != null) {
-                $gbrMks = json_decode($mks->gambar)[0];
-                if ($gbrMks != null) {
+                if ($mks->gambar != null) {
+                    $gbrMks = json_decode($mks->gambar)[0];
                     Storage::delete("stokpusat/mks/$gbrMks");
                 }
                 StokPusatRincian::where('stokpusat_id', $stokPusat->id)->where('cabang_id', $getCabang->id)->delete();
@@ -705,24 +729,30 @@ class StokPusat extends MyModel
             $gambarsby = '';
             if ($data['gambarsby'] != null) {
                 if ($sby != null) {
-                    $gbrSby = json_decode($sby->gambar)[0];
-                    if (trim($data['gambarsby']) != trim($gbrSby)) {
-                        if ($gbrSby != null) {
-                            Storage::delete("stokpusat/sby/$gbrSby");
-                        }
+                    if($sby->gambar != '') {
+                        $gbrSby = json_decode($sby->gambar)[0];
+                        if (trim($data['gambarsby']) != trim($gbrSby)) {
+                            if ($gbrSby != null) {
+                                Storage::delete("stokpusat/sby/$gbrSby");
+                            }
 
+                            $gambarsby = $this->saveFiles('stokpusat/sby/', config('app.pic_url_sby'), $data['gambarsby'], str_replace(' ', '_', $data['namastoksby']));
+                        } else {
+                            $gambarsby = $gbrSby;
+                        }
+                    }else{                        
                         $gambarsby = $this->saveFiles('stokpusat/sby/', config('app.pic_url_sby'), $data['gambarsby'], str_replace(' ', '_', $data['namastoksby']));
-                    } else {
-                        $gambarsby = $gbrSby;
                     }
                 } else {
                     $gambarsby = $this->saveFiles('stokpusat/sby/', config('app.pic_url_sby'), $data['gambarsby'], str_replace(' ', '_', $data['namastoksby']));
                 }
             } else {
                 if ($sby != null) {
-                    $gbrSby = json_decode($sby->gambar)[0];
-                    if ($gbrSby != null) {
-                        Storage::delete("stokpusat/sby/$gbrSby");
+                    if($sby->gambar != null){
+                        $gbrSby = json_decode($sby->gambar)[0];
+                        if ($gbrSby != null) {
+                            Storage::delete("stokpusat/sby/$gbrSby");
+                        }
                     }
                 }
             }
@@ -740,8 +770,8 @@ class StokPusat extends MyModel
             $getCabang = DB::table("cabang")->from(DB::raw("cabang with (readuncommitted)"))->where('kodecabang', 'SBY')->first();
             $sby = (new StokPusatRincian())->findSby($stokPusat->id);
             if ($sby != null) {
-                $gbrSby = json_decode($sby->gambar)[0];
-                if ($gbrSby != null) {
+                if ($sby->gambar != null) {
+                    $gbrSby = json_decode($sby->gambar)[0];
                     Storage::delete("stokpusat/sby/$gbrSby");
                 }
                 StokPusatRincian::where('stokpusat_id', $stokPusat->id)->where('cabang_id', $getCabang->id)->delete();
@@ -756,24 +786,30 @@ class StokPusat extends MyModel
             $gambarbtg = '';
             if ($data['gambarbtg'] != null) {
                 if ($btg != null) {
-                    $gbrBtg = json_decode($btg->gambar)[0];
-                    if (trim($data['gambarbtg']) != trim($gbrBtg)) {
-                        if ($gbrBtg != null) {
-                            Storage::delete("stokpusat/btg/$gbrBtg");
-                        }
+                    if($btg->gambar != '') {
+                        $gbrBtg = json_decode($btg->gambar)[0];
+                        if (trim($data['gambarbtg']) != trim($gbrBtg)) {
+                            if ($gbrBtg != null) {
+                                Storage::delete("stokpusat/btg/$gbrBtg");
+                            }
 
+                            $gambarbtg = $this->saveFiles('stokpusat/btg/', config('app.pic_url_btg'), $data['gambarbtg'], str_replace(' ', '_', $data['namastokbtg']));
+                        } else {
+                            $gambarbtg = $gbrBtg;
+                        }
+                    }else{
                         $gambarbtg = $this->saveFiles('stokpusat/btg/', config('app.pic_url_btg'), $data['gambarbtg'], str_replace(' ', '_', $data['namastokbtg']));
-                    } else {
-                        $gambarbtg = $gbrBtg;
                     }
                 } else {
                     $gambarbtg = $this->saveFiles('stokpusat/btg/', config('app.pic_url_btg'), $data['gambarbtg'], str_replace(' ', '_', $data['namastokbtg']));
                 }
             } else {
                 if ($btg != null) {
-                    $gbrBtg = json_decode($btg->gambar)[0];
-                    if ($gbrBtg != null) {
-                        Storage::delete("stokpusat/btg/$gbrBtg");
+                    if($btg->gambar != ''){
+                        $gbrBtg = json_decode($btg->gambar)[0];
+                        if ($gbrBtg != null) {
+                            Storage::delete("stokpusat/btg/$gbrBtg");
+                        }
                     }
                 }
             }
@@ -791,8 +827,8 @@ class StokPusat extends MyModel
             $getCabang = DB::table("cabang")->from(DB::raw("cabang with (readuncommitted)"))->where('kodecabang', 'MND')->first();
             $btg = (new StokPusatRincian())->findBtg($stokPusat->id);
             if ($btg != null) {
-                $gbrBtg = json_decode($btg->gambar)[0];
-                if ($gbrBtg != null) {
+                if ($btg->gambar != null) {
+                    $gbrBtg = json_decode($btg->gambar)[0];
                     Storage::delete("stokpusat/btg/$gbrBtg");
                 }
                 StokPusatRincian::where('stokpusat_id', $stokPusat->id)->where('cabang_id', $getCabang->id)->delete();

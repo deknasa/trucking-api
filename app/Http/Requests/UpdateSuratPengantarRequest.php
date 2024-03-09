@@ -125,7 +125,7 @@ class UpdateSuratPengantarRequest extends FormRequest
             ],
             "nobukti_tripasal" => 'required_if:statusgudangsama,=,' . $getGudangSama->id,                   
             // "lokasibongkarmuat" => "required",
-            'statuslongtrip' => ['required', Rule::in($statuslongtrip),new ValidasiJenisOrderLongtrip()],
+            'statuslongtrip' => ['required', Rule::in($statuslongtrip)],
             'statusperalihan' => ['required', Rule::in($statusperalihan)],
             'statusbatalmuat' => ['required', Rule::in($statusbatalmuat)],
             'statusgudangsama' => ['required', Rule::in($statusgudangsama),new ValidasiLongtripGudangsama()],
