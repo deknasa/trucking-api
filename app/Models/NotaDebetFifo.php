@@ -126,4 +126,23 @@ class NotaDebetFifo extends Model
         // dd('test1');
         return $notadebetFifo;
     }
+    public function processStoreNotFifo(array $data): NotaDebetFifo
+    {
+        $notaDebetDetail = NotaDebetDetail::where('nobukti',$data['notadebet_nobukti'])->get();
+        $lebihbayar = $notaDebetDetail->sum('lebihbayar') ?? 0;
+
+        $notadebetFifo = new NotaDebetFifo();
+        $notadebetFifo->pelunasanpiutang_id = $data['pelunasanpiutang_id'];
+        $notadebetFifo->pelunasanpiutang_nobukti = $data['pelunasanpiutang_nobukti'];
+        $notadebetFifo->agen_id = $data['agen_id'];
+        $notadebetFifo->notadebet_id = $notaDebetDetail[0]->notadebet_id ?? '';
+        $notadebetFifo->nominal = $data['nominal'] ?? 0;
+        $notadebetFifo->notadebet_nobukti = $data['notadebet_nobukti'] ?? '';
+        $notadebetFifo->notadebet_nominal = $lebihbayar ?? 0;
+        $notadebetFifo->modifiedby = $data['modifiedby'] ?? '';
+        if (!$notadebetFifo->save()) {
+            throw new \Exception("Error Simpan Nota Debet Detail fifo.");
+        }
+        return $notadebetFifo;
+    }
 }
