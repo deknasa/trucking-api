@@ -383,6 +383,12 @@ class Parameter extends MyModel
             $query->where('subgrp','=',request()->subgrp);
         }
         $this->filter($query);
+        if (request()->sortIndex) {
+
+            $sortOrder =  request()->sortOrder ?? 'asc';
+            $sortIndex =  request()->sortIndex ??'id';
+            $query->orderBy("$sortIndex", $sortOrder);
+        }
         
         $query = $query->get();
 

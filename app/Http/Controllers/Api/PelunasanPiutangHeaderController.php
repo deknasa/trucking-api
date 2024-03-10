@@ -92,6 +92,7 @@ class PelunasanPiutangHeaderController extends Controller
                 'alatbayar_id' => $request->alatbayar_id,
                 'agen_id' => $request->agen_id,
                 'agen' => $request->agen,
+                'notadebet_nobukti' => $request->notadebet_nobukti,
                 'statuspelunasan' => $request->statuspelunasan,
                 'nowarkat' => $request->nowarkat,
                 'piutang_id' => $request->piutang_id,

@@ -717,7 +717,7 @@ class PelunasanPiutangHeader extends MyModel
         $pelunasanPiutangHeader->penerimaangiro_nobukti = '-';
         $pelunasanPiutangHeader->statuscetak = $statusCetak->id ?? 0;
         $pelunasanPiutangHeader->notakredit_nobukti = '-';
-        $pelunasanPiutangHeader->notadebet_nobukti = '-';
+        $pelunasanPiutangHeader->notadebet_nobukti = $data['notadebet_nobukti'] ?? '-';
         $pelunasanPiutangHeader->agen_id = $data['agen_id'];
         $pelunasanPiutangHeader->nowarkat = $data['nowarkat'] ?? '-';
         $pelunasanPiutangHeader->statusformat = $format->id;
@@ -965,14 +965,17 @@ class PelunasanPiutangHeader extends MyModel
 
 
 
+            if ($data['notadebet_nobukti']) {
+                $detailFifo = [
+                    'nominal' => $nominal,
+                    'agen_id' => $data['agen_id'],
+                    'pelunasanpiutang_id' => $pelunasanPiutangHeader->id,
+                    'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
+                    'notadebet_nobukti' => $pelunasanPiutangHeader->notadebet_nobukti,
+                ];
+                (new NotaDebetFifo())->processStoreNotFifo($detailFifo);
+            }
 
-            $detailFifo = [
-                'nominal' => $nominal,
-                'agen_id' => $data['agen_id'],
-                'pelunasanpiutang_id' => $pelunasanPiutangHeader->id,
-                'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
-            ];
-            (new NotaDebetFifo())->processStore($detailFifo);
         }
         $pelunasanPiutangHeader->save();
 
@@ -1447,8 +1450,9 @@ class PelunasanPiutangHeader extends MyModel
                     'agen_id' => $item['agen_id'] ?? 0,
                     'pelunasanpiutang_id' => $item['id'] ?? 0,
                     'pelunasanpiutang_nobukti' => $item['nobukti'] ?? '',
+                    'notadebet_nobukti' => $pelunasanPiutangHeader->notadebet_nobukti ?? '',
                 ];
-                (new NotaDebetFifo())->processStore($detailFifo);
+                (new NotaDebetFifo())->processStoreNotFifo($detailFifo);
             }
         }
 
