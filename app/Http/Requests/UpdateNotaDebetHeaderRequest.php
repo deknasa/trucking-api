@@ -74,7 +74,6 @@ class UpdateNotaDebetHeaderRequest extends FormRequest
                 new DateTutupBuku(),
                 'before_or_equal:' . date('d-m-Y')
             ],
-            'agen' => 'required',
             'nowarkat' => $requiredGiro
         ];
         $relatedRequests = [

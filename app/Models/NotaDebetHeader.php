@@ -32,6 +32,71 @@ class NotaDebetHeader extends MyModel
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
 
+        $panjar = request()->panjar ?? '';
+        $agen_id= request()->agen_id ?? 0;
+
+        if ($panjar=='PANJAR') {
+            $tglnow = date('Y-m-d');
+
+            $temppanjar = '##temppanjar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temppanjar, function ($table) {
+                $table->string('nobukti', 50)->nullable();
+                $table->double('nominal')->nullable();                
+            });
+
+            DB::table($temppanjar)->insertUsing([
+                'nobukti',
+                'nominal',
+            ], (new LaporanKartuPanjar())->getSisapanjar($tglnow, $tglnow, 0, 0, 1,$agen_id,$tglnow));
+
+            // dd(db::table($temppanjar)->get());
+        }
+
+        if ($panjar=='PANJAR') {
+                        // dd(db::table($temppanjar)->get());
+
+            $query = DB::table($this->table)->from(
+                DB::raw($this->table . " with (readuncommitted)")
+            )->select(
+                "$this->table.id",
+                "$this->table.nobukti",
+                "$this->table.pelunasanpiutang_nobukti",
+                "$this->table.tglbukti",
+                "$this->table.postingdari",
+                "$this->table.statusapproval",
+                "$this->table.tgllunas",
+                "$this->table.userapproval",
+                DB::raw('(case when (year(notadebetheader.tglapproval) <= 2000) then null else notadebetheader.tglapproval end ) as tglapproval'),
+                "$this->table.userbukacetak",
+                DB::raw('(case when (year(notadebetheader.tglbukacetak) <= 2000) then null else notadebetheader.tglbukacetak end ) as tglbukacetak'),
+                "$this->table.statusformat",
+                "$this->table.statuscetak",
+                "$this->table.created_at",
+                "$this->table.updated_at",
+                "statuscetak.memo as statuscetak_memo",
+                "$this->table.modifiedby",
+                "parameter.memo as  statusapproval_memo",
+                "$this->table.penerimaan_nobukti",
+                "agen.namaagen as agen",
+                "bank.namabank as bank",
+                "alatbayar.namaalatbayar as alatbayar",
+                db::raw("cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaanheader"),
+                db::raw("cast(cast(format((cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanheader"),
+                db::raw("cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpelunasanpiutangheader"),
+                db::raw("cast(cast(format((cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpelunasanpiutangheader"),
+                db::raw("isnull(panjar.nominal,0) as nominal")
+            )
+    
+                ->leftJoin(DB::raw("pelunasanpiutangheader with (readuncommitted)"), 'notadebetheader.pelunasanpiutang_nobukti', '=', 'pelunasanpiutangheader.nobukti')
+                ->leftJoin(DB::raw("penerimaanheader with (readuncommitted)"), 'notadebetheader.penerimaan_nobukti', '=', 'penerimaanheader.nobukti')
+                ->leftJoin(DB::raw("bank with (readuncommitted)"), 'notadebetheader.bank_id', 'bank.id')
+                ->leftJoin(DB::raw("agen with (readuncommitted)"), 'notadebetheader.agen_id', 'agen.id')
+                ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'notadebetheader.alatbayar_id', 'alatbayar.id')
+                ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'notadebetheader.statusapproval', 'parameter.id')
+                ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'notadebetheader.statuscetak', 'statuscetak.id')
+                ->Join(DB::raw($temppanjar . " panjar"), 'notadebetheader.nobukti', 'panjar.nobukti');
+
+        } else {
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )->select(
@@ -61,6 +126,8 @@ class NotaDebetHeader extends MyModel
             db::raw("cast(cast(format((cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanheader"),
             db::raw("cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpelunasanpiutangheader"),
             db::raw("cast(cast(format((cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpelunasanpiutangheader"),
+            db::raw("0 as nominal")
+
         )
 
             ->leftJoin(DB::raw("pelunasanpiutangheader with (readuncommitted)"), 'notadebetheader.pelunasanpiutang_nobukti', '=', 'pelunasanpiutangheader.nobukti')
@@ -70,6 +137,7 @@ class NotaDebetHeader extends MyModel
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'notadebetheader.alatbayar_id', 'alatbayar.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'notadebetheader.statusapproval', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'notadebetheader.statuscetak', 'statuscetak.id');
+        }
         if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
@@ -82,13 +150,14 @@ class NotaDebetHeader extends MyModel
             $query->where("notadebetheader.statuscetak", $statusCetak);
         }
 
+
+        // dd('test');
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
-
         $data = $query->get();
 
         return $data;
@@ -387,67 +456,139 @@ class NotaDebetHeader extends MyModel
 
     public function filter($query, $relationFields = [])
     {
-        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
-            switch ($this->params['filters']['groupOp']) {
-                case "AND":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] != '') {
-                            if ($filters['field'] == 'statusapproval_memo') {
-                                $query = $query->where('parameter.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'statuscetak_memo') {
-                                $query = $query->where('statuscetak.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'agen') {
-                                $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'bank') {
-                                $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'alatbayar') {
-                                $query = $query->where('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgllunas' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
-                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
-                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-                            }
-                        }
-                    }
+        $panjar = request()->panjar ?? '';
 
-                    break;
-                case "OR":
-                    $query = $query->where(function ($query) {
+        if ($panjar=='PANJAR') {
+            if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+                switch ($this->params['filters']['groupOp']) {
+                    case "AND":
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] != '') {
                                 if ($filters['field'] == 'statusapproval_memo') {
-                                    $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                                    $query = $query->where('parameter.text', '=', $filters['data']);
                                 } else if ($filters['field'] == 'statuscetak_memo') {
-                                    $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
+                                    $query = $query->where('statuscetak.text', '=', $filters['data']);
                                 } else if ($filters['field'] == 'agen') {
-                                    $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                                    $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'nominal') {
+                                    $query = $query->where('panjar.nominal', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'bank') {
-                                    $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                                    $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'alatbayar') {
-                                    $query = $query->orWhere('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
+                                    $query = $query->where('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgllunas' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
-                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                    $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                    $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                                 } else {
-                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                    // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                                 }
                             }
                         }
-                    });
-                    break;
-                default:
-
-                    break;
+    
+                        break;
+                    case "OR":
+                        $query = $query->where(function ($query) {
+                            foreach ($this->params['filters']['rules'] as $index => $filters) {
+                                if ($filters['field'] != '') {
+                                    if ($filters['field'] == 'statusapproval_memo') {
+                                        $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                                    } else if ($filters['field'] == 'statuscetak_memo') {
+                                        $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
+                                    } else if ($filters['field'] == 'agen') {
+                                        $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                                    } else if ($filters['field'] == 'nominal') {
+                                        $query = $query->orwhere('panjar.nominal', 'LIKE', "%$filters[data]%");
+    
+                                    } else if ($filters['field'] == 'bank') {
+                                        $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                                    } else if ($filters['field'] == 'alatbayar') {
+                                        $query = $query->orWhere('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
+                                    } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgllunas' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
+                                        $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                    } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                        $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                    } else {
+                                        // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                        $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                    }
+                                }
+                            }
+                        });
+                        break;
+                    default:
+    
+                        break;
+                }
+    
+                $this->totalRows = $query->count();
+                $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
             }
-
-            $this->totalRows = $query->count();
-            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+        } else {
+            if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+                switch ($this->params['filters']['groupOp']) {
+                    case "AND":
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusapproval_memo') {
+                                    $query = $query->where('parameter.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'statuscetak_memo') {
+                                    $query = $query->where('statuscetak.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'agen') {
+                                    $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'bank') {
+                                    $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'alatbayar') {
+                                    $query = $query->where('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgllunas' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
+                                    $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
+                            }
+                        }
+    
+                        break;
+                    case "OR":
+                        $query = $query->where(function ($query) {
+                            foreach ($this->params['filters']['rules'] as $index => $filters) {
+                                if ($filters['field'] != '') {
+                                    if ($filters['field'] == 'statusapproval_memo') {
+                                        $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                                    } else if ($filters['field'] == 'statuscetak_memo') {
+                                        $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
+                                    } else if ($filters['field'] == 'agen') {
+                                        $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                                    } else if ($filters['field'] == 'bank') {
+                                        $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                                    } else if ($filters['field'] == 'alatbayar') {
+                                        $query = $query->orWhere('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
+                                    } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgllunas' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
+                                        $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                    } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                        $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                    } else {
+                                        // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                        $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                    }
+                                }
+                            }
+                        });
+                        break;
+                    default:
+    
+                        break;
+                }
+    
+                $this->totalRows = $query->count();
+                $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+            }
         }
+     
         if (request()->cetak && request()->periode) {
             $query->where('notadebetheader.statuscetak', '<>', request()->cetak)
                 ->whereYear('notadebetheader.tglbukti', '=', request()->year)
