@@ -15,6 +15,7 @@ use App\Rules\ValidasiStatusNotaDebet;
 use App\Rules\ValidasiStatusNotaKredit;
 use App\Rules\ValidasiNominalSaldo;
 use App\Rules\ValidasiStatusPelunasan;
+use App\Rules\ValidasiNotaDebetPelunasan;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -99,7 +100,7 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
         foreach ($data as $item) {
             $status[] = $item['id'];
         }
-
+        // dd('tets');
         $rules = [
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
@@ -107,13 +108,14 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
                 'before_or_equal:' . date('d-m-Y')
             ],
             'bank' => 'required',
+            'notadebet_nobukti' =>  [ new ValidasiNotaDebetPelunasan()],
             'statuspelunasan' =>  ['required', Rule::in($status), new ValidasiStatusPelunasan()],
             'agen' => [
                 'required',
                 new ValidasiDetail($jumlahdetail),
                 new ValidasiStatusNotaDebet(),
                 new ValidasiStatusNotaKredit(),
-                new ValidasiNominalSaldo()
+                // new ValidasiNominalSaldo()
             ],
             'alatbayar' => ['required', Rule::in($dataKodeAlatBayar)]
         ];

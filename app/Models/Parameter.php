@@ -501,4 +501,19 @@ class Parameter extends MyModel
 
         return $keterangan;
     }
+
+    public function cekId($grp,$subgrp,$text) {
+        $query = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+        ->select(
+            'a.id as keterangan'
+        )
+        ->where('grp' ,$grp)
+        ->where('subgrp' ,$subgrp)
+        ->where('text' ,$text)
+        ->first();
+
+        $keterangan=$query->keterangan ?? 0;
+
+        return $keterangan;
+    }
 }
