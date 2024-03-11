@@ -14,6 +14,7 @@ use App\Rules\ValidasiStatusNotaDebet;
 use App\Rules\ValidasiStatusNotaKredit;
 use App\Rules\ValidasiNominalSaldo;
 use App\Rules\ValidasiStatusPelunasan;
+use App\Rules\ValidasiNotaDebetPelunasan;
 use Illuminate\Validation\Rule;
 
 class UpdatePelunasanPiutangHeaderRequest extends FormRequest

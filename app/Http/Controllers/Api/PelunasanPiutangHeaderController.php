@@ -156,6 +156,7 @@ class PelunasanPiutangHeaderController extends Controller
                 'bank_id' => $request->bank_id,
                 'alatbayar_id' => $request->alatbayar_id,
                 'agen_id' => $request->agen_id,
+                'notadebet_nobukti' => $request->notadebet_nobukti,
                 'statuspelunasan' => $request->statuspelunasan,
                 'agen' => $request->agen,
                 'nowarkat' => $request->nowarkat,
@@ -420,26 +421,79 @@ class PelunasanPiutangHeaderController extends Controller
 
     public function cekvalidasi($id)
     {
+        // dd('test');
         $pengeluaran = PelunasanPiutangHeader::find($id);
+
 
         $statusdatacetak = $pengeluaran->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
+        $pengeluarannobukti = $pengeluaran->pengeluaran_nobukti ?? '';
+        $idpengeluaran = db::table('pengeluaranheader')->from(db::raw("pengeluaranheader a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.nobukti', $pengeluarannobukti)
+            ->first()->id ?? 0;
+        // $aksi = request()->aksi ?? '';
+        $validasipengeluaran = app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
+        $msg = json_decode(json_encode($validasipengeluaran), true)['original']['error'] ?? false;
+        if ($msg == false) {
+            goto lanjut1;
+        } else {
+            return $validasipengeluaran;
+        }
+
+        lanjut1:
+        $penerimaan=$pengeluaran->penerimaan_nobukti ?? '';
+        
+        $idpenerimaan=db::table('penerimaanheader')->from(db::raw("penerimaanheader a with (readuncommitted)"))
+        ->select(
+            'a.id'
+        )
+        ->where('a.nobukti',$penerimaan)
+        ->first()->id ?? 0;
+        $validasipenerimaan=app(PenerimaanHeaderController::class)->cekvalidasi($idpenerimaan);
+        $msg=json_decode(json_encode($validasipenerimaan),true)['original']['error'] ?? false;
+        if ($msg==false) {
+            goto lanjut ;
+        } else {
+            return $validasipenerimaan;
+        }
+
+        lanjut:
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
+        $parameter = new Parameter();
+
+        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup=date('Y-m-d', strtotime($tgltutup));
+
         if ($statusdatacetak == $statusCetak->id) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->whereRaw("kodeerror = 'SDC'")
-                ->first();
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
 
             $data = [
                 'error' => true,
-                'message' =>  'No Bukti ' . $pengeluaran->nobukti . ' ' . $query->keterangan,
+                'message' =>  $keterror,
                 'kodeerror' => 'SDC',
                 'statuspesan' => 'warning',
             ];
             return response($data);
-        } else {
+        } else if ($tgltutup >= $pengeluaran->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data); 
+         } else {
 
             $data = [
                 'error' => false,
