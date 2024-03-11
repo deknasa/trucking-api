@@ -271,6 +271,7 @@ use App\Http\Controllers\Api\AbsensiSupirApprovalHeaderController;
 use App\Http\Controllers\Api\ExportLaporanMingguanSupirController;
 use App\Http\Controllers\Api\LaporanKartuHutangPrediksiController;
 use App\Http\Controllers\Api\LaporanKartuPiutangPerAgenController;
+use App\Http\Controllers\Api\LaporanKartuPanjarController;
 use App\Http\Controllers\Api\LaporanSupirLebihDariTradoController;
 use App\Http\Controllers\Api\LaporanTripGandenganDetailController;
 use App\Http\Controllers\Api\ProsesUangJalanSupirDetailController;
@@ -1609,6 +1610,10 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporankartupiutangperagen/report', [LaporanKartuPiutangPerAgenController::class, 'report'])->name('laporankartupiutangperagen.report');
     Route::get('laporankartupiutangperagen/export', [LaporanKartuPiutangPerAgenController::class, 'export'])->name('laporankartupiutangperagen.export');
     Route::resource('laporankartupiutangperagen', LaporanKartuPiutangPerAgenController::class)->whereNumber('laporankartupiutangperagen');
+
+    Route::get('laporankartupanjar/report', [LaporanKartuPanjarController::class, 'report'])->name('laporankartupanjar.report');
+    Route::get('laporankartupanjar/export', [LaporanKartuPanjarController::class, 'export'])->name('laporankartupanjar.export');
+    Route::resource('laporankartupanjar', LaporanKartuPanjarController::class)->whereNumber('laporankartupanjar');    
 
     Route::get('laporanhistorydeposito/report', [LaporanHistoryDepositoController::class, 'report'])->name('laporanhistorydeposito.report');
     Route::get('laporanhistorydeposito/export', [LaporanHistoryDepositoController::class, 'export'])->name('laporanhistorydeposito.export');

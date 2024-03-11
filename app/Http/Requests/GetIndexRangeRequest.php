@@ -31,19 +31,25 @@ class GetIndexRangeRequest extends FormRequest
         $getBatas = $parameter->getBatasAwalTahun();
         $tglbatasawal = $getBatas->text;
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
-        $rules =  [
-            'tgldari' => [
-                'required', 'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
-                'after_or_equal:'.$tglbatasawal,
-            ],
-            'tglsampai' => [
-                'required', 'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
-                'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
-            ],
-            
-        ];
+    
+        if ($this->panjar=='PANJAR') {
+            $rules =  [];    
+        } else {
+            $rules =  [
+                'tgldari' => [
+                    'required', 'date_format:d-m-Y',
+                    'before:'.$tglbatasakhir,
+                    'after_or_equal:'.$tglbatasawal,
+                ],
+                'tglsampai' => [
+                    'required', 'date_format:d-m-Y',
+                    'before:'.$tglbatasakhir,
+                    'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
+                ],
+                
+            ];
+    
+        }
 
         return $rules;
     }

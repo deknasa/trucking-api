@@ -24,6 +24,148 @@ class LaporanKartuPanjar extends MyModel
         'updated_at',
     ];
 
+    public function getSisapanjar($dari, $sampai, $agenDari, $agenSampai, $prosesneraca,$agen_id,$tgl) {
+        $tempkartupanjar = '##tempkartupanjar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempkartupanjar, function ($table) {
+            $table->integer('id')->nullable();
+            $table->string('agen_id',1000)->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->dateTime('tglbukti')->nullable();
+            $table->double('nominalpiutang')->nullable();
+            $table->dateTime('tgllunas')->nullable();
+            $table->double('nominallunas')->nullable();
+            $table->string('nobuktipiutang', 50)->nullable();
+            $table->dateTime('tglberjalan')->nullable();
+            $table->double('saldo')->nullable();
+            $table->double('saldobayar')->nullable();
+            $table->string('jenispiutang', 50)->nullable();
+            $table->integer('urut')->nullable();
+            $table->string('text', 500)->nullable();
+            $table->string('dari', 500)->nullable();
+            $table->string('sampai', 500)->nullable();
+            $table->string('judullaporan', 500)->nullable();
+            $table->string('judul', 500)->nullable();
+            $table->string('tglcetak', 500)->nullable();
+            $table->string('usercetak', 500)->nullable();
+            $table->string('disetujui', 500)->nullable();
+            $table->string('diperiksa', 500)->nullable();
+        });
+
+
+        DB::table($tempkartupanjar)->insertUsing([
+            'id',
+            'agen_id',
+            'nobukti',
+            'tglbukti',
+            'nominalpiutang',
+            'tgllunas',
+            'nominallunas',
+            'nobuktipiutang',
+            'tglberjalan',
+            'saldo',
+            'saldobayar',
+            'jenispiutang',
+            'urut',
+            'text',
+            'dari',
+            'sampai',
+            'judullaporan',
+            'judul',
+            'tglcetak',
+            'usercetak',
+            'disetujui',
+            'diperiksa',
+        ], (new LaporanKartuPanjar())->getReport($tgl, $tgl, 0, 0, 1));
+
+        $tempdatapanjar = '##tempdatapanjar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdatapanjar, function ($table) {
+            $table->string('nobukti', 50)->nullable();
+            $table->string('agen_id',1000)->nullable();
+            $table->double('nominal')->nullable();                
+        });
+
+        $querydatapanjar=db::table($tempkartupanjar)->from(db::raw($tempkartupanjar . " a "))
+        ->select(
+            'a.nobukti',
+            db::raw("max(a.agen_id) as agen_id"),
+            db::raw("max(a.nominalpiutang) as nominal")
+        )
+        ->groupBY('a.nobukti');
+
+        DB::table($tempdatapanjar)->insertUsing([
+            'nobukti',
+            'agen_id',
+            'nominal',
+        ], $querydatapanjar);            
+
+
+
+        $tempdatalunas = '##tempdatalunas' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdatalunas, function ($table) {
+            $table->string('nobukti', 50)->nullable();
+            $table->string('agen_id',1000)->nullable();
+            $table->double('nominal')->nullable();                
+        });
+
+        $querydatalunas=db::table($tempkartupanjar)->from(db::raw($tempkartupanjar . " a "))
+        ->select(
+            'a.nobukti',
+            db::raw("max(a.agen_id) as agen_id"),
+            db::raw("sum(a.nominallunas) as nominal")
+        )
+        ->groupBY('a.nobukti');
+
+        DB::table($tempdatalunas)->insertUsing([
+            'nobukti',
+            'agen_id',
+            'nominal',
+        ], $querydatalunas); 
+
+
+        $temppanjar = '##temppanjar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temppanjar, function ($table) {
+            $table->string('nobukti', 50)->nullable();
+            $table->double('nominal')->nullable();                
+        });
+
+        $querypanjar=db::table($tempdatapanjar)->from(db::raw($tempdatapanjar . " a "))
+        ->select(
+            'a.nobukti',
+            db::raw("(a.nominal-isnull(lunas.nominal,0)) as nominal")
+        )
+        ->leftJoin(DB::raw($tempdatalunas . " lunas"), 'a.nobukti', 'lunas.nobukti')
+        ->whereRaw("isnull(a.agen_id,0)=" . $agen_id );
+
+        DB::table($temppanjar)->insertUsing([
+            'nobukti',
+            'nominal',
+        ], $querypanjar);
+
+        $querypanjar=db::table($tempdatapanjar)->from(db::raw($tempdatapanjar . " a "))
+        ->select(
+            'a.nobukti',
+            db::raw("(a.nominal-isnull(lunas.nominal,0)) as nominal")
+        )
+        ->leftJoin(DB::raw($tempdatalunas . " lunas"), 'a.nobukti', 'lunas.nobukti')
+        ->whereRaw("isnull(a.agen_id,0)=0" );
+
+        DB::table($temppanjar)->insertUsing([
+            'nobukti',
+            'nominal',
+        ], $querypanjar);
+
+        $data=db::table($temppanjar)->from(db::raw($temppanjar . " a "))
+        ->select(
+            'a.nobukti',
+            'a.nominal'
+        )
+        ->orderby('a.nobukti','asc');
+
+        return $data;
+
+    }
+    
+
     public function getReport($dari, $sampai, $agenDari, $agenSampai, $prosesneraca)
     {
         $prosesneraca = $prosesneraca ?? 0;
@@ -93,30 +235,34 @@ class LaporanKartuPanjar extends MyModel
             $table->double('nominal')->nullable();
         });
 
+        // dd($sampai);
         $coauangditerimadimuka='03.02.02.08';
         $querypiutangsaldo = db::table('notadebetheader')->from(db::raw("notadebetheader a with (readuncommitted)"))
             ->select(
                 'a.nobukti',
-                db::raw("sum(b.nominal) as nominal"),
+                db::raw("sum(b.lebihbayar) as nominal"),
             )
             ->join(db::raw("notadebetdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-            ->whereRaw("a.tglbukti<'" . $dari1 . "'")
-            ->whereRaw("(a.coalebihbayar='" . $coauangditerimadimuka . "'")
+            ->whereRaw("a.tglbukti<='" . $sampai . "'")
+            ->whereRaw("b.coalebihbayar='" . $coauangditerimadimuka . "'")
             ->groupby('a.nobukti');
-
+            
         DB::table($temppiutangsaldo)->insertUsing([
             'nobukti',
             'nominal',
         ], $querypiutangsaldo);
 
+        // dd( $querypiutangsaldo ->get());
+        // dd(db::table($temppiutangsaldo)->get());
+     
         $querypelunasansaldo = db::table('notadebetfifo')->from(db::raw("notadebetfifo a with (readuncommitted)"))
             ->select(
                 'c.nobukti',
-                db::raw("sum(isnull(b.nominal,0)+isnull(b.potongan,0)) as nominal"),
+                db::raw("sum(isnull(a.nominal,0)) as nominal"),
             )
             ->join(db::raw("pelunasanpiutangheader b with (readuncommitted)"), 'a.pelunasanpiutang_nobukti', 'b.nobukti')
-            ->join(db::raw($temppiutangsaldo . " c "), 'b.piutang_nobukti', 'c.nobukti')
-            ->whereRaw("a.tglbukti<'" . $dari1 . "'")
+            ->join(db::raw($temppiutangsaldo . " c "), 'b.notadebet_nobukti', 'c.nobukti')
+            ->whereRaw("b.tglbukti<'" . $dari1 . "'")
             ->groupby('c.nobukti');
 
         DB::table($temppelunasansaldo)->insertUsing([
@@ -124,6 +270,7 @@ class LaporanKartuPanjar extends MyModel
             'nominal',
         ], $querypelunasansaldo);
 
+   
 
         $temprekappiutang = '##temprekappiutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temprekappiutang, function ($table) {
@@ -146,16 +293,15 @@ class LaporanKartuPanjar extends MyModel
             'nominal',
         ], $queryrekappiutang);
 
-
-        $queryrekappiutang = db::table("piutangheader")->from(db::raw("piutangheader a with (readuncommitted) "))
+     
+        $queryrekappiutang = db::table("notadebetfifo")->from(db::raw("notadebetfifo a with (readuncommitted) "))
             ->select(
-                'a.nobukti',
-                db::raw("sum(isnull(b.nominal,0)) as nominal"),
+                'a.notadebet_nobukti as nobukti',
+                db::raw("sum(isnull(a.nominal,0)) as nominal"),
             )
-            ->leftjoin(db::raw("piutangdetail b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
-            ->whereRaw("(a.tglbukti>='" . $dari1 . "' and a.tglbukti<='" . $sampai . "')")
-            ->whereRaw("(a.agen_id>=" . $agenDari . " and a.agen_id<=" . $agenSampai . ")")
-            ->groupby('a.nobukti');
+            ->leftjoin(db::raw("pelunasanpiutangheader b with (readuncommitted) "), 'a.pelunasanpiutang_nobukti', 'b.nobukti')
+            ->whereRaw("(b.tglbukti>='" . $dari1 . "' and b.tglbukti<='" . $sampai . "')")
+            ->groupby('a.notadebet_nobukti');
 
         DB::table($temprekappiutang)->insertUsing([
             'nobukti',
@@ -194,7 +340,7 @@ class LaporanKartuPanjar extends MyModel
                 db::raw(" 'PIUTANG USAHA' as jenispiutang"),
                 db::raw("0 as urut"),
                 )
-            ->join(db::raw("piutangheader b with (readuncommitted) "), 'a.nobukti', 'b.nobukti');
+            ->join(db::raw("notadebetheader b with (readuncommitted) "), 'a.nobukti', 'b.nobukti');
 
         DB::table($temprekapdata)->insertUsing([
             'agen_id',
@@ -223,9 +369,9 @@ class LaporanKartuPanjar extends MyModel
                 db::raw(" 'PIUTANG USAHA' as jenispiutang"),
                 db::raw("1 as urut"),                
             )
-            ->join(db::raw("piutangheader b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
-            ->join(db::raw("pelunasanpiutangdetail c with (readuncommitted) "), 'a.nobukti', 'c.piutang_nobukti')
-            ->join(db::raw("pelunasanpiutangheader d with (readuncommitted) "), 'c.nobukti', 'd.nobukti')
+            ->join(db::raw("notadebetheader b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+            ->join(db::raw("notadebetfifo c with (readuncommitted) "), 'a.nobukti', 'c.notadebet_nobukti')
+            ->join(db::raw("pelunasanpiutangheader d with (readuncommitted) "), 'c.pelunasanpiutang_nobukti', 'd.nobukti')
             ->whereRaw("(d.tglbukti>='" . $dari1 . "' and d.tglbukti<='" . $sampai . "')")
             ->whereRaw("isnull(c.nominal,0)<>0");
 
@@ -243,71 +389,7 @@ class LaporanKartuPanjar extends MyModel
             ], $queryrekapdata);
     
 
-            $queryrekapdata = db::table($temprekappiutang)->from(db::raw($temprekappiutang . " a  "))
-            ->select(
-                'b.agen_id',
-                'e.nobukti',
-                db::raw("'1900/1/1' as tglbukti"),
-                db::raw("0 as nominal"),
-                "d.tglbukti as tgllunas",
-                db::raw("(isnull(c.potongan,0)) as nominallunas"),
-                'a.nobukti as nobuktipiutang',
-                'b.tglbukti as tglberjalan',
-                db::raw(" 'PIUTANG USAHA' as jenispiutang"),
-                db::raw("2 as urut"),                
-            )
-            ->join(db::raw("piutangheader b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
-            ->join(db::raw("pelunasanpiutangdetail c with (readuncommitted) "), 'a.nobukti', 'c.piutang_nobukti')
-            ->join(db::raw("pelunasanpiutangheader d with (readuncommitted) "), 'c.nobukti', 'd.nobukti')
-            ->leftjoin(db::raw("notakreditdetail e with (readuncommitted) "), 'c.invoice_nobukti', 'e.invoice_nobukti')
-            ->whereRaw("(d.tglbukti>='" . $dari1 . "' and d.tglbukti<='" . $sampai . "')")
-            ->whereRaw("isnull(c.potongan,0)<>0");
-
-            DB::table($temprekapdata)->insertUsing([
-                'agen_id',
-                'nobukti',
-                'tglbukti',
-                'nominalpiutang',
-                'tgllunas',
-                'nominallunas',
-                'nobuktipiutang',
-                'tglberjalan',
-                'jenispiutang',
-                'urut',
-            ], $queryrekapdata);
-
-            $queryrekapdata = db::table($temprekappiutang)->from(db::raw($temprekappiutang . " a  "))
-            ->select(
-                'b.agen_id',
-                'e.nobukti',
-                db::raw("'1900/1/1' as tglbukti"),
-                db::raw("0 as nominal"),
-                "d.tglbukti as tgllunas",
-                db::raw("(isnull(c.nominallebihbayar,0)) as nominallunas"),
-                'a.nobukti as nobuktipiutang',
-                'b.tglbukti as tglberjalan',
-                db::raw(" 'PIUTANG USAHA' as jenispiutang"),
-                db::raw("3 as urut"),                
-            )
-            ->join(db::raw("piutangheader b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
-            ->join(db::raw("pelunasanpiutangdetail c with (readuncommitted) "), 'a.nobukti', 'c.piutang_nobukti')
-            ->join(db::raw("pelunasanpiutangheader d with (readuncommitted) "), 'c.nobukti', 'd.nobukti')
-            ->leftjoin(db::raw("notadebetdetail e with (readuncommitted) "), 'c.invoice_nobukti', 'e.invoice_nobukti')
-            ->whereRaw("(d.tglbukti>='" . $dari1 . "' and d.tglbukti<='" . $sampai . "')")
-            ->whereRaw("isnull(c.nominallebihbayar,0)<>0");
-
-            DB::table($temprekapdata)->insertUsing([
-                'agen_id',
-                'nobukti',
-                'tglbukti',
-                'nominalpiutang',
-                'tgllunas',
-                'nominallunas',
-                'nobuktipiutang',
-                'tglberjalan',
-                'jenispiutang',
-                'urut',
-            ], $queryrekapdata);            
+                   
 
         $temprekaphasil = '##temprekaphasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temprekaphasil, function ($table) {
@@ -375,6 +457,8 @@ class LaporanKartuPanjar extends MyModel
             ->where('grp', 'DIPERIKSA')
             ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
+            // dd('test');
+
 $queryurut=db::table($temprekaphasil)->from(db::raw($temprekaphasil . " a"))
 ->select(
     'a.id',
@@ -415,12 +499,12 @@ $queryurut=db::table($temprekaphasil)->from(db::raw($temprekaphasil . " a"))
                 'a.id',
                 'a.agen_id',
                 'a.nobukti',
-                'a.tglbukti',
+                db::raw("cast(a.tglbukti as date) as tglbukti"),
                 'a.nominalpiutang',
-                'a.tgllunas',
+                db::raw("cast(a.tgllunas as date) as tgllunas"),
                 'a.nominallunas',
                 'a.nobuktipiutang',
-                'a.tglberjalan',
+                db::raw("cast(a.tglberjalan as date) as tglberjalan"),
                 'a.saldo',
                 'a.saldobayar',
                 'a.jenispiutang',
