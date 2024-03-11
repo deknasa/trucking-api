@@ -93,6 +93,7 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
        
         $rules = [
             'id' => new ValidasiDestroyPelunasanPiutang(),
+            'notadebet_nobukti' =>  [ new ValidasiNotaDebetPelunasan()],
             'nobukti' => [Rule::in($getDataPelunasan->nobukti)],
             "tglbukti" => [
                 "required", 'date_format:d-m-Y',
@@ -106,7 +107,7 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
                 new ValidasiDetail($jumlahdetail),
                 new ValidasiStatusNotaDebet(),
                 new ValidasiStatusNotaKredit(),
-                new ValidasiNominalSaldo()
+                // new ValidasiNominalSaldo()
             ],
             'alatbayar' => ['required', Rule::in($dataKodeAlatBayar)],
         ];
