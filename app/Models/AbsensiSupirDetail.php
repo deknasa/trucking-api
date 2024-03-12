@@ -706,6 +706,11 @@ class AbsensiSupirDetail extends MyModel
 
         DB::table($tempdatahasil)->insertUsing(['trado_id', 'supir_id', 'tglbatas'], $queryhasil);
 
+        $batasJamEdit = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', '=', 'BATAS JAM EDIT ABSENSI')
+        ->where('subgrp', '=', 'BATAS JAM EDIT ABSENSI')
+        ->first();
 
         // dd(db::table($tempdatahasil)->get());
         $query = db::table($tempdata)->from(db::raw($tempdata . " a"))
@@ -726,10 +731,10 @@ class AbsensiSupirDetail extends MyModel
                 'a.memo',
                 'a.uangjalan',
                 db::raw("format(cast(isnull(b.tglbatas,
-                    (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '".  date('Y-m-d', strtotime($date)) ." 17:00:00'  else    format(a.tglbukti,'yyyy/MM/dd')+' 17:00:00' end)
+                    (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '".  date('Y-m-d', strtotime($date)) ." ".$batasJamEdit->text."'  else    format(a.tglbukti,'yyyy/MM/dd')+' ".$batasJamEdit->text ."' end)
                     ) as datetime),'dd-MM-yyyy HH:mm:ss') as tglbatas"),
                 db::raw("(case when cast(format(cast(isnull(b.tglbatas,
-                    (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '".  date('Y-m-d', strtotime($date)) ." 17:00:00'  else    format(a.tglbukti,'yyyy/MM/dd')+' 17:00:00' end)
+                    (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '".  date('Y-m-d', strtotime($date)) ." ".$batasJamEdit->text."' else    format(a.tglbukti,'yyyy/MM/dd')+' ".$batasJamEdit->text ."' end)
                     ) as datetime),'yyyy/MM/dd HH:mm:ss') as datetime)>=getdate() then 1 else 0 end) 
                     as berlaku"),
 

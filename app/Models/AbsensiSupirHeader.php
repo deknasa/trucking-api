@@ -83,6 +83,8 @@ class AbsensiSupirHeader extends MyModel
                 'statuscetak.memo as statuscetak',
                 'statusapprovaleditabsensi.memo as statusapprovaleditabsensi',
                 'absensisupirheader.userapprovaleditabsensi',
+                'statusapprovalpengajuantripinap.memo as statusapprovalpengajuantripinap',
+                'absensisupirheader.userapprovalpengajuantripinap',
                 'absensisupirheader.userbukacetak',
                 'absensisupirheader.jumlahcetak',
                 'absensisupirheader.modifiedby',
@@ -96,6 +98,7 @@ class AbsensiSupirHeader extends MyModel
             // request()->tgldari ?? date('Y-m-d',strtotime('today'))
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'absensisupirheader.kasgantung_nobukti', '=', 'kasgantungheader.nobukti')
+            ->leftJoin(DB::raw("parameter as statusapprovalpengajuantripinap with (readuncommitted)"), 'absensisupirheader.statusapprovalpengajuantripinap', 'statusapprovalpengajuantripinap.id')
             ->leftJoin(DB::raw("parameter as statusapprovaleditabsensi with (readuncommitted)"), 'absensisupirheader.statusapprovaleditabsensi', 'statusapprovaleditabsensi.id');
         if (request()->tgldari) {
             $query->whereBetween('absensisupirheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
