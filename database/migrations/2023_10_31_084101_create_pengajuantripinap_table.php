@@ -21,6 +21,10 @@ class CreatePengajuantripinapTable extends Migration
             $table->integer('statusapproval')->Length(11)->nullable();
             $table->date('tglapproval')->nullable();
             $table->string('userapproval',50)->nullable();
+            $table->integer('statusapprovallewatbataspengajuan')->Length(11)->nullable();
+            $table->string('userapprovallewatbataspengajuan',50)->nullable();
+            $table->date('tglapprovallewatbataspengajuan')->nullable();
+            $table->dateTime('tglbataslewatbataspengajuan')->nullable();            
             $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();              
             $table->timestamps();
