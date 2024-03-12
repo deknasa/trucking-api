@@ -111,6 +111,10 @@ class PelunasanPiutangHeader extends MyModel
     public function cekvalidasiaksi($id)
     {
 
+        $error = new Error();
+        $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
         $pelunasan = DB::table("pelunasanpiutangheader")->from(DB::raw("pelunasanpiutangheader"))->where('id', $id)->first();
 
         $pelunasanPiutang = DB::table('pelunasanpiutangheader')
@@ -128,11 +132,14 @@ class PelunasanPiutangHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal ' . $pelunasanPiutang->penerimaan_nobukti,
-                'kodeerror' => 'SAP'
+                'keterangan' => 'No Bukti <b>'. $pelunasanPiutang->penerimaan_nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Approval Jurnal ' . $pelunasanPiutang->penerimaan_nobukti,
+                'kodeerror' => 'SAPP'
             ];
             goto selesai;
         }
+
+        $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
 
         $pelunasanPiutang = DB::table('pelunasanpiutangheader')
             ->from(
@@ -148,12 +155,14 @@ class PelunasanPiutangHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal ' . $pelunasanPiutang->penerimaangiro_nobukti,
-                'kodeerror' => 'SAP'
+                'keterangan' => 'No Bukti <b>'. $pelunasanPiutang->penerimaangiro_nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Approval Jurnal ' . $pelunasanPiutang->penerimaangiro_nobukti,
+                'kodeerror' => 'SAPP'
             ];
             goto selesai;
         }
 
+        $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';        
         $pelunasanPiutang = DB::table('pelunasanpiutangheader')
             ->from(
                 DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
@@ -168,11 +177,14 @@ class PelunasanPiutangHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal ' . $pelunasanPiutang->notadebet_nobukti,
-                'kodeerror' => 'SAP'
+                'keterangan' => 'No Bukti <b>'. $pelunasanPiutang->notadebet_nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Approval Jurnal ' . $pelunasanPiutang->notadebet_nobukti,
+                'kodeerror' => 'SAPP'
             ];
             goto selesai;
         }
+
+        $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';        
 
         $pelunasanPiutang = DB::table('pelunasanpiutangheader')
             ->from(
@@ -188,8 +200,9 @@ class PelunasanPiutangHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal ' . $pelunasanPiutang->notakredit_nobukti,
-                'kodeerror' => 'SAP'
+                'keterangan' => 'No Bukti <b>'. $pelunasanPiutang->notakredit_nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Approval Jurnal ' . $pelunasanPiutang->notakredit_nobukti,
+                'kodeerror' => 'SAPP'
             ];
             goto selesai;
         }
