@@ -394,10 +394,10 @@ class PengeluaranHeaderController extends Controller
         $pengeluaran = PengeluaranHeader::find($id);
         $nobukti=$pengeluaran->nobukti ?? '';
         // $cekdata = $pengeluaran->cekvalidasiaksi($pengeluaran->nobukti);
-        $status = $pengeluaran->statusapproval ?? '';
+        $status = $pengeluaran->statusapproval ?? 0;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
-        $statusdatacetak = $pengeluaran->statuscetak;
+        $statusdatacetak = $pengeluaran->statuscetak ?? 0;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
