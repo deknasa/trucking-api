@@ -61,8 +61,9 @@ class DateApprovalQuota implements Rule
 
             while ($kondisi) {
                 $cekHarilibur = DB::table("harilibur")->from(DB::raw("harilibur with (readuncommitted)"))
-                    ->where('tgl', $date)
+                    ->where('tgl', $tanggal)
                     ->first();
+
                 $todayIsSunday = date('l', strtotime($tanggal));
                 $tomorrowIsSunday = date('l', strtotime($tanggal . "+1 days"));
                 if ($cekHarilibur == '') {
