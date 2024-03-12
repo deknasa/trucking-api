@@ -84,7 +84,13 @@ class AbsensiSupirApprovalHeader extends MyModel
 
     public function cekvalidasiaksi($id)
     {
+        $error = new Error();
+        $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
+
         $get = DB::table("absensisupirapprovalheader")->from(DB::raw("absensisupirapprovalheader with (readuncommitted)"))->where('id', $id)->first();
+        // $nobukti=$get->nobukti ?? '';
         $absensiSupir = DB::table('absensisupirapprovalheader')
             ->from(
                 DB::raw("absensisupirapprovalheader as a with (readuncommitted)")
@@ -99,8 +105,9 @@ class AbsensiSupirApprovalHeader extends MyModel
         if (isset($absensiSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal ' . $absensiSupir->pengeluaran_nobukti,
-                'kodeerror' => 'SATL'
+                'keterangan' => 'No Bukti <b>' . $absensiSupir->pengeluaran_nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror,
+                // 'keterangan' => 'Approval Jurnal ' . $absensiSupir->pengeluaran_nobukti,
+                'kodeerror' => 'SAPP'
             ];
             goto selesai;
         }

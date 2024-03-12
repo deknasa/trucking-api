@@ -35,6 +35,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Schema;
 
+
 class InvoiceHeaderController extends Controller
 {
     /**
@@ -76,7 +77,7 @@ class InvoiceHeaderController extends Controller
                 'piutang_nobukti' => $request->piutang_nobukti,
                 'statuspilihaninvoice' => $request->statuspilihaninvoice,
                 'tgldari' => $request->tgldari,
-                'tglsampai' => $request->tglsampai,      
+                'tglsampai' => $request->tglsampai,
                 'sp_id' => $requestData['sp_id'],
                 'nominalretribusi' => $requestData['nominalretribusi'],
                 'nominalextra' => $requestData['nominalextra'],
@@ -428,6 +429,7 @@ class InvoiceHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $pengeluaran = InvoiceHeader::find($id);
+        $nobukti = $pengeluaran->nobukti ?? '';
         $status = $pengeluaran->statusapproval;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
@@ -436,32 +438,60 @@ class InvoiceHeaderController extends Controller
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
         $aksi = request()->aksi ?? '';
 
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
+        $parameter = new Parameter();
+
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
+
+
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->whereRaw("kodeerror = 'SAP'")
-                ->first();
+            $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+
+            // $query = Error::from(DB::raw("error with (readuncommitted)"))
+            //     ->select('keterangan')
+            //     ->whereRaw("kodeerror = 'SAP'")
+            //     ->first();
 
             $data = [
                 'error' => true,
-                'message' =>  'No Bukti ' . $pengeluaran->nobukti . ' ' . $query->keterangan,
+                'message' => $keterror,
+                // 'message' =>  'No Bukti ' . $pengeluaran->nobukti . ' ' . $query->keterangan,
                 'kodeerror' => 'SAP',
                 'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->whereRaw("kodeerror = 'SDC'")
-                ->first();
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+
+            // $query = Error::from(DB::raw("error with (readuncommitted)"))
+            //     ->select('keterangan')
+            //     ->whereRaw("kodeerror = 'SDC'")
+            //     ->first();
 
             $data = [
                 'error' => true,
-                'message' =>  'No Bukti ' . $pengeluaran->nobukti . ' ' . $query->keterangan,
+                // 'message' =>  'No Bukti ' . $pengeluaran->nobukti . ' ' . $query->keterangan,
+                'message' => $keterror,
                 'kodeerror' => 'SDC',
                 'statuspesan' => 'warning',
             ];
+            return response($data);
+        } else if ($tgltutup >= $pengeluaran->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
+            ];
+
             return response($data);
         } else {
 
@@ -489,7 +519,8 @@ class InvoiceHeaderController extends Controller
 
             $data = [
                 'error' => true,
-                'message' => $query->keterangan,
+                'message' => $cekdata['keterangan'] ?? '',
+                // 'message' => $query->keterangan,
                 'kodeerror' => $cekdata['kodeerror'],
                 'statuspesan' => 'warning',
             ];
@@ -514,7 +545,7 @@ class InvoiceHeaderController extends Controller
     {
     }
 
-    
+
     /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK

@@ -87,6 +87,11 @@ class InvoiceHeader extends MyModel
     public function cekvalidasiaksi($nobukti)
     {
 
+        $error = new Error();
+        $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+    
+
         $pelunasanPiutang = DB::table('pelunasanpiutangdetail')
             ->from(
                 DB::raw("pelunasanpiutangdetail as a with (readuncommitted)")
@@ -100,11 +105,15 @@ class InvoiceHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pelunasan Piutang ' . $pelunasanPiutang->nobukti,
-                'kodeerror' => 'SATL'
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti kas gantung <b>'. $pelunasanPiutang->nobukti .'</b> <br> '.$keterangantambahanerror,
+
+                // 'keterangan' => 'Pelunasan Piutang ' . $pelunasanPiutang->nobukti,
+                'kodeerror' => 'SATL2'
             ];
             goto selesai;
         }
+
+        $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
 
         $invoice = DB::table('invoiceheader')
             ->from(
@@ -120,8 +129,10 @@ class InvoiceHeader extends MyModel
         if (isset($invoice)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal ' . $invoice->piutang_nobukti,
-                'kodeerror' => 'SAP'
+                'keterangan' => 'No Bukti <b>'. $invoice->piutang_nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror,
+
+                // 'keterangan' => 'Approval Jurnal ' . $invoice->piutang_nobukti,
+                'kodeerror' => 'SAPP'
             ];
             goto selesai;
         }

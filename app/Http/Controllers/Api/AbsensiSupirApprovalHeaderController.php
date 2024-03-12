@@ -28,6 +28,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
+use App\Models\Error;
 use Exception;
 
 class AbsensiSupirApprovalHeaderController extends Controller
@@ -276,19 +277,62 @@ class AbsensiSupirApprovalHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $absensisupirapproval = AbsensiSupirApprovalHeader::find($id);
+        $nobukti = $absensisupirapproval->nobukti ?? '';
+        $pengeluaran = $absensisupirapproval->pengeluaran_nobukti ?? '';
+        $idpengeluaran = db::table('pengeluaranheader')->from(db::raw("pengeluaranheader a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.nobukti', $pengeluaran)
+            ->first()->id ?? 0;
+        // $aksi = request()->aksi ?? '';
+        if ($idpengeluaran != 0) {
+            $validasipengeluaran = app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
+            $msg = json_decode(json_encode($validasipengeluaran), true)['original']['error'] ?? false;
+            if ($msg == false) {
+                goto lanjut;
+            } else {
+                return $validasipengeluaran;
+            }
+        }
+
 
         //validasi cetak
+        lanjut:
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $parameter = new Parameter();
+
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
+
+
         $printValidation = AbsensiSupirApprovalHeader::printValidation($id);
         if (!$printValidation) {
-            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SDC')->first();
+            // $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SDC')->first();
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+
             $data = [
                 'error' => true,
-                'message' =>  'No Bukti ' . $absensisupirapproval->nobukti . ' ' . $query->keterangan,
+                'message' => $keterror,
+                // 'message' =>  'No Bukti ' . $absensisupirapproval->nobukti . ' ' . $query->keterangan,
                 'kodeerror' => 'SDC',
                 'statuspesan' => 'warning',
             ];
 
             return response($data);
+        } else if ($tgltutup >= $absensisupirapproval->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);            
         } else {
 
             $data = [
@@ -304,18 +348,21 @@ class AbsensiSupirApprovalHeaderController extends Controller
     public function cekValidasiAksi($id)
     {
         $absensiSupirHeader = new AbsensiSupirApprovalHeader();
+        $nobukti = AbsensiSupirApprovalHeader::from(DB::raw("AbsensiSupirApprovalHeader"))->where('id', $id)->first();
+
         $cekdata = $absensiSupirHeader->cekvalidasiaksi($id);
         if ($cekdata['kondisi'] == true) {
-            $query = DB::table('error')
-                ->select(
-                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
-                )
-                ->where('kodeerror', '=', 'SATL')
-                ->first();
+            // $query = DB::table('error')
+            //     ->select(
+            //         DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+            //     )
+            //     ->where('kodeerror', '=', 'SATL')
+            //     ->first();
 
             $data = [
                 'error' => true,
-                'message' => $query->keterangan,
+                'message' => $cekdata['keterangan'] ?? '',
+                'kodeerror' => $cekdata['kodeerror'],
                 'statuspesan' => 'warning',
             ];
 
