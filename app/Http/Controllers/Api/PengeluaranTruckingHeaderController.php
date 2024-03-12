@@ -539,14 +539,18 @@ class PengeluaranTruckingHeaderController extends Controller
             ->where('a.nobukti', $pengeluaran)
             ->first()->id ?? 0;
         // $aksi = request()->aksi ?? '';
-   
-        $validasipengeluaran = app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
-        $msg = json_decode(json_encode($validasipengeluaran), true)['original']['error'] ?? false;
-        if ($msg == false) {
-            goto lanjut;
-        } else {
-            return $validasipengeluaran;
+
+        if (isset($idpengeluaran)) {
+            $validasipengeluaran = app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
+            $msg = json_decode(json_encode($validasipengeluaran), true)['original']['error'] ?? false;
+            if ($msg == false) {
+                goto lanjut;
+            } else {
+                return $validasipengeluaran;
+            }
+    
         }
+   
 
 
 
