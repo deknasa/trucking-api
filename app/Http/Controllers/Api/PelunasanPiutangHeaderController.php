@@ -108,7 +108,7 @@ class PelunasanPiutangHeaderController extends Controller
             ];
             $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processStore($data);
             $pelunasanPiutangHeader->position = $this->getPosition($pelunasanPiutangHeader, $pelunasanPiutangHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / (10));
             } else {
                 $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / ($request->limit ?? 10));
@@ -173,7 +173,7 @@ class PelunasanPiutangHeaderController extends Controller
             ];
             $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processUpdate($pelunasanpiutangheader, $data);
             $pelunasanPiutangHeader->position = $this->getPosition($pelunasanPiutangHeader, $pelunasanPiutangHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / (10));
             } else {
                 $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / ($request->limit ?? 10));
@@ -205,7 +205,7 @@ class PelunasanPiutangHeaderController extends Controller
             $selected = $this->getPosition($pelunasanPiutangHeader, $pelunasanPiutangHeader->getTable(), true);
             $pelunasanPiutangHeader->position = $selected->position;
             $pelunasanPiutangHeader->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / (10));
             } else {
                 $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / ($request->limit ?? 10));
@@ -361,7 +361,7 @@ class PelunasanPiutangHeaderController extends Controller
     {
     }
 
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */
@@ -437,30 +437,36 @@ class PelunasanPiutangHeaderController extends Controller
             ->where('a.nobukti', $pengeluarannobukti)
             ->first()->id ?? 0;
         // $aksi = request()->aksi ?? '';
-        $validasipengeluaran = app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
-        $msg = json_decode(json_encode($validasipengeluaran), true)['original']['error'] ?? false;
-        if ($msg == false) {
-            goto lanjut1;
-        } else {
-            return $validasipengeluaran;
+        if ($idpengeluaran != 0) {
+            $validasipengeluaran = app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
+            $msg = json_decode(json_encode($validasipengeluaran), true)['original']['error'] ?? false;
+            if ($msg == false) {
+                goto lanjut1;
+            } else {
+                return $validasipengeluaran;
+            }
         }
 
         lanjut1:
-        $penerimaan=$pengeluaran->penerimaan_nobukti ?? '';
-        
-        $idpenerimaan=db::table('penerimaanheader')->from(db::raw("penerimaanheader a with (readuncommitted)"))
-        ->select(
-            'a.id'
-        )
-        ->where('a.nobukti',$penerimaan)
-        ->first()->id ?? 0;
-        $validasipenerimaan=app(PenerimaanHeaderController::class)->cekvalidasi($idpenerimaan);
-        $msg=json_decode(json_encode($validasipenerimaan),true)['original']['error'] ?? false;
-        if ($msg==false) {
-            goto lanjut ;
-        } else {
-            return $validasipenerimaan;
+        $penerimaan = $pengeluaran->penerimaan_nobukti ?? '';
+
+        $idpenerimaan = db::table('penerimaanheader')->from(db::raw("penerimaanheader a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.nobukti', $penerimaan)
+            ->first()->id ?? 0;
+        if ($idpenerimaan != 0) {
+            $validasipenerimaan = app(PenerimaanHeaderController::class)->cekvalidasi($idpenerimaan);
+            $msg = json_decode(json_encode($validasipenerimaan), true)['original']['error'] ?? false;
+            if ($msg == false) {
+                goto lanjut;
+            } else {
+                return $validasipenerimaan;
+            }
         }
+
+
 
         lanjut:
         $error = new Error();
@@ -468,12 +474,12 @@ class PelunasanPiutangHeaderController extends Controller
 
         $parameter = new Parameter();
 
-        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
-        $tgltutup=date('Y-m-d', strtotime($tgltutup));
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
 
         if ($statusdatacetak == $statusCetak->id) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
-            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
 
             $data = [
                 'error' => true,
@@ -484,7 +490,7 @@ class PelunasanPiutangHeaderController extends Controller
             return response($data);
         } else if ($tgltutup >= $pengeluaran->tglbukti) {
             $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
-            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
                 'message' => $keterror,
@@ -492,8 +498,8 @@ class PelunasanPiutangHeaderController extends Controller
                 'statuspesan' => 'warning',
             ];
 
-            return response($data); 
-         } else {
+            return response($data);
+        } else {
 
             $data = [
                 'error' => false,

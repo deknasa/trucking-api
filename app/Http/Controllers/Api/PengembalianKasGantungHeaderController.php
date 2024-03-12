@@ -39,7 +39,7 @@ use App\Http\Controllers\Api\PenerimaanHeaderController;
 
 class PengembalianKasGantungHeaderController extends Controller
 {
-      /**
+    /**
      * @ClassName 
      * PengembalianKasGantungHeader
      * @Detail PengembalianKasGantungDetailController
@@ -95,7 +95,7 @@ class PengembalianKasGantungHeaderController extends Controller
             ]);
             /* Set position and page */
             $pengembalianKasGantungHeader->position = $this->getPosition($pengembalianKasGantungHeader, $pengembalianKasGantungHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / (10));
             } else {
                 $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / ($request->limit ?? 10));
@@ -135,7 +135,7 @@ class PengembalianKasGantungHeaderController extends Controller
 
             /* Store header */
             $pengembalianKasGantungHeader = PengembalianKasGantungHeader::findOrFail($id);
-            
+
             $pengembalianKasGantungHeader = (new PengembalianKasGantungHeader())->processUpdate($pengembalianKasGantungHeader, [
                 "tanpaprosesnobukti" => $request->tanpaprosesnobukti ?? null,
                 "tglbukti" => $request->tglbukti ?? null,
@@ -156,7 +156,7 @@ class PengembalianKasGantungHeaderController extends Controller
 
             /* Set position and page */
             $pengembalianKasGantungHeader->position = $this->getPosition($pengembalianKasGantungHeader, $pengembalianKasGantungHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / (10));
             } else {
                 $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / ($request->limit ?? 10));
@@ -187,19 +187,20 @@ class PengembalianKasGantungHeaderController extends Controller
         try {
 
             /* delete header */
-           $pengembalianKasGantungHeader = (new PengembalianKasGantungHeader())->processDestroy($id);
+            $pengembalianKasGantungHeader = (new PengembalianKasGantungHeader())->processDestroy($id);
 
             /* Set position and page */
             $selected = $this->getPosition($pengembalianKasGantungHeader, $pengembalianKasGantungHeader->getTable(), true);
             $pengembalianKasGantungHeader->position = $selected->position;
-            $pengembalianKasGantungHeader->id = $selected->id; if ($request->limit==0) {
+            $pengembalianKasGantungHeader->id = $selected->id;
+            if ($request->limit == 0) {
                 $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / (10));
             } else {
                 $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / ($request->limit ?? 10));
             }
             $pengembalianKasGantungHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $pengembalianKasGantungHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
 
             DB::commit();
             return response()->json([
@@ -303,42 +304,45 @@ class PengembalianKasGantungHeaderController extends Controller
     {
 
         $pengembaliankasgantung = PengembalianKasGantungHeader::find($id);
-        $nobukti=$pengembaliankasgantung->nobukti ?? '';
+        $nobukti = $pengembaliankasgantung->nobukti ?? '';
         $statusdatacetak = $pengembaliankasgantung->statuscetak;
         $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
         $aksi = request()->aksi ?? '';
-        
-        $penerimaan=$pengembaliankasgantung->penerimaan_nobukti ?? '';
-        $idpenerimaan=db::table('penerimaanheader')->from(db::raw("penerimaanheader a with (readuncommitted)"))
-        ->select(
-            'a.id'
-        )
-        ->where('a.nobukti',$penerimaan)
-        ->first()->id ?? 0;
-        $validasipenerimaan=app(PenerimaanHeaderController::class)->cekvalidasi($idpenerimaan);
-        $msg=json_decode(json_encode($validasipenerimaan),true)['original']['error'] ?? false;
-        if ($msg==false) {
-            goto lanjut ;
-        } else {
-            return $validasipenerimaan;
+
+        $penerimaan = $pengembaliankasgantung->penerimaan_nobukti ?? '';
+        $idpenerimaan = db::table('penerimaanheader')->from(db::raw("penerimaanheader a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.nobukti', $penerimaan)
+            ->first()->id ?? 0;
+        if ($idpenerimaan != 0) {
+            $validasipenerimaan = app(PenerimaanHeaderController::class)->cekvalidasi($idpenerimaan);
+            $msg = json_decode(json_encode($validasipenerimaan), true)['original']['error'] ?? false;
+            if ($msg == false) {
+                goto lanjut;
+            } else {
+                return $validasipenerimaan;
+            }
         }
-        
-        
 
 
-        lanjut:        
+
+
+
+        lanjut:
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
 
         $parameter = new Parameter();
 
-        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
-        $tgltutup=date('Y-m-d', strtotime($tgltutup));
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
 
 
         if ($statusdatacetak == $statusCetak->id) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
-            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
 
             $data = [
                 'error' => true,
@@ -350,7 +354,7 @@ class PengembalianKasGantungHeaderController extends Controller
             return response($data);
         } else if ($tgltutup >= $pengembaliankasgantung->tglbukti) {
             $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
-            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
                 'message' => $keterror,
@@ -358,7 +362,7 @@ class PengembalianKasGantungHeaderController extends Controller
                 'statuspesan' => 'warning',
             ];
 
-            return response($data);            
+            return response($data);
         } else {
 
             $data = [
@@ -461,7 +465,7 @@ class PengembalianKasGantungHeaderController extends Controller
     {
     }
 
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */
