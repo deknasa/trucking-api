@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DestroyPengeluaranTruckingHeader;
+use App\Rules\ValidasiDestroyPengeluaranTruckingHeader;
 use Illuminate\Validation\Rule;
 
 class DestroyPengeluaranTruckingHeaderRequest extends FormRequest
@@ -27,7 +28,8 @@ class DestroyPengeluaranTruckingHeaderRequest extends FormRequest
     {
       
         return [
-            'id' => new DestroyPengeluaranTruckingHeader(),
+            // 'id' => new DestroyPengeluaranTruckingHeader(),
+            'id' => [ new ValidasiDestroyPengeluaranTruckingHeader()],    
         ];
       
     }

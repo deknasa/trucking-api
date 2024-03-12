@@ -53,7 +53,12 @@ class JobTrucking extends MyModel
             ->where('a.grp', '=', 'PELABUHAN CABANG')
             ->where('a.subgrp', '=', 'PELABUHAN CABANG')
             ->first();
-
+        $isPulangLongtrip = request()->isPulangLongtrip ?? '';
+        if ($isPulangLongtrip == true) {
+            if (request()->tripasal != '') {
+                goto pulanglongtrip;
+            }
+        }
 
 
         $temprekap = '##temprekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -104,7 +109,6 @@ class JobTrucking extends MyModel
         if ($isGandengan->text == 'TIDAK') {
             goto tidakgandengan;
         }
-
         if (isset($query)) {
 
 
@@ -405,12 +409,9 @@ class JobTrucking extends MyModel
                 $querydata->where('a.dari_id', 1);
             }
         }
-
-
-
+        
         $this->filter($querydata);
-
-
+        // dd($querydata->get());
         $querygerobak = DB::table('trado')->from(
             DB::raw("trado as a with (readuncommitted)")
         )
@@ -526,6 +527,31 @@ class JobTrucking extends MyModel
             }
         }
 
+        pulanglongtrip:
+        if (request()->tripasal != '') {
+
+            $querydata = DB::table('suratpengantar')->from(
+                DB::raw("suratpengantar as a ")
+            )
+                ->select(
+                    'a.jobtrucking',
+                    'a.tglbukti',
+                    'b.namasupir as supir',
+                    'c.keterangan as trado',
+                    'kotadr.keterangan as kotadari',
+                    'kotasd.keterangan as kotasampai',
+                    'a.nobukti',
+                    'a.pelanggan_id'
+
+                )
+                ->leftjoin(DB::raw("supir as b with(readuncommitted)"), 'a.supir_id', 'b.id')
+                ->leftjoin(DB::raw("trado as c with(readuncommitted)"), 'a.trado_id', 'c.id')
+                ->leftjoin(DB::raw("kota as kotadr with(readuncommitted)"), 'a.dari_id', 'kotadr.id')
+                ->leftjoin(DB::raw("kota as kotasd with(readuncommitted)"), 'a.sampai_id', 'kotasd.id')
+                ->where('a.nobukti', '=', request()->tripasal);
+                $this->filter($querydata);
+        }
+        
 
         $this->totalRows = $querydata->count();
 

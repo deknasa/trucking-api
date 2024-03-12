@@ -45,7 +45,7 @@ class ListTrip extends MyModel
 
                 while ($kondisi) {
                     $cekHarilibur = DB::table("harilibur")->from(DB::raw("harilibur with (readuncommitted)"))
-                        ->where('tgl', $trip->tglbukti)
+                        ->where('tgl', $tanggal)
                         ->first();
                     $todayIsSunday = date('l', strtotime($tanggal));
                     $tomorrowIsSunday = date('l', strtotime($tanggal . "+1 days"));
@@ -81,6 +81,45 @@ class ListTrip extends MyModel
         $nobukti = $trip->nobukti;
         $jobtrucking = $trip->jobtrucking;
 
+        $cekSP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('dari_id', 'jobtrucking', 'statuslongtrip')->where('nobukti', $nobukti)->first();
+        if ($cekSP->dari_id == 1) {
+            $cekJob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', $cekSP->jobtrucking)->where('nobukti', '<>', $nobukti)->first();
+            if ($cekJob != '') {
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => 'trip ' . $cekJob->nobukti,
+                    'kodeerror' => 'SATL',
+                ];
+
+
+                goto selesai;
+            }
+        }
+        if ($cekSP->statuslongtrip == 65) {
+            $cekJob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', $cekSP->jobtrucking)->where('nobukti', '<>', $nobukti)->first();
+            if ($cekJob != '') {
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => 'trip ' . $cekJob->nobukti,
+                    'kodeerror' => 'SATL',
+                ];
+
+
+                goto selesai;
+            }
+        }
+        
+        $cekJob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('nobukti_tripasal', $nobukti)->first();
+        if ($cekJob != '') {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'trip ' . $cekJob->nobukti,
+                'kodeerror' => 'SATL',
+            ];
+
+
+            goto selesai;
+        }
         $gajiSupir = DB::table('gajisupirdetail')
             ->from(
                 DB::raw("gajisupirdetail as a with (readuncommitted)")

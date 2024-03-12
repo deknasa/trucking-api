@@ -7,6 +7,7 @@ use App\Models\KasGantungHeader;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\DestroyKasGantung;
+use App\Rules\ValidasiDestroyKasGantungHeader;
 use Illuminate\Validation\Rule;
 
 class UpdateKasGantungHeaderRequest extends FormRequest
@@ -67,7 +68,9 @@ class UpdateKasGantungHeaderRequest extends FormRequest
         // }
 
         $rules = [
-            'nobukti' => [Rule::in($getDataKasgantung), new DestroyKasGantung()],
+            'id' => [ new ValidasiDestroyKasGantungHeader()],
+            // 'nobukti' => [Rule::in($getDataKasgantung), new DestroyKasGantung()],
+            'nobukti' => [Rule::in($getDataKasgantung)],
             "tglbukti" => [
                 "required", 'date_format:d-m-Y',
                 'before_or_equal:' . date('d-m-Y'),

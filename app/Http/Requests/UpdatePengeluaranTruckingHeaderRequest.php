@@ -15,6 +15,7 @@ use App\Rules\DestroyPengeluaranTruckingHeader;
 use App\Rules\ExistKaryawanForPengeluaranTrucking;
 use App\Rules\validasiJenisOrderanPengeluaranTrucking;
 use App\Rules\ValidasiKlaimPosting;
+use App\Rules\ValidasiDestroyPengeluaranTruckingHeader;
 
 class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
 {
@@ -160,6 +161,8 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
         $rulesSupir_id = [];
         if ($kodepengeluaran == 'BST') {
             $rules = [
+                'id' => [ new ValidasiDestroyPengeluaranTruckingHeader()],                 
+
                 'nobukti' => [Rule::in($getDataPengeluaran->nobukti)],
                 "tglbukti" => [
                 "required", 'date_format:d-m-Y',
@@ -181,6 +184,8 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
             ];
         }elseif($kodepengeluaran == 'KBBM'){
             $rules = [
+                'id' => [ new ValidasiDestroyPengeluaranTruckingHeader()],                 
+
                 'nobukti' => [Rule::in($getDataPengeluaran->nobukti)],
                 "tglbukti" => [
                 "required", 'date_format:d-m-Y',
@@ -212,6 +217,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
             }
             $jumlahdetail = $this->jumlahdetail ?? 0;
             $rules = [
+                'id' => [ new ValidasiDestroyPengeluaranTruckingHeader()],                 
                 "tglbukti" => [
                     "required", 'date_format:d-m-Y',
                     'before_or_equal:'.date('d-m-Y'),
@@ -236,6 +242,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
             }
             $jumlahdetail = $this->jumlahdetail ?? 0;
             $rules = [
+                'id' => [ new ValidasiDestroyPengeluaranTruckingHeader()],                 
                 "tglbukti" => [
                     "required", 'date_format:d-m-Y',
                     'before_or_equal:'.date('d-m-Y'),
@@ -250,6 +257,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
         }elseif($kodepengeluaran == 'BBT'){
             
             $rules = [
+                'id' => [ new ValidasiDestroyPengeluaranTruckingHeader()],                 
                 "tglbukti" => [
                     "required", 'date_format:d-m-Y',
                     'before_or_equal:'.date('d-m-Y'),
@@ -264,6 +272,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
             
             $jumlahdetail = $this->jumlahdetail ?? 0;
             $rules = [
+                'id' => [ new ValidasiDestroyPengeluaranTruckingHeader()],                 
                 "tglbukti" => [
                     "required", 'date_format:d-m-Y',
                     'before_or_equal:'.date('d-m-Y'),
@@ -285,6 +294,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
             ];
         }else{
             $rules = [
+                'id' => [ new ValidasiDestroyPengeluaranTruckingHeader()],                 
                 'nobukti' => [Rule::in($getDataPengeluaran->nobukti)],
                 "tglbukti" => [
                     "required", 'date_format:d-m-Y',

@@ -394,23 +394,28 @@ class PengeluaranHeaderController extends Controller
         $pengeluaran = PengeluaranHeader::find($id);
         $nobukti=$pengeluaran->nobukti ?? '';
         // $cekdata = $pengeluaran->cekvalidasiaksi($pengeluaran->nobukti);
-        $status = $pengeluaran->statusapproval;
+        $status = $pengeluaran->statusapproval ?? 0;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
-        $statusdatacetak = $pengeluaran->statuscetak;
+        $statusdatacetak = $pengeluaran->statuscetak ?? 0;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
         $aksi = request()->aksi ?? '';
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
+        $parameter = new Parameter();
+
+        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup=date('Y-m-d', strtotime($tgltutup));        
+
+        
         if ($status == $statusApproval->id && ($aksi == 'DELETE')) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-            ->select(
-                db::raw("'No Bukti ".$nobukti ." '+trim(keterangan)+' <br> proses tidak bisa dilanjutkan' as keterangan")
-                )
-            ->whereRaw("kodeerror = 'SAP'")
-                ->first();
+            $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
+            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
             $data = [
-                'message' => $query->keterangan,
+                'message' => $keterror,
                 'error' => true,
                 'kodeerror' => 'SAP',
                 'statuspesan' => 'warning',
@@ -418,20 +423,28 @@ class PengeluaranHeaderController extends Controller
 
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select(
-                    db::raw("'No Bukti ".$nobukti ." '+trim(keterangan)+' <br> proses tidak bisa dilanjutkan' as keterangan")
-                    )
-                ->whereRaw("kodeerror = 'SDC'")
-                ->first();
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+
             $data = [
-                'message' => $query->keterangan,
+                'message' => $keterror,
                 'error' => true,
                 'kodeerror' => 'SDC',
                 'statuspesan' => 'warning',
             ];
 
             return response($data);
+        } else if ($tgltutup >= $pengeluaran->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);            
         } else {
 
             $data = [
@@ -454,6 +467,7 @@ class PengeluaranHeaderController extends Controller
                 'error' => true,
                 'message' => $cekdata['keterangan'] ?? '',
                 'statuspesan' => 'warning',
+                'kodeerror' => $cekdata['kodeerror'],
                 'editcoa' => $cekdata['editcoa']
             ];
 

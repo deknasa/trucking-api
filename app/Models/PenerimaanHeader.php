@@ -81,6 +81,11 @@ class PenerimaanHeader extends MyModel
     public function cekvalidasiaksi($nobukti)
     {
 
+        $error = new Error();
+        $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
+
         $jurnal = DB::table('penerimaanheader')
             ->from(
                 DB::raw("penerimaanheader as a with (readuncommitted)")
@@ -94,13 +99,16 @@ class PenerimaanHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal ' . $jurnal->nobukti,
-                'kodeerror' => 'SAP',
+                'keterangan' => 'No Bukti <b>'. $jurnal->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Approval Jurnal ' . $jurnal->nobukti,
+                'kodeerror' => 'SAPP',
                 'editcoa' => false
             ];
             goto selesai;
         }
 
+
+        $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
 
         $pelunasanPiutang = DB::table('pelunasanpiutangheader')
             ->from(
@@ -115,13 +123,15 @@ class PenerimaanHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pelunasan Piutang ' . $pelunasanPiutang->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Pelunasan Piutang <b>'. $pelunasanPiutang->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Pelunasan Piutang ' . $pelunasanPiutang->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
             goto selesai;
         }
 
+        $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
         $penerimaanTrucking = DB::table('penerimaantruckingheader')
             ->from(
                 DB::raw("penerimaantruckingheader as a with (readuncommitted)")
@@ -135,12 +145,15 @@ class PenerimaanHeader extends MyModel
         if (isset($penerimaanTrucking)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'penerimaan trucking ' . $penerimaanTrucking->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti penerimaan trucking <b>'. $penerimaanTrucking->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'penerimaan trucking ' . $penerimaanTrucking->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
             goto selesai;
         }
+
+        $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
 
         $pengembalianKasgantung = DB::table('pengembaliankasgantungheader')
             ->from(
@@ -155,12 +168,15 @@ class PenerimaanHeader extends MyModel
         if (isset($pengembalianKasgantung)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'pengembalian kas gantung ' . $pengembalianKasgantung->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pengembalian kas gantung <b>'. $pengembalianKasgantung->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'pengembalian kas gantung ' . $pengembalianKasgantung->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
             goto selesai;
         }
+
+        $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
         $prosesUangjalan = DB::table('prosesuangjalansupirdetail')
             ->from(
                 DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)")
@@ -174,13 +190,15 @@ class PenerimaanHeader extends MyModel
         if (isset($prosesUangjalan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'proses uang jalan supir ' . $prosesUangjalan->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti proses uang jalan supir <b>'. $prosesUangjalan->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'proses uang jalan supir ' . $prosesUangjalan->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
             goto selesai;
         }
 
+        $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
         $pengeluaranStok = DB::table('pengeluaranstokheader')
             ->from(
                 DB::raw("pengeluaranstokheader as a with (readuncommitted)")
@@ -194,13 +212,15 @@ class PenerimaanHeader extends MyModel
         if (isset($pengeluaranStok)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'pengeluaran stok ' . $pengeluaranStok->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pengeluaran stok <b>'. $pengeluaranStok->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'pengeluaran stok ' . $pengeluaranStok->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
             goto selesai;
         }
 
+        $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
         $pemutihanSupir = DB::table('pemutihansupirheader')
             ->from(
                 DB::raw("pemutihansupirheader as a with (readuncommitted)")
@@ -214,14 +234,15 @@ class PenerimaanHeader extends MyModel
         if (isset($pemutihanSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'pemutihan supir ' . $pemutihanSupir->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pemutihan supir <b>'. $pemutihanSupir->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'pemutihan supir ' . $pemutihanSupir->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
             goto selesai;
         }
 
-
+        $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
         $rekap = DB::table('rekappenerimaandetail')
             ->from(
                 DB::raw("rekappenerimaandetail as a with (readuncommitted)")
@@ -235,8 +256,9 @@ class PenerimaanHeader extends MyModel
         if (isset($rekap)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Rekap Penerimaan ' . $rekap->nobukti,
-                'kodeerror' => 'SATL',
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> Rekap Penerimaan <b>'. $rekap->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Rekap Penerimaan ' . $rekap->nobukti,
+                'kodeerror' => 'SATL2',
                 'editcoa' => true
             ];
             goto selesai;

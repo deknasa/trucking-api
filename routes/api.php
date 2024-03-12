@@ -222,6 +222,7 @@ use App\Http\Controllers\Api\JurnalUmumPusatHeaderController;
 use App\Http\Controllers\Api\LaporanOrderPembelianController;
 use App\Http\Controllers\Api\LaporanRekapSumbanganController;
 use App\Http\Controllers\Api\LaporanSaldoInventoryController;
+use App\Http\Controllers\Api\LaporanSaldoInventoryLamaController;
 use App\Http\Controllers\Api\PelunasanHutangDetailController;
 use App\Http\Controllers\Api\PelunasanHutangHeaderController;
 use App\Http\Controllers\Api\PendapatanSupirDetailController;
@@ -270,6 +271,7 @@ use App\Http\Controllers\Api\AbsensiSupirApprovalHeaderController;
 use App\Http\Controllers\Api\ExportLaporanMingguanSupirController;
 use App\Http\Controllers\Api\LaporanKartuHutangPrediksiController;
 use App\Http\Controllers\Api\LaporanKartuPiutangPerAgenController;
+use App\Http\Controllers\Api\LaporanKartuPanjarController;
 use App\Http\Controllers\Api\LaporanSupirLebihDariTradoController;
 use App\Http\Controllers\Api\LaporanTripGandenganDetailController;
 use App\Http\Controllers\Api\ProsesUangJalanSupirDetailController;
@@ -1609,6 +1611,10 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporankartupiutangperagen/export', [LaporanKartuPiutangPerAgenController::class, 'export'])->name('laporankartupiutangperagen.export');
     Route::resource('laporankartupiutangperagen', LaporanKartuPiutangPerAgenController::class)->whereNumber('laporankartupiutangperagen');
 
+    Route::get('laporankartupanjar/report', [LaporanKartuPanjarController::class, 'report'])->name('laporankartupanjar.report');
+    Route::get('laporankartupanjar/export', [LaporanKartuPanjarController::class, 'export'])->name('laporankartupanjar.export');
+    Route::resource('laporankartupanjar', LaporanKartuPanjarController::class)->whereNumber('laporankartupanjar');    
+
     Route::get('laporanhistorydeposito/report', [LaporanHistoryDepositoController::class, 'report'])->name('laporanhistorydeposito.report');
     Route::get('laporanhistorydeposito/export', [LaporanHistoryDepositoController::class, 'export'])->name('laporanhistorydeposito.export');
     Route::resource('laporanhistorydeposito', LaporanHistoryDepositoController::class)->whereNumber('laporanhistorydeposito');
@@ -1726,6 +1732,10 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporansaldoinventory/export', [LaporanSaldoInventoryController::class, 'export'])->name('laporansaldoinventory.export');
     Route::get('laporansaldoinventory/report', [LaporanSaldoInventoryController::class, 'report'])->name('laporansaldoinventory.report');
     Route::resource('laporansaldoinventory', LaporanSaldoInventoryController::class)->whereNumber('laporansaldoinventory');
+
+    Route::get('laporansaldoinventorylama/export', [LaporanSaldoInventoryLamaController::class, 'export'])->name('laporansaldoinventorylama.export');
+    Route::get('laporansaldoinventorylama/report', [LaporanSaldoInventoryLamaController::class, 'report'])->name('laporansaldoinventorylama.report');
+    Route::resource('laporansaldoinventorylama', LaporanSaldoInventoryLamaController::class)->whereNumber('laporansaldoinventorylama');
 
     Route::get('exportlaporanstok/export', [ExportLaporanStokController::class, 'export'])->name('exportlaporanstok.export');
     Route::resource('exportlaporanstok', ExportLaporanStokController::class)->whereNumber('exportlaporanstok');

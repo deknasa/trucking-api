@@ -33,6 +33,11 @@ class AbsensiSupirHeader extends MyModel
 
     public function cekvalidasiaksi($nobukti)
     {
+        $error = new Error();
+        $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
+
         $absensiSupir = DB::table('absensisupirapprovalheader')
             ->from(
                 DB::raw("absensisupirapprovalheader as a with (readuncommitted)")
@@ -46,7 +51,8 @@ class AbsensiSupirHeader extends MyModel
         if (isset($absensiSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Absensi Supir Posting ' . $absensiSupir->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> Absensi Supir <b>'. $absensiSupir->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Absensi Supir Posting ' . $absensiSupir->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -95,6 +101,7 @@ class AbsensiSupirHeader extends MyModel
             $query->whereBetween('absensisupirheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
 
+        // dd($query->get());
         $proses=request()->proses ?? '' ;
 
         if ($proses=='APPROVALSUPIR') {

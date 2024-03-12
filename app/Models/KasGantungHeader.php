@@ -45,6 +45,10 @@ class KasGantungHeader extends MyModel
 
     public function cekvalidasiaksi($nobukti)
     {
+        $error = new Error();
+        $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
         $absensiSupir = DB::table('absensisupirheader')
             ->from(
                 DB::raw("absensisupirheader as a with (readuncommitted)")
@@ -58,11 +62,15 @@ class KasGantungHeader extends MyModel
         if (isset($absensiSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Absensi Supir ' . $absensiSupir->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> Absensi Supir <b>'. $absensiSupir->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Absensi Supir ' . $absensiSupir->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
         }
+
+        $keteranganerror = $error->cekKeteranganError('SATL2');
+
         $pengembalianKasgantung = DB::table('pengembaliankasgantungdetail')
             ->from(
                 DB::raw("pengembaliankasgantungdetail as a with (readuncommitted)")
@@ -76,12 +84,15 @@ class KasGantungHeader extends MyModel
         if (isset($pengembalianKasgantung)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pengembalian Kas Gantung ' . $pengembalianKasgantung->nobukti,
-                'kodeerror' => 'SATL'
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Pengembalian Kas Gantung <b>'. $pengembalianKasgantung->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Pengembalian Kas Gantung ' . $pengembalianKasgantung->nobukti,
+                'kodeerror' => 'SATL2'
             ];
             goto selesai;
         }
 
+
+        $keteranganerror = $error->cekKeteranganError('SAP');
 
         $jurnal = DB::table('kasgantungheader')
             ->from(
@@ -97,7 +108,8 @@ class KasGantungHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal ' . $jurnal->pengeluaran_nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Approval Jurnal <b>'. $jurnal->pengeluaran_nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Approval Jurnal ' . $jurnal->pengeluaran_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
