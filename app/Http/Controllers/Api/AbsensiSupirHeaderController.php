@@ -20,6 +20,8 @@ use App\Models\KasGantungDetail;
 use App\Models\KasGantungHeader;
 use App\Models\Parameter;
 use App\Models\User;
+use App\Models\Error;
+use App\Http\Controllers\Api\PengeluaranHeaderController;
 
 use App\Http\Requests\AbsensiSupirHeaderRequest;
 
@@ -307,29 +309,33 @@ class AbsensiSupirHeaderController extends Controller
     public function cekvalidasidelete($id)
     {
         $absensisupir = AbsensiSupirHeader::findOrFail($id);
-
+        $nobukti = $absensisupir->nobukti ?? '';
         $passes = true;
         $keterangan = [];
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         //validasi sudah dipakai di orderantrucking / sp
         $isUsedTrip = AbsensiSupirHeader::isUsedTrip($absensisupir->id);
         if ($isUsedTrip) {
-            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
-            // $keterangan = $query['0'];
-            $keterangan = ['keterangan' => $query['0']->keterangan]; //$query['0'];
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+
+            // $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
+            // // $keterangan = $query['0'];
+            // $keterangan = ['keterangan' => $query['0']->keterangan]; //$query['0'];
             $data = [
-                'message' => $keterangan,
-                'errors' => 'Tidak bisa edit di hari yang berbeda',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'SATL2',
+                'statuspesan' => 'warning',
             ];
             $passes = false;
             return response($data);
         }
         $data = [
+            'error' => false,
             'message' => '',
-            'errors' => 'success',
-            'kodestatus' => '0',
-            'kodenobukti' => '1'
+            'statuspesan' => 'success',
         ];
 
         return response($data);
@@ -338,22 +344,31 @@ class AbsensiSupirHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $absensisupir = AbsensiSupirHeader::findOrFail($id);
+        $nobukti = $absensisupir->nobukti ?? '';
 
         $aksi = request()->aksi ?? '';
         $passes = true;
         $keterangan = [];
 
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $parameter = new Parameter();
+
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
+
         if ($aksi == 'PRINTER BESAR' || $aksi == 'PRINTER KECIL') {
             //validasi cetak
             $printValidation = AbsensiSupirHeader::printValidation($id);
             if (!$printValidation) {
-                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SDC')->get();
-                $keterangan = $query['0'];
+                $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+
                 $data = [
-                    'message' => $keterangan,
-                    'errors' => 'Sudah cetak',
-                    'kodestatus' => '1',
-                    'kodenobukti' => '1'
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDC',
+                    'statuspesan' => 'warning',
                 ];
                 $passes = false;
             } else {
@@ -369,14 +384,13 @@ class AbsensiSupirHeaderController extends Controller
 
             $isDateAllowed = AbsensiSupirHeader::isDateAllowed($id);
             if (!$isDateAllowed) {
-                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'TEPT')->get();
-                $keterangan = $query['0'];
-
+                $keteranganerror = $error->cekKeteranganError('TEPT') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
                 $data = [
-                    'message' => $keterangan,
-                    'errors' => 'data tidak bisa diedit pada tanggal ini',
-                    'kodestatus' => '1',
-                    'kodenobukti' => '1'
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'TEPT',
+                    'statuspesan' => 'warning',
                 ];
                 $passes = false;
                 // return response($data);
@@ -386,14 +400,13 @@ class AbsensiSupirHeaderController extends Controller
             $passes = true;
             $isEditAble = AbsensiSupirHeader::isEditAble($id);
             if (!$isEditAble) {
-                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'BAED')->get();
-                $keterangan = $query['0'];
-
+                $keteranganerror = $error->cekKeteranganError('BAED') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
                 $data = [
-                    'message' => $keterangan,
-                    'errors' => 'status approve edit tidak boleh',
-                    'kodestatus' => '1',
-                    'kodenobukti' => '1'
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'BAED',
+                    'statuspesan' => 'warning',
                 ];
                 $passes = false;
                 // return response($data);
@@ -402,13 +415,13 @@ class AbsensiSupirHeaderController extends Controller
             //validasi cetak
             $printValidation = AbsensiSupirHeader::printValidation($id);
             if (!$printValidation) {
-                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SDC')->get();
-                $keterangan = $query['0'];
+                $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
                 $data = [
-                    'message' => $keterangan,
-                    'errors' => 'Sudah cetak',
-                    'kodestatus' => '1',
-                    'kodenobukti' => '1'
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDC',
+                    'statuspesan' => 'warning',
                 ];
                 $passes = false;
 
@@ -418,14 +431,20 @@ class AbsensiSupirHeaderController extends Controller
             //validasi Hari ini
             $todayValidation = AbsensiSupirHeader::todayValidation($absensisupir->tglbukti);
             if (!$todayValidation) {
-                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
+                $jam_batas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'BATAS JAM EDIT ABSENSI')->where('subgrp', 'BATAS JAM EDIT ABSENSI')->first();
+                $batas = date('d-m-Y', strtotime($absensisupir->tglbukti));
+
+                $keteranganerror = $error->cekKeteranganError('SLBE') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' ( ' . $batas . ' ' . $jam_batas->text . ' ) <br> ' . $keterangantambahanerror;
+
+                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL2')->get();
                 // $keterangan = $query['0'];
-                $keterangan = ['keterangan' => 'transaksi Sudah beda tanggal']; //$query['0'];
+                // $keterangan = ['keterangan' => 'transaksi Sudah beda tanggal']; //$query['0'];
                 $data = [
-                    'message' => $keterangan,
-                    'errors' => 'Tidak bisa edit di hari yang berbeda',
-                    'kodestatus' => '1',
-                    'kodenobukti' => '1'
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SLBE',
+                    'statuspesan' => 'warning',
                 ];
                 $passes = false;
                 // return response($data);
@@ -433,28 +452,76 @@ class AbsensiSupirHeaderController extends Controller
 
             //validasi approval
             $isApproved = AbsensiSupirHeader::isApproved($absensisupir->nobukti);
+
             if (!$isApproved) {
-                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
-                $keterangan = $query['0'];
+                $error = new Error();
+                $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+                $parameter = new Parameter();
+                $absensisupirapproval = db::table('absensisupirapprovalheader')->from(db::raw("absensisupirapprovalheader a with (readuncommitted)"))
+                    ->select(
+                        'a.pengeluaran_nobukti',
+                        'a.nobukti'
+                    )
+                    ->where('a.absensisupir_nobukti', $absensisupir->nobukti)
+                    ->first();
+                $nobukti = $absensisupirapproval->nobukti ?? '';
+                $pengeluaran = $absensisupirapproval->pengeluaran_nobukti ?? '';
 
-                // dd($keterangan);
-                // $keterangan = ['keterangan' => 'transaksi Sudah di approved']; //$query['0'];
+                $idpengeluaran = db::table('pengeluaranheader')->from(db::raw("pengeluaranheader a with (readuncommitted)"))
+                    ->select(
+                        'a.id'
+                    )
+                    ->where('a.nobukti', $pengeluaran)
+                    ->first()->id ?? 0;
+                // $aksi = request()->aksi ?? '';
+                if ($idpengeluaran != 0) {
+                    $validasipengeluaran = app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
+                    $msg = json_decode(json_encode($validasipengeluaran), true)['original']['error'] ?? false;
+                    if ($msg == false) {
+                        goto lanjut;
+                    } else {
+                        return $validasipengeluaran;
+                    }
 
-                $data = [
-                    'message' => $keterangan,
-                    'errors' => 'sudah approve',
-                    'kodestatus' => '1',
-                    'kodenobukti' => '1'
-                ];
-                $passes = false;
+                    lanjut:
+                    // dd('test');
+                    $keteranganerror = $error->cekKeteranganError('SDP') ?? '';
+                    $keterror = 'No Bukti <b>' . $absensisupir->nobukti . '</b><br>' . $keteranganerror . ' No Bukti <b>' . $pengeluaran . '</b> <br> ' . $keterangantambahanerror;
+
+                    // $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
+                    // $keterangan = $query['0'];
+
+                    // dd($keterangan);
+                    // $keterangan = ['keterangan' => 'transaksi Sudah di approved']; //$query['0'];
+
+                    $data = [
+                        'error' => true,
+                        'message' => $keterror,
+                        'kodeerror' => 'SDP',
+                        'statuspesan' => 'warning',
+                    ];
+                    $passes = false;
+                    return response($data);
+                }
+
                 // return response($data);
             }
+            if ($tgltutup >= $absensisupir->tglbukti) {
+                $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'TUTUPBUKU',
+                    'statuspesan' => 'warning',
+                ];
+            }
+
             if (($todayValidation && $isApproved) || ($isEditAble && $printValidation) || $isDateAllowed) {
                 $data = [
+                    'error' => false,
                     'message' => '',
-                    'errors' => 'success',
-                    'kodestatus' => '0',
-                    'kodenobukti' => '1'
+                    'statuspesan' => 'success',
                 ];
                 return response($data);
             }
@@ -486,28 +553,27 @@ class AbsensiSupirHeaderController extends Controller
         $nobukti = AbsensiSupirHeader::from(DB::raw("absensisupirheader"))->where('id', $id)->first();
         $cekdata = $absensiSupirHeader->cekvalidasiaksi($nobukti->nobukti);
         if ($cekdata['kondisi'] == true) {
-            $query = DB::table('error')
-                ->select(
-                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
-                )
-                ->where('kodeerror', '=', 'SATL')
-                ->get();
-            $keterangan = $query['0'];
+            // $query = DB::table('error')
+            //     ->select(
+            //         DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+            //     )
+            //     ->where('kodeerror', '=', 'SATL')
+            //     ->get();
+            // $keterangan = $query['0'];
 
             $data = [
-                'status' => false,
-                'message' => $keterangan,
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
+                'error' => true,
+                'message' => $cekdata['keterangan'] ?? '',
+                'kodeerror' => $cekdata['kodeerror'],
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else {
             $data = [
-                'status' => false,
+                'error' => false,
                 'message' => '',
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
+                'statuspesan' => 'success',
             ];
 
             return response($data);
