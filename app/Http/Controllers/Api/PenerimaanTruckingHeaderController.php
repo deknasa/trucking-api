@@ -382,25 +382,29 @@ class PenerimaanTruckingHeaderController extends Controller
         }
 
         // dd($penerimaan
-        $penerimaan=$penerimaanTrucking->penerimaan_nobukti ?? '';
-        $idpenerimaan=db::table('penerimaanheader')->from(db::raw("penerimaanheader a with (readuncommitted)"))
-        ->select(
-            'a.id'
-        )
-        ->where('a.nobukti',$penerimaan)
-        ->first()->id ?? 0;
-        $validasipenerimaan=app(PenerimaanHeaderController::class)->cekvalidasi($idpenerimaan);
-        $msg=json_decode(json_encode($validasipenerimaan),true)['original']['error'] ?? false;
-        if ($msg==false) {
-            goto lanjut ;
-        } else {
-            return $validasipenerimaan;
+        $penerimaan = $penerimaanTrucking->penerimaan_nobukti ?? '';
+        $idpenerimaan = db::table('penerimaanheader')->from(db::raw("penerimaanheader a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.nobukti', $penerimaan)
+            ->first()->id ?? 0;
+        if ($idpenerimaan != 0) {
+            $validasipenerimaan = app(PenerimaanHeaderController::class)->cekvalidasi($idpenerimaan);
+            $msg = json_decode(json_encode($validasipenerimaan), true)['original']['error'] ?? false;
+            if ($msg == false) {
+                goto lanjut;
+            } else {
+                return $validasipenerimaan;
+            }
         }
-        
-        
 
 
-        lanjut: 
+
+
+
+
+        lanjut:
 
 
         $error = new Error();
@@ -408,14 +412,14 @@ class PenerimaanTruckingHeaderController extends Controller
 
         $parameter = new Parameter();
 
-        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
-        $tgltutup=date('Y-m-d', strtotime($tgltutup));
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
 
 
         if ((new PenerimaanTruckingHeader())->printValidation($id)) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
-            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
-    
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+
 
             $data = [
                 'error' => true,
@@ -427,7 +431,7 @@ class PenerimaanTruckingHeaderController extends Controller
             return response($data);
         } else if ($tgltutup >= $penerimaanTrucking->tglbukti) {
             $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
-            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
                 'message' => $keterror,
@@ -435,7 +439,7 @@ class PenerimaanTruckingHeaderController extends Controller
                 'statuspesan' => 'warning',
             ];
 
-            return response($data);  
+            return response($data);
         } else {
 
             $data = [
@@ -454,22 +458,22 @@ class PenerimaanTruckingHeaderController extends Controller
         $PenerimaanTruckingHeader = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader"))->where('id', $id)->first();
         $nobukti = $PenerimaanTruckingHeader->nobukti;
 
-        $penerimaankb=$PenerimaanTruckingHeader->penerimaan_nobukti ?? '';
+        $penerimaankb = $PenerimaanTruckingHeader->penerimaan_nobukti ?? '';
         // dd($penerimaankb);
-        $idpenerimaan=db::table('penerimaanheader')->from(db::raw("penerimaanheader a with (readuncommitted)"))
-        ->select(
-            'a.id'
-        )
-        ->where('a.nobukti',$penerimaankb)
-        ->first()->id ?? 0;
-        $validasipenerimaan=app(PenerimaanHeaderController::class)->cekvalidasi($idpenerimaan);
-        $msg=json_decode(json_encode($validasipenerimaan),true)['original']['error'] ?? false;
-        if ($msg==false) {
-            goto lanjut ;
+        $idpenerimaan = db::table('penerimaanheader')->from(db::raw("penerimaanheader a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.nobukti', $penerimaankb)
+            ->first()->id ?? 0;
+        $validasipenerimaan = app(PenerimaanHeaderController::class)->cekvalidasi($idpenerimaan);
+        $msg = json_decode(json_encode($validasipenerimaan), true)['original']['error'] ?? false;
+        if ($msg == false) {
+            goto lanjut;
         } else {
             return $validasipenerimaan;
         }
-        
+
 
 
         lanjut:
@@ -477,11 +481,11 @@ class PenerimaanTruckingHeaderController extends Controller
 
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
-        
+
         if ($isUangJalanProcessed['kondisi'] == true) {
             $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
-            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
-                
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+
             $query = DB::table('error')->select(DB::raw("ltrim(rtrim(keterangan))+' (Proses Uang Jalan Supir " . $isUangJalanProcessed['nobukti'] . ")' as keterangan"))->where('kodeerror', '=', 'TDT')->first();
             $data = [
                 'error' => true,
@@ -495,7 +499,7 @@ class PenerimaanTruckingHeaderController extends Controller
         $isUangOut = $penerimaan->isUangOut($PenerimaanTruckingHeader->nobukti);
         if ($isUangOut) {
             $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
-            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
                 'message' => $keterror,
@@ -507,7 +511,7 @@ class PenerimaanTruckingHeaderController extends Controller
 
         $cekdata = $penerimaan->cekvalidasiaksi($PenerimaanTruckingHeader->nobukti);
         if ($cekdata['kondisi'] == true) {
-    
+
             $data = [
                 'error' => true,
                 'message' => $cekdata['keterangan'] ?? '',

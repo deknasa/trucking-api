@@ -309,12 +309,14 @@ class KasGantungHeaderController extends Controller
             ->where('a.nobukti', $pengeluaran)
             ->first()->id ?? 0;
         // $aksi = request()->aksi ?? '';
-        $validasipengeluaran = app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
-        $msg = json_decode(json_encode($validasipengeluaran), true)['original']['error'] ?? false;
-        if ($msg == false) {
-            goto lanjut;
-        } else {
-            return $validasipengeluaran;
+        if ($idpengeluaran != 0) {
+            $validasipengeluaran = app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
+            $msg = json_decode(json_encode($validasipengeluaran), true)['original']['error'] ?? false;
+            if ($msg == false) {
+                goto lanjut;
+            } else {
+                return $validasipengeluaran;
+            }
         }
 
 
@@ -326,13 +328,13 @@ class KasGantungHeaderController extends Controller
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $parameter = new Parameter();
 
-        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
-        $tgltutup=date('Y-m-d', strtotime($tgltutup));
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
 
         if ($statusdatacetak == $statusCetak->id) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
-            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
-    
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+
             $data = [
                 'error' => true,
                 'message' => $keterror,
@@ -343,7 +345,7 @@ class KasGantungHeaderController extends Controller
             return response($data);
         } else if ($tgltutup >= $kasgantung->tglbukti) {
             $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
-            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
                 'message' => $keterror,
@@ -351,7 +353,7 @@ class KasGantungHeaderController extends Controller
                 'statuspesan' => 'warning',
             ];
 
-            return response($data);            
+            return response($data);
         } else {
 
             $data = [

@@ -540,7 +540,7 @@ class PengeluaranTruckingHeaderController extends Controller
             ->first()->id ?? 0;
         // $aksi = request()->aksi ?? '';
 
-        if (isset($idpengeluaran)) {
+        if ($idpengeluaran != 0) {
             $validasipengeluaran = app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
             $msg = json_decode(json_encode($validasipengeluaran), true)['original']['error'] ?? false;
             if ($msg == false) {
@@ -548,9 +548,8 @@ class PengeluaranTruckingHeaderController extends Controller
             } else {
                 return $validasipengeluaran;
             }
-    
         }
-   
+
 
 
 
