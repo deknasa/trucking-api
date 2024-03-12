@@ -391,21 +391,29 @@ class LaporanKartuPanjar extends MyModel
         $queryrekapdata = db::table($temprekappiutang)->from(db::raw($temprekappiutang . " a  "))
             ->select(
                 'b.agen_id',
-                'd.nobukti',
+                'e.invoice_nobukti as nobukti',
                 db::raw("'1900/1/1' as tglbukti"),
                 db::raw("0 as nominal"),
                 "d.tglbukti as tgllunas",
-                db::raw("(isnull(c.nominal,0)) as nominallunas"),
+                db::raw("(isnull(e.nominal,0)) as nominallunas"),
                 'a.nobukti as nobuktipiutang',
                 'b.tglbukti as tglberjalan',
                 db::raw(" 'PIUTANG USAHA' as jenispiutang"),
-                db::raw("1 as urut"),                
+                db::raw("row_number() Over(PARTITION BY isnull(b.agen_id,0) Order By B.tglbukti ,d.tglbukti,d.nobukti ) as urut")
+                
+                // db::raw("1 as urut"),                
             )
             ->join(db::raw("notadebetheader b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
             ->join(db::raw("notadebetfifo c with (readuncommitted) "), 'a.nobukti', 'c.notadebet_nobukti')
             ->join(db::raw("pelunasanpiutangheader d with (readuncommitted) "), 'c.pelunasanpiutang_nobukti', 'd.nobukti')
+            ->join(db::raw("pelunasanpiutangdetail e with (readuncommitted) "), 'd.nobukti', 'e.nobukti')
             ->whereRaw("(d.tglbukti>='" . $dari1 . "' and d.tglbukti<='" . $sampai . "')")
-            ->whereRaw("isnull(c.nominal,0)<>0");
+            ->whereRaw("isnull(c.nominal,0)<>0")
+            ->orderBy('b.tglbukti','asc')
+            ->orderBy('d.tglbukti','asc')
+            ->orderBy('d.nobukti','asc');
+
+            // dd($queryrekapdata->get());
 
             DB::table($temprekapdata)->insertUsing([
                 'agen_id',
@@ -456,6 +464,8 @@ class LaporanKartuPanjar extends MyModel
         //         'agen' => db::raw("b.namaagen"),
         //     ]);
 
+
+        //  dd(DB::table($temprekapdata)->get());
         $queryrekaphasil = db::table($temprekapdata)->from(db::raw($temprekapdata . " a  "))
             ->select(
                 'b.namaagen as agen',
@@ -496,6 +506,8 @@ class LaporanKartuPanjar extends MyModel
             'jenispiutang',
             'urut',
         ], $queryrekaphasil);
+
+            // dd(DB::table($temprekaphasil)->get());
 
         $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
             ->select('text')
@@ -566,7 +578,7 @@ $queryurut=db::table($temprekaphasil)->from(db::raw($temprekaphasil . " a"))
                 DB::raw("'$getJudul->text' AS text"),
                 DB::raw("(case when '$keteranganagen'='' then '$agendarinama' else '$keteranganagen' end)  AS dari"),
                 DB::raw("(case when '$keteranganagen'='' then '$agensampainama' else '$keteranganagen' end)   AS sampai"),
-                DB::raw("'Laporan Kartu Piutang Per Customer' as judulLaporan"),
+                DB::raw("'Laporan Kartu Panjar Per Customer' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
