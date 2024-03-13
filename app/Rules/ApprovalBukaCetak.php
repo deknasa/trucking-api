@@ -33,13 +33,44 @@ class ApprovalBukaCetak implements Rule
     public function passes($attribute, $value)
     {
         $table = request()->table;
+        $databukti = request()->bukti;
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
+        $nobukti1 = '';
+        $a = 0;
+        $parameter = new Parameter();
+
+        foreach ($databukti as $dataBukti) {
+            $getcetak = DB::table($table)->from(DB::raw("$table with (readuncommitted)"))->select('tglbukti', 'nobukti')->where('nobukti', $dataBukti)
+                ->first();
+            if (!isset($getcetak)) {
+                if ($a == 0) {
+                    $nobukti1 = $nobukti1 . $dataBukti;
+                } else {
+                    $nobukti1 = $nobukti1 . ', ' . $dataBukti;
+                }
+                $a = $a + 1;
+                // dump($nobukti1);
+            }
+        }
+
+        if ($a >= 1) {
+            $allowed = false;
+            $error = new Error();
+            $keteranganerror = $error->cekKeteranganError('DTA') ?? '';
+  
+            $this->keterror = 'No Bukti <b>' . $nobukti1 . '</b> <br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+            // dd($this->keterror);
+            // return $allowed;
+            goto lanjut;
+        }
+
         if ($table == 'PEMUTIHANSUPIR') {
             $table = 'PEMUTIHANSUPIRHEADER';
         }
-        $databukti = request()->bukti;
+      
 
-        $error = new Error();
-        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $allowed = false;
         $tutupBuku = Parameter::where('grp', 'TUTUP BUKU')->where('subgrp', 'TUTUP BUKU')->first();
         $tutupBukuDate = date('Y-m-d', strtotime($tutupBuku->text));
@@ -52,9 +83,9 @@ class ApprovalBukaCetak implements Rule
                 $allowed = true;
             }
         }
+       
         $nobukti1 = '';
         $a = 0;
-        $parameter = new Parameter();
         foreach ($databukti as $dataBukti) {
             $getcetak = DB::table($table)->from(DB::raw("$table with (readuncommitted)"))->select('tglbukti', 'nobukti')->where('nobukti', $dataBukti)
                 ->where('statuscetak', $parameter->cekId('STATUSCETAK', 'STATUSCETAK', 'BELUM CETAK'))
@@ -66,18 +97,23 @@ class ApprovalBukaCetak implements Rule
                     $nobukti1 = $nobukti1 . ', ' . $dataBukti;
                 }
                 $a = $a + 1;
+                // dump($nobukti1);
             }
         }
-        $this->nobukti = $nobukti1;
+        // dd($nobukti1);
+        // $this->nobukti = $nobukti1;
         if ($a >= 1) {
-            dd($nobukti1);
             $allowed = false;
             $error = new Error();
             $keteranganerror = $error->cekKeteranganError('BC') ?? '';
-            $this->keterror = 'No Bukti <b>' . $nobukti1 . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
-            // dd('test');
+  
+            $this->keterror = 'No Bukti <b>' . $nobukti1 . '</b> <br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+            // dd($this->keterror);
+            // return $allowed;
             goto lanjut;
         }
+
+
         // 
         if ($allowed == false) {
 
