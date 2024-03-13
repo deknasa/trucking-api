@@ -1546,6 +1546,7 @@ class InvoiceHeader extends MyModel
         $invoiceHeader->jenisorder_id = $data['jenisorder_id'];
         $invoiceHeader->piutang_nobukti = $data['piutang_nobukti'] ?? '';
         $invoiceHeader->statusapproval = $statusApproval->id;
+        $invoiceHeader->noinvoicepajak = $data['noinvoicepajak'] ?? '';
         $invoiceHeader->userapproval = '';
         $invoiceHeader->tglapproval = '';
         $invoiceHeader->statuscetak = $statusCetak->id;
@@ -1667,6 +1668,7 @@ class InvoiceHeader extends MyModel
             $invoiceHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
 
+        $invoiceHeader->noinvoicepajak = $data['noinvoicepajak'] ?? '';
         $invoiceHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $invoiceHeader->nominal = '';
         $invoiceHeader->tglterima = date('Y-m-d', strtotime($data['tglterima']));
