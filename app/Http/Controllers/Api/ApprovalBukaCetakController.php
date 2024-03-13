@@ -34,6 +34,7 @@ class ApprovalBukaCetakController extends Controller
         foreach ($dataCetakUlang as $item) {
             $statusCetakUlang[] = $item['text'];
         }
+
         $request->validate([
             'table' => ['required', Rule::in($statusCetakUlang)],
             'periode' => ['required', new RulesApprovalBukaCetak()],

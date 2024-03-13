@@ -28,6 +28,7 @@ class StoreApprovalBukuCetakHeaderRequest extends FormRequest
      */
     public function rules()
     {
+      
         $parameter = new Parameter();
         $dataCetak = $parameter->getcombodata('STATUSCETAK', 'STATUSCETAK');
         $dataCetak = json_decode($dataCetak, true);
@@ -41,7 +42,7 @@ class StoreApprovalBukuCetakHeaderRequest extends FormRequest
             $statusCetakUlang[] = $item['text'];
         }
 
-        
+        // dd('test');
         $rules = [
             // 'tableId' => ['required','min:1',new ApprovalBukaCetak(),new BukaCetakSatuArah()],
             'tableId' => ['required','min:1',new ApprovalBukaCetak()],
