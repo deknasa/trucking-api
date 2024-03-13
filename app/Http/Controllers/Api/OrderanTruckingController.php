@@ -27,6 +27,7 @@ use App\Models\TarifRincian;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Http;
+use App\Models\Error;
 
 class OrderanTruckingController extends Controller
 {
@@ -51,6 +52,13 @@ class OrderanTruckingController extends Controller
     public function cekValidasi($id, $aksi,Request $request)
     {
 
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $parameter = new Parameter();
+
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
+
         $nobuktilist=$request->nobukti ?? '';
 
 
@@ -70,19 +78,21 @@ class OrderanTruckingController extends Controller
             ];
 
             $edit = true;
-            $query = DB::table('error')
-            ->select(
-                DB::raw("'No Bukti ". $nobuktilist ." '+ltrim(rtrim(keterangan)) as keterangan")
-            )
-            ->where('kodeerror', '=', 'BMS')
-            ->get();
-        $keterangan = $query['0'];
+            $keteranganerror = $error->cekKeteranganError('BMS') ?? '';
+            $keterror = 'No Bukti <b>' . $nobuktilist . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+
+        //     $query = DB::table('error')
+        //     ->select(
+        //         DB::raw("'No Bukti ". $nobuktilist ." '+ltrim(rtrim(keterangan)) as keterangan")
+        //     )
+        //     ->where('kodeerror', '=', 'BMS')
+        //     ->get();
+        // $keterangan = $query['0'];
             $data = [
-                'status' => false,
-                'message' => $keterangan,
-                'errors' => '',
-                'edit' => $edit,
-                'kondisi' => $data1['kondisi'],
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'BMS',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
@@ -96,6 +106,8 @@ class OrderanTruckingController extends Controller
 
         $isEditAble = OrderanTrucking::isEditAble($nobukti->id);
         $edit = true;
+
+
         if (!$isEditAble) {
             $edit = false;
         }
@@ -128,23 +140,37 @@ class OrderanTruckingController extends Controller
         
 
         if ($cekdata['kondisi'] == true) {
-            $query = DB::table('error')
-                ->select(
-                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
-                )
-                ->where('kodeerror', '=', 'SATL')
-                ->get();
-            $keterangan = $query['0'];
+            // $query = DB::table('error')
+            //     ->select(
+            //         DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+            //     )
+            //     ->where('kodeerror', '=', 'SATL2')
+            //     ->get();
+            // $keterangan = $query['0'];
+            $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+            // $keterror = 'No Bukti <b>' . $nobukti->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+            $keterror = $cekdata['keterangan'];
+
 
             $data = [
-                'status' => false,
-                'message' => $keterangan,
-                'errors' => '',
-                'edit' => $edit,
-                'kondisi' => $cekdata['kondisi'],
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'SATL2',
+                'statuspesan' => 'warning',
             ];
 
             $passes = false;
+        } else if ($tgltutup >= $nobukti->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti->nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);            
         }else {
 
             $data = [

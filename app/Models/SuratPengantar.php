@@ -67,6 +67,9 @@ class SuratPengantar extends MyModel
     public function cekvalidasihapus($nobukti, $jobtrucking)
     {
 
+        $error = new Error();
+        $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
 
         $gajiSupir = DB::table('gajisupirdetail')
             ->from(
@@ -83,13 +86,16 @@ class SuratPengantar extends MyModel
         if (isset($gajiSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'gaji supir ' . $gajiSupir->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> GAji Supir <b>'. $gajiSupir->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'gaji supir ' . $gajiSupir->nobukti,
+                'kodeerror' => 'SATL2'
             ];
 
 
             goto selesai;
         }
         if (request()->aksi == 'DELETE') {
+            $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
 
             $ritasi = DB::table('ritasi')
                 ->from(
@@ -106,7 +112,9 @@ class SuratPengantar extends MyModel
             if (isset($ritasi)) {
                 $data = [
                     'kondisi' => true,
-                    'keterangan' => 'ritasi ' . $ritasi->nobukti,
+                    'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> Ritasi <b>'. $ritasi->nobukti .'</b> <br> '.$keterangantambahanerror,
+                    'kodeerror' => 'SATL2'
+                    // 'keterangan' => 'ritasi ' . $ritasi->nobukti,
                 ];
 
 
@@ -115,11 +123,16 @@ class SuratPengantar extends MyModel
 
             $cekSP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('dari_id', 'jobtrucking')->where('nobukti', $nobukti)->first();
             if ($cekSP->dari_id == 1) {
+
                 $cekJob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', $cekSP->jobtrucking)->where('nobukti', '<>', $nobukti)->first();
                 if ($cekJob != '') {
+                    $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+
                     $data = [
                         'kondisi' => true,
-                        'keterangan' => 'trip ' . $cekJob->nobukti,
+                        'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> Trip <b>'. $cekJob->nobukti .'</b> <br> '.$keterangantambahanerror,
+                        'kodeerror' => 'SATL2'                        
+                        // 'keterangan' => 'trip ' . $cekJob->nobukti,
                     ];
 
 
@@ -161,9 +174,13 @@ class SuratPengantar extends MyModel
             ->first();
 
         if (isset($query)) {
+            $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'invoice ' . $query->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> Invoice <b>'. $cekJob->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'kodeerror' => 'SATL2'                  
+                // 'keterangan' => 'invoice ' . $query->nobukti,
             ];
             goto selesai;
         }
@@ -176,9 +193,14 @@ class SuratPengantar extends MyModel
             ->first();
 
         if (isset($query)) {
+            $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'pendapatan supir ' . $query->nobukti,
+                // 'keterangan' => 'pendapatan supir ' . $query->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> pendapatan supir <b>'. $cekJob->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'kodeerror' => 'SATL2'                  
+
             ];
             goto selesai;
         }
