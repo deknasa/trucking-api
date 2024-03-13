@@ -18,6 +18,7 @@ use App\Http\Requests\StorePengeluaranHeaderRequest;
 use App\Http\Requests\DestroyPengeluaranHeaderRequest;
 use App\Http\Requests\StorePengeluaranDetailRequest;
 use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\ApprovalValidasiApprovalRequest;
 
 use App\Http\Requests\UpdatePengeluaranHeaderRequest;
 use Illuminate\Http\Request;
@@ -227,8 +228,10 @@ class PengeluaranHeaderController extends Controller
      * @ClassName
      * @Keterangan APPROVAL DATA
      */
-    public function approval(Request $request)
+    public function approval(ApprovalValidasiApprovalRequest $request)
     {
+        dd('a');
+        
         DB::beginTransaction();
 
         try {
