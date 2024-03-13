@@ -24,6 +24,7 @@ class CreateInvoiceheaderTable extends Migration
             $table->double('nominal',15,2)->nullable();
             $table->date('tglterima')->nullable();
             $table->date('tgljatuhtempo')->nullable();
+            $table->string('noinvoicepajak', 50)->nullable();
             $table->unsignedBigInteger('agen_id')->nullable();
             $table->unsignedBigInteger('jenisorder_id')->nullable();
             $table->unsignedBigInteger('cabang_id')->nullable();
