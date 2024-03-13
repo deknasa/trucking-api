@@ -17,6 +17,7 @@ class ApprovalBukaCetak implements Rule
      * @return void
      */
     public $keterror;
+    public $nobukti;
     public function __construct()
     {
         //
@@ -32,9 +33,11 @@ class ApprovalBukaCetak implements Rule
     public function passes($attribute, $value)
     {
         $table = request()->table;
-        if($table == 'PEMUTIHANSUPIR'){
+        if ($table == 'PEMUTIHANSUPIR') {
             $table = 'PEMUTIHANSUPIRHEADER';
         }
+        $databukti = request()->bukti;
+
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $allowed = false;
@@ -42,49 +45,73 @@ class ApprovalBukaCetak implements Rule
         $tutupBukuDate = date('Y-m-d', strtotime($tutupBuku->text));
 
         foreach ($value as $val) {
-            $getTgl = DB::table($table)->from(DB::raw("$table with (readuncommitted)"))->select('tglbukti','nobukti')->where('id', $val)->first();
+            $getTgl = DB::table($table)->from(DB::raw("$table with (readuncommitted)"))->select('tglbukti', 'nobukti')->where('id', $val)->first();
             $date = date('Y-m-d', strtotime($getTgl->tglbukti));
 
             if ($date > $tutupBukuDate) {
                 $allowed = true;
             }
         }
-        
-        // 
-        if ($allowed==false) {
-        
-            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
-            $this->keterror = 'No Bukti <b>' . $getTgl->nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tutupBukuDate)).' ) <br> '.$keterangantambahanerror;
+        $nobukti1 = '';
+        $a = 0;
+        $parameter = new Parameter();
+        foreach ($databukti as $dataBukti) {
+            $getcetak = DB::table($table)->from(DB::raw("$table with (readuncommitted)"))->select('tglbukti', 'nobukti')->where('nobukti', $dataBukti)
+                ->where('statuscetak', $parameter->cekId('STATUSCETAK', 'STATUSCETAK', 'BELUM CETAK'))
+                ->first();
+            if (isset($getcetak)) {
+                if ($a == 0) {
+                    $nobukti1 = $nobukti1 . $dataBukti;
+                } else {
+                    $nobukti1 = $nobukti1 . ', ' . $dataBukti;
+                }
+                $a = $a + 1;
+            }
+        }
+        $this->nobukti = $nobukti1;
+        if ($a >= 1) {
+            dd($nobukti1);
+            $allowed = false;
+            $error = new Error();
+            $keteranganerror = $error->cekKeteranganError('BC') ?? '';
+            $this->keterror = 'No Bukti <b>' . $nobukti1 . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+            // dd('test');
             goto lanjut;
-        } 
-       
+        }
+        // 
+        if ($allowed == false) {
+
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $this->keterror = 'No Bukti <b>' . $getTgl->nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tutupBukuDate)) . ' ) <br> ' . $keterangantambahanerror;
+            goto lanjut;
+        }
+
         // 
 
-        if ($allowed=true) {
+        if ($allowed = true) {
             $table = request()->table;
-            if($table == 'PEMUTIHANSUPIR'){
+            if ($table == 'PEMUTIHANSUPIR') {
                 $table = 'PEMUTIHANSUPIRHEADER';
             }
             $allowed = false;
             $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-    
+
             foreach ($value as $val) {
                 $item = DB::table($table)->from(DB::raw("$table with (readuncommitted)"))->select('statuscetak')->where('id', $val)->where('statuscetak', $statusBelumCetak->id)->first();
                 if ($item) {
                     $allowed = true;
                 }
             }
-    
         }
 
-        if ($allowed==false) {
+        if ($allowed == false) {
             $error = new Error();
-            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
-            $this->keterror ='No Bukti <b>'. $getTgl->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;            
+            $keteranganerror = $error->cekKeteranganError('BC') ?? '';
+            $this->keterror = 'No Bukti <b>' . $this->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             goto lanjut;
         } else {
 
-            $keterror='';
+            $keterror = '';
         }
         lanjut:
         return $allowed;

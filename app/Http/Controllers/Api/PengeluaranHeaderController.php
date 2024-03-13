@@ -391,7 +391,25 @@ class PengeluaranHeaderController extends Controller
 
     public function cekvalidasi($id)
     {
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
         $pengeluaran = PengeluaranHeader::find($id);
+
+        if (!isset($pengeluaran)) {
+            $keteranganerror = $error->cekKeteranganError('DTA') ?? '';
+            $keterror='No Bukti <b>'. request()->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+            $data = [
+                'message' => $keterror,
+                'error' => true,
+                'kodeerror' => 'SAP',
+                'statuspesan' => 'warning',
+            ];
+    
+            return response($data);
+    
+        }
+
         $nobukti=$pengeluaran->nobukti ?? '';
         // $cekdata = $pengeluaran->cekvalidasiaksi($pengeluaran->nobukti);
         $status = $pengeluaran->statusapproval ?? 0;
@@ -402,8 +420,7 @@ class PengeluaranHeaderController extends Controller
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
         $aksi = request()->aksi ?? '';
-        $error = new Error();
-        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
 
         $parameter = new Parameter();
 
