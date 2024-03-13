@@ -29,6 +29,10 @@ class OrderanTrucking extends MyModel
     public function cekvalidasihapus($nobukti, $aksi)
     {
 
+        $error = new Error();
+        $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
         $suratPengantar = DB::table('suratpengantar')
             ->from(
                 DB::raw("suratpengantar as a with (readuncommitted)")
@@ -43,7 +47,9 @@ class OrderanTrucking extends MyModel
             if (isset($suratPengantar)) {
                 $data = [
                     'kondisi' => true,
-                    'keterangan' => 'Surat Pengantar ' . $suratPengantar->nobukti,
+                    'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> sURAT pENGANTAR <b>'. $suratPengantar->nobukti .'</b> <br> '.$keterangantambahanerror,
+                    // 'keterangan' => 'Surat Pengantar ' . $suratPengantar->nobukti,
+                    'kodeerror' => 'SATL2'
                 ];
 
 
@@ -51,6 +57,8 @@ class OrderanTrucking extends MyModel
             }
         } else {
             if ($suratPengantar != null) {
+                $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+
                 $gajiSupir = DB::table('gajisupirdetail')
                     ->from(
                         DB::raw("gajisupirdetail as a with (readuncommitted)")
@@ -65,7 +73,9 @@ class OrderanTrucking extends MyModel
                 if (isset($gajiSupir)) {
                     $data = [
                         'kondisi' => true,
-                        'keterangan' => 'GAJI SUPIR ' . $gajiSupir->nobukti,
+                        'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> Rincian Gaji Supir <b>'. $gajiSupir->nobukti .'</b> <br> '.$keterangantambahanerror,
+                        // 'keterangan' => 'GAJI SUPIR ' . $gajiSupir->nobukti,
+                        'kodeerror' => 'SATL2'
                     ];
 
 
@@ -73,6 +83,8 @@ class OrderanTrucking extends MyModel
                 }
             }
         }
+
+        $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
 
         $invoice = DB::table('invoicedetail')
             ->from(
@@ -87,7 +99,9 @@ class OrderanTrucking extends MyModel
         if (isset($invoice)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'invoice ' . $invoice->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> Invoice <b>'. $gajiSupir->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'invoice ' . $invoice->nobukti,
+                'kodeerror' => 'SATL2'                
             ];
 
 
