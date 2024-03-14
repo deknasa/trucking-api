@@ -808,7 +808,7 @@ class AbsensiSupirDetail extends MyModel
                 'a.supir_id_old',
                 'a.jlhtrip',
                 'a.memo',
-                'a.uangjalan',
+                DB::RAW("isnull(a.uangjalan,0) as uangjalan"),
                 db::raw("format(cast(isnull(b.tglbatas,
                     (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '".  date('Y-m-d', strtotime($date)) ." ".$batasJamEdit->text."'  else    format(a.tglbukti,'yyyy/MM/dd')+' ".$batasJamEdit->text ."' end)
                     ) as datetime),'dd-MM-yyyy HH:mm:ss') as tglbatas"),
