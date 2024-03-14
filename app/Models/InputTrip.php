@@ -152,7 +152,7 @@ class InputTrip extends MyModel
             }
         }
 
-        
+
         $date = date('Y-m-d', strtotime($data['tglbukti']));
         $user_id = auth('api')->user()->id;
 
@@ -168,8 +168,8 @@ class InputTrip extends MyModel
         });
 
         $querybukaabsen = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip with (readuncommitted)"))
-        ->select('id', 'tglbukti', 'jumlahtrip','statusapproval','user_id', 'tglbatas')
-        ->where('tglbukti', $date);
+            ->select('id', 'tglbukti', 'jumlahtrip', 'statusapproval', 'user_id', 'tglbatas')
+            ->where('tglbukti', $date);
         DB::table($tempApp)->insertUsing([
             'id',
             'tglbukti',
@@ -178,7 +178,7 @@ class InputTrip extends MyModel
             'user_id',
             'tglbatas',
         ],  $querybukaabsen);
-        
+
         // GET MANDOR DETAIL
         $tempMandor = '##tempMandor' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempMandor, function ($table) {
@@ -187,7 +187,7 @@ class InputTrip extends MyModel
         });
 
         $querymandor = DB::table("mandordetail")->from(DB::raw("mandordetail with (readuncommitted)"))
-        ->select('mandor_id')->where('user_id', $user_id);
+            ->select('mandor_id')->where('user_id', $user_id);
         DB::table($tempMandor)->insertUsing([
             'mandor_id',
         ],  $querymandor);
@@ -202,11 +202,11 @@ class InputTrip extends MyModel
         });
 
         $querySP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-        ->select('approvalbukatanggal_id',DB::raw("count(nobukti) as jumlahtrip"))
-        ->where('tglbukti', $date)
-        ->whereRaw("isnull(approvalbukatanggal_id,0) != 0")
-        ->groupBy('approvalbukatanggal_id');
-        
+            ->select('approvalbukatanggal_id', DB::raw("count(nobukti) as jumlahtrip"))
+            ->where('tglbukti', $date)
+            ->whereRaw("isnull(approvalbukatanggal_id,0) != 0")
+            ->groupBy('approvalbukatanggal_id');
+
         DB::table($tempSP)->insertUsing([
             'approvalbukatanggal_id',
             'jumlahtrip'
@@ -216,15 +216,15 @@ class InputTrip extends MyModel
         // GET APPROVAL BERDASARKAN MANDOR
 
         $getAll = DB::table("mandordetail")->from(DB::raw("mandordetail as a"))
-        ->select('a.mandor_id','c.id', 'c.user_id', 'c.statusapproval','c.tglbatas','c.jumlahtrip')
-        ->leftJoin(DB::raw("$tempMandor as b with (readuncommitted)"), 'a.mandor_id', 'b.mandor_id')
-        ->leftJoin(DB::raw("$tempApp as c with (readuncommitted)"), 'a.user_id', 'c.user_id')
-        ->leftJoin(DB::raw("$tempSP as d with (readuncommitted)"), 'c.id', 'd.approvalbukatanggal_id')
-        ->whereRaw('COALESCE(b.mandor_id, 0) <> 0')
-        ->whereRaw('COALESCE(c.user_id, 0) <> 0')
-        ->whereRaw('isnull(d.jumlahtrip,0) < c.jumlahtrip')
-        ->first();
-        
+            ->select('a.mandor_id', 'c.id', 'c.user_id', 'c.statusapproval', 'c.tglbatas', 'c.jumlahtrip')
+            ->leftJoin(DB::raw("$tempMandor as b with (readuncommitted)"), 'a.mandor_id', 'b.mandor_id')
+            ->leftJoin(DB::raw("$tempApp as c with (readuncommitted)"), 'a.user_id', 'c.user_id')
+            ->leftJoin(DB::raw("$tempSP as d with (readuncommitted)"), 'c.id', 'd.approvalbukatanggal_id')
+            ->whereRaw('COALESCE(b.mandor_id, 0) <> 0')
+            ->whereRaw('COALESCE(c.user_id, 0) <> 0')
+            ->whereRaw('isnull(d.jumlahtrip,0) < c.jumlahtrip')
+            ->first();
+
         $approvalId = '';
         if ($getAll != null) {
             $approvalId = $getAll->id;
@@ -361,9 +361,9 @@ class InputTrip extends MyModel
         }
     }
 
-    public function getInfo($trado_id, $upah_id, $statuscontainer)
+    public function getInfo($trado_id, $upah_id, $statuscontainer, $id)
     {
-        if ($upah_id != '') {
+        if ($upah_id != '' && $trado_id != '') {
 
             $getUpah = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->where('id', $upah_id)->first();
             if ($statuscontainer == 3) {
@@ -395,14 +395,49 @@ class InputTrip extends MyModel
                 'kmperjalanan',
                 'statusbatas'
             ], (new ReminderOli())->getdata2($trado_id));
-            $query = DB::table($temtabel)->from(DB::raw("$temtabel as a with (readuncommitted)"))
-                ->select(
-                    DB::raw("REPLACE(a.status, 'PENGGANTIAN', '') as status"),
-                    DB::raw("CONCAT(CAST(a.kmperjalanan AS DECIMAL(10, 2)),'(+$jarak)') as kmperjalanan"),
-                    DB::raw(" CAST(ROUND((a.kmperjalanan + $jarak), 2, 1) AS DECIMAL(10, 2)) as kmtotal"),
-                    DB::raw("a.statusbatas"),
-                    DB::raw("CAST(ROUND(($jarak), 2, 1) AS DECIMAL(10, 2)) as jarak")
-                )->get();
+            if ($id != '') {
+                $query = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))
+                    ->select(
+                        'tglbukti',
+                        'nobukti',
+                        'statusapprovaleditsuratpengantar',
+                        'trado_id',
+                        'jarak'
+                    )
+                    ->where('id', $id)
+                    ->first();
+                if ($trado_id == $query->trado_id) {
+
+                    $query = DB::table($temtabel)->from(DB::raw("$temtabel as a with (readuncommitted)"))
+                        ->select(
+                            DB::raw("REPLACE(a.status, 'PENGGANTIAN', '') as status"),
+                            DB::raw("CONCAT(CAST((a.kmperjalanan - $query->jarak) AS DECIMAL(10, 2)),'(+$jarak)') as kmperjalanan"),
+                            DB::raw(" CAST(ROUND((a.kmperjalanan + $jarak - $query->jarak), 2, 1) AS DECIMAL(10, 2)) as kmtotal"),
+                            DB::raw("a.statusbatas"),
+                            DB::raw("CAST(ROUND(($jarak), 2, 1) AS DECIMAL(10, 2)) as jarak")
+                        )->get();
+                } else {
+
+                    $query = DB::table($temtabel)->from(DB::raw("$temtabel as a with (readuncommitted)"))
+                        ->select(
+                            DB::raw("REPLACE(a.status, 'PENGGANTIAN', '') as status"),
+                            DB::raw("CONCAT(CAST(a.kmperjalanan AS DECIMAL(10, 2)),'(+$jarak)') as kmperjalanan"),
+                            DB::raw(" CAST(ROUND((a.kmperjalanan + $jarak), 2, 1) AS DECIMAL(10, 2)) as kmtotal"),
+                            DB::raw("a.statusbatas"),
+                            DB::raw("CAST(ROUND(($jarak), 2, 1) AS DECIMAL(10, 2)) as jarak")
+                        )->get();
+                }
+            } else {
+
+                $query = DB::table($temtabel)->from(DB::raw("$temtabel as a with (readuncommitted)"))
+                    ->select(
+                        DB::raw("REPLACE(a.status, 'PENGGANTIAN', '') as status"),
+                        DB::raw("CONCAT(CAST(a.kmperjalanan AS DECIMAL(10, 2)),'(+$jarak)') as kmperjalanan"),
+                        DB::raw(" CAST(ROUND((a.kmperjalanan + $jarak), 2, 1) AS DECIMAL(10, 2)) as kmtotal"),
+                        DB::raw("a.statusbatas"),
+                        DB::raw("CAST(ROUND(($jarak), 2, 1) AS DECIMAL(10, 2)) as jarak")
+                    )->get();
+            }
             return $query;
         }
     }
