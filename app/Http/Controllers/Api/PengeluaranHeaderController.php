@@ -230,7 +230,7 @@ class PengeluaranHeaderController extends Controller
      */
     public function approval(ApprovalValidasiApprovalRequest $request)
     {
-        dd('a');
+        // dd('a');
         
         DB::beginTransaction();
 

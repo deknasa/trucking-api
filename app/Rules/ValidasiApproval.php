@@ -31,8 +31,8 @@ class ValidasiApproval implements Rule
     public function passes($attribute, $value)
     {
         // dd('testuji');
-        $allowed=true;
-        $table='pengeluaranheader';
+        $allowed = true;
+        $table = 'pengeluaranheader';
         $databukti = request()->bukti;
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
@@ -59,25 +59,27 @@ class ValidasiApproval implements Rule
             $allowed = false;
             $error = new Error();
             $keteranganerror = $error->cekKeteranganError('DTA') ?? '';
-  
+
             $this->keterror = 'No Bukti <b>' . $nobukti1 . '</b> <br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             // dd($this->keterror);
             // return $allowed;
             goto lanjut;
-        }        
+        }
 
-   
-        $data1='';
-        $a=0;
-        $b=0;
+
+        $data1 = '';
+        $a = 0;
+        $b = 0;
+        $ketstatus = '';
         foreach ($databukti as $dataBukti) {
-            $getstatus = DB::table($table)->from(DB::raw("$table with (readuncommitted)"))->select('tglbukti', 'nobukti')->where('nobukti', $dataBukti)
-            ->first();
+            $getstatus = DB::table($table)->from(DB::raw("$table with (readuncommitted)"))->select('statusapproval', 'nobukti')->where('nobukti', $dataBukti)
+                ->first();
 
-            if ($a==0) {
-                $data1=$getstatus->statusapproval ?? '';  
+            if ($a == 0) {
+                $data1 = $getstatus->statusapproval ?? '';
             } else {
-                if ($data1 !=$getstatus->statusapproval) {
+                if ($data1 != $getstatus->statusapproval) {
+                    $ketstatus = $parameter->cekdataText($getstatus->statusapproval) ?? '';
                     if ($b == 0) {
                         $nobukti1 = $nobukti1 . $dataBukti;
                     } else {
@@ -86,25 +88,25 @@ class ValidasiApproval implements Rule
                     $b = $b + 1;
                 }
             }
-
+            $a = $a + 1;
         }
+
 
         if ($b >= 1) {
             $allowed = false;
             $error = new Error();
             $keteranganerror = $error->cekKeteranganError('ASB') ?? '';
-  
-            $this->keterror = 'No Bukti <b>' . $nobukti1 . '</b> <br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+
+            $this->keterror = 'No Bukti <b>' . $nobukti1 . '</b> Status ' . $ketstatus . ' <br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             // dd($this->keterror);
             // return $allowed;
             goto lanjut;
-        }  
+        }
 
         // dd('test');
         lanjut:
 
         return $allowed;
-
     }
 
     /**
