@@ -104,42 +104,230 @@ class AbsensiSupirHeader extends MyModel
             $query->whereBetween('absensisupirheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
 
-        // dd($query->get());
-        $proses=request()->proses ?? '' ;
+        $proses = request()->proses ?? '';
+        $from = request()->from ?? '';
 
-        if ($proses=='APPROVALSUPIR') {
+        if ($proses == 'APPROVALSUPIR') {
             $tempbelumlengkap = '##tempbelumlengkap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
             Schema::create($tempbelumlengkap, function ($table) {
                 $table->string('nobukti', 1000)->nullable();
             });
 
-                $querybelumlengkap=db::table("absensisupirdetail")->from(db::raw("absensisupirdetail a with (readuncommitted)"))
+            $querybelumlengkap = db::table("absensisupirdetail")->from(db::raw("absensisupirdetail a with (readuncommitted)"))
                 ->select(
                     'a.nobukti'
                 )
-                ->join(db::raw("absensisupirheader b with (readuncommitted)"),'a.nobukti','b.nobukti')
+                ->join(db::raw("absensisupirheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
                 ->leftjoin(DB::raw("suratpengantar as c with(readuncommitted)"), function ($join) {
                     $join->on('a.supir_id', '=', 'c.supir_id');
                     $join->on('a.trado_id', '=', 'c.trado_id');
                     $join->on('b.tglbukti', '=', 'c.tglbukti');
-                })     
+                })
                 ->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
                 ->whereRaw("isnull(a.absen_id,0)=0")
                 ->whereRaw("isnull(c.nobukti,'')=''")
                 ->groupBy('a.nobukti');
 
-                DB::table($tempbelumlengkap)->insertUsing([
-                    'nobukti',
-                ], $querybelumlengkap);
+            DB::table($tempbelumlengkap)->insertUsing([
+                'nobukti',
+            ], $querybelumlengkap);
 
-                // dd(db::table($tempbelumlengkap)->get());
-                $query->leftjoin(db::raw($tempbelumlengkap . " as tempbelumlengkap"),'absensisupirheader.nobukti','tempbelumlengkap.nobukti')
-                      ->whereraw("isnull(tempbelumlengkap.nobukti,'')=''");
-
+            // dd(db::table($tempbelumlengkap)->get());
+            $query->leftjoin(db::raw($tempbelumlengkap . " as tempbelumlengkap"), 'absensisupirheader.nobukti', 'tempbelumlengkap.nobukti')
+                ->whereraw("isnull(tempbelumlengkap.nobukti,'')=''");
         }
 
+        if ($from == 'pengajuantripinap') {
+            $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATAS PENGAJUAN TRIP INAP')->where('subgrp', 'BATAS PENGAJUAN TRIP INAP')->first()->text;
 
+            $batas = date('Y-m-d', strtotime("-$getBatasInput days"));
+            $query->whereBetween('absensisupirheader.tglbukti', [$batas, date('Y-m-d')]);
+
+            $temppengajuan = '##temppengajuan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temppengajuan, function ($table) {
+                $table->bigInteger('id')->nullable();
+                $table->string('nobukti', 1000)->nullable();
+                $table->date('tglbukti')->nullable();
+                $table->string('kasgantung_nobukti', 1000)->nullable();
+                $table->double('nominal', 15, 2)->nullable();
+                $table->date('tglbukacetak')->nullable();
+                $table->date('tglapprovaleditabsensi')->nullable();
+                $table->string('statuscetak', 1000)->nullable();
+                $table->string('statusapprovaleditabsensi', 1000)->nullable();
+                $table->string('userapprovaleditabsensi', 50)->nullable();
+                $table->string('userbukacetak', 50)->nullable();
+                $table->integer('jumlahcetak')->Length(11)->nullable();
+                $table->string('modifiedby', 1000)->nullable();
+                $table->dateTime('created_at')->nullable();
+                $table->dateTime('updated_at')->nullable();
+                $table->dateTime('tgldariheaderkasgantungheader')->nullable();
+                $table->dateTime('tglsampaiheaderkasgantungheader')->nullable();
+            });
+
+            DB::table($temppengajuan)->insertUsing([
+                'id',
+                'nobukti',
+                'tglbukti',
+                'kasgantung_nobukti',
+                'nominal',
+                'tglbukacetak',
+                'tglapprovaleditabsensi',
+                'statuscetak',
+                'statusapprovaleditabsensi',
+                'userapprovaleditabsensi',
+                'userbukacetak',
+                'jumlahcetak',
+                'modifiedby',
+                'created_at',
+                'updated_at',
+                'tgldariheaderkasgantungheader',
+                'tglsampaiheaderkasgantungheader'
+            ], $query);
+
+            $getApprovalPengajuanTripInap = DB::table("absensisupirheader")->from(DB::raw("absensisupirheader with (readuncommitted)"))
+                ->select(
+
+                    'id',
+                    'nobukti',
+                    'tglbukti',
+                    'kasgantung_nobukti',
+                    DB::raw("(case when nominal IS NULL then 0 else nominal end) as nominal"),
+                    'modifiedby',
+                    'created_at',
+                    'updated_at',
+                )
+                ->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                ->where('statusapprovalpengajuantripinap', 3)
+                ->whereRaw("tglbataspengajuantripinap >= CONVERT(VARCHAR, GETDATE(), 120)")
+                ->whereRaw("tglbataspengajuantripinap <= CONVERT(VARCHAR, DATEADD(DAY, 1, GETDATE()), 120)");
+
+            DB::table($temppengajuan)->insertUsing([
+                'id',
+                'nobukti',
+                'tglbukti',
+                'kasgantung_nobukti',
+                'nominal',
+                'modifiedby',
+                'created_at',
+                'updated_at'
+            ], $getApprovalPengajuanTripInap);
+
+            $query = DB::table($temppengajuan)->from(DB::raw("$temppengajuan as absensisupirheader with (readuncommitted)"));
+        }
+
+        if ($from == 'tripinap') {
+            $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATAS TRIP INAP')->where('subgrp', 'BATAS TRIP INAP')->first()->text;
+
+            $batas = date('Y-m-d', strtotime("-$getBatasInput days")).' 00:00:00';
+
+            $getTglPengajuan = DB::table("pengajuantripinap")->from(DB::raw("pengajuantripinap with (readuncommitted)"))
+                ->select('tglabsensi')
+                ->where('statusapproval', 3)
+                ->whereBetween('created_at', [$batas, date('Y-m-d H:i:s')])
+                ->groupBy('tglabsensi');
+
+            $temppengajuan = '##temppengajuan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temppengajuan, function ($table) {
+                $table->date('tglabsensi')->nullable();
+            });
+            
+            DB::table($temppengajuan)->insertUsing([
+                'tglabsensi',
+            ], $getTglPengajuan);
+
+            $query->join(DB::raw("$temppengajuan with (readuncommitted)"), 'absensisupirheader.tglbukti', $temppengajuan.'.tglabsensi');
+
+            $tempAbsensi = '##tempAbsensi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempAbsensi, function ($table) {
+                $table->bigInteger('id')->nullable();
+                $table->string('nobukti', 1000)->nullable();
+                $table->date('tglbukti')->nullable();
+                $table->string('kasgantung_nobukti', 1000)->nullable();
+                $table->double('nominal', 15, 2)->nullable();
+                $table->date('tglbukacetak')->nullable();
+                $table->date('tglapprovaleditabsensi')->nullable();
+                $table->string('statuscetak', 1000)->nullable();
+                $table->string('statusapprovaleditabsensi', 1000)->nullable();
+                $table->string('userapprovaleditabsensi', 50)->nullable();
+                $table->string('userbukacetak', 50)->nullable();
+                $table->integer('jumlahcetak')->Length(11)->nullable();
+                $table->string('modifiedby', 1000)->nullable();
+                $table->dateTime('created_at')->nullable();
+                $table->dateTime('updated_at')->nullable();
+                $table->dateTime('tgldariheaderkasgantungheader')->nullable();
+                $table->dateTime('tglsampaiheaderkasgantungheader')->nullable();
+            });
+
+            DB::table($tempAbsensi)->insertUsing([
+                'id',
+                'nobukti',
+                'tglbukti',
+                'kasgantung_nobukti',
+                'nominal',
+                'tglbukacetak',
+                'tglapprovaleditabsensi',
+                'statuscetak',
+                'statusapprovaleditabsensi',
+                'userapprovaleditabsensi',
+                'userbukacetak',
+                'jumlahcetak',
+                'modifiedby',
+                'created_at',
+                'updated_at',
+                'tgldariheaderkasgantungheader',
+                'tglsampaiheaderkasgantungheader'
+            ], $query);
+
+            $awal = date('Y-m-d').' 00:00:00';
+            $akhir = date('Y-m-d').' 23:59:59';
+
+            $getLewatBatas = DB::table("pengajuantripinap")->from(DB::raw("pengajuantripinap with (readuncommitted)"))
+            ->select(DB::raw("pengajuantripinap.tglabsensi"))
+            ->leftJoin(DB::raw("$tempAbsensi as absensi with (readuncommitted)"), 'absensi.tglbukti', 'pengajuantripinap.tglabsensi')
+            // ->whereRaw("CAST(pengajuantripinap.tglabsensi AS date) != CAST(absensi.tglbukti AS date)")
+            ->where('pengajuantripinap.statusapproval', 3)
+            ->where('pengajuantripinap.statusapprovallewatbataspengajuan', 3)            
+            ->whereNotBetween('pengajuantripinap.created_at', [$batas, date('Y-m-d H:i:s')])
+            ->whereRaw("pengajuantripinap.tglbataslewatbataspengajuan >= '$awal'")
+            ->whereRaw("pengajuantripinap.tglbataslewatbataspengajuan <= '$akhir'")
+            ->whereRaw("year(isnull(absensi.tglbukti,'1900/1/1'))=1900")
+            ->groupBy('pengajuantripinap.tglabsensi');
+            $tempLewatBatas = '##tempLewatBatas' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempLewatBatas, function ($table) {
+                $table->date('tglabsensi')->nullable();
+            });
+            
+            DB::table($tempLewatBatas)->insertUsing([
+                'tglabsensi',
+            ], $getLewatBatas);
+
+            $queryAkhir = DB::table($this->table)->from(DB::raw("absensisupirheader with (readuncommitted)"))
+            ->select(
+                'absensisupirheader.id',
+                'absensisupirheader.nobukti',
+                'absensisupirheader.tglbukti',
+                'absensisupirheader.kasgantung_nobukti',
+                DB::raw("(case when absensisupirheader.nominal IS NULL then 0 else absensisupirheader.nominal end) as nominal"),
+                
+                'absensisupirheader.modifiedby',
+                'absensisupirheader.created_at',
+                'absensisupirheader.updated_at',
+            );
+            $queryAkhir->join(DB::raw("$tempLewatBatas as lewatbatas with (readuncommitted)"), 'absensisupirheader.tglbukti', 'lewatbatas.tglabsensi');
+            DB::table($tempAbsensi)->insertUsing([
+                'id',
+                'nobukti',
+                'tglbukti',
+                'kasgantung_nobukti',
+                'nominal',
+                'modifiedby',
+                'created_at',
+                'updated_at'
+            ], $queryAkhir);
+
+            $query = DB::table($tempAbsensi)->from(DB::raw("$tempAbsensi as absensisupirheader with (readuncommitted)"));
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -303,9 +491,9 @@ class AbsensiSupirHeader extends MyModel
     left join absensisupirapprovalheader  with (readuncommitted)  on absensisupirapprovalheader.absensisupir_nobukti= absensisupirdetail.nobukti
     WHERE absensisupirapprovalheader.absensisupir_nobukti = absensisupirheader.nobukti 
           )")
-          ->where('absensi_id', $id)
-          ->whereRaw('isnull(absensisupirdetail.uangjalan,0)<>0')
-          ->where('trado.statusabsensisupir', $statusabsensi);
+            ->where('absensi_id', $id)
+            ->whereRaw('isnull(absensisupirdetail.uangjalan,0)<>0')
+            ->where('trado.statusabsensisupir', $statusabsensi);
         //     $this->totalRows = $query->count();
         // $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -411,7 +599,7 @@ class AbsensiSupirHeader extends MyModel
         if ($now < $limit) return true;
         return false;
     }
-    public function isBukaTanggalValidation($date) :bool
+    public function isBukaTanggalValidation($date): bool
     {
         $date = date('Y-m-d', strtotime($date));
         $bukaAbsensi = $this->cekBukaTanggalValidation($date);
@@ -420,7 +608,7 @@ class AbsensiSupirHeader extends MyModel
         $limit = strtotime($tglbatas);
         $now = strtotime('now');
         // dd( date('Y-m-d H:i:s',$now), date('Y-m-d H:i:s',$limit));
-        
+
         if ($now < $limit) return true;
         return false;
     }
@@ -428,35 +616,35 @@ class AbsensiSupirHeader extends MyModel
     public function cekBukaTanggalValidation($date)
     {
         $date = date('Y-m-d', strtotime($date));
-        
+
         //user ada dimandor apa aja
-        $userMandor = DB::table('mandordetail')->select('mandor_id')->where('user_id',auth()->user()->id);
+        $userMandor = DB::table('mandordetail')->select('mandor_id')->where('user_id', auth()->user()->id);
         //mandor yang dimiliki user login memiliki user apa aja
         $mandorUser = DB::table('mandordetail')
-        ->select('mandor_id','user_id')
-        ->where(function ($query) use ($userMandor) {
-            $query->whereIn('mandor_id', $userMandor);
-        })
-        ->groupBy('mandor_id','user_id')
-        ->get();
+            ->select('mandor_id', 'user_id')
+            ->where(function ($query) use ($userMandor) {
+                $query->whereIn('mandor_id', $userMandor);
+            })
+            ->groupBy('mandor_id', 'user_id')
+            ->get();
         $userArray = [];
         foreach ($mandorUser as $mandor) {
             $userArray[] = $mandor->user_id;
         }
-        
+
         $bukaAbsensi = BukaAbsensi::where('tglabsensi', '=', $date);
         $isAdmin = auth()->user()->isAdmin();
-        
+
         if (!$isAdmin) {
-            
-            $cekSingle = BukaAbsensi::where('tglabsensi', '=', $date)->where('mandor_user_id',auth()->user()->id)->first();
+
+            $cekSingle = BukaAbsensi::where('tglabsensi', '=', $date)->where('mandor_user_id', auth()->user()->id)->first();
             if ($cekSingle) {
                 $tglbatas = $cekSingle->tglbatas ?? 0;
                 $limit = strtotime($tglbatas);
                 $now = strtotime('now');
-                $userArray= ($now < $limit) ? [$cekSingle->mandor_user_id]: $userArray;
+                $userArray = ($now < $limit) ? [$cekSingle->mandor_user_id] : $userArray;
             }
-            $bukaAbsensi = $bukaAbsensi->whereIn('mandor_user_id',$userArray);
+            $bukaAbsensi = $bukaAbsensi->whereIn('mandor_user_id', $userArray);
         }
         $bukaAbsensi = $bukaAbsensi->first();
         return $bukaAbsensi;
@@ -464,23 +652,23 @@ class AbsensiSupirHeader extends MyModel
 
     public function isBukaTanggalAbsenMandor($date)
     {
-        $date = date('Y-m-d', strtotime($date));        
+        $date = date('Y-m-d', strtotime($date));
         //user ada dimandor apa aja
-        $userMandor = DB::table('mandordetail')->select('mandor_id')->where('user_id',auth()->user()->id);
+        $userMandor = DB::table('mandordetail')->select('mandor_id')->where('user_id', auth()->user()->id);
         //mandor yang dimiliki user login memiliki user apa aja
         $mandorUser = DB::table('mandordetail')
-        ->select('mandor_id')
-        ->where(function ($query) use ($userMandor) {
-            $query->whereIn('mandor_id', $userMandor);
-        })
-        ->groupBy('mandor_id')
-        ->get();
+            ->select('mandor_id')
+            ->where(function ($query) use ($userMandor) {
+                $query->whereIn('mandor_id', $userMandor);
+            })
+            ->groupBy('mandor_id')
+            ->get();
         $userArray = [];
         // foreach ($mandorUser as $mandor) {
         //     $userArray[] = $mandor->user_id;
         // }
-        
-       return $mandorUser;
+
+        return $mandorUser;
     }
 
 

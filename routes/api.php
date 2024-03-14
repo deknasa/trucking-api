@@ -431,6 +431,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('pengeluaranstokdetail/hutangbayar', [PengeluaranStokDetailController::class, 'hutangbayar']);
     Route::get('pengeluaranstokdetail/pengeluaran', [PengeluaranStokDetailController::class, 'pengeluaran']);
     Route::get('pengeluaranstokdetail/jurnal', [PengeluaranStokDetailController::class, 'jurnal']);
+    Route::get('suratpengantar/gettripinap',  [SuratPengantarController::class, 'getTripInap']);
     Route::resource('suratpengantar', SuratPengantarController::class)->whereNumber('suratpengantar');
     Route::get('invoicedetail/piutang', [InvoiceDetailController::class, 'piutang']);
     Route::resource('invoicedetail', InvoiceDetailController::class)->whereNumber('invoicedetail');
@@ -1910,12 +1911,15 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('tripinap/report', [TripInapController::class, 'report']);
     Route::post('tripinap/approval', [TripInapController::class, 'approval']);
     Route::post('tripinap/{id}/approval', [TripInapController::class, 'approval'])->name('tripinap.approval')->whereNumber('tripinap');
+    Route::post('tripinap/{id}/cekValidasi', [TripInapController::class, 'cekValidasi'])->name('tripinap.cekValidasi')->whereNumber('id');
     Route::resource('tripinap', TripInapController::class)->whereNumber('tripinap');
 
     Route::get('pengajuantripinap/export', [PengajuanTripInapController::class, 'export']);
     Route::get('pengajuantripinap/report', [PengajuanTripInapController::class, 'report']);
     Route::post('pengajuantripinap/approval', [PengajuanTripInapController::class, 'approval']);
+    Route::post('pengajuantripinap/approvalbataspengajuan', [PengajuanTripInapController::class, 'approvalbataspengajuan']);
     Route::post('pengajuantripinap/{id}/approval', [PengajuanTripInapController::class, 'approval'])->name('pengajuantripinap.approval')->whereNumber('pengajuantripinap');
+    Route::post('pengajuantripinap/{id}/cekValidasi', [PengajuanTripInapController::class, 'cekValidasi'])->name('pengajuantripinap.cekValidasi')->whereNumber('id');
     Route::resource('pengajuantripinap', PengajuanTripInapController::class)->whereNumber('pengajuantripinap');
 
     Route::get('exportric/export', [ExportRicController::class, 'export'])->name('exportric.export');

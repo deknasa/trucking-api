@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Rules\validasiApprovalPengajuanTripInap;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ApprovalPengajuanTripInapRequest extends FormRequest
@@ -25,7 +26,7 @@ class ApprovalPengajuanTripInapRequest extends FormRequest
     public function rules()
     {
         return [
-            'Id' => 'required'
+            'Id' => ['required', new validasiApprovalPengajuanTripInap()]
         ];
     }
 

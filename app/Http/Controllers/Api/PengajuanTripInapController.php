@@ -8,8 +8,11 @@ use App\Models\PengajuanTripInap;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ApprovalPengajuanTripInapRequest;
+use App\Http\Requests\DestroyPengajuanTripInapRequest;
 use App\Http\Requests\StorePengajuanTripInapRequest;
 use App\Http\Requests\UpdatePengajuanTripInapRequest;
+use App\Models\Error;
+use App\Models\Parameter;
 
 use function PHPUnit\Framework\isEmpty;
 
@@ -67,9 +70,6 @@ class PengajuanTripInapController extends Controller
         }
     }
 
-    /**
-     * @ClassName
-     */
     public function show(PengajuanTripInap $pengajuantripinap)
     {
         return response([
@@ -117,7 +117,7 @@ class PengajuanTripInapController extends Controller
      * @ClassName 
      * @Keterangan HAPUS DATA
      */
-    public function destroy(Request $request, PengajuanTripInap $pengajuantripinap)
+    public function destroy(DestroyPengajuanTripInapRequest $request, PengajuanTripInap $pengajuantripinap)
     {
         DB::beginTransaction();
 
@@ -251,6 +251,99 @@ class PengajuanTripInapController extends Controller
                 ],
                 'message' => "The given data was invalid.",
             ], 422);
+        }
+    }
+
+    public function cekValidasi($id)
+    {
+        $pengajuan = PengajuanTripInap::find($id);
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        if ($pengajuan == '') {
+            $keterangan = $error->cekKeteranganError('DTA') ?? '';
+
+            $keterror = $keterangan . ' <br> ' . $keterangantambahanerror;
+            $data = [
+                'message' => $keterror,
+                'error' => true,
+                'kodeerror' => 'SAP',
+                'statuspesan' => 'warning',
+            ];
+            return response($data);
+        }
+
+        $status = $pengajuan->statusapproval;
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        if ($status == $statusApproval->id) {
+            $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
+            $getDetail = DB::table("pengajuantripinap")->from(DB::raw("pengajuantripinap with (readuncommitted)"))
+                ->select('trado.kodetrado', 'supir.namasupir', 'pengajuantripinap.tglabsensi')
+                ->join(DB::raw("trado with (readuncommitted)"), 'pengajuantripinap.trado_id', 'trado.id')
+                ->join(DB::raw("supir with (readuncommitted)"), 'pengajuantripinap.supir_id', 'supir.id')
+                ->where('pengajuantripinap.id', $id)
+                ->first();
+
+            $keterror = 'Absensi <b>' . date('d-m-Y', strtotime($getDetail->tglabsensi)) . '</b> trado <b>' . $getDetail->kodetrado . '</b> supir <b>' . $getDetail->namasupir . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+            $data = [
+                'message' => $keterror,
+                'error' => true,
+                'kodeerror' => 'SAP',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else  if ($pengajuan->statusapprovallewatbataspengajuan == $statusApproval->id) {
+            $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
+            $getDetail = DB::table("pengajuantripinap")->from(DB::raw("pengajuantripinap with (readuncommitted)"))
+                ->select('trado.kodetrado', 'supir.namasupir', 'pengajuantripinap.tglabsensi')
+                ->join(DB::raw("trado with (readuncommitted)"), 'pengajuantripinap.trado_id', 'trado.id')
+                ->join(DB::raw("supir with (readuncommitted)"), 'pengajuantripinap.supir_id', 'supir.id')
+                ->where('pengajuantripinap.id', $id)
+                ->first();
+
+            $keterror = 'Absensi <b>' . date('d-m-Y', strtotime($getDetail->tglabsensi)) . '</b> trado <b>' . $getDetail->kodetrado . '</b> supir <b>' . $getDetail->namasupir . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+            $data = [
+                'message' => $keterror,
+                'error' => true,
+                'kodeerror' => 'SAP',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'message' => '',
+                'error' => false,
+                'statuspesan' => 'success',
+            ];
+
+            return response($data);
+        }
+    }
+
+
+    /**
+     * @ClassName
+     * @Keterangan APPROVAL BATAS PENGAJUAN TRIP INAP
+     */
+    public function approvalbataspengajuan(ApprovalPengajuanTripInapRequest $request)
+    {
+        DB::beginTransaction();
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            $pengajuanTripInap = (new PengajuanTripInap())->processApproveBatasPengajuan($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
         }
     }
 }

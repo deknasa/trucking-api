@@ -47,8 +47,8 @@ class TripInap extends MyModel
                 'tripinap.supir_id',
                 'supir.namasupir as supir',
                 'tripinap.suratpengantar_nobukti',
-                'tripinap.jammasukinap',
-                'tripinap.jamkeluarinap',
+                DB::raw('(case when (year(tripinap.jammasukinap) <= 2000) then null else tripinap.jammasukinap end ) as jammasukinap'),
+                DB::raw('(case when (year(tripinap.jamkeluarinap) <= 2000) then null else tripinap.jamkeluarinap end ) as jamkeluarinap'),
                 'tripinap.statusapproval as statusapproval_id',
                 'approval.memo as statusapproval',
                 'tripinap.tglapproval',
@@ -119,8 +119,8 @@ class TripInap extends MyModel
             $table->bigInteger('supir_id')->nullable();
             $table->string('supir', 1000)->nullable();
             $table->string('suratpengantar_nobukti', 1000)->nullable();
-            $table->time('jammasukinap')->nullable();
-            $table->time('jamkeluarinap')->nullable();
+            $table->dateTime('jammasukinap')->nullable();
+            $table->dateTime('jamkeluarinap')->nullable();
             $table->string('statusapproval_id', 1000)->nullable();
             $table->string('statusapproval', 1000)->nullable();
             $table->date('tglapproval')->nullable();
@@ -187,7 +187,7 @@ class TripInap extends MyModel
                                 $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tglabsensi' || $filters['field'] == 'tglapproval') {
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at' || $filters['field'] == 'jammasukinap' || $filters['field'] == 'jamkeluarinap') {
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -209,7 +209,7 @@ class TripInap extends MyModel
                                     $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'tglabsensi' || $filters['field'] == 'tglapproval') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at' || $filters['field'] == 'jammasukinap' || $filters['field'] == 'jamkeluarinap') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                                 } else {
                                     // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -281,8 +281,8 @@ class TripInap extends MyModel
         $tripInap->trado_id = $data["trado_id"];
         $tripInap->supir_id = $suratPengantar->supir_id;
         $tripInap->suratpengantar_nobukti = $data["suratpengantar_nobukti"];
-        $tripInap->jammasukinap = $data["jammasukinap"];
-        $tripInap->jamkeluarinap = $data["jamkeluarinap"];
+        $tripInap->jammasukinap = date('Y-m-d H:i:s', strtotime($data["jammasukinap"]));
+        $tripInap->jamkeluarinap = date('Y-m-d H:i:s', strtotime($data["jamkeluarinap"]));
         $tripInap->statusapproval = $statusapproval->id;
         $tripInap->modifiedby = auth('api')->user()->name;
         if (!$tripInap->save()) {
@@ -310,8 +310,8 @@ class TripInap extends MyModel
         $tripInap->trado_id = $data["trado_id"];
         $tripInap->supir_id = $suratPengantar->supir_id;
         $tripInap->suratpengantar_nobukti = $data["suratpengantar_nobukti"];
-        $tripInap->jammasukinap = $data["jammasukinap"];
-        $tripInap->jamkeluarinap = $data["jamkeluarinap"];
+        $tripInap->jammasukinap = date('Y-m-d H:i:s', strtotime($data["jammasukinap"]));
+        $tripInap->jamkeluarinap = date('Y-m-d H:i:s', strtotime($data["jamkeluarinap"]));
         $tripInap->modifiedby = auth('api')->user()->name;
         if (!$tripInap->save()) {
             throw new \Exception("Error storing Trip Inap.");
