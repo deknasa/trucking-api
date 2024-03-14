@@ -310,6 +310,15 @@ class PenerimaanStokHeaderController extends Controller
     public function cekvalidasi($id)
     {
 
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
+        $parameter = new Parameter();
+
+        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup=date('Y-m-d', strtotime($tgltutup));
+
+
 
         $penerimaanStokHeader  = new PenerimaanStokHeader();
         $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
@@ -355,6 +364,7 @@ class PenerimaanStokHeaderController extends Controller
                         ->where('kodeerror', '=', 'TPH')
                         ->get();
                     $keterangan = $query['0'];
+                    
                     $data = [
                         'message' => $keterangan,
                         'errors' => $keterangan,
@@ -412,7 +422,7 @@ class PenerimaanStokHeaderController extends Controller
             if ($isEhtUsed) {
                 $query = Error::from(DB::raw("error with (readuncommitted)"))
                     ->select(db::raw("'$msg <br>'+keterangan +' <br>(" . $isEhtUsed[1] . ")' as keterangan"))
-                    ->whereRaw("kodeerror = 'SATL2'")
+                    ->whereRaw("kodeerror = 'SAP'")
                     ->get();
                 $keterangan = $query['0'];
                 $dataUsed = [
