@@ -406,9 +406,25 @@ class MandorAbsensiSupir extends MyModel
             ->where('text', $id)
             ->first();
         if ($queryabsen) {
-            return 1;
+            $supir = ["supir"=>1];
+        }else{
+            $supir = ["supir"=>0];
         }
-        return 0;
+        $queryuang = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select(
+                'text',
+            )
+            ->where('grp', 'ABSENSI TANPA UANG JALAN')
+            ->where('text', $id)
+            ->first();
+        if ($queryuang) {
+            $uang = ["uang"=>1];
+        }else{
+            $uang = ["uang"=>0];
+        }
+// dd($queryabsen,
+// $queryuang,$id);
+        return array_merge($supir,$uang);
     }
 
 
