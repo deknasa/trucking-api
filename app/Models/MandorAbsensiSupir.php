@@ -235,7 +235,12 @@ class MandorAbsensiSupir extends MyModel
 
         //supir serap yang belum diisi
         $tgl = date('Y-m-d', strtotime($date));
-        $tglbatas = $bukaAbsensi->tglbatas ?? '';
+        $query_jam = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'BATAS JAM EDIT ABSENSI')->where('subgrp', 'BATAS JAM EDIT ABSENSI')->first();
+        $jam = substr($query_jam->text, 0, 2);
+        $menit = substr($query_jam->text, 3, 2);
+        $query_jam = strtotime($tgl . ' ' . $jam . ':' . $menit . ':00');
+        $tglbataseditabsensi = date('Y-m-d H:i:s', $query_jam);
+        $tglbatas = $bukaAbsensi->tglbatas ?? $tglbataseditabsensi;
         $update->update([
             "tglbukti"=>date('Y-m-d', strtotime($date)),
             "tglbatas"=>$tglbatas

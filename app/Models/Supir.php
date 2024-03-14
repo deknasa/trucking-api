@@ -220,7 +220,7 @@ class Supir extends MyModel
         $isProsesUangjalan = request()->isProsesUangjalan ?? '';
         $absensi_id = request()->absensi_id ?? '';
         $tgltrip = request()->tgltrip ?? '';
-
+        $fromSupirSerap = request()->fromSupirSerap ?? '';
         $isMandor = auth()->user()->isMandor();
         $isAdmin = auth()->user()->isAdmin();
         $formatCabang = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'MANDOR SUPIR')->where('subgrp', 'MANDOR SUPIR')->first();
@@ -312,6 +312,17 @@ class Supir extends MyModel
             } else {
                 $query->whereRaw("supir.id in (select supir_id from absensisupirdetail where absensi_id=$absensiSupirHeader->id)");
             }
+        }
+        if($fromSupirSerap =="true"){
+            $tglbukti = date('Y-m-d', strtotime($tgltrip));
+            $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti', $tglbukti)->first();
+            $parameter = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->select('text')
+                    ->where('grp', '=', 'ABSENSI SUPIR SERAP')
+                    ->get();
+            $values = array_column($parameter->toArray(), 'text');
+            $result = implode(',', $values);
+            $query->whereRaw("supir.id not in (select supirold_id from absensisupirdetail where absensi_id=$absensiSupirHeader->id and absen_id IN ($result) )");
         }
         if ($isProsesUangjalan == true) {
             $query->addSelect(DB::raw("absensisupirdetail.uangjalan"))

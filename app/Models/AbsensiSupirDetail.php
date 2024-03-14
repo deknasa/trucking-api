@@ -234,7 +234,7 @@ class AbsensiSupirDetail extends MyModel
                 $query->select(
                     "trado.kodetrado as trado",
                     "supir.namasupir as supir",
-                    "absentrado.kodeabsen as status",
+                    "absentrado.keterangan as status",
                     "absentrado.keterangan as statusKeterangan",
                     "absentrado.memo as memo",
                     DB::raw("(case when c.nominalplusborongan IS NULL then 0 else c.nominalplusborongan end) as nominalplusborongan"),
