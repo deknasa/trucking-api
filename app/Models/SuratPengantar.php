@@ -2682,6 +2682,7 @@ class SuratPengantar extends MyModel
         $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
         $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
 
+        $orderanTruckingId=[];
         for ($i = 0; $i < count($data['nobukti']); $i++) {
 
             $nobukti = $data['nobukti'][$i] ?? '';
@@ -2690,6 +2691,18 @@ class SuratPengantar extends MyModel
                     'a.id'
                 )->where('a.nobukti', $nobukti)
                 ->first();
+
+                $queridorderantrucking=db::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
+                ->select(
+                    'b.id'
+                )
+                ->join(db::raw("orderantrucking b with (readuncommitted)"),'a.jobtrucking','b.nobukti')
+                ->where('a.nobukti',$nobukti)
+                ->first();
+
+                
+                $orderanTruckingId[]= $queridorderantrucking->id ?? 0;  
+
 
             if (isset($querysuratpengantar)) {
                 $id = $querysuratpengantar->id ?? 0;
@@ -2752,9 +2765,19 @@ class SuratPengantar extends MyModel
                         'datajson' => $saldosuratPengantar->toArray(),
                         'modifiedby' => auth('api')->user()->user
                     ]);
+
+                           
                 }
             }
+
+
         }
+
+        // dd($orderanTruckingId);
+        $orderantruckingUpdate = [
+            'orderanTruckingId' => $orderanTruckingId,
+        ];
+        (new OrderanTrucking())->processApprovalEdit($orderantruckingUpdate);     
 
 
         return $data;

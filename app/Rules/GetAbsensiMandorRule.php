@@ -5,6 +5,7 @@ namespace App\Rules;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Contracts\Validation\Rule;
 use App\Models\AbsensiSupirHeader;
+use Illuminate\Support\Facades\DB;
 
 class GetAbsensiMandorRule implements Rule
 {
@@ -13,6 +14,8 @@ class GetAbsensiMandorRule implements Rule
      *
      * @return void
      */
+    public $errorid;
+    public $nobuktipengeluaran;
     public function __construct()
     {
         //
@@ -27,6 +30,7 @@ class GetAbsensiMandorRule implements Rule
      */
     public function passes($attribute, $value)
     {
+        $this->errorid=1;
         $allow = true;
         $date = date('Y-m-d', strtotime($value));
         $todayValidation = AbsensiSupirHeader::todayValidation($date);
@@ -44,7 +48,26 @@ class GetAbsensiMandorRule implements Rule
             $limit = strtotime($tglbatas);
             $now = strtotime('now');
             // dd($limit,$now);
-            if ($now < $limit) return true;
+            if ($now < $limit) {
+                // cek absensisupir approval
+                $nobukti= $absensiSupirHeader->nobukti;
+                $queryapp=db::table("absensisupirapprovalheader")->from(db::raw("absensisupirapprovalheader a with (readuncommitted)"))
+                ->select(
+                    'a.pengeluaran_nobukti'
+                )
+                ->where('a.absensisupir_nobukti',$nobukti)
+                ->whereraw("isnull(a.pengeluaran_nobukti,'')<>''")
+                ->first();
+                if (isset($queryapp)) {
+                    $this->nobuktipengeluaran= $queryapp->pengeluaran_nobukti;
+                    $this->errorid=2;
+                    return false;
+                } else {
+                    return true;
+                }
+
+                
+            }
             return false;
         }
         return  $allow;
@@ -57,6 +80,11 @@ class GetAbsensiMandorRule implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('TBT')->keterangan;
+        if ($this->errorid==1) {
+            return app(ErrorController::class)->geterror('TBT')->keterangan;
+        } else {
+            return app(ErrorController::class)->geterror('SDP')->keterangan. ' '.$this->nobuktipengeluaran;
+        }
+        
     }
 }
