@@ -1605,6 +1605,7 @@ class OrderanTrucking extends MyModel
 
     public function processApprovalEdit(array $data)
     {
+        // dd($data);
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
         $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
@@ -1612,7 +1613,10 @@ class OrderanTrucking extends MyModel
 
         $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
         $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
+  
+        // dd($data['orderanTruckingId']);
         for ($i = 0; $i < count($data['orderanTruckingId']); $i++) {
+            
             $orderanTrucking = OrderanTrucking::find($data['orderanTruckingId'][$i]);
             if ($orderanTrucking->statusapprovaledit == $statusApproval->id) {
                 $orderanTrucking->statusapprovaledit = $statusNonApproval->id;
@@ -1629,10 +1633,11 @@ class OrderanTrucking extends MyModel
             }
 
             $orderanTrucking->info = html_entity_decode(request()->info);
-
+         
             if (!$orderanTrucking->save()) {
                 throw new \Exception('Error Un/approval orderan Trucking.');
             }
+        
 
             (new LogTrail())->processStore([
                 'namatabel' => strtoupper($orderanTrucking->getTable()),
