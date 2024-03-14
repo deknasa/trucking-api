@@ -829,12 +829,16 @@ class SuratPengantar extends MyModel
         }
         if ($isGudangSama == 'false') {
             if ($longtrip == 66) {
+                $jenisorder_id = request()->jenisorder_id ?? 0;
+                $container_id = request()->container_id ?? 0;
                 $pelanggan_id = request()->pelanggan_id ?? 0;
                 $trado_id = request()->trado_id ?? 0;
                 $query->where('suratpengantar.dari_id', '!=', 1)
                     ->where('suratpengantar.statuslongtrip', 65)
                     ->where('suratpengantar.trado_id', $trado_id)
-                    ->where('suratpengantar.pelanggan_id', $pelanggan_id);
+                    ->where('suratpengantar.pelanggan_id', $pelanggan_id)
+                    ->where('suratpengantar.jenisorder_id', $jenisorder_id)
+                    ->where('suratpengantar.container_id', $container_id);
             }
         }
 
@@ -1656,7 +1660,8 @@ class SuratPengantar extends MyModel
             ->leftJoin('parameter as statusbatalmuat', 'suratpengantar.statusbatalmuat', 'statusbatalmuat.id')
             ->leftJoin('mandor as mandortrado', 'suratpengantar.mandortrado_id', 'mandortrado.id')
             ->leftJoin('mandor as mandorsupir', 'suratpengantar.mandorsupir_id', 'mandorsupir.id')
-            ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id');
+            ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id')
+            ->orderBy('suratpengantar.tglbukti', 'desc');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

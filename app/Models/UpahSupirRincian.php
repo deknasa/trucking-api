@@ -329,6 +329,9 @@ class UpahSupirRincian extends MyModel
             if ($longtrip == 65) {
                 $queryupahsupir->where('a.kotadari_id', '!=', 1);
             }
+            if ($longtrip == 66) {
+                $queryupahsupir->where('a.kotadari_id', 1);
+            }
 
             DB::table($tempupahsupir)->insertUsing([
                 'id',

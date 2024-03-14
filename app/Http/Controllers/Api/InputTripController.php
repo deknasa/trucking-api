@@ -99,7 +99,7 @@ class InputTripController extends Controller
     public function getInfoTrado(Request $request)
     {
         return response([
-            'data' => (new InputTrip())->getInfo($request->trado_id, $request->upah_id, $request->statuscontainer_id)
+            'data' => (new InputTrip())->getInfo($request->trado_id, $request->upah_id, $request->statuscontainer_id, $request->id)
         ]);
     }
 }
