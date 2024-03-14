@@ -516,4 +516,17 @@ class Parameter extends MyModel
 
         return $keterangan;
     }
+
+    public function cekdataText($id) {
+        $query = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+        ->select(
+            'a.text as keterangan'
+        )
+        ->where('id' ,$id)
+        ->first();
+
+        $keterangan=$query->keterangan ?? 0;
+
+        return $keterangan;
+    }
 }
