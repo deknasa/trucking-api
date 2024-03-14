@@ -624,7 +624,12 @@ class ExportLaporanMingguanSupir extends Model
                 DB::raw("'' as mandor"),
                 DB::raw("'' as supirex"),
                 DB::raw("isnull(e.liter,0) as liter"),
-                db::raw($formatric . " as formatric")
+                db::raw($formatric . " as formatric"),
+                
+                // SURABAYA
+                DB::raw("0 as uangburuh"),
+                DB::raw("0 as uangextra"),                
+                DB::raw("( case when isnull(c.invoice,'')='' then 0 else (isnull(a.omset,0) + isnull(e.omsettambahan,0)) end) as omsetsurabaya"),
             )
             ->leftjoin(DB::raw($tempInvoice . " as b "), 'a.nobukti', 'b.notrip')
             ->leftjoin(DB::raw($tempInvoice . " as c "), 'a.jobtrucking', 'c.jobtrucking')
