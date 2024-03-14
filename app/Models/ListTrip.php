@@ -578,7 +578,7 @@ class ListTrip extends MyModel
             'statusgandengan' => $data['statusgandengan'],
             'statusupahzona' => $data['statusupahzona'],
             'omset' => $tarifrincian->nominal ?? 0,
-            'komisisupir' => $nominalSupir,
+            'komisisupir' => $upahsupirRincian->nominalkomisi,
             'gajikenek' => $upahsupirRincian->nominalkenek,
             'agen_id' => $data['agen_id'],
             'zonadari_id' => $data['zonadari_id'],
