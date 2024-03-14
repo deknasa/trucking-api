@@ -416,10 +416,17 @@ class SuratPengantar extends MyModel
                 db::raw("(case when isnull(c.nobukti,'')='' then " . $getBelumbuka->id . " else " . $getSudahbuka->id . " end) as statusinvoice"),
             )
             ->leftJoin(DB::raw("gajisupirdetail as b with (readuncommitted)"), 'suratpengantar.nobukti', 'b.suratpengantar_nobukti')
-            ->leftJoin(DB::raw("invoicedetail as c with (readuncommitted)"), 'suratpengantar.jobtrucking', 'c.orderantrucking_nobukti')
-            ->whereBetween('suratpengantar.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+            ->leftJoin(DB::raw("invoicedetail as c with (readuncommitted)"), 'suratpengantar.jobtrucking', 'c.orderantrucking_nobukti');
+        if (request()->tgldari) {
+            $querysuratpengantar->whereBetween('suratpengantar.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
 
+        if ($from == 'tripinap') {
+            $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATAS PENGAJUAN TRIP INAP')->where('subgrp', 'BATAS PENGAJUAN TRIP INAP')->first()->text;
 
+            $batas = date('Y-m-d', strtotime("-$getBatasInput days"));
+            $querysuratpengantar->whereBetween('suratpengantar.tglbukti', [$batas, date('Y-m-d')]);
+        }
 
         DB::table($tempsuratpengantar)->insertUsing([
             'id',
@@ -597,9 +604,17 @@ class SuratPengantar extends MyModel
                 'suratpengantar.modifiedby',
                 'suratpengantar.created_at',
                 'suratpengantar.updated_at',
-            )
-            ->whereBetween('suratpengantar.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+            );
+        if (request()->tgldari) {
+            $querysuratpengantar->whereBetween('suratpengantar.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
 
+        if ($from == 'tripinap') {
+            $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATAS PENGAJUAN TRIP INAP')->where('subgrp', 'BATAS PENGAJUAN TRIP INAP')->first()->text;
+
+            $batas = date('Y-m-d', strtotime("-$getBatasInput days"));
+            $querysuratpengantar->whereBetween('suratpengantar.tglbukti', [$batas, date('Y-m-d')]);
+        }
         DB::table($tempsuratpengantar)->insertUsing([
             'id',
             'nobukti',
@@ -811,8 +826,8 @@ class SuratPengantar extends MyModel
                     ->where('suratpengantar.trado_id', $trado_id)
                     ->where('suratpengantar.pelanggan_id', $pelanggan_id);
             }
-        } 
-        if ($isGudangSama == 'false') { 
+        }
+        if ($isGudangSama == 'false') {
             if ($longtrip == 66) {
                 $pelanggan_id = request()->pelanggan_id ?? 0;
                 $trado_id = request()->trado_id ?? 0;
@@ -822,10 +837,11 @@ class SuratPengantar extends MyModel
                     ->where('suratpengantar.pelanggan_id', $pelanggan_id);
             }
         }
-        
+
         if ($from == 'tripinap') {
+            
             if ($tglabsensi != '') {
-                $query->where('suratpengantar.tglbukti', date('Y-m-d', strtotime($tglabsensi)));
+                $query->where('suratpengantar.tglbukti', '<=', date('Y-m-d', strtotime($tglabsensi)));
             }
             if ($supir_id != '') {
                 $query->where('suratpengantar.supir_id', $supir_id);

@@ -62,6 +62,19 @@ class SuratPengantarController extends Controller
         ]);
     }
 
+    public function getTripInap()
+    {
+        $suratPengantar = new SuratPengantar();
+
+        return response([
+            'data' => $suratPengantar->get(),
+            'attributes' => [
+                'totalJarak' => $suratPengantar->totalJarak,
+                'totalRows' => $suratPengantar->totalRows,
+                'totalPages' => $suratPengantar->totalPages
+            ]
+        ]);
+    }
     public function default()
     {
         $suratPengantar = new SuratPengantar();

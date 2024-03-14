@@ -8,8 +8,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ApprovalTripInapRequest;
+use App\Http\Requests\DestroyTripInapRequest;
 use App\Http\Requests\StoreTripInapRequest;
 use App\Http\Requests\UpdateTripInapRequest;
+use App\Models\Error;
+use App\Models\Parameter;
 
 class TripInapController extends Controller
 {
@@ -117,7 +120,7 @@ class TripInapController extends Controller
      * @ClassName 
      * @Keterangan HAPUS DATA
      */
-    public function destroy(Request $request, TripInap $tripinap)
+    public function destroy(DestroyTripInapRequest $request, TripInap $tripinap)
     {
         DB::beginTransaction();
 
@@ -253,5 +256,56 @@ class TripInapController extends Controller
         ];
 
         $this->toExcel('Laporan Trip Inap', $tarifs, $columns);
+    }
+
+    public function cekValidasi($id)
+    {
+        $pengajuan = TripInap::find($id);
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        if ($pengajuan == '') {
+            $keterangan = $error->cekKeteranganError('DTA') ?? '';
+
+            $keterror = $keterangan . ' <br> ' . $keterangantambahanerror;
+            $data = [
+                'message' => $keterror,
+                'error' => true,
+                'kodeerror' => 'SAP',
+                'statuspesan' => 'warning',
+            ];
+            return response($data);
+        }
+        
+        $status = $pengajuan->statusapproval;
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        if ($status == $statusApproval->id) {
+            $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
+            $getDetail = DB::table("tripinap")->from(DB::raw("tripinap with (readuncommitted)"))
+                ->select('trado.kodetrado', 'supir.namasupir', 'tripinap.tglabsensi')
+                ->join(DB::raw("trado with (readuncommitted)"), 'tripinap.trado_id', 'trado.id')
+                ->join(DB::raw("supir with (readuncommitted)"), 'tripinap.supir_id', 'supir.id')
+                ->where('tripinap.id', $id)
+                ->first();
+
+            $keterror = 'Absensi <b>' . date('d-m-Y', strtotime($getDetail->tglabsensi)) . '</b> trado <b>' . $getDetail->kodetrado . '</b> supir <b>' . $getDetail->namasupir . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+            $data = [
+                'message' => $keterror,
+                'error' => true,
+                'kodeerror' => 'SAP',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'message' => '',
+                'error' => false,
+                'statuspesan' => 'success',
+            ];
+
+            return response($data);
+        }
     }
 }

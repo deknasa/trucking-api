@@ -2,11 +2,10 @@
 
 namespace App\Http\Requests;
 
-use App\Http\Controllers\Api\ErrorController;
-use App\Rules\validasiApprovalTripInap;
+use App\Rules\validasiDestroyPengajuanTripInap;
 use Illuminate\Foundation\Http\FormRequest;
 
-class ApprovalTripInapRequest extends FormRequest
+class DestroyPengajuanTripInapRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,14 +25,7 @@ class ApprovalTripInapRequest extends FormRequest
     public function rules()
     {
         return [
-            'Id' => ['required',new validasiApprovalTripInap()]
-        ];
-    }
-
-    public function messages()
-    {
-        return [
-            'Id.required' => 'Trip Inap ' . app(ErrorController::class)->geterror('WP')->keterangan,
+            'id' => new validasiDestroyPengajuanTripInap
         ];
     }
 }

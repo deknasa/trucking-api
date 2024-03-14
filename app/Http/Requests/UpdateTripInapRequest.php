@@ -3,7 +3,12 @@
 namespace App\Http\Requests;
 
 use App\Rules\ExistTrado;
+use App\Rules\validasiDestroyTripInap;
+use App\Rules\validasiJamKeluarInap;
+use App\Rules\validasiJamMasukInap;
+use App\Rules\validasiPengajuan;
 use App\Rules\ValidasiSuratPengantarTripInap;
+use App\Rules\validasiTglTripInap;
 use App\Rules\ValidasiTradoTripInap;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -38,12 +43,13 @@ class UpdateTripInapRequest extends FormRequest
             ];
         }
         $rules = [
+            'id' => new validasiDestroyTripInap(),
             // "absensi_id" => ["required"],
-            "tglabsensi" => ["required"],
-            "trado" => ["required", new ValidasiTradoTripInap()],
+            "tglabsensi" => ["required", new validasiTglTripInap()],
+            "trado" => ["required", new ValidasiTradoTripInap(), new validasiPengajuan()],
             "suratpengantar_nobukti" => ["required", new ValidasiSuratPengantarTripInap()],
-            "jammasukinap" => ["required", 'date_format:H:i'],
-            "jamkeluarinap" => ["required", 'date_format:H:i'],
+            "jammasukinap" => ["required", new validasiJamMasukInap()],
+            "jamkeluarinap" => ["required", new validasiJamKeluarInap()],
         ];
         $rules = array_merge(
             $rules,

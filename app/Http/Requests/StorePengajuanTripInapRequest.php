@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Rules\ExistTrado;
+use App\Rules\validasiTglPengajuanTripInap;
 use App\Rules\ValidasiTradoPengajuanTripInap;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -38,7 +39,7 @@ class StorePengajuanTripInapRequest extends FormRequest
         }
         $rules = [
             // "absensi_id" => ["required"],
-            "tglabsensi" => ["required"],
+            "tglabsensi" => ["required", new validasiTglPengajuanTripInap()],
             "trado" => ["required", new ValidasiTradoPengajuanTripInap()],
         ];
         $rules = array_merge(

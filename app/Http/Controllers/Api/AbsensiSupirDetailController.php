@@ -78,6 +78,12 @@ class AbsensiSupirDetailController extends Controller
             if ($request->isProsesUangjalan == true) {
                 $request->request->add(['isProsesUangjalan' => true]);
             }
+            if ($request->from == 'pengajuantripinap') {
+                $request->request->add(['getabsen' => true]);
+            }
+            if ($request->from == 'tripinap') {
+                $request->request->add(['getabsen' => true]);
+            }
         } else {
 
             $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti', $tglbukti)->first();
