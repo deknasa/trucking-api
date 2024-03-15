@@ -570,8 +570,8 @@ class AbsensiSupirDetail extends MyModel
                 'absensisupirdetail.keterangan',
                 // 'absentrado.keterangan as absentrado',
                 // 'absentrado.id as absen_id',
-                DB::raw("(case when isnull(a.mandor_id,0)=0 then '".$ketstatuslibur ."' else absentrado.keterangan end) as absentrado"),
-                DB::raw("(case when isnull(a.mandor_id,0)=0 then ".$statuslibur ." else absentrado.id end) as absen_id"),
+                DB::raw("(case when isnull(trado.mandor_id,0)=0 then '".$ketstatuslibur ."' else absentrado.keterangan end) as absentrado"),
+                DB::raw("(case when isnull(trado.mandor_id,0)=0 then ".$statuslibur ." else absentrado.id end) as absen_id"),
 
                 'absensisupirdetail.jam',
                 'absensisupirheader.tglbukti',
@@ -805,6 +805,20 @@ class AbsensiSupirDetail extends MyModel
         ->where('subgrp', '=', 'BATAS JAM EDIT ABSENSI')
         ->first();
 
+        $tempidabsen = '##tempidabsen' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempidabsen, function ($table) {
+            $table->integer('text')->nullable();
+        });
+
+        $queryabsen=db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+        ->select(
+            'a.text'
+        )
+        ->where('a.grp','ABSENSI TANPA UANG JALAN') 
+        ->orderby('a.text','asc');
+
+        DB::table($tempidabsen)->insertUsing(['text'], $queryabsen);
+
         // dd(db::table($tempdatahasil)->get());
         $query = db::table($tempdata)->from(db::raw($tempdata . " a"))
             ->select(
@@ -834,7 +848,7 @@ class AbsensiSupirDetail extends MyModel
                     (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '".  date('Y-m-d', strtotime($date)) ." ".$batasJamEdit->text."' else    format(a.tglbukti,'yyyy/MM/dd')+' ".$batasJamEdit->text ."' end)
                     ) as datetime),'yyyy/MM/dd HH:mm:ss') as datetime)>=getdate() then 1 else 0 end) 
                     as berlaku"),
-                db::raw("(CASE WHEN absen_id IN (SELECT text FROM parameter WHERE grp = 'ABSENSI TANPA UANG JALAN') THEN 'readonly' ELSE '' END) AS uangjalan_readonly")
+                db::raw("(CASE WHEN a.absen_id IN (SELECT text FROM ".$tempidabsen.") THEN 'readonly' ELSE '' END) AS uangjalan_readonly")
 
 
                 // db::raw("format(cast(b.tglbatas as datetime),'dd-MM-yyyy HH:mm:ss') as tglbatas1"),
@@ -848,7 +862,7 @@ class AbsensiSupirDetail extends MyModel
             ->orderBy('a.trado', 'asc')
             ->orderBy('a.supir', 'asc');
 
-        // dd($query->get());
+        // dd($query->tosql());
         // 
 
 
