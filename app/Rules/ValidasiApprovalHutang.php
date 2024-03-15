@@ -7,6 +7,8 @@ use Illuminate\Contracts\Validation\Rule;
 use App\Models\Error;
 use App\Models\Parameter;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
 
 class ValidasiApprovalHutang implements Rule
 {
@@ -39,11 +41,21 @@ class ValidasiApprovalHutang implements Rule
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
 
+        $tempbukti = '##tempbukti' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempbukti, function ($table) {
+            $table->string('nobukti', 100)->nullable();
+        });
+
         $nobukti1 = '';
         $a = 0;
         $parameter = new Parameter();
         // dd($databukti);
         foreach ($databukti as $dataBukti) {
+            DB::table($tempbukti)->insert(
+                [
+                    'nobukti' => $dataBukti,
+                ]
+            );
             $getcetak = DB::table($table)->from(DB::raw("$table with (readuncommitted)"))->select('tglbukti', 'nobukti')->where('nobukti', $dataBukti)
                 ->first();
             if (!isset($getcetak)) {
@@ -56,6 +68,31 @@ class ValidasiApprovalHutang implements Rule
                 // dump($nobukti1);
             }
         }
+
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $parameter = new Parameter();
+
+        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup=date('Y-m-d', strtotime($tgltutup));   
+
+        $querytutup=db::table("hutangheader")->from(db::raw("hutangheader a with (readuncommitted)"))        
+        ->select(
+            db::raw("isnull(STRING_AGG(a.nobukti, ', '),'') as nobukti")   
+        )
+        ->join(db::raw($tempbukti." b"),'a.nobukti','b.nobukti')
+        ->whereraw("a.tglbukti<='". $tgltutup ."'")
+        ->first();
+        $nobukti= $querytutup->nobukti ?? '';
+        if ($nobukti!='') {
+            $nobukti= $querytutup->nobukti ?? '';
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $this->keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $this->errorid=2;
+            $allowed = false;
+            return $allowed;
+        } 
+
 
         if ($a >= 1) {
             $allowed = false;
@@ -138,6 +175,7 @@ class ValidasiApprovalHutang implements Rule
             $this->nobukti = $nobukti;
             return false;
         }
+
 
         return true;
     }
