@@ -570,8 +570,8 @@ class AbsensiSupirDetail extends MyModel
                 'absensisupirdetail.keterangan',
                 // 'absentrado.keterangan as absentrado',
                 // 'absentrado.id as absen_id',
-                DB::raw("(case when isnull(trado.mandor_id,0)=0 then '".$ketstatuslibur ."' else absentrado.keterangan end) as absentrado"),
-                DB::raw("(case when isnull(trado.mandor_id,0)=0 then ".$statuslibur ." else absentrado.id end) as absen_id"),
+                DB::raw("(case when isnull(trado.mandor_id,0)=0 and isnull(absensisupirdetail.absen_id,0)=0 then '".$ketstatuslibur ."' else absentrado.keterangan end) as absentrado"),
+                DB::raw("(case when isnull(trado.mandor_id,0)=0 and isnull(absensisupirdetail.absen_id,0)=0 then ".$statuslibur ." else absentrado.id end) as absen_id"),
 
                 'absensisupirdetail.jam',
                 'absensisupirheader.tglbukti',
