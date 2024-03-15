@@ -316,6 +316,9 @@ class Supir extends MyModel
         if($fromSupirSerap =="true"){
             $tglbukti = date('Y-m-d', strtotime($tgltrip));
             $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti', $tglbukti)->first();
+            if (!$absensiSupirHeader) {
+                return $query->where('supir.id',0)->get();
+            }
             $parameter = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                     ->select('text')
                     ->where('grp', '=', 'ABSENSI SUPIR SERAP')
