@@ -318,7 +318,7 @@ class PenerimaanStokHeaderController extends Controller
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
 
-        
+
 
 
 
@@ -328,22 +328,34 @@ class PenerimaanStokHeaderController extends Controller
 
         $aksi = request()->aksi ?? '';
         $peneimaan = $penerimaanStokHeader->findOrFail($id);
-
+        $nobukti=$peneimaan->nobukti ?? '';
         if (!isset($peneimaan)) {
             $keteranganerror = $error->cekKeteranganError('DTA') ?? '';
-            $keterror='No Bukti <b>'. request()->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . request()->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
                 'message' => $keterror,
                 'errors' => $keterror,
                 'kodestatus' => '1',
-                'statuspesan' => 'warning',                        
+                'statuspesan' => 'warning',
                 'kodenobukti' => '1'
             ];
-    
+
             return response($data);
-    
         }
 
+        if ($tgltutup >= $peneimaan->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterangan = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
+            $data = [
+                'message' => $keterangan,
+                'errors' => $keterangan,
+                'kodestatus' => '1',
+                'statuspesan' => 'warning',
+                'kodenobukti' => '1'
+            ];
+            return response($data);
+        }
+        
 
         $penerimaanstok_id = $peneimaan->penerimaanstok_id;
         $aco_id = db::table("penerimaanstok")->from(db::raw("penerimaanstok a with (readuncommitted)"))
@@ -382,13 +394,13 @@ class PenerimaanStokHeaderController extends Controller
                     //     ->where('kodeerror', '=', 'TPH')
                     //     ->get();
                     // $keterangan = $query['0'];
-                    $keteranganerror = $error->cekKeteranganError('TPH') ?? '';                    
+                    $keteranganerror = $error->cekKeteranganError('TPH') ?? '';
                     $keterangan = 'USER ' . $user . ' ' . $error->cekKeteranganError('TPH') ?? '';
                     $data = [
                         'message' => $keterangan,
                         'errors' => $keterangan,
                         'kodestatus' => '1',
-                        'statuspesan' => 'warning',                        
+                        'statuspesan' => 'warning',
                         'kodenobukti' => '1'
                     ];
                     $passes = false;
@@ -398,6 +410,8 @@ class PenerimaanStokHeaderController extends Controller
         }
 
 
+
+  
 
         // dd($penerimaanstok_id);
         // dd(auth('api')->user()->id);
@@ -417,13 +431,13 @@ class PenerimaanStokHeaderController extends Controller
                 //     ->get();
                 // $keterangan = $query['0'];
                 $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
-                $keterangan='No Bukti <b>'. request()->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
-    
+                $keterangan = 'No Bukti <b>' . request()->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+
                 $data = [
                     'message' => $keterangan,
                     'errors' => 'sudah cetak',
                     'kodestatus' => '1',
-                    'statuspesan' => 'warning',                        
+                    'statuspesan' => 'warning',
                     'kodenobukti' => '1'
                 ];
             } else {
@@ -431,7 +445,7 @@ class PenerimaanStokHeaderController extends Controller
                     'message' => '',
                     'errors' => 'bisa',
                     'kodestatus' => '0',
-                    'statuspesan' => 'warning',                        
+                    'statuspesan' => 'warning',
                     'kodenobukti' => '1'
                 ];
             }
@@ -451,13 +465,13 @@ class PenerimaanStokHeaderController extends Controller
                 //     ->get();
                 // $keterangan = $query['0'];
                 $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
-                $keterangan='No Bukti <b>'. request()->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+                $keterangan = 'No Bukti <b>' . request()->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
 
                 $dataUsed = [
                     'message' => $keterangan,
                     'errors' => 'Hutang',
                     'kodestatus' => '1',
-                    'statuspesan' => 'warning',                        
+                    'statuspesan' => 'warning',
                     'kodenobukti' => '1'
                 ];
             }
@@ -470,13 +484,13 @@ class PenerimaanStokHeaderController extends Controller
                 //     ->get();
                 // $keterangan = $query['0'];
                 $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
-                $keterangan='No Bukti <b>'. request()->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+                $keterangan = 'No Bukti <b>' . request()->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
 
                 $dataUsed = [
                     'message' => $keterangan,
                     'errors' => 'Approval Jurnal',
                     'kodestatus' => '1',
-                    'statuspesan' => 'warning',                        
+                    'statuspesan' => 'warning',
                     'kodenobukti' => '1'
                 ];
             }
@@ -491,13 +505,13 @@ class PenerimaanStokHeaderController extends Controller
                 //     ->get();
                 // $keterangan = $query['0'];
                 $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
-                $keterangan='No Bukti <b>'. request()->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+                $keterangan = 'No Bukti <b>' . request()->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
 
                 $dataUsed = [
                     'message' => $keterangan,
                     'errors' => 'sudah approve',
                     'kodestatus' => '1',
-                    'statuspesan' => 'warning',                        
+                    'statuspesan' => 'warning',
                     'kodenobukti' => '1'
                 ];
             }
@@ -510,13 +524,13 @@ class PenerimaanStokHeaderController extends Controller
                 // $keterangan = $query;
                 // $keterangan = ['keterangan' => 'transaksi Sudah berbeda tanggal']; //$query['0'];
                 $keteranganerror = $error->cekKeteranganError('TEPT') ?? '';
-                $keterangan='No Bukti <b>'. request()->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+                $keterangan = 'No Bukti <b>' . request()->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
 
                 $data = [
                     'message' => $keterangan,
                     'errors' => 'sudah cetak',
                     'kodestatus' => '1',
-                    'statuspesan' => 'warning',                        
+                    'statuspesan' => 'warning',
                     'kodenobukti' => '1'
                 ];
             }
@@ -529,14 +543,14 @@ class PenerimaanStokHeaderController extends Controller
                 //     ->first();
                 // $keterangan = $query;
                 $keteranganerror = $error->cekKeteranganError('TED2') ?? '';
-                $keterangan='No Bukti <b>'. request()->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+                $keterangan = 'No Bukti <b>' . request()->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
 
                 // $keterangan = ['keterangan' => 'Transaksi Tidak Bisa diedit']; //$query['0'];
                 $data = [
                     'message' => $keterangan,
                     'errors' => 'Transaksi Tidak Bisa diedit',
                     'kodestatus' => '1',
-                    'statuspesan' => 'warning',                        
+                    'statuspesan' => 'warning',
                     'kodenobukti' => '1'
                 ];
             }
@@ -548,13 +562,13 @@ class PenerimaanStokHeaderController extends Controller
                 //     ->get();
                 // $keterangan = $query['0'];
                 $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
-                $keterangan='No Bukti <b>'. request()->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+                $keterangan = 'No Bukti <b>' . request()->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
 
                 $data = [
                     'message' => $keterangan,
                     'errors' => 'sudah cetak',
                     'kodestatus' => '1',
-                    'statuspesan' => 'warning',                        
+                    'statuspesan' => 'warning',
                     'kodenobukti' => '1'
                 ];
 
@@ -585,13 +599,13 @@ class PenerimaanStokHeaderController extends Controller
 
                 // $keterangan = $query;
                 $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
-                $keterangan='No Bukti <b>'. request()->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+                $keterangan = 'No Bukti <b>' . request()->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
 
                 $data = [
                     'message' => $keterangan,
                     'errors' => 'Pengeluaran stok',
                     'kodestatus' => '1',
-                    'statuspesan' => 'warning',                        
+                    'statuspesan' => 'warning',
                     'kodenobukti' => '1'
                 ];
             }
@@ -617,7 +631,7 @@ class PenerimaanStokHeaderController extends Controller
                         'message' => '',
                         'errors' => 'bisa',
                         'kodestatus' => '0',
-                        'statuspesan' => 'warning',                        
+                        'statuspesan' => 'warning',
                         'kodenobukti' => '1'
                     ];
                     return response($data);

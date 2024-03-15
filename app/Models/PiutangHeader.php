@@ -526,16 +526,16 @@ class PiutangHeader extends MyModel
         $coa = $memocoa['JURNAL'];
 
 
-        if (isset($getCoapendapatan)) {
+        /*if (isset($getCoapendapatan)) {
             $coapendapatan=$getCoapendapatan->coapendapatan ?? '';
-        } else {
+        } else {*/
             $param = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PIUTANG INVOICE TAMBAHAN')
             ->where('subgrp', 'KREDIT')
             ->where('text', 'KREDIT')
             ->first();
             $memo = json_decode($param->memo, true);
             $coapendapatan = $memo['JURNAL'];
-        }
+        // }
         // dump($coa);
         // dd($coapendapatan);
 
