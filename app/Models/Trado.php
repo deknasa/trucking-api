@@ -303,8 +303,10 @@ class Trado extends MyModel
                 if($absensisupirapprovalheader){
                     return $query->where('trado.id', 0)->get();
                 }
-                
+            }else{
+                return $query->where('trado.id', 0)->get();
             }
+                
             $absensiId =  $absensiQuery->id?? '' ;
         }
 
