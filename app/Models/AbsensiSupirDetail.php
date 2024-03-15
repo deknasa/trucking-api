@@ -551,6 +551,16 @@ class AbsensiSupirDetail extends MyModel
         }
         DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id', 'namasupir_old', 'supir_id_old', 'uangjalan'], $absensisupirdetail);
 
+        $parameter = new Parameter();
+        $statuslibur = $parameter->cekText('ABSENSI SUPIR SERAP', 'L') ?? '0';
+        $ketstatuslibur=db::table("absentrado")->from(db::raw("absentrado a with (readuncommitted)"))
+        ->select(
+            'a.keterangan'
+        )
+        ->where('a.id',$statuslibur)
+        ->first()->keterangan ?? '';
+
+
         //trado yang sudah absen dan punya tidak punya supir
         $absensisupirdetail = DB::table('absensisupirdetail')
             ->select(
@@ -558,8 +568,11 @@ class AbsensiSupirDetail extends MyModel
                 'trado.kodetrado',
                 'supir.namasupir',
                 'absensisupirdetail.keterangan',
-                'absentrado.keterangan as absentrado',
-                'absentrado.id as absen_id',
+                // 'absentrado.keterangan as absentrado',
+                // 'absentrado.id as absen_id',
+                DB::raw("(case when isnull(a.mandor_id,0)=0 then '".$ketstatuslibur ."' else absentrado.keterangan end) as absentrado"),
+                DB::raw("(case when isnull(a.mandor_id,0)=0 then ".$statuslibur ." else absentrado.id end) as absen_id"),
+
                 'absensisupirdetail.jam',
                 'absensisupirheader.tglbukti',
                 'supir.id as supir_id',
@@ -589,14 +602,6 @@ class AbsensiSupirDetail extends MyModel
 
         $update = DB::table($tempMandor);
         $update->update(["memo" => '{"MEMO":"AKTIF","SINGKATAN":"A","WARNA":"#009933","WARNATULISAN":"#FFF"}']);
-        $parameter = new Parameter();
-        $statuslibur = $parameter->cekText('ABSENSI SUPIR SERAP', 'L') ?? '0';
-        $ketstatuslibur=db::table("absentrado")->from(db::raw("absentrado a with (readuncommitted)"))
-        ->select(
-            'a.keterangan'
-        )
-        ->where('a.id',$statuslibur)
-        ->first()->keterangan ?? '';
 
         	
         $trados = DB::table('trado as a')

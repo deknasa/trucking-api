@@ -682,6 +682,28 @@ class PiutangHeader extends MyModel
 
         $piutangDetails = [];
 
+        $paramcoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PIUTANG INVOICE TAMBAHAN')
+        ->where('subgrp', 'DEBET')
+        ->where('text', 'DEBET')
+        ->first();
+        $memocoa = json_decode($paramcoa->memo, true);
+        $coa = $memocoa['JURNAL'];
+
+
+        /*if (isset($getCoapendapatan)) {
+            $coapendapatan=$getCoapendapatan->coapendapatan ?? '';
+        } else {*/
+            $param = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PIUTANG INVOICE TAMBAHAN')
+            ->where('subgrp', 'KREDIT')
+            ->where('text', 'KREDIT')
+            ->first();
+            $memo = json_decode($param->memo, true);
+            $coapendapatan = $memo['JURNAL'];
+        // }
+        // dump($coa);
+        // dd($coapendapatan);
+        
+
         for ($i = 0; $i < count($data['nominal_detail']); $i++) {
             $piutangDetail = (new PiutangDetail())->processStore($piutangHeader, [
                 'nominal' => $data['nominal_detail'][$i],
@@ -689,8 +711,10 @@ class PiutangHeader extends MyModel
                 'invoice_nobukti' => $data['invoice_nobukti'][$i] ?? ''
             ]);
 
-            $coadebet_detail[] = $getCoa->coa;
-            $coakredit_detail[] = $getCoa->coapendapatan;
+            $coadebet_detail[] = $coa;
+            $coakredit_detail[] = $coapendapatan ;
+            // $coadebet_detail[] = $getCoa->coa;
+            // $coakredit_detail[] = $getCoa->coapendapatan;
             $keterangan_detail[] = $data['keterangan_detail'][$i];
             $nominal_detail[] = $data['nominal_detail'][$i];
 
