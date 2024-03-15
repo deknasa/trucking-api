@@ -827,8 +827,11 @@ class AbsensiSupirDetail extends MyModel
                 'a.trado',
                 'a.supir',
                 'a.keterangan',
-                'a.absen',
-                'a.absen_id',
+                // 'a.absen',
+                // 'a.absen_id',
+                DB::raw("(case when isnull(c.mandor_id,0)=0 and isnull(a.absen_id,0)=0 then '".$ketstatuslibur ."' else a.absen end) as absen"),
+                DB::raw("(case when isnull(c.mandor_id,0)=0 and isnull(a.absen_id,0)=0  then ".$statuslibur ." else a.absen_id end) as absen_id"),
+
                 'a.jam',
                 'a.tglbukti',
                 'a.supir_id',
@@ -859,6 +862,7 @@ class AbsensiSupirDetail extends MyModel
                 // $join->on('a.supir_id', '=', 'b.supir_id');
                 $join->on('a.trado_id', '=', 'b.trado_id');
             })
+            ->join(db::raw("trado c with (readuncommitted)"), 'a.trado_id', 'c.id')
             ->orderBy('a.trado', 'asc')
             ->orderBy('a.supir', 'asc');
 

@@ -953,6 +953,20 @@ class AbsensiSupirHeader extends MyModel
             ->where('tglabsensi', date('Y-m-d', strtotime($data['tglbukti'])))
             ->first();
 
+
+            $parameter = new Parameter();
+        $statusbolehedit=  $parameter->cekId('STATUS EDIT ABSENSI', 'STATUS EDIT ABSENSI','BOLEH EDIT ABSENSI') ?? 0;
+
+        $query=db::table("absensisupirheader")->from(db::raw("absensisupirheader a with (readuncommitted)"))
+        ->select(
+            'a.tglapprovaleditabsensi',
+            'a.tglbataseditabsensi'
+        )
+        ->where('a.nobukti',$data['nobukti'])
+        ->where('a.statusapprovaleditabsensi',$statusbolehedit)
+        ->first();
+
+
         // $query_jam = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'BATAS JAM EDIT ABSENSI')->where('subgrp', 'BATAS JAM EDIT ABSENSI')->first();
         // $jam = substr($query_jam->text, 0, 2);
         // $menit = substr($query_jam->text, 3, 2);
@@ -960,11 +974,18 @@ class AbsensiSupirHeader extends MyModel
         // $query_jam = strtotime($tglbukti.' '.$jam.':'.$menit.':00' );
         // $tglbataseditabsensi = date('Y-m-d H:i:s',$query_jam);
         $tglbataseditabsensi = $absensiSupir->tglbataseditabsensi;
-
-        if ($data['tglbataseditabsensi']) {
-            $tglbataseditabsensi = $data['tglbataseditabsensi'];
+        // dd($data['tglbataseditabsensi']);
+        // if ($data['tglbataseditabsensi']) {
+        //     $tglbataseditabsensi = $data['tglbataseditabsensi'];
+        //     dd('a');
+        //     // dd($tglbataseditabsensi);
+        if (isset($query)) {
+            $tglbataseditabsensi = $query->tglbataseditabsensi;
+                // dd('a');
         } else if (isset($bukaabsensi->tglbatas)) {
             $tglbataseditabsensi = $bukaabsensi->tglbatas;
+            // dd('b');
+            // dd($tglbataseditabsensi);
         }
 
         /* Store header */
