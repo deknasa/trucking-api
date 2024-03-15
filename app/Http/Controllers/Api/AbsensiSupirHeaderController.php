@@ -249,6 +249,7 @@ class AbsensiSupirHeaderController extends Controller
         DB::beginTransaction();
         try {
             $data = [
+                "nobukti" =>  $request->nobukti,
                 "tglbukti" =>  $request->tglbukti,
                 "trado_id" => $request->trado_id,
                 "trado" => $request->trado,
