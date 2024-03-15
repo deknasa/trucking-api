@@ -293,9 +293,19 @@ class Trado extends MyModel
 
 
         if ($supirserap) {
-            $absensiId =  DB::table('absensisupirheader')->from(
+            $absensiQuery =  DB::table('absensisupirheader')->from(
                 DB::raw("absensisupirheader a with (readuncommitted)")
-            )->where('tglbukti', $tglabsensi)->first()->id;
+            )->where('tglbukti', $tglabsensi)->first();
+            if ($absensiQuery) {
+                $absensisupirapprovalheader =  DB::table('absensisupirapprovalheader')->from(
+                    DB::raw("absensisupirapprovalheader a with (readuncommitted)")
+                )->where('absensisupir_nobukti', $absensiQuery->nobukti)->first();
+                if($absensisupirapprovalheader){
+                    return $query->where('trado.id', 0)->get();
+                }
+                
+            }
+            $absensiId =  $absensiQuery->id?? '' ;
         }
 
         if ($absensiId != '') {

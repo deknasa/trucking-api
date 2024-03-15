@@ -234,7 +234,7 @@ class AbsensiSupirDetail extends MyModel
                 $query->select(
                     "trado.kodetrado as trado",
                     "supir.namasupir as supir",
-                    "absentrado.kodeabsen as status",
+                    "absentrado.keterangan as status",
                     "absentrado.keterangan as statusKeterangan",
                     "absentrado.memo as memo",
                     DB::raw("(case when c.nominalplusborongan IS NULL then 0 else c.nominalplusborongan end) as nominalplusborongan"),
@@ -816,6 +816,12 @@ class AbsensiSupirDetail extends MyModel
                     (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '".  date('Y-m-d', strtotime($date)) ." ".$batasJamEdit->text."' else    format(a.tglbukti,'yyyy/MM/dd')+' ".$batasJamEdit->text ."' end)
                     ) as datetime),'yyyy/MM/dd HH:mm:ss') as datetime)>=getdate() then 1 else 0 end) 
                     as berlaku"),
+                db::raw("(case when cast(format(cast(isnull(b.tglbatas,
+                    (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '".  date('Y-m-d', strtotime($date)) ." ".$batasJamEdit->text."' else    format(a.tglbukti,'yyyy/MM/dd')+' ".$batasJamEdit->text ."' end)
+                    ) as datetime),'yyyy/MM/dd HH:mm:ss') as datetime)>=getdate() then 1 else 0 end) 
+                    as berlaku"),
+                db::raw("(CASE WHEN absen_id IN (SELECT text FROM parameter WHERE grp = 'ABSENSI TANPA UANG JALAN') THEN 'readonly' ELSE '' END) AS uangjalan_readonly")
+
 
                 // db::raw("format(cast(b.tglbatas as datetime),'dd-MM-yyyy HH:mm:ss') as tglbatas1"),
                 // db::raw("format(cast(format(a.tglbukti,'yyyy/MM/dd')+' 12:00:00 as datetime),'dd-MM-yyyy HH:mm:ss') as tglbatas2"),
