@@ -583,6 +583,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('supir/approvalsupirtanpa', [SupirController::class, 'approvalSupirTanpa']);
     Route::get('trado/approvaltradotanpa', [TradoController::class, 'approvalTradoTanpa']);
     Route::post('jurnalumumheader/approval', [JurnalUmumHeaderController::class, 'approval']);
+    Route::post('suratpengantar/addrow', [SuratPengantarController::class, 'addrow']);
 
 
 });
@@ -1377,7 +1378,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('absentrado/rekapabsentrado', [AbsenTradoController::class, 'rekapabsentrado']);
     Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
     Route::post('suratpengantar/cekUpahSupir', [SuratPengantarController::class, 'cekUpahSupir']);
-    Route::post('suratpengantar/addrow', [SuratPengantarController::class, 'addrow']);
     Route::get('suratpengantar/export', [SuratPengantarController::class, 'export']);
     Route::get('suratpengantar/{id}/getTarifOmset', [SuratPengantarController::class, 'getTarifOmset'])->whereNumber('id');
     Route::post('suratpengantar/batalmuat', [SuratPengantarController::class, 'approvalBatalMuat'])->whereNumber('id');
