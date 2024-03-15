@@ -24,9 +24,7 @@ use App\Models\Error;
 use App\Http\Controllers\Api\PengeluaranHeaderController;
 
 use App\Http\Requests\AbsensiSupirHeaderRequest;
-
-
-
+use App\Http\Requests\ApprovalPengajuanTripInapAbsensiRequest;
 use Illuminate\Database\QueryException;
 
 class AbsensiSupirHeaderController extends Controller
@@ -110,48 +108,50 @@ class AbsensiSupirHeaderController extends Controller
      * @ClassName 
      * @Keterangan APPROVAL PENGAJUAN TRIP INAP
      */
-    public function approvalTripInap($id)
+    public function approvalTripInap(ApprovalPengajuanTripInapAbsensiRequest $request)
     {
         DB::beginTransaction();
         try {
-            $absensiSupirHeader = AbsensiSupirHeader::lockForUpdate()->findOrFail($id);
+            for ($i = 0; $i < count($request->id); $i++) {
+                $id = $request->id[$i];
+                $absensiSupirHeader = AbsensiSupirHeader::lockForUpdate()->findOrFail($id);
 
-            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            $statusTidakApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
-            // statusapprovaleditabsensi,tglapprovaleditabsensi,userapprovaleditabsensi 
-            if ($absensiSupirHeader->statusapprovalpengajuantripinap == $statusApproval->id) {
-                $absensiSupirHeader->statusapprovalpengajuantripinap = $statusTidakApproval->id;
-                $absensiSupirHeader->userapprovalpengajuantripinap = '';
-                $absensiSupirHeader->tglapprovalpengajuantripinap = date('Y-m-d', strtotime("1900-01-01"));
-                $absensiSupirHeader->tglbataspengajuantripinap = null;
-                $aksi = $statusTidakApproval->text;
-            } else {
-                $tglbtas = date("Y-m-d", strtotime('today'));
-                $tglbtas = date("Y-m-d H:i:s", strtotime($tglbtas . ' 23:59:00'));
-                $absensiSupirHeader->statusapprovalpengajuantripinap = $statusApproval->id;
-                $absensiSupirHeader->userapprovalpengajuantripinap = auth('api')->user()->name;
-                $absensiSupirHeader->tglapprovalpengajuantripinap = date("Y-m-d", strtotime('today'));
-                $absensiSupirHeader->tglbataspengajuantripinap = $tglbtas;
-                $aksi = $statusApproval->text;
+                $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+                $statusTidakApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+                // statusapprovaleditabsensi,tglapprovaleditabsensi,userapprovaleditabsensi 
+                if ($absensiSupirHeader->statusapprovalpengajuantripinap == $statusApproval->id) {
+                    $absensiSupirHeader->statusapprovalpengajuantripinap = $statusTidakApproval->id;
+                    $absensiSupirHeader->userapprovalpengajuantripinap = '';
+                    $absensiSupirHeader->tglapprovalpengajuantripinap = date('Y-m-d', strtotime("1900-01-01"));
+                    $absensiSupirHeader->tglbataspengajuantripinap = null;
+                    $aksi = $statusTidakApproval->text;
+                } else {
+                    $tglbtas = date("Y-m-d", strtotime('today'));
+                    $tglbtas = date("Y-m-d H:i:s", strtotime($tglbtas . ' 23:59:00'));
+                    $absensiSupirHeader->statusapprovalpengajuantripinap = $statusApproval->id;
+                    $absensiSupirHeader->userapprovalpengajuantripinap = auth('api')->user()->name;
+                    $absensiSupirHeader->tglapprovalpengajuantripinap = date("Y-m-d", strtotime('today'));
+                    $absensiSupirHeader->tglbataspengajuantripinap = $tglbtas;
+                    $aksi = $statusApproval->text;
+                }
+
+                if ($absensiSupirHeader->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($absensiSupirHeader->getTable()),
+                        'postingdari' => 'APPROVED PENGAJUAN TRIP INAP',
+                        'idtrans' => $absensiSupirHeader->id,
+                        'nobuktitrans' => $absensiSupirHeader->id,
+                        'aksi' => $aksi,
+                        'datajson' => $absensiSupirHeader->toArray(),
+                        'modifiedby' => auth('api')->user()->name
+                    ];
+
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                }
             }
-            
-            if ($absensiSupirHeader->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($absensiSupirHeader->getTable()),
-                    'postingdari' => 'APPROVED PENGAJUAN TRIP INAP',
-                    'idtrans' => $absensiSupirHeader->id,
-                    'nobuktitrans' => $absensiSupirHeader->id,
-                    'aksi' => $aksi,
-                    'datajson' => $absensiSupirHeader->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
+            DB::commit();
             return response([
                 'message' => 'Berhasil'
             ]);
