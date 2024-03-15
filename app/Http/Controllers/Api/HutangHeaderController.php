@@ -322,34 +322,64 @@ class HutangHeaderController extends Controller
 
     public function cekvalidasi($id)
     {
-        $hutang = HutangHeader::find($id);
 
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
+
+        $hutang = HutangHeader::find($id);
+        $nobukti=$hutang->nobukti ?? '';
         $statusdatacetak = $hutang->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        $parameter = new Parameter();
+
+        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup=date('Y-m-d', strtotime($tgltutup));        
+        
         if ($statusdatacetak == $statusCetak->id) {
-            $query = DB::table('error')
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SDC')
-                ->first();
-            $keterangan = [
-                'keterangan' => 'No Bukti ' . $hutang->nobukti . ' ' . $query->keterangan
-            ];
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+            
+            // $query = DB::table('error')
+            //     ->select('keterangan')
+            //     ->where('kodeerror', '=', 'SDC')
+            //     ->first();
+            // $keterangan = [
+            //     'keterangan' => 'No Bukti ' . $hutang->nobukti . ' ' . $query->keterangan
+            // ];
 
             $data = [
                 'message' => $keterangan,
                 'errors' => 'sudah cetak',
                 'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'kodenobukti' => '1',
+                'statuspesan' => 'warning',
+                'error' => true,
+                'kodeerror' => 'SDC',                
             ];
 
             return response($data);
+        } else if ($tgltutup >= $hutang->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);                  
         } else {
 
             $data = [
                 'message' => '',
                 'errors' => 'belum approve',
                 'kodestatus' => '0',
-                'kodenobukti' => '1'
+                'kodenobukti' => '1',
+                'error' => false,
+                'statuspesan' => 'success',                
             ];
 
             return response($data);
@@ -358,22 +388,31 @@ class HutangHeaderController extends Controller
     public function cekValidasiAksi($id)
     {
         $hutangHeader = new HutangHeader();
+
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
+
         $nobukti = HutangHeader::from(DB::raw("hutangheader"))->where('id', $id)->first();
         $cekdata = $hutangHeader->cekvalidasiaksi($nobukti->nobukti);
         if ($cekdata['kondisi'] == true) {
-            $query = DB::table('error')
-                ->select(
-                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
-                )
-                ->where('kodeerror', '=', $cekdata['kodeerror'])
-                ->get();
-            $keterangan = $query['0'];
+            // $query = DB::table('error')
+            //     ->select(
+            //         DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+            //     )
+            //     ->where('kodeerror', '=', $cekdata['kodeerror'])
+            //     ->get();
+            // $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
-                'message' => $keterangan,
+                // 'message' => $keterangan,
                 'errors' => '',
                 'kondisi' => $cekdata['kondisi'],
+                'error' => true,
+                'message' => $cekdata['keterangan'] ?? '',
+                'statuspesan' => 'warning',
+                'kodeerror' => $cekdata['kodeerror'],                
             ];
 
             return response($data);
@@ -381,9 +420,12 @@ class HutangHeaderController extends Controller
 
             $data = [
                 'status' => false,
+                'error' => false,
                 'message' => '',
+                'statuspesan' => 'success',
                 'errors' => '',
                 'kondisi' => $cekdata['kondisi'],
+
             ];
 
             return response($data);

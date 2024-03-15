@@ -331,6 +331,9 @@ class HutangHeader extends MyModel
 
     public function cekvalidasiaksi($nobukti)
     {
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+   
         $pelunasanHutang = DB::table('pelunasanhutangdetail')
             ->from(
                 DB::raw("pelunasanhutangdetail as a with (readuncommitted)")
@@ -341,11 +344,13 @@ class HutangHeader extends MyModel
             )
             ->where('a.hutang_nobukti', '=', $nobukti)
             ->first();
+          $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
         if (isset($pelunasanHutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pembayaran Hutang '. $pelunasanHutang->nobukti,
-                'kodeerror' => 'SATL'
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Pembayaran hutang <b>'. $pelunasanHutang->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Pembayaran Hutang '. $pelunasanHutang->nobukti,
+                'kodeerror' => 'SATL2'
             ];
             goto selesai;
         }
@@ -360,10 +365,13 @@ class HutangHeader extends MyModel
             )
             ->where('a.hutang_nobukti', '=', $nobukti)
             ->first();
+            $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
+
         if (isset($penerimaanStok)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Penerimaan Stok '. $penerimaanStok->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Penerimaan Stok <b>'. $penerimaanStok->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Penerimaan Stok '. $penerimaanStok->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -379,10 +387,13 @@ class HutangHeader extends MyModel
             )
             ->where('a.hutang_nobukti', '=', $nobukti)
             ->first();
+            $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
+
         if (isset($hutangExtra)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Hutang Extra '. $hutangExtra->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Hutang Extra <b>'. $hutangExtra->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Hutang Extra '. $hutangExtra->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -397,10 +408,12 @@ class HutangHeader extends MyModel
             )
             ->where('a.nobukti', '=', $nobukti)
             ->first();
+            $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
         if (isset($jurnalpusat)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal '. $jurnalpusat->nobukti,
+                'keterangan' => 'No Bukti <b>'. $jurnalpusat->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'Approval Jurnal '. $jurnalpusat->nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
