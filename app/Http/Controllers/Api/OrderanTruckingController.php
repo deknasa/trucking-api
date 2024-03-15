@@ -302,6 +302,60 @@ class OrderanTruckingController extends Controller
             throw $th;
         }
     }
+
+    /**
+     * @ClassName
+     * @Keterangan APPROVAL TANPA JOB EMKL
+     */
+    public function updateNoContainer(UpdateOrderanTruckingRequest $request, OrderanTrucking $orderantrucking): JsonResponse{
+        DB::beginTransaction();
+
+        try {
+            $orderan=$request->jenisorderemkl ?? $request->jenisorder ;
+            $jenisorderemkl_id=db::table("jenisorder")->from(
+                db::raw("jenisorder a with (readuncommitted)")
+            )
+            ->select(
+                'a.id'
+            )
+            ->where ('a.keterangan','=', $orderan)
+            ->first();
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'container_id' => $request->container_id,
+                'agen_id' => $request->agen_id,
+                'jenisorder_id' => $request->jenisorder_id,
+                'jenisorderemkl_id' => $jenisorderemkl_id->id,
+                'pelanggan_id' => $request->pelanggan_id,
+                'tarifrincian_id' => $request->tarifrincian_id,
+                'nojobemkl' => $request->nojobemkl,
+                'nocont' => $request->nocont,
+                'noseal' => $request->noseal,
+                'nojobemkl2' => $request->nojobemkl2,
+                'nocont2' => $request->nocont2,
+                'noseal2' => $request->noseal2,
+                'statuslangsir' => $request->statuslangsir,
+                'statusperalihan' => $request->statusperalihan,
+            ];
+            $orderanTrucking = (new OrderanTrucking())->processUpdateNoContainer($orderantrucking, $data);
+            $orderanTrucking->position = $this->getPosition($orderanTrucking, $orderanTrucking->getTable())->position;
+            if ($request->limit==0) {
+                $orderanTrucking->page = ceil($orderanTrucking->position / (10));
+            } else {
+                $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Berhasil diubah',
+                'data' => $orderanTrucking
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
     /**
      * @ClassName 
      * @Keterangan HAPUS DATA

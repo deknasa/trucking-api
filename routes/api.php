@@ -689,6 +689,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('orderantrucking/approvaledit', [OrderanTruckingController::class, 'approvaledit']);
     Route::post('orderantrucking/approvaltanpajob', [OrderanTruckingController::class, 'approvaltanpajobemkl']);
     Route::post('orderantrucking/approval', [OrderanTruckingController::class, 'approval']);
+    Route::patch('orderantrucking/{orderantrucking}/updatenocontainer', [OrderanTruckingController::class, 'updateNoContainer']);
 
     Route::get('chargegandengan/export', [ChargeGandenganController::class, 'export']);
 
