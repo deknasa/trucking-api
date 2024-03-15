@@ -589,7 +589,16 @@ class AbsensiSupirDetail extends MyModel
 
         $update = DB::table($tempMandor);
         $update->update(["memo" => '{"MEMO":"AKTIF","SINGKATAN":"A","WARNA":"#009933","WARNATULISAN":"#FFF"}']);
+        $parameter = new Parameter();
+        $statuslibur = $parameter->cekText('ABSENSI SUPIR SERAP', 'L') ?? '0';
+        $ketstatuslibur=db::table("absentrado")->from(db::raw("absentrado a with (readuncommitted)"))
+        ->select(
+            'a.keterangan'
+        )
+        ->where('a.id',$statuslibur)
+        ->first()->keterangan ?? '';
 
+        	
         $trados = DB::table('trado as a')
 
             ->select(
@@ -598,8 +607,8 @@ class AbsensiSupirDetail extends MyModel
                 'a.kodetrado as kodetrado',
                 'c.namasupir as namasupir',
                 DB::raw('null as keterangan'),
-                DB::raw('null as absentrado'),
-                DB::raw('null as absen_id'),
+                DB::raw("(case when isnull(a.mandor_id,0)=0 then '".$ketstatuslibur ."' else null end) as absentrado"),
+                DB::raw("(case when isnull(a.mandor_id,0)=0 then ".$statuslibur ." else null end) as absen_id"),
                 DB::raw("null as jam"),
                 DB::raw("null as tglbukti"),
                 DB::raw("(case when (select text from parameter where grp='ABSENSI SUPIR' and subgrp='TRADO MILIK SUPIR')= 'YA' then a.supir_id else null end) as supir_id"),
