@@ -99,7 +99,7 @@ class OrderanTrucking extends MyModel
         if (isset($invoice)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> Invoice <b>'. $gajiSupir->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> Invoice <b>'. $invoice->nobukti .'</b> <br> '.$keterangantambahanerror,
                 // 'keterangan' => 'invoice ' . $invoice->nobukti,
                 'kodeerror' => 'SATL2'                
             ];
@@ -1542,6 +1542,66 @@ class OrderanTrucking extends MyModel
                 }
             }
         }
+        return $orderanTrucking;
+    }
+    public function processUpdateNoContainer(OrderanTrucking $orderanTrucking, array $data): OrderanTrucking
+    {
+        $defaultapproval = DB::table('parameter')
+            ->where('grp', 'STATUS APPROVAL')
+            ->where('subgrp', 'STATUS APPROVAL')
+            ->where('text', 'NON APPROVAL')
+            ->first();
+        $historyorderantrucking = DB::table('historyorderantrucking')->insertGetId(
+            [
+                "nobukti" => $orderanTrucking->nobukti,
+                "container_id" => $orderanTrucking->container_id,
+                "agen_id" => $orderanTrucking->agen_id,
+                "jenisorder_id" => $orderanTrucking->jenisorder_id,
+                "jenisorderemkl_id" => $orderanTrucking->jenisorderemkl_id,
+                "pelanggan_id" => $orderanTrucking->pelanggan_id,
+                "nojobemkl" => $data['nojobemkl'] ?? '',
+                "nocont" => $data['nocont'],
+                "noseal" => $data['noseal'],
+                "nojobemkl2" => $data['nojobemkl2'] ?? '',
+                "nocont2" => $data['nocont2'] ?? '',
+                "noseal2" => $data['noseal2'] ?? '',
+                "nojobemkllama" => $orderanTrucking->nojobemkl,
+                "nocontlama" => $orderanTrucking->nocont,
+                "noseallama" => $orderanTrucking->noseal,
+                "nojobemkllama2" => $orderanTrucking->nojobemkl2,
+                "nocontlama2" => $orderanTrucking->nocont2,
+                "noseallama2" => $orderanTrucking->noseal2,
+                "modifiedby" => auth('api')->user()->name,
+            ],
+        );
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper('historyorderantrucking'),
+            'postingdari' => 'CREATE HISTORY ORDERAN TRUCKING',
+            'idtrans' => $historyorderantrucking,
+            'nobuktitrans' => $orderanTrucking->nobukti,
+            'aksi' => 'CREATE',
+            'datajson' => $orderanTrucking->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+        $dataUpdate = [
+            'tglbukti' => $orderanTrucking->tglbukti,
+            'container_id' => $orderanTrucking->container_id,
+            'agen_id' => $orderanTrucking->agen_id,
+            'jenisorder_id' => $orderanTrucking->jenisorder_id,
+            'jenisorderemkl_id' => $orderanTrucking->jenisorderemkl_id,
+            'pelanggan_id' => $orderanTrucking->pelanggan_id,
+            'tarifrincian_id' => $orderanTrucking->tarifrincian_id,
+            'nojobemkl' => $data['nojobemkl'],
+            'nocont' => $data['nocont'],
+            'noseal' => $data['noseal'],
+            'nojobemkl2' => $data['nojobemkl2'],
+            'nocont2' => $data['nocont2'],
+            'noseal2' => $data['noseal2'],
+            'statuslangsir' => $orderanTrucking->statuslangsir,
+            'statusperalihan' => $orderanTrucking->statusperalihan,
+        ];
+        return $this->processUpdate($orderanTrucking, $data);
         return $orderanTrucking;
     }
 

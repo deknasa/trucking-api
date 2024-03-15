@@ -16,7 +16,7 @@ class CreateHistoryorderantruckingTable extends Migration
     {
         Schema::create('historyorderantrucking', function (Blueprint $table) {
             $table->id();
-            $table->string('nobukti',50)->unique();
+            $table->string('nobukti',50);
             $table->date('tglbukti')->nullable();
             $table->unsignedBigInteger('container_id')->nullable();
             $table->unsignedBigInteger('agen_id')->nullable();
