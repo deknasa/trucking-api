@@ -178,7 +178,7 @@ class SuratPengantar extends MyModel
 
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> Invoice <b>'. $cekJob->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> Invoice <b>'. $query->nobukti .'</b> <br> '.$keterangantambahanerror,
                 'kodeerror' => 'SATL2'                  
                 // 'keterangan' => 'invoice ' . $query->nobukti,
             ];
@@ -198,7 +198,7 @@ class SuratPengantar extends MyModel
             $data = [
                 'kondisi' => true,
                 // 'keterangan' => 'pendapatan supir ' . $query->nobukti,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> pendapatan supir <b>'. $cekJob->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> pendapatan supir <b>'. $query->nobukti .'</b> <br> '.$keterangantambahanerror,
                 'kodeerror' => 'SATL2'                  
 
             ];
