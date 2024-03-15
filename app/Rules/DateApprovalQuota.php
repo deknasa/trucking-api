@@ -161,16 +161,29 @@ class DateApprovalQuota implements Rule
 
             // GET APPROVAL BERDASARKAN MANDOR
             $getAll = DB::table("mandordetail")->from(DB::raw("mandordetail as a"))
-                ->select('a.mandor_id', 'c.id', 'c.user_id', 'c.statusapproval', 'c.tglbatas', 'c.jumlahtrip','e.namamandor')
+                ->select('a.mandor_id', 'c.id', 'c.user_id', 'c.statusapproval', 'c.tglbatas', 'c.jumlahtrip', 'e.namamandor')
                 ->leftJoin(DB::raw("$tempMandor as b with (readuncommitted)"), 'a.mandor_id', 'b.mandor_id')
                 ->leftJoin(DB::raw("$tempApp as c with (readuncommitted)"), 'a.user_id', 'c.user_id')
                 ->leftJoin(DB::raw("$tempSP as d with (readuncommitted)"), 'c.id', 'd.approvalbukatanggal_id')
-                ->leftjoin(db::raw("mandor e "),'a.mandor_id','e.id')
+                ->leftjoin(db::raw("mandor e "), 'a.mandor_id', 'e.id')
                 ->whereRaw('COALESCE(b.mandor_id, 0) <> 0')
                 ->whereRaw('COALESCE(c.user_id, 0) <> 0')
-                ->whereRaw('isnull(c.user_id,0)='.$user_id)
                 ->whereRaw('isnull(d.jumlahtrip,0) < c.jumlahtrip')
                 ->first();
+
+            if (isset($getAll)) {
+                if ($user_id != $getAll->user_id) {
+                    $querycekuser = db::table("mandordetail")->from(db::raw("mandordetail a with (readuncommitted)"))
+                        ->select(
+                            'a.user_id'
+                        )
+                        ->where('a.user_id', $user_id)
+                        ->first();
+                    if (!isset($querycekuser)) {
+                        return false;
+                    }
+                }
+            }
             //     dump($user_id );
             // dd($getAll);
             if ($getAll == '') {
