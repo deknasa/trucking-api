@@ -749,7 +749,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('absensisupirheader/{id}/export', [AbsensiSupirHeaderController::class, 'export'])->name('absensisupirheader.export')->whereNumber('id');
     Route::post('absensisupirheader/{id}/approval', [AbsensiSupirHeaderController::class, 'approval'])->name('absensisupirheader.approval')->whereNumber('id');
     Route::post('absensisupirheader/{id}/approvalEditAbsensi', [AbsensiSupirHeaderController::class, 'approvalEditAbsensi'])->whereNumber('id');
-    Route::post('absensisupirheader/{id}/approvaltripinap', [AbsensiSupirHeaderController::class, 'approvalTripInap'])->whereNumber('id');
+    Route::post('absensisupirheader/approvaltripinap', [AbsensiSupirHeaderController::class, 'approvalTripInap']);
 
     Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
     Route::post('bukaabsensi/updatetanggalbatas', [BukaAbsensiController::class, 'updateTanggalBatas']);
