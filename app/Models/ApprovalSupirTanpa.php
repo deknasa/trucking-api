@@ -160,17 +160,25 @@ class ApprovalSupirTanpa extends Model
     public function supirApprovalAktif($data,$approvalSupirGambar,$approvalSupirKeterangan) {
         $supir = Supir::where('noktp',$data['noktp'])->first();
         $statusAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS Aktif')->where('subgrp', '=', 'STATUS Aktif')->where('text', '=', 'aktif')->first();
+        $statusNonAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS Aktif')->where('subgrp', '=', 'STATUS Aktif')->where('text', '=', 'non aktif')->first();
         $statusApproval = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS APPROVAL')->where('subgrp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-        if ($supir->statusaktif != $statusAktif->text) {
-            $gambar = $approvalSupirGambar?? $statusApproval->id;
-            $keterangan = $approvalSupirKeterangan?? $statusApproval->id;
-            // dd($gambar,
-            // $keterangan,($statusApproval->id == $gambar) && ($statusApproval->id == $keterangan));
-            if (($statusApproval->id == $gambar) && ($statusApproval->id == $keterangan)) {
-                // dd($statusAktif->id);
-                $supir->statusaktif = $statusAktif->id;
-                $supir->save();
-            }
+        $statusTerisi = $this->cekApproval($supir);
+        $status_keterangan = !$statusTerisi['keterangan'];
+        $status_gambar = !$statusTerisi['gambar'];
+        
+        $gambar = ($approvalSupirGambar == $statusApproval->id);
+        $keterangan = ($approvalSupirKeterangan == $statusApproval->id);
+        if (!$status_gambar) {
+            $status_gambar = $gambar;
         }
+        if (!$status_keterangan) {
+            $status_keterangan = $keterangan;
+        }
+        if ($status_gambar && $status_keterangan) {
+            $supir->statusaktif = $statusAktif->id;
+        }else{
+            $supir->statusaktif = $statusNonAktif->id;
+        }
+        $supir->save();
     }
 }

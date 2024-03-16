@@ -24,11 +24,22 @@ class StoreApprovalSupirTanpaRequest extends FormRequest
      */
     public function rules()
     {
+
+        if (request()->showgambar == "true") {
+            $validasi_gambar = "required";
+        }else{
+            $validasi_gambar = "";
+        }
+        if (request()->showketerangan == "true") {
+            $validasi_Keterangan = "required";
+        }else{
+            $validasi_Keterangan = "";
+        }
         return [
             "namasupir"=> "required",
             "noktp"=> ["required",'exists:supir,noktp'],
-            "keterangan_statusapproval"=> "required_without_all:gambar_statusapproval",
-            "gambar_statusapproval"=> "required_without_all:keterangan_statusapproval",
+            "keterangan_statusapproval"=> $validasi_Keterangan,
+            "gambar_statusapproval"=> $validasi_gambar,
             "tglbatas" => ['required','date_format:d-m-Y',new DateApprovalTradoGambar()],
         ];
     }
