@@ -62,7 +62,7 @@ class MainAkunPusat extends MyModel
                 DB::raw("(trim(mainakunpusat.coa)+' - '+trim(mainakunpusat.keterangancoa)) as kodeket"),
             )
 
-            ->leftJoin(DB::raw("typeakuntansi with (readuncommitted)"), 'mainakunpusat.type_id', 'typeakuntansi.id')
+            ->leftJoin(DB::raw("maintypeakuntansi as typeakuntansi with (readuncommitted)"), 'mainakunpusat.type_id', 'typeakuntansi.id')
             ->leftJoin(DB::raw("akuntansi with (readuncommitted)"), 'mainakunpusat.akuntansi_id', 'akuntansi.id')
             ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'mainakunpusat.statusaktif', '=', 'parameter_statusaktif.id')
             ->leftJoin(DB::raw("parameter as parameter_statusparent with (readuncommitted)"), 'mainakunpusat.statusparent', '=', 'parameter_statusparent.id')
