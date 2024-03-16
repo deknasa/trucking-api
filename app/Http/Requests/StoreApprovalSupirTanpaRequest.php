@@ -26,6 +26,7 @@ class StoreApprovalSupirTanpaRequest extends FormRequest
     {
         return [
             "namasupir"=> "required",
+            "noktp"=> ["required",'exists:supir,noktp'],
             "keterangan_statusapproval"=> "required_without_all:gambar_statusapproval",
             "gambar_statusapproval"=> "required_without_all:keterangan_statusapproval",
             "tglbatas" => ['required','date_format:d-m-Y',new DateApprovalTradoGambar()],

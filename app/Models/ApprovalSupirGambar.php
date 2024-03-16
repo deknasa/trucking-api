@@ -217,10 +217,10 @@ class ApprovalSupirGambar extends MyModel
         }else{
             $statusAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
             $supir = Supir::where('noktp',$approvalSupirGambar->noktp)->first();
-            if ($supir) {
-                $supir->statusaktif = $statusAktif->id;
-                $supir->save();
-            }
+            // if ($supir) {
+            //     $supir->statusaktif = $statusAktif->id;
+            //     $supir->save();
+            // }
         }
 
         if (!$approvalSupirGambar->save()) {
@@ -254,10 +254,10 @@ class ApprovalSupirGambar extends MyModel
         }else{
             $statusAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
             $supir = Supir::where('noktp',$approvalSupirGambar->noktp)->first();
-            if ($supir) {
-                $supir->statusaktif = $statusAktif->id;
-                $supir->save();
-            }
+            // if ($supir) {
+            //     $supir->statusaktif = $statusAktif->id;
+            //     $supir->save();
+            // }
         }
 
         if (!$approvalSupirGambar->save()) {

@@ -91,6 +91,7 @@ class ApprovalSupirTanpa extends Model
             $approvalSupirKeterangan = (new ApprovalSupirKeterangan())->processStore($dataKeterangan);
         }
 
+        $this->supirApprovalAktif($data,$approvalSupirGambar->statusapproval,$approvalSupirKeterangan->statusapproval);
         return [
             "supir_id"=>$data['supir_id'],
             "namasupir"=>$data['namasupir'],
@@ -154,5 +155,22 @@ class ApprovalSupirTanpa extends Model
 
         return ["gambar"=>$gambar, "keterangan"=>$keterangan];
         
+    }
+
+    public function supirApprovalAktif($data,$approvalSupirGambar,$approvalSupirKeterangan) {
+        $supir = Supir::where('noktp',$data['noktp'])->first();
+        $statusAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS Aktif')->where('subgrp', '=', 'STATUS Aktif')->where('text', '=', 'aktif')->first();
+        $statusApproval = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS APPROVAL')->where('subgrp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        if ($supir->statusaktif != $statusAktif->text) {
+            $gambar = $approvalSupirGambar?? $statusApproval->id;
+            $keterangan = $approvalSupirKeterangan?? $statusApproval->id;
+            // dd($gambar,
+            // $keterangan,($statusApproval->id == $gambar) && ($statusApproval->id == $keterangan));
+            if (($statusApproval->id == $gambar) && ($statusApproval->id == $keterangan)) {
+                // dd($statusAktif->id);
+                $supir->statusaktif = $statusAktif->id;
+                $supir->save();
+            }
+        }
     }
 }
