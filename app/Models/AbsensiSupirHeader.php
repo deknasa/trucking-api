@@ -336,6 +336,10 @@ class AbsensiSupirHeader extends MyModel
 
             $query = DB::table($tempAbsensi)->from(DB::raw("$tempAbsensi as absensisupirheader with (readuncommitted)"));
         }
+
+        if($from == 'prosesuangjalansupir'){
+            $query->join(DB::raw("absensisupirapprovalheader with (readuncommitted)"), 'absensisupirapprovalheader.absensisupir_nobukti', 'absensisupirheader.nobukti');
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
