@@ -222,8 +222,9 @@ class PiutangHeader extends MyModel
                 DB::raw("piutangheader with (readuncommitted)")
             )
             ->select(DB::raw("row_number() Over(Order By piutangheader.id) as id,piutangheader.nobukti as nobukti,piutangheader.tglbukti as tglbukti_piutang, piutangheader.invoice_nobukti, piutangheader.nominal, piutangheader.agen_id," . $temp . ".sisa, $temp.sisa as sisaawal,
-                (case when isnull(piutangheader.postingdari,'')='INVOICE' then 'UTAMA' else 'TAMBAHAN' end) as jenisinvoice"))
+                (case when isnull(c.nobukti,'')<>'' or isnull(piutangheader.postingdari,'')='INVOICE' then 'UTAMA' else 'TAMBAHAN' end) as jenisinvoice"))
             ->leftJoin(DB::raw("$temp with (readuncommitted)"), 'piutangheader.agen_id', $temp . ".agen_id")
+            ->leftjoin(DB::raw("invoiceheader c with (readuncommitted)"), 'piutangheader.invoice_nobukti', "c.nobukti")
             ->whereRaw("piutangheader.agen_id = $id")
             ->whereRaw("piutangheader.nobukti = $temp.nobukti")
             ->where(function ($query) use ($temp) {
@@ -231,7 +232,10 @@ class PiutangHeader extends MyModel
                     ->orWhereRaw("$temp.sisa is null");
             });
 
+            // dd($query->toSql());
+
         $data = $query->get();
+
 
         return $data;
     }
