@@ -330,7 +330,10 @@ class PelunasanPiutangHeader extends MyModel
         DB::table($temp)->insertUsing(['pelunasanpiutang_id', 'piutang_nobukti', 'tglbukti', 'nominal', 'keterangan', 'potongan', 'coapotongan', 'keteranganpotongan', 'nominallebihbayar', 'nominalpiutang', 'invoice_nobukti', 'sisa', 'statusnotadebet', 'statusnotakredit'], $piutang);
 
         $data = DB::table($temp)
-            ->select(DB::raw("row_number() Over(Order By $temp.piutang_nobukti) as id,pelunasanpiutang_id,piutang_nobukti as nobukti,tglbukti as tglbukti_piutang,invoice_nobukti,nominal as bayar,keterangan,potongan, coapotongan,keteranganpotongan,nominallebihbayar,nominalpiutang as nominal,sisa, statusnotadebet, statusnotakredit"))
+            ->select(DB::raw("row_number() Over(Order By $temp.piutang_nobukti) as id,$temp.pelunasanpiutang_id,$temp.piutang_nobukti as nobukti,$temp.tglbukti as tglbukti_piutang,$temp.invoice_nobukti,$temp.nominal as bayar,$temp.keterangan,potongan, $temp.coapotongan,$temp.keteranganpotongan,$temp.nominallebihbayar,$temp.nominalpiutang as nominal,$temp.sisa, $temp.statusnotadebet, $temp.statusnotakredit,
+            (case when isnull(c.nobukti,'')<>'' or isnull(b.postingdari,'')='INVOICE' then 'UTAMA' else 'TAMBAHAN' end) as jenisinvoice"))
+            ->join(db::raw("piutangheader b with (readuncommitted)"),'b.nobukti',$temp .".piutang_nobukti")
+            ->join(db::raw("invoiceheader c with (readuncommitted)"),'b.invoice_nobukti',"c.nobukti")
             ->get();
 
         return $data;
