@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
-use App\Services\RunningNumberService;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Services\RunningNumberService;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class OrderanTrucking extends MyModel
 {
@@ -1554,6 +1555,7 @@ class OrderanTrucking extends MyModel
         $historyorderantrucking = DB::table('historyorderantrucking')->insertGetId(
             [
                 "nobukti" => $orderanTrucking->nobukti,
+                'tglbukti' => $orderanTrucking->tglbukti,
                 "container_id" => $orderanTrucking->container_id,
                 "agen_id" => $orderanTrucking->agen_id,
                 "jenisorder_id" => $orderanTrucking->jenisorder_id,
@@ -1572,6 +1574,8 @@ class OrderanTrucking extends MyModel
                 "nocontlama2" => $orderanTrucking->nocont2,
                 "noseallama2" => $orderanTrucking->noseal2,
                 "modifiedby" => auth('api')->user()->name,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
             ],
         );
 
