@@ -333,7 +333,7 @@ class PelunasanPiutangHeader extends MyModel
             ->select(DB::raw("row_number() Over(Order By $temp.piutang_nobukti) as id,$temp.pelunasanpiutang_id,$temp.piutang_nobukti as nobukti,$temp.tglbukti as tglbukti_piutang,$temp.invoice_nobukti,$temp.nominal as bayar,$temp.keterangan,potongan, $temp.coapotongan,$temp.keteranganpotongan,$temp.nominallebihbayar,$temp.nominalpiutang as nominal,$temp.sisa, $temp.statusnotadebet, $temp.statusnotakredit,
             (case when isnull(c.nobukti,'')<>'' or isnull(b.postingdari,'')='INVOICE' then 'UTAMA' else 'TAMBAHAN' end) as jenisinvoice"))
             ->join(db::raw("piutangheader b with (readuncommitted)"),'b.nobukti',$temp .".piutang_nobukti")
-            ->join(db::raw("invoiceheader c with (readuncommitted)"),'b.invoice_nobukti',"c.nobukti")
+            ->leftjoin(db::raw("invoiceheader c with (readuncommitted)"),'b.invoice_nobukti',"c.nobukti")
             ->get();
 
         return $data;
