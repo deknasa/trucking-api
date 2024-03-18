@@ -138,7 +138,7 @@ class AbsensiSupirApprovalHeader extends MyModel
             $table->string('userapproval', 200)->nullable();
             $table->string('statusformat', 1000)->nullable();
             $table->string('pengeluaran_nobukti', 50)->nullable();
-            $table->string('coakaskeluar', 50)->nullable();
+            $table->string('coakaskeluar')->nullable();
             $table->string('postingdari', 50)->nullable();
             $table->date('tglkaskeluar')->nullable();
             $table->string('statuscetak', 1000)->nullable();
@@ -203,7 +203,7 @@ class AbsensiSupirApprovalHeader extends MyModel
                 $this->table.userapproval,
                 'statusformat.text as statusformat',
                 $this->table.pengeluaran_nobukti,
-                $this->table.coakaskeluar,
+                'akunpusat.keterangancoa as coakaskeluar',
                 $this->table.postingdari,
                 $this->table.tglkaskeluar,
                 'statuscetak.text as statuscetak',
@@ -215,7 +215,7 @@ class AbsensiSupirApprovalHeader extends MyModel
                 $this->table.updated_at"
             )
         )
-            ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirapprovalheader.nobukti', 'absensisupirheader.nobukti')
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'absensisupirapprovalheader.coakaskeluar', 'akunpusat.coa')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirapprovalheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'absensisupirapprovalheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statusformat with (readuncommitted)"), 'absensisupirapprovalheader.statusformat', 'statusformat.id');
