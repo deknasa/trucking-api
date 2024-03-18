@@ -271,7 +271,7 @@ class OrderanTruckingController extends Controller
                 'container_id' => $request->container_id,
                 'agen_id' => $request->agen_id,
                 'jenisorder_id' => $request->jenisorder_id,
-                'jenisorderemkl_id' => $jenisorderemkl_id->id,
+                'jenisorderemkl_id' => $request->jenisorder_id,
                 'pelanggan_id' => $request->pelanggan_id,
                 'tarifrincian_id' => $request->tarifrincian_id,
                 'nojobemkl' => $request->nojobemkl,
