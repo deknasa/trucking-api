@@ -268,8 +268,6 @@ class PengeluaranTruckingHeader extends MyModel
                 $table->string('coa', 200)->nullable();
                 $table->date('tgldariheaderpengeluaranheader')->nullable();
                 $table->date('tglsampaiheaderpengeluaranheader')->nullable();
-                $table->date('tgldariheaderpenerimaantrucking')->nullable();
-                $table->date('tglsampaiheaderpenerimaantrucking')->nullable();
                 $table->longText('statusposting')->nullable();
                 $table->longText('statuspostingtext')->nullable();
                 $table->double('qty')->nullable();
@@ -304,7 +302,7 @@ class PengeluaranTruckingHeader extends MyModel
             $getpenerimaantruckingdetail = DB::table("penerimaantruckingdetail")->from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
             ->select(DB::raw(" penerimaantruckingdetail.pengeluarantruckingheader_nobukti, STRING_AGG(penerimaantruckingdetail.nobukti, ', ') as nobuktipenerimaan,
             STRING_AGG('<a href=$petik".$url."?tgldari='+(format(penerimaantruckingheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(penerimaantruckingheader.tglbukti,'yyyy-MM')+'-31')+'$petik 
-            class=$petik link-color $petik target=$petik _blank $petik>'+penerimaantruckingdetail.nobukti+'</a>', ' , ') as url"))
+            class=$petik link-color $petik target=$petik _blank $petik>'+penerimaantruckingdetail.nobukti+'</a>', ',') as url"))
             ->join(DB::raw("penerimaantruckingheader with (readuncommitted)"),'penerimaantruckingdetail.nobukti','penerimaantruckingheader.nobukti')
             ->whereRaw("isnull(penerimaantruckingdetail.pengeluarantruckingheader_nobukti,'') != ''")
             ->groupBy("penerimaantruckingdetail.pengeluarantruckingheader_nobukti");
@@ -440,8 +438,6 @@ class PengeluaranTruckingHeader extends MyModel
                     'coa' => $item['coa'],
                     'tgldariheaderpengeluaranheader' => $item['tgldariheaderpengeluaranheader'],
                     'tglsampaiheaderpengeluaranheader' => $item['tglsampaiheaderpengeluaranheader'],
-                    'tgldariheaderpenerimaantrucking' => $item['tgldariheaderpenerimaantrucking'],
-                    'tglsampaiheaderpenerimaantrucking' => $item['tglsampaiheaderpenerimaantrucking'],
                     'statusposting' => $item['statusposting'],
                     'statuspostingtext' => $item['statuspostingtext'],
                     'qty' => $item['qty'] ?? '',
@@ -485,8 +481,6 @@ class PengeluaranTruckingHeader extends MyModel
                 'a.coa',
                 'a.tgldariheaderpengeluaranheader',
                 'a.tglsampaiheaderpengeluaranheader',
-                'a.tgldariheaderpenerimaantrucking',
-                'a.tglsampaiheaderpenerimaantrucking',
                 'a.statusposting',
                 'a.qty',
                 'a.harga',
@@ -1218,7 +1212,8 @@ class PengeluaranTruckingHeader extends MyModel
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
             $table->string('pengeluaran_nobukti', 50)->nullable();
-            $table->string('penerimaantrucking_nobukti', 50)->nullable();
+            $table->longText('penerimaantrucking_nobukti')->nullable();
+            $table->longText('nobuktipenerimaan')->nullable();
             $table->integer('pengeluarantruckingid')->nullable();
             $table->string('pengeluarantrucking_id', 100)->nullable();
             $table->string('bank_id', 50)->nullable();
@@ -1237,8 +1232,6 @@ class PengeluaranTruckingHeader extends MyModel
             $table->string('coa', 200)->nullable();
             $table->date('tgldariheaderpengeluaranheader')->nullable();
             $table->date('tglsampaiheaderpengeluaranheader')->nullable();
-            $table->date('tgldariheaderpenerimaantrucking')->nullable();
-            $table->date('tglsampaiheaderpenerimaantrucking')->nullable();
             $table->longText('statusposting')->nullable();
             $table->longText('statuspostingtext')->nullable();
             $table->double('qty')->nullable();
@@ -1265,6 +1258,25 @@ class PengeluaranTruckingHeader extends MyModel
                 ->where('pengeluarantruckingheader.pengeluarantrucking_id', '!=', 1);
             DB::table($tempSupir)->insertUsing(['nobukti', 'supir'], $getSupir);
         }
+
+        $petik ='"';
+        $url = config('app.url_fe').'penerimaantruckingheader';
+
+        $getpenerimaantruckingdetail = DB::table("penerimaantruckingdetail")->from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+        ->select(DB::raw(" penerimaantruckingdetail.pengeluarantruckingheader_nobukti, STRING_AGG(penerimaantruckingdetail.nobukti, ', ') as nobuktipenerimaan,
+        STRING_AGG('<a href=$petik".$url."?tgldari='+(format(penerimaantruckingheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(penerimaantruckingheader.tglbukti,'yyyy-MM')+'-31')+'$petik 
+        class=$petik link-color $petik target=$petik _blank $petik>'+penerimaantruckingdetail.nobukti+'</a>', ',') as url"))
+        ->join(DB::raw("penerimaantruckingheader with (readuncommitted)"),'penerimaantruckingdetail.nobukti','penerimaantruckingheader.nobukti')
+        ->whereRaw("isnull(penerimaantruckingdetail.pengeluarantruckingheader_nobukti,'') != ''")
+        ->groupBy("penerimaantruckingdetail.pengeluarantruckingheader_nobukti");
+        $tempurl = '##tempurl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempurl, function (Blueprint $table) {
+            $table->string('pengeluarantruckingheader_nobukti', 50)->nullable();
+            $table->longText('nobuktipenerimaan')->nullable();
+            $table->longText('url')->nullable();
+
+        }); 
+        DB::table($tempurl)->insertUsing(['pengeluarantruckingheader_nobukti', 'nobuktipenerimaan','url'], $getpenerimaantruckingdetail);
         $query = DB::table($this->table)->from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
             ->select(
                 'pengeluarantruckingheader.id',
@@ -1292,8 +1304,6 @@ class PengeluaranTruckingHeader extends MyModel
                 'akunpusat.keterangancoa as coa',
                 db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
                 db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
-                db::raw("cast((format(penerimaantruckingheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaantrucking"),
-                db::raw("cast(cast(format((cast((format(penerimaantruckingheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaantrucking"),
                 'statusposting.memo as statusposting',
                 'statusposting.text as statuspostingtext'
             )
@@ -1308,8 +1318,7 @@ class PengeluaranTruckingHeader extends MyModel
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluarantruckingheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("$tempSupir as getsupir with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'getsupir.nobukti')
             ->leftJoin(DB::raw("parameter as statusposting with (readuncommitted)"), 'pengeluarantruckingheader.statusposting', 'statusposting.id')
-            ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti')
-            ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.penerimaantruckingheader_id', 'penerimaantruckingheader.id');
+            ->leftJoin(DB::raw("$tempurl as penerimaantruckingdetail with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti');
         $afkir = Parameter::from(DB::raw("pengeluaranstok with (readuncommitted)"))->where('kodepengeluaran', 'AFKIR')->first();
 
         if (request()->pengeluaranstok_id && request()->pengeluaranstok_id == $afkir->id) {
@@ -1357,6 +1366,7 @@ class PengeluaranTruckingHeader extends MyModel
                 'updated_at' => $item['updated_at'],
                 'pengeluaran_nobukti' => $item['pengeluaran_nobukti'],
                 'penerimaantrucking_nobukti' => $item['penerimaantrucking_nobukti'],
+                'nobuktipenerimaan' => $item['nobuktipenerimaan'],
                 'pengeluarantruckingid' => $item['pengeluarantruckingid'],
                 'pengeluarantrucking_id' => $item['pengeluarantrucking_id'],
                 'bank_id' => $item['bank_id'],
@@ -1375,8 +1385,6 @@ class PengeluaranTruckingHeader extends MyModel
                 'coa' => $item['coa'],
                 'tgldariheaderpengeluaranheader' => $item['tgldariheaderpengeluaranheader'],
                 'tglsampaiheaderpengeluaranheader' => $item['tglsampaiheaderpengeluaranheader'],
-                'tgldariheaderpenerimaantrucking' => $item['tgldariheaderpenerimaantrucking'],
-                'tglsampaiheaderpenerimaantrucking' => $item['tglsampaiheaderpenerimaantrucking'],
                 'statusposting' => $item['statusposting'],
                 'statuspostingtext' => $item['statuspostingtext'],
                 'qty' => $item['qty'] ?? '',
@@ -1390,6 +1398,7 @@ class PengeluaranTruckingHeader extends MyModel
                 'a.tglbukti',
                 'a.pengeluaran_nobukti',
                 'a.penerimaantrucking_nobukti',
+                'a.nobuktipenerimaan',
                 'a.pengeluarantruckingid',
                 'a.pengeluarantrucking_id',
                 'a.bank_id',
@@ -1429,7 +1438,8 @@ class PengeluaranTruckingHeader extends MyModel
             $table->string('nobukti', 50)->nullable();
             $table->dateTime('tglbukti')->nullable();
             $table->string('pengeluaran_nobukti', 50)->nullable();
-            $table->string('penerimaantrucking_nobukti', 50)->nullable();
+            $table->longText('penerimaantrucking_nobukti')->nullable();
+            $table->longText('nobuktipenerimaan')->nullable();
             $table->integer('pengeluarantruckingid')->nullable();
             $table->string('pengeluarantrucking_id', 100)->nullable();
             $table->string('bank_id', 50)->nullable();
@@ -1448,8 +1458,6 @@ class PengeluaranTruckingHeader extends MyModel
             $table->string('coa', 200)->nullable();
             $table->date('tgldariheaderpengeluaranheader')->nullable();
             $table->date('tglsampaiheaderpengeluaranheader')->nullable();
-            $table->date('tgldariheaderpenerimaantrucking')->nullable();
-            $table->date('tglsampaiheaderpenerimaantrucking')->nullable();
             $table->longText('statusposting')->nullable();
             $table->longText('statuspostingtext')->nullable();
             $table->double('qty')->nullable();
@@ -1475,7 +1483,7 @@ class PengeluaranTruckingHeader extends MyModel
             $models->where('a.pengeluarantruckingid', request()->pengeluaranheader_id);
         }
 
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pengeluaran_nobukti', 'penerimaantrucking_nobukti', 'pengeluarantruckingid', 'pengeluarantrucking_id', 'bank_id', 'trado_id', 'trado', 'tradoheader_id', 'supirheader', 'supir', 'karyawan', 'gandengan', 'pengeluarantrucking_nobukti',  'tglbukacetak', 'statuscetak', 'statuscetaktext', 'userbukacetak', 'coa', 'tgldariheaderpengeluaranheader', 'tglsampaiheaderpengeluaranheader', 'tgldariheaderpenerimaantrucking', 'tglsampaiheaderpenerimaantrucking', 'statusposting', 'statuspostingtext', 'qty', 'harga', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pengeluaran_nobukti', 'penerimaantrucking_nobukti','nobuktipenerimaan', 'pengeluarantruckingid', 'pengeluarantrucking_id', 'bank_id', 'trado_id', 'trado', 'tradoheader_id', 'supirheader', 'supir', 'karyawan', 'gandengan', 'pengeluarantrucking_nobukti',  'tglbukacetak', 'statuscetak', 'statuscetaktext', 'userbukacetak', 'coa', 'tgldariheaderpengeluaranheader', 'tglsampaiheaderpengeluaranheader', 'tgldariheaderpenerimaantrucking', 'tglsampaiheaderpenerimaantrucking', 'statusposting', 'statuspostingtext', 'qty', 'harga', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -1511,6 +1519,8 @@ class PengeluaranTruckingHeader extends MyModel
                                 $query = $query->where('a.statuscetaktext', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statusposting') {
                                 $query = $query->where('a.statuspostingtext', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'penerimaantrucking_nobukti') {
+                                $query = $query->where('a.nobuktipenerimaan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak') {
                                 $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
@@ -1531,7 +1541,9 @@ class PengeluaranTruckingHeader extends MyModel
                                     $query->orWhere('a.statuscetaktext', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'statusposting') {
                                     $query = $query->orWhere('a.statuspostingtext', '=', "$filters[data]");
-                                } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak') {
+                                } else if ($filters['field'] == 'penerimaantrucking_nobukti') {
+                                    $query = $query->orWhere('a.nobuktipenerimaan', 'LIKE', "%$filters[data]%");
+                                }else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak') {
                                     $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                     $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
