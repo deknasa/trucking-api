@@ -274,7 +274,7 @@ class Trado extends MyModel
 
         if (!$isAdmin) {
             if ($isMandor) {
-             $query->Join(DB::raw($tempmandordetail . " as mandordetail"), 'trado.mandor_id', 'mandordetail.mandor_id');
+                $query->Join(DB::raw($tempmandordetail . " as mandordetail"), 'trado.mandor_id', 'mandordetail.mandor_id');
 
                 // $query->where('trado.mandor_id', $isMandor->mandor_id);
             }
@@ -300,29 +300,29 @@ class Trado extends MyModel
                 $absensisupirapprovalheader =  DB::table('absensisupirapprovalheader')->from(
                     DB::raw("absensisupirapprovalheader a with (readuncommitted)")
                 )->where('absensisupir_nobukti', $absensiQuery->nobukti)->first();
-                if($absensisupirapprovalheader){
+                if ($absensisupirapprovalheader) {
                     return $query->where('trado.id', 0)->get();
                 }
-            }else{
+            } else {
                 return $query->where('trado.id', 0)->get();
             }
-                
-            $absensiId =  $absensiQuery->id?? '' ;
+
+            $absensiId =  $absensiQuery->id ?? '';
         }
 
         if ($absensiId != '') {
             $querytradoabsen = db::table("absensisupirdetail")->from(db::raw("absensisupirdetail a with (readuncommitted)"))
-            ->select('a.trado_id')
-            ->where('a.absensi_id', '=', $absensiId)
-            ->groupBy('a.trado_id');
+                ->select('a.trado_id')
+                ->where('a.absensi_id', '=', $absensiId)
+                ->groupBy('a.trado_id');
 
             // dd($querytradoabsen ->get());
             DB::table($temptrado)->insertUsing([
                 'trado_id',
             ],  $querytradoabsen);
 
-            
-            $query->join(db::raw($temptrado). ' as absensisupirdetail', 'trado.id', '=', 'absensisupirdetail.trado_id');
+
+            $query->join(db::raw($temptrado) . ' as absensisupirdetail', 'trado.id', '=', 'absensisupirdetail.trado_id');
         }
 
         $this->filter($query);
@@ -700,12 +700,42 @@ class Trado extends MyModel
         });
 
         $this->setRequestParameters();
+
+        $isMandor = auth()->user()->isMandor();
+        $isAdmin = auth()->user()->isAdmin();
+
+        $userid = auth('api')->user()->id;
+
+
+        $querymandor = db::table("mandordetail")->from(db::raw("mandordetail a with (readuncommitted)"))
+        ->select('a.mandor_id')
+        ->where('a.user_id', $userid);
+
+    $tempmandordetail = '##tempmandordetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+    Schema::create($tempmandordetail, function ($table) {
+        $table->id();
+        $table->unsignedBigInteger('mandor_id')->nullable();
+    });
+
+    DB::table($tempmandordetail)->insertUsing([
+        'mandor_id',
+    ],  $querymandor);        
+
         $query = DB::table($modelTable);
+        if (!$isAdmin) {
+            if ($isMandor) {
+                $query->Join(DB::raw($tempmandordetail . " as mandordetail"), 'trado.mandor_id', 'mandordetail.mandor_id');
+
+                // $query->where('trado.mandor_id', $isMandor->mandor_id);
+            }
+        }        
         $query = $this->selectColumns($query);
         $this->sort($query);
+
+
         $models = $this->filter($query);
         DB::table($temp)->insertUsing(['id', 'keterangan', 'kodetrado', 'statusaktif', 'kmawal', 'kmakhirgantioli', 'tglakhirgantioli',  'tglstnkmati', 'tglasuransimati', 'tahun', 'akhirproduksi', 'merek', 'norangka', 'nomesin', 'nama', 'nostnk', 'alamatstnk', 'tglstandarisasi', 'tglserviceopname', 'statusstandarisasi', 'keteranganprogressstandarisasi', 'statusjenisplat', 'tglspeksimati', 'tglpajakstnk', 'tglgantiakiterakhir', 'statusmutasi', 'statusvalidasikendaraan', 'tipe', 'jenis', 'isisilinder', 'warna', 'jenisbahanbakar', 'jumlahsumbu', 'jumlahroda', 'model', 'nobpkb', 'statusmobilstoring', 'mandor_id', 'jumlahbanserap', 'statusappeditban', 'statuslewatvalidasi', 'photostnk', 'photobpkb', 'phototrado', 'modifiedby', 'created_at', 'updated_at'], $models);
-
+        // dd(db::table($temp)->get());
 
         return  $temp;
     }
@@ -718,12 +748,15 @@ class Trado extends MyModel
         } else if ($this->params['sortIndex'] == 'supir_id') {
             return $query->orderBy('supir.namasupir', $this->params['sortOrder']);
         } else {
-            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder'])
+                        ->orderBy($this->table . '.kodetrado', $this->params['sortOrder'])
+            ;
         }
     }
 
     public function filter($query, $relationFields = [])
     {
+        // dd($query);
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
@@ -876,6 +909,7 @@ class Trado extends MyModel
 
     public function processStore(array $data): Trado
     {
+        $trado = '';
         try {
             $statusStandarisasi = DB::table('parameter')->where('grp', 'STATUS STANDARISASI')->where('default', 'YA')->first();
             $statusMutasi = DB::table('parameter')->where('grp', 'STATUS MUTASI')->where('default', 'YA')->first();
@@ -884,8 +918,56 @@ class Trado extends MyModel
             $statusAppeditban = DB::table('parameter')->where('grp', 'STATUS APPROVAL EDIT BAN')->where('default', 'YA')->first();
             $statusLewatValidasi = DB::table('parameter')->where('grp', 'STATUS LEWAT VALIDASI')->where('default', 'YA')->first();
             $isMandor = auth()->user()->isMandor();
+            $userid = auth('api')->user()->id;
+            // dd($userid);
             if ($isMandor) {
-                $data['mandor_id'] = $isMandor->mandor_id;
+
+                $temp1 = '##temp1' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($temp1, function ($table) {
+                    $table->id();
+                    $table->integer('mandor_id')->nullable();
+                });
+
+                $query1 = db::table('mandor')->from(db::raw("mandor a with (readuncommitted)"))
+                    ->select(
+                        'a.id',
+                    )
+                    ->join(db::raw("mandordetail b with (readuncommitted)"), 'a.id', 'b.mandor_id')
+                    ->where('b.user_id', $userid)
+                    ->groupby('a.id');
+
+                DB::table($temp1)->insertUsing([
+                    'mandor_id',
+                ], $query1);
+
+                $temp2 = '##temp2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($temp2, function ($table) {
+                    $table->id();
+                    $table->integer('mandor_id')->nullable();
+                    $table->integer('jumlah')->nullable();
+                });
+
+                $query2 = db::table('mandordetail')->from(db::raw("mandordetail a with (readuncommitted)"))
+                    ->select(
+                        'a.mandor_id',
+                        db::raw("count(a.id) as jumlah")
+                    )
+                    ->join(db::raw($temp1 . " b "), 'a.mandor_id', 'b.mandor_id')
+                    ->groupby('a.mandor_id');
+
+                DB::table($temp2)->insertUsing([
+                    'mandor_id',
+                    'jumlah',
+                ], $query2);
+
+                $queryidmandor = db::table($temp2)->from(db::raw($temp2 . " a"))
+                    ->select(
+                        'a.mandor_id'
+                    )
+                    ->orderby('a.jumlah', 'asc')
+                    ->orderby('a.mandor_id', 'asc')
+                    ->first();
+                $data['mandor_id'] = $queryidmandor->mandor_id ?? 0;
             }
 
             $trado = new Trado();
@@ -928,7 +1010,7 @@ class Trado extends MyModel
             $trado->modifiedby = auth('api')->user()->user;
             $trado->info = html_entity_decode(request()->info);
 
-            
+
             if ($data['mandor_id'] != 0) {
                 $trado->tglberlakumilikmandor = date('Y-m-d');
             }
@@ -1013,7 +1095,10 @@ class Trado extends MyModel
 
             return $trado;
         } catch (\Throwable $th) {
-            $this->deleteFiles($trado);
+            if ($trado != '') {
+                $this->deleteFiles($trado);
+            }
+
             throw $th;
         }
     }
