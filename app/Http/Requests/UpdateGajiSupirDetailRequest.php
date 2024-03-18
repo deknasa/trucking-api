@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidasiKeteranganBBMGajiSupir;
 use App\Rules\ValidasiKeteranganDepositoGajiSupir;
 use App\Rules\ValidasiTripGajiSupir;
 use Illuminate\Foundation\Http\FormRequest;
@@ -54,6 +55,7 @@ class UpdateGajiSupirDetailRequest extends FormRequest
         if(request()->nomBBM > 0) {
             $rulesBBM = [
                 'nomBBM' => ['required','numeric','gt:0'],
+                'ketBBM' => new ValidasiKeteranganBBMGajiSupir()
             ];
         }
         
