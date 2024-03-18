@@ -249,7 +249,8 @@ class PengeluaranTruckingHeader extends MyModel
                 $table->dateTime('created_at')->nullable();
                 $table->dateTime('updated_at')->nullable();
                 $table->string('pengeluaran_nobukti', 50)->nullable();
-                $table->string('penerimaantrucking_nobukti', 50)->nullable();
+                $table->longText('penerimaantrucking_nobukti')->nullable();
+                $table->longText('nobuktipenerimaan')->nullable();
                 $table->string('pengeluarantrucking_id', 100)->nullable();
                 $table->string('bank_id', 50)->nullable();
                 $table->integer('trado_id')->nullable();
@@ -297,6 +298,25 @@ class PengeluaranTruckingHeader extends MyModel
                 DB::table($tempSupir)->insertUsing(['nobukti', 'supir'], $getSupir);
             }
 
+            $petik ='"';
+            $url = config('app.url_fe').'penerimaantruckingheader';
+
+            $getpenerimaantruckingdetail = DB::table("penerimaantruckingdetail")->from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+            ->select(DB::raw(" penerimaantruckingdetail.pengeluarantruckingheader_nobukti, STRING_AGG(penerimaantruckingdetail.nobukti, ', ') as nobuktipenerimaan,
+            STRING_AGG('<a href=$petik".$url."?tgldari='+(format(penerimaantruckingheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(penerimaantruckingheader.tglbukti,'yyyy-MM')+'-31')+'$petik 
+            class=$petik link-color $petik target=$petik _blank $petik>'+penerimaantruckingdetail.nobukti+'</a>', ' , ') as url"))
+            ->join(DB::raw("penerimaantruckingheader with (readuncommitted)"),'penerimaantruckingdetail.nobukti','penerimaantruckingheader.nobukti')
+            ->whereRaw("isnull(penerimaantruckingdetail.pengeluarantruckingheader_nobukti,'') != ''")
+            ->groupBy("penerimaantruckingdetail.pengeluarantruckingheader_nobukti");
+            $tempurl = '##tempurl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempurl, function (Blueprint $table) {
+                $table->string('pengeluarantruckingheader_nobukti', 50)->nullable();
+                $table->longText('nobuktipenerimaan')->nullable();
+                $table->longText('url')->nullable();
+
+            }); 
+            DB::table($tempurl)->insertUsing(['pengeluarantruckingheader_nobukti', 'nobuktipenerimaan','url'], $getpenerimaantruckingdetail);
+
             $query = DB::table($this->table)->from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
                 ->select(
                     'pengeluarantruckingheader.id',
@@ -306,7 +326,8 @@ class PengeluaranTruckingHeader extends MyModel
                     'pengeluarantruckingheader.created_at',
                     'pengeluarantruckingheader.updated_at',
                     'pengeluarantruckingheader.pengeluaran_nobukti',
-                    db::raw("isnull(penerimaantruckingdetail.nobukti,'') as penerimaantrucking_nobukti"),
+                    db::raw("isnull(penerimaantruckingdetail.url,'') as penerimaantrucking_nobukti"),
+                    db::raw("isnull(penerimaantruckingdetail.nobuktipenerimaan,'') as nobuktipenerimaan"),
                     'pengeluarantrucking.keterangan as pengeluarantrucking_id',
                     'bank.namabank as bank_id',
                     'pengeluarantruckingheader.trado_id',
@@ -323,8 +344,6 @@ class PengeluaranTruckingHeader extends MyModel
                     'akunpusat.keterangancoa as coa',
                     db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
                     db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
-                    db::raw("cast((format(penerimaantruckingheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaantrucking"),
-                    db::raw("cast(cast(format((cast((format(penerimaantruckingheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaantrucking"),
                     'statusposting.memo as statusposting',
                     'statusposting.text as statuspostingtext',
                 )
@@ -339,8 +358,7 @@ class PengeluaranTruckingHeader extends MyModel
                 ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluarantruckingheader.statuscetak', 'statuscetak.id')
                 ->leftJoin(DB::raw("$tempSupir as getsupir with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'getsupir.nobukti')
                 ->leftJoin(DB::raw("parameter as statusposting with (readuncommitted)"), 'pengeluarantruckingheader.statusposting', 'statusposting.id')
-                ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti')
-                ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.penerimaantruckingheader_id', 'penerimaantruckingheader.id');
+                ->leftJoin(DB::raw("$tempurl as penerimaantruckingdetail with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti');
             // ->join(db::raw($temprole . " d "), 'pengeluarantrucking.aco_id', 'd.aco_id');
 
 
@@ -404,6 +422,7 @@ class PengeluaranTruckingHeader extends MyModel
                     'updated_at' => $item['updated_at'],
                     'pengeluaran_nobukti' => $item['pengeluaran_nobukti'],
                     'penerimaantrucking_nobukti' => $item['penerimaantrucking_nobukti'],
+                    'nobuktipenerimaan' => $item['nobuktipenerimaan'],
                     'pengeluarantrucking_id' => $item['pengeluarantrucking_id'],
                     'bank_id' => $item['bank_id'],
                     'trado_id' => $item['trado_id'],
