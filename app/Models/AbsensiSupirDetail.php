@@ -1179,12 +1179,14 @@ class AbsensiSupirDetail extends MyModel
                 'absensisupirdetail.absensi_id',
                 'absensisupirdetail.nobukti',
                 'absensisupirheader.tglbukti',
-                'absensisupirdetail.uangjalan'
+                'absensisupirdetail.uangjalan',
+                'trado.kodetrado as trado'
             )
             ->join(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirheader.nobukti', 'absensisupirdetail.nobukti')
+            ->join(DB::raw("trado with (readuncommitted)"), 'trado.id', 'absensisupirdetail.trado_id')
             ->whereRaw("absensisupirdetail.nobukti in (select absensisupir_nobukti from gajisupiruangjalan where gajisupir_nobukti='$nobukti')")
-            ->where('absensisupirdetail.supir_id', $fetch->supir_id)
-            ->where('absensisupirdetail.trado_id', $fetch->trado_id);
+            ->where('absensisupirdetail.supir_id', $fetch->supir_id);
+            // ->where('absensisupirdetail.trado_id', $fetch->trado_id);
 
         if ($query->first() != null) {
             $this->sort($query);
