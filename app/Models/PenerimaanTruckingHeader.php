@@ -2445,7 +2445,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($gajiSupirDeposito)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Rincian Gaji Supir <b>'. $gajiSupirDeposito->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Rincian Gaji Supir <b>'. $gajiSupirDeposito->gajisupir_nobukti .'</b> <br> '.$keterangantambahanerror,
                 // 'keterangan' => 'Rincian Gaji Supir ' . $gajiSupirDeposito->gajisupir_nobukti,
                 'kodeerror' => 'TDT'
             ];
@@ -2466,7 +2466,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($gajiSupirBBM)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Rincian Gaji Supir <b>'. $gajiSupirBBM->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Rincian Gaji Supir <b>'. $gajiSupirBBM->gajisupir_nobukti .'</b> <br> '.$keterangantambahanerror,
                 // 'keterangan' => 'Rincian Gaji Supir ' . $gajiSupirBBM->gajisupir_nobukti,
                 'kodeerror' => 'TDT'
             ];
@@ -2488,7 +2488,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($gajiSupirPelunasan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Rincian Gaji Supir <b>'. $gajiSupirPelunasan->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Rincian Gaji Supir <b>'. $gajiSupirPelunasan->gajisupir_nobukti .'</b> <br> '.$keterangantambahanerror,
                 // 'keterangan' => 'Rincian Gaji Supir ' . $gajiSupirPelunasan->gajisupir_nobukti,
                 'kodeerror' => 'TDT'
             ];
@@ -2510,7 +2510,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($pendapatan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Komisi Supir <b>'. $pendapatan->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Komisi Supir <b>'. $pendapatan->pendapatan .'</b> <br> '.$keterangantambahanerror,
                 // 'keterangan' => 'pendapatan supir ' . $pendapatan->pendapatan,
                 'kodeerror' => 'TDT'
             ];
