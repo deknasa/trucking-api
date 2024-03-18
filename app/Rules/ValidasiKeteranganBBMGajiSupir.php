@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Http\Controllers\Controller;
 use Illuminate\Contracts\Validation\Rule;
 
-class ValidasiKeteranganDepositoGajiSupir implements Rule
+class ValidasiKeteranganBBMGajiSupir implements Rule
 {
     /**
      * Create a new rule instance.
@@ -28,7 +28,7 @@ class ValidasiKeteranganDepositoGajiSupir implements Rule
      */
     public function passes($attribute, $value)
     {
-        $ketDefault = "DEPOSITO SUPIR " . request()->supir . " PERIODE " . request()->tgldari . " S/D " . request()->tglsampai;
+        $ketDefault = "HUTANG BBM SUPIR " . request()->supir . " PERIODE " . request()->tgldari . " S/D " . request()->tglsampai;
         $this->keterangan = $ketDefault;
         $data=app(Controller::class)->like_match('%'.$ketDefault.'%', strtoupper($value));
 
@@ -42,6 +42,6 @@ class ValidasiKeteranganDepositoGajiSupir implements Rule
      */
     public function message()
     {
-        return 'KETERANGAN DEPOSITO ' . app(ErrorController::class)->geterror('HMK')->keterangan. ' : <br>'. $this->keterangan;
+        return 'KETERANGAN BBM ' . app(ErrorController::class)->geterror('HMK')->keterangan. ' : <br>'. $this->keterangan;
     }
 }

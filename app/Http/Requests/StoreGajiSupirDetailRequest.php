@@ -6,6 +6,8 @@ use App\Rules\CekMaxNominalPPGajiSupir;
 use App\Rules\CekMaxNominalPSGajiSupir;
 use App\Rules\CekMaxSisaPPGajiSupir;
 use App\Rules\CekMaxSisaPSGajiSupir;
+use App\Rules\ValidasiKeteranganBBMGajiSupir;
+use App\Rules\ValidasiKeteranganDepositoGajiSupir;
 use App\Rules\ValidasiTripGajiSupir;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -49,6 +51,7 @@ class StoreGajiSupirDetailRequest extends FormRequest
         if(request()->nomDeposito > 0 ){
             $rulesDeposito = [
                 'nomDeposito' => ['required','numeric','gt:0'],
+                'ketDeposito' => new ValidasiKeteranganDepositoGajiSupir()
             ];
         }
 
@@ -56,6 +59,7 @@ class StoreGajiSupirDetailRequest extends FormRequest
         if(request()->nomBBM > 0) {
             $rulesBBM = [
                 'nomBBM' => ['required','numeric','gt:0'],
+                'ketBBM' => new ValidasiKeteranganBBMGajiSupir()
             ];
         }
         $rules = [
