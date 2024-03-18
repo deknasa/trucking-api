@@ -307,6 +307,7 @@ return [
     'url_post_konsol_jkttnl' => env('URL_POST_KONSOL_JKTTNL', 'http://tasjkt.kozow.com:8074/truckingtnldummy-api/public/api/stok/updatekonsolidasi'),
     'kode_cabang' => env('KODE_CABANG', 'jkttnl'),
     'api_tnl' => env('API_TNL', "http://tasjkt.kozow.com:8074/truckingtnldummy-api/public/api/"),
+    'url_fe' => env('URL_FE', "http://tasjkt.kozow.com:8074/trucking/"),
 
 
 ];
