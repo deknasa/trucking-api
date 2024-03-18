@@ -648,8 +648,8 @@ class PengeluaranTruckingHeaderController extends Controller
 
             $data = [
                 'error' => true,
-                'message' => $keterror,
-                'kodeerror' => 'TDT',
+                'message' => $cekdata['keterangan'] ?? '',
+                'kodeerror' => $cekdata['kodeerror'],
                 'statuspesan' => 'warning',
             ];
 
