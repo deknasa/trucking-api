@@ -169,6 +169,7 @@ class DateApprovalQuota implements Rule
                 ->whereRaw('COALESCE(b.mandor_id, 0) <> 0')
                 ->whereRaw('COALESCE(c.user_id, 0) <> 0')
                 ->whereRaw('isnull(d.jumlahtrip,0) < c.jumlahtrip')
+                ->orderBy('c.tglbatas','desc')
                 ->first();
 
             if (isset($getAll)) {
