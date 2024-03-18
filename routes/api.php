@@ -584,6 +584,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('trado/approvaltradotanpa', [TradoController::class, 'approvalTradoTanpa']);
     Route::post('jurnalumumheader/approval', [JurnalUmumHeaderController::class, 'approval']);
     Route::post('suratpengantar/addrow', [SuratPengantarController::class, 'addrow']);
+    Route::get('mandorabsensisupir/{tradoId}/getabsentrado', [MandorAbsensiSupirController::class, 'getabsentrado'])->whereNumber('tradoId');
 
 
 });
@@ -698,7 +699,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('mandorabsensisupir/{tradoId}/cekvalidasi', [MandorAbsensiSupirController::class, 'cekValidasi'])->whereNumber('tradoId');
     Route::get('mandorabsensisupir/{tradoId}/cekvalidasiadd', [MandorAbsensiSupirController::class, 'cekValidasiAdd'])->whereNumber('tradoId');
-    Route::get('mandorabsensisupir/{tradoId}/getabsentrado', [MandorAbsensiSupirController::class, 'getabsentrado'])->whereNumber('tradoId');
     Route::patch('mandorabsensisupir/{id}/update', [MandorAbsensiSupirController::class, 'update'])->whereNumber('id');
     Route::delete('mandorabsensisupir/{id}/delete', [MandorAbsensiSupirController::class, 'destroy'])->whereNumber('id');
 

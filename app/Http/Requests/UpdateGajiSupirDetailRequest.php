@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidasiKeteranganDepositoGajiSupir;
 use App\Rules\ValidasiTripGajiSupir;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -45,6 +46,7 @@ class UpdateGajiSupirDetailRequest extends FormRequest
         if(request()->nomDeposito > 0){
             $rulesDeposito = [
                 'nomDeposito' => ['required','numeric','gt:0'],
+                'ketDeposito' => new ValidasiKeteranganDepositoGajiSupir()
             ];
         }
 
