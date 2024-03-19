@@ -1299,6 +1299,7 @@ class AbsensiSupirDetail extends MyModel
 
     public function processStore(AbsensiSupirHeader $absensiSupirHeader, array $data): AbsensiSupirDetail
     {
+        
         $absensiSupirDetail = new AbsensiSupirDetail();
         $absensiSupirDetail->absensi_id = $data['absensi_id'] ?? '';
         $absensiSupirDetail->nobukti = $data['nobukti'] ?? '';

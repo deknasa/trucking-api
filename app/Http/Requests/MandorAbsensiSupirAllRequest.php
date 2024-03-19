@@ -29,7 +29,11 @@ class MandorAbsensiSupirAllRequest extends FormRequest
      */
     public function rules()
     {
+
         $data = json_decode(request()->data, true);
+        // if ($data==[]) {
+        //     return true;
+        // }
 
         $mainValidator = validator(request()->all(), [
             'data' => [function ($attribute, $value, $fail) {
@@ -39,17 +43,18 @@ class MandorAbsensiSupirAllRequest extends FormRequest
             }],
         ]);
 
+
         $supirAbsen = DB::table("absentrado")->from(DB::raw("absentrado with (readuncommitted)"))
-                    ->where('kodeabsen', 'S')
-                    ->first();
-       
+            ->where('kodeabsen', 'S')
+            ->first();
+
         // Dapatkan kunci data yang dikirim
         $keys = array_keys($data);
-        
+
         // Tentukan aturan validasi untuk setiap kunci data
-        $validaasismass = collect($keys)->mapWithKeys(function ($key) use($data) {
+        $validaasismass = collect($keys)->mapWithKeys(function ($key) use ($data) {
             // dd($data[$key]['absen_id']);
-            
+
             $query = DB::table('parameter')->from(DB::raw("parameter as a with (readuncommitted)"))
                 ->select('text')
                 ->join(DB::raw("absentrado as b with (readuncommitted)"), 'a.text', '=', 'b.id')
@@ -60,7 +65,7 @@ class MandorAbsensiSupirAllRequest extends FormRequest
             $supirAbsen = DB::table("absentrado")->from(DB::raw("absentrado with (readuncommitted)"))
                 ->where('kodeabsen', 'S')
                 ->first();
-            
+
 
             if (isset($query)) {
                 $rules = [
@@ -86,13 +91,12 @@ class MandorAbsensiSupirAllRequest extends FormRequest
                     // }), Rule::when(empty($data[$key]['absen_id']), 'date_format:H:i')]
                 ];
                 $rulesBeda = [];
-                
             } else {
                 $requiredSupir = Rule::requiredIf(function () {
                     $cekSupir = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-                    ->where('grp',"ABSENSI SUPIR")
-                    ->where('subgrp',"TRADO MILIK SUPIR")    
-                    ->first();
+                        ->where('grp', "ABSENSI SUPIR")
+                        ->where('subgrp', "TRADO MILIK SUPIR")
+                        ->first();
                     if ($cekSupir->text != 'YA') {
                         return false;
                     }
@@ -108,24 +112,24 @@ class MandorAbsensiSupirAllRequest extends FormRequest
                 ];
                 // dd($this->input("$key.kodetrado"));
                 $rulesBeda = [
-                    "$key.namasupir" => ['required', new MandorAbsensiSupirEditSupirValidasiTrado($data[$key]['trado_id'],$data[$key]['supir_id'])],
-                    "$key.supir_id" => ['required', new MandorAbsensiSupirEditSupirValidasiTrado($data[$key]['trado_id'],$data[$key]['supir_id'])],
+                    "$key.namasupir" => ['required', new MandorAbsensiSupirEditSupirValidasiTrado($data[$key]['trado_id'], $data[$key]['supir_id'])],
+                    "$key.supir_id" => ['required', new MandorAbsensiSupirEditSupirValidasiTrado($data[$key]['trado_id'], $data[$key]['supir_id'])],
                 ];
             }
-                
+
             $rule = array_merge(
                 $rules,
                 $rulesBeda
             );
             return $rule;
-        
+
             // return [
             //     "$key.tglbukti"=>[
             //         'required', 'date_format:d-m-Y',
             //         new DateAllowedAbsenMandor(),
             //         new DateTutupBuku(),
             //     ],
-                
+
             //     "$key.supir_id" => [
             //         // Aturan validasi untuk supir_id
             //         // Misalnya, wajib diisi jika kondisi tertentu terpenuhi
@@ -141,7 +145,7 @@ class MandorAbsensiSupirAllRequest extends FormRequest
             //     "$key.keterangan"=>['required'],
             // ];
         })->all();
-        
+
         // $dataValidator = validator($data, [
         //     '*.tglbukti'=>[
         //         'required', 'date_format:d-m-Y',
@@ -155,13 +159,13 @@ class MandorAbsensiSupirAllRequest extends FormRequest
         //     '*.supir_id'=>[
         //         new MandorAbsensiSupirInputSupirValidasiTrado(),
         //         // new SupirRequiredConditonAbsen(),
-                
 
-               
+
+
         //     ],
         //     '*.namasupir'=>[
         //         new SupirRequiredConditonAbsen(),
-                
+
         //         Rule::requiredIf(function () use($data, $supirAbsen){
         //         dd($data,$this->input('data'));
         //             // return true;
@@ -183,7 +187,7 @@ class MandorAbsensiSupirAllRequest extends FormRequest
         //         //         // dd(!isset($query) );
         //         //         $fail($value);
         //         //     }
-                
+
         //         // },
         //     ],
         //     '*.absen_id'=>['required'],
@@ -191,13 +195,18 @@ class MandorAbsensiSupirAllRequest extends FormRequest
         //     '*.jam'=>['required'],
         //     '*.absentrado'=>['required'],
         //     '*.keterangan'=>['required'],
-            
-            
-        // ],);
-    
 
-        $validatedMainData = $mainValidator->validated();
+
+        // ],);
+
+
+
+        if ($data != []) {
+            $validatedMainData = $mainValidator->validated();
+        } 
+        // dd($data);
         $validatedDetailData = validator($data, $validaasismass)->validated();
+        // dd($validatedDetailData);
 
         // dd($rules);
         return $validatedDetailData;

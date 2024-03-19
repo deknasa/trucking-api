@@ -47,10 +47,14 @@ class MandorAbsensiSupirController extends Controller
      */
     public function store(MandorAbsensiSupirAllRequest $request)
     {
+        $data = json_decode(request()->data, true);
+        if ($data==[]) {
+            goto selesai;
+        }
+
+
         DB::beginTransaction();
         try {
-            $data = json_decode(request()->data, true);
-            // dd($data);
         
             $statusaktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
             foreach ($data as $key) {
@@ -95,6 +99,12 @@ class MandorAbsensiSupirController extends Controller
 
             throw $th;
         }
+        selesai:
+        return response([
+            'message' => 'Tidak Ada Data yang disimpan',
+            // 'data' => $AbsensiSupirHeader
+        ], 201);
+
     }
     public function store2(MandorAbsensiSupirRequest $request)
     {
