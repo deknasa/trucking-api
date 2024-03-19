@@ -86,6 +86,7 @@ class ApprovalTradoTanpa extends Model
         }else{
             $approvalSupirKeterangan = (new ApprovalTradoKeterangan())->processStore($dataKeterangan);
         }
+        $this->tradoApprovalAktif($data,$approvalSupirGambar->statusapproval,$approvalSupirKeterangan->statusapproval);
 
         return [
             "trado_id"=>$data['trado_id'],
@@ -151,5 +152,21 @@ class ApprovalTradoTanpa extends Model
         return ["gambar"=>$gambar, "keterangan"=>$keterangan];
         
     }
-    
+
+    public function tradoApprovalAktif($data,$approvalTradoGambar,$approvalTradoKeterangan) {
+        $trado = Trado::where('kodetrado',$data['kodetrado'])->first();
+        $statusAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS Aktif')->where('subgrp', '=', 'STATUS Aktif')->where('text', '=', 'aktif')->first();
+        $statusApproval = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS APPROVAL')->where('subgrp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        if ($trado->statusaktif != $statusAktif->text) {
+            $gambar = $approvalTradoGambar?? $statusApproval->id;
+            $keterangan = $approvalTradoKeterangan?? $statusApproval->id;
+            // dd($gambar,
+            // $keterangan,($statusApproval->id == $gambar) && ($statusApproval->id == $keterangan));
+            if (($statusApproval->id == $gambar) && ($statusApproval->id == $keterangan)) {
+                // dd($statusAktif->id);
+                $trado->statusaktif = $statusAktif->id;
+                $trado->save();
+            }
+        }
+    }
 }
