@@ -272,7 +272,8 @@ class MandorAbsensiSupir extends MyModel
         $update->update(["memo" => '{"MEMO":"AKTIF","SINGKATAN":"A","WARNA":"#009933","WARNATULISAN":"#FFF"}']);
 
         // dump(db::table($tempMandor)->where('trado_id',18)->get());
-
+// 
+        // dd(db::table($tempTrado)->where('kodetrado','1234567890')->get());
         $trados = DB::table("$tempTrado as a")
 
             ->select(
@@ -290,7 +291,7 @@ class MandorAbsensiSupir extends MyModel
                 DB::raw("(case when (select text from parameter where grp='ABSENSI SUPIR' and subgrp='TRADO MILIK SUPIR')= 'YA' then a.supir_id else null end) as supir_id_old"),
 
             )
-            ->Join("$tempsupir as c", 'a.supir_id', 'c.id')
+            ->leftJoin("$tempsupir as c", 'a.supir_id', 'c.id')
             ->leftJoin(DB::raw($tempAbsensi . " as b "), function ($join) {
                 $join->on('a.id', '=', 'b.trado_id');
                 $join->on(db::raw("isnull(a.supir_id,0)"), '=', db::raw("isnull(b.supir_id,0)"));
