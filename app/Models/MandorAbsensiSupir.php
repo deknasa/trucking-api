@@ -299,6 +299,8 @@ class MandorAbsensiSupir extends MyModel
             ->where('a.statusaktif', $statusaktif->id)
             ->where('a.statusabsensisupir', $statusabsensisupir->id)
             ->whereRaw("isnull(b.id,0)=0");
+            // dd($trados->where('trado_id',78)->get());
+
 
 
         if (!$isAdmin) {
@@ -322,7 +324,7 @@ class MandorAbsensiSupir extends MyModel
             $trados->whereRaw("a.id not in (select trado_id from $tempMandor)");
         }
 
-        DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id', 'namasupir_old', 'supir_id_old'], $trados);
+        // DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id', 'namasupir_old', 'supir_id_old'], $trados);
 
         //supir serap yang belum diisi
         $tgl = date('Y-m-d', strtotime($date));
