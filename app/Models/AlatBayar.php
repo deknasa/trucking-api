@@ -138,6 +138,19 @@ class AlatBayar extends MyModel
             ->first();
 
         $default = request()->statusdefault ?? 0;
+        $tempBank = '##tempBank' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempBank, function ($table) {
+            $table->string('namabank')->nullable();
+            $table->string('tipe', 50)->nullable();
+        });
+        $queryBank = DB::table("bank")->from(DB::raw("bank with (readuncommitted)"))
+            ->select(DB::raw("STRING_AGG(namabank, ', ') as namabank, tipe"))
+            ->where('statusaktif', 1)
+            ->whereRaw("namabank not like '%pengembalian%'")
+            ->groupBy('tipe');
+
+        DB::table($tempBank)->insertUsing(['namabank', 'tipe'], $queryBank);
+
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
@@ -159,7 +172,7 @@ class AlatBayar extends MyModel
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
-            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'alatbayar.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("$tempBank as bank with (readuncommitted)"), 'alatbayar.tipe', 'bank.tipe')
             ->leftJoin(DB::raw("parameter as parameter_statuslangsungcair with (readuncommitted)"), 'alatbayar.statuslangsungcair', 'parameter_statuslangsungcair.id')
             ->leftJoin(DB::raw("parameter as parameter_statusdefault with (readuncommitted)"), 'alatbayar.statusdefault', 'parameter_statusdefault.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'alatbayar.statusaktif', 'parameter.id');
@@ -297,6 +310,19 @@ class AlatBayar extends MyModel
 
     public function selectColumns($query)
     {
+        $tempBank = '##tempBank' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempBank, function ($table) {
+            $table->string('namabank')->nullable();
+            $table->string('tipe', 50)->nullable();
+        });
+        $queryBank = DB::table("bank")->from(DB::raw("bank with (readuncommitted)"))
+            ->select(DB::raw("STRING_AGG(namabank, ', ') as namabank, tipe"))
+            ->where('statusaktif', 1)
+            ->whereRaw("namabank not like '%pengembalian%'")
+            ->groupBy('tipe');
+
+        DB::table($tempBank)->insertUsing(['namabank', 'tipe'], $queryBank);
+
         return $query->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
@@ -309,14 +335,14 @@ class AlatBayar extends MyModel
                 'parameter_statuslangsungcair.text as statuslangsungcair',
                 'parameter_statusdefault.text as statusdefault',
                 'parameter_statusaktif.text as statusaktif',
-                'bank.namabank as bank_id',
+                'bank.namabank as bank',
                 $this->table.modifiedby,
                 $this->table.created_at,
                 $this->table.updated_at
                 
             ")
             )
-            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'alatbayar.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("$tempBank as bank with (readuncommitted)"), 'alatbayar.tipe', 'bank.tipe')
             ->leftJoin(DB::raw("parameter as parameter_statuslangsungcair with (readuncommitted)"), 'alatbayar.statuslangsungcair', 'parameter_statuslangsungcair.id')
             ->leftJoin(DB::raw("parameter as parameter_statusdefault with (readuncommitted)"), 'alatbayar.statusdefault', 'parameter_statusdefault.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'alatbayar.statusaktif', 'parameter.id');
@@ -333,7 +359,7 @@ class AlatBayar extends MyModel
             $table->string('statuslangsungcair')->nullable();
             $table->string('statusdefault')->nullable();
             $table->string('statusaktif')->nullable();
-            $table->string('bank_id')->nullable();
+            $table->string('bank')->nullable();
             $table->string('modifiedby')->default();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -345,7 +371,7 @@ class AlatBayar extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'kodealatbayar', 'namaalatbayar', 'keterangan', 'statuslangsungcair', 'statusdefault', 'statusaktif', 'bank_id', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'kodealatbayar', 'namaalatbayar', 'keterangan', 'statuslangsungcair', 'statusdefault', 'statusaktif', 'bank', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -365,19 +391,21 @@ class AlatBayar extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statuslangsungcair') {
-                            $query = $query->where('parameter_statuslangsungcair.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statusdefault') {
-                            $query = $query->where('parameter_statusdefault.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'bank') {
-                            $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->where('parameter.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statuslangsungcair') {
+                                $query = $query->where('parameter_statuslangsungcair.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusdefault') {
+                                $query = $query->where('parameter_statusdefault.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'bank') {
+                                $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -385,19 +413,21 @@ class AlatBayar extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusaktif') {
-                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'statuslangsungcair') {
-                                $query = $query->orWhere('parameter_statuslangsungcair.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'statusdefault') {
-                                $query = $query->orWhere('parameter_statusdefault.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'bank') {
-                                $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
-                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusaktif') {
+                                    $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statuslangsungcair') {
+                                    $query = $query->orWhere('parameter_statuslangsungcair.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusdefault') {
+                                    $query = $query->orWhere('parameter_statusdefault.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'bank') {
+                                    $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
                     });
@@ -431,9 +461,9 @@ class AlatBayar extends MyModel
             ->where('id', '=', $bank_id)
             ->first();
 
-            // dd($bank_id);
-            $param1=$bank_id;
-            // dd($param1);
+        // dd($bank_id);
+        $param1 = $bank_id;
+        // dd($param1);
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
@@ -445,16 +475,16 @@ class AlatBayar extends MyModel
             )
             ->join(DB::raw("bank  with(readuncommitted) "), function ($join) use ($param1) {
                 $join->on('alatbayar.tipe', '=', 'bank.tipe');
-                $join->on('bank.id', '=', DB::raw($param1 ));
-            })            
+                $join->on('bank.id', '=', DB::raw($param1));
+            })
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'alatbayar.statusaktif', 'parameter.id')
             ->where('bank.tipe', $bank->tipe)
             ->get();
 
 
-            // dd($query->toSql());
-            // dd($query);
-            return $query;
+        // dd($query->toSql());
+        // dd($query);
+        return $query;
     }
 
     public function processStore(array $data): AlatBayar
@@ -543,7 +573,7 @@ class AlatBayar extends MyModel
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
-            $alatBayar = $this->where('id',$data['Id'][$i])->first();
+            $alatBayar = $this->where('id', $data['Id'][$i])->first();
 
             $alatBayar->statusaktif = $statusnonaktif->id;
             $alatBayar->modifiedby = auth('api')->user()->name;
