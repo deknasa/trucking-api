@@ -31,15 +31,18 @@ class ValidasiTripGajiSupir implements Rule
         $dataTrip = request()->rincian_nobukti;
         $empty = 0;
         $listTrip = '';
-        for ($i = 0; $i < count($dataTrip); $i++) {
-            $cekTripExist = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-                ->where('nobukti', $dataTrip[$i])->first();
-            if ($cekTripExist == '') {
-                $empty++;
-                if($listTrip == ''){
-                    $listTrip = $dataTrip[$i];
-                }else{
-                    $listTrip = $listTrip . ', ' . $dataTrip[$i];
+        if ($dataTrip != '') {
+
+            for ($i = 0; $i < count($dataTrip); $i++) {
+                $cekTripExist = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+                    ->where('nobukti', $dataTrip[$i])->first();
+                if ($cekTripExist == '') {
+                    $empty++;
+                    if ($listTrip == '') {
+                        $listTrip = $dataTrip[$i];
+                    } else {
+                        $listTrip = $listTrip . ', ' . $dataTrip[$i];
+                    }
                 }
             }
         }
@@ -57,6 +60,6 @@ class ValidasiTripGajiSupir implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('DTA')->keterangan . ' (' . $this->trip.')';
+        return app(ErrorController::class)->geterror('DTA')->keterangan . ' (' . $this->trip . ')';
     }
 }

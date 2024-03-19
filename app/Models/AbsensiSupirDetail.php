@@ -353,7 +353,39 @@ class AbsensiSupirDetail extends MyModel
                     }
                 }
                 if ($isProsesUangjalan == true) {
+
+                    $aksi = request()->aksi;
+                    $uangJalanId = request()->uangJalanId ?? 0;
+                    $absensiId = request()->absensi_id ?? 0;
                     $query->where('absensisupirdetail.uangjalan', '!=', 0);
+                    $getProsesUangjalan = DB::table("prosesuangjalansupirheader")->from(DB::raw("prosesuangjalansupirheader as uangjalan with (readuncommitted)"))
+                        ->join(DB::raw("absensisupirheader"), 'uangjalan.absensisupir_nobukti', 'absensisupirheader.nobukti')
+                        ->select('uangjalan.id', 'uangjalan.supir_id', 'uangjalan.trado_id', 'absensisupirheader.nobukti', 'absensisupirheader.id as absensiId')
+                        ->where('absensisupirheader.id',$absensiId);
+
+                    $tempProsesUangjalan = '##tempProsesUangjalan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                    Schema::create($tempProsesUangjalan, function ($table) {
+                        $table->bigInteger('id')->nullable();
+                        $table->bigInteger('supir_id')->nullable();
+                        $table->bigInteger('trado_id')->nullable();
+                        $table->string('nobukti', 1000)->nullable();
+                        $table->bigInteger('absensiId')->nullable();
+                    });
+
+                    DB::table($tempProsesUangjalan)->insertUsing([
+                        'id',
+                        'supir_id',
+                        'trado_id',
+                        'nobukti',
+                        'absensiId',
+                    ], $getProsesUangjalan);
+
+                    if ($aksi == 'add') {
+                        $query->whereRaw("absensisupirdetail.supir_id not in (select supir_id from $tempProsesUangjalan)");
+                    }  else {
+                        
+                        $query->whereRaw("absensisupirdetail.supir_id not in (select supir_id from $tempProsesUangjalan where id <> $uangJalanId)");
+                    }
                 }
                 $this->totalRows = $query->count();
                 $this->totalNominal = $query->sum('uangjalan');
@@ -553,12 +585,12 @@ class AbsensiSupirDetail extends MyModel
 
         $parameter = new Parameter();
         $statuslibur = $parameter->cekText('ABSENSI SUPIR SERAP', 'L') ?? '0';
-        $ketstatuslibur=db::table("absentrado")->from(db::raw("absentrado a with (readuncommitted)"))
-        ->select(
-            'a.keterangan'
-        )
-        ->where('a.id',$statuslibur)
-        ->first()->keterangan ?? '';
+        $ketstatuslibur = db::table("absentrado")->from(db::raw("absentrado a with (readuncommitted)"))
+            ->select(
+                'a.keterangan'
+            )
+            ->where('a.id', $statuslibur)
+            ->first()->keterangan ?? '';
 
 
         //trado yang sudah absen dan punya tidak punya supir
@@ -570,8 +602,8 @@ class AbsensiSupirDetail extends MyModel
                 'absensisupirdetail.keterangan',
                 // 'absentrado.keterangan as absentrado',
                 // 'absentrado.id as absen_id',
-                DB::raw("(case when isnull(trado.mandor_id,0)=0 and isnull(absensisupirdetail.absen_id,0)=0 then '".$ketstatuslibur ."' else absentrado.keterangan end) as absentrado"),
-                DB::raw("(case when isnull(trado.mandor_id,0)=0 and isnull(absensisupirdetail.absen_id,0)=0 then ".$statuslibur ." else absentrado.id end) as absen_id"),
+                DB::raw("(case when isnull(trado.mandor_id,0)=0 and isnull(absensisupirdetail.absen_id,0)=0 then '" . $ketstatuslibur . "' else absentrado.keterangan end) as absentrado"),
+                DB::raw("(case when isnull(trado.mandor_id,0)=0 and isnull(absensisupirdetail.absen_id,0)=0 then " . $statuslibur . " else absentrado.id end) as absen_id"),
 
                 'absensisupirdetail.jam',
                 'absensisupirheader.tglbukti',
@@ -603,7 +635,7 @@ class AbsensiSupirDetail extends MyModel
         $update = DB::table($tempMandor);
         $update->update(["memo" => '{"MEMO":"AKTIF","SINGKATAN":"A","WARNA":"#009933","WARNATULISAN":"#FFF"}']);
 
-        	
+
         $trados = DB::table('trado as a')
 
             ->select(
@@ -612,8 +644,8 @@ class AbsensiSupirDetail extends MyModel
                 'a.kodetrado as kodetrado',
                 'c.namasupir as namasupir',
                 DB::raw('null as keterangan'),
-                DB::raw("(case when isnull(a.mandor_id,0)=0 then '".$ketstatuslibur ."' else null end) as absentrado"),
-                DB::raw("(case when isnull(a.mandor_id,0)=0 then ".$statuslibur ." else null end) as absen_id"),
+                DB::raw("(case when isnull(a.mandor_id,0)=0 then '" . $ketstatuslibur . "' else null end) as absentrado"),
+                DB::raw("(case when isnull(a.mandor_id,0)=0 then " . $statuslibur . " else null end) as absen_id"),
                 DB::raw("null as jam"),
                 DB::raw("null as tglbukti"),
                 DB::raw("(case when (select text from parameter where grp='ABSENSI SUPIR' and subgrp='TRADO MILIK SUPIR')= 'YA' then a.supir_id else null end) as supir_id"),
@@ -800,22 +832,22 @@ class AbsensiSupirDetail extends MyModel
         DB::table($tempdatahasil)->insertUsing(['trado_id', 'supir_id', 'tglbatas'], $queryhasil);
 
         $batasJamEdit = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', '=', 'BATAS JAM EDIT ABSENSI')
-        ->where('subgrp', '=', 'BATAS JAM EDIT ABSENSI')
-        ->first();
+            ->select('text')
+            ->where('grp', '=', 'BATAS JAM EDIT ABSENSI')
+            ->where('subgrp', '=', 'BATAS JAM EDIT ABSENSI')
+            ->first();
 
         $tempidabsen = '##tempidabsen' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempidabsen, function ($table) {
             $table->integer('text')->nullable();
         });
 
-        $queryabsen=db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
-        ->select(
-            'a.text'
-        )
-        ->where('a.grp','ABSENSI TANPA UANG JALAN') 
-        ->orderby('a.text','asc');
+        $queryabsen = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.text'
+            )
+            ->where('a.grp', 'ABSENSI TANPA UANG JALAN')
+            ->orderby('a.text', 'asc');
 
         DB::table($tempidabsen)->insertUsing(['text'], $queryabsen);
 
@@ -829,8 +861,8 @@ class AbsensiSupirDetail extends MyModel
                 'a.keterangan',
                 // 'a.absen',
                 // 'a.absen_id',
-                DB::raw("(case when isnull(c.mandor_id,0)=0 and isnull(a.absen_id,0)=0 then '".$ketstatuslibur ."' else a.absen end) as absen"),
-                DB::raw("(case when isnull(c.mandor_id,0)=0 and isnull(a.absen_id,0)=0  then ".$statuslibur ." else a.absen_id end) as absen_id"),
+                DB::raw("(case when isnull(c.mandor_id,0)=0 and isnull(a.absen_id,0)=0 then '" . $ketstatuslibur . "' else a.absen end) as absen"),
+                DB::raw("(case when isnull(c.mandor_id,0)=0 and isnull(a.absen_id,0)=0  then " . $statuslibur . " else a.absen_id end) as absen_id"),
 
                 'a.jam',
                 'a.tglbukti',
@@ -841,17 +873,17 @@ class AbsensiSupirDetail extends MyModel
                 'a.memo',
                 DB::RAW("isnull(a.uangjalan,0) as uangjalan"),
                 db::raw("format(cast(isnull(b.tglbatas,
-                    (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '".  date('Y-m-d', strtotime($date)) ." ".$batasJamEdit->text."'  else    format(a.tglbukti,'yyyy/MM/dd')+' ".$batasJamEdit->text ."' end)
+                    (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '" .  date('Y-m-d', strtotime($date)) . " " . $batasJamEdit->text . "'  else    format(a.tglbukti,'yyyy/MM/dd')+' " . $batasJamEdit->text . "' end)
                     ) as datetime),'dd-MM-yyyy HH:mm:ss') as tglbatas"),
                 db::raw("(case when cast(format(cast(isnull(b.tglbatas,
-                    (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '".  date('Y-m-d', strtotime($date)) ." ".$batasJamEdit->text."' else    format(a.tglbukti,'yyyy/MM/dd')+' ".$batasJamEdit->text ."' end)
+                    (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '" .  date('Y-m-d', strtotime($date)) . " " . $batasJamEdit->text . "' else    format(a.tglbukti,'yyyy/MM/dd')+' " . $batasJamEdit->text . "' end)
                     ) as datetime),'yyyy/MM/dd HH:mm:ss') as datetime)>=getdate() then 1 else 0 end) 
                     as berlaku"),
                 db::raw("(case when cast(format(cast(isnull(b.tglbatas,
-                    (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '".  date('Y-m-d', strtotime($date)) ." ".$batasJamEdit->text."' else    format(a.tglbukti,'yyyy/MM/dd')+' ".$batasJamEdit->text ."' end)
+                    (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '" .  date('Y-m-d', strtotime($date)) . " " . $batasJamEdit->text . "' else    format(a.tglbukti,'yyyy/MM/dd')+' " . $batasJamEdit->text . "' end)
                     ) as datetime),'yyyy/MM/dd HH:mm:ss') as datetime)>=getdate() then 1 else 0 end) 
                     as berlaku"),
-                db::raw("(CASE WHEN a.absen_id IN (SELECT text FROM ".$tempidabsen.") THEN 'readonly' ELSE '' END) AS uangjalan_readonly")
+                db::raw("(CASE WHEN a.absen_id IN (SELECT text FROM " . $tempidabsen . ") THEN 'readonly' ELSE '' END) AS uangjalan_readonly")
 
 
                 // db::raw("format(cast(b.tglbatas as datetime),'dd-MM-yyyy HH:mm:ss') as tglbatas1"),
@@ -1147,12 +1179,14 @@ class AbsensiSupirDetail extends MyModel
                 'absensisupirdetail.absensi_id',
                 'absensisupirdetail.nobukti',
                 'absensisupirheader.tglbukti',
-                'absensisupirdetail.uangjalan'
+                'absensisupirdetail.uangjalan',
+                'trado.kodetrado as trado'
             )
             ->join(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirheader.nobukti', 'absensisupirdetail.nobukti')
+            ->join(DB::raw("trado with (readuncommitted)"), 'trado.id', 'absensisupirdetail.trado_id')
             ->whereRaw("absensisupirdetail.nobukti in (select absensisupir_nobukti from gajisupiruangjalan where gajisupir_nobukti='$nobukti')")
-            ->where('absensisupirdetail.supir_id', $fetch->supir_id)
-            ->where('absensisupirdetail.trado_id', $fetch->trado_id);
+            ->where('absensisupirdetail.supir_id', $fetch->supir_id);
+            // ->where('absensisupirdetail.trado_id', $fetch->trado_id);
 
         if ($query->first() != null) {
             $this->sort($query);

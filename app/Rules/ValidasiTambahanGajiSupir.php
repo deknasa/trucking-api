@@ -34,24 +34,27 @@ class ValidasiTambahanGajiSupir implements Rule
         $cekStatus = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'SURAT PENGANTAR BIAYA TAMBAHAN')->first();
 
         if ($cekStatus->text == 'YA') {
-            for ($i = 0; $i < count(request()->rincian_nobukti); $i++) {
-                $nobukti = request()->rincian_nobukti[$i];
+            $dataTrip = request()->rincian_nobukti;
+            if ($dataTrip != '') {
+                for ($i = 0; $i < count(request()->rincian_nobukti); $i++) {
+                    $nobukti = request()->rincian_nobukti[$i];
 
-                $query = DB::table("suratpengantarbiayatambahan")->from(DB::raw("suratpengantarbiayatambahan as a with (readuncommitted)"))
-                    ->join(DB::raw("suratpengantar as b with (readuncommitted)"), 'a.suratpengantar_id', 'b.id')
-                    ->where('b.nobukti', $nobukti)
-                    ->where('a.statusapproval', 4)
-                    ->first();
+                    $query = DB::table("suratpengantarbiayatambahan")->from(DB::raw("suratpengantarbiayatambahan as a with (readuncommitted)"))
+                        ->join(DB::raw("suratpengantar as b with (readuncommitted)"), 'a.suratpengantar_id', 'b.id')
+                        ->where('b.nobukti', $nobukti)
+                        ->where('a.statusapproval', 4)
+                        ->first();
 
-                if ($query != '') {
-                    $allowed = false;
+                    if ($query != '') {
+                        $allowed = false;
 
-                    if (strpos($listTrip, $nobukti) === false) {
-                        // If it doesn't exist, append the current element
-                        if ($listTrip == '') {
-                            $listTrip = $nobukti;
-                        } else {
-                            $listTrip = $listTrip . ', ' . $nobukti;
+                        if (strpos($listTrip, $nobukti) === false) {
+                            // If it doesn't exist, append the current element
+                            if ($listTrip == '') {
+                                $listTrip = $nobukti;
+                            } else {
+                                $listTrip = $listTrip . ', ' . $nobukti;
+                            }
                         }
                     }
                 }

@@ -215,6 +215,7 @@ class Supir extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
+        $from = request()->from ?? '';
         $aktif = request()->aktif ?? '';
         $supir_id = request()->supir_id ?? '';
         $isProsesUangjalan = request()->isProsesUangjalan ?? '';
@@ -302,6 +303,10 @@ class Supir extends MyModel
 
             $query->where('supir.statusaktif', '=', $statusaktif->id);
         }
+        if($from == 'historytradosupir'){
+            $query->whereRaw("supir.id not in (select supir_id from trado where isnull(supir_id,0) != 0)");
+        }
+
         if ($absen == true) {
             $trado_id = request()->trado_id ?? '';
             $tglbukti = date('Y-m-d', strtotime($tgltrip));
@@ -703,7 +708,8 @@ class Supir extends MyModel
         } else if ($this->params['sortIndex'] == 'mandor_id') {
             return $query->orderBy('b.namamandor', $this->params['sortOrder']);
         } else {
-            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder'])
+            ;
         }
     }
 
@@ -958,12 +964,60 @@ class Supir extends MyModel
             $statusZonaTertentu = DB::table('parameter')->where('grp', 'ZONA TERTENTU')->where('default', 'YA')->first();
             $statusBlackList = DB::table('parameter')->where('grp', 'BLACKLIST SUPIR')->where('default', 'YA')->first();
             $isMandor = auth()->user()->isMandor();
+            $userid = auth('api')->user()->id;
             if ($isMandor) {
-                $data['mandor_id'] = $isMandor->mandor_id;
+                // $data['mandor_id'] = $isMandor->mandor_id;
+                if ($isMandor) {
+
+                    $temp1 = '##temp1' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                    Schema::create($temp1, function ($table) {
+                        $table->id();
+                        $table->integer('mandor_id')->nullable();
+                    });
+    
+                    $query1 = db::table('mandor')->from(db::raw("mandor a with (readuncommitted)"))
+                        ->select(
+                            'a.id',
+                        )
+                        ->join(db::raw("mandordetail b with (readuncommitted)"), 'a.id', 'b.mandor_id')
+                        ->where('b.user_id', $userid)
+                        ->groupby('a.id');
+    
+                    DB::table($temp1)->insertUsing([
+                        'mandor_id',
+                    ], $query1);
+    
+                    $temp2 = '##temp2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                    Schema::create($temp2, function ($table) {
+                        $table->id();
+                        $table->integer('mandor_id')->nullable();
+                        $table->integer('jumlah')->nullable();
+                    });
+    
+                    $query2 = db::table('mandordetail')->from(db::raw("mandordetail a with (readuncommitted)"))
+                        ->select(
+                            'a.mandor_id',
+                            db::raw("count(a.id) as jumlah")
+                        )
+                        ->join(db::raw($temp1 . " b "), 'a.mandor_id', 'b.mandor_id')
+                        ->groupby('a.mandor_id');
+    
+                    DB::table($temp2)->insertUsing([
+                        'mandor_id',
+                        'jumlah',
+                    ], $query2);
+    
+                    $queryidmandor = db::table($temp2)->from(db::raw($temp2 . " a"))
+                        ->select(
+                            'a.mandor_id'
+                        )
+                        ->orderby('a.jumlah', 'asc')
+                        ->orderby('a.mandor_id', 'asc')
+                        ->first();
+                    $data['mandor_id'] = $queryidmandor->mandor_id ?? 0;
+                }                
             }
             $supir = new Supir();
-
-
             $depositke = str_replace(',', '', $data['depositke'] ?? '');
             $supir->namasupir = $data['namasupir'];
             $supir->alamat = $data['alamat'];

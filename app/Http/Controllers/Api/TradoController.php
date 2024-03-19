@@ -752,6 +752,7 @@ class TradoController extends Controller
                 "gambar_statusapproval" => $request->gambar_statusapproval,
                 "tglbatas" => $request->tglbatas,
             ];
+            // dd($data);
 
             $approvalTradoTanpa = (new ApprovalTradoTanpa())->processStore($data);
 
