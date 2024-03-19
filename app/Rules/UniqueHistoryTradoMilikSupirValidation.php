@@ -13,6 +13,7 @@ class UniqueHistoryTradoMilikSupirValidation implements Rule
      *
      * @return void
      */
+    public $kodetrado;
     public function __construct()
     {
         //
@@ -28,14 +29,17 @@ class UniqueHistoryTradoMilikSupirValidation implements Rule
     public function passes($attribute, $value)
     {
         $id = request()->id;
-        $this->kodetrado = '';
-        $cekSupir = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))->select('supir_id', 'kodetrado')
-                    ->where('supir_id', request()->supirbaru_id)
-                    ->where('id','<>', $id)
-                    ->first();
-        if($cekSupir != ''){
-            $this->kodetrado = $cekSupir->kodetrado;
-            return false;
+        if (request()->supirbaru_id != '') {
+
+            $this->kodetrado = '';
+            $cekSupir = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))->select('supir_id', 'kodetrado')
+                ->where('supir_id', request()->supirbaru_id)
+                ->where('id', '<>', $id)
+                ->first();
+            if ($cekSupir != '') {
+                $this->kodetrado = $cekSupir->kodetrado;
+                return false;
+            }
         }
         return true;
     }
@@ -47,6 +51,6 @@ class UniqueHistoryTradoMilikSupirValidation implements Rule
      */
     public function message()
     {
-        return 'supir ini '.app(ErrorController::class)->geterror('SPI')->keterangan.' '. $this->kodetrado;
+        return 'supir ini ' . app(ErrorController::class)->geterror('SPI')->keterangan . ' ' . $this->kodetrado;
     }
 }

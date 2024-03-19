@@ -41,6 +41,6 @@ class HistoryTradoMilikSupirValidation implements Rule
      */
     public function message()
     {
-        return 'supir baru dengan lama '.app(ErrorController::class)->geterror('TBS')->keterangan;
+        return 'supir baru '.app(ErrorController::class)->geterror('WI')->keterangan;
     }
 }

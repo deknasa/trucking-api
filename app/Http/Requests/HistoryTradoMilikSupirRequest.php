@@ -26,7 +26,7 @@ class HistoryTradoMilikSupirRequest extends FormRequest
     public function rules()
     {
         return [
-            'supirbaru' => ['required', new HistoryTradoMilikSupirValidation(), new UniqueHistoryTradoMilikSupirValidation()]
+            'supirbaru' => [new HistoryTradoMilikSupirValidation(), new UniqueHistoryTradoMilikSupirValidation()]
         ];
     }
     public function attributes()

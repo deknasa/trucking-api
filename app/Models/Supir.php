@@ -215,6 +215,7 @@ class Supir extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
+        $from = request()->from ?? '';
         $aktif = request()->aktif ?? '';
         $supir_id = request()->supir_id ?? '';
         $isProsesUangjalan = request()->isProsesUangjalan ?? '';
@@ -302,6 +303,10 @@ class Supir extends MyModel
 
             $query->where('supir.statusaktif', '=', $statusaktif->id);
         }
+        if($from == 'historytradosupir'){
+            $query->whereRaw("supir.id not in (select supir_id from trado where isnull(supir_id,0) != 0)");
+        }
+
         if ($absen == true) {
             $trado_id = request()->trado_id ?? '';
             $tglbukti = date('Y-m-d', strtotime($tgltrip));
