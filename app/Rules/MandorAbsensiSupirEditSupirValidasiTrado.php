@@ -42,10 +42,14 @@ class MandorAbsensiSupirEditSupirValidasiTrado implements Rule
                     'b.trado_id'
                 )
                 ->join(db::Raw("absensisupirdetail as b with (readuncommitted)"), 'a.id', 'b.absensi_id')
+                ->join(db::Raw("trado as c with (readuncommitted)"), 'b.trado_id', 'c.id')
+                ->whereRaw("isnull(c.tglberlakumilikmandor,'1900/1/1')<='" . date('Y-m-d') . "'")
                 ->whereRaw("a.tglbukti='" . date('Y-m-d') . "'")
                 ->where('b.supir_id', '=', $this->supir_id)
                 ->where('b.trado_id', '<>', $this->trado_id)
                 ->first();
+
+
 
 
             if (isset($query)) {
@@ -74,6 +78,7 @@ class MandorAbsensiSupirEditSupirValidasiTrado implements Rule
             )
             ->join(db::Raw("absensisupirdetail as b with (readuncommitted)"), 'a.id', 'b.absensi_id')
             ->join(db::Raw("trado as c with (readuncommitted)"), 'b.trado_id', 'c.id')
+            ->whereRaw("isnull(c.tglberlakumilikmandor,'1900/1/1')<='" . date('Y-m-d') . "'")
             ->whereRaw("a.tglbukti='" . date('Y-m-d') . "'")
             ->where('b.supir_id', '=', $this->supir_id )
             ->where('b.trado_id', '<>', $this->trado_id)
