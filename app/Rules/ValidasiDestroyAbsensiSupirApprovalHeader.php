@@ -2,6 +2,7 @@
 
 namespace App\Rules;
 
+use App\Http\Controllers\Api\AbsensiSupirApprovalHeaderController;
 use Illuminate\Contracts\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\AbsensiSupirApprovalHeader;
@@ -13,6 +14,8 @@ class ValidasiDestroyAbsensiSupirApprovalHeader implements Rule
      *
      * @return void
      */
+    public $kodeerror;
+    public $keterangan;
     public function __construct()
     {
         
@@ -29,18 +32,17 @@ class ValidasiDestroyAbsensiSupirApprovalHeader implements Rule
     public function passes($attribute, $value)
     {
 
-        $absensisupir = AbsensiSupirApprovalHeader::findOrFail(request()->id);
-
-        $printValidation = (new AbsensiSupirApprovalHeader())->printValidation(request()->id);
-        if (!$printValidation) {
-            $this->kodeerror = "SDC";
-            $this->keterangan = '';
-            return false;
-        }
         $cekdata = (new AbsensiSupirApprovalHeader())->cekvalidasiaksi(request()->id);
         if ($cekdata['kondisi']) {
             $this->kodeerror = $cekdata['kodeerror'];
-            $this->keterangan = ' ('. $cekdata['keterangan'].')';
+            $this->keterangan = $cekdata['keterangan'];
+            return false;
+        }
+        $cekCetak = app(AbsensiSupirApprovalHeaderController::class)->cekvalidasi(request()->id);
+        $getOriginal = $cekCetak->original;
+        if ($getOriginal['error'] == true) {
+            $this->kodeerror = $getOriginal['kodeerror'];
+            $this->keterangan = $getOriginal['message'];
             return false;
         }
         return true;
@@ -53,6 +55,6 @@ class ValidasiDestroyAbsensiSupirApprovalHeader implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror($this->kodeerror)->keterangan.$this->keterangan;
+        return $this->keterangan;
     }
 }
