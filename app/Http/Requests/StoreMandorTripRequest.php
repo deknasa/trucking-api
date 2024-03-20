@@ -43,6 +43,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Schema;
 use App\Models\ReminderOli;
 use App\Rules\ValidasiAgenTripGudangSama;
+use App\Rules\validasiBatasLuarKota;
 use App\Rules\ValidasiContainerTripGudangSama;
 use App\Rules\ValidasiJenisOrderGudangsama;
 use App\Rules\ValidasiJenisOrderLongtrip;
@@ -436,7 +437,7 @@ class StoreMandorTripRequest extends FormRequest
             $rulesTrado_id = [
                 'trado_id' => [
                     // 
-                    'required', 'numeric', 'min:1', new ExistTrado(), new ValidasiSupirBaru(), new ValidasiReminderOli($validasireminderolimesin, $keteranganvalidasireminderolimesin), new ValidasiReminderOliPersneling($validasireminderolipersneling, $keteranganvalidasireminderolipersneling), new ValidasiReminderOliGardan($validasireminderoligardan, $keteranganvalidasireminderoligardan), new ValidasiReminderSaringanHawa($validasiremindersaringanhawa, $keteranganvalidasiremindersaringanhawa)
+                    'required', 'numeric', 'min:1', new ExistTrado(), new validasiBatasLuarKota(), new ValidasiReminderOli($validasireminderolimesin, $keteranganvalidasireminderolimesin), new ValidasiReminderOliPersneling($validasireminderolipersneling, $keteranganvalidasireminderolipersneling), new ValidasiReminderOliGardan($validasireminderoligardan, $keteranganvalidasireminderoligardan), new ValidasiReminderSaringanHawa($validasiremindersaringanhawa, $keteranganvalidasiremindersaringanhawa)
                 ],
                 'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()],
                 'absensidetail_id' => ['required', 'numeric', 'min:1', new ExistAbsensiSupirDetail()],

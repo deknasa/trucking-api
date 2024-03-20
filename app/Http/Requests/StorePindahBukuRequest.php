@@ -34,7 +34,7 @@ class StorePindahBukuRequest extends FormRequest
             'bankdari' => 'required',
             'bankke' => 'required',
             'alatbayar' => 'required',
-            'nominal' => 'required',
+            'nominal' => ['required', 'numeric', 'gt:0'],
             'keterangan' => 'required',
         ];
     }

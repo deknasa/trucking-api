@@ -244,6 +244,7 @@ class Supir extends MyModel
                 'supir.nosim',
                 DB::raw('(case when (year(supir.tglterbitsim) <= 2000) then null else supir.tglterbitsim end ) as tglterbitsim'),
                 DB::raw('(case when (year(supir.tglexpsim) <= 2000) then null else supir.tglexpsim end ) as tglexpsim'),
+                DB::raw("(case when (year(isnull(supir.tglbatastidakbolehluarkota,'1900-01-01')) <= 2000) then null else supir.tglbatastidakbolehluarkota end ) as tglbatastidakbolehluarkota"),
                 'supir.keterangan',
                 'supir.noktp',
                 'supir.nokk',
@@ -303,7 +304,7 @@ class Supir extends MyModel
 
             $query->where('supir.statusaktif', '=', $statusaktif->id);
         }
-        if($from == 'historytradosupir'){
+        if ($from == 'historytradosupir') {
             $query->whereRaw("supir.id not in (select supir_id from trado where isnull(supir_id,0) != 0)");
         }
 
@@ -318,16 +319,16 @@ class Supir extends MyModel
                 $query->whereRaw("supir.id in (select supir_id from absensisupirdetail where absensi_id=$absensiSupirHeader->id)");
             }
         }
-        if($fromSupirSerap =="true"){
+        if ($fromSupirSerap == "true") {
             $tglbukti = date('Y-m-d', strtotime($tgltrip));
             $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti', $tglbukti)->first();
             if (!$absensiSupirHeader) {
-                return $query->where('supir.id',0)->get();
+                return $query->where('supir.id', 0)->get();
             }
             $parameter = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                    ->select('text')
-                    ->where('grp', '=', 'ABSENSI SUPIR SERAP')
-                    ->get();
+                ->select('text')
+                ->where('grp', '=', 'ABSENSI SUPIR SERAP')
+                ->get();
             $values = array_column($parameter->toArray(), 'text');
             $result = implode(',', $values);
             $query->whereRaw("supir.id not in (select supirold_id from absensisupirdetail where absensi_id=$absensiSupirHeader->id and absen_id IN ($result) )");
@@ -583,6 +584,7 @@ class Supir extends MyModel
                 $this->table.noktp,
                 $this->table.nokk,
                 statusluarkota.memo as statusluarkota,
+               (case when (year(isnull(supir.tglbatastidakbolehluarkota,'1900-01-01')) <= 2000) then null else supir.tglbatastidakbolehluarkota end ) as tglbatastidakbolehluarkota,
                 $this->table.angsuranpinjaman,
                 $this->table.plafondeposito,
                 $this->table.photosupir,
@@ -634,6 +636,7 @@ class Supir extends MyModel
             $table->string('noktp', 30)->nullable();
             $table->string('nokk', 30)->nullable();
             $table->longText('statusluarkota')->nullable()->nullable();
+            $table->date('tglbatastidakbolehluarkota')->nullable();
             $table->double('angsuranpinjaman', 15, 2)->nullable();
             $table->double('plafondeposito', 15, 2)->nullable();
             $table->string('photosupir', 4000)->nullable();
@@ -679,6 +682,7 @@ class Supir extends MyModel
             'noktp',
             'nokk',
             'statusluarkota',
+            'tglbatastidakbolehluarkota',
             'angsuranpinjaman',
             'plafondeposito',
             'photosupir',
@@ -708,8 +712,7 @@ class Supir extends MyModel
         } else if ($this->params['sortIndex'] == 'mandor_id') {
             return $query->orderBy('b.namamandor', $this->params['sortOrder']);
         } else {
-            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder'])
-            ;
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
 
@@ -740,7 +743,7 @@ class Supir extends MyModel
                             $query = $query->where('b.namamandor', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'tgllahir' || $filters['field'] == 'tglterbitsim' || $filters['field'] == 'tglexpsim' || $filters['field'] == 'tglmasuk' || $filters['field'] == 'tglberhentisupir') {
+                        } else if ($filters['field'] == 'tgllahir' || $filters['field'] == 'tglterbitsim' || $filters['field'] == 'tglexpsim' || $filters['field'] == 'tglmasuk' || $filters['field'] == 'tglberhentisupir' || $filters['field'] == 'tglbatastidakbolehluarkota') {
                             $query = $query->whereRaw("format((case when year(isnull($this->table." . $filters['field'] . ",'1900/1/1'))<2000 then null else supir." . $filters['field'] . " end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'check') {
                             $query = $query->whereRaw('1 = 1');
@@ -774,7 +777,7 @@ class Supir extends MyModel
                                 $query = $query->orwhere('b.namamandor', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'supirold_id') {
                                 $query = $query->orWhere('supirlama.namasupir', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'tgllahir' || $filters['field'] == 'tglterbitsim' || $filters['field'] == 'tglexpsim' || $filters['field'] == 'tglmasuk' || $filters['field'] == 'tglberhentisupir') {
+                            } else if ($filters['field'] == 'tgllahir' || $filters['field'] == 'tglterbitsim' || $filters['field'] == 'tglexpsim' || $filters['field'] == 'tglmasuk' || $filters['field'] == 'tglberhentisupir' || $filters['field'] == 'tglbatastidakbolehluarkota') {
                                 $query = $query->orWhereRaw("format((case when year(isnull($this->table." . $filters['field'] . ",'1900/1/1'))<2000 then null else supir." . $filters['field'] . " end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'check') {
                                 $query = $query->whereRaw('1 = 1');
@@ -963,6 +966,10 @@ class Supir extends MyModel
             $statusLuarKota = DB::table('parameter')->where('grp', 'STATUS LUAR KOTA')->where('default', 'YA')->first();
             $statusZonaTertentu = DB::table('parameter')->where('grp', 'ZONA TERTENTU')->where('default', 'YA')->first();
             $statusBlackList = DB::table('parameter')->where('grp', 'BLACKLIST SUPIR')->where('default', 'YA')->first();
+            $batasBulan = DB::table('parameter')->where('grp', 'BATAS BULAN SUPIR BARU LUAR KOTA')->where('subgrp', 'BATAS BULAN SUPIR BARU LUAR KOTA')->first();
+            $tglmasuk = date('Y-m-d', strtotime($data['tglmasuk']));
+            $tglBatasLuarKota = (date('Y-m-d', strtotime("+$batasBulan->text months", strtotime($tglmasuk))));
+
             $isMandor = auth()->user()->isMandor();
             $userid = auth('api')->user()->id;
             if ($isMandor) {
@@ -974,7 +981,7 @@ class Supir extends MyModel
                         $table->id();
                         $table->integer('mandor_id')->nullable();
                     });
-    
+
                     $query1 = db::table('mandor')->from(db::raw("mandor a with (readuncommitted)"))
                         ->select(
                             'a.id',
@@ -982,18 +989,18 @@ class Supir extends MyModel
                         ->join(db::raw("mandordetail b with (readuncommitted)"), 'a.id', 'b.mandor_id')
                         ->where('b.user_id', $userid)
                         ->groupby('a.id');
-    
+
                     DB::table($temp1)->insertUsing([
                         'mandor_id',
                     ], $query1);
-    
+
                     $temp2 = '##temp2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                     Schema::create($temp2, function ($table) {
                         $table->id();
                         $table->integer('mandor_id')->nullable();
                         $table->integer('jumlah')->nullable();
                     });
-    
+
                     $query2 = db::table('mandordetail')->from(db::raw("mandordetail a with (readuncommitted)"))
                         ->select(
                             'a.mandor_id',
@@ -1001,12 +1008,12 @@ class Supir extends MyModel
                         )
                         ->join(db::raw($temp1 . " b "), 'a.mandor_id', 'b.mandor_id')
                         ->groupby('a.mandor_id');
-    
+
                     DB::table($temp2)->insertUsing([
                         'mandor_id',
                         'jumlah',
                     ], $query2);
-    
+
                     $queryidmandor = db::table($temp2)->from(db::raw($temp2 . " a"))
                         ->select(
                             'a.mandor_id'
@@ -1015,7 +1022,7 @@ class Supir extends MyModel
                         ->orderby('a.mandor_id', 'asc')
                         ->first();
                     $data['mandor_id'] = $queryidmandor->mandor_id ?? 0;
-                }                
+                }
             }
             $supir = new Supir();
             $depositke = str_replace(',', '', $data['depositke'] ?? '');
@@ -1049,6 +1056,7 @@ class Supir extends MyModel
             }
             $supir->statusadaupdategambar = $statusAdaUpdateGambar->id;
             $supir->statusluarkota = $statusLuarKota->id;
+            $supir->tglbatastidakbolehluarkota = $tglBatasLuarKota;
             $supir->statuszonatertentu = $statusZonaTertentu->id;
             $supir->statusblacklist = $statusBlackList->id;
             if ($data['from'] != '') {
@@ -1159,6 +1167,7 @@ class Supir extends MyModel
             if ($isMandor) {
                 $data['mandor_id'] = $isMandor->mandor_id;
             }
+            $oldTglMasuk = $supir->tglmasuk;
             $depositke = str_replace(',', '', $data['depositke'] ?? '');
             $supir->namasupir = $data['namasupir'];
             $supir->namaalias = $data['namaalias'];
@@ -1196,6 +1205,14 @@ class Supir extends MyModel
             $supir->photovaksin = $data['photovaksin'];
             $supir->pdfsuratperjanjian = $data['pdfsuratperjanjian'];
 
+            if ($oldTglMasuk != date('Y-m-d', strtotime($data['tglmasuk']))) {
+                $batasBulan = DB::table('parameter')->where('grp', 'BATAS BULAN SUPIR BARU LUAR KOTA')->where('subgrp', 'BATAS BULAN SUPIR BARU LUAR KOTA')->first();
+                $tglmasuk = date('Y-m-d', strtotime($data['tglmasuk']));
+                $tglBatasLuarKota = (date('Y-m-d', strtotime("+$batasBulan->text months", strtotime($tglmasuk))));
+
+                $supir->tglbatastidakbolehluarkota = $tglBatasLuarKota;
+            }
+            
             if (!$supir->save()) {
                 throw new \Exception("Error storing supir.");
             }
@@ -1675,34 +1692,20 @@ class Supir extends MyModel
     }
     public function processApprovalSupirLuarKota(array $data)
     {
+        $supir = Supir::find($data['id']);
+        $supir->statusluarkota = $data['statusluarkota'];
+        $supir->tglbatastidakbolehluarkota = date('Y-m-d', strtotime($data['tglbatas']));
+        $supir->save();
 
-        $statusLuarKota = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS LUAR KOTA')->where('text', '=', 'BOLEH LUAR KOTA')->first();
-        $statusBukanLuarKota = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS LUAR KOTA')->where('text', '=', 'TIDAK BOLEH LUAR KOTA')->first();
-        for ($i = 0; $i < count($data['Id']); $i++) {
-            $supir = Supir::find($data['Id'][$i]);
-            if ($supir->statusluarkota == $statusLuarKota->id) {
-                $supir->statusluarkota = $statusBukanLuarKota->id;
-                $aksi = $statusBukanLuarKota->text;
-            } else {
-                $supir->statusluarkota = $statusLuarKota->id;
-                $aksi = $statusLuarKota->text;
-            }
-
-            // dd($Supir);
-            if ($supir->save()) {
-
-                (new LogTrail())->processStore([
-                    'namatabel' => strtoupper($supir->getTable()),
-                    'postingdari' => 'APPROVED SUPIR LUAR KOTA',
-                    'idtrans' => $supir->id,
-                    'nobuktitrans' => $supir->id,
-                    'aksi' => $aksi,
-                    'datajson' => $supir->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ]);
-            }
-        }
-
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($supir->getTable()),
+            'postingdari' => 'UN/APPROVAL SUPIR LUAR KOTA',
+            'idtrans' => $supir->id,
+            'nobuktitrans' => $supir->id,
+            'aksi' => 'UN/APPROVAL',
+            'datajson' => $supir->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
 
         return $supir;
     }
@@ -1739,5 +1742,14 @@ class Supir extends MyModel
 
 
         return $supir;
+    }
+
+    public function getApprovalLuarKota($id)
+    {
+        $query = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))
+            ->select('id', 'id as supir_id', 'noktp', 'namasupir', 'statusluarkota', DB::raw("(case when (year(isnull(supir.tglbatastidakbolehluarkota,'1900-01-01')) <= 2000) then null else supir.tglbatastidakbolehluarkota end ) as tglbatas"))
+            ->where('id', $id)
+            ->first();
+        return $query;
     }
 }

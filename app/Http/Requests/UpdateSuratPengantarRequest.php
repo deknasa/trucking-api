@@ -25,6 +25,7 @@ use App\Rules\ExistNominalUpahSupir;
 use App\Rules\ExistTarifRincian;
 use App\Rules\ExistUpahSupirRincianSuratPengantar;
 use App\Rules\ValidasiAgenTripGudangSama;
+use App\Rules\validasiBatasLuarKota;
 use App\Rules\ValidasiContainerTripGudangSama;
 use App\Rules\ValidasiGajiKenekSP;
 use App\Rules\ValidasiJenisOrderGudangsama;
@@ -498,6 +499,9 @@ class UpdateSuratPengantarRequest extends FormRequest
             $rulessupir_id = [
                 'supir' => [
                     new ExistSupir(),
+                ],
+                'supir_id' => [
+                    new validasiBatasLuarKota()
                 ]
             ];
         } else if ($supir_id != null) {

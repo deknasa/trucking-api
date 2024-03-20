@@ -88,8 +88,10 @@ class SupirController extends Controller
 
         try {
             $data = [
-                'Id' => $request->Id,
-                'nama' => $request->nama
+                'id' => $request->id,
+                'nama' => $request->namasupir,
+                'tglbatas' => $request->tglbatas,
+                'statusluarkota' => $request->statusluarkota
             ];
             (new Supir())->processApprovalSupirLuarKota($data);
 
@@ -103,6 +105,13 @@ class SupirController extends Controller
         }
     }
 
+    public function approvalLuarKota(Request $request)
+    {
+        $id = $request->supir_id;
+        return response([
+            'data' => (new Supir())->getApprovalLuarKota($id)
+        ]);
+    }
     /**
      * @ClassName 
      * @Keterangan APPROVAL SUPIR RESIGN
@@ -176,7 +185,7 @@ class SupirController extends Controller
     public function cekValidasi($id)
     {
         $supir = new Supir();
-        if (request()->aksi =="ApprovalTanpa") {
+        if (request()->aksi == "ApprovalTanpa") {
             $approvalSupirTanpa = (new ApprovalSupirTanpa())->cekApproval($supir->find($id));
             // dd($approvalSupirTanpa);
             $data = [
@@ -864,7 +873,7 @@ class SupirController extends Controller
         }
         return response([
             'data' => $data,
-            
+
         ]);
     }
     /**
@@ -875,8 +884,8 @@ class SupirController extends Controller
     {
         DB::beginTransaction();
         try {
-     
-            $data =[
+
+            $data = [
                 "supir_id" => $request->supir_id,
                 "namasupir" => $request->namasupir,
                 "noktp" => $request->noktp,
@@ -886,14 +895,14 @@ class SupirController extends Controller
                 "gambar_statusapproval" => $request->gambar_statusapproval,
                 "tglbatas" => $request->tglbatas,
             ];
-     
+
             $approvalSupirTanpa = (new ApprovalSupirTanpa())->processStore($data);
-     
+
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $approvalSupirTanpa
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 

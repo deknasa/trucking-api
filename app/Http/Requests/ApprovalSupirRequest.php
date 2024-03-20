@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
+use App\Rules\validasiApprovalTglBatasLuarKota;
 
 class ApprovalSupirRequest extends FormRequest
 {
@@ -25,17 +26,26 @@ class ApprovalSupirRequest extends FormRequest
     public function rules()
     {
         return [
-            'Id' => 'required'
+            'statusluarkota' => 'required',
+            'namasupir' => 'required',
+            'noktp' => 'required',
+            'tglbatas' => new validasiApprovalTglBatasLuarKota()
         ];
     }
 
-    public function messages()
+    // public function messages()
+    // {
+    //     return [
+    //         'statusluarkota.required' => 'Supir ' . app(ErrorController::class)->geterror('WP')->keterangan,
+    //     ];
+    // }
+
+    public function attributes()
     {
-        return [
-            'Id.required' => 'Supir ' . app(ErrorController::class)->geterror('WP')->keterangan,
+        return [ 
+            'statusluarkota' => 'status luar kota'
         ];
     }
-
     
 }
 

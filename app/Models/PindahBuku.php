@@ -508,7 +508,9 @@ class PindahBuku extends MyModel
         ]);
 
         $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $pindahBuku->nobukti)->first();
-        $jurnalumumHeader = (new JurnalUmumHeader())->processDestroy($getJurnal->id, $postingDari);
+        if ($getJurnal != '') {
+            $jurnalumumHeader = (new JurnalUmumHeader())->processDestroy($getJurnal->id, $postingDari);
+        }
         return $pindahBuku;
     }
 
