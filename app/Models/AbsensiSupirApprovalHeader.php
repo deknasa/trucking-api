@@ -223,6 +223,13 @@ class AbsensiSupirApprovalHeader extends MyModel
 
     public function getApproval($nobukti)
     {
+
+        $statusabsensi = db::table("parameter")->from(db::raw("parameter"))->select('id')
+            ->where('grp', 'STATUS ABSENSI SUPIR')
+            ->where('subgrp', 'STATUS ABSENSI SUPIR')
+            ->where('text', 'ABSENSI SUPIR')
+            ->first()->id ?? 0;
+
         $query = DB::table('absensisupirdetail')->from(
             DB::raw("absensisupirdetail with (readuncommitted)")
         )
@@ -247,9 +254,13 @@ class AbsensiSupirApprovalHeader extends MyModel
     left join absensisupirapprovalheader with (readuncommitted) on absensisupirapprovalheader.absensisupir_nobukti= absensisupirdetail.nobukti
     WHERE absensisupirapprovalheader.absensisupir_nobukti = absensisupirheader.nobukti
           )")
-            ->where('absensisupirdetail.nobukti', $nobukti);
+            ->where('absensisupirdetail.nobukti', $nobukti)
+            ->whereRaw('isnull(absensisupirdetail.uangjalan,0)<>0')
+            ->where('trado.statusabsensisupir', $statusabsensi);
+
         $data = $query->get();
 
+        $this->totalUangJalan = $query->sum('absensisupirdetail.uangjalan');
 
         return $data;
     }
