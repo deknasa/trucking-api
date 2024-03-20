@@ -45,8 +45,14 @@ class UpdateTradoRequest extends FormRequest
                 ->whereRaw("grp like '%STATUS APPROVAL%'")
                 ->whereRaw("text like '%NON APPROVAL%'")
                 ->first();
+
+            $statusApp = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+
+
             $cekValidasi = DB::table('approvaltradogambar')->from(DB::raw("approvaltradogambar with (readuncommitted)"))
                 ->select('kodetrado', 'tglbatas', 'statusapproval')
+                ->whereRaw("tglbatas >='" . date('Y-m-d') . "'")
+                ->where('statusapproval', $statusApp->id)
                 ->whereRaw("kodetrado in ('$kodeTrado')")
                 ->first();
             $tradononabsensi = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
@@ -83,10 +89,22 @@ class UpdateTradoRequest extends FormRequest
                 ->whereRaw("grp like '%STATUS APPROVAL%'")
                 ->whereRaw("text like '%NON APPROVAL%'")
                 ->first();
+
+            $statusApp = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+
             $cekValidasi = DB::table('approvaltradoketerangan')->from(DB::raw("approvaltradoketerangan with (readuncommitted)"))
                 ->select('kodetrado', 'tglbatas', 'statusapproval')
+                ->whereRaw("tglbatas >='" . date('Y-m-d') . "'")
+                ->where('statusapproval', $statusApp->id)
                 ->whereRaw("kodetrado in ('$kodetrado')")
                 ->first();
+
+            // $cekValidasigambar = DB::table('approvaltradogambar')->from(DB::raw("approvaltradogambar with (readuncommitted)"))
+            //     ->select('kodetrado', 'tglbatas', 'statusapproval')
+            //     ->whereRaw("tglbatas >='" . date('Y-m-d') . "'")
+            //     ->where('statusapproval', $statusApp->id)
+            //     ->whereRaw("kodetrado in ('$kodetrado')")
+            //     ->first();
 
             $tradononabsensi = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'STATUS ABSENSI SUPIR')
@@ -107,9 +125,28 @@ class UpdateTradoRequest extends FormRequest
                 }
             } else if ($tradononabsensi == request()->statusabsensisupir) {
                 return false;
+                // } else if ($cekValidasigambar != '') {
+                //     if ($cekValidasigambar->statusapproval == $nonApp->id) {
+                //         return false;
+                //     } else {
+                //         if (date('Y-m-d') < $cekValidasigambar->tglbatas) {
+                //             return false;
+                //         }
+                //     }
             }
+
+
+            // if ((!isset($cekValidasi)) || (!isset($cekValidasiGambar))) {
+            //     // if ((!isset($cekValidasiGambar))) {
+            //     return true;
+            //     // dd('test');
+            // } else {
+            // dd('a');
             return $requiredDefault;
+            // }
         });
+
+        // dd($ruleKeterangan);
 
         $parameter = new Parameter();
         $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
