@@ -53,7 +53,7 @@ class UpdateSupirRequest extends FormRequest
             }
             if ($cekValidasi != '') {
                 if ($cekValidasi->statusapproval == $nonApp->id) {
-                    return false;
+                    return true;
                 } else {
                     if (date('Y-m-d') < $cekValidasi->tglbatas) {
                         return false;
@@ -83,7 +83,7 @@ class UpdateSupirRequest extends FormRequest
             }
             if ($cekValidasi != '') {
                 if ($cekValidasi->statusapproval == $nonApp->id) {
-                    return false;
+                    return true;
                 } else {
                     if (date('Y-m-d') < $cekValidasi->tglbatas) {
                         return false;
