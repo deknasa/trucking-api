@@ -247,6 +247,7 @@ class Bank extends MyModel
         $aktif = request()->aktif ?? '';
         $tipe = request()->tipe ?? '';
         $format = request()->format ?? '';
+        $from = request()->from ?? '';
         $bankId = request()->bankId ?? 0;
         $bankExclude = request()->bankExclude ?? 0;
         $withPusat = request()->withPusat ?? 1;
@@ -315,6 +316,9 @@ class Bank extends MyModel
         }
         if ($bankExclude != 0) {
             $query->where('bank.id', '!=', $bankExclude);
+        }
+        if($from != 'pengeluaran'){
+            $query->where('bank.kodebank', 'NOT LIKE', '%PENGEMBALIAN KE PUSAT%');
         }
         if($withPusat == 0){
             $query->where('bank.kodebank', 'NOT LIKE', '%PENGEMBALIAN KE PUSAT%');
