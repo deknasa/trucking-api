@@ -37,6 +37,7 @@ class CreateSupirTable extends Migration
             $table->string('nokk', 30)->nullable();
             $table->integer('statusadaupdategambar')->length(11)->nullable();
             $table->string('statusluarkota')->nullable();
+            $table->date('tglbatastidakbolehluarkota')->nullable();
             $table->integer('statuszonatertentu')->length(11)->nullable();
             $table->unsignedBigInteger('zona_id')->nullable();
             $table->double('angsuranpinjaman', 15,2)->nullable();
