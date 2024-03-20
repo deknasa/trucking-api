@@ -204,10 +204,10 @@ class Agen extends MyModel
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'agen.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statustas with (readuncommitted)"), 'agen.statustas', 'statustas.id');
 
-            // $controller = new Controller;
-            // dump($controller->get_client_ip());
-            // dd($controller->get_server_ip());
-            
+        // $controller = new Controller;
+        // dump($controller->get_client_ip());
+        // dd($controller->get_server_ip());
+
 
 
         $this->filter($query);
@@ -220,7 +220,8 @@ class Agen extends MyModel
                 ->where('text', '=', 'AKTIF')
                 ->first();
 
-            $query->where('agen.statusaktif', '=', $statusaktif->id);
+            $query->where('agen.statusaktif', '=', $statusaktif->id)
+                ->where('agen.statusapproval', '=', 3);
         }
 
         if ($invoice == 'UTAMA') {
@@ -314,27 +315,27 @@ class Agen extends MyModel
     public function findAll($id)
     {
         $query = DB::table("agen")->from(DB::raw("agen with (readuncommitted)"))
-        ->select(
-            'agen.id',
-            'agen.kodeagen',
-            'agen.namaagen',
-            'agen.keterangan',
-            'agen.statusaktif',
-            'agen.namaperusahaan',
-            "agen.alamat",
-            "agen.notelp",
-            "agen.nohp",
-            "agen.contactperson",
-            "agen.top",
-            "agen.statustas",
-            "agen.coa",            
-            DB::raw("(trim(coa.coa)+' - '+trim(coa.keterangancoa)) as keterangancoa"),
-            DB::raw("(trim(coapendapatan.coa)+' - '+trim(coapendapatan.keterangancoa)) as keterangancoapendapatan"),
-            "agen.coapendapatan",
-        )
-        ->leftJoin(DB::raw("akunpusat as coa with (readuncommitted)"), 'agen.coa', 'coa.coa')
-        ->leftJoin(DB::raw("akunpusat as coapendapatan with (readuncommitted)"), 'agen.coapendapatan', 'coapendapatan.coa')
-        ->where('agen.id', $id);
+            ->select(
+                'agen.id',
+                'agen.kodeagen',
+                'agen.namaagen',
+                'agen.keterangan',
+                'agen.statusaktif',
+                'agen.namaperusahaan',
+                "agen.alamat",
+                "agen.notelp",
+                "agen.nohp",
+                "agen.contactperson",
+                "agen.top",
+                "agen.statustas",
+                "agen.coa",
+                DB::raw("(trim(coa.coa)+' - '+trim(coa.keterangancoa)) as keterangancoa"),
+                DB::raw("(trim(coapendapatan.coa)+' - '+trim(coapendapatan.keterangancoa)) as keterangancoapendapatan"),
+                "agen.coapendapatan",
+            )
+            ->leftJoin(DB::raw("akunpusat as coa with (readuncommitted)"), 'agen.coa', 'coa.coa')
+            ->leftJoin(DB::raw("akunpusat as coapendapatan with (readuncommitted)"), 'agen.coapendapatan', 'coapendapatan.coa')
+            ->where('agen.id', $id);
 
         return $query->first();
     }
@@ -451,7 +452,6 @@ class Agen extends MyModel
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'check') {
                             $query = $query->whereRaw('1 = 1');
-
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -472,7 +472,6 @@ class Agen extends MyModel
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'check') {
                                 $query = $query->whereRaw('1 = 1');
-
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -604,14 +603,14 @@ class Agen extends MyModel
         for ($i = 0; $i < count($data['Id']); $i++) {
             $Agen = Agen::find($data['Id'][$i]);
 
-                $Agen->statusaktif = $statusnonaktif->id;
-                $aksi = $statusnonaktif->text;
+            $Agen->statusaktif = $statusnonaktif->id;
+            $aksi = $statusnonaktif->text;
 
-                // dd($Agen);
+            // dd($Agen);
             if ($Agen->save()) {
-                
+
                 (new LogTrail())->processStore([
-                    
+
                     'namatabel' => strtoupper($Agen->getTable()),
                     'postingdari' => 'APPROVAL Agen',
                     'idtrans' => $Agen->id,
@@ -627,7 +626,7 @@ class Agen extends MyModel
         return $Agen;
     }
 
-    
+
     public function processApproval(array $data)
     {
 
@@ -661,9 +660,7 @@ class Agen extends MyModel
             }
         }
 
-     
+
         return $Agen;
     }
-
-    
 }
