@@ -90,7 +90,7 @@ class AkunPusat extends MyModel
             ->first();
 
         // dd(request()->offset);
-        $level = request()->level ?? '';
+        $level = request()->levelCoa ?? '';
         $potongan = request()->potongan ?? '';
         $supplier = request()->supplier ?? '';
         $isParent = request()->isParent ?? '';
