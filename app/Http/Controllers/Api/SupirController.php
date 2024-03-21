@@ -17,6 +17,7 @@ use App\Models\ApprovalSupirTanpa;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalSupirLuarKotaRequest;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 
@@ -82,7 +83,7 @@ class SupirController extends Controller
      * @ClassName 
      * @Keterangan APPROVAL SUPIR LUAR KOTA
      */
-    public function approvalSupirLuarKota(ApprovalSupirRequest $request)
+    public function approvalSupirLuarKota(ApprovalSupirLuarKotaRequest $request)
     {
         DB::beginTransaction();
 
