@@ -53,73 +53,73 @@ class MandorAbsensiSupir extends MyModel
         });
 
         $queryabsensisupirheader = db::table("absensisupirheader")->from(db::raw("absensisupirheader a with (readuncommitted)"))
-        ->select(
-            'a.id',
-            'a.nobukti', 
-            'a.tglbukti',
-            'a.keterangan',
-            'a.kasgantung_nobukti', 
-            'a.nominal', 
-            'a.statusformat',
-            'a.statuscetak',
-            'a.userbukacetak',
-            'a.tglbukacetak',
-            'a.jumlahcetak',
-            'a.statusapprovaleditabsensi',
-            'a.userapprovaleditabsensi', 
-            'a.tglapprovaleditabsensi',
-            'a.tglbataseditabsensi',
-            'a.statusapprovalpengajuantripinap',
-            'a.userapprovalpengajuantripinap', 
-            'a.tglapprovalpengajuantripinap',
-            'a.tglbataspengajuantripinap',
-            'a.info',
-            'a.modifiedby', 
-            'a.editing_by', 
-            'a.editing_at',
-        )
-        ->where('a.tglbukti', $date)
-        ->orderby('a.id', 'asc');
+            ->select(
+                'a.id',
+                'a.nobukti',
+                'a.tglbukti',
+                'a.keterangan',
+                'a.kasgantung_nobukti',
+                'a.nominal',
+                'a.statusformat',
+                'a.statuscetak',
+                'a.userbukacetak',
+                'a.tglbukacetak',
+                'a.jumlahcetak',
+                'a.statusapprovaleditabsensi',
+                'a.userapprovaleditabsensi',
+                'a.tglapprovaleditabsensi',
+                'a.tglbataseditabsensi',
+                'a.statusapprovalpengajuantripinap',
+                'a.userapprovalpengajuantripinap',
+                'a.tglapprovalpengajuantripinap',
+                'a.tglbataspengajuantripinap',
+                'a.info',
+                'a.modifiedby',
+                'a.editing_by',
+                'a.editing_at',
+            )
+            ->where('a.tglbukti', $date)
+            ->orderby('a.id', 'asc');
 
         DB::table($tempabsensisupirheader)->insertUsing([
             'id',
-            'nobukti', 
+            'nobukti',
             'tglbukti',
             'keterangan',
-            'kasgantung_nobukti', 
-            'nominal', 
+            'kasgantung_nobukti',
+            'nominal',
             'statusformat',
             'statuscetak',
             'userbukacetak',
             'tglbukacetak',
             'jumlahcetak',
             'statusapprovaleditabsensi',
-            'userapprovaleditabsensi', 
+            'userapprovaleditabsensi',
             'tglapprovaleditabsensi',
             'tglbataseditabsensi',
             'statusapprovalpengajuantripinap',
-            'userapprovalpengajuantripinap', 
+            'userapprovalpengajuantripinap',
             'tglapprovalpengajuantripinap',
             'tglbataspengajuantripinap',
             'info',
-            'modifiedby', 
-            'editing_by', 
+            'modifiedby',
+            'editing_by',
             'editing_at',
-        ],  $queryabsensisupirheader);        
+        ],  $queryabsensisupirheader);
 
-        $queryheader=db::table($tempabsensisupirheader)->from(db::raw($tempabsensisupirheader . " a"))
-        ->select(
-            'a.nobukti',
-            'a.id'
-        )
-        ->first() ;
+        $queryheader = db::table($tempabsensisupirheader)->from(db::raw($tempabsensisupirheader . " a"))
+            ->select(
+                'a.nobukti',
+                'a.id'
+            )
+            ->first();
 
         if (isset($queryheader)) {
-            $nobukti=$queryheader->nobukti ?? $userid;
-            $absensi_id=$queryheader->id ?? 0;
+            $nobukti = $queryheader->nobukti ?? $userid;
+            $absensi_id = $queryheader->id ?? 0;
         } else {
-            $nobukti=$userid;
-            $absensi_id=0;
+            $nobukti = $userid;
+            $absensi_id = 0;
         }
 
         $tempabsensisupirdetail = '##tempabsensisupirdetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -223,7 +223,34 @@ class MandorAbsensiSupir extends MyModel
             }
             if ($idabsensidetail != 0) {
                 // dd($idabsensidetail);
-                $AbsensiSupirDetail = (new MandorAbsensiSupir())->processDestroy($idabsensidetail);
+
+                $parameter = new Parameter();
+                $idstatussupirserap = $parameter->cekId('SUPIR SERAP', 'SUPIR SERAP', 'YA') ?? 0;
+
+                $querycek = db::table('absensisupirdetail')->from(db::raw('absensisupirdetail a with (readuncommitted)'))
+                    ->select(
+                        'a.id'
+                    )
+                    ->where('a.id', $idabsensidetail)
+                    ->where('a.statussupirserap', $idstatussupirserap)
+                    ->first();
+                if (isset($querycek)) {
+
+                    DB::table('absensisupirdetail')
+                        ->where('id', $idabsensidetail)
+                        ->update([
+                            'keterangan' => DB::raw("''"),
+                            'absen_id' => DB::raw('0'),
+                        ]);
+                    DB::table($temtabel)
+                        ->where('id', $deleted_id)
+                        ->update([
+                            'keterangan' => DB::raw("''"),
+                            'absen_id' => DB::raw('0'),
+                        ]);
+                } else {
+                    $AbsensiSupirDetail = (new MandorAbsensiSupir())->processDestroy($idabsensidetail);
+                }
             }
 
 
@@ -290,31 +317,69 @@ class MandorAbsensiSupir extends MyModel
 
             // dd(db::table($tempabsensisupirdetail2)->get());
 
-            $queryabsensisupirdetail = db::table($temtabel)->from(db::raw($temtabel . " a with (readuncommitted)"))
+            $parameter = new Parameter();
+            $idstatussupirserap = $parameter->cekId('SUPIR SERAP', 'SUPIR SERAP', 'YA') ?? 0;
+
+            $querycek = db::table('absensisupirdetail')->from(db::raw('absensisupirdetail a with (readuncommitted)'))
                 ->select(
-                    db::raw("isnull(b.id,0) as id"),
-                    db::raw($absensi_id ." as absensi_id"),
-                    db::raw("'" .$nobukti ."' as nobukti"),
-                    'a.trado_id',
-                    'a.supir_id',
-                    'a.keterangan',
-                    db::raw("isnull(b.uangjalan,0) as uangjalan"),
-                    'a.absen_id',
-                    'a.supirold_id',
-                    db::raw("isnull(b.jam,'00:00') as jam"),
-                    db::raw("isnull(b.statusapprovaleditabsensi,0) as statusapprovaleditabsensi"),
-                    db::raw("isnull(b.userapprovaleditabsensi,'') as userapprovaleditabsensi"),
-                    db::raw("isnull(b.tglapprovaleditabsensi,'1900/1/1') as tglapprovaleditabsensi"),
-                    db::raw("isnull(b.info,'') as info"),
-                    db::raw("isnull(b.modifiedby,'') as modifiedby"),
+                    'a.id'
                 )
-                ->leftJoin(DB::raw($tempabsensisupirdetail2 . " as b "), function ($join) {
-                    $join->on('a.trado_id', '=', 'b.trado_id');
-                    $join->on('a.supir_id', '=', 'b.supir_id');
-                    $join->on('a.supirold_id', '=', 'b.supirold_id');
-                })
-                ->whereRaw("a.id<>a.deleted_id")
-                ->orderby('a.id', 'asc');
+                ->where('a.id', $idabsensidetail)
+                ->where('a.statussupirserap', $idstatussupirserap)
+                ->first();
+            if (isset($querycek)) {
+                $queryabsensisupirdetail = db::table($temtabel)->from(db::raw($temtabel . " a with (readuncommitted)"))
+                    ->select(
+                        db::raw("isnull(b.id,0) as id"),
+                        db::raw($absensi_id . " as absensi_id"),
+                        db::raw("'" . $nobukti . "' as nobukti"),
+                        'a.trado_id',
+                        'a.supir_id',
+                        'a.keterangan',
+                        db::raw("isnull(b.uangjalan,0) as uangjalan"),
+                        'a.absen_id',
+                        'a.supirold_id',
+                        db::raw("isnull(b.jam,'00:00') as jam"),
+                        db::raw("isnull(b.statusapprovaleditabsensi,0) as statusapprovaleditabsensi"),
+                        db::raw("isnull(b.userapprovaleditabsensi,'') as userapprovaleditabsensi"),
+                        db::raw("isnull(b.tglapprovaleditabsensi,'1900/1/1') as tglapprovaleditabsensi"),
+                        db::raw("isnull(b.info,'') as info"),
+                        db::raw("isnull(b.modifiedby,'') as modifiedby"),
+                    )
+                    ->leftJoin(DB::raw($tempabsensisupirdetail2 . " as b "), function ($join) {
+                        $join->on('a.trado_id', '=', 'b.trado_id');
+                        $join->on('a.supir_id', '=', 'b.supir_id');
+                        $join->on('a.supirold_id', '=', 'b.supirold_id');
+                    })
+                    ->orderby('a.id', 'asc');
+            } else {
+                $queryabsensisupirdetail = db::table($temtabel)->from(db::raw($temtabel . " a with (readuncommitted)"))
+                    ->select(
+                        db::raw("isnull(b.id,0) as id"),
+                        db::raw($absensi_id . " as absensi_id"),
+                        db::raw("'" . $nobukti . "' as nobukti"),
+                        'a.trado_id',
+                        'a.supir_id',
+                        'a.keterangan',
+                        db::raw("isnull(b.uangjalan,0) as uangjalan"),
+                        'a.absen_id',
+                        'a.supirold_id',
+                        db::raw("isnull(b.jam,'00:00') as jam"),
+                        db::raw("isnull(b.statusapprovaleditabsensi,0) as statusapprovaleditabsensi"),
+                        db::raw("isnull(b.userapprovaleditabsensi,'') as userapprovaleditabsensi"),
+                        db::raw("isnull(b.tglapprovaleditabsensi,'1900/1/1') as tglapprovaleditabsensi"),
+                        db::raw("isnull(b.info,'') as info"),
+                        db::raw("isnull(b.modifiedby,'') as modifiedby"),
+                    )
+                    ->leftJoin(DB::raw($tempabsensisupirdetail2 . " as b "), function ($join) {
+                        $join->on('a.trado_id', '=', 'b.trado_id');
+                        $join->on('a.supir_id', '=', 'b.supir_id');
+                        $join->on('a.supirold_id', '=', 'b.supirold_id');
+                    })
+                    ->whereRaw("a.id<>a.deleted_id")
+                    ->orderby('a.id', 'asc');
+            }
+
 
 
 
@@ -423,9 +488,9 @@ class MandorAbsensiSupir extends MyModel
             // ->leftJoin(DB::raw("trado as b with (readuncommitted)"), 'b.supir_id', 'a.id')
             // ->whereRaw("isnull(b.tglberlakumiliksupir,'1900/1/1')<='" . $date . "'")
             ->where('a.statusaktif', $statusaktif->id);
-            // if ($miliktrado=='YA') {
-            //     $querysupir->where('b.statusaktif', $statusaktif->id); // dijakarta tidak aktifkan
-            // }
+        // if ($miliktrado=='YA') {
+        //     $querysupir->where('b.statusaktif', $statusaktif->id); // dijakarta tidak aktifkan
+        // }
 
         DB::table($tempsupir)->insertUsing([
             'id',
@@ -464,11 +529,11 @@ class MandorAbsensiSupir extends MyModel
             // ->leftJoin(DB::raw("trado as b with (readuncommitted)"), 'b.supir_id', 'a.id')
             // ->whereRaw("isnull(b.tglberlakumiliksupir,'1900/1/1')<='" . $date . "'")
             ->where('a.statusaktif', $statusnonaktif->id);
-            // if ($miliktrado=='YA') {
-            //     $querysupirnonaktif->where('b.statusaktif', $statusaktif->id); // dijakarta tidak aktifkan
-            // }
+        // if ($miliktrado=='YA') {
+        //     $querysupirnonaktif->where('b.statusaktif', $statusaktif->id); // dijakarta tidak aktifkan
+        // }
 
-            // ->where('b.statusaktif', $statusaktif->id); // dijakarta tidak aktifkan
+        // ->where('b.statusaktif', $statusaktif->id); // dijakarta tidak aktifkan
 
         DB::table($tempsupirnonaktif)->insertUsing([
             'id',
@@ -578,7 +643,7 @@ class MandorAbsensiSupir extends MyModel
                 'absentrado.keterangan as absentrado',
                 'absentrado.id as absen_id',
                 'absensisupirdetail.jam',
-                db::raw("'". $date ."' as tglbukti"),
+                db::raw("'" . $date . "' as tglbukti"),
                 // 'absensisupirheader.tglbukti',
                 'supir.id as supir_id',
                 db::raw("(case when isnull(d.id,0)=0 then d1.namasupir  else d.namasupir end) as namasupir_old"),
@@ -611,7 +676,7 @@ class MandorAbsensiSupir extends MyModel
                 'absentrado.keterangan as absentrado',
                 'absentrado.id as absen_id',
                 'absensisupirdetail.jam',
-                db::raw("'". $date ."' as tglbukti"),
+                db::raw("'" . $date . "' as tglbukti"),
                 // 'absensisupirheader.tglbukti',
                 'supir.id as supir_id',
                 // 'd.namasupir as namasupir_old',
@@ -756,25 +821,25 @@ class MandorAbsensiSupir extends MyModel
                 $join->on('sp.supir_id', '=', 'a.supir_id');
             });
 
-            $user = auth('api')->user()->name;
-            $class = 'TemporaryAbsensiSupir';
+        $user = auth('api')->user()->name;
+        $class = 'TemporaryAbsensiSupir';
 
-            $querydata = DB::table('listtemporarytabel')->from(
-                DB::raw("listtemporarytabel a with (readuncommitted)")
+        $querydata = DB::table('listtemporarytabel')->from(
+            DB::raw("listtemporarytabel a with (readuncommitted)")
+        )
+            ->select(
+                'id',
+                'class',
+                'namatabel',
             )
-                ->select(
-                    'id',
-                    'class',
-                    'namatabel',
-                )
-                ->where('class', '=', $class)
-                ->where('modifiedby', '=', $user)
-                ->first();
+            ->where('class', '=', $class)
+            ->where('modifiedby', '=', $user)
+            ->first();
 
-            if (isset($querydata)) {
-                Schema::dropIfExists($querydata->namatabel);
-                DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
-            }
+        if (isset($querydata)) {
+            Schema::dropIfExists($querydata->namatabel);
+            DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+        }
 
         return $query;
     }
