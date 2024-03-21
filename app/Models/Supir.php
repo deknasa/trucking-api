@@ -250,6 +250,7 @@ class Supir extends MyModel
                 'supir.nokk',
                 'statusadaupdategambar.memo as statusadaupdategambar',
                 'statusluarkota.memo as statusluarkota',
+                'supir.keterangantidakbolehluarkota',
                 'statuszonatertentu.memo as statuszonatertentu',
                 'zona.keterangan as zona_id',
                 'supir.photosupir',
@@ -585,6 +586,7 @@ class Supir extends MyModel
                 $this->table.nokk,
                 statusluarkota.memo as statusluarkota,
                (case when (year(isnull(supir.tglbatastidakbolehluarkota,'1900-01-01')) <= 2000) then null else supir.tglbatastidakbolehluarkota end ) as tglbatastidakbolehluarkota,
+                $this->table.keterangantidakbolehluarkota,
                 $this->table.angsuranpinjaman,
                 $this->table.plafondeposito,
                 $this->table.photosupir,
@@ -637,6 +639,7 @@ class Supir extends MyModel
             $table->string('nokk', 30)->nullable();
             $table->longText('statusluarkota')->nullable()->nullable();
             $table->date('tglbatastidakbolehluarkota')->nullable();
+            $table->longText('keterangantidakbolehluarkota')->nullable();
             $table->double('angsuranpinjaman', 15, 2)->nullable();
             $table->double('plafondeposito', 15, 2)->nullable();
             $table->string('photosupir', 4000)->nullable();
@@ -683,6 +686,7 @@ class Supir extends MyModel
             'nokk',
             'statusluarkota',
             'tglbatastidakbolehluarkota',
+            'keterangantidakbolehluarkota',
             'angsuranpinjaman',
             'plafondeposito',
             'photosupir',
@@ -1212,7 +1216,7 @@ class Supir extends MyModel
 
                 $supir->tglbatastidakbolehluarkota = $tglBatasLuarKota;
             }
-            
+
             if (!$supir->save()) {
                 throw new \Exception("Error storing supir.");
             }
@@ -1694,6 +1698,7 @@ class Supir extends MyModel
     {
         $supir = Supir::find($data['id']);
         $supir->statusluarkota = $data['statusluarkota'];
+        $supir->keterangantidakbolehluarkota = $data['keterangan'];
         $supir->tglbatastidakbolehluarkota = date('Y-m-d', strtotime($data['tglbatas']));
         $supir->save();
 
@@ -1747,7 +1752,7 @@ class Supir extends MyModel
     public function getApprovalLuarKota($id)
     {
         $query = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))
-            ->select('id', 'id as supir_id', 'noktp', 'namasupir', 'statusluarkota', DB::raw("(case when (year(isnull(supir.tglbatastidakbolehluarkota,'1900-01-01')) <= 2000) then null else supir.tglbatastidakbolehluarkota end ) as tglbatas"))
+            ->select('id', 'id as supir_id', 'noktp', 'namasupir', 'statusluarkota','keterangantidakbolehluarkota as keterangan', DB::raw("(case when (year(isnull(supir.tglbatastidakbolehluarkota,'1900-01-01')) <= 2000) then null else supir.tglbatastidakbolehluarkota end ) as tglbatas"))
             ->where('id', $id)
             ->first();
         return $query;

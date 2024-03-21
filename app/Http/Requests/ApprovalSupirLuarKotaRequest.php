@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Rules\validasiApprovalTglBatasLuarKota;
+use App\Rules\validasiKeteranganLuarKota;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ApprovalSupirLuarKotaRequest extends FormRequest
@@ -26,7 +27,8 @@ class ApprovalSupirLuarKotaRequest extends FormRequest
     {
         return [
             'statusluarkota' => 'required',
-            'tglbatas' => new validasiApprovalTglBatasLuarKota()
+            'tglbatas' => new validasiApprovalTglBatasLuarKota(),
+            'keterangan' => new validasiKeteranganLuarKota()
         ];
     }
     public function attributes()
