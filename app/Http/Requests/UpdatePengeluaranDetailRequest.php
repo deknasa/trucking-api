@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Rules\validasiNominalDetail;
+use App\Rules\validasiNoWarkatPengeluaran;
+use App\Rules\validasiTglJatuhTempoPengeluaran;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdatePengeluaranDetailRequest extends FormRequest
@@ -26,7 +28,9 @@ class UpdatePengeluaranDetailRequest extends FormRequest
     {
         return [
             'tgljatuhtempo' => 'required|array',
-            'tgljatuhtempo.*' => 'required|date_format:d-m-Y',
+            'tgljatuhtempo.*' => ['required','date_format:d-m-Y', new validasiTglJatuhTempoPengeluaran()],
+            'nowarkat' => 'array',
+            'nowarkat.*' => [new validasiNoWarkatPengeluaran()],
             'nominal_detail' => 'required|array',
             'nominal_detail.*' => ['required', 'numeric', new validasiNominalDetail()],
             'ketcoadebet' => 'required|array',
