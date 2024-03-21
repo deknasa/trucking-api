@@ -15,7 +15,7 @@ class CreateApprovalsupirgambarTable extends Migration
     {
         Schema::create('approvalsupirgambar', function (Blueprint $table) {
             $table->id();
-            $table->string('namasupir', 30)->nullable();
+            $table->string('namasupir', 100)->nullable();
             $table->string('noktp', 30)->nullable();
             $table->integer('statusapproval')->length(11)->nullable();
             $table->date('tglbatas')->nullable();     
