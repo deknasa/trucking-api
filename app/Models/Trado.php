@@ -1037,12 +1037,12 @@ class Trado extends MyModel
             ]);
 
 
-            $approvalTradoKeterangan = ApprovalTradoKeterangan::where('kodetrado', $trado->kodetrado)->first();
-            if ($approvalTradoKeterangan) {
-                $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->whereRaw("grp like '%STATUS APPROVAL%'")->whereRaw("text like '%NON APPROVAL%'")->first();
-                $approvalTradoKeterangan->statusapproval = $nonApp->id;
-                $approvalTradoKeterangan->save();
-            }
+            // $approvalTradoKeterangan = ApprovalTradoKeterangan::where('kodetrado', $trado->kodetrado)->first();
+            // if ($approvalTradoKeterangan) {
+            //     $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->whereRaw("grp like '%STATUS APPROVAL%'")->whereRaw("text like '%NON APPROVAL%'")->first();
+            //     $approvalTradoKeterangan->statusapproval = $nonApp->id;
+            //     $approvalTradoKeterangan->save();
+            // }
 
             // $param1 = $trado->id;
             // $param2 = $trado->modifiedby;
