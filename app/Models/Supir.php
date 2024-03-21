@@ -1217,19 +1217,19 @@ class Supir extends MyModel
                 throw new \Exception("Error storing supir.");
             }
 
-            $approvalSupirGambar = ApprovalSupirGambar::where('noktp', $supir->noktp)->first();
-            if ($approvalSupirGambar) {
-                $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->whereRaw("grp like '%STATUS APPROVAL%'")->whereRaw("text like '%NON APPROVAL%'")->first();
-                $approvalSupirGambar->statusapproval = $nonApp->id;
-                $approvalSupirGambar->save();
-            }
+            // $approvalSupirGambar = ApprovalSupirGambar::where('noktp', $supir->noktp)->first();
+            // if ($approvalSupirGambar) {
+            //     $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->whereRaw("grp like '%STATUS APPROVAL%'")->whereRaw("text like '%NON APPROVAL%'")->first();
+            //     $approvalSupirGambar->statusapproval = $nonApp->id;
+            //     $approvalSupirGambar->save();
+            // }
 
-            $approvalSupirKeterangan = ApprovalSupirKeterangan::where('noktp', $supir->noktp)->first();
-            if ($approvalSupirKeterangan) {
-                $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->whereRaw("grp like '%STATUS APPROVAL%'")->whereRaw("text like '%NON APPROVAL%'")->first();
-                $approvalSupirKeterangan->statusapproval = $nonApp->id;
-                $approvalSupirKeterangan->save();
-            }
+            // $approvalSupirKeterangan = ApprovalSupirKeterangan::where('noktp', $supir->noktp)->first();
+            // if ($approvalSupirKeterangan) {
+            //     $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->whereRaw("grp like '%STATUS APPROVAL%'")->whereRaw("text like '%NON APPROVAL%'")->first();
+            //     $approvalSupirKeterangan->statusapproval = $nonApp->id;
+            //     $approvalSupirKeterangan->save();
+            // }
 
             (new LogTrail())->processStore([
                 'namatabel' => strtoupper($supir->getTable()),
