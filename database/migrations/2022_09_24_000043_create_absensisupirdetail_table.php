@@ -27,11 +27,13 @@ class CreateabsensisupirdetailTable extends Migration
             $table->unsignedBigInteger('absen_id')->nullable();
             $table->unsignedBigInteger('supirold_id')->nullable();
             $table->time('jam')->nullable();
+            $table->integer('statussupirserap')->Length(11)->nullable();
             $table->integer('statusapprovaleditabsensi')->Length(11)->nullable();
             $table->string('userapprovaleditabsensi', 50)->nullable();
             $table->date('tglapprovaleditabsensi')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
+            
             $table->timestamps();
 
 

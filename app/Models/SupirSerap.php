@@ -340,6 +340,11 @@ class SupirSerap extends MyModel
         $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti',$supirSerap->tglabsensi)->first();
         $jam = date('H:i',strtotime('now'));
 
+    
+        $parameter = new Parameter();
+        $idstatussupirserap=$parameter->cekId('SUPIR SERAP','SUPIR SERAP','YA') ?? 0;
+        // dd($idstatussupirserap);
+
         $absensiSupirDetail = AbsensiSupirDetail::processStore($absensiSupirHeader, [
             'absensi_id' => $absensiSupirHeader->id,
             'nobukti' => $absensiSupirHeader->nobukti,
@@ -349,7 +354,9 @@ class SupirSerap extends MyModel
             'keterangan' => '',
             'absen_id' => '',
             'jam' => $jam,
-            'modifiedby' => auth('api')->user()->user
+            'modifiedby' => auth('api')->user()->user,
+            'statussupirserap' => $idstatussupirserap,
+            
         ]);
 
         (new LogTrail())->processStore([

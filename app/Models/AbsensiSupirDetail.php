@@ -1300,6 +1300,9 @@ class AbsensiSupirDetail extends MyModel
     public function processStore(AbsensiSupirHeader $absensiSupirHeader, array $data): AbsensiSupirDetail
     {
         
+        $parameter = new Parameter();
+        $idstatusnonsupirserap=$parameter->cekId('SUPIR SERAP','SUPIR SERAP','TIDAK') ?? 0;
+
         $absensiSupirDetail = new AbsensiSupirDetail();
         $absensiSupirDetail->absensi_id = $data['absensi_id'] ?? '';
         $absensiSupirDetail->nobukti = $data['nobukti'] ?? '';
@@ -1311,6 +1314,7 @@ class AbsensiSupirDetail extends MyModel
         $absensiSupirDetail->uangjalan = $data['uangjalan'] ?? '';
         $absensiSupirDetail->keterangan = $data['keterangan'] ?? '';
         $absensiSupirDetail->modifiedby = $data['modifiedby'] ?? '';
+        $absensiSupirDetail->statussupirserap = $data['statussupirserap'] ?? $idstatusnonsupirserap;
 
         if (!$absensiSupirDetail->save()) {
             throw new \Exception("Gagal menyimpan absensi supir detail.");
