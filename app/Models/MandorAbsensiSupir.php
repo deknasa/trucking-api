@@ -420,12 +420,12 @@ class MandorAbsensiSupir extends MyModel
                 'a.info',
                 'a.modifiedby'
             )
-            ->leftJoin(DB::raw("trado as b with (readuncommitted)"), 'b.supir_id', 'a.id')
-            ->whereRaw("isnull(b.tglberlakumiliksupir,'1900/1/1')<='" . $date . "'")
+            // ->leftJoin(DB::raw("trado as b with (readuncommitted)"), 'b.supir_id', 'a.id')
+            // ->whereRaw("isnull(b.tglberlakumiliksupir,'1900/1/1')<='" . $date . "'")
             ->where('a.statusaktif', $statusaktif->id);
-            if ($miliktrado=='YA') {
-                $querysupir->where('b.statusaktif', $statusaktif->id); // dijakarta tidak aktifkan
-            }
+            // if ($miliktrado=='YA') {
+            //     $querysupir->where('b.statusaktif', $statusaktif->id); // dijakarta tidak aktifkan
+            // }
 
         DB::table($tempsupir)->insertUsing([
             'id',
@@ -461,12 +461,12 @@ class MandorAbsensiSupir extends MyModel
                 'a.info',
                 'a.modifiedby'
             )
-            ->leftJoin(DB::raw("trado as b with (readuncommitted)"), 'b.supir_id', 'a.id')
-            ->whereRaw("isnull(b.tglberlakumiliksupir,'1900/1/1')<='" . $date . "'")
+            // ->leftJoin(DB::raw("trado as b with (readuncommitted)"), 'b.supir_id', 'a.id')
+            // ->whereRaw("isnull(b.tglberlakumiliksupir,'1900/1/1')<='" . $date . "'")
             ->where('a.statusaktif', $statusnonaktif->id);
-            if ($miliktrado=='YA') {
-                $querysupirnonaktif->where('b.statusaktif', $statusaktif->id); // dijakarta tidak aktifkan
-            }
+            // if ($miliktrado=='YA') {
+            //     $querysupirnonaktif->where('b.statusaktif', $statusaktif->id); // dijakarta tidak aktifkan
+            // }
 
             // ->where('b.statusaktif', $statusaktif->id); // dijakarta tidak aktifkan
 
