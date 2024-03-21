@@ -92,7 +92,9 @@ class SupirController extends Controller
                 'id' => $request->id,
                 'nama' => $request->namasupir,
                 'tglbatas' => $request->tglbatas,
-                'statusluarkota' => $request->statusluarkota
+                'statusluarkota' => $request->statusluarkota,
+                'keterangan' => $request->keterangan
+
             ];
             (new Supir())->processApprovalSupirLuarKota($data);
 
