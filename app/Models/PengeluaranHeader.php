@@ -773,6 +773,15 @@ class PengeluaranHeader extends MyModel
 
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+        $alatabayargiro=DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+        ->select (
+            'a.text',
+            'a.memo'
+        )
+        ->where('a.grp','ALAT BAYAR GIRO')
+        ->where('a.subgrp','ALAT BAYAR GIRO')
+        ->first();
+
 
         $pengeluaranHeader = new PengeluaranHeader();
 
@@ -811,6 +820,7 @@ class PengeluaranHeader extends MyModel
             'modifiedby' => auth('api')->user()->user
         ]);
 
+        $alatabayarid=$data['alatbayar_id'] ?? 0;
         $pengeluaranDetails = [];
         $coadebet_detail = [];
         $coakredit_detail = [];
@@ -834,7 +844,13 @@ class PengeluaranHeader extends MyModel
             $pengeluaranDetails[] = $pengeluaranDetail->toArray();
             $coadebet_detail[] =  $data['coadebet'][$i];
             // $coakredit_detail[] = ($data['coakredit']) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa;
-            $coakredit_detail[] = $querysubgrppengeluaran->coa;
+            if ($alatabayarid== $alatabayargiro->text) {
+                $memo = json_decode($alatabayargiro->memo, true);
+                $coakredit_detail[]= $memo['JURNAL'];
+            } else {
+                $coakredit_detail[] = $querysubgrppengeluaran->coa;
+            }
+            
             $nominal_detail[] = $data['nominal_detail'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
         }
@@ -848,6 +864,7 @@ class PengeluaranHeader extends MyModel
             'datajson' => $pengeluaranDetails,
             'modifiedby' => auth('api')->user()->user,
         ]);
+
 
         /*STORE JURNAL*/
         $jurnalRequest = [
