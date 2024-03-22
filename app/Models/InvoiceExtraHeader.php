@@ -395,6 +395,7 @@ class InvoiceExtraHeader extends MyModel
             'invoice_nobukti' => $invoiceNobukti,
             'nominal_detail' => $nominalDetail,
             'keterangan_detail' => $keteranganDetail,
+            'jenis' => 'extra'
         ];
         $piutangHeader = (new PiutangHeader())->processStore($invoiceRequest);
         $invoiceExtraHeader->piutang_nobukti = $piutangHeader->nobukti;
@@ -487,6 +488,7 @@ class InvoiceExtraHeader extends MyModel
             'invoice_nobukti' => $invoiceNobukti,
             'nominal_detail' => $nominalDetail,
             'keterangan_detail' => $keteranganDetail,
+            'jenis' => 'extra'
         ];
 
         $getPiutang = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->where('invoice_nobukti', $nobuktiOld)->first();

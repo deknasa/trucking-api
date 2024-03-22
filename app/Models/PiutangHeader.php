@@ -556,10 +556,13 @@ class PiutangHeader extends MyModel
         $piutangHeader->info = html_entity_decode(request()->info);
         $piutangHeader->statusformat = $format->id;
         $piutangHeader->agen_id = $data['agen_id'];
-        // $piutangHeader->coadebet = $getCoa->coa;
-        $piutangHeader->coadebet = $coa;
-        // $piutangHeader->coakredit = $getCoa->coapendapatan;
-        $piutangHeader->coakredit = $coapendapatan;
+        if ($data['jenis'] == 'utama') {
+            $piutangHeader->coadebet = $getCoa->coa;
+            $piutangHeader->coakredit = $getCoa->coapendapatan;
+        } else {
+            $piutangHeader->coadebet = $coa;
+            $piutangHeader->coakredit = $coapendapatan;
+        }
         $piutangHeader->statuscetak = $statusCetak->id;
         $piutangHeader->userbukacetak = '';
         $piutangHeader->tglbukacetak = '';
@@ -591,10 +594,14 @@ class PiutangHeader extends MyModel
                 'invoice_nobukti' => $data['invoice_nobukti'][$i] ?? ''
             ]);
 
-            // $coadebet_detail[] = $getCoa->coa;
-            // $coakredit_detail[] = $getCoa->coapendapatan;
-            $coadebet_detail[] = $coa;
-            $coakredit_detail[] = $coapendapatan;
+            if ($data['jenis'] == 'utama') {
+                $coadebet_detail[] = $getCoa->coa;
+                $coakredit_detail[] = $getCoa->coapendapatan;
+            } else {
+                $coadebet_detail[] = $coa;
+                $coakredit_detail[] = $coapendapatan;
+            }
+
             $keterangan_detail[] = $data['keterangan_detail'][$i];
             $nominal_detail[] = $data['nominal_detail'][$i];
 
@@ -676,8 +683,13 @@ class PiutangHeader extends MyModel
         $piutangHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $piutangHeader->agen_id = $data['agen_id'];
         $piutangHeader->invoice_nobukti = $data['invoice'] ?? '';
-        $piutangHeader->coadebet = $coa;
-        $piutangHeader->coakredit = $coapendapatan;
+        if ($data['jenis'] == 'utama') {
+            $piutangHeader->coadebet = $getCoa->coa;
+            $piutangHeader->coakredit = $getCoa->coapendapatan;
+        } else {
+            $piutangHeader->coadebet = $coa;
+            $piutangHeader->coakredit = $coapendapatan;
+        }
         $piutangHeader->postingdari = $data['postingdari'] ?? 'EDIT PIUTANG HEADER';
         $piutangHeader->nominal = ($proseslain != 0) ? $data['nominal'] : array_sum($data['nominal_detail']);
 
@@ -715,10 +727,13 @@ class PiutangHeader extends MyModel
                 'invoice_nobukti' => $data['invoice_nobukti'][$i] ?? ''
             ]);
 
-            $coadebet_detail[] = $coa;
-            $coakredit_detail[] = $coapendapatan;
-            // $coadebet_detail[] = $getCoa->coa;
-            // $coakredit_detail[] = $getCoa->coapendapatan;
+            if ($data['jenis'] == 'utama') {
+                $coadebet_detail[] = $getCoa->coa;
+                $coakredit_detail[] = $getCoa->coapendapatan;
+            } else {
+                $coadebet_detail[] = $coa;
+                $coakredit_detail[] = $coapendapatan;
+            }
             $keterangan_detail[] = $data['keterangan_detail'][$i];
             $nominal_detail[] = $data['nominal_detail'][$i];
 
