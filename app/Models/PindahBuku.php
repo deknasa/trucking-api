@@ -354,7 +354,27 @@ class PindahBuku extends MyModel
             ->first();
 
         $pindahBuku = new PindahBuku();
+        $alatabayargiro=DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+        ->select (
+            'a.text',
+            'a.memo'
+        )
+        ->where('a.grp','ALAT BAYAR GIRO')
+        ->where('a.subgrp','ALAT BAYAR GIRO')
+        ->first();
+
         $getCoaKredit = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankdari_id'])->first();
+
+        $alatabayarid=$data['alatbayar_id'] ?? 0;
+        if ($alatabayarid== $alatabayargiro->text) {
+            $memo = json_decode($alatabayargiro->memo, true);
+            $coakredit_detail[] = $memo['JURNAL'];
+            $coaKredit = $memo['JURNAL'];            
+        } else {
+            $coaKredit = $getCoaKredit->coa;
+            $coakredit_detail[] = $getCoaKredit->coa;
+        }
+
         $getCoaDebet = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankke_id'])->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
@@ -362,7 +382,7 @@ class PindahBuku extends MyModel
         $pindahBuku->bankdari_id = $data['bankdari_id'];
         $pindahBuku->bankke_id = $data['bankke_id'];
         $pindahBuku->coadebet = $getCoaDebet->coa;
-        $pindahBuku->coakredit = $getCoaKredit->coa;
+        $pindahBuku->coakredit = $coaKredit;
         $pindahBuku->alatbayar_id = $data['alatbayar_id'];
         $pindahBuku->nowarkat = $data['nowarkat'] ?? '';
         $pindahBuku->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
@@ -391,7 +411,6 @@ class PindahBuku extends MyModel
         ]);
 
         $coadebet_detail[] = $getCoaDebet->coa;
-        $coakredit_detail[] = $getCoaKredit->coa;
         $keterangan_detail[] = $data['keterangan'];
         $nominal_detail[] = $data['nominal'];
 
@@ -432,8 +451,26 @@ class PindahBuku extends MyModel
         } else {
             $nobukti = (new RunningNumberService)->get($group, $subgroup, $pindahBuku->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
         }
+        $alatabayargiro=DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+        ->select (
+            'a.text',
+            'a.memo'
+        )
+        ->where('a.grp','ALAT BAYAR GIRO')
+        ->where('a.subgrp','ALAT BAYAR GIRO')
+        ->first();
 
         $getCoaKredit = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankdari_id'])->first();
+
+        $alatabayarid=$data['alatbayar_id'] ?? 0;
+        if ($alatabayarid== $alatabayargiro->text) {
+            $memo = json_decode($alatabayargiro->memo, true);
+            $coakredit_detail[] = $memo['JURNAL'];
+            $coaKredit = $memo['JURNAL'];            
+        } else {
+            $coaKredit = $getCoaKredit->coa;
+            $coakredit_detail[] = $getCoaKredit->coa;
+        }
         $getCoaDebet = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankke_id'])->first();
 
         $pindahBuku->nobukti = $nobukti;
@@ -441,7 +478,7 @@ class PindahBuku extends MyModel
         $pindahBuku->bankdari_id = $data['bankdari_id'];
         $pindahBuku->bankke_id = $data['bankke_id'];
         $pindahBuku->coadebet = $getCoaDebet->coa;
-        $pindahBuku->coakredit = $getCoaKredit->coa;
+        $pindahBuku->coakredit = $coaKredit;
         $pindahBuku->alatbayar_id = $data['alatbayar_id'];
         $pindahBuku->nowarkat = $data['nowarkat'] ?? '';
         $pindahBuku->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
@@ -464,7 +501,7 @@ class PindahBuku extends MyModel
             'modifiedby' => auth('api')->user()->user
         ]);
         $coadebet_detail[] = $getCoaDebet->coa;
-        $coakredit_detail[] = $getCoaKredit->coa;
+        // $coakredit_detail[] = $getCoaKredit->coa;
         $keterangan_detail[] = $data['keterangan'];
         $nominal_detail[] = $data['nominal'];
 
