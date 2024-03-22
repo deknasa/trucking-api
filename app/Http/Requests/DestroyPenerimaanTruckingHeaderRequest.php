@@ -9,6 +9,7 @@ use App\Rules\DestroyBank;
 use App\Rules\DestroyBankPelanggan;
 use App\Rules\DestroyPenerima;
 use App\Rules\DestroyPenerimaanTruckingHeader;
+use App\Rules\ValidasiDestroyPenerimaanTruckingHeader;
 use Illuminate\Validation\Rule;
 
 class DestroyPenerimaanTruckingHeaderRequest extends FormRequest
