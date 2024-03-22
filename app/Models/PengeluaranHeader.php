@@ -709,6 +709,7 @@ class PengeluaranHeader extends MyModel
             ->select(
                 'id as bank_id',
                 'namabank as bank',
+                'tipe'
 
             )
             ->where('id', '=', $bankId)
@@ -736,6 +737,7 @@ class PengeluaranHeader extends MyModel
 
             )
             ->where('statusdefault', '=', $alatbayardefault)
+            ->where('tipe', $bank->tipe)
             ->first();
 
 
@@ -827,6 +829,15 @@ class PengeluaranHeader extends MyModel
         $nominal_detail = [];
         $keterangan_detail = [];
         for ($i = 0; $i < count($data['nominal_detail']); $i++) {
+            if ($alatabayarid== $alatabayargiro->text) {
+                $memo = json_decode($alatabayargiro->memo, true);
+                $coakredit_detail[]= $memo['JURNAL'];
+                $coaKredit = $memo['JURNAL'];
+            } else {
+                $coakredit_detail[] = $querysubgrppengeluaran->coa;
+                $coaKredit = $querysubgrppengeluaran->coa;
+            }
+
             $pengeluaranDetail = (new PengeluaranDetail())->processStore($pengeluaranHeader, [
                 'pengeluaran_id' => $pengeluaranHeader->id,
                 'nobukti' => $pengeluaranHeader->nobukti,
@@ -835,7 +846,7 @@ class PengeluaranHeader extends MyModel
                 'nominal' => $data['nominal_detail'][$i],
                 'coadebet' =>  $data['coadebet'][$i],
                 // 'coakredit' => ($data['coakredit']) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa,
-                 'coakredit' => $querysubgrppengeluaran->coa,
+                 'coakredit' => $coaKredit,
                 'keterangan' => $data['keterangan_detail'][$i],
                 'noinvoice' => $data['noinvoice'][$i] ?? '',
                 'bank' => $data['bank_detail'][$i] ?? '',
@@ -844,12 +855,6 @@ class PengeluaranHeader extends MyModel
             $pengeluaranDetails[] = $pengeluaranDetail->toArray();
             $coadebet_detail[] =  $data['coadebet'][$i];
             // $coakredit_detail[] = ($data['coakredit']) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa;
-            if ($alatabayarid== $alatabayargiro->text) {
-                $memo = json_decode($alatabayargiro->memo, true);
-                $coakredit_detail[]= $memo['JURNAL'];
-            } else {
-                $coakredit_detail[] = $querysubgrppengeluaran->coa;
-            }
             
             $nominal_detail[] = $data['nominal_detail'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
@@ -964,7 +969,16 @@ class PengeluaranHeader extends MyModel
         // $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranHeader->nobukti)->lockForUpdate()->delete();
         /*DELETE EXISTING Pengeluaran*/
         $pengeluaranDetail = PengeluaranDetail::where('pengeluaran_id', $pengeluaranHeader->id)->lockForUpdate()->delete();
+        $alatabayargiro=DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+        ->select (
+            'a.text',
+            'a.memo'
+        )
+        ->where('a.grp','ALAT BAYAR GIRO')
+        ->where('a.subgrp','ALAT BAYAR GIRO')
+        ->first();
 
+        $alatabayarid=$data['alatbayar_id'] ?? 0;
         $pengeluaranDetails = [];
         $coadebet_detail = [];
         $coakredit_detail = [];
@@ -975,10 +989,18 @@ class PengeluaranHeader extends MyModel
 
             $coakredit = $data['coakredit'][$i] ?? '';
 
-            if ($coakredit == '') {
-                $coaKredit = $querysubgrppengeluaran->coa;
+            // if ($coakredit == '') {
+            //     $coaKredit = $querysubgrppengeluaran->coa;
+            // } else {
+            //     $coaKredit = $coakredit;
+            // } 
+            if ($alatabayarid== $alatabayargiro->text) {
+                $memo = json_decode($alatabayargiro->memo, true);
+                $coakredit_detail[]= $memo['JURNAL'];
+                $coaKredit = $memo['JURNAL'];
             } else {
-                $coaKredit = $coakredit;
+                $coakredit_detail[] = $querysubgrppengeluaran->coa;
+                $coaKredit = $querysubgrppengeluaran->coa;
             }
 
             $pengeluaranDetail = (new PengeluaranDetail())->processStore($pengeluaranHeader, [
@@ -996,7 +1018,7 @@ class PengeluaranHeader extends MyModel
             ]);
             $pengeluaranDetails[] = $pengeluaranDetail->toArray();
             $coadebet_detail[] =  $data['coadebet'][$i];
-            $coakredit_detail[] = $coaKredit; //($data['coakredit']) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa;
+            // $coakredit_detail[] = $coaKredit; //($data['coakredit']) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa;
             $nominal_detail[] = $data['nominal_detail'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
         }

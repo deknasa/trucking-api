@@ -15,6 +15,7 @@ use App\Rules\ValidasiStatusNotaKredit;
 use App\Rules\ValidasiNominalSaldo;
 use App\Rules\ValidasiStatusPelunasan;
 use App\Rules\ValidasiNotaDebetPelunasan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class UpdatePelunasanPiutangHeaderRequest extends FormRequest
@@ -91,6 +92,13 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
                 'alatbayar_id' => ['required', 'numeric', 'min:1', Rule::in($getDataPelunasan->alatbayar_id)]
             ];
         }
+        $alatbayarGiro = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'GIRO')->first();
+        $rulesNoWarkat = [];
+        if (request()->alatbayar_id == $alatbayarGiro->id) {
+            $rulesNoWarkat = [
+                'nowarkat' => 'required'
+            ];
+        }
        
         $rules = [
             'id' => new ValidasiDestroyPelunasanPiutang(),
@@ -110,6 +118,7 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
                 new ValidasiStatusNotaKredit(),
                 // new ValidasiNominalSaldo()
             ],
+            'tgljatuhtempo' => ['date_format:d-m-Y','after_or_equal:'.request()->tglbukti],
             'alatbayar' => ['required', Rule::in($dataKodeAlatBayar)],
         ];
 
@@ -123,7 +132,8 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
                 (new $relatedRequest)->rules(),
                 $rulesBank_id,
                 $rulesAgen_id,
-                $rulesAlatBayar_id
+                $rulesAlatBayar_id,
+                $rulesNoWarkat
             );
         }
 
@@ -134,7 +144,9 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
     {
         $attributes = [
             'tglbukti' => 'Tanggal Bukti',
+            'nowarkat' => 'no warkat',
             'alatbayar' => 'alat bayar',
+            'tgljatuhtempo' => 'tgl jatuh tempo',
             'agen' => 'Customer',
             'bayar.*' => 'Nominal Bayar',
             'keterangan.*' => 'keterangan'

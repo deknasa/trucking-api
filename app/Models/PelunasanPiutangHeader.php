@@ -46,6 +46,7 @@ class PelunasanPiutangHeader extends MyModel
             ->select(
                 'id as bank_id',
                 'namabank as bank',
+                'tipe',
 
             )
             ->where('tipe', '=', 'KAS')
@@ -73,6 +74,7 @@ class PelunasanPiutangHeader extends MyModel
 
             )
             ->where('statusdefault', '=', $alatbayardefault)
+            ->where('tipe', '=', $bank->tipe)
             ->first();
 
         $statuspelunasan = Parameter::from(
@@ -493,6 +495,7 @@ class PelunasanPiutangHeader extends MyModel
                 'pelunasanpiutangheader.notakredit_nobukti',
                 db::raw("(case when isnull(c.notadebet_nobukti,'')='' then pelunasanpiutangheader.notadebet_nobukti else isnull(c.notadebet_nobukti,'')  end) as notadebet_nobukti "),
                 'pelunasanpiutangheader.nowarkat',
+                'pelunasanpiutangheader.tglcair as tgljatuhtempo',
 
                 'bank.namabank as bank',
                 'alatbayar.namaalatbayar as alatbayar',
@@ -736,7 +739,8 @@ class PelunasanPiutangHeader extends MyModel
         $pelunasanPiutangHeader->notakredit_nobukti = '-';
         $pelunasanPiutangHeader->notadebet_nobukti =  '-';
         $pelunasanPiutangHeader->agen_id = $data['agen_id'];
-        $pelunasanPiutangHeader->nowarkat = $data['nowarkat'] ?? '-';
+        $pelunasanPiutangHeader->nowarkat = $data['nowarkat'] ?? '';
+        $pelunasanPiutangHeader->tglcair = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $pelunasanPiutangHeader->statusformat = $format->id;
         $pelunasanPiutangHeader->modifiedby = auth('api')->user()->name;
         $pelunasanPiutangHeader->info = html_entity_decode(request()->info);
@@ -842,18 +846,19 @@ class PelunasanPiutangHeader extends MyModel
 
             $pelunasanPiutangDetails[] = $pelunasanPiutangDetail->toArray();
 
-            $noWarkat[] = $data['nowarkat'] ?? '-';
+            $noWarkat[] = $data['nowarkat'] ?? '';
             if ($data['alatbayar_id'] != $alatbayarGiro->id) {
                 $tglJatuhTempo[] = $data['tglbukti'];
             } else {
                 $top = intval($getCoa->top);
                 $dateNow = date('Y-m-d');
                 $nextDay = date('d-m-Y', strtotime($dateNow . " +$top day"));
-                $tglJatuhTempo[] = $nextDay;
+                $tglJatuhTempo[] = $data['tgljatuhtempo'];
             }
 
             $nominalDetail[] = $data['bayar'][$i];
             $coaKredit[] =  $piutang->coadebet;
+            // dd($piutang->coadebet,$piutang->invoice_nobukti);
             $keteranganDetail[] = $data['keterangan'][$i];
             $invoiceNobukti[] = $piutang->invoice_nobukti ?? '';
             $pelunasanNobukti[] = $pelunasanPiutangHeader->nobukti;
@@ -1049,6 +1054,8 @@ class PelunasanPiutangHeader extends MyModel
             $pelunasanPiutangHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
 
+        $pelunasanPiutangHeader->nowarkat = $data['nowarkat'] ?? '';
+        $pelunasanPiutangHeader->tglcair = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $pelunasanPiutangHeader->modifiedby = auth('api')->user()->name;
         $pelunasanPiutangHeader->info = html_entity_decode(request()->info);
 
@@ -1170,16 +1177,16 @@ class PelunasanPiutangHeader extends MyModel
 
             $pelunasanPiutangDetails[] = $pelunasanPiutangDetail->toArray();
 
-            $noWarkat[] = $data['nowarkat'] ?? '-';
+            $noWarkat[] = $data['nowarkat'] ?? '';
             if ($pelunasanPiutangHeader->alatbayar_id != $alatbayarGiro->id) {
                 $tglJatuhTempo[] = $pelunasanPiutangHeader->tglbukti;
             } else {
                 $top = intval($getCoa->top);
                 $dateNow = date('Y-m-d');
                 $nextDay = date('d-m-Y', strtotime($dateNow . " +$top day"));
-                $tglJatuhTempo[] = $nextDay;
+                $tglJatuhTempo[] = $data['tgljatuhtempo'];
             }
-            $tglJatuhTempo[] = $pelunasanPiutangHeader->tglbukti;
+            // $tglJatuhTempo[] = $pelunasanPiutangHeader->tglbukti;
             $nominalDetail[] = $data['bayar'][$i];
             $coaKredit[] =  $piutang->coadebet;
             $keteranganDetail[] = $data['keterangan'][$i];
