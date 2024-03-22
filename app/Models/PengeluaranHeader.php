@@ -709,6 +709,7 @@ class PengeluaranHeader extends MyModel
             ->select(
                 'id as bank_id',
                 'namabank as bank',
+                'tipe'
 
             )
             ->where('id', '=', $bankId)
@@ -736,6 +737,7 @@ class PengeluaranHeader extends MyModel
 
             )
             ->where('statusdefault', '=', $alatbayardefault)
+            ->where('tipe', $bank->tipe)
             ->first();
 
 

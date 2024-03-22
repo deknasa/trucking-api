@@ -503,6 +503,7 @@ class PenerimaanGiroHeader extends MyModel
 
         $memodebet = json_decode($coadebet->memo, true);
         $memokredit = json_decode($coakredit->memo, true);
+        $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'])->first();
 
         for ($i = 0; $i < count($data['nominal']); $i++) {
             $penerimaanDetail = (new PenerimaanGiroDetail())->processStore($penerimaanGiroHeader, [
@@ -510,7 +511,7 @@ class PenerimaanGiroHeader extends MyModel
                 'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'][$i])),
                 'nominal' => $data['nominal'][$i],
                 'coadebet' => $memodebet['JURNAL'],
-                'coakredit' => $data['coakredit'][$i] ?? $memokredit['JURNAL'],
+                'coakredit' => $data['coakredit'][$i] ??  $getCoa->coapendapatan,
                 'keterangan' => $data['keterangan_detail'][$i],
                 'bank_id' => $data['bank_id'][$i],
                 'invoice_nobukti' => $data['invoice_nobukti'][$i] ?? '-',
@@ -521,7 +522,7 @@ class PenerimaanGiroHeader extends MyModel
                 'modifiedby' => auth('api')->user()->name,
             ]);
             $penerimaanDetails[] = $penerimaanDetail->toArray();
-            $coakredit_detail[] = $data['coakredit'][$i] ?? $memokredit['JURNAL'];
+            $coakredit_detail[] = $data['coakredit'][$i] ??  $getCoa->coapendapatan;
             $coadebet_detail[] = $memodebet['JURNAL'];
             $nominal_detail[] = $data['nominal'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
@@ -584,6 +585,8 @@ class PenerimaanGiroHeader extends MyModel
             $penerimaanGiroHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
             $penerimaanGiroHeader->nobukti = $nobukti;
         }
+        
+        $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'])->first();
         $penerimaanGiroHeader->pelanggan_id = $data['pelanggan_id'] ?? '';
         $penerimaanGiroHeader->agen_id = $data['agen_id'] ?? '';
         $penerimaanGiroHeader->diterimadari = $data['diterimadari'];
@@ -628,7 +631,7 @@ class PenerimaanGiroHeader extends MyModel
                 'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'][$i])),
                 'nominal' => $data['nominal'][$i],
                 'coadebet' => $memodebet['JURNAL'],
-                'coakredit' => $data['coakredit'][$i] ?? $memokredit['JURNAL'],
+                'coakredit' => $data['coakredit'][$i] ?? $getCoa->coapendapatan,
                 'keterangan' => $data['keterangan_detail'][$i],
                 'bank_id' => $data['bank_id'][$i],
                 'invoice_nobukti' => $data['invoice_nobukti'][$i] ?? '-',
@@ -639,7 +642,7 @@ class PenerimaanGiroHeader extends MyModel
                 'modifiedby' => auth('api')->user()->name,
             ]);
             $penerimaanGiroDetails[] = $penerimaanGiroDetail->toArray();
-            $coakredit_detail[] = $data['coakredit'][$i] ?? $memokredit['JURNAL'];
+            $coakredit_detail[] = $data['coakredit'][$i] ?? $getCoa->coapendapatan;
             $coadebet_detail[] = $memodebet['JURNAL'];
             $nominal_detail[] = $data['nominal'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];

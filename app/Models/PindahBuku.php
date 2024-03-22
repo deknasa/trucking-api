@@ -29,9 +29,22 @@ class PindahBuku extends MyModel
 
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->string('bank', 255)->nullable();
             $table->unsignedBigInteger('alatbayar_id')->nullable();
             $table->string('alatbayar', 255)->nullable();
         });
+        $bank = DB::table('bank')->from(
+            DB::raw('bank with (readuncommitted)')
+        )
+            ->select(
+                'id as bank_id',
+                'namabank as bank',
+                'tipe'
+
+            )
+            ->where('tipe', '=', 'KAS')
+            ->first();
 
         $statusdefault = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
@@ -55,17 +68,20 @@ class PindahBuku extends MyModel
 
             )
             ->where('statusdefault', '=', $alatbayardefault)
+            ->where('tipe', '=', $bank->tipe)
             ->first();
 
 
         DB::table($tempdefault)->insert(
-            ["alatbayar_id" => $alatbayar->alatbayar_id, "alatbayar" => $alatbayar->alatbayar]
+            ["bank_id" => $bank->bank_id, "bank" => $bank->bank,"alatbayar_id" => $alatbayar->alatbayar_id, "alatbayar" => $alatbayar->alatbayar]
         );
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
             ->select(
+                'bank_id as bankdari_id',
+                'bank as bankdari',
                 'alatbayar_id',
                 'alatbayar',
             );

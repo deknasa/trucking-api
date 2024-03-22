@@ -117,6 +117,7 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
                 new ValidasiStatusNotaKredit(),
                 // new ValidasiNominalSaldo()
             ],
+            'tgljatuhtempo' => ['date_format:d-m-Y','after_or_equal:'.request()->tglbukti],
             'alatbayar' => ['required', Rule::in($dataKodeAlatBayar)]
         ];
         // dd(request()->alatbayar_id, $dataAlatBayar);
@@ -143,6 +144,8 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
         $attributes = [
             'tglbukti' => 'Tanggal Bukti',
             'alatbayar' => 'alat bayar',
+            'nowarkat' => 'no warkat',
+            'tgljatuhtempo' => 'tgl jatuh tempo',
             'agen' => 'customer',
             'bayar.*' => 'Nominal Bayar',
             'keterangan.*' => 'keterangan'
