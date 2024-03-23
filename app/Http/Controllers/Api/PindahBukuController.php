@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyPindahBukuRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreLogTrailRequest;
@@ -143,7 +144,7 @@ class PindahBukuController extends Controller
      * @ClassName 
      * @Keterangan HAPUS DATA
      */
-    public function destroy(Request $request, $id): JsonResponse
+    public function destroy(DestroyPindahBukuRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
 
@@ -282,22 +283,69 @@ class PindahBukuController extends Controller
     
     public function cekvalidasi($id)
     {
+        
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $pengeluaran = PindahBuku::find($id);
+        if (!isset($pengeluaran)) {
+            $keteranganerror = $error->cekKeteranganError('DTA') ?? '';
+            $keterror='No Bukti <b>'. request()->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+            $data = [
+                'message' => $keterror,
+                'error' => true,
+                'kodeerror' => 'SAP',
+                'statuspesan' => 'warning',
+            ];
+    
+            return response($data);
+    
+        }
+
+        $nobukti = $pengeluaran->nobukti;
         $statusdatacetak = $pengeluaran->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+            
+        $tgltutup=(new Parameter())->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup=date('Y-m-d', strtotime($tgltutup));       
+        $cekPencairan = DB::table("pencairangiropengeluaranheader")->from(DB::raw("pencairangiropengeluaranheader with (readuncommitted)"))
+        ->where('pengeluaran_nobukti', $nobukti)
+        ->first();
         if ($statusdatacetak == $statusCetak->id) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SDC')
-                ->first();
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+
             $data = [
+                'message' => $keterror,
                 'error' => true,
-                'message' => $query->keterangan,
+                'kodeerror' => 'SDC',
                 'statuspesan' => 'warning',
             ];
 
             return response($data);
+        } else if ($tgltutup >= $pengeluaran->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);            
+        } else if($cekPencairan != ''){
+            $keteranganerror = $error->cekKeteranganError('SCG') ?? '';
+            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pencairan giro <b>'. $cekPencairan->nobukti .'</b> <br> '.$keterangantambahanerror;
+
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);    
         } else {
 
             $data = [

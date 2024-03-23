@@ -15,6 +15,8 @@ class DestroyPenerimaanGiro implements Rule
      *
      * @return void
      */
+    public $kodeerror;
+    public $keterangan;
     public function __construct()
     {
         //
@@ -29,19 +31,22 @@ class DestroyPenerimaanGiro implements Rule
      */
     public function passes($attribute, $value)
     {
-        $penerimaanGiro = new PenerimaanGiroHeader();
-        $nobukti = PenerimaanGiroHeader::from(DB::raw("penerimaangiroheader"))->where('id', request()->id)->first();
-        $cekdata = $penerimaanGiro->cekvalidasiaksi($nobukti->nobukti);
-        if($cekdata['kondisi']){
+      $pengeluaran = new PenerimaanGiroHeader();
+      $nobukti = PenerimaanGiroHeader::from(DB::raw("penerimaangiroheader"))->where('id', request()->id)->first();
+      $cekdata = $pengeluaran->cekvalidasiaksi($nobukti->nobukti);
+      if ($cekdata['kondisi']) {
+          $this->kodeerror = $cekdata['kodeerror'];
+          $this->keterangan = $cekdata['keterangan'] ;
           return false;
-        }
+      }
 
-        $serviceInHeader = app(PenerimaanGiroHeaderController::class);
-        $cekdata = $serviceInHeader->cekvalidasi(request()->id);
-        
-        if($cekdata->original['kodestatus'] =="1"){
+      $cekCetak = app(PenerimaanGiroHeaderController::class)->cekvalidasi(request()->id);
+      $getOriginal = $cekCetak->original;
+      if ($getOriginal['error'] == true) {
+          $this->kodeerror = $getOriginal['kodeerror'];
+          $this->keterangan = $getOriginal['message'];
           return false;
-        }
+      }
         return true;
     }
 
@@ -52,6 +57,6 @@ class DestroyPenerimaanGiro implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('SATL')->keterangan;
+        return $this->keterangan;
     }
 }

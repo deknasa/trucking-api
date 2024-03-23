@@ -657,8 +657,31 @@ class PengeluaranHeader extends MyModel
                 'editcoa' => false
             ];
             goto selesai;
-        }
+        }        
         
+        $keteranganerror = $error->cekKeteranganError('SCG');
+        $pencairangiro = DB::table('pencairangiropengeluaranheader')
+            ->from(
+                DB::raw("pencairangiropengeluaranheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti',
+                'a.pengeluaran_nobukti'
+            )
+            ->where('a.pengeluaran_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($pencairangiro)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pencairan giro <b>'. $pencairangiro->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'kas gantung '. $kasGantung->nobukti,
+                'kodeerror' => 'SCG',
+                'editcoa' => false
+            ];
+            goto selesai;
+        }
+        $keteranganerror = $error->cekKeteranganError('TDT');
+
         $keteranganerror = $error->cekKeteranganError('SATL');
         $rekap = DB::table('rekappengeluarandetail')
             ->from(

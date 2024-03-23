@@ -41,7 +41,7 @@ class UpdatePenerimaanGiroHeaderRequest extends FormRequest
         }
 
         $rules = [
-            // 'id' => new CheckEditingAtValidation(),
+            'id' => new DestroyPenerimaanGiro(),
             "tglbukti" => [
                 "required", 'date_format:d-m-Y',
                 'before_or_equal:' . date('Y-m-d'),
