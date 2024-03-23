@@ -90,7 +90,7 @@ class ApprovalTradoTanpa extends Model
         } else {
             $approvalSupirKeterangan = (new ApprovalTradoKeterangan())->processStore($dataKeterangan);
         }
-        $this->tradoApprovalAktif($data,$approvalSupirGambar->statusapproval,$approvalSupirKeterangan->statusapproval);
+        $this->tradoApprovalAktif($data, $approvalSupirGambar->statusapproval, $approvalSupirKeterangan->statusapproval);
 
         // ryan
 
@@ -132,7 +132,7 @@ class ApprovalTradoTanpa extends Model
         }
 
         selesai1:
-        if (!is_null(json_decode($trado->photobpkb))) {
+        if (!is_null(json_decode($trado->photostnk))) {
             foreach (json_decode($trado->photostnk) as $value) {
                 if ($value != '') {
                     if (!Storage::exists("trado/stnk/$value")) {
@@ -150,7 +150,7 @@ class ApprovalTradoTanpa extends Model
 
 
         selesai2:
-        if (!is_null(json_decode($trado->photobpkb))) {
+        if (!is_null(json_decode($trado->phototrado))) {
             foreach (json_decode($trado->phototrado) as $value) {
                 if ($value != '') {
                     if (!Storage::exists("trado/trado/$value")) {
@@ -168,9 +168,21 @@ class ApprovalTradoTanpa extends Model
 
         selesai3:
 
-      
+        $date = date('Y-m-d');
+        $querygambar = db::table('approvaltradogambar')->from(db::raw("approvaltradogambar a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->whereRaw("a.tglbatas<'" . $date . "'")
+            ->where('a.kodetrado', $trado->kodetrado)
+            ->where('a.statusapproval', $statusApp->id)
+            ->first();
+
+
         if ($photobpkb == true && $photostnk == true  && $phototrado == true) {
-            $statusgambar = $statusApp->id;
+            if (isset($querygambar)) {
+                $statusgambar = $statusApp->id;
+            }
         }
 
         $required = [
@@ -198,8 +210,20 @@ class ApprovalTradoTanpa extends Model
         // dd($key);
         $jumlah = count($key);
 
+        $queryketerangan = db::table('approvaltradoketerangan')->from(db::raw("approvaltradoketerangan a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->whereRaw("a.tglbatas<'" . $date . "'")
+            ->where('a.kodetrado', $trado->kodetrado)
+            ->where('a.statusapproval', $statusApp->id)
+            ->first();
+
+
         if ($jumlah == 0) {
-            $statusketerangan = $statusApp->id;
+            if (isset($queryketerangan)) {
+                $statusketerangan = $statusApp->id;
+            }
         }
 
         // dump($jumlah);
@@ -278,13 +302,14 @@ class ApprovalTradoTanpa extends Model
     }
 
 
-    public function tradoApprovalAktif($data,$approvalTradoGambar,$approvalTradoKeterangan) {
-        $trado = Trado::where('kodetrado',$data['kodetrado'])->first();
+    public function tradoApprovalAktif($data, $approvalTradoGambar, $approvalTradoKeterangan)
+    {
+        $trado = Trado::where('kodetrado', $data['kodetrado'])->first();
         $statusAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS Aktif')->where('subgrp', '=', 'STATUS Aktif')->where('text', '=', 'aktif')->first();
         $statusApproval = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS APPROVAL')->where('subgrp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
         if ($trado->statusaktif != $statusAktif->text) {
-            $gambar = $approvalTradoGambar?? $statusApproval->id;
-            $keterangan = $approvalTradoKeterangan?? $statusApproval->id;
+            $gambar = $approvalTradoGambar ?? $statusApproval->id;
+            $keterangan = $approvalTradoKeterangan ?? $statusApproval->id;
             // dd($gambar,
             // $keterangan,($statusApproval->id == $gambar) && ($statusApproval->id == $keterangan));
             if (($statusApproval->id == $gambar) && ($statusApproval->id == $keterangan)) {

@@ -160,6 +160,7 @@ class Trado extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+        $this->RefreshTradoNonAktif();
 
         $absensiId = request()->absensiId ?? '';
         $aktif = request()->aktif ?? '';
@@ -708,18 +709,18 @@ class Trado extends MyModel
 
 
         $querymandor = db::table("mandordetail")->from(db::raw("mandordetail a with (readuncommitted)"))
-        ->select('a.mandor_id')
-        ->where('a.user_id', $userid);
+            ->select('a.mandor_id')
+            ->where('a.user_id', $userid);
 
-    $tempmandordetail = '##tempmandordetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-    Schema::create($tempmandordetail, function ($table) {
-        $table->id();
-        $table->unsignedBigInteger('mandor_id')->nullable();
-    });
+        $tempmandordetail = '##tempmandordetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempmandordetail, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('mandor_id')->nullable();
+        });
 
-    DB::table($tempmandordetail)->insertUsing([
-        'mandor_id',
-    ],  $querymandor);        
+        DB::table($tempmandordetail)->insertUsing([
+            'mandor_id',
+        ],  $querymandor);
 
         $query = DB::table($modelTable);
         if (!$isAdmin) {
@@ -728,7 +729,7 @@ class Trado extends MyModel
 
                 // $query->where('trado.mandor_id', $isMandor->mandor_id);
             }
-        }        
+        }
         $query = $this->selectColumns($query);
         $this->sort($query);
 
@@ -749,8 +750,7 @@ class Trado extends MyModel
             return $query->orderBy('supir.namasupir', $this->params['sortOrder']);
         } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder'])
-                        ->orderBy($this->table . '.kodetrado', $this->params['sortOrder'])
-            ;
+                ->orderBy($this->table . '.kodetrado', $this->params['sortOrder']);
         }
     }
 
@@ -1609,5 +1609,240 @@ class Trado extends MyModel
 
 
         return $Trado;
+    }
+    public function RefreshTradoNonAktif()
+    {
+
+        $date = date('Y-m-d');
+        $statusApp = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusNonApp = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+
+        $statusAktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
+        $statusNonAktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'NON AKTIF')->first();
+
+        $tempapprovaltradoketerangan = '##tempapprovaltradoketerangan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempapprovaltradoketerangan, function ($table) {
+            $table->string('kodetrado', 50)->nullable();
+        });
+
+        $queryapprovaltradoketerangan = db::table('approvaltradoketerangan')->from(db::raw("approvaltradoketerangan a with (readuncommitted)"))
+            ->select(
+                'a.kodetrado'
+            )
+            ->whereRaw("a.tglbatas<'". $date . "'")
+            ->orderby('a.kodetrado', 'asc');
+
+
+
+        DB::table($tempapprovaltradoketerangan)->insertUsing([
+            'kodetrado',
+        ],  $queryapprovaltradoketerangan);
+
+        $queryapprovaltradogambar = db::table('approvaltradogambar')->from(db::raw("approvaltradogambar a with (readuncommitted)"))
+            ->select(
+                'a.kodetrado'
+            )
+            ->whereRaw("a.tglbatas<'". $date . "'")
+            ->orderby('a.kodetrado', 'asc');
+        // dd('test');
+
+        DB::table($tempapprovaltradoketerangan)->insertUsing([
+            'kodetrado',
+        ],  $queryapprovaltradogambar);
+
+        $tempapprovaltradorekap = '##tempapprovaltradorekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempapprovaltradorekap, function ($table) {
+            $table->string('kodetrado', 50)->nullable();
+        });
+
+        $queryapprovaltradogambar = db::table($tempapprovaltradoketerangan)->from(db::raw($tempapprovaltradoketerangan . " a "))
+            ->select(
+                'a.kodetrado'
+            )
+            ->groupby('a.kodetrado');
+
+
+        DB::table($tempapprovaltradorekap)->insertUsing([
+            'kodetrado',
+        ],  $queryapprovaltradogambar);
+
+        // dd(db::table($tempapprovaltradorekap)->get());
+        // dd($statusApp->id);
+
+        $trado1 = DB::table('trado')->from(DB::raw("trado a with (readuncommitted)"))
+            ->join(db::raw($tempapprovaltradorekap . ' b'), 'a.kodetrado', 'b.kodetrado')
+            ->where('a.statusaktif', $statusAktif->id)
+            ->get();
+
+            // dd($trado1);
+
+
+
+        $temptradoketerangan = '##temptradoketerangan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temptradoketerangan, function ($table) {
+            $table->integer('trado_id')->nullable();
+            $table->integer('statusapprovalketerangan')->nullable();
+        });
+
+        $temptradogambar = '##temptradogambar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temptradogambar, function ($table) {
+            $table->integer('trado_id')->nullable();
+            $table->integer('statusapprovalgambar')->nullable();
+        });
+
+        $datadetail = json_decode($trado1, true);
+        foreach ($datadetail as $trado) {
+            $photobpkb = true;
+            $photostnk = true;
+            $phototrado = true;
+
+            if (!is_null(json_decode($trado['photobpkb']))) {
+                foreach (json_decode($trado['photobpkb']) as $value) {
+                    if ($value != '') {
+                        if (!Storage::exists("trado/bpkb/$value")) {
+                            $photobpkb = false;
+                            goto selesai1;
+                        }
+                    } else {
+                        $photobpkb = false;
+                        goto selesai1;
+                    }
+                }
+            } else {
+                $photobpkb = false;
+            }
+
+            selesai1:
+            if (!is_null(json_decode($trado['photostnk']))) {
+                foreach (json_decode($trado['photostnk']) as $value) {
+                    if ($value != '') {
+                        if (!Storage::exists("trado/stnk/$value")) {
+                            $photostnk = false;
+                            goto selesai2;
+                        }
+                    } else {
+                        $photostnk = false;
+                        goto selesai2;
+                    }
+                }
+            } else {
+                $photostnk = false;
+            }
+
+
+            selesai2:
+            if (!is_null(json_decode($trado['phototrado']))) {
+                foreach (json_decode($trado['phototrado']) as $value) {
+                    if ($value != '') {
+                        if (!Storage::exists("trado/trado/$value")) {
+                            $phototrado = false;
+                            goto selesai3;
+                        }
+                    } else {
+                        $phototrado = false;
+                        goto selesai3;
+                    }
+                }
+            } else {
+                $phototrado = false;
+            }
+
+            selesai3:
+
+
+            $querygambar = db::table('approvaltradogambar')->from(db::raw("approvaltradogambar a with (readuncommitted)"))
+                ->select(
+                    'a.id'
+                )
+                ->whereRaw("a.tglbatas<'" . $date . "'")
+                ->where('a.kodetrado', $trado['kodetrado'])
+                ->where('a.statusapproval', $statusApp->id)
+                ->first();
+
+                // dd($querygambar->tosql());
+            if ($photobpkb == true || $photostnk == true  || $phototrado == true) {
+                if (isset($querygambar)) {
+
+                    DB::table($temptradogambar)->insert([
+                        'trado_id' => $trado['id'],
+                        'statusapprovalgambar' =>  $statusNonApp->id,
+                    ]);
+                }
+            }
+            $required = [
+                "kodetrado" => $trado['kodetrado'],
+                "tahun" => $trado['tahun'],
+                "merek" => $trado['merek'],
+                "norangka" => $trado['norangka'],
+                "nomesin" => $trado['nomesin'],
+                "nama" => $trado['nama'],
+                "nostnk" => $trado['nostnk'],
+                "alamatstnk" => $trado['alamatstnk'],
+                "tglpajakstnk" => $trado['tglpajakstnk'],
+                "tipe" => $trado['tipe'],
+                "jenis" => $trado['jenis'],
+                "isisilinder" => $trado['isisilinder'],
+                "warna" => $trado['warna'],
+                "jenisbahanbakar" => $trado['jenisbahanbakar'],
+                "jumlahsumbu" => $trado['jumlahsumbu'],
+                "jumlahroda" => $trado['jumlahroda'],
+                "model" => $trado['model'],
+                "nobpkb" => $trado['nobpkb'],
+                "jumlahbanserap" => $trado['jumlahbanserap'],
+            ];
+            $key = array_keys($required, null);
+            
+            $jumlah = count($key);
+
+            $queryketerangan = db::table('approvaltradoketerangan')->from(db::raw("approvaltradoketerangan a with (readuncommitted)"))
+                ->select(
+                    'a.id'
+                )
+                ->whereRaw("a.tglbatas<'" . $date . "'")
+                ->where('a.kodetrado', $trado['kodetrado'])
+                ->where('a.statusapproval', $statusApp->id)
+                ->first();
+
+            if ($jumlah != 0) {
+                if (isset($queryketerangan)) {
+
+                    DB::table($temptradoketerangan)->insert([
+                        'trado_id' => $trado['id'],
+                        'statusapprovalketerangan' =>  $statusNonApp->id,
+                    ]);
+                }
+            }
+        }
+
+// dd('test');
+
+        $query1 = db::table($temptradogambar)->from(db::raw($temptradogambar . " a"))
+            ->select('a.trado_id')
+            ->orderby('a.trado_id','asc')
+            ->first();
+
+        $query2 = db::table($temptradoketerangan)->from(db::raw($temptradoketerangan . " a"))
+        ->select('a.trado_id')
+            ->orderby('a.trado_id','asc')
+            ->first();
+            // 
+            
+        if (isset($query1)) {
+            DB::table('trado')
+                ->from(db::raw("trado"))
+                ->join(db::raw($temptradogambar . " b"), 'trado.id', 'b.trado_id')
+                ->update([
+                    'statusaktif' => $statusNonAktif->id,
+                ]);
+        } else {
+            if (isset($query2)) {
+                DB::table('trado')
+                    ->from(db::raw("trado"))
+                    ->join(db::raw($temptradoketerangan . " b"), 'trado.id', 'b.trado_id')
+                    ->update([
+                        'statusaktif' => $statusNonAktif->id,
+                    ]);
+            }
+        }
     }
 }
