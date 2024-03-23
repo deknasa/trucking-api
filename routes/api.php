@@ -586,6 +586,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('suratpengantar/addrow', [SuratPengantarController::class, 'addrow']);
     Route::get('mandorabsensisupir/{tradoId}/getabsentrado', [MandorAbsensiSupirController::class, 'getabsentrado'])->whereNumber('tradoId');
     Route::get('supir/approvalluarkota', [SupirController::class, 'approvalLuarKota']);
+    Route::post('pencairangiropengeluaranheader/updateTgl', [PencairanGiroPengeluaranHeaderController::class, 'updateTglJatuhTempo']);
 
 
 });

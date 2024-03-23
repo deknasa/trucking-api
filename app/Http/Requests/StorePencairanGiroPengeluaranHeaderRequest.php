@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Rules\ValidasiHutangList;
+use App\Rules\validasiNobuktiPencairan;
 use App\Rules\validasiPencairanGiro;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -25,11 +27,10 @@ class StorePencairanGiroPengeluaranHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $jumlahdetail = $this->jumlahdetail ?? 0;
         return [
-            'pengeluaranId' => 'required|array',
-            'pengeluaranId.*' => 'required',
-            'periode' => 'required',
-            'nobukti'=> new validasiPencairanGiro()
+            'periode' => ['required',new ValidasiHutangList($jumlahdetail), new validasiNobuktiPencairan()],
+            'detail' => [new validasiPencairanGiro()]
         ];
     }
 
