@@ -89,7 +89,7 @@ class validasiBatasLuarKota implements Rule
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         if ($this->errorid == 2) {
-            return ':attribute' . ' ' . $controller->geterror('STLK')->keterangan . ' <br> ' . $keterangantambahanerror;
+            return $controller->geterror('STLK')->keterangan . ' <br> ' . $keterangantambahanerror;
         } elseif ($this->errorid == 1) {
             return $controller->geterror('BSBLK')->keterangan . ' adalah <b>' . $this->hari . '</b> <br> ' . $keterangantambahanerror;;
         } else {
