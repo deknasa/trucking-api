@@ -369,9 +369,9 @@ class InputTrip extends MyModel
 
             $getUpah = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->where('id', $upah_id)->first();
             if ($statuscontainer == 3) {
-                $jarak = number_format((float) $getUpah->jarakfullempty, 2);
+                $jarak = (float) str_replace(',', '', $getUpah->jarakfullempty);
             } else {
-                $jarak = number_format((float) $getUpah->jarak, 2);
+                $jarak = (float) str_replace(',', '', $getUpah->jarak);
             }
 
             $getTrado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))->where('id', $trado_id)->first();
