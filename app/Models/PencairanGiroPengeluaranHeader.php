@@ -68,6 +68,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                 $table->string('pengeluaran_nobukti', 300)->nullable();
                 $table->date('tglbukti_giro')->nullable();
                 $table->longText('dibayarke')->nullable();
+                $table->longText('urlpengeluaran')->nullable();
                 $table->longText('bank_id')->nullable();
                 $table->longText('transferkeac')->nullable();
                 $table->longText('alatbayar_id')->nullable();
@@ -91,6 +92,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                 'pengeluaran_nobukti',
                 'tglbukti_giro',
                 'dibayarke',
+                'urlpengeluaran',
                 'bank_id',
                 'transferkeac',
                 'alatbayar_id',
@@ -125,6 +127,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                 'a.pengeluaran_nobukti',
                 'a.tglbukti_giro',
                 'a.dibayarke',
+                'a.urlpengeluaran',
                 'a.bank_id',
                 'a.transferkeac',
                 'a.alatbayar_id',
@@ -164,6 +167,8 @@ class PencairanGiroPengeluaranHeader extends MyModel
 
         $alatBayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'GIRO')->first();
 
+        $petik = '"';
+        $url = config('app.url_fe') . 'pengeluaranheader';
 
         $templist = '##templist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($templist, function ($table) {
@@ -171,6 +176,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
             $table->date('tglbukti_giro')->nullable();
             $table->integer('id')->nullable();
             $table->longText('dibayarke')->nullable();
+            $table->longText('urlpengeluaran')->nullable();
             $table->longText('bank_id')->nullable();
             $table->longText('transferkeac')->nullable();
             $table->longText('alatbayar_id')->nullable();
@@ -191,6 +197,8 @@ class PencairanGiroPengeluaranHeader extends MyModel
                     pengeluaranheader.tglbukti as tglbukti_giro,
                     pengeluaranheader.id, 
                     pengeluaranheader.dibayarke, 
+                    '<a href=$petik" . $url . "?tgldari='+(format(pengeluaranheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(pengeluaranheader.tglbukti,'yyyy-MM')+'-31')+'$petik 
+                    class=$petik link-color $petik target=$petik _blank $petik>'+pengeluaranheader.nobukti+'</a>' as urlpengeluaran,
                     bank.namabank as bank_id, 
                     pengeluaranheader.transferkeac, 
                     alatbayar.namaalatbayar as alatbayar_id,
@@ -220,6 +228,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
             'tglbukti_giro',
             'id',
             'dibayarke',
+            'urlpengeluaran',
             'bank_id',
             'transferkeac',
             'alatbayar_id',
@@ -241,6 +250,8 @@ class PencairanGiroPengeluaranHeader extends MyModel
                     pengeluaranheader.tglbukti as tglbukti_giro,
                     pengeluaranheader.id, 
                     pengeluaranheader.dibayarke, 
+                    '<a href=$petik" . $url . "?tgldari='+(format(pengeluaranheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(pengeluaranheader.tglbukti,'yyyy-MM')+'-31')+'$petik 
+                    class=$petik link-color $petik target=$petik _blank $petik>'+pengeluaranheader.nobukti+'</a>' as urlpengeluaran,                    
                     bank.namabank as bank_id, 
                     pengeluaranheader.transferkeac,     
                     alatbayar.namaalatbayar as alatbayar_id,   
@@ -271,6 +282,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
             'tglbukti_giro',
             'id',
             'dibayarke',
+            'urlpengeluaran',
             'bank_id',
             'transferkeac',
             'alatbayar_id',
@@ -285,12 +297,16 @@ class PencairanGiroPengeluaranHeader extends MyModel
 
         ], $query2);
 
+
+        $url = config('app.url_fe') . 'pindahbuku';
         $query3 = DB::table("pindahbuku")->from(DB::raw("pindahbuku with (readuncommitted)"))
             ->select(
                 DB::raw("
                     pindahbuku.nobukti as pengeluaran_nobukti,
                     pindahbuku.tglbukti as tglbukti_giro,
                     pindahbuku.id, 
+                    '<a href=$petik" . $url . "?tgldari='+(format(pindahbuku.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(pindahbuku.tglbukti,'yyyy-MM')+'-31')+'$petik 
+                    class=$petik link-color $petik target=$petik _blank $petik>'+pindahbuku.nobukti+'</a>' as urlpengeluaran,
                     bank.namabank as bank_id, 
                     alatbayar.namaalatbayar as alatbayar_id, 
                     pgp.nobukti, 
@@ -316,6 +332,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
             'pengeluaran_nobukti',
             'tglbukti_giro',
             'id',
+            'urlpengeluaran',
             'bank_id',
             'alatbayar_id',
             'nobukti',
@@ -334,6 +351,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                 'pengeluaran_nobukti',
                 'tglbukti_giro',
                 'dibayarke',
+                'urlpengeluaran',
                 'bank_id',
                 'transferkeac',
                 'alatbayar_id',
@@ -374,6 +392,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
             $table->date('tglbukti_giro')->nullable();
             $table->integer('id')->nullable();
             $table->longText('dibayarke')->nullable();
+            $table->longText('urlpengeluaran')->nullable();
             $table->longText('bank_id')->nullable();
             $table->longText('transferkeac')->nullable();
             $table->longText('alatbayar_id')->nullable();
@@ -386,6 +405,8 @@ class PencairanGiroPengeluaranHeader extends MyModel
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
         });
+        $petik = '"';
+        $url = config('app.url_fe') . 'penerimaangiroheader';
 
         $query1 = DB::table("penerimaangiroheader")->from(DB::raw("penerimaangiroheader with (readuncommitted)"))
             ->select(
@@ -393,6 +414,8 @@ class PencairanGiroPengeluaranHeader extends MyModel
                         penerimaangiroheader.nobukti as pengeluaran_nobukti,
                         penerimaangiroheader.tglbukti as tglbukti_giro,
                         penerimaangiroheader.id, 
+                        '<a href=$petik".$url."?tgldari='+(format(penerimaangiroheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(penerimaangiroheader.tglbukti,'yyyy-MM')+'-31')+'$petik 
+                         class=$petik link-color $petik target=$petik _blank $petik>'+penerimaangiroheader.nobukti+'</a>' as urlpengeluaran,
                         bank.namabank as bank_id, 
                         'GIRO' as alatbayar_id,
                         pgp.nobukti,
@@ -411,6 +434,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
             'pengeluaran_nobukti',
             'tglbukti_giro',
             'id',
+            'urlpengeluaran',
             'bank_id',
             'alatbayar_id',
             'nobukti',
@@ -427,7 +451,8 @@ class PencairanGiroPengeluaranHeader extends MyModel
             ->select(
                 'pengeluaran_nobukti',
                 'tglbukti_giro',
-                'dibayarke',
+                'id',
+                'urlpengeluaran',
                 'bank_id',
                 DB::raw("'' as transferkeac"),
                 'alatbayar_id',
@@ -612,6 +637,8 @@ class PencairanGiroPengeluaranHeader extends MyModel
                             $query->whereRaw("format(a.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tglbukti_giro') {
                             $query->whereRaw("format(a.tglbukti_giro, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'urlpengeluaran') {
+                            $query = $query->where('a.pengeluaran_nobukti', 'LIKE', "%$filters[data]%");
                         } else {
                             $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                         }
@@ -631,6 +658,8 @@ class PencairanGiroPengeluaranHeader extends MyModel
                                 $query->orWhereRaw("format(a.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti_giro') {
                                 $query->orWhereRaw("format(a.tglbukti_giro, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'urlpengeluaran') {
+                                $query = $query->orWhere('a.pengeluaran_nobukti', 'LIKE', "%$filters[data]%");
                             } else {
                                 // $query = $query->orWhere($this->anotherTable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -963,14 +992,14 @@ class PencairanGiroPengeluaranHeader extends MyModel
             }
         } else {
             $coa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
-            ->where('grp','JURNAL PIUTANG GIRO')->where('subgrp','JURNAL PIUTANG GIRO')->first()->text;
+                ->where('grp', 'JURNAL PIUTANG GIRO')->where('subgrp', 'JURNAL PIUTANG GIRO')->first()->text;
             for ($i = 0; $i < count($data['nobukti']); $i++) {
                 $cekPencairan = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('penerimaangiro_nobukti', $data['nobukti'][$i])->first();
-                if($cekPencairan != ''){
+                if ($cekPencairan != '') {
                     (new PenerimaanHeader())->processDestroy($cekPencairan->id, 'PENCAIRAN GIRO');
-                }else{
+                } else {
                     $dataHeader = DB::table("penerimaangiroheader")->from(DB::raw("penerimaangiroheader with (readuncommitted)"))
-                    ->where('nobukti', $data['nobukti'][$i])->first();
+                        ->where('nobukti', $data['nobukti'][$i])->first();
 
                     $dataDetail = DB::table("penerimaangirodetail")->from(DB::raw("penerimaangirodetail with (readuncommitted)"))->where('nobukti', $data['nobukti'][$i])->get();
 
@@ -981,7 +1010,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                     $keteranganDetail = [];
                     $bank_id = '';
                     $tglLunas = '';
-                    foreach($dataDetail as $index => $value){
+                    foreach ($dataDetail as $index => $value) {
                         $noWarkat[] = $value->nowarkat;
                         $tglJatuhTempo[] = $value->tgljatuhtempo;
                         $nominalDetail[] = $value->nominal;
@@ -1004,7 +1033,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                         'nominal_detail' => $nominalDetail,
                         'coakredit' => $coaKredit,
                         'keterangan_detail' => $keteranganDetail,
-        
+
                     ];
                     $penerimaanHeader = (new PenerimaanHeader())->processStore($penerimaanRequest);
                 }
@@ -1060,7 +1089,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
         if (isset($jurnalpusat)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => '<br>' .$keteranganerror.' <br> '.$keterangantambahanerror,
+                'keterangan' => '<br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror,
                 'kodeerror' => 'SAPP'
             ];
             goto selesai;
