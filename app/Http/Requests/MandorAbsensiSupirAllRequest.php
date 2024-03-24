@@ -29,12 +29,14 @@ class MandorAbsensiSupirAllRequest extends FormRequest
      */
     public function rules()
     {
-
+        // return [];
         $deleted_id = request()->deleted_id ?? 0;
+        // dd($deleted_id);
         if ($deleted_id !=0) {
             return [];
         }
         $data = json_decode(request()->data, true);
+        // dd(request()->all());
         // if ($data==[]) {
         //     return true;
         // }

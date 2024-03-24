@@ -50,6 +50,9 @@ class MandorAbsensiSupirController extends Controller
     public function store(MandorAbsensiSupirAllRequest $request)
     {
         $data = json_decode(request()->data, true);
+        // dd('test');
+        // dd(request()->deleted_id);
+        // dd($data);
         // dd($data);
         if ($data == []) {
             goto selesai;
@@ -57,7 +60,9 @@ class MandorAbsensiSupirController extends Controller
 
         $deleted_id = request()->deleted_id ?? 0;
 
+        // dd($request()->all());
         // 
+      
 
         if ($deleted_id != 0) {
             $user = auth('api')->user()->name;

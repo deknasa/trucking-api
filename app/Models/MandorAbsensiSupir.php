@@ -20,6 +20,9 @@ class MandorAbsensiSupir extends MyModel
     {
         $trado = new Trado();
         $trado->RefreshTradoNonAktif();
+        $supir = new Supir();
+        $supir->RefreshTradoNonAktif();
+
         $mandorId = false;
         $isMandor = auth()->user()->isMandor();
         $isAdmin = auth()->user()->isAdmin();
@@ -212,6 +215,8 @@ class MandorAbsensiSupir extends MyModel
                 )
                 ->where('a.id', $deleted_id)
                 ->first();
+
+                // dd(db::table($temtabel)->get());
 
             if (isset($deleteid)) {
                 $AbsensiSupirDetail = db::table('absensisupirdetail')->from(db::raw("absensisupirdetail a with (readuncommitted)"))
@@ -788,10 +793,10 @@ class MandorAbsensiSupir extends MyModel
         ]);
 
 
-        $query = DB::table($tempMandor)->from(DB::raw("$tempMandor as a"))
+        $queryhasil = DB::table($tempMandor)->from(DB::raw("$tempMandor as a"))
             ->select(
                 // DB::raw("row_number() Over(Order By a.trado_id) as id"),
-                'a.id',
+                'a.id as idtemp',
                 'a.trado_id',
                 'a.kodetrado',
                 'a.namasupir',
@@ -827,7 +832,70 @@ class MandorAbsensiSupir extends MyModel
                 $join->on('sp.tglbukti', '=', 'a.tglbukti');
                 $join->on('sp.trado_id', '=', 'a.trado_id');
                 $join->on('sp.supir_id', '=', 'a.supir_id');
-            });
+            })
+            ->orderby('a.kodetrado','asc');
+
+            // dd($queryhasil->get());
+
+            $tempHasil = '##tempHasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempHasil, function ($table) {
+                $table->tinyIncrements('id');
+                $table->integer('idtemp')->nullable();
+                $table->integer('trado_id')->nullable();
+                $table->string('kodetrado')->nullable();
+                $table->string('namasupir')->nullable();
+                $table->string('keterangan')->nullable();
+                $table->string('absentrado')->nullable();
+                $table->integer('absen_id')->nullable();
+                $table->time('jam')->nullable();
+                $table->string('tglbukti',50)->nullable();
+                $table->integer('supir_id')->nullable();
+                $table->string('namasupir_old')->nullable();
+                $table->integer('supir_id_old')->nullable();
+                $table->integer('jlhtrip')->nullable();
+                $table->text('memo')->nullable();
+                $table->string('tglbatas',50)->nullable();
+
+            });            
+
+            DB::table($tempHasil)->insertUsing([
+                'idtemp',
+                'trado_id',
+                'kodetrado',
+                'namasupir',
+                'keterangan',
+                'absentrado',
+                'absen_id',
+                'jam',
+                'tglbukti',
+                'supir_id',
+                'namasupir_old',
+                'supir_id_old',
+                'jlhtrip',
+                'memo',
+                'tglbatas',
+            ],  $queryhasil);
+
+            $query = DB::table($tempHasil)->from(DB::raw("$tempHasil as a"))
+            ->select(
+                // DB::raw("row_number() Over(Order By a.trado_id) as id"),
+                'a.id',
+                'a.trado_id',
+                'a.kodetrado',
+                'a.namasupir',
+                'a.keterangan',
+                'a.absentrado',
+                'a.absen_id',
+                'a.jam',
+                'a.tglbukti',
+                'a.supir_id',
+                'a.namasupir_old',
+                'a.supir_id_old',
+                'a.jlhtrip',
+                'a.memo',
+                'a.tglbatas',
+            );
+
 
         $user = auth('api')->user()->name;
         $class = 'TemporaryAbsensiSupir';
