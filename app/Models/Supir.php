@@ -208,6 +208,7 @@ class Supir extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+        $this->RefreshTradoNonAktif();
         $absen = request()->absen ?? '';
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->select('text')
@@ -1757,4 +1758,303 @@ class Supir extends MyModel
             ->first();
         return $query;
     }
+
+    public function RefreshTradoNonAktif()
+    {
+
+        $date = date('Y-m-d');
+        $statusApp = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusNonApp = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+
+        $statusAktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
+        $statusNonAktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'NON AKTIF')->first();
+
+        $tempapprovalsupirketerangan = '##tempapprovalsupirketerangan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempapprovalsupirketerangan, function ($table) {
+            $table->string('namasupir', 50)->nullable();
+            $table->string('noktp', 50)->nullable();
+        });
+
+        $queryapprovalsupirketerangan = db::table('approvalsupirketerangan')->from(db::raw("approvalsupirketerangan a with (readuncommitted)"))
+            ->select(
+                'a.namasupir',
+                'a.noktp'
+            )
+            ->whereRaw("a.tglbatas<'". $date . "'")
+            ->orderby('a.namasupir', 'asc')
+            ->orderby('a.noktp', 'asc');
+
+
+
+        DB::table($tempapprovalsupirketerangan)->insertUsing([
+            'namasupir',
+            'noktp',
+        ],  $queryapprovalsupirketerangan);
+
+        $queryapprovalsupirgambar = db::table('approvalsupirgambar')->from(db::raw("approvalsupirgambar a with (readuncommitted)"))
+            ->select(
+                'a.namasupir',
+                'a.noktp'
+            )
+            ->whereRaw("a.tglbatas<'". $date . "'")
+            ->orderby('a.namasupir', 'asc')
+            ->orderby('a.noktp', 'asc');
+        // dd('test');
+
+        DB::table($tempapprovalsupirketerangan)->insertUsing([
+            'namasupir',
+            'noktp',
+        ],  $queryapprovalsupirgambar);
+
+        $tempapprovalsupirrekap = '##tempapprovalsupirrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempapprovalsupirrekap, function ($table) {
+            $table->string('namasupir', 50)->nullable();
+            $table->string('noktp', 50)->nullable();
+        });
+
+        $queryapprovalsupirgambar = db::table($tempapprovalsupirketerangan)->from(db::raw($tempapprovalsupirketerangan . " a "))
+            ->select(
+                'a.namasupir',
+                'a.noktp'
+            )
+            ->groupby('a.namasupir')
+            ->groupby('a.noktp');
+
+
+        DB::table($tempapprovalsupirrekap)->insertUsing([
+            'namasupir',
+            'noktp',
+        ],  $queryapprovalsupirgambar);
+
+        // dd(db::table($tempapprovalsupirrekap)->get());
+        // dd($statusApp->id);
+
+        $supir1 = DB::table('supir')->from(DB::raw("supir a with (readuncommitted)"))
+        ->join(DB::raw($tempapprovalsupirrekap . ' b'), function ($join) {
+            $join->on('a.namasupir', '=', 'b.namasupir');
+            $join->on('a.noktp', '=', 'b.noktp');
+        })        
+            ->where('a.statusaktif', $statusAktif->id)
+            ->get();
+
+  
+
+
+        $tempsupirketerangan = '##tempsupirketerangan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsupirketerangan, function ($table) {
+            $table->integer('supir_id')->nullable();
+            $table->integer('statusapprovalketerangan')->nullable();
+        });
+
+        $tempsupirgambar = '##tempsupirgambar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsupirgambar, function ($table) {
+            $table->integer('supir_id')->nullable();
+            $table->integer('statusapprovalgambar')->nullable();
+        });
+
+        $datadetail = json_decode($supir1, true);
+        foreach ($datadetail as $supir) {
+            $photosupir = true;
+            $photoktp = true;
+            $photosim = true;
+            $photokk = true;
+            $photoskck = true;
+            $pdfsuratperjanjian = true;
+
+            if (!is_null(json_decode($supir['photosupir']))) {
+                foreach (json_decode($supir['photosupir']) as $value) {
+                    if ($value != '') {
+                        if (!Storage::exists("supir/profil/$value")) {
+                            $photosupir = false;
+                            goto selesai1;
+                        }
+                    } else {
+                        $photosupir = false;
+                        goto selesai1;
+                    }
+                }
+            } else {
+                $photosupir = false;
+            }
+
+            selesai1:
+            if (!is_null(json_decode($supir['photoktp']))) {
+                foreach (json_decode($supir['photoktp']) as $value) {
+                    if ($value != '') {
+                        if (!Storage::exists("supir/ktp/$value")) {
+                            $photoktp = false;
+                            goto selesai2;
+                        }
+                    } else {
+                        $photoktp = false;
+                        goto selesai2;
+                    }
+                }
+            } else {
+                $photoktp = false;
+            }
+
+
+            selesai2:
+            if (!is_null(json_decode($supir['photosim']))) {
+                foreach (json_decode($supir['photosim']) as $value) {
+                    if ($value != '') {
+                        if (!Storage::exists("supir/sim/$value")) {
+                            $photosim = false;
+                            goto selesai3;
+                        }
+                    } else {
+                        $photosim = false;
+                        goto selesai3;
+                    }
+                }
+            } else {
+                $photosim = false;
+            }
+
+            selesai3:
+
+            if (!is_null(json_decode($supir['photokk']))) {
+                foreach (json_decode($supir['photokk']) as $value) {
+                    if ($value != '') {
+                        if (!Storage::exists("supir/kk/$value")) {
+                            $photokk = false;
+                            goto selesai4;
+                        }
+                    } else {
+                        $photokk = false;
+                        goto selesai4;
+                    }
+                }
+            } else {
+                $photokk = false;
+            }
+
+            selesai4: 
+            
+            if (!is_null(json_decode($supir['photoskck']))) {
+                foreach (json_decode($supir['photoskck']) as $value) {
+                    if ($value != '') {
+                        if (!Storage::exists("supir/skck/$value")) {
+                            $photoskck = false;
+                            goto selesai5;
+                        }
+                    } else {
+                        $photoskck = false;
+                        goto selesai5;
+                    }
+                }
+            } else {
+                $photoskck = false;
+            }
+
+            selesai5:  
+
+            if (!is_null(json_decode($supir['pdfsuratperjanjian']))) {
+                foreach (json_decode($supir['pdfsuratperjanjian']) as $value) {
+                    if ($value != '') {
+                        if (!Storage::exists("supir/SURATPERJANJIAN/$value")) {
+                            $pdfsuratperjanjian = false;
+                            goto selesai6;
+                        }
+                    } else {
+                        $pdfsuratperjanjian = false;
+                        goto selesai6;
+                    }
+                }
+            } else {
+                $pdfsuratperjanjian = false;
+            }
+
+            selesai6:              
+
+
+            $querygambar = db::table('approvalsupirgambar')->from(db::raw("approvalsupirgambar a with (readuncommitted)"))
+                ->select(
+                    'a.id'
+                )
+                ->whereRaw("a.tglbatas<'" . $date . "'")
+                ->where('a.namasupir', $supir['namasupir'])
+                ->where('a.noktp', $supir['noktp'])
+                ->where('a.statusapproval', $statusApp->id)
+                ->first();
+
+                // dd($querygambar->tosql());
+            if ($photosupir == true || $photokk == true  || $photoktp == true || $photosim == true || $photoskck == true || $pdfsuratperjanjian == true) {
+                if (isset($querygambar)) {
+
+                    DB::table($tempsupirgambar)->insert([
+                        'supir_id' => $supir['id'],
+                        'statusapprovalgambar' =>  $statusNonApp->id,
+                    ]);
+                }
+            }
+            $required = [
+                "namasupir" => $supir['namasupir'],
+                "alamat" => $supir['alamat'],
+                "namaalias" => $supir['namaalias'],
+                "kota" => $supir['kota'],
+                "telp" => $supir['telp'],
+                "nosim" => $supir['nosim'],
+                "noktp" => $supir['noktp'],
+                "nokk" => $supir['nokk'],
+                "tgllahir" => $supir['tgllahir'],
+            ];
+            $key = array_keys($required, null);
+            
+            $jumlah = count($key);
+
+            $queryketerangan = db::table('approvalsupirketerangan')->from(db::raw("approvalsupirketerangan a with (readuncommitted)"))
+                ->select(
+                    'a.id'
+                )
+                ->whereRaw("a.tglbatas<'" . $date . "'")
+                ->where('a.namasupir', $supir['namasupir'])
+                ->where('a.noktp', $supir['noktp'])
+                ->where('a.statusapproval', $statusApp->id)
+                ->first();
+
+            if ($jumlah != 0) {
+                if (isset($queryketerangan)) {
+
+                    DB::table($tempsupirketerangan)->insert([
+                        'supir_id' => $supir['id'],
+                        'statusapprovalketerangan' =>  $statusNonApp->id,
+                    ]);
+                }
+            }
+        }
+
+// dd('test');
+
+        $query1 = db::table($tempsupirgambar)->from(db::raw($tempsupirgambar . " a"))
+            ->select('a.supir_id')
+            ->orderby('a.supir_id','asc')
+            ->first();
+
+        $query2 = db::table($tempsupirketerangan)->from(db::raw($tempsupirketerangan . " a"))
+        ->select('a.supir_id')
+            ->orderby('a.supir_id','asc')
+            ->first();
+            // 
+            
+        if (isset($query1)) {
+            DB::table('supir')
+                ->from(db::raw("supir"))
+                ->join(db::raw($tempsupirgambar . " b"), 'supir.id', 'b.supir_id')
+                ->update([
+                    'statusaktif' => $statusNonAktif->id,
+                ]);
+        } else {
+            if (isset($query2)) {
+                DB::table('supir')
+                    ->from(db::raw("supir"))
+                    ->join(db::raw($tempsupirketerangan . " b"), 'supir.id', 'b.supir_id')
+                    ->update([
+                        'statusaktif' => $statusNonAktif->id,
+                    ]);
+            }
+        }
+    }
+
 }

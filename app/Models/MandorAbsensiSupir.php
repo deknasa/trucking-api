@@ -18,12 +18,20 @@ class MandorAbsensiSupir extends MyModel
 
     public function tableTemp($date = 'now', $deleted_id)
     {
+        $trado = new Trado();
+        $trado->RefreshTradoNonAktif();
         $mandorId = false;
         $isMandor = auth()->user()->isMandor();
         $isAdmin = auth()->user()->isAdmin();
 
         $userid = auth('api')->user()->id;
         $date = date('Y-m-d', strtotime($date));
+
+        // update trado jadi non aktif jika 
+
+
+
+        // 
 
         $tempabsensisupirheader = '##tempabsensisupirheader' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempabsensisupirheader, function ($table) {

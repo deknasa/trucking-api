@@ -64,7 +64,7 @@ class ValidasiTradoTanpaGambarGambar implements Rule
         }
 
         selesai1:
-        if (!is_null(json_decode($trado->photobpkb))) {
+        if (!is_null(json_decode($trado->photostnk))) {
             foreach (json_decode($trado->photostnk) as $value) {
                 if ($value != '') {
                     if (!Storage::exists("trado/stnk/$value")) {
@@ -82,7 +82,7 @@ class ValidasiTradoTanpaGambarGambar implements Rule
 
 
         selesai2:
-        if (!is_null(json_decode($trado->photobpkb))) {
+        if (!is_null(json_decode($trado->phototrado))) {
             foreach (json_decode($trado->phototrado) as $value) {
                 if ($value != '') {
                     if (!Storage::exists("trado/trado/$value")) {
