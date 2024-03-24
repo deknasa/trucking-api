@@ -2,11 +2,10 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\DateTutupBuku;
-use App\Rules\DestroyPenerimaanGiro;
+use App\Rules\validasiTglJatuhTempoSudahCair;
 use Illuminate\Foundation\Http\FormRequest;
 
-class DestroyPenerimaanGiroHeaderRequest extends FormRequest
+class UpdateTglJatuhTempoRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,11 +25,7 @@ class DestroyPenerimaanGiroHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            'id' => new DestroyPenerimaanGiro(),
-            'tglbukti' => [
-                'required','date_format:d-m-Y',
-                new DateTutupBuku()
-            ],
+            'detail' => new validasiTglJatuhTempoSudahCair()
         ];
     }
 }

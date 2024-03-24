@@ -11,6 +11,7 @@ use App\Http\Requests\StorePencairanGiroPengeluaranDetailRequest;
 use App\Models\PencairanGiroPengeluaranHeader;
 use App\Http\Requests\StorePencairanGiroPengeluaranHeaderRequest;
 use App\Http\Requests\UpdatePencairanGiroPengeluaranHeaderRequest;
+use App\Http\Requests\UpdateTglJatuhTempoRequest;
 use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
 use App\Models\Parameter;
@@ -25,7 +26,7 @@ use Illuminate\Support\Facades\DB;
 
 class PencairanGiroPengeluaranHeaderController extends Controller
 {
-      /**
+    /**
      * @ClassName 
      * PencairanGiroPengeluaranHeader
      * @Detail PencairanGiroPengeluaranDetailController
@@ -62,26 +63,28 @@ class PencairanGiroPengeluaranHeaderController extends Controller
      * @ClassName 
      * @Keterangan TAMBAH DATA
      */
-    public function store(StorePencairanGiroPengeluaranHeaderRequest $request): JsonResponse
+    public function store(StorePencairanGiroPengeluaranHeaderRequest $request)
     {
         DB::BeginTransaction();
         try {
+            $detail = json_decode($request->detail, true);
             $data = [
                 'periode' => $request->periode,
-                'pengeluaranId' => $request->pengeluaranId,
+                'status' => $request->status,
+                'nobukti' => $detail['nobukti'],
             ];
             $pencairanGiro = (new PencairanGiroPengeluaranHeader())->processStore($data);
-            $pencairanGiro->position = $this->getPosition($pencairanGiro, $pencairanGiro->getTable())->position;
-            if ($request->limit==0) {
-                $pencairanGiro->page = ceil($pencairanGiro->position / (10));
-            } else {
-                $pencairanGiro->page = ceil($pencairanGiro->position / ($request->limit ?? 10));
-            }
+            // $pencairanGiro->position = $this->getPosition($pencairanGiro, $pencairanGiro->getTable())->position;
+            // if ($request->limit==0) {
+            //     $pencairanGiro->page = ceil($pencairanGiro->position / (10));
+            // } else {
+            //     $pencairanGiro->page = ceil($pencairanGiro->position / ($request->limit ?? 10));
+            // }
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $pencairanGiro
-            ], 201);      
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -94,5 +97,38 @@ class PencairanGiroPengeluaranHeaderController extends Controller
      */
     public function report()
     {
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan EDIT TGL JATUH TEMPO
+     */
+    public function updateTglJatuhTempo(UpdateTglJatuhTempoRequest $request)
+    {
+        DB::BeginTransaction();
+        try {
+            $detail = json_decode($request->detail, true);
+            $data = [
+                'tgljatuhtempo' => $request->tgljatuhtempo,
+                'periode' => $request->periode,
+                'status' => $request->status,
+                'nobukti' => $detail['nobukti'],
+            ];
+            $pencairanGiro = (new PencairanGiroPengeluaranHeader())->processUpdateTglJatuhtempo($data);
+            // $pencairanGiro->position = $this->getPosition($pencairanGiro, $pencairanGiro->getTable())->position;
+            // if ($request->limit==0) {
+            //     $pencairanGiro->page = ceil($pencairanGiro->position / (10));
+            // } else {
+            //     $pencairanGiro->page = ceil($pencairanGiro->position / ($request->limit ?? 10));
+            // }
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $pencairanGiro
+            ], 200);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 }

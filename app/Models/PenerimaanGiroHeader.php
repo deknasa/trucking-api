@@ -29,7 +29,32 @@ class PenerimaanGiroHeader extends MyModel
     public function cekvalidasiaksi($nobukti)
     {
 
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
 
+
+        $penerimaan = DB::table('penerimaanheader')
+            ->from(
+                DB::raw("penerimaanheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti',
+                'a.penerimaangiro_nobukti'
+            )
+            ->where('a.penerimaangiro_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($penerimaan)) {
+            $keteranganerror = $error->cekKeteranganError('SCG') ?? '';
+
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pencairan giro <b>'. $penerimaan->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'kodeerror' => 'SCG'
+            ];
+            goto selesai;
+        }
+
+        
         $pelunasanPiutang = DB::table('pelunasanpiutangheader')
             ->from(
                 DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
@@ -41,33 +66,15 @@ class PenerimaanGiroHeader extends MyModel
             ->where('a.penerimaangiro_nobukti', '=', $nobukti)
             ->first();
         if (isset($pelunasanPiutang)) {
+            $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
+
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pelunasan Piutang ' . $pelunasanPiutang->nobukti,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pelunasan <b>'. $pelunasanPiutang->nobukti .'</b> <br> '.$keterangantambahanerror,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
         }
-
-        $penerimaan = DB::table('penerimaandetail')
-            ->from(
-                DB::raw("penerimaandetail as a with (readuncommitted)")
-            )
-            ->select(
-                'a.nobukti',
-                'a.penerimaangiro_nobukti'
-            )
-            ->where('a.penerimaangiro_nobukti', '=', $nobukti)
-            ->first();
-        if (isset($penerimaan)) {
-            $data = [
-                'kondisi' => true,
-                'keterangan' => 'Penerimaan Kas/Bank ' . $penerimaan->nobukti,
-                'kodeerror' => 'SATL'
-            ];
-            goto selesai;
-        }
-
 
         $data = [
             'kondisi' => false,
@@ -585,7 +592,7 @@ class PenerimaanGiroHeader extends MyModel
             $penerimaanGiroHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
             $penerimaanGiroHeader->nobukti = $nobukti;
         }
-        
+
         $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'])->first();
         $penerimaanGiroHeader->pelanggan_id = $data['pelanggan_id'] ?? '';
         $penerimaanGiroHeader->agen_id = $data['agen_id'] ?? '';

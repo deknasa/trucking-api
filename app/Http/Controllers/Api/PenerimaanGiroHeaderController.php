@@ -18,6 +18,7 @@ use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
 use App\Http\Requests\UpdatePenerimaanGiroHeaderRequest;
 use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\ValidasiApprovalPenerimaanGiroRequest;
+use App\Models\Error;
 use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
 use App\Models\Parameter;
@@ -281,7 +282,29 @@ class PenerimaanGiroHeaderController extends Controller
 
     public function cekvalidasi($id)
     {
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
         $pengeluaran = PenerimaanGiroHeader::find($id);
+        
+        if (!isset($pengeluaran)) {
+            $keteranganerror = $error->cekKeteranganError('DTA') ?? '';
+            $keterror='No Bukti <b>'. request()->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+            $data = [
+                'message' => $keterror,
+                'error' => true,
+                'kodeerror' => 'SAP',
+                'statuspesan' => 'warning',
+            ];
+    
+            return response($data);
+    
+        }
+        $nobukti=$pengeluaran->nobukti ?? '';
+        
+        $tgltutup=(new Parameter())->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup=date('Y-m-d', strtotime($tgltutup));        
+
         $status = $pengeluaran->statusapproval;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
@@ -291,40 +314,46 @@ class PenerimaanGiroHeaderController extends Controller
         $aksi = request()->aksi ?? '';
 
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
-            $query = DB::table('error')
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SAP')
-                ->get();
-            $keterangan = $query['0'];
+            $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
+            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah approve',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'message' => $keterror,
+                'error' => true,
+                'kodeerror' => 'SAP',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
-            $query = DB::table('error')
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SDC')
-                ->get();
-            $keterangan = $query['0'];
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah cetak',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'message' => $keterror,
+                'error' => true,
+                'kodeerror' => 'SDC',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
+        } else if ($tgltutup >= $pengeluaran->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);            
         } else {
 
             $data = [
+                'error' => false,
                 'message' => '',
-                'errors' => 'belum approve',
-                'kodestatus' => '0',
-                'kodenobukti' => '1'
+                'kodeerror' => '',
+                'statuspesan' => 'success',
             ];
 
             return response($data);
@@ -337,29 +366,21 @@ class PenerimaanGiroHeaderController extends Controller
         $nobukti = PenerimaanGiroHeader::from(DB::raw("penerimaangiroheader"))->where('id', $id)->first();
         $cekdata = $penerimaanGiro->cekvalidasiaksi($nobukti->nobukti);
         if ($cekdata['kondisi'] == true) {
-            $query = DB::table('error')
-                ->select(
-                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
-                )
-                ->where('kodeerror', '=', $cekdata['kodeerror'])
-                ->get();
-            $keterangan = $query['0'];
 
             $data = [
-                'status' => false,
-                'message' => $keterangan,
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
+                'error' => true,
+                'message' => $cekdata['keterangan'] ?? '',
+                'statuspesan' => 'warning',
+                'kodeerror' => $cekdata['kodeerror'],
             ];
 
             return response($data);
         } else {
 
             $data = [
-                'status' => false,
+                'error' => false,
                 'message' => '',
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
+                'statuspesan' => 'success',
             ];
 
             return response($data);

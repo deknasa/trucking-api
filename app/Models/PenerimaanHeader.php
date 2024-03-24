@@ -242,6 +242,29 @@ class PenerimaanHeader extends MyModel
             goto selesai;
         }
 
+        $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
+        $cekGiro = DB::table('penerimaanheader')
+            ->from(
+                DB::raw("penerimaanheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti',
+                'a.penerimaangiro_nobukti'
+            )
+            ->where('a.nobukti', '=', $nobukti)
+            ->where('a.penerimaangiro_nobukti', '!=', '')
+            ->first();
+        if (isset($cekGiro)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti GIRO <b>'. $cekGiro->penerimaangiro_nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'pemutihan supir ' . $pemutihanSupir->nobukti,
+                'kodeerror' => 'TDT',
+                'editcoa' => false
+            ];
+            goto selesai;
+        }
+
         $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
         $rekap = DB::table('rekappenerimaandetail')
             ->from(

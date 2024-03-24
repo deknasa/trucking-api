@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\AlatBayar;
 use App\Rules\DateTutupBuku;
+use App\Rules\validasiDestroyPindahBuku;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 
@@ -34,6 +35,7 @@ class UpdatePindahBukuRequest extends FormRequest
             ];
         }
         $rules = [
+            'id' => new validasiDestroyPindahBuku(),
             'tglbukti' => [
                 'required','date_format:d-m-Y',
                 'before_or_equal:' . date('d-m-Y'),

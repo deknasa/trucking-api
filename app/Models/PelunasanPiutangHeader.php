@@ -134,7 +134,7 @@ class PelunasanPiutangHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $pelunasanPiutang->penerimaan_nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $pelunasanPiutang->penerimaan_nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Approval Jurnal ' . $pelunasanPiutang->penerimaan_nobukti,
                 'kodeerror' => 'SAPP'
             ];
@@ -157,14 +157,38 @@ class PelunasanPiutangHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $pelunasanPiutang->penerimaangiro_nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $pelunasanPiutang->penerimaangiro_nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Approval Jurnal ' . $pelunasanPiutang->penerimaangiro_nobukti,
                 'kodeerror' => 'SAPP'
             ];
             goto selesai;
         }
 
-        $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';        
+
+        $pelunasanPiutang = DB::table('pelunasanpiutangheader')
+            ->from(
+                DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.penerimaangiro_nobukti',
+                'a.nobukti'
+            )
+            ->join(DB::raw("penerimaanheader b with (readuncommitted)"), 'a.penerimaangiro_nobukti', 'b.penerimaangiro_nobukti')
+            ->where('a.penerimaangiro_nobukti', '=', $pelunasan->penerimaangiro_nobukti)
+            ->first();
+        if (isset($pelunasanPiutang)) {
+
+            $keteranganerror = $error->cekKeteranganError('SCG') ?? '';
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'No Bukti <b>' . $pelunasanPiutang->penerimaangiro_nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror,
+                // 'keterangan' => 'Approval Jurnal ' . $pelunasanPiutang->penerimaangiro_nobukti,
+                'kodeerror' => 'SCG'
+            ];
+            goto selesai;
+        }
+
+        $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
         $pelunasanPiutang = DB::table('pelunasanpiutangheader')
             ->from(
                 DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
@@ -179,14 +203,14 @@ class PelunasanPiutangHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $pelunasanPiutang->notadebet_nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $pelunasanPiutang->notadebet_nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Approval Jurnal ' . $pelunasanPiutang->notadebet_nobukti,
                 'kodeerror' => 'SAPP'
             ];
             goto selesai;
         }
 
-        $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';        
+        $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
 
         $pelunasanPiutang = DB::table('pelunasanpiutangheader')
             ->from(
@@ -202,7 +226,7 @@ class PelunasanPiutangHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $pelunasanPiutang->notakredit_nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $pelunasanPiutang->notakredit_nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Approval Jurnal ' . $pelunasanPiutang->notakredit_nobukti,
                 'kodeerror' => 'SAPP'
             ];
@@ -334,8 +358,8 @@ class PelunasanPiutangHeader extends MyModel
         $data = DB::table($temp)
             ->select(DB::raw("row_number() Over(Order By $temp.piutang_nobukti) as id,$temp.pelunasanpiutang_id,$temp.piutang_nobukti as nobukti,$temp.tglbukti as tglbukti_piutang,$temp.invoice_nobukti,$temp.nominal as bayar,$temp.keterangan,potongan, $temp.coapotongan,$temp.keteranganpotongan,$temp.nominallebihbayar,$temp.nominalpiutang as nominal,$temp.sisa, $temp.statusnotadebet, $temp.statusnotakredit,
             (case when isnull(c.nobukti,'')<>'' or isnull(b.postingdari,'')='INVOICE' then 'UTAMA' else 'TAMBAHAN' end) as jenisinvoice"))
-            ->join(db::raw("piutangheader b with (readuncommitted)"),'b.nobukti',$temp .".piutang_nobukti")
-            ->leftjoin(db::raw("invoiceheader c with (readuncommitted)"),'b.invoice_nobukti',"c.nobukti")
+            ->join(db::raw("piutangheader b with (readuncommitted)"), 'b.nobukti', $temp . ".piutang_nobukti")
+            ->leftjoin(db::raw("invoiceheader c with (readuncommitted)"), 'b.invoice_nobukti', "c.nobukti")
             ->get();
 
         return $data;
@@ -986,7 +1010,7 @@ class PelunasanPiutangHeader extends MyModel
             $pelunasanPiutangHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
 
 
-         
+
             if ($data['notadebet_nobukti']) {
                 $detailFifo = [
                     'nominal' => $nominal,
@@ -998,7 +1022,6 @@ class PelunasanPiutangHeader extends MyModel
                 // dd($detailFifo);
                 (new NotaDebetFifo())->processStoreNotFifo($detailFifo);
             }
-
         }
         $pelunasanPiutangHeader->save();
 
@@ -1135,7 +1158,7 @@ class PelunasanPiutangHeader extends MyModel
         }
 
         // dd($getcoadebetnk);
-        $nominal=0;
+        $nominal = 0;
         for ($i = 0; $i < count($data['piutang_id']); $i++) {
             $piutang = PiutangHeader::where('nobukti', $data['piutang_nobukti'][$i])->first();
 
@@ -1282,7 +1305,7 @@ class PelunasanPiutangHeader extends MyModel
                 ];
 
                 // dd($notaKreditRequest);
-                
+
                 $newNotaKredit = new NotaKreditHeader();
                 $newNotaKredit = $newNotaKredit->findAll($get->id);
                 $getNotaKredit = (new NotaKreditHeader())->processUpdate($newNotaKredit, $notaKreditRequest);
@@ -1319,73 +1342,73 @@ class PelunasanPiutangHeader extends MyModel
                 $pelunasanPiutangHeader->notakredit_nobukti = $notaKreditHeader->nobukti;
             }
         }
-        
-        $statuspelunasan=$data['statuspelunasan'] ?? 0 ;
+
+        $statuspelunasan = $data['statuspelunasan'] ?? 0;
         $parameter = new Parameter();
-        $idstatuspelunasan=$parameter->cekId('PELUNASAN','PELUNASAN','NOTA DEBET') ?? 0;
+        $idstatuspelunasan = $parameter->cekId('PELUNASAN', 'PELUNASAN', 'NOTA DEBET') ?? 0;
 
-if ($idstatuspelunasan!=$statuspelunasan) {
-        if ($pelunasanPiutangHeader->notadebet_nobukti != '-') {
-            if ($notadebet) {
-                $get = NotaDebetHeader::from(DB::raw("notadebetheader with (readuncommitted)"))
-                    ->select('id')
-                    ->where('nobukti', $pelunasanPiutangHeader->notadebet_nobukti)->first();
-                $notaDebetRequest = [
-                    'tanpaprosesnobukti' => 1,
-                    'tglbukti' => $pelunasanPiutangHeader->tglbukti,
-                    'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
-                    'agen_id' => $data['agen_id'],
-                    'bank_id' => $pelunasanPiutangHeader->bank_id,
-                    'alatbayar_id' => $pelunasanPiutangHeader->alatbayar_id,
-                    'agen' => $data['agen'],
-                    'postingdari' => 'EDIT PELUNASAN PIUTANG',
-                    'tgllunas' => $pelunasanPiutangHeader->tglbukti,
-                    'nowarkat' => $data['nowarkat'] ?? '',
-                    'invoice_nobukti' => $invoiceNobuktiND,
-                    'nominalpiutang' => $nominalPiutangND,
-                    'nominal' => $nominalBayarND,
-                    'nominallebihbayar' => $nominalLebihBayar,
-                    'coadebet' => $coaDebetNotaDebet,
-                    'coakredit' => $coaKreditNotaDebet,
-                    'cekcoakredit' => $memoNotaDebetCoa['JURNAL']
+        if ($idstatuspelunasan != $statuspelunasan) {
+            if ($pelunasanPiutangHeader->notadebet_nobukti != '-') {
+                if ($notadebet) {
+                    $get = NotaDebetHeader::from(DB::raw("notadebetheader with (readuncommitted)"))
+                        ->select('id')
+                        ->where('nobukti', $pelunasanPiutangHeader->notadebet_nobukti)->first();
+                    $notaDebetRequest = [
+                        'tanpaprosesnobukti' => 1,
+                        'tglbukti' => $pelunasanPiutangHeader->tglbukti,
+                        'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
+                        'agen_id' => $data['agen_id'],
+                        'bank_id' => $pelunasanPiutangHeader->bank_id,
+                        'alatbayar_id' => $pelunasanPiutangHeader->alatbayar_id,
+                        'agen' => $data['agen'],
+                        'postingdari' => 'EDIT PELUNASAN PIUTANG',
+                        'tgllunas' => $pelunasanPiutangHeader->tglbukti,
+                        'nowarkat' => $data['nowarkat'] ?? '',
+                        'invoice_nobukti' => $invoiceNobuktiND,
+                        'nominalpiutang' => $nominalPiutangND,
+                        'nominal' => $nominalBayarND,
+                        'nominallebihbayar' => $nominalLebihBayar,
+                        'coadebet' => $coaDebetNotaDebet,
+                        'coakredit' => $coaKreditNotaDebet,
+                        'cekcoakredit' => $memoNotaDebetCoa['JURNAL']
 
-                ];
+                    ];
 
-                $newNotaDebet = new NotaDebetHeader();
-                $newNotaDebet = $newNotaDebet->findAll($get->id);
-                $getNotaDebet = (new NotaDebetHeader())->processUpdate($newNotaDebet, $notaDebetRequest);
-                $pelunasanPiutangHeader->notadebet_nobukti = $getNotaDebet->nobukti;
+                    $newNotaDebet = new NotaDebetHeader();
+                    $newNotaDebet = $newNotaDebet->findAll($get->id);
+                    $getNotaDebet = (new NotaDebetHeader())->processUpdate($newNotaDebet, $notaDebetRequest);
+                    $pelunasanPiutangHeader->notadebet_nobukti = $getNotaDebet->nobukti;
+                } else {
+                    $getNotaDebet = NotaDebetHeader::from(DB::raw("notadebetheader with (readuncommitted)"))->where('nobukti', $pelunasanPiutangHeader->notadebet_nobukti)->first();
+                    (new NotaDebetHeader())->processDestroy($getNotaDebet->id, 'DELETE PELUNASAN PIUTANG');
+                    $pelunasanPiutangHeader->notadebet_nobukti = '-';
+                }
             } else {
-                $getNotaDebet = NotaDebetHeader::from(DB::raw("notadebetheader with (readuncommitted)"))->where('nobukti', $pelunasanPiutangHeader->notadebet_nobukti)->first();
-                (new NotaDebetHeader())->processDestroy($getNotaDebet->id, 'DELETE PELUNASAN PIUTANG');
-                $pelunasanPiutangHeader->notadebet_nobukti = '-';
-            }
-        } else {
-            if ($notadebet) {
-                $notaDebetRequest = [
-                    'tanpaprosesnobukti' => 1,
-                    'tglbukti' => $pelunasanPiutangHeader->tglbukti,
-                    'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
-                    'agen_id' => $data['agen_id'],
-                    'bank_id' => $pelunasanPiutangHeader->bank_id,
-                    'alatbayar_id' => $pelunasanPiutangHeader->alatbayar_id,
-                    'agen' => $data['agen'],
-                    'postingdari' => 'EDIT PELUNASAN PIUTANG',
-                    'tgllunas' => $pelunasanPiutangHeader->tglbukti,
-                    'nowarkat' => $data['nowarkat'] ?? '',
-                    'invoice_nobukti' => $invoiceNobuktiND,
-                    'nominalpiutang' => $nominalPiutangND,
-                    'nominal' => $nominalBayarND,
-                    'nominallebihbayar' => $nominalLebihBayar,
-                    'coadebet' => $coaDebetNotaDebet,
-                    'coakredit' => $coaKreditNotaDebet,
-                    'cekcoakredit' => $memoNotaDebetCoa['JURNAL']
-                ];
-                $notaDebetheader = (new NotaDebetHeader())->processStore($notaDebetRequest);
-                $pelunasanPiutangHeader->notadebet_nobukti = $notaDebetheader->nobukti;
+                if ($notadebet) {
+                    $notaDebetRequest = [
+                        'tanpaprosesnobukti' => 1,
+                        'tglbukti' => $pelunasanPiutangHeader->tglbukti,
+                        'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
+                        'agen_id' => $data['agen_id'],
+                        'bank_id' => $pelunasanPiutangHeader->bank_id,
+                        'alatbayar_id' => $pelunasanPiutangHeader->alatbayar_id,
+                        'agen' => $data['agen'],
+                        'postingdari' => 'EDIT PELUNASAN PIUTANG',
+                        'tgllunas' => $pelunasanPiutangHeader->tglbukti,
+                        'nowarkat' => $data['nowarkat'] ?? '',
+                        'invoice_nobukti' => $invoiceNobuktiND,
+                        'nominalpiutang' => $nominalPiutangND,
+                        'nominal' => $nominalBayarND,
+                        'nominallebihbayar' => $nominalLebihBayar,
+                        'coadebet' => $coaDebetNotaDebet,
+                        'coakredit' => $coaKreditNotaDebet,
+                        'cekcoakredit' => $memoNotaDebetCoa['JURNAL']
+                    ];
+                    $notaDebetheader = (new NotaDebetHeader())->processStore($notaDebetRequest);
+                    $pelunasanPiutangHeader->notadebet_nobukti = $notaDebetheader->nobukti;
+                }
             }
         }
-    }
 
         if ($pelunasanPiutangHeader->pengeluaran_nobukti != '-' && $pelunasanPiutangHeader->pengeluaran_nobukti != null) {
             $get = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
@@ -1518,7 +1541,7 @@ if ($idstatuspelunasan!=$statuspelunasan) {
 
 
             if ($data['notadebet_nobukti']) {
-                db::table('notadebetfifo')->where('pelunasanpiutang_nobukti',$pelunasanPiutangHeader->nobukti)->delete();
+                db::table('notadebetfifo')->where('pelunasanpiutang_nobukti', $pelunasanPiutangHeader->nobukti)->delete();
                 $detailFifo = [
                     'nominal' => $nominal,
                     'agen_id' => $data['agen_id'],
@@ -1528,7 +1551,6 @@ if ($idstatuspelunasan!=$statuspelunasan) {
                 ];
                 (new NotaDebetFifo())->processStoreNotFifo($detailFifo);
             }
-
         }
 
 
@@ -1574,7 +1596,7 @@ if ($idstatuspelunasan!=$statuspelunasan) {
             ->whereRaw("a.id=" . $id)
             ->first();
 
-        $nobuktipelunasan=$querypelunasanheader->nobukti ?? '';
+        $nobuktipelunasan = $querypelunasanheader->nobukti ?? '';
 
         db::table('notadebetfifo')->where('pelunasanpiutang_nobukti', $nobuktipelunasan)->delete();
 
@@ -1667,20 +1689,20 @@ if ($idstatuspelunasan!=$statuspelunasan) {
             }
         }
 
-        $statuspelunasan=$data['statuspelunasan'] ?? 0 ;
+        $statuspelunasan = $data['statuspelunasan'] ?? 0;
         $parameter = new Parameter();
-        $idstatuspelunasan=$parameter->cekId('PELUNASAN','PELUNASAN','NOTA DEBET') ?? 0;
+        $idstatuspelunasan = $parameter->cekId('PELUNASAN', 'PELUNASAN', 'NOTA DEBET') ?? 0;
 
-if ($idstatuspelunasan!=$statuspelunasan) {
-        if ($pelunasanPiutangHeader->notadebet_nobukti != '-') {
-            $getNotaDebet = NotaDebetHeader::from(DB::raw("notadebetheader with (readuncommitted)"))->where('nobukti', $pelunasanPiutangHeader->notadebet_nobukti)->first();
-            if (isset($getNotaDebet)) {
-                if ($getNotaDebet != null) {
-                    (new NotaDebetHeader())->processDestroy($getNotaDebet->id, $postingDari);
+        if ($idstatuspelunasan != $statuspelunasan) {
+            if ($pelunasanPiutangHeader->notadebet_nobukti != '-') {
+                $getNotaDebet = NotaDebetHeader::from(DB::raw("notadebetheader with (readuncommitted)"))->where('nobukti', $pelunasanPiutangHeader->notadebet_nobukti)->first();
+                if (isset($getNotaDebet)) {
+                    if ($getNotaDebet != null) {
+                        (new NotaDebetHeader())->processDestroy($getNotaDebet->id, $postingDari);
+                    }
                 }
             }
         }
-    }
         if ($pelunasanPiutangHeader->pengeluaran_nobukti != '-' && $pelunasanPiutangHeader->pengeluaran_nobukti != null) {
             $getPengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $pelunasanPiutangHeader->pengeluaran_nobukti)->first();
             if ($getPengeluaran != null) {
