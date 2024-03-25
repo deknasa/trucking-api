@@ -23,6 +23,7 @@ use App\Http\Requests\StoreKasGantungHeaderRequest;
 use App\Http\Requests\StoreAbsensiSupirDetailRequest;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
+use App\Http\Requests\MandorAbsensiSupirAllSupirSerapRequest;
 
 class MandorAbsensiSupirController extends Controller
 {
@@ -47,7 +48,7 @@ class MandorAbsensiSupirController extends Controller
      * @ClassName 
      * @Keterangan TAMBAH DATA
      */
-    public function store(MandorAbsensiSupirAllRequest $request)
+    public function store(MandorAbsensiSupirAllRequest $request,MandorAbsensiSupirAllSupirSerapRequest $request1)
     {
         $data = json_decode(request()->data, true);
         // dd('test');
