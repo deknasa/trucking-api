@@ -1279,21 +1279,9 @@ class MandorAbsensiSupir extends MyModel
             goto selesai;
         }
 
-        // cek status supir serap
-        $tempstatusnonsupirserap = '##tempstatusnonsupirserap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($tempstatusnonsupirserap, function ($table) {
-            $table->integer('id');
-            $table->string('keterangan', 50)->nullable();
-        });
+       
 
-        // ada
-        // $queryparameter=db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
-        // ->select (
-        //     'a.text as id',
-        //     'a.subgrp as keterangan'
-        // )
-        // ->where('a.grp','ABSENSI SUPIR SERAP')
-        // ->orderby('a.text','asc');
+
         // 
 
         $AbsensiSupirHeader = AbsensiSupirHeader::where('tglbukti', date('Y-m-d', strtotime($data['tglbukti'])))->first();
