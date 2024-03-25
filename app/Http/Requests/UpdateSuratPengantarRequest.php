@@ -37,6 +37,7 @@ use App\Rules\ValidasiReminderOli;
 use App\Rules\ValidasiReminderOliGardan;
 use App\Rules\ValidasiReminderOliPersneling;
 use App\Rules\ValidasiReminderSaringanHawa;
+use App\Rules\validasiStatusContainerLongtrip;
 use App\Rules\ValidasiTradoTripGudangSama;
 use App\Rules\ValidasiTripGudangSama;
 use Illuminate\Support\Facades\Schema;
@@ -114,6 +115,17 @@ class UpdateSuratPengantarRequest extends FormRequest
             }
         }
 
+        $ruleTripAsal = Rule::requiredIf(function () {
+            $getGudangSama = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GUDANG SAMA')->where('text', 'GUDANG SAMA')->first();
+       
+            if (request()->statusgudangsama ==  $getGudangSama->id) {
+                if((request()->statuscontainer_id==1 && request()->jenisorder_id == 1) || (request()->statuscontainer_id==1 && request()->jenisorder_id == 4)){
+                    return true;
+                }
+            }
+            return false;
+        });
+
         $rules = [
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
@@ -124,9 +136,9 @@ class UpdateSuratPengantarRequest extends FormRequest
             'nobukti' => [
                 Rule::in($query->nobukti),
             ],
-            "nobukti_tripasal" => 'required_if:statusgudangsama,=,' . $getGudangSama->id,                   
+            "nobukti_tripasal" => $ruleTripAsal,                   
             // "lokasibongkarmuat" => "required",
-            'statuslongtrip' => ['required', Rule::in($statuslongtrip)],
+            'statuslongtrip' => ['required', Rule::in($statuslongtrip), new validasiStatusContainerLongtrip()],
             'statusperalihan' => ['required', Rule::in($statusperalihan)],
             'statusbatalmuat' => ['required', Rule::in($statusbatalmuat)],
             'statusgudangsama' => ['required', Rule::in($statusgudangsama),new ValidasiLongtripGudangsama()],

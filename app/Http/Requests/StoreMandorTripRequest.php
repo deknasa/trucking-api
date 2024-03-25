@@ -49,6 +49,7 @@ use App\Rules\ValidasiJenisOrderGudangsama;
 use App\Rules\ValidasiJenisOrderLongtrip;
 use App\Rules\ValidasiLongtripGudangsama;
 use App\Rules\ValidasiPelangganTripGudangSama;
+use App\Rules\validasiStatusContainerLongtrip;
 use App\Rules\ValidasiTradoTripGudangSama;
 use App\Rules\ValidasiTripGudangSama;
 
@@ -445,6 +446,18 @@ class StoreMandorTripRequest extends FormRequest
         }
 
         $rulesTarif_id = [];
+        $ruleTripAsal = Rule::requiredIf(function () {
+            $getGudangSama = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GUDANG SAMA')->where('text', 'GUDANG SAMA')->first();
+       
+            if (request()->statusgudangsama ==  $getGudangSama->id) {
+                if((request()->statuscontainer_id==1 && request()->jenisorder_id == 1) || (request()->statuscontainer_id==1 && request()->jenisorder_id == 4)){
+                    return true;
+                }
+            }
+            return false;
+        });
+
+
         $rulesGandengan_id = [];
         if ((request()->dari_id == 1 && request()->sampai_id == 103) || (request()->dari_id == 103 && request()->sampai_id == 1) || (request()->statuslongtrip == 65)) {
 
@@ -458,7 +471,7 @@ class StoreMandorTripRequest extends FormRequest
                         'required', 'date_format:d-m-Y',
                         new DateApprovalQuota()
                     ],
-                    "nobukti_tripasal" => 'required_if:statusgudangsama,=,' . $getGudangSama->id,
+                    "nobukti_tripasal" => $ruleTripAsal,
                     "agen" => ["required", new ValidasiAgenTripGudangSama($dataTripAsal)],
                     "container" => ["required", new ValidasiContainerTripGudangSama($dataTripAsal)],
                     "dari" => ["required"],
@@ -468,7 +481,7 @@ class StoreMandorTripRequest extends FormRequest
                     "sampai" => ["required"],
                     "statuscontainer" => "required",
                     "statusgudangsama" => ["required", new ValidasiLongtripGudangsama()],
-                    "statuslongtrip" => ["required"],
+                    "statuslongtrip" => ["required", new validasiStatusContainerLongtrip()],
                     "statuslangsir" => "required",
                     // "lokasibongkarmuat" => "required",
                     "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
@@ -492,7 +505,7 @@ class StoreMandorTripRequest extends FormRequest
                         'required', 'date_format:d-m-Y',
                         new DateApprovalQuota()
                     ],
-                    "nobukti_tripasal" => 'required_if:statusgudangsama,=,' . $getGudangSama->id,
+                    "nobukti_tripasal" => $ruleTripAsal,
                     "agen" => ["required", new ValidasiAgenTripGudangSama($dataTripAsal)],
                     "container" => ["required", new ValidasiContainerTripGudangSama($dataTripAsal)],
                     "dari" => ["required"],
@@ -503,7 +516,7 @@ class StoreMandorTripRequest extends FormRequest
                     "sampai" => ["required"],
                     "statuscontainer" => "required",
                     "statusgudangsama" => ["required", new ValidasiLongtripGudangsama()],
-                    "statuslongtrip" => ["required"],
+                    "statuslongtrip" => ["required", new validasiStatusContainerLongtrip()],
                     "statuslangsir" => "required",
                     // "lokasibongkarmuat" => "required",
                     "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
@@ -533,7 +546,7 @@ class StoreMandorTripRequest extends FormRequest
                         'required', 'date_format:d-m-Y',
                         new DateApprovalQuota()
                     ],
-                    "nobukti_tripasal" => 'required_if:statusgudangsama,=,' . $getGudangSama->id,
+                    "nobukti_tripasal" => $ruleTripAsal,
                     "agen" => ["required", new ValidasiAgenTripGudangSama($dataTripAsal)],
                     "tarifrincian" => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiExistOmsetTarif(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
                     "container" => ["required", new ValidasiContainerTripGudangSama($dataTripAsal)],
@@ -544,7 +557,7 @@ class StoreMandorTripRequest extends FormRequest
                     "sampai" => ["required"],
                     "statuscontainer" => "required",
                     "statusgudangsama" => ["required", new ValidasiLongtripGudangsama()],
-                    "statuslongtrip" => ["required"],
+                    "statuslongtrip" => ["required", new validasiStatusContainerLongtrip()],
                     "statuslangsir" => "required",
                     // "lokasibongkarmuat" => "required",
                     "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
@@ -568,7 +581,7 @@ class StoreMandorTripRequest extends FormRequest
                         'required', 'date_format:d-m-Y',
                         new DateApprovalQuota()
                     ],
-                    "nobukti_tripasal" => 'required_if:statusgudangsama,=,' . $getGudangSama->id,
+                    "nobukti_tripasal" => $ruleTripAsal,
                     "agen" => ["required", new ValidasiAgenTripGudangSama($dataTripAsal)],
                     "tarifrincian" => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiExistOmsetTarif(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
                     "container" => ["required", new ValidasiContainerTripGudangSama($dataTripAsal)],
@@ -580,7 +593,7 @@ class StoreMandorTripRequest extends FormRequest
                     "sampai" => ["required"],
                     "statuscontainer" => "required",
                     "statusgudangsama" => ["required", new ValidasiLongtripGudangsama()],
-                    "statuslongtrip" => ["required"],
+                    "statuslongtrip" => ["required", new validasiStatusContainerLongtrip()],
                     "statuslangsir" => "required",
                     // "lokasibongkarmuat" => "required",
                     "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],

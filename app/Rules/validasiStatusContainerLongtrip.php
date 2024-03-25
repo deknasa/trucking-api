@@ -2,10 +2,9 @@
 
 namespace App\Rules;
 
-use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Contracts\Validation\Rule;
 
-class ValidasiJenisOrderGudangsama implements Rule
+class validasiStatusContainerLongtrip implements Rule
 {
     /**
      * Create a new rule instance.
@@ -26,15 +25,8 @@ class ValidasiJenisOrderGudangsama implements Rule
      */
     public function passes($attribute, $value)
     {
-        
-        $jenisorder_id = request()->jenisorder_id;
-        $statusgudangsama = request()->statusgudangsama;
-        $statuscontainer_id = request()->statuscontainer_id;
-        if($statusgudangsama == 204){
-            if($jenisorder_id != 1 && $jenisorder_id != 4){
-                return false;
-            }
-            if($statuscontainer_id == 3){
+        if(request()->statuscontainer_id != ''){
+            if(request()->statuscontainer_id == 3){
                 return false;
             }
         }
@@ -49,6 +41,6 @@ class ValidasiJenisOrderGudangsama implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('JOGS')->keterangan. ' FULL';
+        return 'TIDAK BOLEH FULL/EMPTY';
     }
 }
