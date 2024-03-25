@@ -20,6 +20,27 @@ class JobTrucking extends MyModel
         // dump(request()->container_id);
         // dd(request()->jenisorder_id);
 
+        $container_id=request()->container_id ?? 0;
+        $jenisorder_id=request()->jenisorder_id ?? 0;
+        $gandengan_id=request()->gandengan_id ?? 0;
+        $pelanggan_id=request()->pelanggan_id ?? 0;
+        if (request()->tarif_id=='undefined') {
+            $tarif_id=0;
+        } else  {
+            $tarif_id=request()->tarif_id ?? 0;
+        }
+        
+        $trado_id=request()->trado_id ?? 0;
+        $statuscontainer_id=request()->statuscontainer_id ?? 0;
+        $tripasal=request()->tripasal ?? '';
+        
+        
+
+        $parameter = new Parameter();
+        $statusfullempty = $parameter->cekText('STATUS CONTAINER', 'STATUS CONTAINER FULL EMPTY') ?? 0;
+        	
+
+
         $edit = request()->edit ?? false;
 
         $statusgerobak = DB::table('parameter')->from(
@@ -55,7 +76,7 @@ class JobTrucking extends MyModel
             ->first();
         $isPulangLongtrip = request()->isPulangLongtrip ?? '';
         if ($isPulangLongtrip == true) {
-            if (request()->tripasal != '') {
+            if ($tripasal != '') {
                 goto pulanglongtrip;
             }
         }
@@ -85,7 +106,7 @@ class JobTrucking extends MyModel
             ->select(
                 'a.keterangan'
             )
-            ->where('a.id', '=', request()->trado_id)
+            ->where('a.id', '=', $trado_id)
             ->where('a.statusgerobak', '=', $statusgerobak->id)
             ->first();
 
@@ -111,6 +132,11 @@ class JobTrucking extends MyModel
         }
         if (isset($query)) {
 
+            
+
+            
+
+           
 
             $queryjob = DB::table('suratpengantar')->from(
                 DB::raw("suratpengantar as a with(readuncommitted)")
@@ -119,15 +145,15 @@ class JobTrucking extends MyModel
                     'a.jobtrucking'
                 )
                 ->join(DB::raw("orderantrucking as b with(readuncommitted)"), 'a.jobtrucking', 'b.nobukti')
-                ->where('a.container_id', '=', request()->container_id)
-                ->where('a.jenisorder_id', '=', request()->jenisorder_id)
-                ->where('a.gandengan_id', '=', request()->gandengan_id)
-                ->where('a.pelanggan_id', '=', request()->pelanggan_id)
-                ->where('a.tarif_id', '=', request()->tarif_id)
+                ->where('a.container_id', '=', $container_id)
+                ->where('a.jenisorder_id', '=', $jenisorder_id)
+                ->where('a.gandengan_id', '=', $gandengan_id)
+                ->where('a.pelanggan_id', '=', $pelanggan_id)
+                ->where('a.tarif_id', '=', $tarif_id)
                 ->whereRaw("isnull(a.jobtrucking,'')<>''")
-                ->whereRaw("a.sampai_id=" . $pelabuhan->text . " and isnull(B.statusapprovalbukatrip,4)=4");
+                ->whereRaw("a.sampai_id=" . $pelabuhan->text . " and isnull(B.statusapprovalbukatrip,4)=4")
+                ->whereRaw("a.statuscontainer_id not in(" . $statusfullempty . ")");
             // ->where('a.sampai_id', '=', $pelabuhan->text);
-
 
             // dd($queryjob->get());
 
@@ -161,7 +187,9 @@ class JobTrucking extends MyModel
                 ->leftjoin(DB::raw("trado as c with(readuncommitted)"), 'a.trado_id', 'c.id')
                 ->leftjoin(DB::raw("kota as kotadr with(readuncommitted)"), 'a.dari_id', 'kotadr.id')
                 ->leftjoin(DB::raw("kota as kotasd with(readuncommitted)"), 'a.sampai_id', 'kotasd.id')
-                ->leftjoin(DB::raw($tempselesai . " as d"), 'a.jobtrucking', 'd.jobtrucking');
+                ->leftjoin(DB::raw($tempselesai . " as d"), 'a.jobtrucking', 'd.jobtrucking')
+                ->whereRaw("a.statuscontainer_id not in(" . $statusfullempty . ")");      
+
 
 
             DB::table($temprekap)->insertUsing([
@@ -244,17 +272,16 @@ class JobTrucking extends MyModel
                 ->leftjoin(DB::raw("kota as kotasd with(readuncommitted)"), 'a.sampai_id', 'kotasd.id')
                 ->leftjoin(DB::raw($tempselesai . " as d"), 'a.jobtrucking', 'd.jobtrucking')
 
-                ->where('a.container_id', '=', request()->container_id)
-                ->where('a.jenisorder_id', '=', request()->jenisorder_id)
-                ->where('a.gandengan_id', '=', request()->gandengan_id)
-                ->where('a.pelanggan_id', '=', request()->pelanggan_id)
-                ->where('a.tarif_id', '=', request()->tarif_id);
+                ->where('a.container_id', '=', $container_id)
+                ->where('a.jenisorder_id', '=', $jenisorder_id)
+                ->where('a.gandengan_id', '=', $gandengan_id)
+                ->where('a.pelanggan_id', '=', $pelanggan_id)
+                ->where('a.tarif_id', '=', $tarif_id);
 
             if ($edit == true) {
                 $querydata->where('a.dari_id', 1);
             }
         } else {
-            // dd('test');
             tidakgandengan:
             $queryjob = DB::table('suratpengantar')->from(
                 DB::raw("suratpengantar as a with(readuncommitted)")
@@ -262,11 +289,12 @@ class JobTrucking extends MyModel
                 ->select(
                     'a.jobtrucking'
                 )
-                ->where('a.container_id', '=', request()->container_id)
-                ->where('a.jenisorder_id', '=', request()->jenisorder_id)
-                ->where('a.pelanggan_id', '=', request()->pelanggan_id)
-                ->where('a.tarif_id', '=', request()->tarif_id)
+                ->where('a.container_id', '=', $container_id)
+                ->where('a.jenisorder_id', '=', $jenisorder_id)
+                ->where('a.pelanggan_id', '=', $pelanggan_id)
+                ->where('a.tarif_id', '=', $tarif_id)
                 ->whereRaw("isnull(a.jobtrucking,'')<>''")
+                ->whereRaw("a.statuscontainer_id not in(" . $statusfullempty . ")")
                 ->where('a.sampai_id', '=', $pelabuhan->text);
 
             DB::table($tempselesai)->insertUsing([
@@ -298,7 +326,8 @@ class JobTrucking extends MyModel
                 ->leftjoin(DB::raw("trado as c with(readuncommitted)"), 'a.trado_id', 'c.id')
                 ->leftjoin(DB::raw("kota as kotadr with(readuncommitted)"), 'a.dari_id', 'kotadr.id')
                 ->leftjoin(DB::raw("kota as kotasd with(readuncommitted)"), 'a.sampai_id', 'kotasd.id')
-                ->leftjoin(DB::raw($tempselesai . " as d"), 'a.jobtrucking', 'd.jobtrucking');
+                ->leftjoin(DB::raw($tempselesai . " as d"), 'a.jobtrucking', 'd.jobtrucking')
+                ->whereRaw("a.statuscontainer_id not in(" . $statusfullempty . ")");      
 
 
             DB::table($temprekap)->insertUsing([
@@ -401,10 +430,10 @@ class JobTrucking extends MyModel
                 ->leftjoin(DB::raw("kota as kotadr with(readuncommitted)"), 'a.dari_id', 'kotadr.id')
                 ->leftjoin(DB::raw("kota as kotasd with(readuncommitted)"), 'a.sampai_id', 'kotasd.id')
                 ->leftjoin(DB::raw($tempselesai . " as d"), 'a.jobtrucking', 'd.jobtrucking')
-                ->where('a.container_id', '=', request()->container_id)
-                ->where('a.jenisorder_id', '=', request()->jenisorder_id)
-                ->where('a.pelanggan_id', '=', request()->pelanggan_id)
-                ->where('a.tarif_id', '=', request()->tarif_id);
+                ->where('a.container_id', '=', $container_id)
+                ->where('a.jenisorder_id', '=', $jenisorder_id)
+                ->where('a.pelanggan_id', '=', $pelanggan_id)
+                ->where('a.tarif_id', '=', $tarif_id);
             if ($edit == true) {
                 $querydata->where('a.dari_id', 1);
             }
@@ -418,7 +447,7 @@ class JobTrucking extends MyModel
             ->select(
                 'a.keterangan'
             )
-            ->where('a.id', '=', request()->trado_id)
+            ->where('a.id', '=', $trado_id)
             ->where('a.statusgerobak', '=', $statusgerobak->id)
             ->first();
         $idtrip = request()->idtrip ?? '';
@@ -430,11 +459,11 @@ class JobTrucking extends MyModel
         if (isset($querygerobak)) {
 
             // dd(request()->gandengan_id);
-            $querydata->where('a.container_id', '=', request()->container_id);
-            $querydata->where('a.jenisorder_id', '=', request()->jenisorder_id);
-            $querydata->where('a.gandengan_id', '=', request()->gandengan_id);
+            $querydata->where('a.container_id', '=', $container_id);
+            $querydata->where('a.jenisorder_id', '=', $jenisorder_id);
+            $querydata->where('a.gandengan_id', '=', $gandengan_id);
             // dd($querydata->get()); 
-            $querydata->where('a.pelanggan_id', '=', request()->pelanggan_id);
+            $querydata->where('a.pelanggan_id', '=', $pelanggan_id);
 
 
             // $querydata->where('a.tarif_id', '=', request()->tarif_id);
@@ -458,7 +487,7 @@ class JobTrucking extends MyModel
                 if (in_array($trip->jenisorder_id, $dataMuatanEksport)) {
                     $queryFull = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'FULL')->first();
                     if ($trip->statuscontainer_id != $queryFull->id) {
-                        if ($trip->statuscontainer_id != request()->statuscontainer_id) {
+                        if ($trip->statuscontainer_id != $statuscontainer_id) {
                             $querydata->whereRaw("isnull(a.nobukti,'') != '$trip->nobukti'");
                         } else {
                             $querydata->whereRaw("isnull(d.jobtrucking,'')=''");
@@ -468,7 +497,7 @@ class JobTrucking extends MyModel
                     $queryEmpty = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'EMPTY')->first();
 
                     if ($trip->statuscontainer_id != $queryEmpty->id) {
-                        if ($trip->statuscontainer_id != request()->statuscontainer_id) {
+                        if ($trip->statuscontainer_id != $statuscontainer_id) {
                             $querydata->whereRaw("isnull(a.nobukti,'') != '$trip->nobukti'");
                         } else {
                             $querydata->whereRaw("isnull(d.jobtrucking,'')=''");
@@ -478,15 +507,15 @@ class JobTrucking extends MyModel
             }
         } else {
             tidakgandengan2:
-            // $querydata->where('a.trado_id', '=', request()->trado_id);
+            // $querydata->where('a.trado_id', '=', $trado_id);
             //  dd($querydata->get());
-            $querydata->where('a.pelanggan_id', '=', request()->pelanggan_id);
+            $querydata->where('a.pelanggan_id', '=', $pelanggan_id);
 
 
 
-            $querydata->where('a.container_id', '=', request()->container_id);
-            $querydata->where('a.jenisorder_id', '=', request()->jenisorder_id);
-            // $querydata->where('a.tarif_id', '=', request()->tarif_id);
+            $querydata->where('a.container_id', '=', $container_id);
+            $querydata->where('a.jenisorder_id', '=', $jenisorder_id);
+            // $querydata->where('a.tarif_id', '=', $tarif_id);
             $querydata->whereRaw("isnull(a.jobtrucking,'')<>''");
             $querydata->whereRaw(DB::raw("(a.dari_id=" . $pelabuhan->text . " or a.statuslongtrip=" . $statuslongtrip->id . ")"));
             if ($edit == 'false') {
@@ -507,7 +536,7 @@ class JobTrucking extends MyModel
                 if (in_array($trip->jenisorder_id, $dataMuatanEksport)) {
                     $queryFull = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'FULL')->first();
                     if ($trip->statuscontainer_id != $queryFull->id) {
-                        if ($trip->statuscontainer_id != request()->statuscontainer_id) {
+                        if ($trip->statuscontainer_id != $statuscontainer_id) {
                             $querydata->whereRaw("isnull(a.nobukti,'') != '$trip->nobukti'");
                         } else {
                             $querydata->whereRaw("isnull(d.jobtrucking,'')=''");
@@ -517,7 +546,7 @@ class JobTrucking extends MyModel
                     $queryEmpty = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'EMPTY')->first();
 
                     if ($trip->statuscontainer_id != $queryEmpty->id) {
-                        if ($trip->statuscontainer_id != request()->statuscontainer_id) {
+                        if ($trip->statuscontainer_id != $statuscontainer_id) {
                             $querydata->whereRaw("isnull(a.nobukti,'') != '$trip->nobukti'");
                         } else {
                             $querydata->whereRaw("isnull(d.jobtrucking,'')=''");
@@ -528,7 +557,7 @@ class JobTrucking extends MyModel
         }
 
         pulanglongtrip:
-        if (request()->tripasal != '') {
+        if ($tripasal != '') {
 
             $querydata = DB::table('suratpengantar')->from(
                 DB::raw("suratpengantar as a ")

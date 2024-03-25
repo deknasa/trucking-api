@@ -813,17 +813,37 @@ class SuratPengantar extends MyModel
         if ($isGudangSama == 'true') {
 
             if ($gudangsama == 204) {
+                $tempTripAsal = '##tempTripAsal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempTripAsal, function ($table) {
+                    $table->string('nobukti_tripasal',50)->nullable();
+                });
+
+                $querytripasal=DB::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
+                ->select(
+                    'a.nobukti_tripasal'
+                )
+                ->whereraw("isnull(a.nobukti_tripasal,'')<>''")
+                ->groupBY('a.nobukti_tripasal');
+
+                DB::table($tempTripAsal)->insertUsing([
+                    'nobukti_tripasal',
+                ],  $querytripasal);   
+                
+                // dd(db::table($tempTripAsal)->get());
+
                 $container_id = request()->container_id ?? 0;
                 $agen_id = request()->agen_id ?? 0;
                 $upah_id = request()->upah_id ?? 0;
                 $pelanggan_id = request()->pelanggan_id ?? 0;
                 $trado_id = request()->trado_id ?? 0;
                 $supir_id = request()->supir_id ?? 0;
-                $query->whereRaw("suratpengantar.jenisorder_id in (2,3)")
+                $query->leftjoin(db::raw($tempTripAsal . " a"),'suratpengantar.nobukti','a.nobukti_tripasal')
+                    ->whereRaw("suratpengantar.jenisorder_id in (2,3)")
                     ->where('suratpengantar.container_id', $container_id)
                     ->where('suratpengantar.agen_id', $agen_id)
                     ->where('suratpengantar.upah_id', $upah_id)
                     ->where('suratpengantar.trado_id', $trado_id)
+                    ->whereRaw("isnull(a.nobukti_tripasal,'')=''")
                     ->where('suratpengantar.pelanggan_id', $pelanggan_id);
             }
         }
