@@ -7,6 +7,7 @@ use App\Rules\ValidasiHutangList;
 use App\Rules\validasiNobuktiPencairan;
 use App\Rules\validasiPencairanGiro;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Parameter;
 
 class StorePencairanGiroPengeluaranHeaderRequest extends FormRequest
 {
@@ -27,9 +28,10 @@ class StorePencairanGiroPengeluaranHeaderRequest extends FormRequest
      */
     public function rules()
     {
+
         $jumlahdetail = $this->jumlahdetail ?? 0;
         return [
-            'periode' => ['required',new ValidasiHutangList($jumlahdetail), new validasiNobuktiPencairan()],
+            'periode' => ['required', new ValidasiHutangList($jumlahdetail), new validasiNobuktiPencairan()],
             'detail' => [new validasiPencairanGiro()]
         ];
     }
