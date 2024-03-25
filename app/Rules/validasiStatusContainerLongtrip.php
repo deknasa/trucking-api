@@ -25,12 +25,14 @@ class validasiStatusContainerLongtrip implements Rule
      */
     public function passes($attribute, $value)
     {
-        if(request()->statuscontainer_id != ''){
-            if(request()->statuscontainer_id == 3){
-                return false;
+        if (request()->statuslongtrip == 65) {
+
+            if (request()->statuscontainer_id != '') {
+                if (request()->statuscontainer_id == 3) {
+                    return false;
+                }
             }
         }
-
         return true;
     }
 
