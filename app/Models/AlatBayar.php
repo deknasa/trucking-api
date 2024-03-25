@@ -112,6 +112,7 @@ class AlatBayar extends MyModel
             ->first();
 
         $aktif = request()->aktif ?? '';
+        $from = request()->from ?? '';
         // dd(request()->all());
         $bank_id = request()->bank_id ?? 0;
 
@@ -183,7 +184,13 @@ class AlatBayar extends MyModel
             $query->where('alatbayar.statusdefault', '=', $statusdefault->id);
         }
         if ($tipe != "") {
-            $query->where('bank.tipe', '=', $tipe);
+            if($from == 'pindahbuku'){
+                if($bank_id == 1){
+                    $query->where('bank.tipe', '=', $tipe);
+                }
+            }else{
+                $query->where('bank.tipe', '=', $tipe);
+            }
         }
 
         if ($aktif == 'AKTIF') {
