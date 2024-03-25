@@ -318,7 +318,7 @@ class UpahSupir extends MyModel
             DB::raw("(case when upahsupir.parent_id=0 then null else upahsupir.parent_id end) as parent_id"),
             'parent.keterangan as parent',
             DB::raw("(case when upahsupir.tarif_id=0 then null else upahsupir.tarif_id end) as tarif_id"),
-            DB::raw("(trim(tarif.tujuan)+' - '+trim(tarif.penyesuaian)) as tarif"),
+            DB::raw("(trim(tarif.tujuan)+ (CASE WHEN isnull(tarif.penyesuaian,'')='' then '' ELSE ' - '+trim(tarif.penyesuaian) end))  as tarif"),
             DB::raw("(case when upahsupir.kotadari_id=0 then null else upahsupir.kotadari_id end) as kotadari_id"),
             DB::raw("TRIM(kotadari.keterangan) as kotadari"),
             'upahsupir.keterangan',
