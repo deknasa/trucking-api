@@ -4,6 +4,10 @@ namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
+use App\Http\Controllers\Api\OrderanTruckingController;
+use App\Models\OrderanTrucking;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ValidasiDestroyOrderanTrucking implements Rule
 {
@@ -12,13 +16,11 @@ class ValidasiDestroyOrderanTrucking implements Rule
      *
      * @return void
      */
-    public function __construct($param, $paramcetak)
+    public function __construct()
     {
-        $this->kondisi = $param;
-        $this->kondisicetak = $paramcetak;
     }
-    public $kondisi;
-    public $kondisicetak;
+    public $kodeerror;
+    public $keterangan;
 
     /**
      * Determine if the validation rule passes.
@@ -29,16 +31,21 @@ class ValidasiDestroyOrderanTrucking implements Rule
      */
     public function passes($attribute, $value)
     {
-        if ($this->kondisi == true) {
-            // dd('1');
-            return false;
-        } else if ($this->kondisicetak == false) {
-            // dd('2');
-            return false;
-        } else {
-            // dd('3');
-            return true;
+        if (request()->aksi != 'updatenocont') {
+
+            $controller = new OrderanTruckingController;
+            $nobukti = OrderanTrucking::from(DB::raw("orderantrucking"))->where('id', request()->id)->first();
+            $request = new Request();
+            $request['nobukti'] = $nobukti->nobukti;
+            $cekCetak = app(OrderanTruckingController::class)->cekvalidasi(request()->id, request()->aksi, $request);
+            $getOriginal = $cekCetak->original;
+            if ($getOriginal['error'] == true) {
+                $this->kodeerror = $getOriginal['kodeerror'];
+                $this->keterangan = $getOriginal['message'];
+                return false;
+            }
         }
+        return true;
     }
 
     /**
@@ -48,10 +55,6 @@ class ValidasiDestroyOrderanTrucking implements Rule
      */
     public function message()
     {
-        if ($this->kondisi == true) {
-            return app(ErrorController::class)->geterror('SATL')->keterangan;
-        } else {
-            return app(ErrorController::class)->geterror('SDC')->keterangan;
-        }
+        return $this->keterangan;
     }
 }

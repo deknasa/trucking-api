@@ -18,6 +18,7 @@ use App\Rules\ExistJenisOrder;
 use App\Rules\ExistPelanggan;
 use App\Rules\ExistTarifRincian;
 use App\Models\Parameter;
+use App\Rules\ValidasiDestroyOrderanTrucking;
 use App\Rules\validationTarifOrderemkl;
 use Illuminate\Support\Facades\DB;
 
@@ -111,7 +112,7 @@ class UpdateOrderanTruckingRequest extends FormRequest
         }
 
         $rules = [
-            'id'=>[new DateAllowedOrderanTrucking()],
+            'id'=>[new DateAllowedOrderanTrucking(), new ValidasiDestroyOrderanTrucking()],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku(),

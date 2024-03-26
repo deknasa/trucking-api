@@ -3,8 +3,10 @@
 namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Http\Controllers\Api\SuratPengantarController;
 use App\Models\SuratPengantar;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DestroySuratPengantar implements Rule
@@ -14,6 +16,8 @@ class DestroySuratPengantar implements Rule
      *
      * @return void
      */
+    public $kodeerror;
+    public $keterangan;
     public function __construct()
     {
         //
@@ -31,10 +35,20 @@ class DestroySuratPengantar implements Rule
         $suratPengantar = new SuratPengantar();
         $nobukti = SuratPengantar::from(DB::raw("suratpengantar"))->where('id', request()->id)->first();
         $cekdata = $suratPengantar->cekvalidasihapus($nobukti->nobukti, request()->jobtrucking);
-        if($cekdata['kondisi']){
-          return false;
+        if ($cekdata['kondisi']) {
+            $this->kodeerror = $cekdata['kodeerror'];
+            $this->keterangan = $cekdata['keterangan'];
+            return false;
         }
-
+        $request = new Request();
+        $request['nobukti'] = $nobukti->nobukti;
+        $cekCetak = app(SuratPengantarController::class)->cekvalidasi(request()->id,$request);
+        $getOriginal = $cekCetak->original;
+        if ($getOriginal['error'] == true) {
+            $this->kodeerror = $getOriginal['kodeerror'];
+            $this->keterangan = $getOriginal['message'];
+            return false;
+        }
         return true;
     }
 
@@ -45,6 +59,6 @@ class DestroySuratPengantar implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('SATL')->keterangan;
+        return $this->keterangan;
     }
 }

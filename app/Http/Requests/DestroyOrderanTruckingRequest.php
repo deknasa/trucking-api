@@ -29,20 +29,8 @@ class DestroyOrderanTruckingRequest extends FormRequest
      */
     public function rules()
     {
-        $controller = new OrderanTruckingController;
-        $orderantrucking = new OrderanTrucking();
-        $nobukti = OrderanTrucking::from(DB::raw("orderantrucking"))->where('id', request()->id)->first();
-        $cekdata = $orderantrucking->cekvalidasihapus($nobukti->nobukti, 'delete');
-        $request = new Request();
-        $request['nobukti'] = $nobukti->nobukti;
-        $cekdatacetak = $controller->cekvalidasi($this->id, 'delete', $request);
-        if ($cekdatacetak->original['errors']=='success') {
-                $cekdtcetak=true;
-        } else {
-            $cekdtcetak=false;
-        }
         return [
-            'id' => [ new ValidasiDestroyOrderanTrucking($cekdata['kondisi'],$cekdtcetak)],
+            'id' => [ new ValidasiDestroyOrderanTrucking()],
         ];
     }
 }

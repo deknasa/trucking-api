@@ -8,6 +8,7 @@ use App\Rules\DateTutupBuku;
 use App\Models\Parameter;
 use App\Models\ReminderOli;
 use App\Models\SuratPengantar;
+use App\Rules\DestroySuratPengantar;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use App\Rules\ExistContainer;
@@ -127,6 +128,7 @@ class UpdateSuratPengantarRequest extends FormRequest
         });
 
         $rules = [
+            'id' => new DestroySuratPengantar(),
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku(),

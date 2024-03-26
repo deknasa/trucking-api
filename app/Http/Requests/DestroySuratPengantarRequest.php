@@ -26,7 +26,7 @@ class DestroySuratPengantarRequest extends FormRequest
     public function rules()
     {
         return [
-            'nobukti' => new DestroySuratPengantar(),
+            'id' => new DestroySuratPengantar(),
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku()
