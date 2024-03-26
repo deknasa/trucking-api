@@ -179,9 +179,13 @@ class ApprovalTradoGambar extends MyModel
     }
     public function processStore(array $data): ApprovalTradoGambar
     {
+        $tglbatas = $data['tglbatas'];
+        if ($data['tglbatas']) {
+            $tglbatas = date('Y-m-d', strtotime($data['tglbatas']));
+        }
         $approvalTradoGambar = new ApprovalTradoGambar();
         $approvalTradoGambar->kodetrado = $data['kodetrado'];
-        $approvalTradoGambar->tglbatas = date('Y-m-d', strtotime($data['tglbatas']));
+        $approvalTradoGambar->tglbatas = $tglbatas;
         $approvalTradoGambar->statusapproval = $data['statusapproval'];
         $approvalTradoGambar->modifiedby = auth('api')->user()->name;
 

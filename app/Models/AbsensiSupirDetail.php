@@ -1339,4 +1339,29 @@ class AbsensiSupirDetail extends MyModel
         }
         return $absensiSupirDetail;
     }
+
+    public function deleteFromApprovalTanpa($tglabsensi, $tradoid){
+        $tglabsensi = date('Y-m-d',strtotime($tglabsensi));
+        $saldosuratpengantar = DB::table('saldosuratpengantar')
+        ->from(DB::raw("suratpengantar with (readuncommitted)"))
+        ->where('trado_id', $tradoid)
+        ->where('tglbukti','>',$tglabsensi)
+        ->get();
+
+        $absensi = DB::table('absensisupirapprovalheader')
+        ->from(DB::raw("absensisupirapprovalheader as header with (readuncommitted)"))
+        ->where('header.tglbukti','>',$tglabsensi)
+        ->where('detail.trado_id', $tradoid)
+        ->leftJoin(DB::raw("absensisupirapprovaldetail as detail with (readuncommitted)"), 'detail.absensisupirapproval_id', 'header.id')
+        ->get();
+        if((0 <= count($absensi)) && (0 <= count($saldosuratpengantar))){
+            $AbsensiSupirDetail = AbsensiSupirDetail::where('trado_id', $tradoid)
+            ->select('AbsensiSupirDetail.id')
+            ->where('absensiSupirheader.tglbukti','>',$tglabsensi)
+            ->leftJoin(DB::raw("absensiSupirheader  with (readuncommitted)"), 'absensiSupirheader.id', 'AbsensiSupirDetail.absensi_id');
+            $AbsensiSupirDetail->delete();
+        }
+
+
+    }
 }
