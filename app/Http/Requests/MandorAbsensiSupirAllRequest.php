@@ -120,6 +120,7 @@ class MandorAbsensiSupirAllRequest extends FormRequest
                 $rulesBeda = [
                     "$key.namasupir" => ['required', new MandorAbsensiSupirEditSupirValidasiTrado($data[$key]['trado_id'], $data[$key]['supir_id'])],
                     "$key.supir_id" => ['required', new MandorAbsensiSupirEditSupirValidasiTrado($data[$key]['trado_id'], $data[$key]['supir_id'])],
+                    
                 ];
             }
 

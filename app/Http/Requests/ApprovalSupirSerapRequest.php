@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
 use App\Rules\ValidasiSupirSerapApproval;
+use App\Rules\ValidasiSupirSerapApprovalAbsensi;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ApprovalSupirSerapRequest extends FormRequest
@@ -27,7 +28,7 @@ class ApprovalSupirSerapRequest extends FormRequest
     {
         return [
             'serapId' => ['required'],
-            'serapId.*' => new ValidasiSupirSerapApproval()
+            'serapId.*' => [new ValidasiSupirSerapApproval(),new ValidasiSupirSerapApprovalAbsensi()]
         ];
     }
     

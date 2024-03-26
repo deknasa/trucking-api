@@ -108,7 +108,7 @@ class ListTrip extends MyModel
                 goto selesai;
             }
         }
-        
+
         $cekJob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('nobukti_tripasal', $nobukti)->first();
         if ($cekJob != '') {
             $data = [
@@ -403,6 +403,12 @@ class ListTrip extends MyModel
                 $differences = array_diff_assoc($cek, $toCek);
                 if (!empty($differences)) {
                     if ($data['jobtrucking'] == '') {
+                        if ($trip->statuslongtrip != $data['statuslongtrip']) {
+                            if ($data['statusgudangsama'] != 65) {
+                                $getId = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
+                                (new OrderanTrucking())->processDestroy($getId->id);
+                            }
+                        }
                         $isDifferent = true;
                         $isTripPulang = true;
                     } else {
@@ -433,7 +439,47 @@ class ListTrip extends MyModel
                     }
                 }
             }
+        }else{
+            if ($trip->dari_id != 1) {
+                $cek = [$trip->agen_id, $trip->jenisorder_id, $trip->statuscontainer_id, $trip->container_id, $trip->upah_id, $trip->pelanggan_id];
+
+                $toCek = [$data['agen_id'], $data['jenisorder_id'], $data['statuscontainer_id'], $data['container_id'], $data['upah_id'], $data['pelanggan_id']];
+
+                $differences = array_diff_assoc($cek, $toCek);
+                if (!empty($differences)) {
+                    if ($data['jobtrucking'] == '') {
+                        $isDifferent = true;
+                        $isTripPulang = true;
+                    } else {
+                        if ($trip->statusgudangsama != $data['statusgudangsama']) {
+                            if ($data['statusgudangsama'] != 204) {
+                                $getId = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
+                                (new OrderanTrucking())->processDestroy($getId->id);
+                            }
+                        }
+                        $trip->jobtrucking = $data['jobtrucking'];
+                        $isTripPulang = true;
+                    }
+                }
+            } else {
+                if($data['nobukti_tripasal'] != ''){
+                    $getId = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
+                    (new OrderanTrucking())->processDestroy($getId->id);
+                    if($data['jobtrucking'] != ''){
+                        $trip->jobtrucking = $data['jobtrucking'];
+                    }else{
+                        
+                        $isTripPulang = true;
+                        $isDifferent = true;
+                    }
+                } else {
+                    if($data['jobtrucking'] != ''){
+                        $trip->jobtrucking = $data['jobtrucking'];
+                    }
+                }
+            }
         }
+        // dd($trip->jobtrucking,  $isTripPulang, $isDifferent);
         $statusperalihan = DB::table('parameter')->from(
             DB::raw("parameter as a with (readuncommitted)")
         )
@@ -455,7 +501,7 @@ class ListTrip extends MyModel
             ->where('a.text', '=', 'BUKAN LANGSIR')
             ->first();
         if (!$isDifferent) {
-
+            
             if (!$isTripPulang) {
                 $getJobtrucking = OrderanTrucking::from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
                 $orderan = [

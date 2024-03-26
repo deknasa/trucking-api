@@ -86,7 +86,7 @@ class SuratPengantar extends MyModel
         if (isset($gajiSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> GAji Supir <b>'. $gajiSupir->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> GAji Supir <b>' . $gajiSupir->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'gaji supir ' . $gajiSupir->nobukti,
                 'kodeerror' => 'SATL2'
             ];
@@ -112,7 +112,7 @@ class SuratPengantar extends MyModel
             if (isset($ritasi)) {
                 $data = [
                     'kondisi' => true,
-                    'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> Ritasi <b>'. $ritasi->nobukti .'</b> <br> '.$keterangantambahanerror,
+                    'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> Ritasi <b>' . $ritasi->nobukti . '</b> <br> ' . $keterangantambahanerror,
                     'kodeerror' => 'SATL2'
                     // 'keterangan' => 'ritasi ' . $ritasi->nobukti,
                 ];
@@ -130,8 +130,8 @@ class SuratPengantar extends MyModel
 
                     $data = [
                         'kondisi' => true,
-                        'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> Trip <b>'. $cekJob->nobukti .'</b> <br> '.$keterangantambahanerror,
-                        'kodeerror' => 'SATL2'                        
+                        'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> Trip <b>' . $cekJob->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                        'kodeerror' => 'SATL2'
                         // 'keterangan' => 'trip ' . $cekJob->nobukti,
                     ];
 
@@ -178,8 +178,8 @@ class SuratPengantar extends MyModel
 
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> Invoice <b>'. $query->nobukti .'</b> <br> '.$keterangantambahanerror,
-                'kodeerror' => 'SATL2'                  
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> Invoice <b>' . $query->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                'kodeerror' => 'SATL2'
                 // 'keterangan' => 'invoice ' . $query->nobukti,
             ];
             goto selesai;
@@ -198,8 +198,8 @@ class SuratPengantar extends MyModel
             $data = [
                 'kondisi' => true,
                 // 'keterangan' => 'pendapatan supir ' . $query->nobukti,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> pendapatan supir <b>'. $query->nobukti .'</b> <br> '.$keterangantambahanerror,
-                'kodeerror' => 'SATL2'                  
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> pendapatan supir <b>' . $query->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                'kodeerror' => 'SATL2'
 
             ];
             goto selesai;
@@ -815,20 +815,20 @@ class SuratPengantar extends MyModel
             if ($gudangsama == 204) {
                 $tempTripAsal = '##tempTripAsal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                 Schema::create($tempTripAsal, function ($table) {
-                    $table->string('nobukti_tripasal',50)->nullable();
+                    $table->string('nobukti_tripasal', 50)->nullable();
                 });
 
-                $querytripasal=DB::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
-                ->select(
-                    'a.nobukti_tripasal'
-                )
-                ->whereraw("isnull(a.nobukti_tripasal,'')<>''")
-                ->groupBY('a.nobukti_tripasal');
+                $querytripasal = DB::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
+                    ->select(
+                        'a.nobukti_tripasal'
+                    )
+                    ->whereraw("isnull(a.nobukti_tripasal,'')<>''")
+                    ->groupBY('a.nobukti_tripasal');
 
                 DB::table($tempTripAsal)->insertUsing([
                     'nobukti_tripasal',
-                ],  $querytripasal);   
-                
+                ],  $querytripasal);
+
                 // dd(db::table($tempTripAsal)->get());
 
                 $container_id = request()->container_id ?? 0;
@@ -837,7 +837,7 @@ class SuratPengantar extends MyModel
                 $pelanggan_id = request()->pelanggan_id ?? 0;
                 $trado_id = request()->trado_id ?? 0;
                 $supir_id = request()->supir_id ?? 0;
-                $query->leftjoin(db::raw($tempTripAsal . " a"),'suratpengantar.nobukti','a.nobukti_tripasal')
+                $query->leftjoin(db::raw($tempTripAsal . " a"), 'suratpengantar.nobukti', 'a.nobukti_tripasal')
                     ->whereRaw("suratpengantar.jenisorder_id in (2,3)")
                     ->where('suratpengantar.container_id', $container_id)
                     ->where('suratpengantar.agen_id', $agen_id)
@@ -849,21 +849,128 @@ class SuratPengantar extends MyModel
         }
         if ($isGudangSama == 'false') {
             if ($longtrip == 66) {
+                $idtrip = request()->idTrip ?? 0;
+                $tempTripAsal = '##tempTripAsal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempTripAsal, function ($table) {
+                    $table->string('nobukti_tripasal', 50)->nullable();
+                });
+
+                $querytripasal = DB::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
+                    ->select(
+                        'a.nobukti_tripasal'
+                    )
+                    ->whereraw("isnull(a.nobukti_tripasal,'')<>''");
+                if ($idtrip != 0) {
+                    $querytripasal->where('id', '<>', $idtrip);
+                }
+                $querytripasal->groupBY('a.nobukti_tripasal');
+
+                DB::table($tempTripAsal)->insertUsing([
+                    'nobukti_tripasal',
+                ],  $querytripasal);
                 $jenisorder_id = request()->jenisorder_id ?? 0;
                 $container_id = request()->container_id ?? 0;
                 $pelanggan_id = request()->pelanggan_id ?? 0;
                 $trado_id = request()->trado_id ?? 0;
-                $query->where('suratpengantar.dari_id', '!=', 1)
+                $upah_id = request()->upah_id ?? 0;
+
+                $getKota = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->where('id', $upah_id)->first();
+                $kotaSampai = 0;
+                if ($getKota != '') {
+                    $kotaSampai = $getKota->kotasampai_id;
+                }
+
+                $query->leftjoin(db::raw($tempTripAsal . " a"), 'suratpengantar.nobukti', 'a.nobukti_tripasal')
+                    ->whereRaw("isnull(a.nobukti_tripasal,'')=''")
+                    ->where('suratpengantar.dari_id', '!=', 1)
                     ->where('suratpengantar.statuslongtrip', 65)
                     ->where('suratpengantar.trado_id', $trado_id)
+                    ->where('suratpengantar.sampai_id', $kotaSampai)
                     ->where('suratpengantar.pelanggan_id', $pelanggan_id)
                     ->where('suratpengantar.jenisorder_id', $jenisorder_id)
+                    ->where('suratpengantar.container_id', $container_id);
+            } else {
+
+                $idtrip = request()->idTrip ?? 0;
+
+                $tempTripAsal = '##tempTripAsal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempTripAsal, function ($table) {
+                    $table->string('nobukti_tripasal', 50)->nullable();
+                });
+
+                $querytripasal = DB::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
+                    ->select(
+                        'a.nobukti_tripasal'
+                    )
+                    ->whereraw("isnull(a.nobukti_tripasal,'')<>''");
+                if ($idtrip != 0) {
+                    $querytripasal->where('id', '<>', $idtrip);
+                }
+                $querytripasal->groupBY('a.nobukti_tripasal');
+                
+                DB::table($tempTripAsal)->insertUsing([
+                    'nobukti_tripasal',
+                ],  $querytripasal);
+
+                $tempJobAwal = '##tempJobAwal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempJobAwal, function ($table) {
+                    $table->string('jobtrucking', 50)->nullable();
+                });
+
+                $queryJobtruckingAwal = DB::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
+                    ->select(
+                        'a.jobtrucking'
+                    )
+                    ->whereraw("a.dari_id = 1");
+
+                DB::table($tempJobAwal)->insertUsing([
+                    'jobtrucking',
+                ],  $queryJobtruckingAwal);
+
+                $tempJobAkhir = '##tempJobAkhir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempJobAkhir, function ($table) {
+                    $table->string('jobtrucking', 50)->nullable();
+                });
+
+                $queryJobtruckingAkhir = DB::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
+                    ->select(
+                        'a.jobtrucking'
+                    )
+                    ->whereraw("a.sampai_id = 1");
+
+                DB::table($tempJobAkhir)->insertUsing([
+                    'jobtrucking',
+                ],  $queryJobtruckingAkhir);
+                $tempJobFinal = '##tempJobFinal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempJobFinal, function ($table) {
+                    $table->string('jobtrucking', 50)->nullable();
+                });
+
+                $queryJobTruckingFinal = DB::table($tempJobAwal)->from(db::raw("$tempJobAwal as A"))
+                    ->select('A.jobtrucking')
+                    ->leftjoin(db::raw($tempJobAkhir . " as B"), 'A.jobtrucking', 'B.jobtrucking')
+                    ->whereRaw("isnull(B.jobtrucking,'')='' ");
+
+                DB::table($tempJobFinal)->insertUsing([
+                    'jobtrucking',
+                ],  $queryJobTruckingFinal);
+
+                $container_id = request()->container_id ?? 0;
+                $pelanggan_id = request()->pelanggan_id ?? 0;
+
+                $query->leftjoin(db::raw($tempJobFinal . " jobfinal"), 'suratpengantar.jobtrucking', 'jobfinal.jobtrucking')
+                    ->leftjoin(db::raw($tempTripAsal . " a"), 'suratpengantar.nobukti', 'a.nobukti_tripasal')
+                    ->whereRaw("isnull(a.nobukti_tripasal,'')=''")
+                    ->whereRaw("isnull(jobfinal.jobtrucking,'')!='' ")
+                    ->where('suratpengantar.dari_id', '=', 1)
+                    ->where('suratpengantar.pelanggan_id', $pelanggan_id)
+                    ->where('suratpengantar.statuscontainer_id', '!=', 3)
                     ->where('suratpengantar.container_id', $container_id);
             }
         }
 
         if ($from == 'tripinap') {
-            
+
             if ($tglabsensi != '') {
                 $query->where('suratpengantar.tglbukti', '<=', date('Y-m-d', strtotime($tglabsensi)));
             }
@@ -2702,7 +2809,7 @@ class SuratPengantar extends MyModel
         $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
         $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
 
-        $orderanTruckingId=[];
+        $orderanTruckingId = [];
         for ($i = 0; $i < count($data['nobukti']); $i++) {
 
             $nobukti = $data['nobukti'][$i] ?? '';
@@ -2712,16 +2819,16 @@ class SuratPengantar extends MyModel
                 )->where('a.nobukti', $nobukti)
                 ->first();
 
-                $queridorderantrucking=db::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
+            $queridorderantrucking = db::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
                 ->select(
                     'b.id'
                 )
-                ->join(db::raw("orderantrucking b with (readuncommitted)"),'a.jobtrucking','b.nobukti')
-                ->where('a.nobukti',$nobukti)
+                ->join(db::raw("orderantrucking b with (readuncommitted)"), 'a.jobtrucking', 'b.nobukti')
+                ->where('a.nobukti', $nobukti)
                 ->first();
 
-                
-                $orderanTruckingId[]= $queridorderantrucking->id ?? 0;  
+
+            $orderanTruckingId[] = $queridorderantrucking->id ?? 0;
 
 
             if (isset($querysuratpengantar)) {
@@ -2785,19 +2892,15 @@ class SuratPengantar extends MyModel
                         'datajson' => $saldosuratPengantar->toArray(),
                         'modifiedby' => auth('api')->user()->user
                     ]);
-
-                           
                 }
             }
-
-
         }
 
         // dd($orderanTruckingId);
         $orderantruckingUpdate = [
             'orderanTruckingId' => $orderanTruckingId,
         ];
-        (new OrderanTrucking())->processApprovalEdit($orderantruckingUpdate);     
+        (new OrderanTrucking())->processApprovalEdit($orderantruckingUpdate);
 
 
         return $data;

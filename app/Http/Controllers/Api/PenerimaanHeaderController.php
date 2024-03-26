@@ -389,7 +389,7 @@ class PenerimaanHeaderController extends Controller
         $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
         $tgltutup=date('Y-m-d', strtotime($tgltutup));
 
-        if ($status == $statusApproval->id && ($aksi == 'DELETE')) {
+        if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
             $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
 

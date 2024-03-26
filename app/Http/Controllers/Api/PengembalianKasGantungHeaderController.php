@@ -390,7 +390,7 @@ class PengembalianKasGantungHeaderController extends Controller
                 ->first();
             $data = [
                 'error' => true,
-                'message' => $query->keterangan,
+                'message' => $cekdata['keterangan'],
                 'kodeerror' => $cekdata['kodeerror'],
                 'statuspesan' => 'warning',
             ];
