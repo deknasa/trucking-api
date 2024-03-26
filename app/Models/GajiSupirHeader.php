@@ -29,6 +29,9 @@ class GajiSupirHeader extends MyModel
     ];
     public function cekvalidasiaksi($nobukti)
     {
+        $error = new Error();
+        $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $rekap = DB::table('prosesgajisupirdetail')
             ->from(
                 DB::raw("prosesgajisupirdetail as a with (readuncommitted)")
@@ -42,7 +45,7 @@ class GajiSupirHeader extends MyModel
         if (isset($rekap)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'PROSES GAJI SUPIR ' . $rekap->nobukti,
+                'keterangan' =>  'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti PROSES GAJI SUPIR <b>' . $rekap->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -61,7 +64,7 @@ class GajiSupirHeader extends MyModel
         if (isset($rekap)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'PENDAPATAN SUPIR ' . $rekap->nobukti,
+                'keterangan' =>  'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti PENDAPATAN SUPIR <b>' . $rekap->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;

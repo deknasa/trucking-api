@@ -69,7 +69,9 @@ class ProsesGajiSupirHeader extends MyModel
 
     public function cekvalidasiaksi($id)
     {
-
+        $error = new Error();
+        $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $prosesGaji = ProsesGajiSupirHeader::from(DB::raw("prosesgajisupirheader"))->where('id', $id)->first();
 
         $hutangBayar = DB::table('jurnalumumpusatheader')
@@ -84,25 +86,28 @@ class ProsesGajiSupirHeader extends MyModel
         if (isset($hutangBayar)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal ' . $hutangBayar->nobukti,
+                'keterangan' =>  'No Bukti <b>'. $prosesGaji->nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Approval Jurnal <b>'. $hutangBayar->nobukti .'</b> <br> '.$keterangantambahanerror,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
         }
 
-        $hutangBayar = DB::table('jurnalumumpusatheader')
-            ->from(
-                DB::raw("jurnalumumpusatheader as a with (readuncommitted)")
-            )
-            ->select(
-                'a.nobukti',
-            )
-            ->where('a.nobukti', '=', $prosesGaji->pengeluaran_nobukti)
-            ->first();
-        if (isset($hutangBayar)) {
+        $PelunasanHutang = DB::table('prosesgajisupirheader')
+        ->from(
+            DB::raw("prosesgajisupirheader as a with (readuncommitted)")
+        )
+        ->select(
+            'a.pengeluaran_nobukti',
+            'a.nobukti'
+        )
+        ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti')
+        ->where('a.nobukti', '=',$prosesGaji->nobukti)
+        ->first();
+
+        if (isset($PelunasanHutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal ' . $hutangBayar->nobukti,
+                'keterangan' =>  'No Bukti <b>'. $PelunasanHutang->nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Approval Jurnal <b>'. $PelunasanHutang->pengeluaran_nobukti .'</b> <br> '.$keterangantambahanerror,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;

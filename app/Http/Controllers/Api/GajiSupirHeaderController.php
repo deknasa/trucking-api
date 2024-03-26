@@ -135,7 +135,7 @@ class GajiSupirHeaderController extends Controller
             $gajiSupirHeader = (new GajiSupirHeader())->processStore($data);
             $gajiSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $gajiSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             $gajiSupirHeader->position = $this->getPosition($gajiSupirHeader, $gajiSupirHeader->getTable())->position;
 
             if ($request->limit == 0) {
@@ -229,7 +229,7 @@ class GajiSupirHeaderController extends Controller
             $gajiSupirHeader = (new GajiSupirHeader())->processUpdate($gajisupirheader, $data);
             $gajiSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $gajiSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             $gajiSupirHeader->position = $this->getPosition($gajiSupirHeader, $gajiSupirHeader->getTable())->position;
             if ($request->limit == 0) {
                 $gajiSupirHeader->page = ceil($gajiSupirHeader->position / (10));
@@ -261,7 +261,7 @@ class GajiSupirHeaderController extends Controller
             $selected = $this->getPosition($gajiSupirHeader, $gajiSupirHeader->getTable(), true);
             $gajiSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $gajiSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             $gajiSupirHeader->position = $selected->position;
             $gajiSupirHeader->id = $selected->id;
             if ($request->limit == 0) {
@@ -402,25 +402,44 @@ class GajiSupirHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $gajisupir = GajiSupirHeader::find($id);
+        $nobukti = $gajisupir->nobukti;
         $statusdatacetak = $gajisupir->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        
+        $parameter = new Parameter();
+
+        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup=date('Y-m-d', strtotime($tgltutup));        
+
+
         if ($statusdatacetak == $statusCetak->id) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SDC')
-                ->first();
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
 
             $data = [
+                'message' => $keterror,
                 'error' => true,
-                'message' => $query->keterangan,
                 'kodeerror' => 'SDC',
                 'statuspesan' => 'warning',
             ];
 
             return response($data);
-        } else {
+        } else if ($tgltutup >= $gajisupir->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);            
+        }  else {
 
             $data = [
                 'error' => false,
@@ -445,7 +464,7 @@ class GajiSupirHeaderController extends Controller
                 ->first();
             $data = [
                 'error' => true,
-                'message' => $query->keterangan,
+                'message' => $cekdata['keterangan'],
                 'kodeerror' => $cekdata['kodeerror'],
                 'statuspesan' => 'warning',
             ];
@@ -646,7 +665,7 @@ class GajiSupirHeaderController extends Controller
     }
 
 
-    
+
     /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
@@ -654,7 +673,7 @@ class GajiSupirHeaderController extends Controller
     public function approvalbukacetak()
     {
     }
-    
+
     /**
      * @ClassName 
      * @Keterangan EXPORT KE EXCEL
