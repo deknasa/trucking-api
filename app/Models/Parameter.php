@@ -18,31 +18,31 @@ class Parameter extends MyModel
         'updated_at',
     ];
 
-    public function getdefaultparameter($data) {
-        $grp=$data['grp'] ?? '';
-        $subgrp=$data['subgrp'] ?? '';
+    public function getdefaultparameter($data)
+    {
+        $grp = $data['grp'] ?? '';
+        $subgrp = $data['subgrp'] ?? '';
 
 
-        $query=DB::table('parameter')
-            ->from (
+        $query = DB::table('parameter')
+            ->from(
                 DB::raw("parameter with (readuncommitted)")
             )
-            ->select (
+            ->select(
                 'id'
             )
-            ->Where('grp','=',$grp)
-            ->Where('subgrp','=',$subgrp)
-            ->Where('default','=','YA')
+            ->Where('grp', '=', $grp)
+            ->Where('subgrp', '=', $subgrp)
+            ->Where('default', '=', 'YA')
             ->first();
 
-            if (isset( $query)) {
-                $data= $query->id;
-            }  else  {
-                $data=0;
-            }
-            
-            return $data;
+        if (isset($query)) {
+            $data = $query->id;
+        } else {
+            $data = 0;
+        }
 
+        return $data;
     }
 
     public function get()
@@ -51,10 +51,10 @@ class Parameter extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
 
         $query = DB::table('parameter')->from(
@@ -73,9 +73,9 @@ class Parameter extends MyModel
                 'parameter.updated_at',
                 DB::raw("case when parameter.type = 0 then '' else B.grp end as type"),
                 DB::raw("'Laporan Parameter' as judulLaporan "),
-                DB::raw("'".$getJudul->text ."' as judul "),
+                DB::raw("'" . $getJudul->text . "' as judul "),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter as B with (readuncommitted)"), 'parameter.type', 'B.id');
 
@@ -136,15 +136,15 @@ class Parameter extends MyModel
         foreach ($getcoa as $key => $coa) {
             $a = 0;
             $memo = json_decode($coa->memo, true);
-            
+
             $ketcoa = AkunPusat::from(DB::raw("akunpusat with (readuncommitted)"))
-            ->select('keterangancoa')->where('coa', $memo['JURNAL'])->first();
+                ->select('keterangancoa')->where('coa', $memo['JURNAL'])->first();
             $jurnal[] = [
                 'coa' => $memo['JURNAL'],
                 'keterangancoa' => $ketcoa->keterangancoa
             ];
         }
-         
+
         return $jurnal;
     }
 
@@ -256,7 +256,6 @@ class Parameter extends MyModel
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'like', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -270,7 +269,6 @@ class Parameter extends MyModel
                         } else {
                             // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -279,8 +277,8 @@ class Parameter extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'grp') {
                             $query = $query
-                                    ->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'")
-                                    ->whereRaw($this->table . ".[" .  $filters['execpt_field'] . "] NOT LIKE '%" . escapeLike($filters['execpt_data']) . "%' escape '|'");
+                                ->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'")
+                                ->whereRaw($this->table . ".[" .  $filters['execpt_field'] . "] NOT LIKE '%" . escapeLike($filters['execpt_data']) . "%' escape '|'");
                         }
                     }
                     break;
@@ -301,95 +299,183 @@ class Parameter extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function getcombodata($grp,$subgrp) {
+    public function getcombodata($grp, $subgrp)
+    {
 
 
-        $query=DB::table('parameter')
-            ->from (
+        $query = DB::table('parameter')
+            ->from(
                 DB::raw("parameter with (readuncommitted)")
             )
-            ->select (
+            ->select(
                 'id',
                 'text'
             )
-            ->Where('grp','=',$grp)
-            ->Where('subgrp','=',$subgrp)
+            ->Where('grp', '=', $grp)
+            ->Where('subgrp', '=', $subgrp)
             ->get();
-
-                        return $query;
-
-    }
-    public function getBatasAwalTahun(){
-        $query = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'BATAS AWAL TAHUN')
-        ->where('subgrp', 'BATAS AWAL TAHUN')
-        ->first();
 
         return $query;
     }
-
-    public function getTutupBuku(){
+    public function getBatasAwalTahun()
+    {
         $query = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'TUTUP BUKU')
-        ->where('subgrp', 'TUTUP BUKU')
-        ->first();
-
-        return $query;
-    }
-
-    public function getComboByGroup($grp) 
-    {
-        $query=DB::table('parameter')
-            ->from (
-                DB::raw("parameter with (readuncommitted)")
-            )
-            ->select (
-                'id'
-            )
-            ->Where('grp','=',$grp)
-            ->get();
-
-            return $query;
-    }
-
-    public function getComboByGroupAndText($grp, $text) 
-    {
-        $query=DB::table('parameter')
-            ->from (
-                DB::raw("parameter with (readuncommitted)")
-            )
-            ->select (
-                'id'
-            )
-            ->Where('grp','=',$grp)
-            ->Where('text','=',$text)
+            ->select('text')
+            ->where('grp', 'BATAS AWAL TAHUN')
+            ->where('subgrp', 'BATAS AWAL TAHUN')
             ->first();
 
-            return $query;
+        return $query;
+    }
+
+    public function getTutupBuku()
+    {
+        $query = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'TUTUP BUKU')
+            ->where('subgrp', 'TUTUP BUKU')
+            ->first();
+
+        return $query;
+    }
+
+    public function getComboByGroup($grp)
+    {
+        $query = DB::table('parameter')
+            ->from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+            ->select(
+                'id'
+            )
+            ->Where('grp', '=', $grp)
+            ->get();
+
+        return $query;
+    }
+
+    public function getComboByGroupAndText($grp, $text)
+    {
+        $query = DB::table('parameter')
+            ->from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+            ->select(
+                'id'
+            )
+            ->Where('grp', '=', $grp)
+            ->Where('text', '=', $text)
+            ->first();
+
+        return $query;
     }
 
     public function combo()
     {
         $this->setRequestParameters();
-        $query=DB::table('parameter')
-        ->from (
-            DB::raw("parameter with (readuncommitted)")
-        )
-        ->select('*')
-        ->where('grp','=',request()->grp);
+        $semua = request()->semua ?? '';
+        $grp = request()->grp ?? '';
+        $subgrp = request()->subgrp ?? '';
+        $tempparameter = '##tempparameter' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempparameter, function ($table) {
+            $table->integer('id');
+            $table->string('grp', 255)->nullable();
+            $table->string('subgrp', 255)->nullable();
+            $table->string('kelompok', 255)->nullable();
+            $table->string('text', 255)->nullable();
+            $table->longText('memo')->nullable();
+            $table->integer('type')->length(11)->nullable();
+            $table->string('default', 255)->nullable();
+            $table->longText('info')->nullable();
+            $table->string('modifiedby', 50)->nullable();
+        });
+
+        $query1 = DB::table('parameter')
+            ->from(
+                DB::raw("parameter a with (readuncommitted)")
+            )
+            ->select(
+                'a.id',
+                'a.grp',
+                'a.subgrp',
+                'a.kelompok',
+                'a.text',
+                'a.memo',
+                'a.type',
+                'a.default',
+                'a.info',
+                'a.modifiedby',
+
+            )
+            ->where('a.grp', '=', request()->grp);
         if (request()->subgrp) {
-            $query->where('subgrp','=',request()->subgrp);
+            $query1->where('a.subgrp', '=', request()->subgrp);
         }
+
+        // dd($query1->get());
+        DB::table($tempparameter)->insertUsing([
+            'id',
+            'grp',
+            'subgrp',
+            'kelompok',
+            'text',
+            'memo',
+            'type',
+            'default',
+            'info',
+            'modifiedby',
+        ],  $query1);
+
+        if ($semua == 'SEMUA') {
+            $memodefault = '{"MEMO":"SEMUA","SINGKATAN":"S","WARNA":"#009933","WARNATULISAN":"#FFF"}';
+            $query2 = DB::select(DB::raw("SELECT 
+                0 as id,
+                '" . $grp . "' as grp,
+                '" . $subgrp . "' as subgrp,
+                '' as kelompok,
+                'SEMUA' as [text],
+                '" . $memodefault . "' AS[memo],
+                0 as [type],
+                '' as  [default],
+                '' as info,
+                '' as modifiedby
+                "));
+
+                DB::table($tempparameter)->insert([
+                    'id' => $query2[0]->id,
+                    'grp' => $query2[0]->grp,
+                    'subgrp' => $query2[0]->subgrp,
+                    'kelompok' => $query2[0]->kelompok,
+                    'text' => $query2[0]->text,
+                    'memo' => $query2[0]->memo,
+                    'type' => $query2[0]->type,
+                    'default' => $query2[0]->default,
+                    'info' => $query2[0]->info,
+                    'modifiedby' => $query2[0]->modifiedby,
+                ]);
+        }
+
+        $query = db::table($tempparameter)->from(db::raw($tempparameter . " a"))
+            ->select(
+                'a.id',
+                'a.grp',
+                'a.subgrp',
+                'a.kelompok',
+                'a.text',
+                'a.memo',
+                'a.type',
+                'a.default',
+                'a.info',
+                'a.modifiedby',
+            );
         $this->filter($query);
         if (request()->sortIndex) {
 
             $sortOrder =  request()->sortOrder ?? 'asc';
-            $sortIndex =  request()->sortIndex ??'id';
+            $sortIndex =  request()->sortIndex ?? 'id';
             $query->orderBy("$sortIndex", $sortOrder);
         }
-        
+
         $query = $query->get();
 
         return $query;
@@ -459,12 +545,12 @@ class Parameter extends MyModel
         }
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($parameter->getTable()),
-                'postingdari' => 'EDIT PARAMETER',
-                'idtrans' => $parameter->id,
-                'nobuktitrans' => $parameter->id,
-                'aksi' => 'EDIT',
-                'datajson' => $parameter->toArray(),
-                'modifiedby' => $parameter->modifiedby
+            'postingdari' => 'EDIT PARAMETER',
+            'idtrans' => $parameter->id,
+            'nobuktitrans' => $parameter->id,
+            'aksi' => 'EDIT',
+            'datajson' => $parameter->toArray(),
+            'modifiedby' => $parameter->modifiedby
         ]);
 
         return $parameter;
@@ -488,44 +574,47 @@ class Parameter extends MyModel
         return $parameter;
     }
 
-    public function cekText($grp,$subgrp) {
+    public function cekText($grp, $subgrp)
+    {
         $query = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
-        ->select(
-            'a.text as keterangan'
-        )
-        ->where('grp' ,$grp)
-        ->where('subgrp' ,$subgrp)
-        ->first();
+            ->select(
+                'a.text as keterangan'
+            )
+            ->where('grp', $grp)
+            ->where('subgrp', $subgrp)
+            ->first();
 
-        $keterangan=$query->keterangan ?? '';
+        $keterangan = $query->keterangan ?? '';
 
         return $keterangan;
     }
 
-    public function cekId($grp,$subgrp,$text) {
+    public function cekId($grp, $subgrp, $text)
+    {
         $query = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
-        ->select(
-            'a.id as keterangan'
-        )
-        ->where('grp' ,$grp)
-        ->where('subgrp' ,$subgrp)
-        ->where('text' ,$text)
-        ->first();
+            ->select(
+                'a.id as keterangan'
+            )
+            ->where('grp', $grp)
+            ->where('subgrp', $subgrp)
+            ->where('text', $text)
+            ->first();
 
-        $keterangan=$query->keterangan ?? 0;
+        $keterangan = $query->keterangan ?? 0;
 
         return $keterangan;
     }
 
-    public function cekdataText($id) {
+    public function cekdataText($id)
+    {
         $query = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
-        ->select(
-            'a.text as keterangan'
-        )
-        ->where('id' ,$id)
-        ->first();
+            ->select(
+                'a.text as keterangan'
+            )
+            ->where('id', $id)
+            ->first();
 
-        $keterangan=$query->keterangan ?? 0;
+        $keterangan = $query->keterangan ?? 0;
 
         return $keterangan;
     }

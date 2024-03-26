@@ -198,7 +198,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             )
             ->join(DB::raw($penerimaanTruckingHeader . " as b"), 'a.nobukti', 'b.nobukti')
             ->groupBy('a.pengeluarantruckingheader_nobukti');
-            
+
 
         DB::table($penerimaanTruckingDetailrekap)->insertUsing([
             'nobukti',
@@ -206,7 +206,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             'nominal',
             'supir_id',
         ], $querypenerimaanTruckingDetail);
-        
+
         // dd(db::table($penerimaanTruckingDetailrekap)->get());
 
         $pengeluaranTruckingHeader = '##pengeluaranTruckingHeader' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -231,6 +231,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             $table->string('modifiedby', 50)->nullable();
             $table->datetime('created_at')->nullable();
             $table->datetime('updated_at')->nullable();
+            $table->string('posting', 500)->nullable();
         });
 
         $pengeluaranTrucking = PengeluaranTrucking::where('kodepengeluaran', '=', 'PJT')->first();
@@ -260,12 +261,16 @@ class LaporanKeteranganPinjamanSupir extends MyModel
                 'a.jumlahcetak',
                 'a.modifiedby',
                 'a.created_at',
-                'a.updated_at'
+                'a.updated_at',
+                db::raw("(case when " . $statusposting . "=0 then ' ( '+isnull(e.[text],'')+' ) '  else '' end) as posting"),
+
 
             )
+            ->leftjoin(db::raw('parameter e with (readuncommitted)'), 'a.statusposting', 'e.id')
             ->where('a.tglbukti', '<=', $periode)
             ->where('a.pengeluarantrucking_id', '=', $pengeluarantrucking_id)
-            ->where('a.statusposting', '=', $statusposting);
+            // ->where('a.statusposting', '=', $statusposting);
+            ->whereRaw("(a.statusposting=" . $statusposting . " or " . $statusposting . "=0)");
 
         DB::table($pengeluaranTruckingHeader)->insertUsing([
             'id',
@@ -288,6 +293,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             'modifiedby',
             'created_at',
             'updated_at',
+            'posting',
         ], $queryPengeluaranTruckingHeader);
 
         $pengeluaranTruckingDetail = '##pengeluaranTruckingDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -310,7 +316,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             )
             ->join(DB::raw($pengeluaranTruckingHeader . " as b"), 'a.nobukti', 'b.nobukti')
             ->groupBy('a.nobukti');
-            
+
 
         DB::table($pengeluaranTruckingDetail)->insertUsing([
             'nobukti',
@@ -455,7 +461,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
                 'a.tglbukti',
                 'c.nobukti',
                 'c.nobukti as nobuktipelunasan',
-                'c.keterangan',
+                db::raw("trim(c.keterangan)+isnull(a.posting,'') as keterangan"),
                 DB::raw("0 as flag"),
                 db::raw("(isnull(c.nominal,0)-isnull(b.nominal,0)) as debet"),
                 DB::raw("0 as kredit"),
@@ -496,7 +502,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
                 'a.tglbukti',
                 'c.pengeluarantruckingheader_nobukti as nobukti',
                 'a.penerimaan_nobukti as nobuktipelunasan',
-                'c.keterangan',
+                db::raw("(case when " . $statusposting . "=0 then trim(c.keterangan)+ ' ( '+isnull(e.[text],'')+' ) '  else c.keterangan end) as keterangan"),
                 DB::raw("1 as flag"),
                 DB::raw("0 as debet"),
                 'c.nominal as kredit',
@@ -506,7 +512,10 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             ->join(DB::raw($penerimaanTruckingDetail2 . " as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
             ->join(DB::raw("pengeluarantruckingheader as b"), 'c.pengeluarantruckingheader_nobukti', 'b.nobukti')
             ->leftjoin(DB::raw("supir as d with (readuncommitted) "), 'c.supir_id', 'd.id')
-            ->where('b.statusposting', '=', $statusposting)
+            ->leftjoin(db::raw('parameter e with (readuncommitted)'), 'b.statusposting', 'e.id')
+            // ->where('b.statusposting', '=', $statusposting)
+            ->whereRaw("(b.statusposting=" . $statusposting . " or " . $statusposting . "=0)")
+
             ->orderBy('d.namasupir', 'ASC')
             ->orderBy('a.tglbukti', 'ASC')
             ->orderBy('c.pengeluarantruckingheader_nobukti', 'ASC');
@@ -583,7 +592,12 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             ->where('grp', 'JUDULAN LAPORAN')
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
-
+        $parameter = new Parameter();
+        if ($statusposting == 0) {
+            $judul1 = ' ( SEMUA )';
+        } else {
+            $judul1 = ' ( ' . $parameter->cekdataText($statusposting) . ' ) ' ?? '' ;
+        }
         $queryRekap = DB::table($tempLaporan2)->from(
             DB::raw($tempLaporan2 . " as a")
         )
@@ -597,10 +611,10 @@ class LaporanKeteranganPinjamanSupir extends MyModel
                 DB::raw("sum ((isnull(A.saldo,0)+A.debet)-A.Kredit) over (order by id asc) as Saldo"),
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
-                DB::raw("upper('Laporan Keterangan Pinjaman Supir') as judulLaporan"),
+                DB::raw("upper('Laporan Keterangan Pinjaman Supir')+'" . $judul1 . "' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
 
             )
             ->orderBy('a.id');
@@ -612,7 +626,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
         } else {
             $data = $queryRekap->get();
         }
-//  dd($data);
+        //  dd($data);
         return $data;
     }
 }
