@@ -468,7 +468,39 @@ class MandorAbsensiSupir extends MyModel
             'tglberlakumiliksupir',
             'modifiedby',
         ],  $queryTrado);
+        // db::raw("isnull(b.id,0) as id"),
+        $queryNonAktifTrado = db::table("trado")->from(db::raw("trado a with (readuncommitted)"))
+            ->select(
+                'a.id',
+                'a.kodetrado',
+                'a.keterangan',
+                DB::raw($statusaktif->id . ' as statusaktif'),
+                'a.statusabsensisupir',
+                'a.nama',
+                'a.mandor_id',
+                'a.supir_id',
+                'a.tglberlakumiliksupir',
+                'a.modifiedby',
+            )
+            ->join(db::raw("approvaltradogambar b with (readuncommitted)"), 'a.kodetrado', 'b.kodetrado')
+            ->join(db::raw("approvaltradoketerangan c with (readuncommitted)"), 'a.kodetrado', 'c.kodetrado')
+            ->whereRaw("isnull(a.tglberlakumilikmandor,'1900/1/1')<='" . $date . "'")
+            ->where('b.tglbatas','>=', $date)
+            ->where('a.statusaktif','<>', $statusaktif->id);
+            // dd( $queryNonAktifTrado->get());
 
+        DB::table($tempTrado)->insertUsing([
+            'id',
+            'kodetrado',
+            'keterangan',
+            'statusaktif',
+            'statusabsensisupir',
+            'nama',
+            'mandor_id',
+            'supir_id',
+            'tglberlakumiliksupir',
+            'modifiedby',
+        ],  $queryNonAktifTrado);
 
         $tempsupir = '##tempsupir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsupir, function ($table) {
