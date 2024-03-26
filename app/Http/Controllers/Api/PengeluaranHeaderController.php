@@ -431,7 +431,7 @@ class PengeluaranHeaderController extends Controller
         $tgltutup=date('Y-m-d', strtotime($tgltutup));        
 
         
-        if ($status == $statusApproval->id && ($aksi == 'DELETE')) {
+        if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
             $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
             $data = [

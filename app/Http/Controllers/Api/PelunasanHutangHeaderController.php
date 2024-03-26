@@ -368,6 +368,7 @@ class PelunasanHutangHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $PelunasanHutang = PelunasanHutangHeader::find($id);
+        $nobukti = $PelunasanHutang->nobukti ?? '';
         // dd($PelunasanHutang->statusapproval);
         $status = $PelunasanHutang->statusapproval;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
@@ -377,42 +378,75 @@ class PelunasanHutangHeaderController extends Controller
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
         $aksi = request()->aksi ?? '';
 
+        $pengeluaran = $PelunasanHutang->pengeluaran_nobukti ?? '';
+        // dd($pengeluaran);
+        $idpengeluaran = db::table('pengeluaranheader')->from(db::raw("pengeluaranheader a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.nobukti', $pengeluaran)
+            ->first()->id ?? 0;
+        // $aksi = request()->aksi ?? '';
+
+        if ($idpengeluaran != 0) {
+            $validasipengeluaran = app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
+            $msg = json_decode(json_encode($validasipengeluaran), true)['original']['error'] ?? false;
+            if ($msg == false) {
+                goto lanjut;
+            } else {
+                return $validasipengeluaran;
+            }
+        }
+
+        lanjut:
+
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $parameter = new Parameter();
+
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
+
         if ($statusdatacetak == $statusCetak->id) {
-            $query = DB::table('error')
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SDC')
-                ->get();
-            $keterangan = $query['0'];
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah cetak',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'SDC',
+                'statuspesan' => 'warning',
             ];
+
 
             return response($data);
         } else if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
-
-            $query = DB::table('error')
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SAP')
-                ->get();
-            $keterangan = $query['0'];
+            $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah approve',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'SAP',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else if ($tgltutup >= $PelunasanHutang->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' )';
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else {
 
             $data = [
+                'error' => false,
                 'message' => '',
-                'errors' => 'belum approve',
-                'kodestatus' => '0',
-                'kodenobukti' => '1'
+                'statuspesan' => 'success',
             ];
 
             return response($data);
@@ -433,7 +467,7 @@ class PelunasanHutangHeaderController extends Controller
 
             $data = [
                 'error' => true,
-                'message' => $query->keterangan,
+                'message' => $cekdata['keterangan'],
                 'kodeerror' => $cekdata['kodeerror'],
                 'statuspesan' => 'warning',
             ];
@@ -503,14 +537,14 @@ class PelunasanHutangHeaderController extends Controller
     }
 
 
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {
     }
-    
+
     /**
      * @ClassName 
      * @Keterangan EXPORT KE EXCEL

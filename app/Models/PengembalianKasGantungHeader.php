@@ -52,7 +52,7 @@ class PengembalianKasGantungHeader extends MyModel
             goto selesai;
         }
 
-        $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
+        $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
         $jurnal = DB::table('pengembaliankasgantungheader')
             ->from(
                 DB::raw("pengembaliankasgantungheader as a with (readuncommitted)")

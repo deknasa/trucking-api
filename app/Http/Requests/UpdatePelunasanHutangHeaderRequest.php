@@ -35,20 +35,7 @@ class UpdatePelunasanHutangHeaderRequest extends FormRequest
      * @return array
      */
     public function rules()
-    {
-
-        $controller = new PelunasanHutangHeaderController;
-        $pelunasanhutangheader = new PelunasanHutangHeader();
-        $cekdata = $pelunasanhutangheader->cekvalidasiaksi($this->nobukti);
-        $cekdatacetak = $controller->cekvalidasi($this->id);
-        if ($cekdatacetak->original['kodestatus']=='1') {
-                $cekdtcetak=true;
-        } else {
-            $cekdtcetak=false;
-        }
-        
-
-         
+    {        
     
 
         $jumlahdetail = $this->jumlahdetail ?? 0;
@@ -70,7 +57,7 @@ class UpdatePelunasanHutangHeaderRequest extends FormRequest
 
 
         $rules = [
-            'id' => [ new ValidasiDestroyHutangBayarHeader($cekdata['kondisi'],$cekdtcetak)],
+            'id' => [ new ValidasiDestroyHutangBayarHeader()],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku(),
