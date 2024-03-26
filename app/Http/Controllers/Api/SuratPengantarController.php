@@ -454,7 +454,7 @@ class SuratPengantarController extends Controller
             $data = [
                 'status' => false,
                 'message' => '',
-                'errors' => '',
+                'error' => false,
                 'edit' => $edit,
                 'kondisi' => $cekdata['kondisi'],
             ];

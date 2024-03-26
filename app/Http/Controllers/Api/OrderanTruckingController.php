@@ -175,7 +175,7 @@ class OrderanTruckingController extends Controller
 
             $data = [
                 'message' => '',
-                'errors' => 'success',
+                'error' => false,
                 'kodestatus' => '0',
                 'edit' => $edit,
                 'kodenobukti' => '1'

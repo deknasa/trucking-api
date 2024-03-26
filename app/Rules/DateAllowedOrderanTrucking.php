@@ -35,7 +35,7 @@ class DateAllowedOrderanTrucking implements Rule
         $todayValidation = OrderanTrucking::todayValidation($value);
         $isEditAble = OrderanTrucking::isEditAble($value);
         $nobukti = OrderanTrucking::from(DB::raw("orderantrucking"))->where('id', $value)->first();
-        $cekdata = OrderanTrucking::cekvalidasihapus($nobukti->nobukti, 'edit');
+        // $cekdata = OrderanTrucking::cekvalidasihapus($nobukti->nobukti, 'edit');
         
         $this->table = '';
         // if(!$todayValidation){
@@ -47,11 +47,11 @@ class DateAllowedOrderanTrucking implements Rule
             $allowed = true;
             $this->pesan = "BAED";
         }
-        else if ($cekdata['kondisi']) {
-            $allowed = false;
-            $this->pesan = "SATL";
-            $this->table = ' (GAJI SUPIR)';
-        }
+        // else if ($cekdata['kondisi']) {
+        //     $allowed = false;
+        //     $this->pesan = "SATL";
+        //     $this->table = ' (GAJI SUPIR)';
+        // }
         // else {
         //     $allowed = false ;   
         // }
