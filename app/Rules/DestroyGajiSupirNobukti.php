@@ -15,6 +15,8 @@ class DestroyGajiSupirNobukti implements Rule
      *
      * @return void
      */
+    public $kodeerror;
+    public $keterangan;
     public function __construct()
     {
         //
@@ -34,7 +36,7 @@ class DestroyGajiSupirNobukti implements Rule
         $cekdata = $gajisupir->cekvalidasiaksi($nobukti->nobukti);
         if ($cekdata['kondisi']) {
             $this->kodeerror = $cekdata['kodeerror'];            
-            $this->keterangan = ' ('. $cekdata['keterangan'].')';
+            $this->keterangan = $cekdata['keterangan'] ;
             return false;
         }
         
@@ -42,7 +44,7 @@ class DestroyGajiSupirNobukti implements Rule
         $getOriginal = $cekCetak->original;
         if ($getOriginal['error'] == true) {
             $this->kodeerror = $getOriginal['kodeerror'];
-            $this->keterangan = '';
+            $this->keterangan = $getOriginal['message'];
             return false;
         }
 
@@ -56,6 +58,6 @@ class DestroyGajiSupirNobukti implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror($this->kodeerror)->keterangan.$this->keterangan;
+        return $this->keterangan;
     }
 }

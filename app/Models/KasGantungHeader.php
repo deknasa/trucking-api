@@ -92,7 +92,7 @@ class KasGantungHeader extends MyModel
         }
 
 
-        $keteranganerror = $error->cekKeteranganError('SAP');
+        $keteranganerror = $error->cekKeteranganError('SAPP');
 
         $jurnal = DB::table('kasgantungheader')
             ->from(
@@ -110,7 +110,7 @@ class KasGantungHeader extends MyModel
                 'kondisi' => true,
                 'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Approval Jurnal <b>'. $jurnal->pengeluaran_nobukti .'</b> <br> '.$keterangantambahanerror,
                 // 'keterangan' => 'Approval Jurnal ' . $jurnal->pengeluaran_nobukti,
-                'kodeerror' => 'SAP'
+                'kodeerror' => 'SAPP'
             ];
             goto selesai;
         }

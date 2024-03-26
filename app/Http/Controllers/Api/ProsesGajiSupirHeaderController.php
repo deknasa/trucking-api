@@ -109,7 +109,7 @@ class ProsesGajiSupirHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            
+
             $requestData = json_decode($request->dataric, true);
             $data = [
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
@@ -355,8 +355,11 @@ class ProsesGajiSupirHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $prosesgaji = ProsesGajiSupirHeader::find($id);
-        $nobukti=$prosesgaji->nobukti ?? '';
+        $nobukti = $prosesgaji->nobukti ?? '';
         $status = $prosesgaji->statusapproval;
+
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
         $statusdatacetak = $prosesgaji->statuscetak;
@@ -364,23 +367,30 @@ class ProsesGajiSupirHeaderController extends Controller
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
         $aksi = request()->aksi ?? '';
 
-        $pengeluaran=$prosesgaji->pengeluaran_nobukti ?? '';
-        $idpengeluaran=db::table('pengeluaranheader')->from(db::raw("pengeluaranheader a with (readuncommitted)"))
-        ->select(
-            'a.id'
-        )
-        ->where('a.nobukti',$pengeluaran)
-        ->first()->id ?? 0;
-        $validasipengeluaran=app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
-        $msg=json_decode(json_encode($validasipengeluaran),true)['original']['error'] ?? false;
+        $pengeluaran = $prosesgaji->pengeluaran_nobukti ?? '';
+        $idpengeluaran = db::table('pengeluaranheader')->from(db::raw("pengeluaranheader a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.nobukti', $pengeluaran)
+            ->first()->id ?? 0;
+        $validasipengeluaran = app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
+        $msg = json_decode(json_encode($validasipengeluaran), true)['original']['error'] ?? false;
         // dd($msg);
-        if ($msg==false) {
-            goto lanjut ;
+        if ($msg == false) {
+            goto lanjut;
         } else {
             return $validasipengeluaran;
         }
 
-  lanjut:
+        lanjut:
+
+        
+        $parameter = new Parameter();
+
+        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup=date('Y-m-d', strtotime($tgltutup));  
+
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
@@ -395,17 +405,27 @@ class ProsesGajiSupirHeaderController extends Controller
 
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SDC')
-                ->first();
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+
             $data = [
                 'error' => true,
-                'message' => $query->keterangan,
+                'message' => $keterror,
                 'kodeerror' => 'SDC',
                 'statuspesan' => 'warning',
             ];
             return response($data);
+        } else if ($tgltutup >= $prosesgaji->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);            
         } else {
 
             $data = [
@@ -432,7 +452,7 @@ class ProsesGajiSupirHeaderController extends Controller
 
             $data = [
                 'error' => true,
-                'message' => $query->keterangan,
+                'message' => $cekdata['keterangan'],
                 'kodeerror' => $cekdata['kodeerror'],
                 'statuspesan' => 'warning',
             ];
@@ -533,7 +553,7 @@ class ProsesGajiSupirHeaderController extends Controller
     public function approvalbukacetak()
     {
     }
-    
+
     /**
      * @ClassName 
      * @Keterangan EXPORT KE EXCEL
