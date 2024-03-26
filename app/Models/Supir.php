@@ -1698,10 +1698,20 @@ class Supir extends MyModel
     public function processApprovalSupirLuarKota(array $data)
     {
         $supir = Supir::find($data['id']);
+        $tglbataslama = $supir->tglbatastidakbolehluarkota;
         $supir->statusluarkota = $data['statusluarkota'];
         $supir->keterangantidakbolehluarkota = $data['keterangan'];
         $supir->tglbatastidakbolehluarkota = date('Y-m-d', strtotime($data['tglbatas']));
         $supir->save();
+
+        $dataHistory = [
+            'supir_id' => $data['id'],
+            'tglbataslama' => $tglbataslama,
+            'tglbatasbaru' => date('Y-m-d', strtotime($data['tglbatas'])),
+            'statusluarkota' => $data['statusluarkota']
+        ];
+
+        (new HistoryTglBatasLuarKota())->processStore($dataHistory);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($supir->getTable()),

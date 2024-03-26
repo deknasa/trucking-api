@@ -13,6 +13,7 @@ class validasiApprovalTglBatasLuarKota implements Rule
      *
      * @return void
      */
+    public $kode;
     public function __construct()
     {
         //
@@ -29,11 +30,34 @@ class validasiApprovalTglBatasLuarKota implements Rule
     {
         if ($value != '') {
 
-            $supir = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))->select('tglmasuk')
+            $supir = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))->select('tglmasuk', DB::raw("(case when (year(tglbatastidakbolehluarkota) <= 2000) then null else tglbatastidakbolehluarkota end ) as tglbatastidakbolehluarkota"))
                 ->where('id', request()->id)->first();
             $tglbatas = date("Y-m-d", strtotime($value));
             if ($tglbatas < $supir->tglmasuk) {
+                $this->kode = 1;
                 return false;
+            }
+
+            if ($supir->tglbatastidakbolehluarkota != '') {
+                if ($value != '') {
+                    if (date('Y-m-d', strtotime($supir->tglbatastidakbolehluarkota)) < $tglbatas) {
+
+                        $batas = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
+                            ->where('grp', 'BATAS KM LUAR KOTA')->first()->text;
+
+
+                        $cekSP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+                            ->where('jarak', '>', $batas)
+                            ->where('supir_id', request()->id)
+                            ->whereBetween('tglbukti', [date('Y-m-d', strtotime($supir->tglbatastidakbolehluarkota)), $tglbatas])
+                            ->first();
+                        if($cekSP != ''){
+                            $this->kode = 2;
+                            return false;
+                        }
+
+                    }
+                }
             }
         }
         return true;
@@ -46,6 +70,11 @@ class validasiApprovalTglBatasLuarKota implements Rule
      */
     public function message()
     {
-        return 'tgl batas ' . app(ErrorController::class)->geterror('MAX')->keterangan . ' tgl masuk';
+        if($this->kode == 1){
+            return 'tgl batas ' . app(ErrorController::class)->geterror('MAX')->keterangan . ' tgl masuk';
+        }
+        if($this->kode == 2){
+            return app(ErrorController::class)->geterror('ATLK')->keterangan;
+        }
     }
 }
