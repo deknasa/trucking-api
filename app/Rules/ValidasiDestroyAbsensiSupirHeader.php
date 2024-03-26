@@ -2,6 +2,7 @@
 
 namespace App\Rules;
 
+use App\Http\Controllers\Api\AbsensiSupirHeaderController;
 use Illuminate\Contracts\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\AbsensiSupirHeader;
@@ -13,6 +14,8 @@ class ValidasiDestroyAbsensiSupirHeader implements Rule
      *
      * @return void
      */
+    public $kodeerror;
+    public $keterangan;
     public function __construct()
     {
         
@@ -29,37 +32,46 @@ class ValidasiDestroyAbsensiSupirHeader implements Rule
     public function passes($attribute, $value)
     {
 
-        $absensisupir = AbsensiSupirHeader::findOrFail(request()->id);
+        // $absensisupir = AbsensiSupirHeader::findOrFail(request()->id);
 
-        $isDateAllowed = AbsensiSupirHeader::isDateAllowed($absensisupir->id);
-        if (!$isDateAllowed) {
-            $this->message = "TEPT";
+        // $isDateAllowed = AbsensiSupirHeader::isDateAllowed($absensisupir->id);
+        // if (!$isDateAllowed) {
+        //     $this->message = "TEPT";
 
-        }
-        $isEditAble = AbsensiSupirHeader::isEditAble($absensisupir->id);
-        if (!$isEditAble) {
-            $this->message = "BAED";
+        // }
+        // $isEditAble = AbsensiSupirHeader::isEditAble($absensisupir->id);
+        // if (!$isEditAble) {
+        //     $this->message = "BAED";
 
-        }
-        $printValidation = AbsensiSupirHeader::printValidation($absensisupir->id);
-        if (!$printValidation) {
-            $this->message = "SDC";
+        // }
+        // $printValidation = AbsensiSupirHeader::printValidation($absensisupir->id);
+        // if (!$printValidation) {
+        //     $this->message = "SDC";
 
-        }
-        $todayValidation = AbsensiSupirHeader::todayValidation($absensisupir->tglbukti);
-        if (!$todayValidation) {
-            $this->message = "SATL";
+        // }
+        // $todayValidation = AbsensiSupirHeader::todayValidation($absensisupir->tglbukti);
+        // if (!$todayValidation) {
+        //     $this->message = "SATL";
 
-        }
-        $isApproved = AbsensiSupirHeader::isApproved($absensisupir->nobukti);
-        if (!$isApproved) {
-            $this->message = "SATL";
+        // }
+        // $isApproved = AbsensiSupirHeader::isApproved($absensisupir->nobukti);
+        // if (!$isApproved) {
+        //     $this->message = "SATL";
 
+        // }
+        // if (($todayValidation && $isApproved) || ($isEditAble && $printValidation) || $isDateAllowed) {
+        //     return true;
+        // }
+        // return false;
+
+        $cekCetak = app(AbsensiSupirHeaderController::class)->cekvalidasi(request()->id);
+        $getOriginal = $cekCetak->original;
+        if ($getOriginal['error'] == true) {
+            $this->kodeerror = $getOriginal['kodeerror'];
+            $this->keterangan = $getOriginal['message'];
+            return false;
         }
-        if (($todayValidation && $isApproved) || ($isEditAble && $printValidation) || $isDateAllowed) {
-            return true;
-        }
-        return false;
+        return true;
     }
 
     /**
@@ -69,6 +81,6 @@ class ValidasiDestroyAbsensiSupirHeader implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror($this->message)->keterangan;
+        return $this->keterangan;
     }
 }
