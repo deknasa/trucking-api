@@ -27,15 +27,16 @@ class CekMinusSisaPelunasanPiutang implements Rule
      */
     public function passes($attribute, $value)
     {
-        $attribute = substr($attribute,5);
+        $attribute = substr($attribute, 5);
         $nobukti = request()->piutang_nobukti[$attribute];
         $piutang = new PiutangHeader();
         $getPiutang = $piutang->getSisaPiutang($nobukti, request()->agen_id);
-        if($value > $getPiutang->sisa){
-            return false;
-        }else{
-            return true;
+        if ($getPiutang != '') {
+            if ($value > $getPiutang->sisa) {
+                return false;
+            }
         }
+        return true;
     }
 
     /**
@@ -45,6 +46,6 @@ class CekMinusSisaPelunasanPiutang implements Rule
      */
     public function message()
     {
-        return  app(ErrorController::class)->geterror('NTLB')->keterangan.' nominal piutang';
+        return  app(ErrorController::class)->geterror('NTLB')->keterangan . ' nominal piutang';
     }
 }

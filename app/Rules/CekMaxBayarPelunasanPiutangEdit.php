@@ -28,19 +28,20 @@ class CekMaxBayarPelunasanPiutangEdit implements Rule
      */
     public function passes($attribute, $value)
     {
-        $attribute = substr($attribute,6);
+        $attribute = substr($attribute, 6);
         $nobukti = request()->piutang_nobukti[$attribute];
         $potongan = (request()->potongan[$attribute] == '') ? 0 : request()->potongan[$attribute];
         $total = $potongan + $value;
         $piutang = new PelunasanPiutangHeader();
         // 
         $getPiutang = $piutang->getEditPelunasan($nobukti, request()->agen_id);
-        $totalAwal = $getPiutang->sisa + $value + $potongan;
-        if((float)$total > (float)$totalAwal){
-            return false;
-        }else{
-            return true;
+        if ($getPiutang != '') {
+            $totalAwal = $getPiutang->sisa + $value + $potongan;
+            if ((float)$total > (float)$totalAwal) {
+                return false;
+            }
         }
+        return true;
     }
 
     /**
@@ -50,6 +51,6 @@ class CekMaxBayarPelunasanPiutangEdit implements Rule
      */
     public function message()
     {
-        return  app(ErrorController::class)->geterror('NTLB')->keterangan.' nominal piutang';
+        return  app(ErrorController::class)->geterror('NTLB')->keterangan . ' nominal piutang';
     }
 }
