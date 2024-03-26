@@ -15,6 +15,7 @@ use App\Rules\ValidasiStatusNotaKredit;
 use App\Rules\ValidasiNominalSaldo;
 use App\Rules\ValidasiStatusPelunasan;
 use App\Rules\ValidasiNotaDebetPelunasan;
+use App\Rules\ValidasiPiutangPelunasan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
@@ -116,6 +117,7 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
                 new ValidasiDetail($jumlahdetail),
                 new ValidasiStatusNotaDebet(),
                 new ValidasiStatusNotaKredit(),
+                new ValidasiPiutangPelunasan()
                 // new ValidasiNominalSaldo()
             ],
             'tgljatuhtempo' => ['date_format:d-m-Y','after_or_equal:'.request()->tglbukti],

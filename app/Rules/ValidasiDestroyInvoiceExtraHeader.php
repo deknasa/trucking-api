@@ -19,8 +19,8 @@ class ValidasiDestroyInvoiceExtraHeader implements Rule
 
     }
 
-    public $kondisi;
-    public $kondisicetak;
+    public $kodeerror;
+    public $keterangan;
     /**
      * Determine if the validation rule passes.
      *
@@ -38,13 +38,13 @@ class ValidasiDestroyInvoiceExtraHeader implements Rule
         
         if ($cekdata['kondisi']) {
             $this->kodeerror = $cekdata['kodeerror'];            
-            $this->keterangan = ' ('. $cekdata['keterangan'].')';
+            $this->keterangan = $cekdata['keterangan'] ;
             return false;
         }
         $getOriginal = $cekdatacetak->original;
         if ($getOriginal['error'] == true) {
             $this->kodeerror = $getOriginal['kodeerror'];
-            $this->keterangan = '';
+            $this->keterangan = $getOriginal['message'];
             return false;
         }
 
@@ -58,7 +58,7 @@ class ValidasiDestroyInvoiceExtraHeader implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror($this->kodeerror)->keterangan.$this->keterangan;
+        return $this->keterangan;
         
     }
 }
