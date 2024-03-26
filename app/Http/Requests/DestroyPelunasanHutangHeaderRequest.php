@@ -25,22 +25,9 @@ class DestroyPelunasanHutangHeaderRequest extends FormRequest
      * @return array
      */
     public function rules()
-    {
-        $controller = new PelunasanHutangHeaderController;
-        $pelunasanhutangheader = new PelunasanHutangHeader();
-        $cekdata = $pelunasanhutangheader->cekvalidasiaksi($this->nobukti);
-        $cekdatacetak = $controller->cekvalidasi($this->id);
-        if ($cekdatacetak->original['kodestatus']=='1') {
-                $cekdtcetak=true;
-        } else {
-            $cekdtcetak=false;
-        }
-        
-
-         
-    
+    {    
         return [
-            'id' => [ new ValidasiDestroyHutangBayarHeader($cekdata['kondisi'],$cekdtcetak)],
+            'id' => [ new ValidasiDestroyHutangBayarHeader()],
         ];
     }
 }

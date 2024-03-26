@@ -4,6 +4,9 @@ namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
+use App\Http\Controllers\Api\PelunasanHutangHeaderController;
+use App\Models\PelunasanHutangHeader;
+use Illuminate\Support\Facades\DB;
 
 class ValidasiDestroyHutangBayarHeader implements Rule
 {
@@ -12,13 +15,12 @@ class ValidasiDestroyHutangBayarHeader implements Rule
      *
      * @return void
      */
-    public function __construct($param, $paramcetak)
+    public $kodeerror;
+    public $keterangan;
+    public function __construct()
     {
-        $this->kondisi = $param;
-        $this->kondisicetak = $paramcetak;
+
     }
-    public $kondisi;
-    public $kondisicetak;
 
     /**
      * Determine if the validation rule passes.
@@ -29,16 +31,23 @@ class ValidasiDestroyHutangBayarHeader implements Rule
      */
     public function passes($attribute, $value)
     {
-        if ($this->kondisi == true) {
-            // dd('1');
+        $pelunasanHutangHeader = new PelunasanHutangHeader();
+        $nobukti = PelunasanHutangHeader::from(DB::raw("pelunasanhutangheader"))->where('id', request()->id)->first();
+        $cekdata = $pelunasanHutangHeader->cekvalidasiaksi($nobukti->nobukti);
+        if ($cekdata['kondisi']) {
+            $this->kodeerror = $cekdata['kodeerror'];
+            $this->keterangan = $cekdata['keterangan'] ;
             return false;
-        } else if ($this->kondisicetak == true) {
-            // dd('2');
-            return false;
-        } else {
-            // dd('3');
-            return true;
         }
+
+        $cekCetak = app(PelunasanHutangHeaderController::class)->cekvalidasi(request()->id);
+        $getOriginal = $cekCetak->original;
+        if ($getOriginal['error'] == true) {
+            $this->kodeerror = $getOriginal['kodeerror'];
+            $this->keterangan = $getOriginal['message'];
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -48,10 +57,6 @@ class ValidasiDestroyHutangBayarHeader implements Rule
      */
     public function message()
     {
-        if ($this->kondisi == true) {
-            return app(ErrorController::class)->geterror('SATL')->keterangan;
-        } else {
-            return app(ErrorController::class)->geterror('SDC')->keterangan;
-        }
+        return $this->keterangan;
     }
 }

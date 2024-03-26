@@ -473,7 +473,7 @@ class PelunasanPiutangHeaderController extends Controller
         lanjut:
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
-
+        $nobukti = $pengeluaran->nobukti;
         $parameter = new Parameter();
 
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
@@ -526,7 +526,7 @@ class PelunasanPiutangHeaderController extends Controller
 
             $data = [
                 'error' => true,
-                'message' => $query->keterangan,
+                'message' => $cekdata['keterangan'],
                 'kodeerror' => $cekdata['kodeerror'],
                 'statuspesan' => 'warning',
             ];

@@ -290,6 +290,9 @@ class PelunasanHutangHeader extends MyModel
 
     public function cekvalidasiaksi($nobukti)
     {
+        $error = new Error();
+        $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $PelunasanHutang = DB::table('PelunasanHutangheader')
             ->from(
                 DB::raw("PelunasanHutangheader as a with (readuncommitted)")
@@ -304,8 +307,8 @@ class PelunasanHutangHeader extends MyModel
         if (isset($PelunasanHutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal '. $PelunasanHutang->pengeluaran_nobukti,
-                'kodeerror' => 'SATL'
+                'keterangan' =>  'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Approval Jurnal <b>'. $PelunasanHutang->pengeluaran_nobukti .'</b> <br> '.$keterangantambahanerror,
+                'kodeerror' => 'SAPP'
             ];
             goto selesai;
         }
