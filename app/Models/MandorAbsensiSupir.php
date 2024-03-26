@@ -21,7 +21,7 @@ class MandorAbsensiSupir extends MyModel
         $trado = new Trado();
         $trado->RefreshTradoNonAktif();
         $supir = new Supir();
-        $supir->RefreshTradoNonAktif();
+        $supir->RefreshSupirNonAktif();
 
         $mandorId = false;
         $isMandor = auth()->user()->isMandor();

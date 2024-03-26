@@ -5,20 +5,21 @@ namespace App\Rules;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Validation\Rule;
 
-class AbsensiTradoNontaktif implements Rule
+class AbsensiSupirNontaktif implements Rule
 {
     /**
      * Create a new rule instance.
      *
      * @return void
      */
-    public function __construct($tglbukti,$trado_id)
+    public function __construct($tglbukti,$supir_id)
     {
         $this->tglbukti = date('Y-m-d',strtotime($tglbukti));
-        $this->trado_id = $trado_id;
+        $this->supir_id = $supir_id;
     }
     protected $tglbukti;
-    protected $trado_id;
+    protected $supir_id;
+
     /**
      * Determine if the validation rule passes.
      *
@@ -31,16 +32,14 @@ class AbsensiTradoNontaktif implements Rule
         $statusaktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
            
 
-        $trado = DB::table("trado")->from(DB::raw("trado a with (readuncommitted)"))
-        ->join(db::raw("approvaltradogambar b with (readuncommitted)"), 'a.kodetrado', 'b.kodetrado')
-        ->join(db::raw("approvaltradoketerangan c with (readuncommitted)"), 'a.kodetrado', 'c.kodetrado')
-        ->where('a.id', $this->trado_id)
+        $supir = DB::table("supir")->from(DB::raw("supir a with (readuncommitted)"))
+        ->join(DB::raw("approvalsupirgambar b with (readuncommitted)"), 'a.noktp', 'b.noktp')
+        ->join(DB::raw("approvalsupirketerangan c with (readuncommitted)"), 'a.noktp', 'c.noktp')
+        ->where('a.id', $this->supir_id)
         ->where('b.tglbatas','<=', $this->tglbukti)
         ->where('a.statusaktif','<>', $statusaktif->id)
         ->first();
-        
-        if ($trado) {
-            
+        if ($supir) {
             return false;
         }
         return true;
@@ -53,6 +52,6 @@ class AbsensiTradoNontaktif implements Rule
      */
     public function message()
     {
-        return 'Tanggal aktif trado sudah habis';
+        return 'SUPIR DARI TRADO INI TIDAK AKTIF';
     }
 }
