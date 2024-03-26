@@ -21,7 +21,7 @@ class MandorAbsensiSupir extends MyModel
         $trado = new Trado();
         $trado->RefreshTradoNonAktif();
         $supir = new Supir();
-        $supir->RefreshTradoNonAktif();
+        $supir->RefreshSupirNonAktif();
 
         $mandorId = false;
         $isMandor = auth()->user()->isMandor();
@@ -537,6 +537,33 @@ class MandorAbsensiSupir extends MyModel
         //     $querysupir->where('b.statusaktif', $statusaktif->id); // dijakarta tidak aktifkan
         // }
 
+        DB::table($tempsupir)->insertUsing([
+            'id',
+            'namasupir',
+            'statusaktif',
+            // 'supirold_id',
+            'keterangan',
+            'mandor_id',
+            'info',
+            'modifiedby'
+        ],  $querysupir);
+
+        $querysupir = db::table("supir")->from(db::raw("supir a with (readuncommitted)"))
+        ->select(
+            'a.id',
+            'a.namasupir',
+            DB::raw($statusaktif->id . ' as statusaktif'),
+            // 'a.supirold_id',
+            'a.keterangan',
+            'a.mandor_id',
+            'a.info',
+            'a.modifiedby'
+        )
+        ->join(db::raw("approvalsupirgambar b with (readuncommitted)"), 'a.noktp', 'b.noktp')
+        ->join(db::raw("approvalsupirketerangan c with (readuncommitted)"), 'a.noktp', 'c.noktp')
+        ->where('b.tglbatas','>=', $date)
+        ->where('a.statusaktif','<>', $statusaktif->id);
+        // dd($querysupir->get());
         DB::table($tempsupir)->insertUsing([
             'id',
             'namasupir',

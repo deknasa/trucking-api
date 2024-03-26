@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\AbsensiSupirNontaktif;
 use App\Rules\AbsensiTradoNontaktif;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\MandorAbsensiSupirEditSupirValidasiTradoSupirSerap;
@@ -42,6 +43,7 @@ class MandorAbsensiSupirAllSupirSerapRequest extends FormRequest
                  $rule = [
                     "$key.kodetrado" => [ 
                         new MandorAbsensiSupirEditSupirValidasiTradoSupirSerap($data[$key]['trado_id'], $data[$key]['absen_id'], $data[$key]['tglbukti'], $data[$key]['supirold_id']),
+                        new AbsensiSupirNontaktif($data[$key]['tglbukti'],$data[$key]['supir_id']),
                         new AbsensiTradoNontaktif($data[$key]['tglbukti'],$data[$key]['trado_id'])
                     ],
                 ];

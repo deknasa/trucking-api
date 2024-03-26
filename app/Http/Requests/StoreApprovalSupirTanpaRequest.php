@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\DateUsedSupirTrip;
 use App\Rules\DateApprovalTradoGambar;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -40,7 +41,8 @@ class StoreApprovalSupirTanpaRequest extends FormRequest
             "noktp"=> ["required",'exists:supir,noktp'],
             "keterangan_statusapproval"=> $validasi_Keterangan,
             "gambar_statusapproval"=> $validasi_gambar,
-            "tglbatas" => ['required','date_format:d-m-Y',new DateApprovalTradoGambar()],
+            "tglbatas" => ['date_format:d-m-Y','nullable',new DateUsedSupirTrip()],
+            // "tglbatas" => ['required','date_format:d-m-Y',new DateApprovalTradoGambar()],
         ];
     }
 }

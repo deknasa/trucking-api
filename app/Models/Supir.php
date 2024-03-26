@@ -208,7 +208,7 @@ class Supir extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-        $this->RefreshTradoNonAktif();
+        $this->RefreshSupirNonAktif();
         $absen = request()->absen ?? '';
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->select('text')
@@ -1769,7 +1769,7 @@ class Supir extends MyModel
         return $query;
     }
 
-    public function RefreshTradoNonAktif()
+    public function RefreshSupirNonAktif()
     {
 
         $date = date('Y-m-d');
@@ -1847,7 +1847,6 @@ class Supir extends MyModel
             ->where('a.statusaktif', $statusAktif->id)
             ->get();
 
-  
 
 
         $tempsupirketerangan = '##tempsupirketerangan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -1870,7 +1869,7 @@ class Supir extends MyModel
             $photokk = true;
             $photoskck = true;
             $pdfsuratperjanjian = true;
-
+           
             if (!is_null(json_decode($supir['photosupir']))) {
                 foreach (json_decode($supir['photosupir']) as $value) {
                     if ($value != '') {
@@ -1983,14 +1982,14 @@ class Supir extends MyModel
                 ->select(
                     'a.id'
                 )
-                ->whereRaw("a.tglbatas<'" . $date . "'")
+                ->whereRaw("a.tglbatas <='" . $date . "'")
                 ->where('a.namasupir', $supir['namasupir'])
                 ->where('a.noktp', $supir['noktp'])
                 ->where('a.statusapproval', $statusApp->id)
                 ->first();
 
-                // dd($querygambar->tosql());
-            if ($photosupir == true || $photokk == true  || $photoktp == true || $photosim == true || $photoskck == true || $pdfsuratperjanjian == true) {
+
+                if ($photosupir == true || $photokk == true  || $photoktp == true || $photosim == true || $photoskck == true || $pdfsuratperjanjian == true) {
                 if (isset($querygambar)) {
 
                     DB::table($tempsupirgambar)->insert([
