@@ -88,6 +88,9 @@ class PendapatanSupirHeader extends MyModel
 
     public function cekvalidasiaksi($nobukti)
     {
+        $error = new Error();
+        $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
 
 
         $jurnal = DB::table('pendapatansupirheader')
@@ -104,7 +107,7 @@ class PendapatanSupirHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal ' . $jurnal->pengeluaran_nobukti,
+                'keterangan' =>  'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Approval Jurnal <b>'. $jurnal->pengeluaran_nobukti .'</b> <br> '.$keterangantambahanerror,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;

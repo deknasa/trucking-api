@@ -11,6 +11,7 @@ use App\Http\Requests\StorePendapatanSupirDetailRequest;
 use App\Models\PendapatanSupirHeader;
 use App\Http\Requests\StorePendapatanSupirHeaderRequest;
 use App\Http\Requests\UpdatePendapatanSupirHeaderRequest;
+use App\Models\Error;
 use App\Models\Parameter;
 use App\Models\PendapatanSupirDetail;
 use Illuminate\Http\JsonResponse;
@@ -329,6 +330,7 @@ class PendapatanSupirHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $pendapatan = PendapatanSupirHeader::find($id);
+        $nobukti = $pendapatan->nobukti ?? '';
         $status = $pendapatan->statusapproval;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
@@ -337,32 +339,69 @@ class PendapatanSupirHeaderController extends Controller
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
         $aksi = request()->aksi ?? '';
 
+
+        $pengeluaran = $pendapatan->pengeluaran_nobukti ?? '';
+        // dd($pengeluaran);
+        $idpengeluaran = db::table('pengeluaranheader')->from(db::raw("pengeluaranheader a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.nobukti', $pengeluaran)
+            ->first()->id ?? 0;
+        // $aksi = request()->aksi ?? '';
+
+        if ($idpengeluaran != 0) {
+            $validasipengeluaran = app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
+            $msg = json_decode(json_encode($validasipengeluaran), true)['original']['error'] ?? false;
+            if ($msg == false) {
+                goto lanjut;
+            } else {
+                return $validasipengeluaran;
+            }
+        }
+
+        lanjut:
+
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $parameter = new Parameter();
+
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
+
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
-            $query = DB::table('error')
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SAP')
-                ->first();
+            $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
-                'message' =>  'No Bukti ' . $pendapatan->nobukti . ' ' . $query->keterangan,
+                'message' =>  $keterror,
                 'kodeerror' => 'SAP',
                 'statuspesan' => 'warning',
             ];
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
-            $query = DB::table('error')
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SDC')
-                ->first();
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
-                'message' =>  'No Bukti ' . $pendapatan->nobukti . ' ' . $query->keterangan,
+                'message' =>  $keterror,
                 'kodeerror' => 'SDC',
                 'statuspesan' => 'warning',
             ];
 
             return response($data);
-        } else {
+        } else if ($tgltutup >= $pendapatan->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' )';
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        }else {
 
             $data = [
                 'error' => false,
@@ -389,7 +428,8 @@ class PendapatanSupirHeaderController extends Controller
 
             $data = [
                 'error' => true,
-                'message' => $query->keterangan,
+                'message' => $cekdata['keterangan'],
+                'kodeerror' => $cekdata['kodeerror'],
                 'statuspesan' => 'warning',
             ];
 
