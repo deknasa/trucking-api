@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\AbsensiTradoNontaktif;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\MandorAbsensiSupirEditSupirValidasiTradoSupirSerap;
 
@@ -39,7 +40,10 @@ class MandorAbsensiSupirAllSupirSerapRequest extends FormRequest
         // Tentukan aturan validasi untuk setiap kunci data
         $validaasismass = collect($keys)->mapWithKeys(function ($key) use ($data) {
                  $rule = [
-                    "$key.kodetrado" => [ new MandorAbsensiSupirEditSupirValidasiTradoSupirSerap($data[$key]['trado_id'], $data[$key]['absen_id'], $data[$key]['tglbukti'], $data[$key]['supirold_id'])],
+                    "$key.kodetrado" => [ 
+                        new MandorAbsensiSupirEditSupirValidasiTradoSupirSerap($data[$key]['trado_id'], $data[$key]['absen_id'], $data[$key]['tglbukti'], $data[$key]['supirold_id']),
+                        new AbsensiTradoNontaktif($data[$key]['tglbukti'],$data[$key]['trado_id'])
+                    ],
                 ];
  
             return $rule;
