@@ -204,11 +204,15 @@ class ApprovalSupirKeterangan extends MyModel
 
     public function processStore(array $data): ApprovalSupirKeterangan
     {
+        $tglbatas = $data['tglbatas'];
+        if ($data['tglbatas']) {
+            $tglbatas = date('Y-m-d', strtotime($data['tglbatas']));
+        }
         $approvalSupirKeterangan = new ApprovalSupirKeterangan();
         $approvalSupirKeterangan->namasupir = $data['namasupir'];
         $approvalSupirKeterangan->noktp = $data['noktp'];
         $approvalSupirKeterangan->statusapproval = $data['statusapproval'];
-        $approvalSupirKeterangan->tglbatas = date('Y-m-d', strtotime($data['tglbatas']));
+        $approvalSupirKeterangan->tglbatas = $tglbatas;
 
         $statusNonApproval = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS APPROVAL')->where('subgrp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
         //nonaktif supir
@@ -242,10 +246,14 @@ class ApprovalSupirKeterangan extends MyModel
 
     public function processUpdate(ApprovalSupirKeterangan $approvalSupirKeterangan ,array $data): ApprovalSupirKeterangan
     {
+        $tglbatas = $data['tglbatas'];
+        if ($data['tglbatas']) {
+            $tglbatas = date('Y-m-d', strtotime($data['tglbatas']));
+        }
         $approvalSupirKeterangan->namasupir = $data['namasupir'];
         $approvalSupirKeterangan->noktp = $data['noktp'];
         $approvalSupirKeterangan->statusapproval = $data['statusapproval'];
-        $approvalSupirKeterangan->tglbatas = date('Y-m-d', strtotime($data['tglbatas']));
+        $approvalSupirKeterangan->tglbatas = $tglbatas;
 
         $statusNonApproval = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS APPROVAL')->where('subgrp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
         //nonaktif supir

@@ -204,11 +204,15 @@ class ApprovalSupirGambar extends MyModel
 
     public function processStore(array $data): ApprovalSupirGambar
     {
+        $tglbatas = $data['tglbatas'];
+        if ($data['tglbatas']) {
+            $tglbatas = date('Y-m-d', strtotime($data['tglbatas']));
+        }
         $approvalSupirGambar = new ApprovalSupirGambar();
         $approvalSupirGambar->namasupir = $data['namasupir'];
         $approvalSupirGambar->noktp = $data['noktp'];
         $approvalSupirGambar->statusapproval = $data['statusapproval'];
-        $approvalSupirGambar->tglbatas = date('Y-m-d', strtotime($data['tglbatas']));
+        $approvalSupirGambar->tglbatas = $tglbatas;
         
         $statusNonApproval = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS APPROVAL')->where('subgrp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
         //nonaktif supir
@@ -242,10 +246,14 @@ class ApprovalSupirGambar extends MyModel
 
     public function processUpdate(ApprovalSupirGambar $approvalSupirGambar ,array $data): ApprovalSupirGambar
     {
+        $tglbatas = $data['tglbatas'];
+        if ($data['tglbatas']) {
+            $tglbatas = date('Y-m-d', strtotime($data['tglbatas']));
+        }
         $approvalSupirGambar->namasupir = $data['namasupir'];
         $approvalSupirGambar->noktp = $data['noktp'];
         $approvalSupirGambar->statusapproval = $data['statusapproval'];
-        $approvalSupirGambar->tglbatas = date('Y-m-d', strtotime($data['tglbatas']));
+        $approvalSupirGambar->tglbatas = $tglbatas;
         
         $statusNonApproval = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS APPROVAL')->where('subgrp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
         //nonaktif supir
