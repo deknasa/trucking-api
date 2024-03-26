@@ -69,7 +69,7 @@ class validasiApprovalPengajuanTripInap implements Rule
             
             $this->keterangantambahanerror = (new Error())->cekKeteranganError('PTBL') ?? '';
             $this->keterangan = $error->cekKeteranganError('SATL2') ?? '';
-            $this->data = $data. $this->keterangan. ' <br> ' . $this->keterangantambahanerror;
+            $this->data = $data. $this->keterangan. ' (trip inap) <br> ' . $this->keterangantambahanerror;
             return false;
         }
         

@@ -274,8 +274,7 @@ class AbsensiSupirDetail extends MyModel
                         $aksi = request()->aksi;
                         $tgltrip = date('Y-m-d', strtotime(request()->tgltrip));
                         $query->addSelect(DB::raw("(trim(trado.kodetrado)+' - '+trim(supir.namasupir)) as tradosupir"))
-                            ->where("$this->table.supir_id", '!=', 0)
-                            ->where('absensisupirdetail.absen_id', 2);
+                            ->where("$this->table.supir_id", '!=', 0);
                         if ($aksi == 'add') {
                             $query->whereRaw("absensisupirdetail.trado_id not in (select trado_id from pengajuantripinap where tglabsensi='$tgltrip')");
                         } else {
@@ -293,8 +292,7 @@ class AbsensiSupirDetail extends MyModel
                         $awal = date('Y-m-d') . ' 00:00:00';
                         $akhir = date('Y-m-d') . ' 23:59:59';
                         $query->addSelect(DB::raw("(trim(trado.kodetrado)+' - '+trim(supir.namasupir)) as tradosupir"))
-                            ->where("$this->table.supir_id", '!=', 0)
-                            ->where('absensisupirdetail.absen_id', 2);
+                            ->where("$this->table.supir_id", '!=', 0);
                         // ->whereRaw("CONVERT(VARCHAR(10), created_at, 23) = '$now'")
 
                         $getPengajuan3Hari = DB::table("pengajuantripinap")->from(DB::raw("pengajuantripinap with (readuncommitted)"))
