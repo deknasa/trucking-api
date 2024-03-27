@@ -27,6 +27,9 @@ use App\Http\Requests\AbsensiSupirHeaderRequest;
 use App\Http\Requests\ApprovalPengajuanTripInapAbsensiRequest;
 use Illuminate\Database\QueryException;
 
+use App\Models\MyModel;
+use DateTime;
+
 class AbsensiSupirHeaderController extends Controller
 {
     /**
@@ -413,7 +416,10 @@ class AbsensiSupirHeaderController extends Controller
 
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
+        $user = auth('api')->user()->name;
+        $useredit = $absensisupir->editing_by ?? '';
 
+   
         if ($aksi == 'PRINTER BESAR' || $aksi == 'PRINTER KECIL') {
             //validasi cetak
             $printValidation = AbsensiSupirHeader::printValidation($id);
@@ -437,6 +443,39 @@ class AbsensiSupirHeaderController extends Controller
                 ];
             }
             return response($data);
+        } else if ($useredit != '' && $useredit != $user) {
+
+            $waktu = (new Parameter())->cekBatasWaktuEdit('ABSENSI SUPIR BUKTI');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($absensisupir->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                // if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('absensisupirheader', $id, $aksi);
+                // }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }     
+
+            
         } else {
 
             $isDateAllowed = AbsensiSupirHeader::isDateAllowed($id);
@@ -572,9 +611,14 @@ class AbsensiSupirHeaderController extends Controller
                     'kodeerror' => 'TUTUPBUKU',
                     'statuspesan' => 'warning',
                 ];
+                     
             }
 
             if (($todayValidation && $isApproved) || ($isEditAble && $printValidation) || $isDateAllowed) {
+                // dd($aksi);
+                // if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('absensisupirheader', $id, $aksi);
+                // }                
                 $data = [
                     'error' => false,
                     'message' => '',
@@ -627,6 +671,7 @@ class AbsensiSupirHeaderController extends Controller
 
             return response($data);
         } else {
+            (new MyModel())->updateEditingBy('absensisupirheader', $id, 'EDIT');
             $data = [
                 'error' => false,
                 'message' => '',

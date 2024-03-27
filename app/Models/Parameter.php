@@ -621,8 +621,13 @@ class Parameter extends MyModel
 
     public function cekBatasWaktuEdit($grp) {
         $param = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', $grp)->first();
-        $memo = json_decode($param->memo, true);
-        $waktu = $memo['BATASWAKTUEDIT'];
+        if (isset($param)) {
+            $memo = json_decode($param->memo, true);
+            $waktu = $memo['BATASWAKTUEDIT'] ;
+    
+        } else {
+            $waktu=5;
+        }
 
         return $waktu;
     }
