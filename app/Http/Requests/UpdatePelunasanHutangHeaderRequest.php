@@ -13,6 +13,8 @@ use App\Rules\ExistSupplier;
 use App\Rules\ValidasiBankList;
 use App\Rules\ValidasiDestroyHutangBayarHeader;
 use App\Rules\ValidasiHutangList;
+use App\Rules\ValidasiHutangPelunasan;
+use App\Rules\ValidasiHutangPelunasanApproval;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -88,6 +90,8 @@ class UpdatePelunasanHutangHeaderRequest extends FormRequest
                     new ExistSupplier(),
                     new ValidasiHutangList($jumlahdetail),
                     Rule::in($query->supplier),
+                    new ValidasiHutangPelunasanApproval(),
+                    new ValidasiHutangPelunasan()
 
                 ]
             ];

@@ -4,6 +4,9 @@ namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
+use App\Http\Controllers\Api\HutangHeaderController;
+use App\Models\HutangHeader;
+use Illuminate\Support\Facades\DB;
 
 class ValidasiDestroyHutangHeader implements Rule
 {
@@ -12,13 +15,12 @@ class ValidasiDestroyHutangHeader implements Rule
      *
      * @return void
      */
-    public function __construct($param, $paramcetak)
+    public function __construct()
     {
-        $this->kondisi = $param;
-        $this->kondisicetak = $paramcetak;
+        
     }
-    public $kondisi;
-    public $kondisicetak;
+    public $kodeerror;
+    public $keterangan;
     /**
      * Determine if the validation rule passes.
      *
@@ -28,15 +30,23 @@ class ValidasiDestroyHutangHeader implements Rule
      */
     public function passes($attribute, $value)
     {
-        // dd($this->kondisicetak);
-        if ($this->kondisi == true) {
+        $hutangheader = new HutangHeader();
+        $nobukti = HutangHeader::from(DB::raw("hutangheader"))->where('id', request()->id)->first();
+        $cekdata = $hutangheader->cekvalidasiaksi($nobukti->nobukti);
+        if ($cekdata['kondisi']) {
+            $this->kodeerror = $cekdata['kodeerror'];
+            $this->keterangan = $cekdata['keterangan'] ;
             return false;
-        } else if ($this->kondisicetak == true) {
-            return false;
-        } else {
-
-            return true;
         }
+
+        $cekCetak = app(HutangHeaderController::class)->cekvalidasi(request()->id);
+        $getOriginal = $cekCetak->original;
+        if ($getOriginal['error'] == true) {
+            $this->kodeerror = $getOriginal['kodeerror'];
+            $this->keterangan = $getOriginal['message'];
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -46,6 +56,6 @@ class ValidasiDestroyHutangHeader implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('SATL')->keterangan;
+        return $this->keterangan;
     }
 }

@@ -331,8 +331,12 @@ class HutangHeaderController extends Controller
         $nobukti=$hutang->nobukti ?? '';
         $statusdatacetak = $hutang->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
-
+        $status = $hutang->statusapproval;
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        
         $parameter = new Parameter();
+        $aksi = request()->aksi ?? '';
 
         $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
         $tgltutup=date('Y-m-d', strtotime($tgltutup));        
@@ -350,13 +354,24 @@ class HutangHeaderController extends Controller
             // ];
 
             $data = [
-                'message' => $keterangan,
+                'message' => $keterror,
                 'errors' => 'sudah cetak',
                 'kodestatus' => '1',
                 'kodenobukti' => '1',
                 'statuspesan' => 'warning',
                 'error' => true,
                 'kodeerror' => 'SDC',                
+            ];
+
+            return response($data);
+        } else if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
+            $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'SAP',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);

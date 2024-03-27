@@ -11,6 +11,8 @@ use App\Rules\ExistAlatBayar;
 use App\Rules\ValidasiHutangList;
 use App\Rules\ValidasiBankList;
 use App\Models\AlatBayar;
+use App\Rules\ValidasiHutangPelunasan;
+use App\Rules\ValidasiHutangPelunasanApproval;
 
 class StorePelunasanHutangHeaderRequest extends FormRequest
 {
@@ -65,6 +67,8 @@ class StorePelunasanHutangHeaderRequest extends FormRequest
                 'supplier' => [
                     new ExistSupplier(),
                     new ValidasiHutangList($jumlahdetail),
+                    new ValidasiHutangPelunasanApproval(),
+                    new ValidasiHutangPelunasan()
                 ]
             ];
         } else if ($supplier_id != null) {
