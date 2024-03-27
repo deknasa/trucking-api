@@ -481,6 +481,28 @@ class PengeluaranHeader extends MyModel
             ];
             goto selesai;
         }
+
+        $keteranganerror = $error->cekKeteranganError('TDT');
+        $notaKredit = DB::table('notakreditheader')
+            ->from(
+                DB::raw("notakreditheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti',
+                'a.pengeluaran_nobukti'
+            )
+            ->where('a.pengeluaran_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($notaKredit)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti kas gantung <b>'. $notaKredit->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'kas gantung '. $kasGantung->nobukti,
+                'kodeerror' => 'TDT',
+                'editcoa' => false
+            ];
+            goto selesai;
+        }
         $keteranganerror = $error->cekKeteranganError('TDT');
 
         $absensiApproval = DB::table('absensisupirapprovalheader')
@@ -970,6 +992,8 @@ class PengeluaranHeader extends MyModel
         $pengeluaranHeader->statuscetak = $statusCetak->id;
         $pengeluaranHeader->userbukacetak = '';
         $pengeluaranHeader->tglbukacetak = '';
+        $pengeluaranHeader->editing_by = '';
+        $pengeluaranHeader->editing_at = null;
         $pengeluaranHeader->modifiedby = auth('api')->user()->name;
         $pengeluaranHeader->info = html_entity_decode(request()->info);
 

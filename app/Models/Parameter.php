@@ -618,4 +618,12 @@ class Parameter extends MyModel
 
         return $keterangan;
     }
+
+    public function cekBatasWaktuEdit($grp) {
+        $param = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', $grp)->first();
+        $memo = json_decode($param->memo, true);
+        $waktu = $memo['BATASWAKTUEDIT'];
+
+        return $waktu;
+    }
 }

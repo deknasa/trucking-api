@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\UpdateExportProgress;
 use App\Helpers\App as AppHelper;
 use App\Models\Cabang;
+use App\Models\MyModel;
 use App\Models\Parameter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
@@ -128,10 +129,10 @@ class Controller extends BaseController
     }
 
     function like_match($pattern, $subject)
-{
-    $pattern = str_replace('%', '.*', preg_quote($pattern, '/'));
-    return (bool) preg_match("/^{$pattern}$/i", $subject);
-}
+    {
+        $pattern = str_replace('%', '.*', preg_quote($pattern, '/'));
+        return (bool) preg_match("/^{$pattern}$/i", $subject);
+    }
 
     /* Compatible for single table */
     public function toExcel(string $Laporan, array $data, array $columns)
@@ -405,10 +406,10 @@ class Controller extends BaseController
         $data['from'] = 'tas';
         $data['aksi'] = $aksi;
         $data['table'] = $table;
-        
+
         $accessTokenTnl = $data['accessTokenTnl'] ?? '';
-        $access_token =$accessTokenTnl;
-        
+        $access_token = $accessTokenTnl;
+
         if ($accessTokenTnl != '') {
             if ($aksi == 'add') {
                 $posting = Http::withHeaders([
@@ -455,7 +456,7 @@ class Controller extends BaseController
                 }
             }
 
-       
+
             $tesResp = $posting->toPsrResponse();
             $response = [
                 'statuscode' => $tesResp->getStatusCode(),
@@ -475,30 +476,30 @@ class Controller extends BaseController
         // return true;
     }
 
-    public function CekValidasiToTnl($table,$data)
+    public function CekValidasiToTnl($table, $data)
     {
         $server = config('app.api_tnl');
 
         $data['from'] = 'tas';
         $data['table'] = $table;
-        
-        $accessTokenTnl = $data['accessTokenTnl'] ?? '';
-        $access_token =$accessTokenTnl;
-        // dd($server . $table);
-        
-        if ($accessTokenTnl != '') {
-                $posting = Http::withHeaders([
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json',
-                    'Authorization' => 'Bearer ' . $access_token
-                ])->Post($server . $table,$data);
 
-       
+        $accessTokenTnl = $data['accessTokenTnl'] ?? '';
+        $access_token = $accessTokenTnl;
+        // dd($server . $table);
+
+        if ($accessTokenTnl != '') {
+            $posting = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $access_token
+            ])->Post($server . $table, $data);
+
+
             $tesResp = $posting->toPsrResponse();
             // dd($posting->json());
             $response = [
                 'statuscode' => $tesResp->getStatusCode(),
-                 'data' => $posting->json(),
+                'data' => $posting->json(),
             ];
 
             // dd($response);
@@ -571,5 +572,15 @@ class Controller extends BaseController
         //     return $process;
         // }
 
+    }
+
+    public function batalEditingBy()
+    {
+        $id = request()->id ?? '';
+        $table = request()->table ?? '';
+        $aksi = request()->aksi ?? '';
+        return response([
+            'data' => (new MyModel())->updateEditingBy($table, $id, $aksi),
+        ]);
     }
 }
