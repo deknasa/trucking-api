@@ -18,6 +18,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StoreNotaKreditDetailRequest;
 use App\Http\Requests\StoreNotaKreditHeaderRequest;
 use App\Http\Requests\UpdateNotaKreditHeaderRequest;
+use App\Models\Error;
 
 class NotaKreditHeaderController extends Controller
 {
@@ -273,32 +274,83 @@ class NotaKreditHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $notaKredit = NotaKreditHeader::find($id);
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        if ($notaKredit == '') {
+            $keterangan = $error->cekKeteranganError('DTA') ?? '';
+
+            $keterror = $keterangan . ' <br> ' . $keterangantambahanerror;
+            $data = [
+                'message' => $keterror,
+                'error' => true,
+                'kodeerror' => 'SAP',
+                'statuspesan' => 'warning',
+            ];
+            return response($data);
+        }
+        $nobukti = $notaKredit->nobukti ?? '';
+
+        $pengeluaran = $notaKredit->pengeluaran_nobukti ?? '';
+        // dd($pengeluaran);
+        $idpengeluaran = db::table('pengeluaranheader')->from(db::raw("pengeluaranheader a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.nobukti', $pengeluaran)
+            ->first()->id ?? 0;
+        // $aksi = request()->aksi ?? '';
+
+        if ($idpengeluaran != 0) {
+            $validasipengeluaran = app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
+            $msg = json_decode(json_encode($validasipengeluaran), true)['original']['error'] ?? false;
+            if ($msg == false) {
+                goto lanjut;
+            } else {
+                return $validasipengeluaran;
+            }
+        }
+
+        lanjut:
+
         $status = $notaKredit->statusapproval;
         $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
         $statusdatacetak = $notaKredit->statuscetak;
         $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
         $aksi = request()->aksi ?? '';
+        $parameter = new Parameter();
+
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
 
         if ($statusdatacetak == $statusCetak->id) {
-            $query = DB::table('error')
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SDC')
-                ->first();
+             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
-                'message' => $query->keterangan,
+                'message' => $keterror,
+                'kodeerror' => 'SDC',
                 'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
-            $query = DB::table('error')
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SAP')
-                ->first();
+            $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
-                'message' => $query->keterangan,
+                'message' => $keterror,
+                'kodeerror' => 'SAP',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else if ($tgltutup >= $notaKredit->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' )';
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
                 'statuspesan' => 'warning',
             ];
 
@@ -320,16 +372,11 @@ class NotaKreditHeaderController extends Controller
         $notaKreditHeader = new NotaKreditHeader();
         $cekdata = $notaKreditHeader->cekvalidasiaksi($id);
         if ($cekdata['kondisi'] == true) {
-            $query = DB::table('error')
-                ->select(
-                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
-                )
-                ->where('kodeerror', '=', $cekdata['kodeerror'])
-                ->first();
 
             $data = [
                 'error' => true,
-                'message' => $query->keterangan,
+                'message' => $cekdata['keterangan'],
+                'kodeerror' => $cekdata['kodeerror'],
                 'statuspesan' => 'warning',
             ];
 

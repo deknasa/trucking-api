@@ -71,6 +71,100 @@ class ProsesUangJalanSupirHeader extends MyModel
         return $data;
     }
 
+    public function cekvalidasiaksi($nobukti)
+    {
+        $error = new Error();
+        $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $getDetail = DB::table("prosesuangjalansupirdetail")->from(DB::raw("prosesuangjalansupirdetail with (readuncommitted)"))
+            ->where('nobukti', $nobukti)
+            ->get();
+
+        foreach ($getDetail as $row => $val) {
+            if ($val->penerimaantrucking_nobukti != '') {
+                $cekPenerimaan = DB::table("penerimaantruckingheader")->from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $val->penerimaantrucking_nobukti)
+                    ->first();
+
+                if ($cekPenerimaan != '') {
+                    $penerimaan = $cekPenerimaan->penerimaan_nobukti ?? '';
+                    // dd($penerimaan);
+                    $idpenerimaan = db::table('penerimaanheader')->from(db::raw("penerimaanheader a with (readuncommitted)"))
+                        ->select(
+                            'a.id',
+                            'a.nobukti'
+                        )
+                        ->where('a.nobukti', $penerimaan)
+                        ->first();
+                    if ($idpenerimaan != '') {
+                        $cekJurnal = DB::table('jurnalumumpusatheader')
+                            ->from(
+                                DB::raw("jurnalumumpusatheader as a with (readuncommitted)")
+                            )
+                            ->select(
+                                'a.nobukti'
+                            )
+                            ->where('a.nobukti', '=', $idpenerimaan->nobukti)
+                            ->first();
+                        if (isset($cekJurnal)) {
+                            $data = [
+                                'kondisi' => true,
+                                'keterangan' =>  'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Approval Jurnal <b>' . $cekJurnal->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                                'kodeerror' => 'SAPP'
+                            ];
+                            goto selesai;
+                        }
+                    }
+                }
+            }
+
+
+            if ($val->pengeluarantrucking_nobukti != '') {
+                $cekPengeluaran = DB::table("pengeluarantruckingheader")->from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $val->pengeluarantrucking_nobukti)
+                    ->first();
+
+                if ($cekPengeluaran != '') {
+                    $pengeluaran = $cekPengeluaran->pengeluaran_nobukti ?? '';
+                    // dd($pengeluaran);
+                    $idpengeluaran = db::table('pengeluaranheader')->from(db::raw("pengeluaranheader a with (readuncommitted)"))
+                        ->select(
+                            'a.id',
+                            'a.nobukti'
+                        )
+                        ->where('a.nobukti', $pengeluaran)
+                        ->first();
+                    if ($idpengeluaran != '') {
+                        $cekJurnal = DB::table('jurnalumumpusatheader')
+                            ->from(
+                                DB::raw("jurnalumumpusatheader as a with (readuncommitted)")
+                            )
+                            ->select(
+                                'a.nobukti'
+                            )
+                            ->where('a.nobukti', '=', $idpengeluaran->nobukti)
+                            ->first();
+                        if (isset($cekJurnal)) {
+                            $data = [
+                                'kondisi' => true,
+                                'keterangan' =>  'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Approval Jurnal <b>' . $cekJurnal->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                                'kodeerror' => 'SAPP'
+                            ];
+                            goto selesai;
+                        }
+                    }
+                }
+            }
+        }
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
+
     public function getPinjaman($supirId)
     {
         $nobukti = request()->nobukti;
