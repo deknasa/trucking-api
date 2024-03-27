@@ -268,50 +268,155 @@ class ProsesUangJalanSupirHeaderController extends Controller
 
     public function cekvalidasi($id)
     {
-        $pengeluaran = ProsesUangJalanSupirHeader::find($id);
-        $status = $pengeluaran->statusapproval;
+        $prosesUangJalan = ProsesUangJalanSupirHeader::find($id);
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        if ($prosesUangJalan == '') {
+            $keterangan = $error->cekKeteranganError('DTA') ?? '';
+
+            $keterror = $keterangan . ' <br> ' . $keterangantambahanerror;
+            $data = [
+                'message' => $keterror,
+                'error' => true,
+                'kodeerror' => 'DTA',
+                'statuspesan' => 'warning',
+            ];
+            return response($data);
+        }
+
+        $getDetail = DB::table("prosesuangjalansupirdetail")->from(DB::raw("prosesuangjalansupirdetail with (readuncommitted)"))
+            ->where('prosesuangjalansupir_id', $id)
+            ->get();
+
+        foreach ($getDetail as $row => $val) {
+            if ($val->penerimaantrucking_nobukti != '') {
+                $cekPenerimaan = DB::table("penerimaantruckingheader")->from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $val->penerimaantrucking_nobukti)
+                    ->first();
+
+                if ($cekPenerimaan != '') {
+                    $penerimaan = $cekPenerimaan->penerimaan_nobukti ?? '';
+                    // dd($penerimaan);
+                    $idpenerimaan = db::table('penerimaanheader')->from(db::raw("penerimaanheader a with (readuncommitted)"))
+                        ->select(
+                            'a.id'
+                        )
+                        ->where('a.nobukti', $penerimaan)
+                        ->first()->id ?? 0;
+                    if ($idpenerimaan != 0) {
+                        $validasipenerimaan = app(PenerimaanHeaderController::class)->cekvalidasi($idpenerimaan);
+                        $msg = json_decode(json_encode($validasipenerimaan), true)['original']['error'] ?? false;
+                        if ($msg == true) {
+                            return $validasipenerimaan;
+                        }
+                    }
+                }
+            }
+
+
+            if ($val->pengeluarantrucking_nobukti != '') {
+                $cekPengeluaran = DB::table("pengeluarantruckingheader")->from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $val->pengeluarantrucking_nobukti)
+                    ->first();
+
+                if ($cekPengeluaran != '') {
+                    $pengeluaran = $cekPengeluaran->pengeluaran_nobukti ?? '';
+                    // dd($pengeluaran);
+                    $idpengeluaran = db::table('pengeluaranheader')->from(db::raw("pengeluaranheader a with (readuncommitted)"))
+                        ->select(
+                            'a.id'
+                        )
+                        ->where('a.nobukti', $pengeluaran)
+                        ->first()->id ?? 0;
+                    if ($idpengeluaran != 0) {
+                        $validasipengeluaran = app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
+                        $msg = json_decode(json_encode($validasipengeluaran), true)['original']['error'] ?? false;
+                        if ($msg == true) {
+                            return $validasipengeluaran;
+                        }
+                    }
+                }
+            }
+        }
+
+        $nobukti = $prosesUangJalan->nobukti ?? '';
+        $status = $prosesUangJalan->statusapproval;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
-        $statusdatacetak = $pengeluaran->statuscetak;
+        $statusdatacetak = $prosesUangJalan->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
+        $parameter = new Parameter();
+
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
         $aksi = request()->aksi;
         if ($status == $statusApproval->id && ($aksi == 'EDIT' || $aksi == 'DELETE')) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SAP')
-                ->get();
-            $keterangan = $query['0'];
+            $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah approve',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'SAP',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SDC')
-                ->get();
-            $keterangan = $query['0'];
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah cetak',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'SDC',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else if ($tgltutup >= $prosesUangJalan->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' )';
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else {
 
             $data = [
+                'error' => false,
                 'message' => '',
-                'errors' => 'belum approve',
-                'kodestatus' => '0',
-                'kodenobukti' => '1'
+                'statuspesan' => 'success',
+            ];
+
+            return response($data);
+        }
+    }
+
+    public function cekValidasiAksi($id)
+    {
+        $prosesUangJalan = DB::table("prosesuangjalansupirheader")->from(DB::raw("prosesuangjalansupirheader"))->where('id', $id)->first();
+
+        $cekdata = (new ProsesUangJalanSupirHeader())->cekvalidasiaksi($prosesUangJalan->nobukti);
+        if ($cekdata['kondisi'] == true) {
+            $data = [
+                'error' => true,
+                'message' => $cekdata['keterangan'],
+                'kodeerror' => $cekdata['kodeerror'],
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'error' => false,
+                'message' => '',
+                'statuspesan' => 'success',
             ];
 
             return response($data);

@@ -167,7 +167,8 @@ class TarifController extends Controller
                 'container' => $request->container,
                 'container_id' => $request->container_id,
                 'nominal' => $request->nominal,
-                'detail_id' => $request->detail_id
+                'detail_id' => $request->detail_id,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
 
             $tarif = (new Tarif())->processStore($data);

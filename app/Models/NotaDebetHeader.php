@@ -165,6 +165,9 @@ class NotaDebetHeader extends MyModel
 
     public function cekvalidasiaksi($id)
     {
+        $error = new Error();
+        $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $notaDebet = DB::table("notadebetheader")->from(DB::raw("notadebetheader with (readuncommitted)"))->where('id', $id)->first();
         $pelunasanPiutang = DB::table('pelunasanpiutangheader')
             ->from(
@@ -179,12 +182,13 @@ class NotaDebetHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pelunasan Piutang ' . $pelunasanPiutang->nobukti,
+                'keterangan' =>  'No Bukti <b>'. $notaDebet->nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti PELUNASAN PIUTANG <b>'. $pelunasanPiutang->nobukti .'</b> <br> '.$keterangantambahanerror,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
         }
 
+        $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
         if ($notaDebet->penerimaan_nobukti != '') {
             $jurnal = DB::table('penerimaanheader')
                 ->from(
@@ -200,8 +204,8 @@ class NotaDebetHeader extends MyModel
             if (isset($jurnal)) {
                 $data = [
                     'kondisi' => true,
-                    'keterangan' => 'Approval Jurnal ' . $jurnal->nobukti,
-                    'kodeerror' => 'SAP'
+                    'keterangan' =>  'No Bukti <b>'. $notaDebet->nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Approval Jurnal <b>'. $jurnal->nobukti .'</b> <br> '.$keterangantambahanerror,
+                    'kodeerror' => 'SAPP'
                 ];
                 goto selesai;
             }
@@ -220,8 +224,8 @@ class NotaDebetHeader extends MyModel
             if (isset($jurnal)) {
                 $data = [
                     'kondisi' => true,
-                    'keterangan' => 'Approval Jurnal ' . $jurnal->nobukti,
-                    'kodeerror' => 'SAP'
+                    'keterangan' =>  'No Bukti <b>'. $notaDebet->nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Approval Jurnal <b>'. $jurnal->nobukti .'</b> <br> '.$keterangantambahanerror,
+                    'kodeerror' => 'SAPP'
                 ];
                 goto selesai;
             }

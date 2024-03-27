@@ -90,7 +90,7 @@ class Tarif extends MyModel
     {
         $this->setRequestParameters();
 
-        
+
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
         $class = 'TarifController';
@@ -98,147 +98,146 @@ class Tarif extends MyModel
         $aktif = request()->aktif ?? '';
         $jenisOrder = request()->jenisOrder ?? '';
         $isParent = request()->isParent ?? false;
-    // 
-    if ($proses == 'reload') {
-        $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        // 
+        if ($proses == 'reload') {
+            $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
-        $querydata = DB::table('listtemporarytabel')->from(
-            DB::raw("listtemporarytabel a with (readuncommitted)")
-        )
-            ->select(
-                'id',
-                'class',
-                'namatabel',
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel a with (readuncommitted)")
             )
-            ->where('class', '=', $class)
-            ->where('modifiedby', '=', $user)
-            ->first();
+                ->select(
+                    'id',
+                    'class',
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
 
-        if (isset($querydata)) {
-            Schema::dropIfExists($querydata->namatabel);
-            DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+            if (isset($querydata)) {
+                Schema::dropIfExists($querydata->namatabel);
+                DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+            }
+
+            DB::table('listtemporarytabel')->insert(
+                [
+                    'class' => $class,
+                    'namatabel' => $temtabel,
+                    'modifiedby' => $user,
+                    'created_at' => date('Y/m/d H:i:s'),
+                    'updated_at' => date('Y/m/d H:i:s'),
+                ]
+            );
+
+            Schema::create($temtabel, function (Blueprint $table) {
+                $table->bigInteger('id')->nullable();
+                $table->longText('parent_id')->nullable();
+                $table->longText('upahsupir')->nullable();
+                $table->longText('tujuan')->nullable();
+                $table->longText('penyesuaian')->nullable();
+                $table->longText('statusaktif')->nullable();
+                $table->longText('statussistemton')->nullable();
+                $table->longText('kota_id')->nullable();
+                $table->bigInteger('kotaId')->nullable();
+                $table->longText('zona_id')->nullable();
+                $table->longText('jenisorder')->nullable()->nullable();
+                $table->date('tglmulaiberlaku')->nullable();
+                $table->longText('statuspenyesuaianharga')->nullable();
+                $table->longText('statuspostingtnl')->nullable();
+                $table->longText('keterangan')->nullable();
+                $table->longText('modifiedby')->nullable();
+                $table->dateTime('created_at')->nullable();
+                $table->dateTime('updated_at')->nullable();
+                $table->longText('tglcetak')->nullable();
+                $table->longText('usercetak')->nullable();
+                $table->longText('tujuanpenyesuaian')->nullable();
+                $table->bigInteger('statusaktif_id')->nullable();
+                $table->bigInteger('jenisorder_id')->nullable();
+            });
+
+            $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
+                ->select(
+                    'tarif.id',
+                    'parent.tujuan as parent_id',
+                    db::raw("isnull(kotadari.keterangan,'')+(case when isnull(kotasampai.keterangan,'')='' then '' else ' - ' +isnull(kotasampai.keterangan,'') end)+ 
+             (case when isnull(upahsupir.penyesuaian,'')='' then '' else ' ( ' +isnull(upahsupir.penyesuaian,'')+ ' ) ' end) as upahsupir
+             "),
+                    'tarif.tujuan',
+                    'tarif.penyesuaian',
+                    'parameter.memo as statusaktif',
+                    'sistemton.memo as statussistemton',
+                    'kota.kodekota as kota_id',
+                    'tarif.kota_id as kotaId',
+                    'zona.zona as zona_id',
+                    'jenisorder.keterangan as jenisorder',
+                    'tarif.tglmulaiberlaku',
+                    'p.memo as statuspenyesuaianharga',
+                    'posting.memo as statuspostingtnl',
+                    'tarif.keterangan',
+                    'tarif.modifiedby',
+                    'tarif.created_at',
+                    'tarif.updated_at',
+                    DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                    DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                    DB::raw("(trim(tarif.tujuan)+(case when trim(tarif.penyesuaian)='' then '' else ' - ' end)+trim(tarif.penyesuaian)) as tujuanpenyesuaian"),
+                    'tarif.statusaktif as statusaktif_id',
+                    'tarif.jenisorder_id',
+
+                )
+                ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'tarif.statusaktif', '=', 'parameter.id')
+                ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
+                ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
+                ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'tarif.jenisorder_id', '=', 'jenisorder.id')
+                // ->leftJoin(DB::raw("$tempUpahsupir as B with (readuncommitted)"), 'tarif.upahsupir_id', '=', "B.id")
+                ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
+                ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
+                ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id')
+                ->leftJoin(DB::raw("parameter AS posting with (readuncommitted)"), 'tarif.statuspostingtnl', '=', 'posting.id')
+                ->leftJoin(DB::raw("upahsupir as upahsupir with (readuncommitted)"), 'upahsupir.tarif_id', '=', 'tarif.id')
+                ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
+                ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id');
+
+
+            DB::table($temtabel)->insertUsing([
+                'id',
+                'parent_id',
+                'upahsupir',
+                'tujuan',
+                'penyesuaian',
+                'statusaktif',
+                'statussistemton',
+                'kota_id',
+                'kotaId',
+                'zona_id',
+                'jenisorder',
+                'tglmulaiberlaku',
+                'statuspenyesuaianharga',
+                'statuspostingtnl',
+                'keterangan',
+                'modifiedby',
+                'created_at',
+                'updated_at',
+                'tglcetak',
+                'usercetak',
+                'tujuanpenyesuaian',
+                'statusaktif_id',
+                'jenisorder_id',
+            ], $query);
+        } else {
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel with (readuncommitted)")
+            )
+                ->select(
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            $temtabel = $querydata->namatabel;
         }
 
-        DB::table('listtemporarytabel')->insert(
-            [
-                'class' => $class,
-                'namatabel' => $temtabel,
-                'modifiedby' => $user,
-                'created_at' => date('Y/m/d H:i:s'),
-                'updated_at' => date('Y/m/d H:i:s'),
-            ]
-        );
-
-        Schema::create($temtabel, function (Blueprint $table) {
-            $table->bigInteger('id')->nullable();
-            $table->longText('parent_id')->nullable();
-            $table->longText('upahsupir')->nullable();
-            $table->longText('tujuan')->nullable();
-            $table->longText('penyesuaian')->nullable();
-            $table->longText('statusaktif')->nullable();
-            $table->longText('statussistemton')->nullable();
-            $table->longText('kota_id')->nullable();
-            $table->bigInteger('kotaId')->nullable();
-            $table->longText('zona_id')->nullable();
-            $table->longText('jenisorder')->nullable()->nullable();
-            $table->date('tglmulaiberlaku')->nullable();
-            $table->longText('statuspenyesuaianharga')->nullable();
-            $table->longText('statuspostingtnl')->nullable();
-            $table->longText('keterangan')->nullable();
-            $table->longText('modifiedby')->nullable();
-            $table->dateTime('created_at')->nullable();
-            $table->dateTime('updated_at')->nullable();
-            $table->longText('tglcetak')->nullable();
-            $table->longText('usercetak')->nullable();
-            $table->longText('tujuanpenyesuaian')->nullable();
-            $table->bigInteger('statusaktif_id')->nullable();
-            $table->bigInteger('jenisorder_id')->nullable();
-            
-        });
-
-        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
-        ->select(
-            'tarif.id',
-            'parent.tujuan as parent_id',
-             db::raw("isnull(kotadari.keterangan,'')+(case when isnull(kotasampai.keterangan,'')='' then '' else ' - ' +isnull(kotasampai.keterangan,'') end)+ 
-             (case when isnull(upahsupir.penyesuaian,'')='' then '' else ' ( ' +isnull(upahsupir.penyesuaian,'')+ ' ) ' end) as upahsupir
-             ") ,
-            'tarif.tujuan',
-            'tarif.penyesuaian',
-            'parameter.memo as statusaktif',
-            'sistemton.memo as statussistemton',
-            'kota.kodekota as kota_id',
-            'tarif.kota_id as kotaId',
-            'zona.zona as zona_id',
-            'jenisorder.keterangan as jenisorder',
-            'tarif.tglmulaiberlaku',
-            'p.memo as statuspenyesuaianharga',
-            'posting.memo as statuspostingtnl',
-            'tarif.keterangan',
-            'tarif.modifiedby',
-            'tarif.created_at',
-            'tarif.updated_at',
-            DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-            DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
-            DB::raw("(trim(tarif.tujuan)+(case when trim(tarif.penyesuaian)='' then '' else ' - ' end)+trim(tarif.penyesuaian)) as tujuanpenyesuaian"),
-            'tarif.statusaktif as statusaktif_id',
-            'tarif.jenisorder_id',
-
-        )
-        ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'tarif.statusaktif', '=', 'parameter.id')
-        ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
-        ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
-        ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'tarif.jenisorder_id', '=', 'jenisorder.id')
-        // ->leftJoin(DB::raw("$tempUpahsupir as B with (readuncommitted)"), 'tarif.upahsupir_id', '=', "B.id")
-        ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
-        ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
-        ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id')
-        ->leftJoin(DB::raw("parameter AS posting with (readuncommitted)"), 'tarif.statuspostingtnl', '=', 'posting.id')
-        ->leftJoin(DB::raw("upahsupir as upahsupir with (readuncommitted)"), 'upahsupir.tarif_id', '=', 'tarif.id')
-        ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
-        ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id');
-
-
-        DB::table($temtabel)->insertUsing([
-            'id',
-            'parent_id',
-            'upahsupir',
-            'tujuan',
-            'penyesuaian',
-            'statusaktif',
-            'statussistemton',
-            'kota_id',
-            'kotaId',
-            'zona_id',
-            'jenisorder',
-            'tglmulaiberlaku',
-            'statuspenyesuaianharga',
-            'statuspostingtnl',
-            'keterangan',
-            'modifiedby',
-            'created_at',
-            'updated_at',
-            'tglcetak',
-            'usercetak',
-            'tujuanpenyesuaian',
-            'statusaktif_id',
-            'jenisorder_id',
-        ], $query);
-    } else {
-        $querydata = DB::table('listtemporarytabel')->from(
-            DB::raw("listtemporarytabel with (readuncommitted)")
-        )
-            ->select(
-                'namatabel',
-            )
-            ->where('class', '=', $class)
-            ->where('modifiedby', '=', $user)
-            ->first();
-
-        $temtabel = $querydata->namatabel;
-    }
-
-    // 
+        // 
 
         // $tempUpahsupir = $this->tempUpahsupir();
         // $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
@@ -319,7 +318,7 @@ class Tarif extends MyModel
             );
 
 
-// dd('test');
+        // dd('test');
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
@@ -388,84 +387,89 @@ class Tarif extends MyModel
     public function selectColumns($query)
     { //sesuaikan dengan createtemp
 
-        $query1=$query->select(
-            db::raw($this->table.".id"),
+        $query1 = $query->select(
+            db::raw($this->table . ".id"),
             'parent.tujuan as parent_id',
-            db::raw($this->table.".tujuan"),
-            db::raw($this->table.".penyesuaian"),
+            db::raw($this->table . ".tujuan"),
+            db::raw($this->table . ".penyesuaian"),
             'parameter.text as statusaktif',
             'sistemton.text as statussistemton',
             'kota.kodekota as kota_id',
             'zona.zona as zona_id',
             'jenisorder.keterangan as jenisorder',
-            db::raw($this->table.".tglmulaiberlaku"),
+            db::raw($this->table . ".tglmulaiberlaku"),
             'p.text as statuspenyesuaianharga',
             'posting.text as statuspostingtnl',
-            db::raw($this->table.".keterangan"),
-            db::raw($this->table.".modifiedby"),
-            db::raw($this->table.".created_at"),
-            db::raw($this->table.".updated_at"),
-           //  db::raw("'' as upahsupir")
+            db::raw($this->table . ".keterangan"),
+            db::raw($this->table . ".modifiedby"),
+            db::raw($this->table . ".created_at"),
+            db::raw($this->table . ".updated_at"),
+            //  db::raw("'' as upahsupir")
             db::raw("isnull(kotadari.keterangan,'')+(case when isnull(kotasampai.keterangan,'')='' then '' else ' - ' +isnull(kotasampai.keterangan,'') end)+ 
             (case when isnull(upahsupir.penyesuaian,'')='' then '' else ' ( ' +isnull(upahsupir.penyesuaian,'')+ ' ) ' end) as upahsupir
-            ") ,
+            "),
 
-       )
-           ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'tarif.statusaktif', '=', 'parameter.id')
-           ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
-           ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
-           ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'tarif.jenisorder_id', '=', 'jenisorder.id')
-           // ->leftJoin(DB::raw("$tempUpahsupir as B with (readuncommitted)"), 'tarif.upahsupir_id', '=', "B.id")
-           ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
-           ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
-           ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id')
-           ->leftJoin(DB::raw("parameter AS posting with (readuncommitted)"), 'tarif.statuspostingtnl', '=', 'posting.id')
-           ->leftJoin(DB::raw("upahsupir as upahsupir with (readuncommitted)"), 'upahsupir.tarif_id', '=', 'tarif.id')
-           ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
-           ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id');  
+        )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'tarif.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
+            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'tarif.jenisorder_id', '=', 'jenisorder.id')
+            // ->leftJoin(DB::raw("$tempUpahsupir as B with (readuncommitted)"), 'tarif.upahsupir_id', '=', "B.id")
+            ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
+            ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
+            ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id')
+            ->leftJoin(DB::raw("parameter AS posting with (readuncommitted)"), 'tarif.statuspostingtnl', '=', 'posting.id')
+            ->leftJoin(DB::raw("upahsupir as upahsupir with (readuncommitted)"), 'upahsupir.tarif_id', '=', 'tarif.id')
+            ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
+            ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id');
 
-           $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-           Schema::create($temp, function ($table) {
-               $table->bigInteger('id')->nullable();
-               $table->string('parent_id', 200)->nullable();
-               $table->string('tujuan', 200)->nullable();
-               $table->string('penyesuaian', 200)->nullable();
-               $table->string('statusaktif')->nullable();
-               $table->string('statussistemton')->nullable();
-               $table->string('kota_id')->nullable();
-               $table->string('zona_id')->nullable();
-               $table->string('jenisorder')->nullable();
-               $table->date('tglmulaiberlaku')->nullable();
-               $table->string('statuspenyesuaianharga')->nullable();
-               $table->string('statuspostingtnl')->nullable();
-               $table->longText('keterangan')->nullable();
-               $table->string('modifiedby', 50)->nullable();
-               $table->dateTime('created_at')->nullable();
-               $table->dateTime('updated_at')->nullable();
-               $table->longtext('upahsupir')->nullable();
-           });
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id')->nullable();
+            $table->string('parent_id', 200)->nullable();
+            $table->string('tujuan', 200)->nullable();
+            $table->string('penyesuaian', 200)->nullable();
+            $table->string('statusaktif')->nullable();
+            $table->string('statussistemton')->nullable();
+            $table->string('kota_id')->nullable();
+            $table->string('zona_id')->nullable();
+            $table->string('jenisorder')->nullable();
+            $table->date('tglmulaiberlaku')->nullable();
+            $table->string('statuspenyesuaianharga')->nullable();
+            $table->string('statuspostingtnl')->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
+            $table->longtext('upahsupir')->nullable();
+        });
 
-           DB::table($temp)->insertUsing(['id','parent_id', 'tujuan', 'penyesuaian',  'statusaktif',  'statussistemton', 'kota_id', 'zona_id', 'jenisorder', 'tglmulaiberlaku', 
-           'statuspenyesuaianharga','statuspostingtnl', 'keterangan', 'modifiedby', 'created_at', 'updated_at', 'upahsupir'], $query1);
+        DB::table($temp)->insertUsing([
+            'id', 'parent_id', 'tujuan', 'penyesuaian',  'statusaktif',  'statussistemton', 'kota_id', 'zona_id', 'jenisorder', 'tglmulaiberlaku',
+            'statuspenyesuaianharga', 'statuspostingtnl', 'keterangan', 'modifiedby', 'created_at', 'updated_at', 'upahsupir'
+        ], $query1);
 
-           $query2=db::table($temp)->from(db::raw($temp. " as tarif with (readuncommitted)"))
-           ->select(
-            'tarif.id',
-            'tarif.parent_id', 
-            'tarif.tujuan', 
-            'tarif.penyesuaian',  
-            'tarif.statusaktif',  
-            'tarif.statussistemton', 
-            'tarif.kota_id', 
-            'tarif.zona_id', 
-            'tarif.jenisorder', 
-            'tarif.tglmulaiberlaku', 
-           'tarif.statuspenyesuaianharga',
-           'tarif.statuspostingtnl', 'tarif.keterangan', 'tarif.modifiedby', 'tarif.created_at', 'tarif.updated_at', 'tarif.upahsupir'
-           );
-           return $query2;
-
-               
+        $query2 = db::table($temp)->from(db::raw($temp . " as tarif with (readuncommitted)"))
+            ->select(
+                'tarif.id',
+                'tarif.parent_id',
+                'tarif.tujuan',
+                'tarif.penyesuaian',
+                'tarif.statusaktif',
+                'tarif.statussistemton',
+                'tarif.kota_id',
+                'tarif.zona_id',
+                'tarif.jenisorder',
+                'tarif.tglmulaiberlaku',
+                'tarif.statuspenyesuaianharga',
+                'tarif.statuspostingtnl',
+                'tarif.keterangan',
+                'tarif.modifiedby',
+                'tarif.created_at',
+                'tarif.updated_at',
+                'tarif.upahsupir'
+            );
+        return $query2;
     }
 
     public function createTemp(string $modelTable)
@@ -495,14 +499,16 @@ class Tarif extends MyModel
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
-      
+
         $this->sort($query);
         // dd($query->get());   
         $models = $this->filter($query);
         // $models = $this->filter($query);
 
-        DB::table($temp)->insertUsing(['id','parent_id', 'tujuan', 'penyesuaian',  'statusaktif',  'statussistemton', 'kota_id', 'zona_id', 'jenisorder', 'tglmulaiberlaku', 
-        'statuspenyesuaianharga','statuspostingtnl', 'keterangan', 'modifiedby', 'created_at', 'updated_at', 'upahsupir'], $models);
+        DB::table($temp)->insertUsing([
+            'id', 'parent_id', 'tujuan', 'penyesuaian',  'statusaktif',  'statussistemton', 'kota_id', 'zona_id', 'jenisorder', 'tglmulaiberlaku',
+            'statuspenyesuaianharga', 'statuspostingtnl', 'keterangan', 'modifiedby', 'created_at', 'updated_at', 'upahsupir'
+        ], $models);
 
         return  $temp;
     }
@@ -645,7 +651,7 @@ class Tarif extends MyModel
         // } else if ($this->params['sortIndex'] == 'jenisorder') {
         //     return $query->orderBy('jenisorder.keterangan', $this->params['sortOrder']);
         // } else {
-            return $query->orderBy('tarif.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        return $query->orderBy('tarif.' . $this->params['sortIndex'], $this->params['sortOrder']);
         // }
     }
 
@@ -680,13 +686,12 @@ class Tarif extends MyModel
                         // } elseif ($filters['field'] == 'statussistemton') {
                         //     $query = $query->where('sistemton.text', '=', "$filters[data]");
                         // } else
-                         if ($filters['field'] == 'tglmulaiberlaku') {
+                        if ($filters['field'] == 'tglmulaiberlaku') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'check') {
                             $query = $query->whereRaw('1 = 1');
-
                         } else {
                             // $query = $query->where('tarif.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw('tarif' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -726,7 +731,6 @@ class Tarif extends MyModel
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'check') {
                                 $query = $query->whereRaw('1 = 1');
-
                             } else {
                                 // $query = $query->orWhere('tarif.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw('tarif' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -806,12 +810,12 @@ class Tarif extends MyModel
         if (!$tarif->save()) {
             throw new \Exception("Error storing tarif.");
         }
-        $upahsupir_id=$data['upahsupir_id'] ?? 0  ;
-        if ($upahsupir_id!=0) {
-            $datadetailsUpahSupir = (new Upahsupir())->processUpdateTarif( [
+        $upahsupir_id = $data['upahsupir_id'] ?? 0;
+        if ($upahsupir_id != 0) {
+            $datadetailsUpahSupir = (new Upahsupir())->processUpdateTarif([
                 'tarif_id' => $tarif->id,
                 'id' => $upahsupir_id,
-            ]);   
+            ]);
         }
 
         $storedLogTrail = (new LogTrail())->processStore([
@@ -867,7 +871,7 @@ class Tarif extends MyModel
 
     public function processUpdate(Tarif $tarif, array $data): Tarif
     {
-        
+
         $tarif->parent_id = $data['parent_id'] ?? '';
         // $tarif->upahsupir_id = $data['upahsupir_id'] ?? '';
         $tarif->tujuan = $data['tujuan'];
@@ -886,12 +890,12 @@ class Tarif extends MyModel
             throw new \Exception("Error updating tarif.");
         }
 
-        $upahsupir_id=$data['upahsupir_id'] ?? 0  ;
-        if ($upahsupir_id!=0) {
-            $datadetailsUpahSupir = (new Upahsupir())->processUpdateTarif( [
+        $upahsupir_id = $data['upahsupir_id'] ?? 0;
+        if ($upahsupir_id != 0) {
+            $datadetailsUpahSupir = (new Upahsupir())->processUpdateTarif([
                 'tarif_id' => $tarif->id,
                 'id' => $upahsupir_id,
-            ]);   
+            ]);
         }
 
         $storedLogTrail = (new LogTrail())->processStore([
@@ -949,24 +953,24 @@ class Tarif extends MyModel
     public function postingTnl($data)
     {
         $server = config('app.server_jkt');
-        $getToken = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Accept' => 'application/json'
-        ])
-            ->post($server . 'truckingtnl-api/public/api/token', [
-                'user' => 'ADMIN',
-                'password' => config('app.password_tnl'),
-                'ipclient' => '',
-                'ipserver' => '',
-                'latitude' => '',
-                'longitude' => '',
-                'browser' => '',
-                'os' => '',
-            ]);
-        if ($getToken->getStatusCode() == '404') {
-            throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
-        } else if ($getToken->getStatusCode() == '200') {
-            $access_token = json_decode($getToken, TRUE)['access_token'];
+        // $getToken = Http::withHeaders([
+        //     'Content-Type' => 'application/json',
+        //     'Accept' => 'application/json'
+        // ])
+        //     ->post($server . 'truckingtnl-api/public/api/token', [
+        //         'user' => 'ADMIN',
+        //         'password' => config('app.password_tnl'),
+        //         'ipclient' => '',
+        //         'ipserver' => '',
+        //         'latitude' => '',
+        //         'longitude' => '',
+        //         'browser' => '',
+        //         'os' => '',
+        //     ]);
+
+        $accessTokenTnl = $data['accessTokenTnl'] ?? '';
+        $access_token = $accessTokenTnl;
+        if ($accessTokenTnl != '') {
             $data['from'] = 'jkt';
             $transferTarif = Http::withHeaders([
                 'Content-Type' => 'application/json',
@@ -1001,14 +1005,14 @@ class Tarif extends MyModel
         for ($i = 0; $i < count($data['Id']); $i++) {
             $Tarif = Tarif::find($data['Id'][$i]);
 
-                $Tarif->statusaktif = $statusnonaktif->id;
-                $aksi = $statusnonaktif->text;
+            $Tarif->statusaktif = $statusnonaktif->id;
+            $aksi = $statusnonaktif->text;
 
-                // dd($Tarif);
+            // dd($Tarif);
             if ($Tarif->save()) {
-                
+
                 (new LogTrail())->processStore([
-                    
+
                     'namatabel' => strtoupper($Tarif->getTable()),
                     'postingdari' => 'APPROVAL Tarif',
                     'idtrans' => $Tarif->id,
@@ -1023,6 +1027,4 @@ class Tarif extends MyModel
 
         return $Tarif;
     }
-
-    
 }

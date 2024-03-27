@@ -144,9 +144,9 @@ class UpahSupirController extends Controller
                 'nominalkomisi' => $request->nominalkomisi ?? 0,
                 'nominaltol' =>  $request->nominaltol ?? 0,
                 'liter' => $request->liter ?? 0,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
 
             ];
-
             if ($request->from != '') {
                 $data['gambar'] = $request->gambar ?? [];
             } else {
