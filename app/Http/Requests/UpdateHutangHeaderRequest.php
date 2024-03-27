@@ -31,16 +31,6 @@ class UpdateHutangHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        $controller = new HutangHeaderController;
-        $hutangheader = new HutangHeader();
-        $cekdata = $hutangheader->cekvalidasiaksi($this->nobukti);
-        $cekdatacetak = $controller->cekvalidasi($this->id);
-        if ($cekdatacetak->original['kodestatus']=='1') {
-                $cekdtcetak=true;
-        } else {
-            $cekdtcetak=false;
-        }
-        
 
          
     
@@ -58,7 +48,7 @@ class UpdateHutangHeaderRequest extends FormRequest
                 new DateTutupBuku(),
                 'before_or_equal:' . date('d-m-Y'),
             ],
-            'id' => [ new ValidasiDestroyHutangHeader($cekdata['kondisi'],$cekdtcetak)],
+            'id' => [ new ValidasiDestroyHutangHeader()],
             'nobukti' => [
                 Rule::in($query->nobukti),
             ],

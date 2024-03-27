@@ -29,11 +29,14 @@ class HutangBayarLimit implements Rule
      */
     public function passes($attribute, $value)
     {
-        $attribute = substr($attribute,6);
+        $attribute = substr($attribute, 6);
         $hutang_nobukti = request()->hutang_nobukti[$attribute];
         $hutang = HutangHeader::where('nobukti', $hutang_nobukti)->first();
-        if (request()->bayar[$attribute] > $hutang->total) {
-            return false;
+        if ($hutang != '') {
+
+            if (request()->bayar[$attribute] > $hutang->total) {
+                return false;
+            }
         }
         return true;
     }
