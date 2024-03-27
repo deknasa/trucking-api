@@ -25,10 +25,10 @@ class CreateSupirTable extends Migration
             $table->string('telp', 30)->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
             $table->string('pemutihansupir_nobukti', 50)->nullable();
-            $table->double('nominaldepositsa', 15,2)->nullable();
+            $table->double('nominaldepositsa', 15, 2)->nullable();
             $table->BigInteger('depositke')->nullable();
             $table->date('tglmasuk')->nullable();
-            $table->double('nominalpinjamansaldoawal', 15,2)->nullable();
+            $table->double('nominalpinjamansaldoawal', 15, 2)->nullable();
             $table->unsignedBigInteger('supirold_id')->nullable();
             $table->date('tglexpsim')->nullable();
             $table->string('nosim', 30)->nullable();
@@ -41,8 +41,8 @@ class CreateSupirTable extends Migration
             $table->longText('keterangantidakbolehluarkota')->nullable();
             $table->integer('statuszonatertentu')->length(11)->nullable();
             $table->unsignedBigInteger('zona_id')->nullable();
-            $table->double('angsuranpinjaman', 15,2)->nullable();
-            $table->double('plafondeposito', 15,2)->nullable();
+            $table->double('angsuranpinjaman', 15, 2)->nullable();
+            $table->double('plafondeposito', 15, 2)->nullable();
             $table->string('photosupir', 4000)->nullable();
             $table->string('photoktp', 4000)->nullable();
             $table->string('photosim', 4000)->nullable();
@@ -59,10 +59,15 @@ class CreateSupirTable extends Migration
             $table->date('tglterbitsim')->nullable();
             $table->unsignedBigInteger('mandor_id')->nullable();
             $table->integer('statuspostingtnl')->length(11)->nullable();
-            $table->dateTime('tglberlakumilikmandor')->nullable();            
+            $table->dateTime('tglberlakumilikmandor')->nullable();
+            $table->integer('statusapprovalhistorysupirmilikmandor')->nullable();
+            $table->string('userapprovalhistorysupirmilikmandor', 50)->nullable();
+            $table->datetime('tglapprovalhistorysupirmilikmandor')->nullable();
+            $table->datetime('tglupdatehistorysupirmilikmandor')->nullable();
             $table->unsignedBigInteger('tas_id')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 30)->nullable();
+
             $table->timestamps();
 
             $table->foreign('zona_id', 'supir_zona_zona_id_foreign')->references('id')->on('zona');

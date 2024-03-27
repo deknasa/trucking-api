@@ -204,6 +204,14 @@ class Trado extends MyModel
             ->first();
 
 
+        $defaultmemononapproval = db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.memo'
+            )
+            ->where('a.grp', 'STATUS APPROVAL')
+            ->where('a.subgrp', 'STATUS APPROVAL')
+            ->where('a.text', 'NON APPROVAL')
+            ->first()->memo ?? '';
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
 
             ->select(
@@ -255,6 +263,17 @@ class Trado extends MyModel
                 'supir.id as supirid',
                 'supir.namasupir as supir_id',
                 'trado.updated_at',
+                db::raw("isnull(parameter_statusapprovalhistorymilikmandor.memo,'" . $defaultmemononapproval . "')  as statusapprovalhistorytradomilikmandor"),
+                'trado.userapprovalhistorytradomilikmandor as userapprovalhistorytradomilikmandor',
+                'trado.tglapprovalhistorytradomilikmandor as tglapprovalhistorytradomilikmandor',
+                'trado.tglupdatehistorytradomilikmandor as tglupdatehistorytradomilikmandor',
+                db::raw("isnull(parameter_statusapprovalhistorymiliksupir.memo,'" . $defaultmemononapproval . "')  as statusapprovalhistorytradomiliksupir"),
+                'trado.userapprovalhistorytradomiliksupir as userapprovalhistorytradomiliksupir',
+                'trado.tglapprovalhistorytradomiliksupir as tglapprovalhistorytradomiliksupir',
+                'trado.tglupdatehistorytradomiliksupir as tglupdatehistorytradomiliksupir',
+                'trado.tglberlakumilikmandor as tglberlakumilikmandor',
+                'trado.tglberlakumiliksupir as tglberlakumiliksupir',
+
                 DB::raw("'Laporan Trado' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
@@ -269,6 +288,8 @@ class Trado extends MyModel
             ->leftJoin(DB::raw("parameter as parameter_statusappeditban with (readuncommitted)"), 'trado.statusappeditban', 'parameter_statusappeditban.id')
             ->leftJoin(DB::raw("parameter as parameter_statuslewatvalidasi with (readuncommitted)"), 'trado.statuslewatvalidasi', 'parameter_statuslewatvalidasi.id')
             ->leftJoin(DB::raw("parameter as parameter_statusabsensisupir with (readuncommitted)"), 'trado.statusabsensisupir', 'parameter_statusabsensisupir.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusapprovalhistorymilikmandor with (readuncommitted)"), 'trado.statusapprovalhistorytradomilikmandor', 'parameter_statusapprovalhistorymilikmandor.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusapprovalhistorymiliksupir with (readuncommitted)"), 'trado.statusapprovalhistorytradomiliksupir', 'parameter_statusapprovalhistorymiliksupir.id')
             ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'trado.mandor_id', 'mandor.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'trado.supir_id', 'supir.id');
         // ->where("trado.id" ,"=","37");
@@ -580,7 +601,7 @@ class Trado extends MyModel
                 "$this->table.id,           
                 $this->table.keterangan,            
                 $this->table.kodetrado,            
-                'parameter_statusaktif.text as statusaktif',
+                parameter_statusaktif.text as statusaktif,
                 $this->table.kmawal,
                 $this->table.kmakhirgantioli,
                 $this->table.tglakhirgantioli,
@@ -596,14 +617,14 @@ class Trado extends MyModel
                 $this->table.alamatstnk,
                 $this->table.tglstandarisasi,
                 $this->table.tglserviceopname,
-                'parameter_statusstandarisasi.text as statusstandarisasi',
+                parameter_statusstandarisasi.text as statusstandarisasi,
                 $this->table.keteranganprogressstandarisasi,
                 $this->table.statusjenisplat,
                 $this->table.tglspeksimati,
                 $this->table.tglpajakstnk,
                 $this->table.tglgantiakiterakhir,
-                'parameter_statusmutasi.text as statusmutasi',
-                'parameter_statusvalidasikendaraan.text as statusvalidasikendaraan',
+                parameter_statusmutasi.text as statusmutasi,
+                parameter_statusvalidasikendaraan.text as statusvalidasikendaraan,
                 $this->table.tipe,
                 $this->table.jenis,
                 $this->table.isisilinder,
@@ -618,10 +639,21 @@ class Trado extends MyModel
                 $this->table.jumlahbanserap,
                 $this->table.statusappeditban,
                 $this->table.statuslewatvalidasi,
-
+                parameter_statusapprovalhistorymilikmandor.memo as statusapprovalhistorytradomilikmandor,
+                $this->table.userapprovalhistorytradomilikmandor as userapprovalhistorytradomilikmandor,
+                $this->table.tglapprovalhistorytradomilikmandor as tglapprovalhistorytradomilikmandor,
+                $this->table.tglupdatehistorytradomilikmandor as tglupdatehistorytradomilikmandor,
+                parameter_statusapprovalhistorymiliksupir.memo as statusapprovalhistorytradomiliksupir,
+                $this->table.userapprovalhistorytradomiliksupir as userapprovalhistorytradomiliksupir,
+                $this->table.tglapprovalhistorytradomiliksupir as tglapprovalhistorytradomiliksupir,
+                $this->table.tglupdatehistorytradomiliksupir as tglupdatehistorytradomiliksupir,
+                $this->table.tglberlakumilikmandor,
+                $this->table.tglberlakumiliksupir,
                 $this->table.photostnk,
                 $this->table.photobpkb,
                 $this->table.phototrado,
+
+
                 
                $this->table.modifiedby,
                $this->table.created_at,
@@ -639,6 +671,8 @@ class Trado extends MyModel
             ->leftJoin(DB::raw("parameter as parameter_statusappeditban with (readuncommitted)"), 'trado.statusappeditban', 'parameter_statusappeditban.id')
             ->leftJoin(DB::raw("parameter as parameter_statuslewatvalidasi with (readuncommitted)"), 'trado.statuslewatvalidasi', 'parameter_statuslewatvalidasi.id')
             ->leftJoin(DB::raw("parameter as parameter_statusabsensisupir with (readuncommitted)"), 'trado.statusabsensisupir', 'parameter_statusabsensisupir.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusapprovalhistorymilikmandor with (readuncommitted)"), 'trado.statusapprovalhistorytradomilikmandor', 'parameter_statusapprovalhistorymilikmandor.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusapprovalhistorymiliksupir with (readuncommitted)"), 'trado.statusapprovalhistorytradomiliksupir', 'parameter_statusapprovalhistorymiliksupir.id')
             ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'trado.mandor_id', 'mandor.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'trado.supir_id', 'supir.id');
     }
@@ -689,7 +723,17 @@ class Trado extends MyModel
             $table->integer('jumlahbanserap')->length(11)->nullable();
             $table->integer('statusappeditban')->length(11)->nullable();
             $table->integer('statuslewatvalidasi')->length(11)->nullable();
-
+            $table->longtext('statusapprovalhistorytradomilikmandor')->nullable();
+            $table->string('userapprovalhistorytradomilikmandor', 50)->nullable();
+            $table->datetime('tglapprovalhistorytradomilikmandor')->nullable();
+            $table->datetime('tglupdatehistorytradomilikmandor')->nullable();
+            $table->longtext('statusapprovalhistorytradomiliksupir')->nullable();
+            $table->string('userapprovalhistorytradomiliksupir', 50)->nullable();
+            $table->datetime('tglapprovalhistorytradomiliksupir')->nullable();
+            $table->datetime('tglupdatehistorytradomiliksupir')->nullable();
+            $table->datetime('tglberlakumilikmandor')->nullable();
+            $table->datetime('tglberlakumiliksupir')->nullable();
+            
             $table->string('photostnk', 1500)->nullable();
             $table->string('photobpkb', 1500)->nullable();
             $table->string('phototrado', 1500)->nullable();
@@ -730,12 +774,27 @@ class Trado extends MyModel
                 // $query->where('trado.mandor_id', $isMandor->mandor_id);
             }
         }
+       
         $query = $this->selectColumns($query);
+        // dd($query->get());
         $this->sort($query);
 
 
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'keterangan', 'kodetrado', 'statusaktif', 'kmawal', 'kmakhirgantioli', 'tglakhirgantioli',  'tglstnkmati', 'tglasuransimati', 'tahun', 'akhirproduksi', 'merek', 'norangka', 'nomesin', 'nama', 'nostnk', 'alamatstnk', 'tglstandarisasi', 'tglserviceopname', 'statusstandarisasi', 'keteranganprogressstandarisasi', 'statusjenisplat', 'tglspeksimati', 'tglpajakstnk', 'tglgantiakiterakhir', 'statusmutasi', 'statusvalidasikendaraan', 'tipe', 'jenis', 'isisilinder', 'warna', 'jenisbahanbakar', 'jumlahsumbu', 'jumlahroda', 'model', 'nobpkb', 'statusmobilstoring', 'mandor_id', 'jumlahbanserap', 'statusappeditban', 'statuslewatvalidasi', 'photostnk', 'photobpkb', 'phototrado', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing([
+            'id', 'keterangan', 'kodetrado', 'statusaktif', 'kmawal', 'kmakhirgantioli', 'tglakhirgantioli',  'tglstnkmati', 'tglasuransimati', 'tahun', 'akhirproduksi', 'merek', 'norangka', 'nomesin', 'nama', 'nostnk', 'alamatstnk', 'tglstandarisasi', 'tglserviceopname', 'statusstandarisasi', 'keteranganprogressstandarisasi', 'statusjenisplat', 'tglspeksimati', 'tglpajakstnk', 'tglgantiakiterakhir', 'statusmutasi', 'statusvalidasikendaraan', 'tipe', 'jenis', 'isisilinder', 'warna', 'jenisbahanbakar', 'jumlahsumbu', 'jumlahroda', 'model', 'nobpkb', 'statusmobilstoring', 'mandor_id', 'jumlahbanserap', 'statusappeditban', 'statuslewatvalidasi',
+            'statusapprovalhistorytradomilikmandor',
+            'userapprovalhistorytradomilikmandor',
+            'tglapprovalhistorytradomilikmandor',
+            'tglupdatehistorytradomilikmandor',
+            'statusapprovalhistorytradomiliksupir',
+            'userapprovalhistorytradomiliksupir',
+            'tglapprovalhistorytradomiliksupir',
+            'tglupdatehistorytradomiliksupir',
+            'tglberlakumilikmandor',
+            'tglberlakumiliksupir',
+            'photostnk', 'photobpkb', 'phototrado', 'modifiedby', 'created_at', 'updated_at'
+        ], $models);
         // dd(db::table($temp)->get());
 
         return  $temp;
@@ -779,6 +838,10 @@ class Trado extends MyModel
                             $query = $query->where('parameter_statusabsensisupir.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusvalidasikendaraan') {
                             $query = $query->where('parameter_statusvalidasikendaraan.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusapprovalhistorytradomilikmandor') {
+                            $query = $query->where('parameter_statusapprovalhistorytradomilikmandor.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusapprovalhistorytradomiliksupir') {
+                            $query = $query->where('parameter_statusapprovalhistorytradomilikmandor.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'mandor_id') {
                             $query = $query->where('mandor.namamandor', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'supir_id') {
@@ -819,6 +882,10 @@ class Trado extends MyModel
                                 $query = $query->orWhere('parameter_statusabsensisupir.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statusvalidasikendaraan') {
                                 $query = $query->orWhere('parameter_statusvalidasikendaraan.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statusapprovalhistorytradomilikmandor') {
+                                $query = $query->orwhereRaw('parameter_statusapprovalhistorytradomilikmandor.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statusapprovalhistorytradomiliksupir') {
+                                $query = $query->orwhereRaw('parameter_statusapprovalhistorytradomilikmandor.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'mandor_id') {
                                 $query = $query->orWhere('mandor.namamandor', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'supir_id') {
@@ -1474,6 +1541,100 @@ class Trado extends MyModel
         return $result;
     }
 
+    public function processApprovalHistoryTradoMilikMandor(array $data)
+    {
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+        $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
+        $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
+        for ($i = 0; $i < count($data['tradoId']); $i++) {
+
+            $trado = Trado::find($data['tradoId'][$i]);
+            if ($trado->statusapprovalhistorytradomilikmandor == $statusApproval->id) {
+                $trado->statusapprovalhistorytradomilikmandor = $statusNonApproval->id;
+                $trado->tglapprovalhistorytradomilikmandor = '';
+                $trado->userapprovalhistorytradomilikmandor = '';
+                $aksi = $statusNonApproval->text;
+            } else {
+                $trado->statusapprovalhistorytradomilikmandor = $statusApproval->id;
+                $trado->tglapprovalhistorytradomilikmandor = date('Y-m-d H:i:s');
+                $trado->userapprovalhistorytradomilikmandor = auth('api')->user()->name;
+                $aksi = $statusApproval->text;
+            }
+
+            $trado->tglapprovalhistorytradomilikmandor = date('Y-m-d H:i:s');
+            $trado->userapprovalhistorytradomilikmandor = auth('api')->user()->name;
+            $trado->info = html_entity_decode(request()->info);
+
+            if (!$trado->save()) {
+                throw new \Exception('Error Un/approval History Trado Milik Mandor.');
+            }
+
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($trado->getTable()),
+                'postingdari' => "UN/APPROVAL History Trado Milik Mandor",
+                'idtrans' => $trado->id,
+                'nobuktitrans' => $trado->nobukti,
+                'aksi' => $aksi,
+                'datajson' => $trado->toArray(),
+                'modifiedby' => auth('api')->user()->name,
+            ]);
+            $result[] = $trado;
+        }
+
+        return $result;
+    }
+
+    public function processApprovalHistoryTradoMilikSupir(array $data)
+    {
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+        $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
+        $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
+        for ($i = 0; $i < count($data['tradoId']); $i++) {
+
+            $trado = Trado::find($data['tradoId'][$i]);
+            if ($trado->statusapprovalhistorytradomiliksupir == $statusApproval->id) {
+                $trado->statusapprovalhistorytradomiliksupir = $statusNonApproval->id;
+                $trado->tglapprovalhistorytradomiliksupir = '';
+                $trado->userapprovalhistorytradomiliksupir = '';
+                $aksi = $statusNonApproval->text;
+            } else {
+                $trado->statusapprovalhistorytradomiliksupir = $statusApproval->id;
+                $trado->tglapprovalhistorytradomiliksupir = date('Y-m-d H:i:s');
+                $trado->userapprovalhistorytradomiliksupir = auth('api')->user()->name;
+                $aksi = $statusApproval->text;
+            }
+
+            $trado->tglapprovalhistorytradomiliksupir = date('Y-m-d H:i:s');
+            $trado->userapprovalhistorytradomiliksupir = auth('api')->user()->name;
+            $trado->info = html_entity_decode(request()->info);
+
+            if (!$trado->save()) {
+                throw new \Exception('Error Un/approval History Trado Milik Supir.');
+            }
+
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($trado->getTable()),
+                'postingdari' => "UN/APPROVAL History Trado Milik Supir",
+                'idtrans' => $trado->id,
+                'nobuktitrans' => $trado->nobukti,
+                'aksi' => $aksi,
+                'datajson' => $trado->toArray(),
+                'modifiedby' => auth('api')->user()->name,
+            ]);
+            $result[] = $trado;
+        }
+
+        return $result;
+    }
+
     public function getHistoryMandor($id)
     {
         $query = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))
@@ -1493,20 +1654,22 @@ class Trado extends MyModel
 
     public function processHistoryTradoMilikMandor($data)
     {
-   
 
-        $mandorbaru=$data['mandorbaru_id'] ?? 0;
-        $mandorlama=$data['mandor_id'] ?? 0;
 
-        if  ($mandorbaru==0) {
-            $data['mandorbaru_id']=$mandorlama;
+        $mandorbaru = $data['mandorbaru_id'] ?? 0;
+        $mandorlama = $data['mandor_id'] ?? 0;
+
+        if ($mandorbaru == 0) {
+            $data['mandorbaru_id'] = $mandorlama;
         }
 
-
+        $statusNonApp = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
         $trado = Trado::findOrFail($data['id']);
         $trado->mandor_id = $data['mandorbaru_id'];
         $trado->tglberlakumilikmandor = date('Y-m-d', strtotime($data['tglberlaku']));
+        $trado->tglupdatehistorytradomilikmandor = date('Y-m-d H:i:s');
+        $trado->statusapprovalhistorytradomilikmandor = $statusNonApp->id;
 
         if (!$trado->save()) {
             throw new \Exception("Error updating trado milik mandor.");
@@ -1531,7 +1694,7 @@ class Trado extends MyModel
             'modifiedby' => auth('api')->user()->name
         ]);
 
-    
+
         DB::table('suratpengantar')
             ->where('trado_id', $trado->id)
             ->where('tglbukti', '>=', $trado->tglberlakumilikmandor)
@@ -1563,9 +1726,15 @@ class Trado extends MyModel
 
     public function processHistoryTradoMilikSupir($data)
     {
+        $statusNonApp = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+
         $trado = Trado::findOrFail($data['id']);
         $trado->supir_id = $data['supirbaru_id'];
         $trado->tglberlakumiliksupir = date('Y-m-d', strtotime($data['tglberlaku']));
+        $trado->tglupdatehistorytradomiliksupir = date('Y-m-d H:i:s');
+        $trado->statusapprovalhistorytradomiliksupir = $statusNonApp->id;
+
+
 
         if (!$trado->save()) {
             throw new \Exception("Error updating trado milik supir.");
@@ -1641,7 +1810,7 @@ class Trado extends MyModel
             ->select(
                 'a.kodetrado'
             )
-            ->whereRaw("a.tglbatas<'". $date . "'")
+            ->whereRaw("a.tglbatas<'" . $date . "'")
             ->orderby('a.kodetrado', 'asc');
 
 
@@ -1654,7 +1823,7 @@ class Trado extends MyModel
             ->select(
                 'a.kodetrado'
             )
-            ->whereRaw("a.tglbatas<'". $date . "'")
+            ->whereRaw("a.tglbatas<'" . $date . "'")
             ->orderby('a.kodetrado', 'asc');
         // dd('test');
 
@@ -1686,7 +1855,7 @@ class Trado extends MyModel
             ->where('a.statusaktif', $statusAktif->id)
             ->get();
 
-            // dd($trado1);
+        // dd($trado1);
 
 
 
@@ -1771,7 +1940,7 @@ class Trado extends MyModel
                 ->where('a.statusapproval', $statusApp->id)
                 ->first();
 
-                // dd($querygambar->tosql());
+            // dd($querygambar->tosql());
             if ($photobpkb == true || $photostnk == true  || $phototrado == true) {
                 if (isset($querygambar)) {
 
@@ -1803,7 +1972,7 @@ class Trado extends MyModel
                 "jumlahbanserap" => $trado['jumlahbanserap'],
             ];
             $key = array_keys($required, null);
-            
+
             $jumlah = count($key);
 
             $queryketerangan = db::table('approvaltradoketerangan')->from(db::raw("approvaltradoketerangan a with (readuncommitted)"))
@@ -1826,19 +1995,19 @@ class Trado extends MyModel
             }
         }
 
-// dd('test');
+        // dd('test');
 
         $query1 = db::table($temptradogambar)->from(db::raw($temptradogambar . " a"))
             ->select('a.trado_id')
-            ->orderby('a.trado_id','asc')
+            ->orderby('a.trado_id', 'asc')
             ->first();
 
         $query2 = db::table($temptradoketerangan)->from(db::raw($temptradoketerangan . " a"))
-        ->select('a.trado_id')
-            ->orderby('a.trado_id','asc')
+            ->select('a.trado_id')
+            ->orderby('a.trado_id', 'asc')
             ->first();
-            // 
-            
+        // 
+
         if (isset($query1)) {
             DB::table('trado')
                 ->from(db::raw("trado"))

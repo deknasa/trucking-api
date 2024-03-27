@@ -32,6 +32,7 @@ use App\Http\Requests\RangeExportReportRequest;
 use Intervention\Image\ImageManagerStatic as Image;
 use App\Http\Requests\HistorySupirMilikMandorRequest;
 use App\Http\Requests\StoreApprovalSupirTanpaRequest;
+use App\Models\Error;
 
 class SupirController extends Controller
 {
@@ -912,6 +913,81 @@ class SupirController extends Controller
             throw $th;
         }
     }
+
+    public function cekvalidasihistory($id)
+    {
+        $supir = db::table("supir")->from(db::raw("supir a with (readuncommitted)"))
+            ->select(
+                'a.namasupir'
+            )
+            ->where('a.id', $id)
+            ->first();
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $aksi = request()->aksi ?? '';
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+
+        // dd($aksi);
+        if ($aksi == 'historyMandor') {
+            $query = DB::table('supir')->from(db::raw("supir a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    'a.namasupir'
+                )
+                ->where('a.id', $id)
+                ->where('a.statusapprovalhistorysupirmilikmandor', $statusApproval->id)
+                ->first();
+
+            if (!isset($query)) {
+                $keteranganerror = $error->cekKeteranganError('BAP') ?? '';
+                $keterror = 'No Polisi <b>' . $supir->namasupir  . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'BAP',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }
+        }
+
+      
+
+        $data = [
+            'error' => false,
+            'message' => '',
+            'statuspesan' => 'success',
+        ];
+
+        return response($data);
+    }
+
+     /**
+     * @ClassName
+     * @Keterangan APPROVAL HISTORY SUPIR MILIK MANDOR
+     */
+    public function approvalhistorysupirmilikmandor(ApprovalSupirRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id
+            ];
+            $trado = (new Supir())->processApprovalHistoryTradoMilikMandor($data);
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $trado
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }    
+
     /**
      * @ClassName 
      * @Keterangan APPROVAL SUPIR TANPA KETERANGAN

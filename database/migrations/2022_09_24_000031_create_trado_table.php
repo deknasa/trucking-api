@@ -86,6 +86,15 @@ class CreateTradoTable extends Migration
             $table->unsignedBigInteger('tas_id')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 30)->nullable();
+            $table->integer('statusapprovalhistorytradomilikmandor')->nullable();
+            $table->string('userapprovalhistorytradomilikmandor', 50)->nullable();
+            $table->datetime('tglapprovalhistorytradomilikmandor')->nullable();
+            $table->datetime('tglupdatehistorytradomilikmandor')->nullable();
+            $table->integer('statusapprovalhistorytradomiliksupir')->nullable();
+            $table->string('userapprovalhistorytradomiliksupir', 50)->nullable();
+            $table->datetime('tglapprovalhistorytradomiliksupir')->nullable();
+            $table->datetime('tglupdatehistorytradomiliksupir')->nullable();
+
             $table->timestamps();
 
 

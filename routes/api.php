@@ -483,6 +483,10 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('supir/approvalblacklist', [SupirController::class, 'approvalBlackListSupir'])->whereNumber('id');
     Route::post('supir/approvalluarkota', [SupirController::class, 'approvalSupirLuarKota'])->whereNumber('id');
     Route::post('supir/approvalnonaktif', [SupirController::class, 'approvalnonaktif']);
+    Route::post('supir/approvalhistorysupirmilikmandor', [SupirController::class, 'approvalhistorysupirmilikmandor']);
+    Route::post('supir/{id}/cekvalidasihistory', [SupirController::class, 'cekvalidasihistory'])->name('supir.cekvalidasihistory')->whereNumber('id');
+
+
 
     Route::post('prosesuangjalansupirheader/approval', [ProsesUangJalanSupirHeaderController::class, 'approval']);
     Route::post('getidtnl', [Controller::class, 'getIdTnl'])->name('getidtnl');
@@ -846,7 +850,11 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('trado/approvalpersneling', [TradoController::class, 'approvalpersneling']);
     Route::post('trado/approvalgardan', [TradoController::class, 'approvalgardan']);
     Route::post('trado/approvalsaringanhawa', [TradoController::class, 'approvalsaringanhawa']);
+    Route::post('trado/approvalhistorytradomilikmandor', [TradoController::class, 'approvalhistorytradomilikmandor']);
+    Route::post('trado/approvalhistorytradomiliksupir', [TradoController::class, 'approvalhistorytradomiliksupir']);
     Route::post('trado/approvaltradotanpa', [TradoController::class, 'StoreApprovalTradoTanpa']);
+    Route::post('trado/{id}/cekvalidasihistory', [TradoController::class, 'cekvalidasihistory'])->name('trado.cekvalidasihistory')->whereNumber('id');
+
 
 
 

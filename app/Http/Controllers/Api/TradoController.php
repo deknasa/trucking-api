@@ -33,10 +33,11 @@ use Intervention\Image\ImageManagerStatic as Image;
 use App\Http\Requests\HistoryTradoMilikSupirRequest;
 use App\Http\Requests\HistoryTradoMilikMandorRequest;
 use App\Http\Requests\StoreApprovalTradoTanpaRequest;
+use App\Models\Error;
 
 class TradoController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -58,8 +59,8 @@ class TradoController extends Controller
     public function cekValidasi($id)
     {
         $trado = new Trado();
-        
-        if (request()->aksi =="ApprovalTanpa") {
+
+        if (request()->aksi == "ApprovalTanpa") {
             $approvalTradoTanpa = (new ApprovalTradoTanpa())->cekApproval($trado->find($id));
             // dd($approvalTradoTanpa);
             $data = [
@@ -178,6 +179,82 @@ class TradoController extends Controller
             throw $th;
         }
     }
+
+
+    public function cekvalidasihistory($id)
+    {
+        $trado = db::table("trado")->from(db::raw("trado a with (readuncommitted)"))
+            ->select(
+                'a.kodetrado'
+            )
+            ->where('a.id', $id)
+            ->first();
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $aksi = request()->aksi ?? '';
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+
+        // dd($aksi);
+        if ($aksi == 'historyMandor') {
+            $query = DB::table('trado')->from(db::raw("trado a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    'a.kodetrado'
+                )
+                ->where('a.id', $id)
+                ->where('a.statusapprovalhistorytradomilikmandor', $statusApproval->id)
+                ->first();
+
+            if (!isset($query)) {
+                $keteranganerror = $error->cekKeteranganError('BAP') ?? '';
+                $keterror = 'No Polisi <b>' . $trado->kodetrado  . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'BAP',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }
+        }
+
+        if ($aksi == 'historySupir') {
+
+            $query = DB::table('trado')->from(db::raw("trado a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    'a.kodetrado'
+                )
+                ->where('a.id', $id)
+                ->where('a.statusapprovalhistorytradomiliksupir', $statusApproval->id)
+                ->first();
+
+
+            if (!isset($query)) {
+                $keteranganerror = $error->cekKeteranganError('BAP') ?? '';
+                $keterror = 'No Polisi <b>' . $trado->kodetrado  . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'BAP',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }
+        }
+
+        $data = [
+            'error' => false,
+            'message' => '',
+            'statuspesan' => 'success',
+        ];
+
+        return response($data);
+    }
+
     /**
      * @ClassName 
      * @Keterangan EDIT DATA
@@ -254,13 +331,13 @@ class TradoController extends Controller
         ]);
     }
 
-     /**
+    /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
      */
     public function approvalnonaktif(ApprovalTradoRequest $request)
     {
-        
+
         DB::beginTransaction();
 
         try {
@@ -719,7 +796,7 @@ class TradoController extends Controller
         }
     }
 
-   
+
     public function approvalTradoTanpa()
     {
         $approvalTradoTanpa = new ApprovalTradoTanpa();
@@ -743,7 +820,7 @@ class TradoController extends Controller
         DB::beginTransaction();
         try {
 
-            $data =[
+            $data = [
                 "trado_id" => $request->trado_id,
                 "kodetrado" => $request->kodetrado,
                 "keterangan_id" => $request->keterangan_id,
@@ -760,7 +837,7 @@ class TradoController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $approvalTradoTanpa
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -805,6 +882,54 @@ class TradoController extends Controller
                 'tradoId' => $request->Id
             ];
             $trado = (new Trado())->processApprovalSaringanHawa($data);
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $trado
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName
+     * @Keterangan APPROVAL HISTORY TRADO MILIK MANDOR
+     */
+    public function approvalhistorytradomilikmandor(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'tradoId' => $request->Id
+            ];
+            $trado = (new Trado())->processApprovalHistoryTradoMilikMandor($data);
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $trado
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName
+     * @Keterangan APPROVAL HISTORY TRADO MILIK SUPIR
+     */
+    public function approvalhistorytradomiliksupir(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'tradoId' => $request->Id
+            ];
+            $trado = (new Trado())->processApprovalHistoryTradoMilikSupir($data);
 
             DB::commit();
             return response()->json([
@@ -912,13 +1037,14 @@ class TradoController extends Controller
      * @Keterangan APPROVAL TRADO TANPA GAMBAR
      */
     public function approvaltradogambar()
-    {}
-    
+    {
+    }
+
     /**
      * @ClassName 
      * @Keterangan APPROVAL TRADO TANPA KETERANGAN
      */
     public function approvaltradoketerangan()
-    {}
-    
+    {
+    }
 }
