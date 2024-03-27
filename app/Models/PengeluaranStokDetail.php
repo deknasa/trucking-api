@@ -385,6 +385,14 @@ class PengeluaranStokDetail extends MyModel
         }
 
         if ($pengeluaranStokHeader->pengeluaranstok_id == $spk->text) {
+
+            $kelompok = DB::table('kelompok')->where('kodekelompok', "AKI")->first();
+            if($stok->kelompok_id == $kelompok->id){
+                if($pengeluaranStokHeader->trado_id){
+                    $trado = (new Trado)->updateTglGantiAki($pengeluaranStokHeader->trado_id,$pengeluaranStokHeader->tglbukti);
+                }
+            }
+
             $tempstatusservice = '##tempstatusservice' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
             Schema::create($tempstatusservice, function ($table) {
