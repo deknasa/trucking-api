@@ -1106,7 +1106,7 @@ class UpahSupir extends MyModel
 
                     $getTarif = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
                         ->where('kota_id', $data['kotasampai_id'])
-                        ->where('penyesuaian', $data['penyesuaian'])
+                        ->where('penyesuaian', trim(strtoupper($data['penyesuaian'])))
                         ->first();
 
                     if ($getTarif != '') {
@@ -1117,7 +1117,7 @@ class UpahSupir extends MyModel
 
                     $getTarif = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
                         ->where('kota_id', $data['kotasampai_id'])
-                        ->where('penyesuaian', $data['penyesuaian'])
+                        ->where('penyesuaian', trim(strtoupper($data['penyesuaian'])))
                         ->where('jenisorder_id', 1)
                         ->first();
 
@@ -1129,7 +1129,7 @@ class UpahSupir extends MyModel
 
                     $getTarif = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
                         ->where('kota_id', $data['kotasampai_id'])
-                        ->where('penyesuaian', $data['penyesuaian'])
+                        ->where('penyesuaian', trim(strtoupper($data['penyesuaian'])))
                         ->where('jenisorder_id', 2)
                         ->first();
 
@@ -1141,7 +1141,7 @@ class UpahSupir extends MyModel
 
                     $getTarif = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
                         ->where('kota_id', $data['kotasampai_id'])
-                        ->where('penyesuaian', $data['penyesuaian'])
+                        ->where('penyesuaian', trim(strtoupper($data['penyesuaian'])))
                         ->where('jenisorder_id', 3)
                         ->first();
 
@@ -1153,7 +1153,7 @@ class UpahSupir extends MyModel
 
                     $getTarif = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
                         ->where('kota_id', $data['kotasampai_id'])
-                        ->where('penyesuaian', $data['penyesuaian'])
+                        ->where('penyesuaian', trim(strtoupper($data['penyesuaian'])))
                         ->where('jenisorder_id', 4)
                         ->first();
 
