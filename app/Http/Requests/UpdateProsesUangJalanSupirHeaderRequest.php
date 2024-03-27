@@ -8,6 +8,7 @@ use App\Rules\DateTutupBuku;
 use App\Rules\ExistAbsensiSupirHeader;
 use App\Rules\ExistSupir;
 use App\Rules\ExistTrado;
+use App\Rules\validasiDestroyProsesUangJalanSupir;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -57,6 +58,7 @@ class UpdateProsesUangJalanSupirHeaderRequest extends FormRequest
             ];
         }
         $rules = [
+            'id' => new validasiDestroyProsesUangJalanSupir(),
             'nobukti' => [Rule::in($getDataProsesUang->nobukti)],
             "tglbukti" => [
                 "required",'date_format:d-m-Y',

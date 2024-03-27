@@ -56,9 +56,9 @@ class NotaKreditHeader extends MyModel
                 "bank.namabank as bank",
                 "alatbayar.namaalatbayar as alatbayar",
                 db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
-                db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"), 
+                db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
                 db::raw("cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpelunasanpiutangheader"),
-                db::raw("cast(cast(format((cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpelunasanpiutangheader"), 
+                db::raw("cast(cast(format((cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpelunasanpiutangheader"),
             )
             ->leftJoin(DB::raw("pelunasanpiutangheader with (readuncommitted)"), 'notakreditheader.pelunasanpiutang_nobukti', '=', 'pelunasanpiutangheader.nobukti')
             ->leftJoin(DB::raw("pengeluaranheader with (readuncommitted)"), 'notakreditheader.pengeluaran_nobukti', '=', 'pengeluaranheader.nobukti')
@@ -93,7 +93,11 @@ class NotaKreditHeader extends MyModel
 
     public function cekvalidasiaksi($id)
     {
+        $error = new Error();
+        $keteranganerror = $error->cekKeteranganError('TDT') ?? '';
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $notaKredit = DB::table("notakreditheader")->from(DB::raw("notakreditheader with (readuncommitted)"))->where('id', $id)->first();
+
         $pelunasanPiutang = DB::table('pelunasanpiutangheader')
             ->from(
                 DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
@@ -107,12 +111,13 @@ class NotaKreditHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pelunasan Piutang ' . $pelunasanPiutang->nobukti,
+                'keterangan' =>  'No Bukti <b>' . $notaKredit->nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti PELUNASAN PIUTANG <b>' . $pelunasanPiutang->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
         }
 
+        $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
         if ($notaKredit->pengeluaran_nobukti != '') {
             $jurnal = DB::table('pengeluaranheader')
                 ->from(
@@ -128,8 +133,8 @@ class NotaKreditHeader extends MyModel
             if (isset($jurnal)) {
                 $data = [
                     'kondisi' => true,
-                    'keterangan' => 'Approval Jurnal ' . $jurnal->nobukti,
-                    'kodeerror' => 'SAP'
+                    'keterangan' =>  'No Bukti <b>' . $notaKredit->nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Approval Jurnal <b>' . $jurnal->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                    'kodeerror' => 'SAPP'
                 ];
                 goto selesai;
             }
@@ -148,8 +153,8 @@ class NotaKreditHeader extends MyModel
             if (isset($jurnal)) {
                 $data = [
                     'kondisi' => true,
-                    'keterangan' => 'Approval Jurnal ' . $jurnal->nobukti,
-                    'kodeerror' => 'SAP'
+                    'keterangan' =>  'No Bukti <b>' . $notaKredit->nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Approval Jurnal <b>' . $jurnal->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                    'kodeerror' => 'SAPP'
                 ];
                 goto selesai;
             }
@@ -327,7 +332,6 @@ class NotaKreditHeader extends MyModel
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'notakreditheader.alatbayar_id', 'alatbayar.id')
             ->leftJoin('parameter as statuscetak', 'notakreditheader.statuscetak', 'statuscetak.id')
             ->leftJoin('parameter', 'notakreditheader.statusapproval', 'parameter.id');
-       
     }
 
     public function getNotaKredit($id)
@@ -772,7 +776,7 @@ class NotaKreditHeader extends MyModel
                 }
             }
         }
-        
+
         if ($data['cekcoadebet'] == $getPreviousCoa->coaadjust) {
             if ($data['cekcoadebet'] == $memoNotaKreditCoa['JURNAL']) {
                 $pengeluaranRequest = [

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Rules\DateTutupBuku;
+use App\Rules\validasiDestroyProsesUangJalanSupir;
 use Illuminate\Foundation\Http\FormRequest;
 
 class DestroyProsesUangJalanSupirHeaderRequest extends FormRequest
@@ -25,6 +26,7 @@ class DestroyProsesUangJalanSupirHeaderRequest extends FormRequest
     public function rules()
     {
         return [
+            'id' => new validasiDestroyProsesUangJalanSupir(),
             'tglbukti' => [
                 'required','date_format:d-m-Y',
                 new DateTutupBuku()

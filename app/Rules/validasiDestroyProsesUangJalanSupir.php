@@ -2,12 +2,12 @@
 
 namespace App\Rules;
 
-use App\Http\Controllers\Api\ErrorController;
-use App\Http\Controllers\Api\NotaKreditHeaderController;
-use App\Models\NotaKreditHeader;
+use App\Http\Controllers\Api\ProsesUangJalanSupirHeaderController;
+use App\Models\ProsesUangJalanSupirHeader;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
-class DestroyNotaKredit implements Rule
+class validasiDestroyProsesUangJalanSupir implements Rule
 {
     /**
      * Create a new rule instance.
@@ -30,15 +30,16 @@ class DestroyNotaKredit implements Rule
      */
     public function passes($attribute, $value)
     {
-        $notaKredit = new NotaKreditHeader();
-        $cekdata = $notaKredit->cekvalidasiaksi(request()->id);
+        $prosesUangJalanSupir = new ProsesUangJalanSupirHeader();
+        $nobukti = ProsesUangJalanSupirHeader::from(DB::raw("prosesuangjalansupirheader"))->where('id', request()->id)->first();
+        $cekdata = $prosesUangJalanSupir->cekvalidasiaksi($nobukti->nobukti);
         if ($cekdata['kondisi']) {
             $this->kodeerror = $cekdata['kodeerror'];
             $this->keterangan = $cekdata['keterangan'] ;
             return false;
         }
 
-        $cekCetak = app(NotaKreditHeaderController::class)->cekvalidasi(request()->id);
+        $cekCetak = app(ProsesUangJalanSupirHeaderController::class)->cekvalidasi(request()->id);
         $getOriginal = $cekCetak->original;
         if ($getOriginal['error'] == true) {
             $this->kodeerror = $getOriginal['kodeerror'];
