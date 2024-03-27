@@ -1493,6 +1493,17 @@ class Trado extends MyModel
 
     public function processHistoryTradoMilikMandor($data)
     {
+   
+
+        $mandorbaru=$data['mandorbaru_id'] ?? 0;
+        $mandorlama=$data['mandor_id'] ?? 0;
+
+        if  ($mandorbaru==0) {
+            $data['mandorbaru_id']=$mandorlama;
+        }
+
+
+
         $trado = Trado::findOrFail($data['id']);
         $trado->mandor_id = $data['mandorbaru_id'];
         $trado->tglberlakumilikmandor = date('Y-m-d', strtotime($data['tglberlaku']));
@@ -1520,6 +1531,7 @@ class Trado extends MyModel
             'modifiedby' => auth('api')->user()->name
         ]);
 
+    
         DB::table('suratpengantar')
             ->where('trado_id', $trado->id)
             ->where('tglbukti', '>=', $trado->tglberlakumilikmandor)
