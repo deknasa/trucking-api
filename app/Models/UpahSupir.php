@@ -54,7 +54,7 @@ class UpahSupir extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
-            // dd(request()->isParent);
+        // dd(request()->isParent);
 
         $aktif = request()->aktif ?? '';
         $isParent = request()->isParent ?? false;
@@ -265,7 +265,7 @@ class UpahSupir extends MyModel
             );
 
 
-// dd($query->get());
+        // dd($query->get());
 
         $this->filter($query);
 
@@ -1101,7 +1101,67 @@ class UpahSupir extends MyModel
             $belawan = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))
                 ->where('kodekota', 'BELAWAN')
                 ->first();
+            if ($data['from'] != '') {
+                if ($data['tarif_id'] != 0) {
 
+                    $getTarif = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
+                        ->where('kota_id', $data['kotasampai_id'])
+                        ->where('penyesuaian', $data['penyesuaian'])
+                        ->first();
+
+                    if ($getTarif != '') {
+                        $data['tarif_id'] = $getTarif->id;
+                    }
+                }
+                if ($data['tarifmuatan_id'] != 0) {
+
+                    $getTarif = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
+                        ->where('kota_id', $data['kotasampai_id'])
+                        ->where('penyesuaian', $data['penyesuaian'])
+                        ->where('jenisorder_id', 1)
+                        ->first();
+
+                    if ($getTarif != '') {
+                        $data['tarifmuatan_id'] = $getTarif->id;
+                    }
+                }
+                if ($data['tarifbongkaran_id'] != 0) {
+
+                    $getTarif = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
+                        ->where('kota_id', $data['kotasampai_id'])
+                        ->where('penyesuaian', $data['penyesuaian'])
+                        ->where('jenisorder_id', 2)
+                        ->first();
+
+                    if ($getTarif != '') {
+                        $data['tarifbongkaran_id'] = $getTarif->id;
+                    }
+                }
+                if ($data['tarifimport_id'] != 0) {
+
+                    $getTarif = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
+                        ->where('kota_id', $data['kotasampai_id'])
+                        ->where('penyesuaian', $data['penyesuaian'])
+                        ->where('jenisorder_id', 3)
+                        ->first();
+
+                    if ($getTarif != '') {
+                        $data['tarifimport_id'] = $getTarif->id;
+                    }
+                }
+                if ($data['tarifexport_id'] != 0) {
+
+                    $getTarif = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
+                        ->where('kota_id', $data['kotasampai_id'])
+                        ->where('penyesuaian', $data['penyesuaian'])
+                        ->where('jenisorder_id', 4)
+                        ->first();
+
+                    if ($getTarif != '') {
+                        $data['tarifexport_id'] = $getTarif->id;
+                    }
+                }
+            }
             $upahsupir = new UpahSupir();
             $upahsupir->kotadari_id = $data['kotadari_id'] ?? 0;
             $upahsupir->parent_id = $data['parent_id'] ?? 0;
@@ -1389,26 +1449,24 @@ class UpahSupir extends MyModel
         // $data['gambar'] = $data['gambartnl'];
         // dd($data['gambar']);
         $server = config('app.server_jkt');
-        $getToken = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Accept' => 'application/json'
-        ])
-            ->post($server . 'truckingtnl-api/public/api/token', [
-                'user' => 'ADMIN',
-                'password' => config('app.password_tnl'),
-                'ipclient' => '',
-                'ipserver' => '',
-                'latitude' => '',
-                'longitude' => '',
-                'browser' => '',
-                'os' => '',
-            ]);
-
-        if ($getToken->getStatusCode() == '404') {
-            throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
-        } else if ($getToken->getStatusCode() == '200') {
-
-            $access_token = json_decode($getToken, TRUE)['access_token'];
+        // $getToken = Http::withHeaders([
+        //     'Content-Type' => 'application/json',
+        //     'Accept' => 'application/json'
+        // ])
+        //     ->post($server . 'truckingtnl-api/public/api/token', [
+        //         'user' => 'ADMIN',
+        //         'password' => config('app.password_tnl'),
+        //         'ipclient' => '',
+        //         'ipserver' => '',
+        //         'latitude' => '',
+        //         'longitude' => '',
+        //         'browser' => '',
+        //         'os' => '',
+        //     ]);
+        // dd($getToken, $server . 'truckingtnl-api/public/api/token');
+        $accessTokenTnl = $data['accessTokenTnl'] ?? '';
+        $access_token = $accessTokenTnl;
+        if ($accessTokenTnl != '') {
             $imageBase64 = [];
             foreach ($gambar as $imagePath) {
                 $imageBase64[] = base64_encode(file_get_contents(storage_path("app/upahsupir/" . $imagePath)));
@@ -1473,21 +1531,21 @@ class UpahSupir extends MyModel
         return $UpahSupir;
     }
 
-    public function getRincian($upah_id, $container_id, $statuscontainer_id){
-        if($statuscontainer_id != '' && $container_id != '' && $upah_id != ''){
+    public function getRincian($upah_id, $container_id, $statuscontainer_id)
+    {
+        if ($statuscontainer_id != '' && $container_id != '' && $upah_id != '') {
             $query = DB::table("upahsupirrrincian")->from(DB::raw("upahsupirrincian with (readuncommitted)"))
-            ->where('upahsupir_id', $upah_id)
-            ->where('statuscontainer_id', $statuscontainer_id)
-            ->where('container_id', $container_id)
-            ->first();
+                ->where('upahsupir_id', $upah_id)
+                ->where('statuscontainer_id', $statuscontainer_id)
+                ->where('container_id', $container_id)
+                ->first();
             return $query;
-            
-        }else{
+        } else {
             return [];
         }
     }
 
-    public function processUpdateTarif( array $data)
+    public function processUpdateTarif(array $data)
     {
         // dd($upahsupir);
         // dd($data['id']);
@@ -1516,5 +1574,4 @@ class UpahSupir extends MyModel
             throw $th;
         }
     }
-
 }
