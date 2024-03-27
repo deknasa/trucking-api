@@ -32,6 +32,8 @@ use App\Models\Error;
 use Exception;
 use Illuminate\Database\QueryException;
 use PhpParser\Builder\Param;
+use App\Models\MyModel;
+use DateTime;
 
 class PenerimaanHeaderController extends Controller
 {
@@ -388,6 +390,8 @@ class PenerimaanHeaderController extends Controller
 
         $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
         $tgltutup=date('Y-m-d', strtotime($tgltutup));
+        $user = auth('api')->user()->name;
+        $useredit = $pengeluaran->editing_by ?? '';
 
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
@@ -423,8 +427,41 @@ class PenerimaanHeaderController extends Controller
             ];
 
             return response($data);            
+        } else if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('PENERIMAAN KAS/BANK BUKTI');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('penerimaanheader', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
             
         } else {
+            if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                (new MyModel())->updateEditingBy('penerimaanheader', $id, $aksi);
+            }
 
             $data = [
                 'error' => false,
@@ -452,6 +489,8 @@ class PenerimaanHeaderController extends Controller
 
             return response($data);
         } else {
+
+            (new MyModel())->updateEditingBy('penerimaanheader', $id, 'EDIT');
 
             $data = [
                 'error' => false,

@@ -30,6 +30,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
 use App\Models\Error;
 use Exception;
+use App\Models\MyModel;
+use DateTime;
 
 class AbsensiSupirApprovalHeaderController extends Controller
 {
@@ -305,7 +307,9 @@ class AbsensiSupirApprovalHeaderController extends Controller
 
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
-
+        $user = auth('api')->user()->name;
+        $useredit = $absensisupirapproval->editing_by ?? '';
+        $aksi = request()->aksi ?? '';
 
         $printValidation = AbsensiSupirApprovalHeader::printValidation($id);
         if (!$printValidation) {
@@ -333,8 +337,40 @@ class AbsensiSupirApprovalHeaderController extends Controller
             ];
 
             return response($data);            
-        } else {
+        } else if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('ABSENSI SUPIR APPROVAL BUKTI');
 
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($absensisupirapproval->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('absensisupirapprovalheader', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }                  
+        } else {
+            if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                (new MyModel())->updateEditingBy('absensisupirapprovalheader', $id, $aksi);
+            }
             $data = [
                 'error' => false,
                 'message' => '',
@@ -368,6 +404,8 @@ class AbsensiSupirApprovalHeaderController extends Controller
 
             return response($data);
         } else {
+            (new MyModel())->updateEditingBy('AbsensiSupirApprovalHeader', $id, 'EDIT');
+
             $data = [
                 'error' => false,
                 'message' => '',

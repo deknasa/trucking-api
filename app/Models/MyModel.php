@@ -195,9 +195,14 @@ class MyModel extends Model
     {
         if ($aksi == 'BATAL') {
             $cekEditingBy =  DB::table($table)
-                ->where('id', $id)->first();
+                ->select(
+                    db::raw("isnull(editing_by,'') as editing_by")
+                )
+                ->where('id', $id)->first()->editing_by ?? '';
 
-            if ($cekEditingBy->editing_by == auth('api')->user()->name) {
+
+
+            if ($cekEditingBy == auth('api')->user()->name) {
 
                $data = DB::table($table)
                     ->where('id', $id)
@@ -206,6 +211,9 @@ class MyModel extends Model
                         'editing_by' => ''
                     ]);
             }
+
+          
+
         } else {
 
             $data = DB::table($table)

@@ -579,7 +579,9 @@ class Controller extends BaseController
         $id = request()->id ?? '';
         $table = request()->table ?? '';
         $aksi = request()->aksi ?? '';
+        // $tablelink = request()->tablelink ?? '';
         return response([
+            // 'data' => (new MyModel())->updateEditingBy($table, $id, $aksi,$tablelink),
             'data' => (new MyModel())->updateEditingBy($table, $id, $aksi),
         ]);
     }
