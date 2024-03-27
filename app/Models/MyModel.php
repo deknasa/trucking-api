@@ -64,7 +64,7 @@ class MyModel extends Model
         return true;
     }
 
-    
+
     public function saveToTnl($table, $aksi, $data)
     {
         $server = config('app.api_tnl');
@@ -91,10 +91,10 @@ class MyModel extends Model
         //     throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
         // } else if ($getToken->getStatusCode() == '200') {
         $accessTokenTnl = $data['accessTokenTnl'] ?? '';
-        $access_token =$accessTokenTnl;
+        $access_token = $accessTokenTnl;
         if ($accessTokenTnl != '') {
             // $access_token = json_decode($getToken, TRUE)['access_token'];
-           
+
             if ($aksi == 'add') {
                 // dump($server);
                 // dump($table);
@@ -189,5 +189,33 @@ class MyModel extends Model
         //     return $process;
         // }
 
+    }
+
+    public function updateEditingBy($table, $id, $aksi)
+    {
+        if ($aksi == 'BATAL') {
+            $cekEditingBy =  DB::table($table)
+                ->where('id', $id)->first();
+
+            if ($cekEditingBy->editing_by == auth('api')->user()->name) {
+
+               $data = DB::table($table)
+                    ->where('id', $id)
+                    ->update([
+                        'editing_at' => null,
+                        'editing_by' => ''
+                    ]);
+            }
+        } else {
+
+            $data = DB::table($table)
+                ->where('id', $id)
+                ->update([
+                    'editing_at' => date('Y-m-d H:i:s'),
+                    'editing_by' => auth('api')->user()->name
+                ]);
+        }
+
+        return true;
     }
 }

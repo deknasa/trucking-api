@@ -19,7 +19,7 @@ use App\Http\Requests\DestroyPengeluaranHeaderRequest;
 use App\Http\Requests\StorePengeluaranDetailRequest;
 use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\ApprovalValidasiApprovalRequest;
-
+use App\Http\Requests\EditingByRequest;
 use App\Http\Requests\UpdatePengeluaranHeaderRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +32,8 @@ use App\Http\Requests\UpdatePengeluaranDetailRequest;
 use App\Models\Error;
 use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
+use App\Models\MyModel;
+use DateTime;
 use Exception;
 use Illuminate\Database\QueryException;
 
@@ -231,7 +233,7 @@ class PengeluaranHeaderController extends Controller
     public function approval(ApprovalValidasiApprovalRequest $request)
     {
         // dd('a');
-        
+
         DB::beginTransaction();
 
         try {
@@ -401,19 +403,18 @@ class PengeluaranHeaderController extends Controller
 
         if (!isset($pengeluaran)) {
             $keteranganerror = $error->cekKeteranganError('DTA') ?? '';
-            $keterror='No Bukti <b>'. request()->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . request()->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
                 'message' => $keterror,
                 'error' => true,
                 'kodeerror' => 'SAP',
                 'statuspesan' => 'warning',
             ];
-    
+
             return response($data);
-    
         }
 
-        $nobukti=$pengeluaran->nobukti ?? '';
+        $nobukti = $pengeluaran->nobukti ?? '';
         // $cekdata = $pengeluaran->cekvalidasiaksi($pengeluaran->nobukti);
         $status = $pengeluaran->statusapproval ?? 0;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
@@ -427,13 +428,14 @@ class PengeluaranHeaderController extends Controller
 
         $parameter = new Parameter();
 
-        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
-        $tgltutup=date('Y-m-d', strtotime($tgltutup));        
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
+        $user = auth('api')->user()->name;
+        $useredit = $pengeluaran->editing_by ?? '';
 
-        
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
-            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
                 'message' => $keterror,
                 'error' => true,
@@ -444,7 +446,7 @@ class PengeluaranHeaderController extends Controller
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
-            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
 
             $data = [
                 'message' => $keterror,
@@ -456,7 +458,7 @@ class PengeluaranHeaderController extends Controller
             return response($data);
         } else if ($tgltutup >= $pengeluaran->tglbukti) {
             $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
-            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
                 'message' => $keterror,
@@ -464,8 +466,42 @@ class PengeluaranHeaderController extends Controller
                 'statuspesan' => 'warning',
             ];
 
-            return response($data);            
+            return response($data);
+        } else if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('PENGELUARAN KAS/BANK BUKTI');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('pengeluaranheader', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }
         } else {
+
+            if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                (new MyModel())->updateEditingBy('pengeluaranheader', $id, $aksi);
+            }
 
             $data = [
                 'message' => '',
@@ -494,6 +530,7 @@ class PengeluaranHeaderController extends Controller
             return response($data);
         } else {
 
+            (new MyModel())->updateEditingBy('pengeluaranheader', $id, 'EDIT');
             $data = [
                 'error' => false,
                 'message' => '',
@@ -533,5 +570,9 @@ class PengeluaranHeaderController extends Controller
         return response([
             'data' => $pengeluaranHeader->getExport($id)
         ]);
+    }
+
+    public function editingat(EditingByRequest $request)
+    {
     }
 }
