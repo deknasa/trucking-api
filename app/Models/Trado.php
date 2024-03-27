@@ -1474,6 +1474,13 @@ class Trado extends MyModel
         return $result;
     }
 
+    public function updateTglGantiAki($trado_id,$tglbukti) {
+        $trado = Trado::where('id',$trado_id)->first();
+        $trado->tglgantiakiterakhir = $tglbukti;
+        $trado->save();
+        return $trado;
+    }
+
     public function getHistoryMandor($id)
     {
         $query = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))
