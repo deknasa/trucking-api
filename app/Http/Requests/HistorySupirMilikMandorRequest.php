@@ -25,7 +25,7 @@ class HistorySupirMilikMandorRequest extends FormRequest
     public function rules()
     {
         return [
-            'mandorbaru' => ['required', new HistorySupirMilikMandorValidation]
+            // 'mandorbaru' => ['required', new HistorySupirMilikMandorValidation]
         ];
     }
 

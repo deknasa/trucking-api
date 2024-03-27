@@ -227,6 +227,15 @@ class Supir extends MyModel
         $isAdmin = auth()->user()->isAdmin();
         $formatCabang = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'MANDOR SUPIR')->where('subgrp', 'MANDOR SUPIR')->first();
 
+        $defaultmemononapproval = db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+        ->select(
+            'a.memo'
+        )
+        ->where('a.grp', 'STATUS APPROVAL')
+        ->where('a.subgrp', 'STATUS APPROVAL')
+        ->where('a.text', 'NON APPROVAL')
+        ->first()->memo ?? '';        
+
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'supir.id',
@@ -275,7 +284,14 @@ class Supir extends MyModel
                 DB::raw("'Laporan Supir' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                db::raw("isnull(parameter_statusapprovalhistorymilikmandor.memo,'" . $defaultmemononapproval . "')  as statusapprovalhistorysupirmilikmandor"),
+                'supir.userapprovalhistorysupirmilikmandor as userapprovalhistorysupirmilikmandor',
+                'supir.tglapprovalhistorysupirmilikmandor as tglapprovalhistorysupirmilikmandor',
+                'supir.tglupdatehistorysupirmilikmandor as tglupdatehistorysupirmilikmandor',
+                'supir.tglberlakumilikmandor as tglberlakumilikmandor',
+
+
             )
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'supir.zona_id', 'zona.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'supir.statusaktif', '=', 'parameter.id')
@@ -285,6 +301,7 @@ class Supir extends MyModel
             ->leftJoin(DB::raw("parameter as statusblacklist with (readuncommitted)"), 'supir.statusblacklist', '=', 'statusblacklist.id')
             ->leftJoin(DB::raw("parameter as statuspostingtnl with (readuncommitted)"), 'supir.statuspostingtnl', '=', 'statuspostingtnl.id')
             ->leftJoin(DB::raw("pemutihansupirheader as pemutihansupir with (readuncommitted)"), 'supir.pemutihansupir_nobukti', '=', 'pemutihansupir.nobukti')
+            ->leftJoin(DB::raw("parameter as parameter_statusapprovalhistorymilikmandor with (readuncommitted)"), 'supir.statusapprovalhistorysupirmilikmandor', 'parameter_statusapprovalhistorymilikmandor.id')
             ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id')
             ->leftJoin(DB::raw("mandor as b with (readuncommitted)"), 'supir.mandor_id', '=', 'b.id');
 
@@ -502,6 +519,15 @@ class Supir extends MyModel
     }
     public function findAll($id)
     {
+        $defaultmemononapproval = db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+        ->select(
+            'a.memo'
+        )
+        ->where('a.grp', 'STATUS APPROVAL')
+        ->where('a.subgrp', 'STATUS APPROVAL')
+        ->where('a.text', 'NON APPROVAL')
+        ->first()->memo ?? ''; 
+
         $data = Supir::from(DB::raw("supir with (readuncommitted)"))
             ->select(
                 'supir.id',
@@ -550,12 +576,19 @@ class Supir extends MyModel
 
                 'supir.modifiedby',
                 'supir.created_at',
-                'supir.updated_at'
+                'supir.updated_at',
+                db::raw("isnull(parameter_statusapprovalhistorymilikmandor.memo,'" . $defaultmemononapproval . "')  as statusapprovalhistorysupirmilikmandor"),
+                'supir.userapprovalhistorysupirmilikmandor as userapprovalhistorysupirmilikmandor',
+                'supir.tglapprovalhistorysupirmilikmandor as tglapprovalhistorysupirmilikmandor',
+                'supir.tglupdatehistorysupirmilikmandor as tglupdatehistorysupirmilikmandor',
+                'supir.tglberlakumilikmandor as tglberlakumilikmandor',
+
             )
 
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'supir.zona_id', 'zona.id')
             ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'supir.mandor_id', 'mandor.id')
             ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusapprovalhistorymilikmandor with (readuncommitted)"), 'supir.statusapprovalhistorysupirmilikmandor', 'parameter_statusapprovalhistorymilikmandor.id')
 
             ->where('supir.id', $id)->first();
 
@@ -601,6 +634,12 @@ class Supir extends MyModel
                 $this->table.pemutihansupir_nobukti,
                 statuspostingtnl.memo as statuspostingtnl,
                 isnull(b.namamandor,'') as mandor_id,
+                parameter_statusapprovalhistorymilikmandor.memo as statusapprovalhistorysupirmiliksupir,
+                $this->table.userapprovalhistorysupirmilikmandor as userapprovalhistorysupirmilikmandor,
+                $this->table.tglapprovalhistorysupirmilikmandor as tglapprovalhistorysupirmilikmandor,
+                $this->table.tglupdatehistorysupirmilikmandor as tglupdatehistorysupirmilikmandor,                
+                $this->table.tglberlakumilikmandor as tglberlakumilikmandor,
+
                 $this->table.modifiedby,
                 $this->table.created_at,
                 $this->table.updated_at"
@@ -611,6 +650,8 @@ class Supir extends MyModel
             ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'supir.statusluarkota', '=', 'statusluarkota.id')
             ->leftJoin(DB::raw("parameter as statusblacklist with (readuncommitted)"), 'supir.statusblacklist', '=', 'statusblacklist.id')
             ->leftJoin(DB::raw("parameter as statuspostingtnl with (readuncommitted)"), 'supir.statuspostingtnl', '=', 'statuspostingtnl.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusapprovalhistorymilikmandor with (readuncommitted)"), 'supir.statusapprovalhistorysupirmilikmandor', 'parameter_statusapprovalhistorymilikmandor.id')
+
             ->leftJoin('supir as supirlama', 'supir.supirold_id', '=', 'supirlama.id')
             ->leftJoin(DB::raw("mandor as b with (readuncommitted)"), 'supir.mandor_id', '=', 'b.id');
     }
@@ -654,6 +695,11 @@ class Supir extends MyModel
             $table->string('pemutihansupir_nobukti')->nullable();
             $table->longText('statuspostingtnl')->nullable();
             $table->string('mandor_id', 100)->nullable();
+            $table->longtext('statusapprovalhistorysupirmilikmandor')->nullable();
+            $table->string('userapprovalhistorysupirmilikmandor', 50)->nullable();
+            $table->datetime('tglapprovalhistorysupirmilikmandor')->nullable();
+            $table->datetime('tglupdatehistorysupirmilikmandor')->nullable();            
+            $table->datetime('tglberlakumilikmandor')->nullable();            
 
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
@@ -664,6 +710,7 @@ class Supir extends MyModel
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
+        // dd($query->get());
         $this->sort($query);
         $models = $this->filter($query);
         DB::table($temp)->insertUsing([
@@ -701,6 +748,11 @@ class Supir extends MyModel
             'pemutihansupir_nobukti',
             'statuspostingtnl',
             'mandor_id',
+            'statusapprovalhistorysupirmilikmandor',
+            'userapprovalhistorysupirmilikmandor', 
+            'tglapprovalhistorysupirmilikmandor',
+            'tglupdatehistorysupirmilikmandor',            
+            'tglberlakumilikmandor',            
             'modifiedby',
             'created_at',
             'updated_at'
@@ -744,7 +796,11 @@ class Supir extends MyModel
                             $query = $query->where('zona.zona', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'supirold_id') {
                             $query = $query->where('supirlama.namasupir', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'statusapprovalhistorysupirmilikmandor') {
+                            $query = $query->where('parameter_statusapprovalhistorysupirmilikmandor.text', '=', $filters['data']);
+
                         } else if ($filters['field'] == 'mandor_id') {
+                            
                             $query = $query->where('b.namamandor', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
@@ -780,6 +836,9 @@ class Supir extends MyModel
                                 $query = $query->orWhere('zona.zona', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'mandor_id') {
                                 $query = $query->orwhere('b.namamandor', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'statusapprovalhistorysupirmilikmandor') {
+                                $query = $query->orwhere('parameter_statusapprovalhistorysupirmilikmandor.text', '=', $filters['data']);
+    
                             } else if ($filters['field'] == 'supirold_id') {
                                 $query = $query->orWhere('supirlama.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tgllahir' || $filters['field'] == 'tglterbitsim' || $filters['field'] == 'tglexpsim' || $filters['field'] == 'tglmasuk' || $filters['field'] == 'tglberhentisupir' || $filters['field'] == 'tglbatastidakbolehluarkota') {
@@ -1516,9 +1575,21 @@ class Supir extends MyModel
 
     public function processHistorySupirMilikMandor($data)
     {
+        $statusNonApp = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+
+        $mandorbaru = $data['mandorbaru_id'] ?? 0;
+        $mandorlama = $data['mandor_id'] ?? 0;
+
+        if ($mandorbaru == 0) {
+            $data['mandorbaru_id'] = $mandorlama;
+        }
+
         $supir = Supir::findOrFail($data['id']);
         $supir->mandor_id = $data['mandorbaru_id'];
         $supir->tglberlakumilikmandor = date('Y-m-d', strtotime($data['tglberlaku']));
+        $supir->tglupdatehistorysupirmilikmandor = date('Y-m-d H:i:s');
+        $supir->statusapprovalhistorysupirmilikmandor = $statusNonApp->id;
+
 
         if (!$supir->save()) {
             throw new \Exception("Error updating supir milik mandor.");
@@ -1695,6 +1766,54 @@ class Supir extends MyModel
 
         return $Supir;
     }
+                    
+    public function processApprovalHistoryTradoMilikMandor(array $data)
+    {
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+        $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
+        $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
+        for ($i = 0; $i < count($data['Id']); $i++) {
+
+            $supir = Supir::find($data['Id'][$i]);
+            if ($supir->statusapprovalhistorysupirmilikmandor == $statusApproval->id) {
+                $supir->statusapprovalhistorysupirmilikmandor = $statusNonApproval->id;
+                $supir->tglapprovalhistorysupirmilikmandor = '';
+                $supir->userapprovalhistorysupirmilikmandor = '';
+                $aksi = $statusNonApproval->text;
+            } else {
+                $supir->statusapprovalhistorysupirmilikmandor = $statusApproval->id;
+                $supir->tglapprovalhistorysupirmilikmandor = date('Y-m-d H:i:s');
+                $supir->userapprovalhistorysupirmilikmandor = auth('api')->user()->name;
+                $aksi = $statusApproval->text;
+            }
+
+            $supir->tglapprovalhistorysupirmilikmandor = date('Y-m-d H:i:s');
+            $supir->userapprovalhistorysupirmilikmandor = auth('api')->user()->name;
+            $supir->info = html_entity_decode(request()->info);
+
+            if (!$supir->save()) {
+                throw new \Exception('Error Un/approval History Supir Milik Mandor.');
+            }
+
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($supir->getTable()),
+                'postingdari' => "UN/APPROVAL History Supir Milik Mandor",
+                'idtrans' => $supir->id,
+                'nobuktitrans' => $supir->nobukti,
+                'aksi' => $aksi,
+                'datajson' => $supir->toArray(),
+                'modifiedby' => auth('api')->user()->name,
+            ]);
+            $result[] = $supir;
+        }
+
+        return $result;
+    }    
+
     public function processApprovalSupirLuarKota(array $data)
     {
         $supir = Supir::find($data['id']);
