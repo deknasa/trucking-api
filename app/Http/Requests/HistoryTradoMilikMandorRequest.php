@@ -24,9 +24,10 @@ class HistoryTradoMilikMandorRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'mandorbaru' => ['required', new HistoryTradoMilikMandorValidation]
-        ];
+        return [];
+        // return [
+        //     'mandorbaru' => ['required', new HistoryTradoMilikMandorValidation]
+        // ];
     }
     public function attributes()
     {
