@@ -184,26 +184,33 @@ class StoreMandorTripRequest extends FormRequest
         if ($upah_id != null) {
             $validasiUpah = (new UpahSupirRincian())->cekValidasiInputTripUpah(request()->statuscontainer_id, request()->jenisorder_id, request()->upah_id);
             $getUpah = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->select('zonadari_id', 'zonasampai_id')->where('id', request()->upah_id)->first();
-
+            $validasiDari = '';
+            if(request()->statuslongtrip == 66){
+                $validasiDari = (request()->statusupahzona == $getUpahZona->id) ? new ValidasiKotaZonaTrip($getUpah->zonadari_id) : Rule::in($validasiUpah->kotadari_id);
+            }
+            $validasiSampai = '';
+            if(request()->statuslongtrip == 66){
+                $validasiSampai = (request()->statusupahzona == $getUpahZona->id) ? new ValidasiKotaZonaTrip($getUpah->zonasampai_id) : Rule::in($validasiUpah->kotasampai_id);
+            }
             $dari_id = $this->dari_id;
             if ($dari_id != null) {
                 $rulesDari_id = [
-                    'dari_id' => ['required', 'numeric', 'min:1', new ExistKota(), (request()->statusupahzona == $getUpahZona->id) ? new ValidasiKotaZonaTrip($getUpah->zonadari_id) : Rule::in($validasiUpah->kotadari_id)]
+                    'dari_id' => ['required', 'numeric', 'min:1', new ExistKota(), $validasiDari]
                 ];
             } else if ($dari_id == null && $this->dari != '') {
                 $rulesDari_id = [
-                    'dari_id' => ['required', 'numeric', 'min:1', new ExistKota(), (request()->statusupahzona == $getUpahZona->id) ? new ValidasiKotaZonaTrip($getUpah->zonadari_id) : Rule::in($validasiUpah->kotadari_id)]
+                    'dari_id' => ['required', 'numeric', 'min:1', new ExistKota(), $validasiDari]
                 ];
             }
 
             $sampai_id = $this->sampai_id;
             if ($sampai_id != null) {
                 $rulesSampai_id = [
-                    'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota(), (request()->statusupahzona == $getUpahZona->id) ? new ValidasiKotaZonaTrip($getUpah->zonasampai_id) : Rule::in($validasiUpah->kotasampai_id)]
+                    'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota(), $validasiSampai]
                 ];
             } else if ($sampai_id == null && $this->sampai != '') {
                 $rulesSampai_id = [
-                    'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota(), (request()->statusupahzona == $getUpahZona->id) ? new ValidasiKotaZonaTrip($getUpah->zonasampai_id) : Rule::in($validasiUpah->kotasampai_id)]
+                    'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota(), $validasiSampai]
                 ];
             }
         }

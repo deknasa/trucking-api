@@ -709,6 +709,87 @@ class UpahSupirRincian extends MyModel
                 'updated_at',
                 'kotadarisampai',
             ], $query);
+            if ($longtrip == 65) {
+
+                $query = DB::table("upahsupirrincian")->from(DB::raw("upahsupirrincian with (readuncommitted)"))
+                    ->select(
+                        'B.id',
+                        'B.kotasampai_id as kotadari_id',
+                        'B.kotadari_id as kotasampai_id',
+                        'B.zonasampai_id as zonadari_id',
+                        'B.zonadari_id as zonasampai_id',
+                        'B.tarif_id',
+                        'B.tarif',
+                        'B.kotasampai as kotadari',
+                        'B.kotadari as kotasampai',
+                        'B.zonadari as zonasampai',
+                        'B.zonasampai as zonadari',
+                        'B.penyesuaian',
+                        'B.jarak',
+                        'parameter.memo as statusaktif',
+                        'container.kodecontainer as container',
+                        'statuscontainer.kodestatuscontainer as statuscontainer',
+                        'upahsupirrincian.nominalsupir',
+                        'upahsupirrincian.nominalkenek',
+                        'upahsupirrincian.nominalkomisi',
+                        'B.tglmulaiberlaku',
+                        'B.modifiedby',
+                        'B.created_at',
+                        'B.updated_at',
+                        DB::raw("(trim(b.kotasampai)+' - '+trim(b.kotadari)) as kotadarisampai"),
+
+                    )
+                    ->Join(DB::raw($tempupahsupir . " as B1 "), 'B1.id', 'upahsupirrincian.upahsupir_id')
+                    ->leftJoin(DB::raw("$temptarif as B with (readuncommitted)"), 'B.id', 'upahsupirrincian.upahsupir_id')
+                    ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'B.statusaktif', '=', 'parameter.id')
+                    ->leftJoin(DB::raw("container with (readuncommitted)"), 'upahsupirrincian.container_id', 'container.id')
+                    ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'upahsupirrincian.statuscontainer_id', 'statuscontainer.id')
+                    ->where('upahsupirrincian.nominalsupir', '!=', 0);
+
+                if (($aktif == 'AKTIF')) {
+                    $statusaktif = Parameter::from(
+                        DB::raw("parameter with (readuncommitted)")
+                    )
+                        ->where('grp', '=', 'STATUS AKTIF')
+                        ->where('text', '=', 'AKTIF')
+                        ->first();
+
+                    $query->where('B.statusaktif', '=', $statusaktif->id);
+                }
+                if ($container_id > 0) {
+                    $query->where('upahsupirrincian.container_id', '=', $container_id);
+                }
+                if ($statuscontainer_id > 0) {
+                    $query->where('upahsupirrincian.statuscontainer_id', '=', $statuscontainer_id);
+                }
+
+                DB::table($temtabel)->insertUsing([
+                    'id',
+                    'kotadari_id',
+                    'kotasampai_id',
+                    'zonadari_id',
+                    'zonasampai_id',
+                    'tarif_id',
+                    'tarif',
+                    'kotadari',
+                    'kotasampai',
+                    'zonadari',
+                    'zonasampai',
+                    'penyesuaian',
+                    'jarak',
+                    'statusaktif',
+                    'container',
+                    'statuscontainer',
+                    'nominalsupir',
+                    'nominalkenek',
+                    'nominalkomisi',
+                    'tglmulaiberlaku',
+                    'modifiedby',
+                    'created_at',
+                    'updated_at',
+                    'kotadarisampai',
+                ], $query);
+            }
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
                 DB::raw("listtemporarytabel with (readuncommitted)")
@@ -727,7 +808,8 @@ class UpahSupirRincian extends MyModel
             DB::raw(DB::raw($temtabel) . " a with (readuncommitted)")
         )
             ->select(
-                'a.id',
+                DB::raw("row_number() Over(Order By a.id) as id"),
+                'a.id as upah_id',
                 'a.kotadari_id',
                 'a.kotasampai_id',
                 'a.zonadari_id',
