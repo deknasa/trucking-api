@@ -2,47 +2,49 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Parameter;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
+use DateTime;
+use App\Models\Bank;
+use App\Models\Stok;
+use App\Models\Error;
 
+use App\Models\MyModel;
+use App\Models\Parameter;
+use App\Models\HutangHeader;
+use Illuminate\Http\Request;
+use App\Models\StokPersediaan;
 use App\Models\PengeluaranStok;
-use App\Models\PengeluaranStokHeader;
-use App\Models\PengeluaranStokDetail;
-use App\Models\PenerimaanStokDetail;
-use App\Models\PenerimaanStokHeader;
+use App\Models\JurnalUmumDetail;
+use App\Models\JurnalUmumHeader;
+use App\Models\PenerimaanDetail;
+use App\Models\PenerimaanHeader;
+use App\Models\HutangBayarDetail;
+use App\Models\HutangBayarHeader;
 use App\Models\PengeluaranDetail;
 use App\Models\PengeluaranHeader;
-use App\Models\HutangHeader;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+
+use App\Http\Controllers\Controller;
+use App\Models\PenerimaanStokDetail;
+use App\Models\PenerimaanStokHeader;
+use App\Models\PengeluaranStokDetail;
+use App\Models\PengeluaranStokHeader;
+use Illuminate\Support\Facades\Schema;
 use App\Models\PengeluaranStokDetailFifo;
-use App\Models\StokPersediaan;
-use App\Models\Stok;
-use App\Models\Bank;
-use App\Models\Error;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\GetIndexRangeRequest;
-use Illuminate\Http\JsonResponse;
-
-use Illuminate\Support\Facades\Schema;
 use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use App\Http\Requests\StoreJurnalUmumHeaderRequest;
+use App\Http\Requests\StorePenerimaanDetailRequest;
+use App\Http\Requests\StorePenerimaanHeaderRequest;
+use App\Http\Requests\StoreHutangBayarHeaderRequest;
+use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
+use App\Http\Requests\StorePengeluaranStokDetailRequest;
 use App\Http\Requests\StorePengeluaranStokHeaderRequest;
 use App\Http\Requests\UpdatePengeluaranStokHeaderRequest;
 use App\Http\Requests\DestroyPengeluaranStokHeaderRequest;
-use App\Http\Requests\StorePengeluaranStokDetailRequest;
 use App\Http\Requests\StorePengeluaranStokDetailFifoRequest;
-use App\Http\Requests\StoreHutangBayarHeaderRequest;
-use App\Http\Requests\StorePenerimaanHeaderRequest;
-use App\Http\Requests\StorePenerimaanDetailRequest;
-use App\Http\Requests\StoreJurnalUmumHeaderRequest;
-use App\Http\Requests\StoreJurnalUmumDetailRequest;
-use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
-use App\Models\PenerimaanHeader;
-use App\Models\PenerimaanDetail;
-use App\Models\HutangBayarHeader;
-use App\Models\HutangBayarDetail;
-use App\Models\JurnalUmumDetail;
-use App\Models\JurnalUmumHeader;
 
 
 class PengeluaranStokHeaderController extends Controller
@@ -363,6 +365,8 @@ class PengeluaranStokHeaderController extends Controller
         $pengeluaran  = new PengeluaranStokHeader();
         $pengeluaran  = $pengeluaran->findOrFail($id);
         $nobukti = $pengeluaran->nobukti ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $pengeluaran->editing_by ?? '';
 
         if (!isset($pengeluaran)) {
             $keteranganerror = $error->cekKeteranganError('DTA') ?? '';
@@ -685,8 +689,40 @@ class PengeluaranStokHeaderController extends Controller
             }
 
             //    dd($pengeluaran->tglbukti,$isEditAble,$printValidation);
-
+            if ($useredit != '' && $useredit != $user) {
+                $waktu = (new Parameter())->cekBatasWaktuEdit('pengeluaran stok header BUKTI');
+                
+                $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
+                $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+                if ($diffNow->i > $waktu) {
+                    if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                        (new MyModel())->updateEditingBy('pengeluaranstokheader', $id, $aksi);
+                    }
+                    
+                    $data = [
+                        'message' => '',
+                        'error' => false,
+                        'statuspesan' => 'success',
+                    ];
+                    
+                    // return response($data);
+                } else {
+                    
+                    $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                    $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                    $data = [
+                        'error' => true,
+                        'message' => $keterror,
+                        'kodeerror' => 'SDE',
+                        'statuspesan' => 'warning',
+                    ];
+                    
+                    return response($data);
+                }    
+            }
             if ($todayValidation || (($isEditAble || $isKeteranganEditAble) && !$printValidation)) {
+                (new MyModel())->updateEditingBy('pengeluaranstokheader', $id, $aksi);
+
                 $data = [
                     'message' => '',
                     'errors' => 'bisa',

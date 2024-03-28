@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers\Api;
 
+use DateTime;
 use App\Models\Error;
 use App\Models\Gudang;
+use App\Models\MyModel;
 use App\Models\Parameter;
 use App\Models\HutangDetail;
 use App\Models\HutangHeader;
+
+
 use Illuminate\Http\Request;
 use App\Models\PenerimaanStok;
-
-
 use App\Models\StokPersediaan;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\JsonResponse;
@@ -18,16 +20,16 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\PenerimaanStokDetail;
 use App\Models\PenerimaanStokHeader;
+
 use App\Models\PengeluaranStokDetail;
 use Illuminate\Support\Facades\Schema;
-
 use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\StoreLogTrailRequest;
+
 use Illuminate\Validation\ValidationException;
+
 use App\Http\Requests\StoreHutangDetailRequest;
-
 use App\Http\Requests\StoreHutangHeaderRequest;
-
 use App\Http\Requests\UpdateHutangHeaderRequest;
 use App\Http\Requests\DestroyHutangHeaderRequest;
 use App\Http\Requests\StorePenerimaanStokDetailRequest;
@@ -329,6 +331,8 @@ class PenerimaanStokHeaderController extends Controller
         $aksi = request()->aksi ?? '';
         $peneimaan = $penerimaanStokHeader->findOrFail($id);
         $nobukti=$peneimaan->nobukti ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $peneimaan->editing_by ?? '';
         if (!isset($peneimaan)) {
             $keteranganerror = $error->cekKeteranganError('DTA') ?? '';
             $keterror = 'No Bukti <b>' . request()->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
@@ -626,7 +630,43 @@ class PenerimaanStokHeaderController extends Controller
                     }
                 }
 
+                if ($useredit != '' && $useredit != $user) {
+                    $waktu = (new Parameter())->cekBatasWaktuEdit('Nota Kredit Header BUKTI');
+                    
+                    $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($peneimaan->editing_at)));
+                    $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+                    if ($diffNow->i > $waktu) {
+                        if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                            (new MyModel())->updateEditingBy('penerimaanstokheader', $id, $aksi);
+                        }
+                        
+                        $data = [
+                            'message' => '',
+                            'error' => false,
+                            'statuspesan' => 'success',
+                        ];
+                        
+                        // return response($data);
+                    } else {
+                        
+                        $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                        $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                        $data = [
+                            'error' => true,
+                            'message' => $keterror,
+                            'kodeerror' => 'SDE',
+                            'statuspesan' => 'warning',
+                        ];
+                        
+                        return response($data);
+                    }    
+                }
+                
                 if (!$isPGUsed) {
+                    // if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                        (new MyModel())->updateEditingBy('penerimaanstokheader', $id, $aksi);
+                    // }
+        
                     $data = [
                         'message' => '',
                         'errors' => 'bisa',
