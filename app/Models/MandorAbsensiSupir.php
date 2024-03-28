@@ -150,6 +150,7 @@ class MandorAbsensiSupir extends MyModel
             $table->date('tglapprovaleditabsensi')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
+            $table->integer('statussupirserap')->Length(11)->nullable();
         });
         // dd($deleted_id);
         if ($deleted_id == 0) {
@@ -170,6 +171,7 @@ class MandorAbsensiSupir extends MyModel
                     'a.tglapprovaleditabsensi',
                     'a.info',
                     'a.modifiedby',
+                    db::raw("isnull(a.statussupirserap,0) as statussupirserap"),
                 )
                 ->join(db::raw("absensisupirheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
                 ->where('b.tglbukti', $date)
@@ -191,6 +193,7 @@ class MandorAbsensiSupir extends MyModel
                 'tglapprovaleditabsensi',
                 'info',
                 'modifiedby',
+                'statussupirserap'
             ],  $queryabsensisupirdetail);
         } else {
             $user = auth('api')->user()->name;
@@ -284,6 +287,7 @@ class MandorAbsensiSupir extends MyModel
                 $table->date('tglapprovaleditabsensi')->nullable();
                 $table->longText('info')->nullable();
                 $table->string('modifiedby', 50)->nullable();
+                $table->integer('statussupirserap')->Length(11)->nullable();
             });
 
             $queryabsensisupirdetail2 = db::table("absensisupirdetail")->from(db::raw("absensisupirdetail a with (readuncommitted)"))
@@ -303,6 +307,7 @@ class MandorAbsensiSupir extends MyModel
                     'a.tglapprovaleditabsensi',
                     'a.info',
                     'a.modifiedby',
+                    db::raw("isnull(a.statussupirserap,0) as statussupirserap"),
                 )
                 ->join(db::raw("absensisupirheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
                 ->where('b.tglbukti', $date)
@@ -324,6 +329,7 @@ class MandorAbsensiSupir extends MyModel
                 'tglapprovaleditabsensi',
                 'info',
                 'modifiedby',
+                'statussupirserap'
             ],  $queryabsensisupirdetail2);
 
 
@@ -358,6 +364,7 @@ class MandorAbsensiSupir extends MyModel
                         db::raw("isnull(b.tglapprovaleditabsensi,'1900/1/1') as tglapprovaleditabsensi"),
                         db::raw("isnull(b.info,'') as info"),
                         db::raw("isnull(b.modifiedby,'') as modifiedby"),
+                        db::raw("isnull(b.statussupirserap,0) as statussupirserap")
                     )
                     ->leftJoin(DB::raw($tempabsensisupirdetail2 . " as b "), function ($join) {
                         $join->on('a.trado_id', '=', 'b.trado_id');
@@ -383,6 +390,7 @@ class MandorAbsensiSupir extends MyModel
                         db::raw("isnull(b.tglapprovaleditabsensi,'1900/1/1') as tglapprovaleditabsensi"),
                         db::raw("isnull(b.info,'') as info"),
                         db::raw("isnull(b.modifiedby,'') as modifiedby"),
+                        db::raw("isnull(b.statussupirserap,0) as statussupirserap")
                     )
                     ->leftJoin(DB::raw($tempabsensisupirdetail2 . " as b "), function ($join) {
                         $join->on('a.trado_id', '=', 'b.trado_id');
@@ -412,6 +420,7 @@ class MandorAbsensiSupir extends MyModel
                 'tglapprovaleditabsensi',
                 'info',
                 'modifiedby',
+                'statussupirserap'
             ],  $queryabsensisupirdetail);
 
             // dump(DB::table($temtabel)->get());
@@ -687,6 +696,7 @@ class MandorAbsensiSupir extends MyModel
             $table->integer('supir_id_old')->nullable();
             $table->text('memo')->nullable();
             $table->datetime('tglbatas')->nullable();
+            $table->integer('statussupirserap')->Length(11)->nullable();
         });
         $tempAbsensi = '##tempAbsensi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempAbsensi, function ($table) {
@@ -703,6 +713,7 @@ class MandorAbsensiSupir extends MyModel
             $table->string('namasupir_old')->nullable();
             $table->integer('supir_id_old')->nullable();
             $table->text('memo')->nullable();
+            $table->integer('statussupirserap')->Length(11)->nullable();
         });
 
         //trado yang sudah absen dan punya supir
@@ -721,6 +732,8 @@ class MandorAbsensiSupir extends MyModel
                 db::raw("(case when isnull(d.id,0)=0 then d1.namasupir  else d.namasupir end) as namasupir_old"),
                 db::raw("(case when isnull(d.id,0)=0 then d1.id  else d.id end) as supir_id_old"),
                 // 'd.id as supir_id_old',
+                db::raw("isnull(absensisupirdetail.statussupirserap,0) as statussupirserap")
+
 
             )
             // ->where('absensisupirheader.tglbukti', date('Y-m-d', strtotime($date)))
@@ -737,7 +750,7 @@ class MandorAbsensiSupir extends MyModel
                 $absensisupirdetail->Join(DB::raw($tempmandordetail . " as mandordetail"), 'trado.mandor_id', 'mandordetail.mandor_id');
             }
         }
-        DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id', 'namasupir_old', 'supir_id_old'], $absensisupirdetail);
+        DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id', 'namasupir_old', 'supir_id_old','statussupirserap'], $absensisupirdetail);
         //trado yang sudah absen dan punya tidak punya supir
         $absensisupirdetail = DB::table($tempabsensisupirdetail)->from(db::raw($tempabsensisupirdetail . " as absensisupirdetail"))
             ->select(
@@ -754,6 +767,7 @@ class MandorAbsensiSupir extends MyModel
                 // 'd.namasupir as namasupir_old',
                 db::raw("(case when isnull(d1.id,0)=0 then d.namasupir else d1.namasupir end) as namasupir_old"),
                 db::raw("(case when isnull(d1.id,0)=0 then d.id else d1.id end) as supir_id_old"),
+                db::raw("isnull(absensisupirdetail.statussupirserap,0) as statussupirserap")
 
             )
             // ->where('absensisupirheader.tglbukti', date('Y-m-d', strtotime($date)))
@@ -773,8 +787,8 @@ class MandorAbsensiSupir extends MyModel
         }
 
         //supir Trado yang belum diisi
-        DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id', 'namasupir_old', 'supir_id_old'], $absensisupirdetail);
-        DB::table($tempAbsensi)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id', 'namasupir_old', 'supir_id_old'], $absensisupirdetail);
+        DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id', 'namasupir_old', 'supir_id_old','statussupirserap'], $absensisupirdetail);
+        DB::table($tempAbsensi)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id', 'namasupir_old', 'supir_id_old','statussupirserap'], $absensisupirdetail);
 
         // dump(DB::table($tempMandor)->get());
         // dump(DB::table($tempabsensisupirheader)->get());
@@ -869,6 +883,7 @@ class MandorAbsensiSupir extends MyModel
                 'a.supir_id_old',
                 db::raw("count(sp.nobukti) as jlhtrip"),
                 'a.memo',
+                db::raw("isnull(a.statussupirserap,0) as statussupirserap"),
                 DB::raw("(case when year(isnull(a.tglbatas,'1900/1/1 '))=1900 then null else format(a.tglbatas,'dd-MM-yyyy HH:mm:ss')  end)as tglbatas"),
             )
             ->groupBy(
@@ -885,6 +900,7 @@ class MandorAbsensiSupir extends MyModel
                 'a.namasupir_old',
                 'a.supir_id_old',
                 'a.memo',
+                'a.statussupirserap',
                 'a.tglbatas'
             )
             ->leftJoin('suratpengantar as sp', function ($join) {
@@ -913,6 +929,7 @@ class MandorAbsensiSupir extends MyModel
                 $table->integer('supir_id_old')->nullable();
                 $table->integer('jlhtrip')->nullable();
                 $table->text('memo')->nullable();
+                $table->integer('statussupirserap')->nullable();
                 $table->string('tglbatas',50)->nullable();
 
             });            
@@ -932,6 +949,7 @@ class MandorAbsensiSupir extends MyModel
                 'supir_id_old',
                 'jlhtrip',
                 'memo',
+                'statussupirserap',
                 'tglbatas',
             ],  $queryhasil);
 
@@ -952,8 +970,11 @@ class MandorAbsensiSupir extends MyModel
                 'a.supir_id_old',
                 'a.jlhtrip',
                 'a.memo',
+                DB::raw("(CASE WHEN isnull(a.statussupirserap,0)=0 THEN '' ELSE
+                    (CASE WHEN a.statussupirserap=593 THEN parameter.text ELSE '' end) end) as statussupirserap
+                "),
                 'a.tglbatas',
-            );
+            )->leftJoin("parameter",'a.statussupirserap','parameter.id');
 
 
         $user = auth('api')->user()->name;
@@ -1237,7 +1258,7 @@ class MandorAbsensiSupir extends MyModel
         //         return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
         //         break;
         // }
-        return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder'])->orderBy('a.statussupirserap','desc');
     }
     public function paginate($query)
     {
@@ -1257,7 +1278,10 @@ class MandorAbsensiSupir extends MyModel
                                 // $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                                 $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                                 break;
-
+                            case "statussupirserap":
+                                $query = $query->whereRaw("(CASE WHEN isnull(a.statussupirserap,0)=0 THEN '' ELSE
+                                (CASE WHEN a.statussupirserap=593 THEN parameter.text ELSE '' end) end) LIKE '%$filters[data]%'");
+                                break;
                             default:
                                 $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
 

@@ -423,7 +423,7 @@ class AbsensiSupirHeaderController extends Controller
             ->where('absensisupir_nobukti', $nobukti)
             ->first();
 
-        if ($cekgajisupiruangjalan != '' && ($aksi == 'EDIT' || $aksi == 'DELETE')) {
+        if ($cekgajisupiruangjalan != '' && $aksi == 'DELETE') {
 
             $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
             $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' no bukti gaji supir <b>' . $cekgajisupiruangjalan->gajisupir_nobukti . '</b> <br> ' . $keterangantambahanerror;
