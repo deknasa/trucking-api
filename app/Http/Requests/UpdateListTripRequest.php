@@ -478,11 +478,15 @@ class UpdateListTripRequest extends FormRequest
         $rulesGandengan_id = [];
         $ruleTripAsal = Rule::requiredIf(function () {
             $getGudangSama = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GUDANG SAMA')->where('text', 'GUDANG SAMA')->first();
-       
+            $getLongtrip = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS LONGTRIP')->where('text', 'LONGTRIP')->first();
+            
             if (request()->statusgudangsama ==  $getGudangSama->id) {
                 if((request()->statuscontainer_id==1 && request()->jenisorder_id == 1) || (request()->statuscontainer_id==1 && request()->jenisorder_id == 4)){
                     return true;
                 }
+            }
+            if (request()->statuslongtrip ==  $getLongtrip->id) {
+                return true;
             }
             return false;
         });

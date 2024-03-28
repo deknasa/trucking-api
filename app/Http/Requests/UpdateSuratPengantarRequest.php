@@ -107,7 +107,7 @@ class UpdateSuratPengantarRequest extends FormRequest
         $getUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
         $getPeralihan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS PERALIHAN')->where('text', 'PERALIHAN')->first();
         $getGudangSama = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GUDANG SAMA')->where('text', 'GUDANG SAMA')->first();
-        
+
         $dataTripAsal = [];
         if (request()->statusgudangsama == $getGudangSama->id) {
             if (request()->nobukti_tripasal != '') {
@@ -118,11 +118,14 @@ class UpdateSuratPengantarRequest extends FormRequest
 
         $ruleTripAsal = Rule::requiredIf(function () {
             $getGudangSama = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GUDANG SAMA')->where('text', 'GUDANG SAMA')->first();
-       
+            $getLongtrip = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS LONGTRIP')->where('text', 'LONGTRIP')->first();
             if (request()->statusgudangsama ==  $getGudangSama->id) {
-                if((request()->statuscontainer_id==1 && request()->jenisorder_id == 1) || (request()->statuscontainer_id==1 && request()->jenisorder_id == 4)){
+                if ((request()->statuscontainer_id == 1 && request()->jenisorder_id == 1) || (request()->statuscontainer_id == 1 && request()->jenisorder_id == 4)) {
                     return true;
                 }
+            }
+            if (request()->statuslongtrip ==  $getLongtrip->id) {
+                return true;
             }
             return false;
         });
@@ -138,14 +141,14 @@ class UpdateSuratPengantarRequest extends FormRequest
             'nobukti' => [
                 Rule::in($query->nobukti),
             ],
-            "nobukti_tripasal" => $ruleTripAsal,                   
+            "nobukti_tripasal" => $ruleTripAsal,
             // "lokasibongkarmuat" => "required",
             'statuslongtrip' => ['required', Rule::in($statuslongtrip), new validasiStatusContainerLongtrip()],
             'statusperalihan' => ['required', Rule::in($statusperalihan)],
             'statusbatalmuat' => ['required', Rule::in($statusbatalmuat)],
-            'statusgudangsama' => ['required', Rule::in($statusgudangsama),new ValidasiLongtripGudangsama()],
+            'statusgudangsama' => ['required', Rule::in($statusgudangsama), new ValidasiLongtripGudangsama()],
             'nosp' => 'required',
-            'upah' => ['required', new ExistNominalUpahSupir(),new ValidasiTripGudangSama($dataTripAsal)],
+            'upah' => ['required', new ExistNominalUpahSupir(), new ValidasiTripGudangSama($dataTripAsal)],
             'statusupahzona' => ['required', Rule::in($statusUpahZona)],
             'gajisupir' => new ValidasiGajiKenekSP('gajisupir'),
             'gajikenek' => new ValidasiGajiKenekSP('gajikenek')
@@ -780,7 +783,7 @@ class UpdateSuratPengantarRequest extends FormRequest
         if ($pelanggan_id != '' && $this->pelanggan != '') {
             $rulespelanggan_id = [
                 'pelanggan' => [
-                    new ExistPelanggan(), 
+                    new ExistPelanggan(),
                     new ValidasiPelangganTripGudangSama($dataTripAsal)
                 ]
             ];
@@ -887,7 +890,7 @@ class UpdateSuratPengantarRequest extends FormRequest
         if ($jenisorder_id != '' && $this->jenisorder != '') {
             $rulesjenisorder_id = [
                 'jenisorder' => [
-                    new ExistJenisOrder(),new ValidasiJenisOrderGudangsama()
+                    new ExistJenisOrder(), new ValidasiJenisOrderGudangsama()
                 ]
             ];
         } else if ($jenisorder_id != null) {
