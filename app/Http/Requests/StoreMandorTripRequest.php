@@ -486,7 +486,8 @@ class StoreMandorTripRequest extends FormRequest
                     // "lokasibongkarmuat" => "required",
                     "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
                     "upah" => ["required", new ExistNominalUpahSupir(), new ValidasiTripGudangSama($dataTripAsal)],
-                    'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+                    'statusupahzona' => ['required', Rule::in($statusUpahZona)],                    
+                    "tarifrincian" => [new ValidasiExistOmsetTarif()],
                 ];
             } else {
                 $gandengan_id = $this->gandengan_id;
@@ -521,7 +522,8 @@ class StoreMandorTripRequest extends FormRequest
                     // "lokasibongkarmuat" => "required",
                     "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
                     "upah" => ["required", new ExistNominalUpahSupir(), new ValidasiTripGudangSama($dataTripAsal)],
-                    'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+                    'statusupahzona' => ['required', Rule::in($statusUpahZona)],     
+                    "tarifrincian" => [new ValidasiExistOmsetTarif()],
                 ];
             }
         } else {

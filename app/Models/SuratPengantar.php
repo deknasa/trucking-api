@@ -2604,6 +2604,10 @@ class SuratPengantar extends MyModel
             $cekSP = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $suratPengantar->jobtrucking)->first();
             (new OrderanTrucking())->processDestroy($cekSP->id);
         }
+        if ($suratPengantar->statuslongtrip == 65) {
+            $cekSP = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $suratPengantar->jobtrucking)->first();
+            (new OrderanTrucking())->processDestroy($cekSP->id);
+        }
 
         $suratPengantarLogTrail = (new LogTrail())->processStore([
             'namatabel' => $suratPengantar->getTable(),
