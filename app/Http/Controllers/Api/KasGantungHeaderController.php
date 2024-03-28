@@ -3,37 +3,39 @@
 namespace App\Http\Controllers\Api;
 
 use App\Helpers\App;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\DestroyKasGantungHeaderRequest;
-use App\Http\Requests\GetIndexRangeRequest;
-use App\Models\KasGantungDetail;
-use App\Models\KasGantungHeader;
-use App\Models\JurnalUmumDetail;
-use App\Models\JurnalUmumHeader;
-use App\Models\PengeluaranDetail;
-use App\Models\PengeluaranHeader;
 use App\Models\Bank;
-use App\Models\Penerima;
-use App\Http\Requests\StoreKasGantungHeaderRequest;
-use App\Http\Requests\UpdateKasGantungHeaderRequest;
-use App\Http\Requests\StoreKasGantungDetailRequest;
-use App\Http\Requests\JurnalUmumHeaderRequest;
+use App\Models\Error;
+use App\Models\MyModel;
 use App\Models\LogTrail;
+use App\Models\Penerima;
+use App\Models\AlatBayar;
 use App\Models\Parameter;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Http\Requests\StoreLogTrailRequest;
-use App\Http\Requests\StoreJurnalUmumHeaderRequest;
-use App\Http\Requests\StoreJurnalUmumDetailRequest;
-use App\Http\Requests\StorePengeluaranHeaderRequest;
-use App\Http\Requests\StorePengeluaranDetailRequest;
-use App\Http\Requests\UpdatePengeluaranHeaderRequest;
-use App\Models\AlatBayar;
-use Illuminate\Database\QueryException;
-use App\Http\Requests\DestroyPengeluaranHeaderRequest;
+use App\Models\JurnalUmumDetail;
+use App\Models\JurnalUmumHeader;
+use App\Models\KasGantungDetail;
+use App\Models\KasGantungHeader;
+use App\Models\PengeluaranDetail;
+use App\Models\PengeluaranHeader;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Database\QueryException;
+use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\JurnalUmumHeaderRequest;
+use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use App\Http\Requests\StoreJurnalUmumHeaderRequest;
+use App\Http\Requests\StoreKasGantungDetailRequest;
+use App\Http\Requests\StoreKasGantungHeaderRequest;
+use App\Http\Requests\StorePengeluaranDetailRequest;
+use App\Http\Requests\StorePengeluaranHeaderRequest;
+use App\Http\Requests\UpdateKasGantungHeaderRequest;
+use App\Http\Requests\DestroyKasGantungHeaderRequest;
+use App\Http\Requests\UpdatePengeluaranHeaderRequest;
+use App\Http\Requests\DestroyPengeluaranHeaderRequest;
 use App\Http\Controllers\Api\PengeluaranHeaderController;
-use App\Models\Error;
+use DateTime;
 
 class KasGantungHeaderController extends Controller
 {
@@ -283,6 +285,7 @@ class KasGantungHeaderController extends Controller
 
             return response($data);
         } else {
+            (new MyModel())->updateEditingBy('kasgantungheader', $id, 'EDIT');
             $data = [
                 'error' => false,
                 'message' => '',
@@ -308,7 +311,8 @@ class KasGantungHeaderController extends Controller
             )
             ->where('a.nobukti', $pengeluaran)
             ->first()->id ?? 0;
-        // $aksi = request()->aksi ?? '';
+        $aksi = request()->aksi ?? '';
+
         if ($idpengeluaran != 0) {
             $validasipengeluaran = app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
             $msg = json_decode(json_encode($validasipengeluaran), true)['original']['error'] ?? false;
@@ -330,6 +334,8 @@ class KasGantungHeaderController extends Controller
 
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
+        $user = auth('api')->user()->name;
+        $useredit = $kasgantung->editing_by ?? '';
 
         if ($statusdatacetak == $statusCetak->id) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
@@ -354,8 +360,42 @@ class KasGantungHeaderController extends Controller
             ];
 
             return response($data);
+        } else if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('kasgantung header BUKTI');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($kasgantung->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('kasgantungheader', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
         } else {
 
+            if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                (new MyModel())->updateEditingBy('kasgantungheader', $id, $aksi);
+            }
             $data = [
                 'error' => false,
                 'message' => '',

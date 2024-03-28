@@ -2,40 +2,42 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\DestroyPenerimaanHeaderRequest;
-use App\Http\Requests\DestroyPengembalianKasGantungHeaderRequest;
-use App\Http\Requests\GetIndexRangeRequest;
-use App\Http\Requests\StoreLogTrailRequest;
-use App\Http\Requests\StorePengembalianKasGantungDetailRequest;
-use App\Models\KasGantungHeader;
+use DateTime;
+use App\Models\Bank;
+use App\Models\Error;
+use App\Models\MyModel;
 use App\Models\Parameter;
+use Illuminate\Http\Request;
+use PhpParser\Node\Stmt\Else_;
+use App\Models\JurnalUmumDetail;
+use App\Models\JurnalUmumHeader;
+use App\Models\KasGantungDetail;
+use App\Models\KasGantungHeader;
 use App\Models\PenerimaanDetail;
 use App\Models\PenerimaanHeader;
-use App\Models\JurnalUmumHeader;
-use App\Models\JurnalUmumDetail;
-use App\Models\KasGantungDetail;
-use App\Models\PengembalianKasGantungHeader;
-use App\Models\PengembalianKasGantungDetail;
-use App\Models\Bank;
-use App\Http\Requests\StorePengembalianKasGantungHeaderRequest;
-use App\Http\Requests\UpdatePengembalianKasGantungHeaderRequest;
-use App\Http\Requests\GetPengembalianKasGantungHeaderRequest;
-
-use App\Http\Requests\StorePenerimaanHeaderRequest;
-// use App\Http\Controllers\ParameterController;
-use App\Http\Requests\StoreJurnalUmumHeaderRequest;
-use App\Http\Requests\StoreJurnalUmumDetailRequest;
-use App\Http\Requests\StorePenerimaanDetailRequest;
-use App\Http\Requests\UpdatePenerimaanHeaderRequest;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
-use PhpParser\Node\Stmt\Else_;
-use App\Models\Error;
+use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\StoreLogTrailRequest;
 
+use App\Models\PengembalianKasGantungDetail;
+// use App\Http\Controllers\ParameterController;
+use App\Models\PengembalianKasGantungHeader;
+use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use App\Http\Requests\StoreJurnalUmumHeaderRequest;
+use App\Http\Requests\StorePenerimaanDetailRequest;
+use App\Http\Requests\StorePenerimaanHeaderRequest;
+use App\Http\Requests\UpdatePenerimaanHeaderRequest;
+use App\Http\Requests\DestroyPenerimaanHeaderRequest;
 use App\Http\Controllers\Api\PenerimaanHeaderController;
+use App\Http\Requests\GetPengembalianKasGantungHeaderRequest;
+use App\Http\Requests\StorePengembalianKasGantungDetailRequest;
+
+use App\Http\Requests\StorePengembalianKasGantungHeaderRequest;
+use App\Http\Requests\UpdatePengembalianKasGantungHeaderRequest;
+use App\Http\Requests\DestroyPengembalianKasGantungHeaderRequest;
 
 class PengembalianKasGantungHeaderController extends Controller
 {
@@ -338,7 +340,8 @@ class PengembalianKasGantungHeaderController extends Controller
 
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
-
+        $user = auth('api')->user()->name;
+        $useredit = $pengembaliankasgantung->editing_by ?? '';
 
         if ($statusdatacetak == $statusCetak->id) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
@@ -363,8 +366,42 @@ class PengembalianKasGantungHeaderController extends Controller
             ];
 
             return response($data);
+        } else if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('pengembalian kasgantung header BUKTI');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengembaliankasgantung->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('pengembaliankasgantung', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
         } else {
 
+            if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                (new MyModel())->updateEditingBy('pengembaliankasgantung', $id, $aksi);
+            }
             $data = [
                 'error' => false,
                 'message' => '',
@@ -397,7 +434,7 @@ class PengembalianKasGantungHeaderController extends Controller
 
             return response($data);
         } else {
-
+            (new MyModel())->updateEditingBy('pengembaliankasgantungheader', $id, 'EDIT');
             $data = [
                 'error' => false,
                 'message' => '',

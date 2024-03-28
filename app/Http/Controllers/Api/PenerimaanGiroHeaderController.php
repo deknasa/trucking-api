@@ -2,34 +2,35 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Events\forceEditNotification;
-use App\Events\NewNotification;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\ApprovalKacabEditingRequest;
-use App\Http\Requests\DestroyPenerimaanGiroHeaderRequest;
-use App\Http\Requests\EditingAtRequest;
-use App\Http\Requests\StoreJurnalUmumDetailRequest;
-use App\Http\Requests\StoreJurnalUmumHeaderRequest;
-use App\Http\Requests\StoreLogTrailRequest;
-use App\Http\Requests\StorePenerimaanGiroDetailRequest;
-use App\Models\PenerimaanGiroHeader;
-use App\Http\Requests\StorePenerimaanGiroHeaderRequest;
-use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
-use App\Http\Requests\UpdatePenerimaanGiroHeaderRequest;
-use App\Http\Requests\GetIndexRangeRequest;
-use App\Http\Requests\ValidasiApprovalPenerimaanGiroRequest;
-use App\Models\Error;
-use App\Models\JurnalUmumDetail;
-use App\Models\JurnalUmumHeader;
-use App\Models\Parameter;
-use App\Models\PenerimaanGiroDetail;
 use DateTime;
 use Exception;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\JsonResponse;
+use App\Models\Error;
+use App\Models\MyModel;
+use App\Models\Parameter;
 use Illuminate\Http\Request;
+use App\Events\NewNotification;
+use App\Models\JurnalUmumDetail;
+use App\Models\JurnalUmumHeader;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Models\PenerimaanGiroDetail;
+use App\Models\PenerimaanGiroHeader;
 use Illuminate\Support\Facades\Hash;
+use App\Events\forceEditNotification;
+use App\Http\Requests\EditingAtRequest;
+use Illuminate\Database\QueryException;
+use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\ApprovalKacabEditingRequest;
+use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use App\Http\Requests\StoreJurnalUmumHeaderRequest;
+use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
+use App\Http\Requests\StorePenerimaanGiroDetailRequest;
+use App\Http\Requests\StorePenerimaanGiroHeaderRequest;
+use App\Http\Requests\UpdatePenerimaanGiroHeaderRequest;
+use App\Http\Requests\DestroyPenerimaanGiroHeaderRequest;
+use App\Http\Requests\ValidasiApprovalPenerimaanGiroRequest;
 
 class PenerimaanGiroHeaderController extends Controller
 {
@@ -312,6 +313,8 @@ class PenerimaanGiroHeaderController extends Controller
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
         $aksi = request()->aksi ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $pengeluaran->editing_by ?? '';
 
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
@@ -347,7 +350,42 @@ class PenerimaanGiroHeaderController extends Controller
             ];
 
             return response($data);            
+        } else if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('Penerimaan Giro Header BUKTI');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('penerimaangiroheader', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
         } else {
+
+            if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                (new MyModel())->updateEditingBy('penerimaangiroheader', $id, $aksi);
+            }
 
             $data = [
                 'error' => false,
@@ -376,6 +414,7 @@ class PenerimaanGiroHeaderController extends Controller
 
             return response($data);
         } else {
+            (new MyModel())->updateEditingBy('penerimaangiroheader', $id, 'EDIT');
 
             $data = [
                 'error' => false,
