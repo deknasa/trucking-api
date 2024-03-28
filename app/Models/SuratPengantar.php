@@ -422,10 +422,11 @@ class SuratPengantar extends MyModel
         }
 
         if ($from == 'tripinap') {
-            $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATAS PENGAJUAN TRIP INAP')->where('subgrp', 'BATAS PENGAJUAN TRIP INAP')->first()->text;
+            // $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATAS PENGAJUAN TRIP INAP')->where('subgrp', 'BATAS PENGAJUAN TRIP INAP')->first()->text;
 
-            $batas = date('Y-m-d', strtotime("-$getBatasInput days"));
-            $querysuratpengantar->whereBetween('suratpengantar.tglbukti', [$batas, date('Y-m-d')]);
+            // $batas = date('Y-m-d', strtotime("-$getBatasInput days"));
+            // $querysuratpengantar->whereBetween('suratpengantar.tglbukti', [$batas, date('Y-m-d')]);
+            $querysuratpengantar->where('suratpengantar.tglbukti', date('Y-m-d', strtotime(request()->tglabsensi)));
         }
 
         DB::table($tempsuratpengantar)->insertUsing([
@@ -610,10 +611,12 @@ class SuratPengantar extends MyModel
         }
 
         if ($from == 'tripinap') {
-            $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATAS PENGAJUAN TRIP INAP')->where('subgrp', 'BATAS PENGAJUAN TRIP INAP')->first()->text;
+            // $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATAS PENGAJUAN TRIP INAP')->where('subgrp', 'BATAS PENGAJUAN TRIP INAP')->first()->text;
 
-            $batas = date('Y-m-d', strtotime("-$getBatasInput days"));
-            $querysuratpengantar->whereBetween('suratpengantar.tglbukti', [$batas, date('Y-m-d')]);
+            // $batas = date('Y-m-d', strtotime("-$getBatasInput days"));
+            // $querysuratpengantar->whereBetween('suratpengantar.tglbukti', [$batas, date('Y-m-d')]);
+            $querysuratpengantar->where('suratpengantar.tglbukti', date('Y-m-d', strtotime(request()->tglabsensi)));
+
         }
         DB::table($tempsuratpengantar)->insertUsing([
             'id',
@@ -972,7 +975,7 @@ class SuratPengantar extends MyModel
         if ($from == 'tripinap') {
 
             if ($tglabsensi != '') {
-                $query->where('suratpengantar.tglbukti', '<=', date('Y-m-d', strtotime($tglabsensi)));
+                $query->where('suratpengantar.tglbukti', date('Y-m-d', strtotime($tglabsensi)));
             }
             if ($supir_id != '') {
                 $query->where('suratpengantar.supir_id', $supir_id);
