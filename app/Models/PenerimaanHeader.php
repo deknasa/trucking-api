@@ -996,6 +996,8 @@ class PenerimaanHeader extends MyModel
         $penerimaanHeader->bank_id = $data['bank_id'] ?? '';
         $penerimaanHeader->penerimaangiro_nobukti = $data['penerimaangiro_nobukti'] ?? '';
         $penerimaanHeader->modifiedby = auth('api')->user()->name;
+        $penerimaanHeader->editing_by = '';
+        $penerimaanHeader->editing_at = null;        
         $penerimaanHeader->info = html_entity_decode(request()->info);
         $penerimaanHeader->agen_id = $data['agen_id'] ?? '';
 
