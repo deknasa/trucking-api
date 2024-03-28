@@ -2,22 +2,24 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\ApprovalNotaDebetRequest;
-use App\Http\Requests\DestroyNotaDebetHeaderRequest;
-use App\Http\Requests\GetIndexRangeRequest;
-use Illuminate\Support\Facades\DB;
-use App\Models\NotaDebetDetail;
+use DateTime;
+use App\Models\Error;
+use App\Models\MyModel;
+use App\Models\Parameter;
 use Illuminate\Http\Request;
-
+use App\Models\NotaDebetDetail;
 use App\Models\NotaDebetHeader;
+
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use App\Models\PelunasanPiutangHeader;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\ApprovalNotaDebetRequest;
 use App\Http\Requests\StoreNotaDebetDetailRequest;
 use App\Http\Requests\StoreNotaDebetHeaderRequest;
 use App\Http\Requests\UpdateNotaDebetHeaderRequest;
-use App\Models\Error;
-use App\Models\Parameter;
+use App\Http\Requests\DestroyNotaDebetHeaderRequest;
 
 class NotaDebetHeaderController extends Controller
 {
@@ -323,6 +325,9 @@ class NotaDebetHeaderController extends Controller
 
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
+        $user = auth('api')->user()->name;
+        $useredit = $notaDebet->editing_by ?? '';
+        
         if ($statusdatacetak == $statusCetak->id) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
             $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
@@ -356,7 +361,43 @@ class NotaDebetHeaderController extends Controller
             ];
 
             return response($data);
-        }else {
+        } else if ($useredit != '' && $useredit != $user) {
+            
+            $waktu = (new Parameter())->cekBatasWaktuEdit('Nota Debet Header BUKTI');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($notaDebet->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('notadebetheader', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
+        } else {
+
+            if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                (new MyModel())->updateEditingBy('notadebetheader', $id, $aksi);
+            }
 
             $data = [
                 'error' => false,
@@ -383,6 +424,7 @@ class NotaDebetHeaderController extends Controller
 
             return response($data);
         } else {
+            (new MyModel())->updateEditingBy('NotaDebetHeader', $id, 'EDIT');
 
             $data = [
                 'error' => false,

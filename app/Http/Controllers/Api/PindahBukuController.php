@@ -2,23 +2,25 @@
 
 namespace App\Http\Controllers\Api;
 
+use DateTime;
+use App\Models\Bank;
+use App\Models\Error;
+use App\Models\MyModel;
+use App\Models\Parameter;
+use App\Models\PindahBuku;
+use Illuminate\Http\Request;
+use App\Models\JurnalUmumDetail;
+use App\Models\JurnalUmumHeader;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\StorePindahBukuRequest;
+use App\Http\Requests\UpdatePindahBukuRequest;
 use App\Http\Requests\DestroyPindahBukuRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
-use App\Http\Requests\StoreLogTrailRequest;
-use App\Models\PindahBuku;
-use App\Http\Requests\StorePindahBukuRequest;
 use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
-use App\Http\Requests\UpdatePindahBukuRequest;
-use App\Models\Bank;
-use App\Models\Error;
-use App\Models\JurnalUmumDetail;
-use App\Models\JurnalUmumHeader;
-use App\Models\Parameter;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class PindahBukuController extends Controller
 {
@@ -307,7 +309,11 @@ class PindahBukuController extends Controller
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
             
         $tgltutup=(new Parameter())->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
-        $tgltutup=date('Y-m-d', strtotime($tgltutup));       
+        $tgltutup=date('Y-m-d', strtotime($tgltutup));
+        $user = auth('api')->user()->name;
+        $useredit = $pengeluaran->editing_by ?? '';
+        $aksi = request()->aksi ?? '';
+
         $cekPencairan = DB::table("pencairangiropengeluaranheader")->from(DB::raw("pencairangiropengeluaranheader with (readuncommitted)"))
         ->where('pengeluaran_nobukti', $nobukti)
         ->first();
@@ -346,7 +352,39 @@ class PindahBukuController extends Controller
             ];
 
             return response($data);    
+        } else if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('Pindah Buku BUKTI');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('pindahbuku', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
         } else {
+            (new MyModel())->updateEditingBy('pindahbuku', $id, $aksi);
 
             $data = [
                 'error' => false,

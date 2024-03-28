@@ -2,33 +2,35 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\HutangHeader;
-use App\Models\HutangDetail;
-use App\Http\Requests\StoreHutangHeaderRequest;
-use App\Http\Requests\DestroyHutangHeaderRequest;
-use App\Http\Requests\StoreHutangDetailRequest;
-use App\Http\Requests\UpdateHutangDetailRequest;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\ApprovalHutangHeaderRequest;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Http\Requests\StoreLogTrailRequest;
-use App\Http\Requests\GetIndexRangeRequest;
-use App\Models\LogTrail;
-use App\Models\AkunPusat;
-use App\Models\Supplier;
+use DateTime;
 use App\Models\Bank;
+use App\Models\Error;
+use App\Models\MyModel;
+use App\Models\LogTrail;
+use App\Models\Supplier;
+use App\Models\AkunPusat;
+use App\Models\Parameter;
+use App\Models\Pelanggan;
+use App\Models\HutangDetail;
+use App\Models\HutangHeader;
+use Illuminate\Http\Request;
+use PhpParser\Builder\Param;
 use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
-use App\Models\Parameter;
-use App\Http\Requests\StoreJurnalUmumHeaderRequest;
-use App\Http\Requests\StoreJurnalUmumDetailRequest;
-use App\Http\Requests\UpdateHutangHeaderRequest;
-use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
-use App\Models\Error;
-use App\Models\Pelanggan;
-use PhpParser\Builder\Param;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use Illuminate\Database\QueryException;
+use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\StoreHutangDetailRequest;
+use App\Http\Requests\StoreHutangHeaderRequest;
+use App\Http\Requests\UpdateHutangDetailRequest;
+use App\Http\Requests\UpdateHutangHeaderRequest;
+use App\Http\Requests\DestroyHutangHeaderRequest;
+use App\Http\Requests\ApprovalHutangHeaderRequest;
+use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use App\Http\Requests\StoreJurnalUmumHeaderRequest;
+use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
 
 class HutangHeaderController extends Controller
 {
@@ -339,7 +341,9 @@ class HutangHeaderController extends Controller
         $aksi = request()->aksi ?? '';
 
         $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
-        $tgltutup=date('Y-m-d', strtotime($tgltutup));        
+        $tgltutup=date('Y-m-d', strtotime($tgltutup));
+        $user = auth('api')->user()->name;
+        $useredit = $hutang->editing_by ?? '';    
         
         if ($statusdatacetak == $statusCetak->id) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
@@ -386,8 +390,42 @@ class HutangHeaderController extends Controller
             ];
 
             return response($data);                  
+        } else if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('Hutang Header BUKTI');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($hutang->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('hutangheader', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
         } else {
 
+            if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                (new MyModel())->updateEditingBy('hutangheader', $id, $aksi);
+            }
             $data = [
                 'message' => '',
                 'errors' => 'belum approve',
@@ -432,6 +470,7 @@ class HutangHeaderController extends Controller
 
             return response($data);
         } else {
+            (new MyModel())->updateEditingBy('hutangheader', $id, 'EDIT');
 
             $data = [
                 'status' => false,

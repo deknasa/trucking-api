@@ -2,24 +2,26 @@
 
 namespace App\Http\Controllers\Api;
 
+use DateTime;
+use App\Models\Error;
+use App\Models\MyModel;
 use App\Models\Parameter;
 use Illuminate\Http\Request;
+use App\Models\PengeluaranHeader;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\ApprovalRekapPenerimaanRequest;
+use App\Models\RekapPengeluaranDetail;
+
 use App\Models\RekapPengeluaranHeader;
+use Illuminate\Support\Facades\Schema;
+use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\ApprovalRekapPenerimaanRequest;
+use App\Http\Requests\StoreRekapPengeluaranDetailRequest;
 use App\Http\Requests\StoreRekapPengeluaranHeaderRequest;
 use App\Http\Requests\UpdateRekapPengeluaranHeaderRequest;
 use App\Http\Requests\DestroyRekapPengeluaranHeaderRequest;
-use App\Http\Requests\GetIndexRangeRequest;
-
-use App\Models\RekapPengeluaranDetail;
-use App\Models\PengeluaranHeader;
-use App\Models\Error;
-use Illuminate\Support\Facades\Schema;
-use App\Http\Requests\StoreRekapPengeluaranDetailRequest;
-use App\Http\Requests\StoreLogTrailRequest;
-use Illuminate\Http\JsonResponse;
 
 class RekapPengeluaranHeaderController extends Controller
 {
@@ -202,6 +204,8 @@ class RekapPengeluaranHeaderController extends Controller
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $parameter = new Parameter();
+        $user = auth('api')->user()->name;
+        $useredit = $pengeluaran->editing_by ?? '';
 
         $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
         $tgltutup=date('Y-m-d', strtotime($tgltutup));
@@ -240,7 +244,39 @@ class RekapPengeluaranHeaderController extends Controller
             ];
 
             return response($data);
+        } else if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('Rekap Pengeluaran Header BUKTI');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('rekappengeluaranheader', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
         } else {
+            (new MyModel())->updateEditingBy('rekappengeluaranheader', $id, $aksi);
 
             $data = [
                 'error' => false,
