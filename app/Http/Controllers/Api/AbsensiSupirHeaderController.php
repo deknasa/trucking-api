@@ -759,4 +759,69 @@ class AbsensiSupirHeaderController extends Controller
             throw $th;
         }
     }
+        /**
+     * @ClassName 
+     * @Keterangan APPROVAL FINAL ABSENSI
+     */
+
+    public function approvalfinalabsensi(Request $request)
+    {
+        // dd('a');
+
+        DB::beginTransaction();
+
+        try {
+            if ($request->absensiId != '') {
+
+                $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+                $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+                for ($i = 0; $i < count($request->absensiId); $i++) {
+                    $absensisupirHeader = AbsensiSupirHeader::find($request->absensiId[$i]);
+                    if ($absensisupirHeader->statusapprovalabsensifinal == $statusApproval->id) {
+                        $absensisupirHeader->statusapprovalabsensifinal = $statusNonApproval->id;
+                        $aksi = $statusNonApproval->text;
+                    } else {
+                        $absensisupirHeader->statusapprovalabsensifinal = $statusApproval->id;
+                        $aksi = $statusApproval->text;
+                    }
+
+                    $absensisupirHeader->tglapprovalabsensifinal = date('Y-m-d', time());
+                    $absensisupirHeader->userapprovalabsensifinal = auth('api')->user()->name;
+
+                    if ($absensisupirHeader->save()) {
+                        $logTrail = [
+                            'namatabel' => strtoupper($absensisupirHeader->getTable()),
+                            'postingdari' => 'APPROVAL ABSENSI FINAL',
+                            'idtrans' => $absensisupirHeader->id,
+                            'nobuktitrans' => $absensisupirHeader->nobukti,
+                            'aksi' => $aksi,
+                            'datajson' => $absensisupirHeader->toArray(),
+                            'modifiedby' => auth('api')->user()->name
+                        ];
+
+                        $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                        $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    }
+                }
+                DB::commit();
+                return response([
+                    'message' => 'Berhasil'
+                ]);
+            } else {
+                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
+                    ->first();
+                return response([
+                    'errors' => [
+                        'absensisupir' => "Absensi $query->keterangan"
+                    ],
+                    'message' => "ABSENSI $query->keterangan",
+                ], 422);
+            }
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
 }
