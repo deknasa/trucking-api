@@ -2,40 +2,42 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
-
-use App\Http\Requests\StorePelunasanHutangHeaderRequest;
-use App\Http\Requests\DestroyPelunasanHutangHeaderRequest;
-use App\Http\Requests\StorePelunasanHutangDetailRequest;
-use App\Http\Requests\StoreJurnalUmumDetailRequest;
-use App\Http\Requests\StoreJurnalUmumHeaderRequest;
-use App\Http\Requests\StoreLogTrailRequest;
-use App\Http\Requests\StorePengeluaranDetailRequest;
-use App\Http\Requests\StorePengeluaranHeaderRequest;
-use App\Http\Requests\UpdatePelunasanHutangHeaderRequest;
-use App\Http\Requests\UpdatePengeluaranHeaderRequest;
-use App\Http\Requests\DestroyPengeluaranHeaderRequest;
-use App\Http\Requests\GetIndexRangeRequest;
-use App\Models\AlatBayar;
+use DateTime;
 use App\Models\Bank;
-use App\Models\AkunPusat;
 use App\Models\Error;
+
+use App\Models\MyModel;
+use App\Models\LogTrail;
 use App\Models\Supplier;
-use App\Models\PelunasanHutangHeader;
-use App\Models\PelunasanHutangDetail;
-use App\Models\HutangDetail;
+use App\Models\AkunPusat;
+use App\Models\AlatBayar;
 use App\Models\Parameter;
+use App\Models\SaldoHutang;
+use App\Models\HutangDetail;
 use App\Models\HutangHeader;
+use Illuminate\Http\Request;
 use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
-use App\Models\LogTrail;
 use App\Models\PengeluaranDetail;
 use App\Models\PengeluaranHeader;
-use App\Models\SaldoHutang;
-use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Models\PelunasanHutangDetail;
+use App\Models\PelunasanHutangHeader;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
+use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use App\Http\Requests\StoreJurnalUmumHeaderRequest;
+use App\Http\Requests\StorePengeluaranDetailRequest;
+use App\Http\Requests\StorePengeluaranHeaderRequest;
+use App\Http\Requests\UpdatePengeluaranHeaderRequest;
+use App\Http\Requests\DestroyPengeluaranHeaderRequest;
+use App\Http\Requests\StorePelunasanHutangDetailRequest;
+use App\Http\Requests\StorePelunasanHutangHeaderRequest;
+use App\Http\Requests\UpdatePelunasanHutangHeaderRequest;
+use App\Http\Requests\DestroyPelunasanHutangHeaderRequest;
 
 class PelunasanHutangHeaderController extends Controller
 {
@@ -406,6 +408,8 @@ class PelunasanHutangHeaderController extends Controller
 
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
+        $user = auth('api')->user()->name;
+        $useredit = $PelunasanHutang->editing_by ?? '';
 
         if ($statusdatacetak == $statusCetak->id) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
@@ -441,7 +445,42 @@ class PelunasanHutangHeaderController extends Controller
             ];
 
             return response($data);
+        } else if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('pelunasan hutang header BUKTI');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($PelunasanHutang->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('pelunasanhutangheader', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
         } else {
+
+            if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                (new MyModel())->updateEditingBy('pelunasanhutangheader', $id, $aksi);
+            }
 
             $data = [
                 'error' => false,
@@ -474,6 +513,7 @@ class PelunasanHutangHeaderController extends Controller
 
             return response($data);
         } else {
+            (new MyModel())->updateEditingBy('pelunasanhutangheader', $id, 'EDIT');
 
             $data = [
                 'error' => false,

@@ -2,48 +2,50 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\DestroyPelunasanPiutangHeaderRequest;
-use App\Http\Requests\DestroyPenerimaanHeaderRequest;
-use App\Http\Requests\GetIndexRangeRequest;
-use App\Models\PelunasanPiutangHeader;
-use App\Models\PelunasanPiutangDetail;
+use DateTime;
+use App\Models\Agen;
+use App\Models\Bank;
+use App\Models\Error;
+use App\Models\Cabang;
+use App\Models\MyModel;
+use App\Models\LogTrail;
+
+
+use App\Models\AkunPusat;
+use App\Models\AlatBayar;
+use App\Models\Parameter;
+use App\Models\Pelanggan;
+use App\Models\SaldoPiutang;
+use Illuminate\Http\Request;
 use App\Models\PiutangHeader;
-
-
-use App\Http\Requests\StorePelunasanPiutangHeaderRequest;
-use App\Http\Requests\UpdatePelunasanPiutangHeaderRequest;
-use App\Http\Requests\StorePelunasanPiutangDetailRequest;
+use App\Models\NotaDebetHeader;
+use App\Models\JurnalUmumHeader;
+use App\Models\NotaKreditHeader;
+use App\Models\PenerimaanDetail;
+use App\Models\PenerimaanHeader;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Models\PenerimaanGiroHeader;
+use App\Models\PelunasanPiutangDetail;
+use App\Models\PelunasanPiutangHeader;
+use Illuminate\Database\QueryException;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StoreNotaDebetHeaderRequest;
 use App\Http\Requests\StoreNotaKreditHeaderRequest;
-use App\Http\Requests\StorePenerimaanGiroHeaderRequest;
 use App\Http\Requests\StorePenerimaanHeaderRequest;
 use App\Http\Requests\UpdateNotaDebetDetailRequest;
 use App\Http\Requests\UpdateNotaDebetHeaderRequest;
 use App\Http\Requests\UpdateNotaKreditHeaderRequest;
-use App\Http\Requests\UpdatePenerimaanGiroHeaderRequest;
 use App\Http\Requests\UpdatePenerimaanHeaderRequest;
-use App\Models\LogTrail;
-use App\Models\Agen;
-use App\Models\AkunPusat;
-use App\Models\AlatBayar;
-use App\Models\Cabang;
-use App\Models\Bank;
-use App\Models\Error;
-use App\Models\JurnalUmumHeader;
-use App\Models\NotaDebetHeader;
-use App\Models\NotaKreditHeader;
-use App\Models\Parameter;
-use App\Models\Pelanggan;
-use App\Models\PenerimaanDetail;
-use App\Models\PenerimaanGiroHeader;
-use App\Models\PenerimaanHeader;
-use App\Models\SaldoPiutang;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Http\Requests\DestroyPenerimaanHeaderRequest;
+use App\Http\Requests\StorePenerimaanGiroHeaderRequest;
+use App\Http\Requests\UpdatePenerimaanGiroHeaderRequest;
+use App\Http\Requests\StorePelunasanPiutangDetailRequest;
+use App\Http\Requests\StorePelunasanPiutangHeaderRequest;
+use App\Http\Requests\UpdatePelunasanPiutangHeaderRequest;
+use App\Http\Requests\DestroyPelunasanPiutangHeaderRequest;
 
 
 
@@ -478,6 +480,9 @@ class PelunasanPiutangHeaderController extends Controller
 
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
+        $user = auth('api')->user()->name;
+        $useredit = $pengeluaran->editing_by ?? '';
+        $aksi = request()->aksi ?? '';
 
         if ($statusdatacetak == $statusCetak->id) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
@@ -501,7 +506,42 @@ class PelunasanPiutangHeaderController extends Controller
             ];
 
             return response($data);
+        } else if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('Pelunasan Piutang Header BUKTI');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('pelunasanpiutangheader', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
         } else {
+
+            if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                (new MyModel())->updateEditingBy('pelunasanpiutangheader', $id, $aksi);
+            }
 
             $data = [
                 'error' => false,
@@ -533,6 +573,7 @@ class PelunasanPiutangHeaderController extends Controller
 
             return response($data);
         } else {
+            (new MyModel())->updateEditingBy('pelunasanpiutangheader', $id, 'EDIT');
 
             $data = [
                 'error' => false,
