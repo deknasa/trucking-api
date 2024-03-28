@@ -1607,7 +1607,7 @@ class InvoiceHeader extends MyModel
         $invoiceRequest = [
             'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
             'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'])),
-            'postingdari' => 'ENTRY INVOICE HEADER',
+            'postingdari' => 'ENTRY INVOICE',
             'invoice' => $invoiceHeader->nobukti,
             'agen_id' => $data['agen_id'],
             'invoice_nobukti' => $invoiceNobukti,
@@ -1740,7 +1740,7 @@ class InvoiceHeader extends MyModel
 
         $invoiceRequest = [
             'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'])),
-            'postingdari' => 'EDIT INVOICE HEADER',
+            'postingdari' => 'EDIT INVOICE',
             'tglbukti' => $invoiceHeader->tglbukti,
             'invoice' => $invoiceHeader->nobukti,
             'agen_id' => $invoiceHeader->agen_id,
