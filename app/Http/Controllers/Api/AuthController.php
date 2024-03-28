@@ -116,4 +116,18 @@ class AuthController extends Controller
             'data' => $data,
         ]);
     }
+
+    public function remainderFinalAbsensi(){
+        $user_id =  auth()->user()->id;
+
+        if ($user_id < 10) {
+            $show =true;
+        }else {
+            $show = false;
+        }
+
+        return response([
+            'data' => $show,
+        ]);
+    }
 }

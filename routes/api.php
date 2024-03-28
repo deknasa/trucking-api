@@ -337,6 +337,7 @@ Route::get('stok/getGambar', [StokController::class, 'getGambar']);
 
 route::middleware(['auth:api'])->group(function () {
     Route::resource('dashboard', DashboardController::class)->whereNumber('dashboard');
+    Route::get('remainderfinalabsensi', [AuthController::class,'remainderFinalAbsensi']);
     Route::get('error/geterrors', [ErrorController::class, 'errorUrl']);
 });
 
