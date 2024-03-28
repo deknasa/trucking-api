@@ -419,7 +419,24 @@ class AbsensiSupirHeaderController extends Controller
         $user = auth('api')->user()->name;
         $useredit = $absensisupir->editing_by ?? '';
 
-   
+        $cekgajisupiruangjalan = DB::table("gajisupiruangjalan")->from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
+            ->where('absensisupir_nobukti', $nobukti)
+            ->first();
+
+        if ($cekgajisupiruangjalan != '' && ($aksi == 'EDIT' || $aksi == 'DELETE')) {
+
+            $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' no bukti gaji supir <b>' . $cekgajisupiruangjalan->gajisupir_nobukti . '</b> <br> ' . $keterangantambahanerror;
+
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'SATL2',
+                'statuspesan' => 'warning',
+            ];
+            return response($data);
+        }
+
         if ($aksi == 'PRINTER BESAR' || $aksi == 'PRINTER KECIL') {
             //validasi cetak
             $printValidation = AbsensiSupirHeader::printValidation($id);
@@ -451,7 +468,7 @@ class AbsensiSupirHeaderController extends Controller
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
             if ($diffNow->i > $waktu) {
                 // if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                    (new MyModel())->updateEditingBy('absensisupirheader', $id, $aksi);
+                (new MyModel())->updateEditingBy('absensisupirheader', $id, $aksi);
                 // }
 
                 $data = [
@@ -473,9 +490,7 @@ class AbsensiSupirHeaderController extends Controller
                 ];
 
                 return response($data);
-            }     
-
-            
+            }
         } else {
 
             $isDateAllowed = AbsensiSupirHeader::isDateAllowed($id);
@@ -611,13 +626,12 @@ class AbsensiSupirHeaderController extends Controller
                     'kodeerror' => 'TUTUPBUKU',
                     'statuspesan' => 'warning',
                 ];
-                     
             }
 
             if (($todayValidation && $isApproved) || ($isEditAble && $printValidation) || $isDateAllowed) {
                 // dd($aksi);
                 // if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                    (new MyModel())->updateEditingBy('absensisupirheader', $id, $aksi);
+                (new MyModel())->updateEditingBy('absensisupirheader', $id, $aksi);
                 // }                
                 $data = [
                     'error' => false,
