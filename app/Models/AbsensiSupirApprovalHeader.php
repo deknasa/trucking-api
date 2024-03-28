@@ -534,6 +534,8 @@ class AbsensiSupirApprovalHeader extends MyModel
         $absensiSupirApprovalHeader->postingdari =  "ABSENSI SUPIR APPROVAL";
         $absensiSupirApprovalHeader->statuscetak = $statusCetak->id ?? 0;
         $absensiSupirApprovalHeader->modifiedby =  auth('api')->user()->name;
+        $absensiSupirApprovalHeader->editing_by = '';
+        $absensiSupirApprovalHeader->editing_at = null;           
         $absensiSupirApprovalHeader->info = html_entity_decode(request()->info);
 
         if (!$absensiSupirApprovalHeader->save()) {

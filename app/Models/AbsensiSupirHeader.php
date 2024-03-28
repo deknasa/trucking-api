@@ -999,6 +999,8 @@ class AbsensiSupirHeader extends MyModel
         $absensiSupir->statuscetak = $statusCetak->id ?? 0;
         // $absensiSupir->statusapprovaleditabsensi  = $statusEditAbsensi->id;
         $absensiSupir->tglbataseditabsensi  = $tglbataseditabsensi;
+        $absensiSupir->editing_by = '';
+        $absensiSupir->editing_at = null;         
         $absensiSupir->info = html_entity_decode(request()->info);
 
         if (!$absensiSupir->save()) {
