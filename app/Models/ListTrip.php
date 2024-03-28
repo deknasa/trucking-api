@@ -681,7 +681,7 @@ class ListTrip extends MyModel
     public function processDestroy($id): SuratPengantar
     {
         // $suratPengantarBiayaTambahan = SuratPengantarBiayaTambahan::where('suratpengantar_id', $id)->get();
-        $cekSP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('suratpengantar.dari_id', 'orderantrucking.id', 'suratpengantar.statusgudangsama')
+        $cekSP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('suratpengantar.dari_id', 'orderantrucking.id', 'suratpengantar.statusgudangsama','suratpengantar.statuslongtrip')
             ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'suratpengantar.jobtrucking', 'orderantrucking.nobukti')->where('suratpengantar.id', $id)->first();
 
         if ($cekSP->dari_id == 1) {
@@ -690,7 +690,9 @@ class ListTrip extends MyModel
         if ($cekSP->statusgudangsama == 204) {
             (new OrderanTrucking())->processDestroy($cekSP->id);
         }
-
+        if ($cekSP->statuslongtrip == 65) {
+            (new OrderanTrucking())->processDestroy($cekSP->id);
+        }
         $suratPengantar = new SuratPengantar();
         $suratPengantar = $suratPengantar->lockAndDestroy($id);
 

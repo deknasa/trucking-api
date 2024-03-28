@@ -27,15 +27,22 @@ class ValidasiExistOmsetTarif implements Rule
      */
     public function passes($attribute, $value)
     {
-        $tarifRincian = new TarifRincian();
-        $dataTarif = $tarifRincian->getExistNominal(request()->container_id, request()->tarifrincian_id);
-        if($dataTarif == null){
-            return false;
-        } else if($dataTarif->nominal == 0){
-            return false;
-        }else{
-            return true;
+        if (request()->statuslongtrip != '') {
+            if (request()->statuslongtrip == 66) {
+
+
+                $tarifRincian = new TarifRincian();
+                $dataTarif = $tarifRincian->getExistNominal(request()->container_id, request()->tarifrincian_id);
+                if ($dataTarif == null) {
+                    return false;
+                } else if ($dataTarif->nominal == 0) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
         }
+        return true;
     }
 
     /**
@@ -46,6 +53,6 @@ class ValidasiExistOmsetTarif implements Rule
     public function message()
     {
         $controller = new ErrorController;
-        return $controller->geterror('TBA')->keterangan.' untuk cont '. request()->container;
+        return $controller->geterror('TBA')->keterangan . ' untuk cont ' . request()->container;
     }
 }

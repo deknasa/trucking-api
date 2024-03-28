@@ -600,8 +600,10 @@ class UpahSupirRincian extends MyModel
                     DB::raw("tarifrincian.nominal as omset")
                 )
                 ->join(DB::raw("$temp as B with (readuncommitted)"), 'B.tarif_id', 'tarifrincian.tarif_id')
-                ->where('tarifrincian.container_id', $container_id)
-                ->where('tarifrincian.nominal', '!=', 0);
+                ->where('tarifrincian.container_id', $container_id);
+            if ($longtrip == 66) {
+                $query->where('tarifrincian.nominal', '!=', 0);
+            }
             DB::table($temptarif)->insertUsing([
                 'id',
                 'kotadari_id',
