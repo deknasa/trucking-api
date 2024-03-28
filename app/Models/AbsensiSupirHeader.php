@@ -92,6 +92,9 @@ class AbsensiSupirHeader extends MyModel
                 'absensisupirheader.updated_at',
                 db::raw("cast((format(kasgantungheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderkasgantungheader"),
                 db::raw("cast(cast(format((cast((format(kasgantungheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderkasgantungheader"),
+                'statusapprovalfinalabsensi.memo as statusapprovalfinalabsensi',
+                'absensisupirheader.userapprovalfinalabsensi',
+                'absensisupirheader.tglapprovalfinalabsensi',
 
 
             )
@@ -99,11 +102,12 @@ class AbsensiSupirHeader extends MyModel
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'absensisupirheader.kasgantung_nobukti', '=', 'kasgantungheader.nobukti')
             ->leftJoin(DB::raw("parameter as statusapprovalpengajuantripinap with (readuncommitted)"), 'absensisupirheader.statusapprovalpengajuantripinap', 'statusapprovalpengajuantripinap.id')
-            ->leftJoin(DB::raw("parameter as statusapprovaleditabsensi with (readuncommitted)"), 'absensisupirheader.statusapprovaleditabsensi', 'statusapprovaleditabsensi.id');
+            ->leftJoin(DB::raw("parameter as statusapprovaleditabsensi with (readuncommitted)"), 'absensisupirheader.statusapprovaleditabsensi', 'statusapprovaleditabsensi.id')
+            ->leftJoin(DB::raw("parameter as statusapprovalfinalabsensi with (readuncommitted)"), 'absensisupirheader.statusapprovalfinalabsensi', 'statusapprovalfinalabsensi.id');
         if (request()->tgldari) {
             $query->whereBetween('absensisupirheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
-
+        // dd($query->get());
         $proses = request()->proses ?? '';
         $from = request()->from ?? '';
 
@@ -337,7 +341,7 @@ class AbsensiSupirHeader extends MyModel
             $query = DB::table($tempAbsensi)->from(DB::raw("$tempAbsensi as absensisupirheader with (readuncommitted)"));
         }
 
-        if($from == 'prosesuangjalansupir'){
+        if ($from == 'prosesuangjalansupir') {
             $query->join(DB::raw("absensisupirapprovalheader with (readuncommitted)"), 'absensisupirapprovalheader.absensisupir_nobukti', 'absensisupirheader.nobukti');
         }
         $this->totalRows = $query->count();
@@ -420,6 +424,9 @@ class AbsensiSupirHeader extends MyModel
             $table->string('modifiedby', 1000)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
+            $table->string('statusapprovalfinalabsensi', 1000)->nullable();
+            $table->string('userapprovalfinalabsensi', 50)->nullable();
+            $table->date('tglapprovalfinalabsensi')->nullable();
             $table->increments('position');
         });
 
@@ -440,10 +447,15 @@ class AbsensiSupirHeader extends MyModel
                 'absensisupirheader.modifiedby',
                 'absensisupirheader.created_at',
                 'absensisupirheader.updated_at',
+                'statusapprovalfinalabsensi.memo as statusapprovalfinalabsensi',
+                'absensisupirheader.userapprovalfinalabsensi',
+                DB::raw('(case when (year(absensisupirheader.tglapprovalfinalabsensi) <= 2000) then null else absensisupirheader.tglapprovalfinalabsensi end ) as tglapprovalfinalabsensi'),
+
             )
             // request()->tgldari ?? date('Y-m-d',strtotime('today'))
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirheader.statuscetak', 'statuscetak.id')
-            ->leftJoin(DB::raw("parameter as statusapprovaleditabsensi with (readuncommitted)"), 'absensisupirheader.statusapprovaleditabsensi', 'statusapprovaleditabsensi.id');
+            ->leftJoin(DB::raw("parameter as statusapprovaleditabsensi with (readuncommitted)"), 'absensisupirheader.statusapprovaleditabsensi', 'statusapprovaleditabsensi.id')
+            ->leftJoin(DB::raw("parameter as statusapprovalfinalabsensi with (readuncommitted)"), 'absensisupirheader.statusapprovalfinalabsensi', 'statusapprovalfinalabsensi.id');
         if (request()->tgldari) {
             $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
@@ -468,6 +480,9 @@ class AbsensiSupirHeader extends MyModel
             'modifiedby',
             'created_at',
             'updated_at',
+            'statusapprovalfinalabsensi',
+            'userapprovalfinalabsensi',
+            'tglapprovalfinalabsensi',
         ], $models);
 
         return $temp;
@@ -546,6 +561,8 @@ class AbsensiSupirHeader extends MyModel
                                 $query = $query->where('statuscetak.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statusapprovaleditabsensi') {
                                 $query = $query->where('statusapprovaleditabsensi.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusapprovalfinalabsensi') {
+                                $query = $query->where('statusapprovalfinalabsensi.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'nominal') {
                                 $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapprovaleditabsensi') {
@@ -567,6 +584,8 @@ class AbsensiSupirHeader extends MyModel
                                     $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'statusapprovaleditabsensi') {
                                     $query = $query->orWhere('statusapprovaleditabsensi.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusapprovalfinalabsensi') {
+                                    $query = $query->orWhere('statusapprovalfinalabsensi.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'nominal') {
                                     $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapprovaleditabsensi') {
@@ -958,17 +977,17 @@ class AbsensiSupirHeader extends MyModel
             ->first();
 
 
-            $parameter = new Parameter();
-        $statusbolehedit=  $parameter->cekId('STATUS EDIT ABSENSI', 'STATUS EDIT ABSENSI','BOLEH EDIT ABSENSI') ?? 0;
+        $parameter = new Parameter();
+        $statusbolehedit =  $parameter->cekId('STATUS EDIT ABSENSI', 'STATUS EDIT ABSENSI', 'BOLEH EDIT ABSENSI') ?? 0;
 
-        $query=db::table("absensisupirheader")->from(db::raw("absensisupirheader a with (readuncommitted)"))
-        ->select(
-            'a.tglapprovaleditabsensi',
-            'a.tglbataseditabsensi'
-        )
-        ->where('a.nobukti',$data['nobukti'])
-        ->where('a.statusapprovaleditabsensi',$statusbolehedit)
-        ->first();
+        $query = db::table("absensisupirheader")->from(db::raw("absensisupirheader a with (readuncommitted)"))
+            ->select(
+                'a.tglapprovaleditabsensi',
+                'a.tglbataseditabsensi'
+            )
+            ->where('a.nobukti', $data['nobukti'])
+            ->where('a.statusapprovaleditabsensi', $statusbolehedit)
+            ->first();
 
 
         // $query_jam = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'BATAS JAM EDIT ABSENSI')->where('subgrp', 'BATAS JAM EDIT ABSENSI')->first();
@@ -985,7 +1004,7 @@ class AbsensiSupirHeader extends MyModel
         //     // dd($tglbataseditabsensi);
         if (isset($query)) {
             $tglbataseditabsensi = $query->tglbataseditabsensi;
-                // dd('a');
+            // dd('a');
         } else if (isset($bukaabsensi->tglbatas)) {
             $tglbataseditabsensi = $bukaabsensi->tglbatas;
             // dd('b');
@@ -1000,7 +1019,7 @@ class AbsensiSupirHeader extends MyModel
         // $absensiSupir->statusapprovaleditabsensi  = $statusEditAbsensi->id;
         $absensiSupir->tglbataseditabsensi  = $tglbataseditabsensi;
         $absensiSupir->editing_by = '';
-        $absensiSupir->editing_at = null;         
+        $absensiSupir->editing_at = null;
         $absensiSupir->info = html_entity_decode(request()->info);
 
         if (!$absensiSupir->save()) {
