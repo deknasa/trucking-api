@@ -88,6 +88,7 @@ class CreateSuratpengantarTable extends Migration
             $table->unsignedBigInteger('zonasampai_id')->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();
             $table->unsignedBigInteger('statusgudangsama')->nullable();
+            $table->unsignedBigInteger('statuskandang')->nullable();
             $table->unsignedBigInteger('statusbatalmuat')->nullable();
             $table->unsignedBigInteger('statusgandengan')->nullable();
             $table->unsignedBigInteger('gandenganasal_id')->nullable();
