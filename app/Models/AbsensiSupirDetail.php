@@ -856,6 +856,32 @@ class AbsensiSupirDetail extends MyModel
 
         DB::table($tempidabsen)->insertUsing(['text'], $queryabsen);
 
+
+        $tempric = '##tempric' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempric, function ($table) {
+            $table->string('nobukti',50)->nullable();
+            $table->integer('supir_id')->nullable();
+            $table->longtext('gajisupir_nobukti')->nullable();
+        });
+
+        $queryric=db::table("gajisupiruangjalan")->from(db::raw("gajisupiruangjalan a with (readuncommitted)"))
+        ->select(
+            'c.nobukti',
+            'a.supir_id',
+            db::raw("isnull(STRING_AGG(a.gajisupir_nobukti, ', '),'') as gajisupir_nobukti") 
+
+        )
+        ->join(DB::raw("absensisupirdetail as b with (readuncommitted)"), function ($join) {
+            $join->on("a.supir_id", "=", "b.supir_id");
+            $join->on("a.absensisupir_nobukti", "=", "b.nobukti");
+        })        
+        ->join(db::raw("absensisupirheader c with (readuncommitted)"),'a.absensisupir_nobukti','c.nobukti')
+        ->where('c.tglbukti',date('Y-m-d', strtotime($date)))
+        ->groupby('c.nobukti')
+        ->groupby('a.supir_id');
+
+        DB::table($tempric)->insertUsing(['nobukti', 'supir_id', 'gajisupir_nobukti'], $queryric);
+
         // dd(db::table($tempdatahasil)->get());
         $query = db::table($tempdata)->from(db::raw($tempdata . " a"))
             ->select(
@@ -888,7 +914,7 @@ class AbsensiSupirDetail extends MyModel
                     (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '" .  date('Y-m-d', strtotime($date)) . " " . $batasJamEdit->text . "' else    format(a.tglbukti,'yyyy/MM/dd')+' " . $batasJamEdit->text . "' end)
                     ) as datetime),'yyyy/MM/dd HH:mm:ss') as datetime)>=getdate() then 1 else 0 end) 
                     as berlaku"),
-                db::raw("(CASE WHEN a.absen_id IN (SELECT text FROM " . $tempidabsen . ") THEN 'readonly' ELSE '' END) AS uangjalan_readonly"),
+                db::raw("(CASE WHEN a.absen_id IN (SELECT text FROM " . $tempidabsen . ") or isnull(d.supir_id,0)<>0 THEN 'readonly' ELSE '' END) AS uangjalan_readonly"),
                 DB::raw("(CASE WHEN isnull(a.statussupirserap,0)=0 THEN '' ELSE
                 (CASE WHEN a.statussupirserap=593 THEN parameter.text ELSE '' end) end) as statussupirserap
             "),
@@ -902,6 +928,7 @@ class AbsensiSupirDetail extends MyModel
                 $join->on('a.trado_id', '=', 'b.trado_id');
             })
             ->leftJoin("parameter",'a.statussupirserap','parameter.id')
+            ->leftJoin(db::raw($tempric . " as d"),'a.supir_id','d.supir_id')
             ->join(db::raw("trado c with (readuncommitted)"), 'a.trado_id', 'c.id')
             ->orderBy('a.trado', 'asc')
             ->orderBy('a.statussupirserap', 'desc')
