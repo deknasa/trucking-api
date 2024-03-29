@@ -360,15 +360,71 @@ class SuratPengantarController extends Controller
 
         $nobuktilist = $request->nobukti ?? '';
 
+        $aksi=$request->aksi ?? '';
+
+ 
+
 
 
         $querysp = DB::table('suratpengantar')->from(
             DB::raw("suratpengantar a with (readuncommitted)")
         )
-            ->select('a.id')
+            ->select(
+            'a.id',
+            'a.tglbukti'
+            )
             ->where('a.nobukti', $nobuktilist)
             ->first();
         if (isset($querysp)) {
+            if ($aksi=='DELETE') {
+                // $tglnow=date('Y-m-d');
+                // $date1=date_create($querysp->tglbukti);
+                // $date2= date_create();
+                // $diff=date_diff($date1,$date2);
+                // $diff=$diff->days;
+                $defaultidnonapproval = db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+                ->select(
+                    'a.id'
+                )
+                ->where('a.grp', 'STATUS APPROVAL')
+                ->where('a.subgrp', 'STATUS APPROVAL')
+                ->where('a.text', 'NON APPROVAL')
+                ->first()->id ?? '';
+        
+                $defaultidapproval = db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+                ->select(
+                    'a.id'
+                )
+                ->where('a.grp', 'STATUS APPROVAL')
+                ->where('a.subgrp', 'STATUS APPROVAL')
+                ->where('a.text', 'APPROVAL')
+                ->first()->id ?? '';     
+
+                $queryabsen=db::table("absensisupirheader")->from(db::raw("absensisupirheader a with (readuncommitted)"))
+                ->select(
+                    'a.tglbukti',
+                    db::raw("isnull(a.statusapprovalfinalabsensi,".$defaultidnonapproval.") as statusapprovalfinalabsensi"),
+
+                )
+                ->where('a.tglbukti',$querysp->tglbukti)
+                ->where('a.statusapprovalfinalabsensi', $defaultidapproval)
+                ->first();
+
+                if (isset($queryabsen)) {
+                    $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
+                    $keterror = 'Tgl Absensi <b>' . $querysp->tglbukti . '</b><br>' . $keteranganerror . ' FINAL ABSENSI <br> ' . $keterangantambahanerror;         
+
+                    $data = [
+                        'error' => true,
+                        'message' => $keterror,
+                        'kodeerror' => 'BAP',
+                        'statuspesan' => 'warning',
+                    ];        
+                    
+                return response($data);                        
+                }
+                   
+            }
             goto validasilanjut;
         } else {
 
@@ -450,6 +506,7 @@ class SuratPengantarController extends Controller
             ];
 
             return response($data);
+            
         } else {
             $data = [
                 'status' => false,

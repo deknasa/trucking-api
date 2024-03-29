@@ -12,6 +12,8 @@ use App\Http\Requests\UpdateSuratPengantarApprovalInputTripRequest;
 use App\Models\ApprovalBukaTanggalSuratPengantar;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use App\Http\Requests\ApprovalAbsensiFinalTripRequest;
+
 
 class SuratPengantarApprovalInputTripController extends Controller
 {
@@ -47,8 +49,9 @@ class SuratPengantarApprovalInputTripController extends Controller
      * @ClassName 
      * @Keterangan TAMBAH DATA
      */
-    public function store(StoreSuratPengantarApprovalInputTripRequest $request): JsonResponse
+    public function store(StoreSuratPengantarApprovalInputTripRequest $request,ApprovalAbsensiFinalTripRequest $request1): JsonResponse
     {
+        
         DB::beginTransaction();
         try {
             $data = [
@@ -89,7 +92,7 @@ class SuratPengantarApprovalInputTripController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateSuratPengantarApprovalInputTripRequest $request, SuratPengantarApprovalInputTrip $suratpengantarapprovalinputtrip): JsonResponse
+    public function update(UpdateSuratPengantarApprovalInputTripRequest $request, SuratPengantarApprovalInputTrip $suratpengantarapprovalinputtrip,ApprovalAbsensiFinalTripRequest $request1): JsonResponse
     {
         DB::beginTransaction();
         try {

@@ -2,13 +2,10 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\DateTutupBuku;
-use App\Rules\UniqueTglBukaAbsensi;
-use App\Rules\DateAllowedAbsenMandor;
-use App\Rules\ApprovalAbsensiFinal;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\ApprovalAbsensiFinal;
 
-class StoreBukaAbsensiRequest extends FormRequest
+class ApprovalAbsensiFinalRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -27,16 +24,11 @@ class StoreBukaAbsensiRequest extends FormRequest
      */
     public function rules()
     {
+
         return [
-            "tglabsensi"=> [
-                
-                'required', 'date_format:d-m-Y', 
-                'before_or_equal:' . date('d-m-Y'),
+            "Id"=> [
                 new ApprovalAbsensiFinal,
-                new UniqueTglBukaAbsensi,
-                new DateTutupBuku(),
             ],
-            "user_id"=>["required"]
         ];
     }
 }

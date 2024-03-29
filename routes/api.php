@@ -759,6 +759,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('absensisupirheader/{id}/approval', [AbsensiSupirHeaderController::class, 'approval'])->name('absensisupirheader.approval')->whereNumber('id');
     Route::post('absensisupirheader/{id}/approvalEditAbsensi', [AbsensiSupirHeaderController::class, 'approvalEditAbsensi'])->whereNumber('id');
     Route::post('absensisupirheader/approvaltripinap', [AbsensiSupirHeaderController::class, 'approvalTripInap']);
+    Route::post('absensisupirheader/approvalfinalabsensi', [AbsensiSupirHeaderController::class, 'approvalfinalabsensi']);
+    
 
     Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
     Route::post('bukaabsensi/updatetanggalbatas', [BukaAbsensiController::class, 'updateTanggalBatas']);

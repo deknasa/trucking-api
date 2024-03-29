@@ -9,6 +9,7 @@ use App\Http\Requests\StoreBukaAbsensiRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Http\Requests\UpdateBukaAbsensiRequest;
+use App\Http\Requests\ApprovalAbsensiFinalRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -116,7 +117,7 @@ class BukaAbsensiController extends Controller
      * @ClassName
      * @Keterangan PERBARUI BATAS TANGGAL
      */
-    public function updateTanggalBatas(ApprovalKaryawanRequest $request)
+    public function updateTanggalBatas(ApprovalKaryawanRequest $request,ApprovalAbsensiFinalRequest $request1)
     {
         DB::beginTransaction();
         try {

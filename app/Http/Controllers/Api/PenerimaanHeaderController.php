@@ -34,6 +34,7 @@ use Illuminate\Database\QueryException;
 use PhpParser\Builder\Param;
 use App\Models\MyModel;
 use DateTime;
+use App\Http\Requests\ApprovalValidasiApprovalRequest;
 
 class PenerimaanHeaderController extends Controller
 {
@@ -213,7 +214,7 @@ class PenerimaanHeaderController extends Controller
      * @ClassName
      * @Keterangan APPROVAL DATA
      */
-    public function approval(ApprovalPenerimaanHeaderRequest $request)
+    public function approval(ApprovalValidasiApprovalRequest $request)
     {
         DB::beginTransaction();
 
