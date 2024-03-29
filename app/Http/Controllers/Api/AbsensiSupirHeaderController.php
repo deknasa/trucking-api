@@ -22,6 +22,11 @@ use App\Models\Parameter;
 use App\Models\User;
 use App\Models\Error;
 use App\Http\Controllers\Api\PengeluaranHeaderController;
+use App\Http\Requests\ApprovalKaryawanRequest;
+use App\Http\Requests\ApprovalValidasiApprovalRequest;
+use App\Http\Requests\ApprovalAbsensiFinalRequest;
+use App\Http\Requests\ApprovalAbsensiFinalAppEditRequest;
+
 
 use App\Http\Requests\AbsensiSupirHeaderRequest;
 use App\Http\Requests\ApprovalPengajuanTripInapAbsensiRequest;
@@ -55,7 +60,7 @@ class AbsensiSupirHeaderController extends Controller
      * @ClassName 
      * @Keterangan APPROVAL EDIT ABSENSI
      */
-    public function approvalEditAbsensi($id)
+    public function approvalEditAbsensi(ApprovalAbsensiFinalAppEditRequest $request,$id)
     {
         DB::beginTransaction();
         try {
@@ -778,62 +783,22 @@ class AbsensiSupirHeaderController extends Controller
      * @Keterangan APPROVAL FINAL ABSENSI
      */
 
-    public function approvalfinalabsensi(Request $request)
+    public function approvalfinalabsensi(ApprovalValidasiApprovalRequest $request)
     {
-        // dd('a');
 
         DB::beginTransaction();
 
         try {
-            if ($request->absensiId != '') {
+            $data = [
+                'Id' => $request->Id
+            ];
+            $absensisupirheader = (new AbsensiSupirHeader())->processapprovalfinalabsensi($data);
 
-                $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-                $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
-
-                for ($i = 0; $i < count($request->absensiId); $i++) {
-                    $absensisupirHeader = AbsensiSupirHeader::find($request->absensiId[$i]);
-                    if ($absensisupirHeader->statusapprovalabsensifinal == $statusApproval->id) {
-                        $absensisupirHeader->statusapprovalabsensifinal = $statusNonApproval->id;
-                        $aksi = $statusNonApproval->text;
-                    } else {
-                        $absensisupirHeader->statusapprovalabsensifinal = $statusApproval->id;
-                        $aksi = $statusApproval->text;
-                    }
-
-                    $absensisupirHeader->tglapprovalabsensifinal = date('Y-m-d', time());
-                    $absensisupirHeader->userapprovalabsensifinal = auth('api')->user()->name;
-
-                    if ($absensisupirHeader->save()) {
-                        $logTrail = [
-                            'namatabel' => strtoupper($absensisupirHeader->getTable()),
-                            'postingdari' => 'APPROVAL ABSENSI FINAL',
-                            'idtrans' => $absensisupirHeader->id,
-                            'nobuktitrans' => $absensisupirHeader->nobukti,
-                            'aksi' => $aksi,
-                            'datajson' => $absensisupirHeader->toArray(),
-                            'modifiedby' => auth('api')->user()->name
-                        ];
-
-                        $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                        $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                    }
-                }
-                DB::commit();
-                return response([
-                    'message' => 'Berhasil'
-                ]);
-            } else {
-                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
-                    ->first();
-                return response([
-                    'errors' => [
-                        'absensisupir' => "Absensi $query->keterangan"
-                    ],
-                    'message' => "ABSENSI $query->keterangan",
-                ], 422);
-            }
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $absensisupirheader
+            ]);
         } catch (\Throwable $th) {
             throw $th;
         }

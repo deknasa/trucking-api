@@ -31,9 +31,10 @@ class ValidasiApproval implements Rule
      */
     public function passes($attribute, $value)
     {
-        // dd('testuji');
+
         $allowed = true;
-        $table = 'pengeluaranheader';
+        $table = request()->table;
+        $statusapproval = request()->statusapproval;
         $databukti = request()->bukti;
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
@@ -55,7 +56,7 @@ class ValidasiApproval implements Rule
                 ]
             );
 
-            $getcetak = DB::table($table)->from(DB::raw("$table with (readuncommitted)"))->select('tglbukti', 'nobukti')->where('nobukti', $dataBukti)
+            $getcetak = DB::table($table)->from(DB::raw($table ." a with (readuncommitted)"))->select('a.tglbukti', 'a.nobukti')->where('a.nobukti', $dataBukti)
                 ->first();
             if (!isset($getcetak)) {
                 if ($a == 0) {
@@ -75,7 +76,7 @@ class ValidasiApproval implements Rule
 
         $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
         $tgltutup=date('Y-m-d', strtotime($tgltutup));   
-        $querytutup=db::table("pengeluaranheader")->from(db::raw("pengeluaranheader a with (readuncommitted)"))        
+        $querytutup=db::table($table)->from(db::raw($table ." a with (readuncommitted)"))        
         ->select(
             db::raw("isnull(STRING_AGG(a.nobukti, ', '),'') as nobukti")   
             // 'a.nobukti'
@@ -107,12 +108,21 @@ class ValidasiApproval implements Rule
         }
 
 
+        $defaultidnonapproval = db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+        ->select(
+            'a.id'
+        )
+        ->where('a.grp', 'STATUS APPROVAL')
+        ->where('a.subgrp', 'STATUS APPROVAL')
+        ->where('a.text', 'NON APPROVAL')
+        ->first()->id ?? '';
+
         $data1 = '';
         $a = 0;
         $b = 0;
         $ketstatus = '';
         foreach ($databukti as $dataBukti) {
-            $getstatus = DB::table($table)->from(DB::raw("$table with (readuncommitted)"))->select('statusapproval', 'nobukti')->where('nobukti', $dataBukti)
+            $getstatus = DB::table($table)->from(DB::raw($table ." a with (readuncommitted)"))->select(db::raw("isnull(a.".$statusapproval .",".$defaultidnonapproval.") as statusapproval"), 'a.nobukti')->where('a.nobukti', $dataBukti)
                 ->first();
 
             if ($a == 0) {
