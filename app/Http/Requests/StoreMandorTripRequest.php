@@ -80,6 +80,8 @@ class StoreMandorTripRequest extends FormRequest
             $statusUpahZona[] = $item['id'];
         }
 
+        $idstatuskandang = $parameter->cekId('STATUS KANDANG', 'STATUS KANDANG', 'KANDANG') ?? 0;        
+
         $getGudangSama = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GUDANG SAMA')->where('text', 'GUDANG SAMA')->first();
         $getBukanUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'NON UPAH ZONA')->first();
         $getUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
@@ -180,12 +182,13 @@ class StoreMandorTripRequest extends FormRequest
 
         $rulesDari_id = [];
         $rulesSampai_id = [];
+        $idpelabuhan = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? 0;        
 
         if ($upah_id != null) {
             $validasiUpah = (new UpahSupirRincian())->cekValidasiInputTripUpah(request()->statuscontainer_id, request()->jenisorder_id, request()->upah_id);
             $getUpah = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->select('zonadari_id', 'zonasampai_id')->where('id', request()->upah_id)->first();
             $validasiDari = '';
-            if(request()->statuslongtrip == 66){
+            if(request()->statuslongtrip == 66 && $idstatuskandang!=request()->statuskandang){
                 $validasiDari = (request()->statusupahzona == $getUpahZona->id) ? new ValidasiKotaZonaTrip($getUpah->zonadari_id) : Rule::in($validasiUpah->kotadari_id);
             }
             $validasiSampai = '';
@@ -627,13 +630,18 @@ class StoreMandorTripRequest extends FormRequest
             }
         }
 
+        $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;        
+        // dd(request()->statuskandang,$idstatuskandang);
         $rulesJobTrucking = [];
-        if (request()->dari_id != '') {
-            if ((request()->statuslongtrip == 66) && (request()->statuslangsir == 80) && (request()->statusgudangsama == 205)) {
+            if (request()->dari_id != '' ) {
+                if ((request()->statuslongtrip == 66) && (request()->statuslangsir == 80) && (request()->statusgudangsama == 205)) {
                 // dd('disini');
-                $rulesJobTrucking = [
-                    'jobtrucking' => ['required_unless:dari_id,1']
-                ];
+                if ($idstatuskandang!=request()->statuskandang) {
+                    $rulesJobTrucking = [
+                        'jobtrucking' => ['required_unless:dari_id,1']
+                    ];
+    
+                }
             }
         }
         $rules = array_merge(

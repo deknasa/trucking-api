@@ -1664,7 +1664,18 @@ class SuratPengantar extends MyModel
             ->where('text', '=', $id)
             ->first();
 
-        if (isset($data)) {
+            $datakandang = DB::table('parameter')
+            ->from(DB::raw("parameter with (readuncommitted)"))
+            ->select(
+                'text as id'
+            )
+            ->where('grp', '=', 'KANDANG')
+            ->where('subgrp', '=', 'KANDANG')
+            ->where('text', '=', $id)
+            ->first();
+            
+
+        if (isset($data) || isset($datakandang)) {
             $kondisi = ['status' => '0'];
         } else {
             $kondisi = ['status' => '1'];

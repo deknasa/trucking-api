@@ -65,6 +65,7 @@ class UpahSupirRincian extends MyModel
         $aktif = request()->aktif ?? '';
         $container_id = request()->container_id ?? 0;
         $statuscontainer_id = request()->statuscontainer_id ?? 0;
+        $statuskandang_id = request()->statuskandang_id ?? 0;
         $jenisorder_id = request()->jenisorder_id ?? 0;
         $statusUpahZona = request()->statusupahzona ?? 0;
         $longtrip = request()->longtrip ?? 0;
@@ -94,6 +95,99 @@ class UpahSupirRincian extends MyModel
             ->where("kodejenisorder", 'MUAT')
             ->orWhere("kodejenisorder", 'EKS')
             ->get();
+
+        $parameter = new Parameter();
+        $idstatuskandang = $parameter->cekId('STATUS KANDANG', 'STATUS KANDANG', 'KANDANG') ?? 0;        
+        $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;        
+        $idpelabuhan = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? 0;        
+        // $kotakandang=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+        // -select(
+        //     'a.kodekota as kota'
+        // )
+        // ->where('a.id',$idkandang)
+        // ->first()->kota ?? '';
+
+        $upahsupirkandnag=db::table("upahsupir")->from(db::raw("upahsupir a with (readuncommitted)"))
+        ->select(
+            'b.id',
+            'a.kotadari_id',
+            'a.kotasampai_id',
+            'b.upahsupir_id',
+            'b.container_id',
+            'b.statuscontainer_id',
+            'b.nominalsupir',
+            'b.nominalkenek',
+            'b.nominalkomisi',
+            'b.nominaltol',
+            'b.liter',
+            'b.tas_id',
+            'b.info',
+            'b.modifiedby',
+        )
+        ->join(db::raw("upahsupirrincian b with (readuncommitted)"),'a.id','b.upahsupir_id')
+        ->where('a.kotadari_id',$idpelabuhan)
+        ->where('a.kotasampai_id',$idkandang)
+        ->where('b.container_id',$container_id)
+        ->where('b.statuscontainer_id',$statuscontainer_id)
+        ->whereraw("isnull(a.penyesuaian,'')=''");
+
+        $tempupahsupirkandang = '##tempupahsupirkandang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempupahsupirkandang, function ($table) {
+            $table->bigInteger('id')->nullable();
+            $table->unsignedBigInteger('kotadari_id')->nullable();
+            $table->unsignedBigInteger('kotasampai_id')->nullable();
+            $table->unsignedBigInteger('upahsupir_id')->nullable();
+            $table->unsignedBigInteger('container_id')->nullable();
+            $table->unsignedBigInteger('statuscontainer_id')->nullable();
+            $table->double('nominalsupir',15,2)->nullable();
+            $table->double('nominalkenek',15,2)->nullable();
+            $table->double('nominalkomisi',15,2)->nullable();
+            $table->double('nominaltol',15,2)->nullable();
+            $table->double('liter',15,2)->nullable();
+            $table->unsignedBigInteger('tas_id')->nullable();
+            $table->longText('info')->nullable();
+            $table->string('modifiedby',50)->nullable();        
+        });
+
+        DB::table($tempupahsupirkandang)->insertUsing([
+            'id',
+            'kotadari_id',
+            'kotasampai_id',
+            'upahsupir_id',
+            'container_id',
+            'statuscontainer_id',
+            'nominalsupir',
+            'nominalkenek',
+            'nominalkomisi',
+            'nominaltol',
+            'liter',
+            'tas_id',
+            'info',
+            'modifiedby',
+        ],  $upahsupirkandnag);
+
+        $querynominal=db::table($tempupahsupirkandang)->from(db::raw($tempupahsupirkandang . " a"))
+        ->select(
+            'a.nominalsupir',
+            'a.nominalkenek',
+            'a.nominalkomisi',
+        )->first();
+
+        if (isset($querynominal)) {
+            $nominalsupirkandang=$querynominal->nominalsupir ?? 0;
+            $nominalkenekkandang=$querynominal->nominalkenek ?? 0;
+            $nominalkomisikandang=$querynominal->nominalkomisi ?? 0;
+        } else {
+            $nominalsupirkandang=0;
+            $nominalkenekkandang=0;
+            $nominalkomisikandang=0;
+        }
+
+
+
+
+        // dd(db::table($tempupahsupirkandang)->get());
+        
 
 
         $getJenisOrderMuatan = json_decode($getJenisOrderMuatan, true);
@@ -300,7 +394,7 @@ class UpahSupirRincian extends MyModel
                     'a.tarifbongkaran_id',
                     'a.tarifimport_id',
                     'a.tarifexport_id',
-                    'a.kotadari_id',
+                    db::raw("(case when ". $statuskandang_id ."=".$idstatuskandang ." then ". $idkandang . " else  a.kotadari_id end) as kotadari_id" ),
                     'a.kotasampai_id',
                     'a.zonadari_id',
                     'a.zonasampai_id',
@@ -630,7 +724,11 @@ class UpahSupirRincian extends MyModel
             // join upah dengan temp dari tarif ke tamp upah baru
             // hasilnya baru di masukkan ke dalam temp fisik
 
-
+            // dump(db::table($tempupahsupirkandang)->get());
+            // dump(db::table($tempupahsupir)->get());
+            
+            // dd(db::table($temptarif)->get());
+            
             $query = DB::table("upahsupirrincian")->from(DB::raw("upahsupirrincian with (readuncommitted)"))
                 ->select(
                     'B.id',
@@ -649,9 +747,18 @@ class UpahSupirRincian extends MyModel
                     'parameter.memo as statusaktif',
                     'container.kodecontainer as container',
                     'statuscontainer.kodestatuscontainer as statuscontainer',
-                    'upahsupirrincian.nominalsupir',
-                    'upahsupirrincian.nominalkenek',
-                    'upahsupirrincian.nominalkomisi',
+                    db::raw("(upahsupirrincian.nominalsupir-
+                    (case when ". $statuskandang_id ."=".$idstatuskandang ." then ".$nominalsupirkandang." else  0 end))
+                    as nominalsupir"),
+                    db::raw("(upahsupirrincian.nominalkenek-
+                    (case when ". $statuskandang_id ."=".$idstatuskandang ." then ".$nominalkenekkandang." else  0 end))
+                    as nominalkenek"),
+                    db::raw("(upahsupirrincian.nominalkomisi-
+                    (case when ". $statuskandang_id ."=".$idstatuskandang ." then ".$nominalkomisikandang." else  0 end))
+                    as nominalkomisi"),
+
+                    // 'upahsupirrincian.nominalkenek',
+                    // 'upahsupirrincian.nominalkomisi',
                     'B.tglmulaiberlaku',
                     'B.modifiedby',
                     'B.created_at',
@@ -664,6 +771,12 @@ class UpahSupirRincian extends MyModel
                 ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'B.statusaktif', '=', 'parameter.id')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'upahsupirrincian.container_id', 'container.id')
                 ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'upahsupirrincian.statuscontainer_id', 'statuscontainer.id')
+                ->leftJoin(DB::raw("$tempupahsupirkandang as b2 with (readuncommitted)"), 'B2.kotadari_id', 'b1.kotadari_id')
+                // ->leftJoin(DB::raw($tempupahsupirkandang . " as b2 "), function ($join) {
+                //     $join->on('b1.kotadari_id', '=', 'b2.kotadari_id');
+                //     // $join->on('b1.kotasampai_id', '=', 'b2.kotasampai_id');
+                // })
+
                 ->where('upahsupirrincian.nominalsupir', '!=', 0);
 
             if (($aktif == 'AKTIF')) {

@@ -42,6 +42,7 @@ class InputTripController extends Controller
                 'upah_id' => $request->upah_id,
                 'container_id' => $request->container_id,
                 'statuscontainer_id' => $request->statuscontainer_id,
+                'statuskandang_id' => $request->statuskandang,
                 'statusgandengan' => $request->statusgandengan,
                 'statusupahzona' => $request->statusupahzona,
                 'tglbukti' => $request->tglbukti,
