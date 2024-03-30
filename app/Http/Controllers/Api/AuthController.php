@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Config;
+use Illuminate\Http\Request;
+use App\Models\AbsensiSupirHeader;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Artisan;
 
 class AuthController extends Controller
@@ -119,15 +120,18 @@ class AuthController extends Controller
 
     public function remainderFinalAbsensi(){
         $user_id =  auth()->user()->id;
+        $isUserPusat =auth()->user()->isUserPusat();
 
-        if ($user_id < 10) {
-            $show =true;
-        }else {
-            $show = false;
+        $show = false;
+        $data = [];
+        if ($isUserPusat) {
+            $show = true;
+            $data = (new AbsensiSupirHeader())->notifApprovalFinal()->tglbukti;
         }
 
         return response([
-            'data' => $show,
+            'data' => $data,
+            'show' => $show,
         ]);
     }
 }

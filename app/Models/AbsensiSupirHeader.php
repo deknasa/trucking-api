@@ -832,6 +832,18 @@ class AbsensiSupirHeader extends MyModel
         return false;
     }
 
+    public function notifApprovalFinal()
+    {
+        $tigaHariSebelum = date('Y-m-d',strtotime('-3 days'));
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        return $absensisupirheader = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
+            ->select(DB::raw("STRING_AGG(format(tglbukti,'dd-MM-yyyy'), ', ') as tglbukti"))
+            ->where('tglbukti', '<',$tigaHariSebelum)
+            ->whereRaw("isNull(statusapprovalfinalabsensi,0) <> ".$statusApproval->id)
+            ->first();
+    }
+
     public function getExport($id)
     {
         $this->setRequestParameters();
