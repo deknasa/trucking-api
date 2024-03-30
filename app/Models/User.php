@@ -79,6 +79,15 @@ class User extends Authenticatable
         if ($userAdmin->count())  return true;
         return false;
     }
+    public function isUserPusat()
+    {
+        $cabang = DB::table('cabang')->select('id')->where('namacabang', 'PUSAT')->first();
+        $user = auth()->user();
+        $userPusat = $this->where('cabang_id',$cabang->id)->where('id',$user->id)->first();
+
+        if ($userPusat)  return true;
+        return false;
+    }
 
     public function checkUserRole($role)
     {
