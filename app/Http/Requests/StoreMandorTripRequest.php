@@ -198,22 +198,22 @@ class StoreMandorTripRequest extends FormRequest
             $dari_id = $this->dari_id;
             if ($dari_id != null) {
                 $rulesDari_id = [
-                    'dari_id' => ['required', 'numeric', 'min:1', new ExistKota(), $validasiDari]
+                    'dari_id' => ['required', 'numeric', 'min:1', new ExistKota()]
                 ];
             } else if ($dari_id == null && $this->dari != '') {
                 $rulesDari_id = [
-                    'dari_id' => ['required', 'numeric', 'min:1', new ExistKota(), $validasiDari]
+                    'dari_id' => ['required', 'numeric', 'min:1', new ExistKota()]
                 ];
             }
 
             $sampai_id = $this->sampai_id;
             if ($sampai_id != null) {
                 $rulesSampai_id = [
-                    'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota(), $validasiSampai]
+                    'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota()]
                 ];
             } else if ($sampai_id == null && $this->sampai != '') {
                 $rulesSampai_id = [
-                    'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota(), $validasiSampai]
+                    'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota()]
                 ];
             }
         }
