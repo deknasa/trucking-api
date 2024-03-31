@@ -839,12 +839,14 @@ class AbsensiSupirHeader extends MyModel
             ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
 
             $absensisupirheader = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
-            ->select(DB::raw("STRING_AGG(format(tglbukti,'dd-MM-yyyy'), ', ') as tglbukti"))
+            ->select(DB::raw("isnull(STRING_AGG(format(tglbukti,'dd-MM-yyyy'), ', '),'') as tglbukti"))
             ->where('tglbukti', '<',$tigaHariSebelum)
             ->whereRaw("isNull(statusapprovalfinalabsensi,0) <> ".$statusApproval->id)
             ->first();
 
-            if (isset($absensisupirheader)) {
+            // dd($absensisupirheader);
+
+            if ($absensisupirheader->tglbukti!='') {
                 return $absensisupirheader;
 
             } else {
@@ -852,7 +854,7 @@ class AbsensiSupirHeader extends MyModel
                     'data' => '',
                     'show' => false,
                 ];
-                return data;
+                return $data;
             }
             
     }            
