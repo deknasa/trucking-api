@@ -837,12 +837,26 @@ class AbsensiSupirHeader extends MyModel
         $tigaHariSebelum = date('Y-m-d',strtotime('-3 days'));
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-        return $absensisupirheader = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
+
+            $absensisupirheader = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
             ->select(DB::raw("STRING_AGG(format(tglbukti,'dd-MM-yyyy'), ', ') as tglbukti"))
             ->where('tglbukti', '<',$tigaHariSebelum)
             ->whereRaw("isNull(statusapprovalfinalabsensi,0) <> ".$statusApproval->id)
             ->first();
-    }
+
+            if (isset($absensisupirheader)) {
+                return $absensisupirheader;
+
+            } else {
+                $data = [
+                    'data' => '',
+                    'show' => false,
+                ];
+                return data;
+            }
+            
+    }            
+     
 
     public function getExport($id)
     {
