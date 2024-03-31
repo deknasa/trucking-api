@@ -844,18 +844,9 @@ class AbsensiSupirHeader extends MyModel
             ->whereRaw("isNull(statusapprovalfinalabsensi,0) <> ".$statusApproval->id)
             ->first();
 
-            // dd($absensisupirheader);
-
-            if ($absensisupirheader->tglbukti!='') {
                 return $absensisupirheader;
 
-            } else {
-                $data = [
-                    'data' => '',
-                    'show' => false,
-                ];
-                return $data;
-            }
+         
             
     }            
      

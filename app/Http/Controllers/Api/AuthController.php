@@ -127,6 +127,9 @@ class AuthController extends Controller
         if ($isUserPusat) {
             $show = true;
             $data = (new AbsensiSupirHeader())->notifApprovalFinal()->tglbukti;
+            if ($data=='') {
+                $show=false;
+            }
         }
 
         return response([
