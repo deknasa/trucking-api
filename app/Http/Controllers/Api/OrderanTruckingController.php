@@ -2,32 +2,34 @@
 
 namespace App\Http\Controllers\Api;
 
+use DateTime;
+use App\Models\Agen;
+use App\Models\Error;
+use App\Models\Tarif;
+use App\Models\MyModel;
+use App\Models\LogTrail;
+use App\Models\Container;
+use App\Models\Parameter;
+use App\Models\Pelanggan;
+use App\Models\JenisOrder;
+use App\Models\TarifRincian;
+use Illuminate\Http\Request;
+use App\Models\SuratPengantar;
 use App\Models\OrderanTrucking;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
+use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\GetUpahSupirRangeRequest;
+use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\StoreOrderanTruckingRequest;
+use App\Http\Requests\UpdateSuratPengantarRequest;
 use App\Http\Requests\UpdateOrderanTruckingRequest;
 use App\Http\Requests\DestroyOrderanTruckingRequest;
 use App\Http\Requests\ValidasiApprovalOrderanTruckingRequest;
-use App\Http\Requests\GetIndexRangeRequest;
-use App\Http\Requests\RangeExportReportRequest;
-use App\Http\Requests\GetUpahSupirRangeRequest;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
-use App\Models\LogTrail;
-use App\Models\Parameter;
-use App\Http\Requests\StoreLogTrailRequest;
-use App\Http\Requests\UpdateSuratPengantarRequest;
-use App\Models\Container;
-use App\Models\Agen;
-use App\Models\JenisOrder;
-use App\Models\Pelanggan;
-use App\Models\SuratPengantar;
-use App\Models\Tarif;
-use App\Models\TarifRincian;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Http;
-use App\Models\Error;
 
 class OrderanTruckingController extends Controller
 {
@@ -106,6 +108,9 @@ class OrderanTruckingController extends Controller
 
         $isEditAble = OrderanTrucking::isEditAble($nobukti->id);
         $edit = true;
+        $user = auth('api')->user()->name;
+        $useredit = $nobukti->editing_by ?? '';
+
 
 
         if (!$isEditAble) {
@@ -171,7 +176,41 @@ class OrderanTruckingController extends Controller
             ];
 
             return response($data);            
-        }else {
+        } else if ($useredit != '' && $useredit != $user) {
+           
+            $waktu = (new Parameter())->cekBatasWaktuEdit('Nota Kredit Header BUKTI');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($nobukti->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+
+                    (new MyModel())->updateEditingBy('orderantrucking', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                // return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti->nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
+        } else {
+            (new MyModel())->updateEditingBy('orderantrucking', $id, $aksi);
 
             $data = [
                 'message' => '',
