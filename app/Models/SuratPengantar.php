@@ -616,7 +616,6 @@ class SuratPengantar extends MyModel
             // $batas = date('Y-m-d', strtotime("-$getBatasInput days"));
             // $querysuratpengantar->whereBetween('suratpengantar.tglbukti', [$batas, date('Y-m-d')]);
             $querysuratpengantar->where('suratpengantar.tglbukti', date('Y-m-d', strtotime(request()->tglabsensi)));
-
         }
         DB::table($tempsuratpengantar)->insertUsing([
             'id',
@@ -910,7 +909,7 @@ class SuratPengantar extends MyModel
                     $querytripasal->where('id', '<>', $idtrip);
                 }
                 $querytripasal->groupBY('a.nobukti_tripasal');
-                
+
                 DB::table($tempTripAsal)->insertUsing([
                     'nobukti_tripasal',
                 ],  $querytripasal);
@@ -1240,6 +1239,7 @@ class SuratPengantar extends MyModel
                     'suratpengantar.nobukti',
                     'suratpengantar.tglbukti',
                     'suratpengantar.jobtrucking',
+                    'suratpengantar.statuskandang',
                     'suratpengantar.statuslongtrip',
                     'suratpengantar.nosp',
                     'suratpengantar.trado_id',
@@ -1321,6 +1321,7 @@ class SuratPengantar extends MyModel
                     'suratpengantar.nobukti',
                     'suratpengantar.tglbukti',
                     'suratpengantar.jobtrucking',
+                    'suratpengantar.statuskandang',
                     'suratpengantar.statuslongtrip',
                     'suratpengantar.nosp',
                     'suratpengantar.trado_id',
@@ -1664,7 +1665,7 @@ class SuratPengantar extends MyModel
             ->where('text', '=', $id)
             ->first();
 
-            $datakandang = DB::table('parameter')
+        $datakandang = DB::table('parameter')
             ->from(DB::raw("parameter with (readuncommitted)"))
             ->select(
                 'text as id'
@@ -1673,7 +1674,7 @@ class SuratPengantar extends MyModel
             ->where('subgrp', '=', 'KANDANG')
             ->where('text', '=', $id)
             ->first();
-            
+
 
         if (isset($data) || isset($datakandang)) {
             $kondisi = ['status' => '0'];
@@ -2237,6 +2238,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->statuslongtrip = $data['statuslongtrip'];
             $suratPengantar->statusgudangsama = $data['statusgudangsama'];
             $suratPengantar->statusupahzona = $data['statusupahzona'];
+            $suratPengantar->statuskandang = $data['statuskandang'];
             $suratPengantar->tarif_id = $data['tarif_id'] ?? '';
             $suratPengantar->komisisupir = $upahsupirRincian->nominalkomisi;
             $suratPengantar->tolsupir = $upahsupirRincian->nominaltol;
@@ -2387,12 +2389,13 @@ class SuratPengantar extends MyModel
             $suratPengantar->noseal2 = $orderanTrucking->noseal2 ?? '';
             $suratPengantar->statuslongtrip = $data['statuslongtrip'];
             $suratPengantar->omset = $tarifNominal;
-            $suratPengantar->gajisupir = $nominalSupir;
+            $suratPengantar->gajisupir = $data['gajisupir'];
             $suratPengantar->agen_id = $orderanTrucking->agen_id;
             $suratPengantar->penyesuaian = $data['penyesuaian'];
             $suratPengantar->jenisorder_id = $orderanTrucking->jenisorder_id;
             $suratPengantar->statusperalihan = $data['statusperalihan'];
             $suratPengantar->statusupahzona = $data['statusupahzona'];
+            $suratPengantar->statuskandang = $data['statuskandang'];
             $suratPengantar->tarif_id = $data['tarif_id'] ?? '';
             $nominalPeralihan = 0;
             if ($data['persentaseperalihan'] != 0) {
@@ -2563,6 +2566,103 @@ class SuratPengantar extends MyModel
             $nominalSupir = $upahsupirRincian->nominalsupir;
             // }
             $tarifNominal = $tarif->nominal ?? 0;
+            $oldContainer = $suratPengantar->container_id;
+
+            if ($oldContainer != $data['container_id']) {
+                $parameter = new Parameter();
+                $idstatuskandang = $parameter->cekId('STATUS KANDANG', 'STATUS KANDANG', 'KANDANG') ?? 0;
+                $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
+                $idpelabuhan = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? 0;
+
+                $upahsupirkandnag = db::table("upahsupir")->from(db::raw("upahsupir a with (readuncommitted)"))
+                    ->select(
+                        'b.id',
+                        'a.kotadari_id',
+                        'a.kotasampai_id',
+                        'b.upahsupir_id',
+                        'b.container_id',
+                        'b.statuscontainer_id',
+                        'b.nominalsupir',
+                        'b.nominalkenek',
+                        'b.nominalkomisi',
+                        'b.nominaltol',
+                        'b.liter',
+                        'b.tas_id',
+                        'b.info',
+                        'b.modifiedby',
+                    )
+                    ->join(db::raw("upahsupirrincian b with (readuncommitted)"), 'a.id', 'b.upahsupir_id')
+                    ->where('a.kotadari_id', $idpelabuhan)
+                    ->where('a.kotasampai_id', $idkandang)
+                    ->where('b.container_id', $data['container_id'])
+                    ->where('b.statuscontainer_id', $suratPengantar->statuscontainer_id)
+                    ->whereraw("isnull(a.penyesuaian,'')=''");
+
+                $tempupahsupirkandang = '##tempupahsupirkandang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempupahsupirkandang, function ($table) {
+                    $table->bigInteger('id')->nullable();
+                    $table->unsignedBigInteger('kotadari_id')->nullable();
+                    $table->unsignedBigInteger('kotasampai_id')->nullable();
+                    $table->unsignedBigInteger('upahsupir_id')->nullable();
+                    $table->unsignedBigInteger('container_id')->nullable();
+                    $table->unsignedBigInteger('statuscontainer_id')->nullable();
+                    $table->double('nominalsupir', 15, 2)->nullable();
+                    $table->double('nominalkenek', 15, 2)->nullable();
+                    $table->double('nominalkomisi', 15, 2)->nullable();
+                    $table->double('nominaltol', 15, 2)->nullable();
+                    $table->double('liter', 15, 2)->nullable();
+                    $table->unsignedBigInteger('tas_id')->nullable();
+                    $table->longText('info')->nullable();
+                    $table->string('modifiedby', 50)->nullable();
+                });
+
+                DB::table($tempupahsupirkandang)->insertUsing([
+                    'id',
+                    'kotadari_id',
+                    'kotasampai_id',
+                    'upahsupir_id',
+                    'container_id',
+                    'statuscontainer_id',
+                    'nominalsupir',
+                    'nominalkenek',
+                    'nominalkomisi',
+                    'nominaltol',
+                    'liter',
+                    'tas_id',
+                    'info',
+                    'modifiedby',
+                ],  $upahsupirkandnag);
+
+                $querynominal = db::table($tempupahsupirkandang)->from(db::raw($tempupahsupirkandang . " a"))
+                    ->select(
+                        'a.nominalsupir',
+                        'a.nominalkenek',
+                        'a.nominalkomisi',
+                    )->first();
+
+                if (isset($querynominal)) {
+                    $nominalsupirkandang = $querynominal->nominalsupir ?? 0;
+                    $nominalkenekkandang = $querynominal->nominalkenek ?? 0;
+                    $nominalkomisikandang = $querynominal->nominalkomisi ?? 0;
+                } else {
+                    $nominalsupirkandang = 0;
+                    $nominalkenekkandang = 0;
+                    $nominalkomisikandang = 0;
+                }
+                
+                if ($suratPengantar->statuskandang == $idstatuskandang) {
+
+                    $suratPengantar->gajikenek = $upahsupirRincian->nominalkenek - $nominalkenekkandang;
+                    $suratPengantar->komisisupir = $upahsupirRincian->nominalkomisi - $nominalkomisikandang;
+                    $suratPengantar->gajisupir = $upahsupirRincian->nominalsupir - $nominalsupirkandang;
+                } else {
+
+
+                    $suratPengantar->gajikenek = $upahsupirRincian->nominalkenek;
+                    $suratPengantar->komisisupir = $upahsupirRincian->nominalkomisi;
+                    $suratPengantar->gajisupir = $upahsupirRincian->nominalsupir;
+                }
+            }
 
             $suratPengantar->pelanggan_id = $data['pelanggan_id'];
             $suratPengantar->container_id = $data['container_id'];
@@ -2575,7 +2675,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->noseal2 = $data['noseal2'] ?? '';
             $suratPengantar->agen_id = $data['agen_id'];
             $suratPengantar->jenisorder_id = $data['jenisorder_id'];
-            $suratPengantar->gajisupir = $nominalSupir;
+            // $suratPengantar->gajisupir = $nominalSupir;
             // if (trim($isKomisiReadonly->text) == 'YA') {
             //     $suratPengantar->gajikenek = $upahsupirRincian->nominalkenek;
             //     $suratPengantar->komisisupir = $upahsupirRincian->nominalkomisi;
