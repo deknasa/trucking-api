@@ -2,51 +2,53 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\DestroyGajiSupirHeaderRequest;
-use App\Http\Requests\GetIndexRangeRequest;
-use App\Http\Requests\GetTripGajiSupirRequest;
-use App\Http\Requests\StoreGajiSupirBBMRequest;
-use App\Http\Requests\StoreGajiSupirDepositoRequest;
-use App\Http\Requests\StoreGajiSupirDetailRequest;
-use App\Models\GajiSupirHeader;
-use App\Http\Requests\StoreGajiSupirHeaderRequest;
-use App\Http\Requests\StoreGajiSupirPelunasanPinjamanRequest;
-use App\Http\Requests\StoreGajiSupirPinjamanRequest;
-use App\Http\Requests\StoreGajisUpirUangJalanRequest;
-use App\Http\Requests\StoreJurnalUmumDetailRequest;
-use App\Http\Requests\StoreJurnalUmumHeaderRequest;
-use App\Http\Requests\StoreLogTrailRequest;
-use App\Http\Requests\StorePenerimaanTruckingHeaderRequest;
-use App\Http\Requests\StorePengeluaranTruckingHeaderRequest;
-use App\Http\Requests\UpdateGajiSupirBBMRequest;
-use App\Http\Requests\UpdateGajiSupirDepositoRequest;
-use App\Http\Requests\UpdateGajiSupirHeaderRequest;
-use App\Http\Requests\UpdateGajiSupirPelunasanPinjamanRequest;
-use App\Http\Requests\UpdateGajiSupirPinjamanRequest;
-use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
-use App\Http\Requests\UpdatePenerimaanTruckingHeaderRequest;
-use App\Http\Requests\UpdatePengeluaranTruckingHeaderRequest;
+use DateTime;
 use App\Models\Error;
-use App\Models\GajiSupirBBM;
-use App\Models\GajiSupirDeposito;
-use App\Models\GajiSupirDetail;
-use App\Models\GajiSupirPelunasanPinjaman;
-use App\Models\GajiSupirPinjaman;
-use App\Models\GajisUpirUangJalan;
-use App\Models\JurnalUmumHeader;
+use App\Models\Supir;
+use App\Models\Ritasi;
+use App\Models\MyModel;
 use App\Models\LogTrail;
 use App\Models\Parameter;
+use App\Models\GajiSupirBBM;
+use Illuminate\Http\Request;
+use App\Models\SuratPengantar;
+use App\Models\GajiSupirDetail;
+use App\Models\GajiSupirHeader;
+use App\Models\JurnalUmumHeader;
+use App\Models\GajiSupirDeposito;
+use App\Models\GajiSupirPinjaman;
+use App\Models\GajisUpirUangJalan;
 use App\Models\PenerimaanTrucking;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Database\QueryException;
 use App\Models\PenerimaanTruckingHeader;
 use App\Models\PengeluaranTruckingDetail;
 use App\Models\PengeluaranTruckingHeader;
-use App\Models\Ritasi;
-use App\Models\Supir;
-use App\Models\SuratPengantar;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Models\GajiSupirPelunasanPinjaman;
+use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\GetTripGajiSupirRequest;
+use App\Http\Requests\StoreGajiSupirBBMRequest;
+use App\Http\Requests\UpdateGajiSupirBBMRequest;
+use App\Http\Requests\StoreGajiSupirDetailRequest;
+use App\Http\Requests\StoreGajiSupirHeaderRequest;
+use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use App\Http\Requests\StoreJurnalUmumHeaderRequest;
+use App\Http\Requests\UpdateGajiSupirHeaderRequest;
+use App\Http\Requests\DestroyGajiSupirHeaderRequest;
+use App\Http\Requests\StoreGajiSupirDepositoRequest;
+use App\Http\Requests\StoreGajiSupirPinjamanRequest;
+use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
+use App\Http\Requests\StoreGajisUpirUangJalanRequest;
+use App\Http\Requests\UpdateGajiSupirDepositoRequest;
+use App\Http\Requests\UpdateGajiSupirPinjamanRequest;
+use App\Http\Requests\StorePenerimaanTruckingHeaderRequest;
+use App\Http\Requests\StorePengeluaranTruckingHeaderRequest;
+use App\Http\Requests\UpdatePenerimaanTruckingHeaderRequest;
+use App\Http\Requests\StoreGajiSupirPelunasanPinjamanRequest;
+use App\Http\Requests\UpdatePengeluaranTruckingHeaderRequest;
+use App\Http\Requests\UpdateGajiSupirPelunasanPinjamanRequest;
 
 class GajiSupirHeaderController extends Controller
 {
@@ -415,6 +417,9 @@ class GajiSupirHeaderController extends Controller
         $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
         $tgltutup=date('Y-m-d', strtotime($tgltutup));        
 
+        $aksi=$request->aksi ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $gajisupir->editing_by ?? '';
 
         if ($statusdatacetak == $statusCetak->id) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
@@ -438,9 +443,45 @@ class GajiSupirHeaderController extends Controller
                 'statuspesan' => 'warning',
             ];
 
-            return response($data);            
-        }  else {
+            return response($data);
+        } else if ($useredit != '' && $useredit != $user) {
+           
+            $waktu = (new Parameter())->cekBatasWaktuEdit('gaji supir header BUKTI');
 
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($gajisupir->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+
+                    (new MyModel())->updateEditingBy('gajisupirheader', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                // return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $gajisupir->nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
+        } else {
+            if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                (new MyModel())->updateEditingBy('gajisupirheader', $id, $aksi);
+            }
+            
             $data = [
                 'error' => false,
                 'message' => '',

@@ -35,6 +35,8 @@ class ServiceInHeader extends MyModel
         $this->setRequestParameters();
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
+        $trado_id = request()->trado_id ?? '';
+        $serviceout = request()->serviceout ?? '';
         $query = DB::table($this->table)->from(
             DB::raw("serviceinheader with (readuncommitted)")
         )
@@ -45,7 +47,9 @@ class ServiceInHeader extends MyModel
 
                 'trado.kodetrado as trado_id',
                 'statuscetak.memo as statuscetak',
-
+                'serviceout.nobukti as serviceout_nobukti',
+                db::raw("cast((format(serviceoutheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderserviceout"),
+                db::raw("cast(cast(format((cast((format(serviceoutheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderserviceout"),
                 'serviceinheader.tglmasuk',
                 'serviceinheader.modifiedby',
                 'serviceinheader.created_at',
@@ -53,6 +57,8 @@ class ServiceInHeader extends MyModel
 
             )
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'serviceinheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("serviceoutdetail as serviceout with (readuncommitted)"), 'serviceinheader.nobukti', 'serviceout.servicein_nobukti')
+            ->leftJoin(DB::raw("serviceoutheader with (readuncommitted)"), 'serviceout.serviceout_id', 'serviceoutheader.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceinheader.trado_id', 'trado.id');
         if (request()->tgldari) {
             $query->whereBetween('serviceinheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
@@ -64,6 +70,18 @@ class ServiceInHeader extends MyModel
         }
         if ($statusCetak != '') {
             $query->where("serviceinheader.statuscetak", $statusCetak);
+        }
+        if ($serviceout != '') {
+            $query->whereNotIn('serviceinheader.nobukti', function ($query) {
+                $query->select(DB::raw('DISTINCT serviceoutdetail.servicein_nobukti'))
+                ->from('serviceoutdetail')
+                ->whereNotNull('serviceoutdetail.servicein_nobukti')
+                ->where('serviceoutdetail.servicein_nobukti', '!=', '');
+            });
+            if ($trado_id  != '') {
+                $query->where("serviceinheader.trado_id", $trado_id);
+            }
+            
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

@@ -2,38 +2,40 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Api\InvoiceDetailController as ApiInvoiceDetailController;
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\InvoiceDetailController;
-use App\Http\Requests\StoreInvoiceDetailRequest;
-use App\Http\Requests\GetIndexRangeRequest;
-use App\Models\InvoiceHeader;
-use App\Http\Requests\StoreInvoiceHeaderRequest;
-use App\Http\Requests\StoreJurnalUmumDetailRequest;
-use App\Http\Requests\StoreJurnalUmumHeaderRequest;
-use App\Http\Requests\UpdateInvoiceHeaderRequest;
-use App\Http\Requests\DestroyInvoiceHeaderRequest;
-
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-
-use App\Http\Requests\StoreLogTrailRequest;
-use App\Http\Requests\StorePiutangDetailRequest;
-use App\Http\Requests\StorePiutangHeaderRequest;
-use App\Http\Requests\UpdatePiutangHeaderRequest;
+use DateTime;
 use App\Models\Error;
-use App\Models\InvoiceDetail;
-use App\Models\JurnalUmumDetail;
-use App\Models\JurnalUmumHeader;
+use App\Models\MyModel;
 use App\Models\LogTrail;
-use App\Models\OrderanTrucking;
 use App\Models\Parameter;
+use Illuminate\Http\Request;
+use App\Models\InvoiceDetail;
+use App\Models\InvoiceHeader;
 use App\Models\PiutangDetail;
 use App\Models\PiutangHeader;
 use App\Models\SuratPengantar;
-use Illuminate\Database\QueryException;
+
+use App\Models\OrderanTrucking;
+use App\Models\JurnalUmumDetail;
+
+use App\Models\JurnalUmumHeader;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
+use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\StoreInvoiceDetailRequest;
+use App\Http\Requests\StoreInvoiceHeaderRequest;
+use App\Http\Requests\StorePiutangDetailRequest;
+use App\Http\Requests\StorePiutangHeaderRequest;
+use App\Http\Controllers\InvoiceDetailController;
+use App\Http\Requests\UpdateInvoiceHeaderRequest;
+use App\Http\Requests\UpdatePiutangHeaderRequest;
+use App\Http\Requests\DestroyInvoiceHeaderRequest;
+use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use App\Http\Requests\StoreJurnalUmumHeaderRequest;
+use App\Http\Controllers\Api\InvoiceDetailController as ApiInvoiceDetailController;
 
 
 class InvoiceHeaderController extends Controller
@@ -439,6 +441,8 @@ class InvoiceHeaderController extends Controller
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
         $aksi = request()->aksi ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $pengeluaran->editing_by ?? '';
 
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
@@ -495,7 +499,41 @@ class InvoiceHeaderController extends Controller
             ];
 
             return response($data);
+        } else if ($useredit != '' && $useredit != $user) {
+           
+            $waktu = (new Parameter())->cekBatasWaktuEdit('Invoice Header BUKTI');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+
+                    (new MyModel())->updateEditingBy('InvoiceHeader', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                // return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $pengeluaran->nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
         } else {
+            (new MyModel())->updateEditingBy('InvoiceHeader', $id, $aksi);
 
             $data = [
                 'error' => false,

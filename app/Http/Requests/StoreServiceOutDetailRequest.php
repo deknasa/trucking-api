@@ -24,10 +24,10 @@ class StoreServiceOutDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'servicein_nobukti' => 'required|array',
-            'servicein_nobukti.*' => 'required',
-            'keterangan_detail' => 'required|array',
-            'keterangan_detail.*' => 'required'
+            'servicein_nobukti' => 'required|array|distinct',
+            'servicein_nobukti.*' => 'required|distinct',
+            'keterangan_detail' => 'required|array|distinct',
+            'keterangan_detail.*' => 'required|distinct'
         ];
     }
 
