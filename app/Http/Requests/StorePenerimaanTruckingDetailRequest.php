@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use App\Rules\SisaNotMinus;
 use App\Rules\ValidasiKaryawanDeposito;
+use App\Rules\ValidasiKeteranganPenerimaanTrucking;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -111,7 +112,7 @@ class StorePenerimaanTruckingDetailRequest extends FormRequest
             'nominal.*' => ['required', 'gt:0', 'numeric', $min],
             'karyawandetail.*' => [$requiredDPOK, new ValidasiKaryawanDeposito()],
             'keterangan' => [$requiredKeterangan, 'array'],
-            'keterangan.*' => $requiredKeterangan
+            'keterangan.*' => [$requiredKeterangan, new ValidasiKeteranganPenerimaanTrucking()]
         ];
     }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Rules\ValidasiKeteranganPenerimaanTrucking;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -75,7 +76,7 @@ class UpdatePenerimaanTruckingDetailRequest extends FormRequest
             'nominal' => 'required|array',
             'nominal.*' => ['required', 'numeric', 'gt:0'],
             'keterangan' => [$requiredKeterangan, 'array'],
-            'keterangan.*' => $requiredKeterangan
+            'keterangan.*' => [$requiredKeterangan,new ValidasiKeteranganPenerimaanTrucking()]
         ];
     }
     public function attributes()

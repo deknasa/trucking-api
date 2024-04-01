@@ -1403,7 +1403,6 @@ class PenerimaanTruckingHeader extends MyModel
         }
 
 
-
         for ($i = 0; $i < count($data['nominal']); $i++) {
             $penerimaanTruckingDetail = (new PenerimaanTruckingDetail())->processStore($penerimaanTruckingHeader, [
                 'penerimaantruckingheader_id' => $penerimaanTruckingHeader->id,
@@ -1558,7 +1557,7 @@ class PenerimaanTruckingHeader extends MyModel
                 if ($tanpaprosesnobukti == 3) {
                     $keterangan_detail[] = 'DEPOSITO DARI PENDAPATAN SUPIR ' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'];
                 } else {
-                    $keterangan_detail[] = $data['keterangan'][0];
+                    $keterangan_detail[] = 'DEPOSITO SUPIR';
                     // $keterangan_detail[] = 'DEPOSITO SUPIR A/N ' . $namasupirdata . ' ' . $data['keterangan'][0];
                 }
             } else if ($fetchFormat->kodepenerimaan == 'BBM' || $fetchFormat->kodepenerimaan == 'PJPK' || $fetchFormat->kodepenerimaan == 'DPOK') {
@@ -1571,7 +1570,11 @@ class PenerimaanTruckingHeader extends MyModel
                 $coakredit_detail[] = $data['coa'];
                 $coadebet_detail[] = $coadebet;
                 $nominal_detail[] = $totalNominal;
-                $keterangan_detail[] = $data['keterangan'][0];
+                if ($fetchFormat->kodepenerimaan == 'DPOK') {
+                    $keterangan_detail[] = 'DEPOSITO KARYAWAN';
+                } else {
+                    $keterangan_detail[] = $data['keterangan'][0];
+                }
             }
             if ($fetchFormat->kodepenerimaan == 'PJPK') {
                 $getKaryawan = DB::table("karyawan")->from(DB::raw("karyawan with (readuncommitted)"))->select("namakaryawan")->where('id', $data['karyawanheader_id'])->first();
@@ -1948,7 +1951,7 @@ class PenerimaanTruckingHeader extends MyModel
                     if ($tanpaprosesnobukti == 3) {
                         $keterangan_detail[] = 'DEPOSITO DARI PENDAPATAN SUPIR ' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'];
                     } else {
-                        $keterangan_detail[] = $data['keterangan'][0];
+                        $keterangan_detail[] = 'DEPOSITO SUPIR';
                         // $keterangan_detail[] = 'DEPOSITO SUPIR A/N ' . $namasupirdata . ' ' . $data['keterangan'][0];
                     }
                 } else if ($fetchFormat->kodepenerimaan == 'BBM' || $fetchFormat->kodepenerimaan == 'PJPK' || $fetchFormat->kodepenerimaan == 'DPOK') {
@@ -1961,7 +1964,11 @@ class PenerimaanTruckingHeader extends MyModel
                     $coakredit_detail[] = $data['coa'];
                     $coadebet_detail[] = $coadebet;
                     $nominal_detail[] = $totalNominal;
-                    $keterangan_detail[] = $data['keterangan'][0];
+                    if ($fetchFormat->kodepenerimaan == 'DPOK') {
+                        $keterangan_detail[] = 'DEPOSITO KARYAWAN';
+                    } else {
+                        $keterangan_detail[] = $data['keterangan'][0];
+                    }
                 }
 
                 if ($fetchFormat->kodepenerimaan == 'PJPK') {
@@ -2296,7 +2303,7 @@ class PenerimaanTruckingHeader extends MyModel
             ];
             return $data;
         }
-        
+
         $data = [
             'kondisi' => false,
             'nobukti' => ''
@@ -2338,7 +2345,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $jurnal->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $jurnal->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Approval Jurnal ' . $jurnal->penerimaan_nobukti,
                 'kodeerror' => 'SAPP'
             ];
@@ -2359,7 +2366,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($prosesUangJalan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Proses Uang Jalan Supir <b>'. $prosesUangJalan->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Proses Uang Jalan Supir <b>' . $prosesUangJalan->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Proses Uang Jalan Supir ' . $prosesUangJalan->nobukti,
                 'kodeerror' => 'TDT'
             ];
@@ -2380,7 +2387,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($pengeluaranTrucking)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Pengeluaran Trucking <b>'. $pengeluaranTrucking->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Pengeluaran Trucking <b>' . $pengeluaranTrucking->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Pengeluaran Trucking ' . $pengeluaranTrucking->nobukti,
                 'kodeerror' => 'SATL2'
             ];
@@ -2401,7 +2408,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti PEMUTIHAN SUPIR <b>'. $jurnal->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti PEMUTIHAN SUPIR <b>' . $jurnal->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'PEMUTIHAN SUPIR ' . $jurnal->nobukti,
                 'kodeerror' => 'TDT'
             ];
@@ -2423,7 +2430,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti PEMUTIHAN SUPIR <b>'. $jurnal->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti PEMUTIHAN SUPIR <b>' . $jurnal->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 'keterangan' => 'PEMUTIHAN SUPIR ' . $jurnal->nobukti,
                 'kodeerror' => 'TDT'
             ];
@@ -2445,7 +2452,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($gajiSupirDeposito)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Rincian Gaji Supir <b>'. $gajiSupirDeposito->gajisupir_nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Rincian Gaji Supir <b>' . $gajiSupirDeposito->gajisupir_nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Rincian Gaji Supir ' . $gajiSupirDeposito->gajisupir_nobukti,
                 'kodeerror' => 'TDT'
             ];
@@ -2466,7 +2473,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($gajiSupirBBM)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Rincian Gaji Supir <b>'. $gajiSupirBBM->gajisupir_nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Rincian Gaji Supir <b>' . $gajiSupirBBM->gajisupir_nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Rincian Gaji Supir ' . $gajiSupirBBM->gajisupir_nobukti,
                 'kodeerror' => 'TDT'
             ];
@@ -2488,7 +2495,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($gajiSupirPelunasan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Rincian Gaji Supir <b>'. $gajiSupirPelunasan->gajisupir_nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Rincian Gaji Supir <b>' . $gajiSupirPelunasan->gajisupir_nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Rincian Gaji Supir ' . $gajiSupirPelunasan->gajisupir_nobukti,
                 'kodeerror' => 'TDT'
             ];
@@ -2510,7 +2517,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($pendapatan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Komisi Supir <b>'. $pendapatan->pendapatan .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Komisi Supir <b>' . $pendapatan->pendapatan . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'pendapatan supir ' . $pendapatan->pendapatan,
                 'kodeerror' => 'TDT'
             ];

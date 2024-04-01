@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Rules\ValidasiKeteranganPengeluaranTrucking;
 use App\Rules\ValidasiKlaimPenerimaanStok;
 use App\Rules\ValidasiKlaimPengeluaranStok;
 use App\Rules\ValidasiStatusTitipanEMKL;
@@ -174,7 +175,7 @@ class UpdatePengeluaranTruckingDetailRequest extends FormRequest
             'supir.*' => [$requiredPJT, new ValidasiSupirPJT()],
             'nominal.*' => ['required', $min],
             'keterangan' => [$requiredKeterangan, 'array'],
-            'keterangan.*' => $requiredKeterangan,
+            'keterangan.*' => [$requiredKeterangan, new ValidasiKeteranganPengeluaranTrucking()],
             'suratpengantar_nobukti' => [$requiredBBT, 'array'],
             'suratpengantar_nobukti.*' => [$requiredBBT],
             'detail_statustitipanemkl' => [$requiredBBT, 'array'],
