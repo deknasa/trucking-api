@@ -460,6 +460,16 @@ class Trado extends MyModel
             $table->string('supir_id', 1500)->nullable();
             $table->string('supirid', 1500)->nullable();
             $table->dateTime('updated_at')->nullable();
+            $table->longtext('statusapprovalhistorytradomilikmandor')->nullable();
+            $table->string('userapprovalhistorytradomilikmandor', 50)->nullable();
+            $table->datetime('tglapprovalhistorytradomilikmandor')->nullable();
+            $table->datetime('tglupdatehistorytradomilikmandor')->nullable();
+            $table->longtext('statusapprovalhistorytradomiliksupir')->nullable();
+            $table->string('userapprovalhistorytradomiliksupir', 50)->nullable();
+            $table->datetime('tglapprovalhistorytradomiliksupir')->nullable();
+            $table->datetime('tglupdatehistorytradomiliksupir')->nullable();
+            $table->datetime('tglberlakumilikmandor')->nullable();
+            $table->datetime('tglberlakumiliksupir')->nullable();
         });
 
         foreach ($data as $row) {

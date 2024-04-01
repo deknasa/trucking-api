@@ -1531,15 +1531,111 @@ class UpahSupir extends MyModel
         return $UpahSupir;
     }
 
-    public function getRincian($upah_id, $container_id, $statuscontainer_id)
+    public function getRincian($statuskandang, $upah_id, $container_id, $statuscontainer_id)
     {
         if ($statuscontainer_id != '' && $container_id != '' && $upah_id != '') {
+          
+            $parameter = new Parameter();
+            $idstatuskandang = $parameter->cekId('STATUS KANDANG', 'STATUS KANDANG', 'KANDANG') ?? 0;
+            $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
+            $idpelabuhan = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? 0;
+
+            $upahsupirkandnag = db::table("upahsupir")->from(db::raw("upahsupir a with (readuncommitted)"))
+                ->select(
+                    'b.id',
+                    'a.kotadari_id',
+                    'a.kotasampai_id',
+                    'b.upahsupir_id',
+                    'b.container_id',
+                    'b.statuscontainer_id',
+                    'b.nominalsupir',
+                    'b.nominalkenek',
+                    'b.nominalkomisi',
+                    'b.nominaltol',
+                    'b.liter',
+                    'b.tas_id',
+                    'b.info',
+                    'b.modifiedby',
+                )
+                ->join(db::raw("upahsupirrincian b with (readuncommitted)"), 'a.id', 'b.upahsupir_id')
+                ->where('a.kotadari_id', $idpelabuhan)
+                ->where('a.kotasampai_id', $idkandang)
+                ->where('b.container_id', $container_id)
+                ->where('b.statuscontainer_id', $statuscontainer_id)
+                ->whereraw("isnull(a.penyesuaian,'')=''");
+
+            $tempupahsupirkandang = '##tempupahsupirkandang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempupahsupirkandang, function ($table) {
+                $table->bigInteger('id')->nullable();
+                $table->unsignedBigInteger('kotadari_id')->nullable();
+                $table->unsignedBigInteger('kotasampai_id')->nullable();
+                $table->unsignedBigInteger('upahsupir_id')->nullable();
+                $table->unsignedBigInteger('container_id')->nullable();
+                $table->unsignedBigInteger('statuscontainer_id')->nullable();
+                $table->double('nominalsupir', 15, 2)->nullable();
+                $table->double('nominalkenek', 15, 2)->nullable();
+                $table->double('nominalkomisi', 15, 2)->nullable();
+                $table->double('nominaltol', 15, 2)->nullable();
+                $table->double('liter', 15, 2)->nullable();
+                $table->unsignedBigInteger('tas_id')->nullable();
+                $table->longText('info')->nullable();
+                $table->string('modifiedby', 50)->nullable();
+            });
+
+            DB::table($tempupahsupirkandang)->insertUsing([
+                'id',
+                'kotadari_id',
+                'kotasampai_id',
+                'upahsupir_id',
+                'container_id',
+                'statuscontainer_id',
+                'nominalsupir',
+                'nominalkenek',
+                'nominalkomisi',
+                'nominaltol',
+                'liter',
+                'tas_id',
+                'info',
+                'modifiedby',
+            ],  $upahsupirkandnag);
+
+            $querynominal = db::table($tempupahsupirkandang)->from(db::raw($tempupahsupirkandang . " a"))
+                ->select(
+                    'a.nominalsupir',
+                    'a.nominalkenek',
+                    'a.nominalkomisi',
+                )->first();
+
+            if (isset($querynominal)) {
+                $nominalsupirkandang = $querynominal->nominalsupir ?? 0;
+                $nominalkenekkandang = $querynominal->nominalkenek ?? 0;
+                $nominalkomisikandang = $querynominal->nominalkomisi ?? 0;
+            } else {
+                $nominalsupirkandang = 0;
+                $nominalkenekkandang = 0;
+                $nominalkomisikandang = 0;
+            }
+
             $query = DB::table("upahsupirrrincian")->from(DB::raw("upahsupirrincian with (readuncommitted)"))
                 ->where('upahsupir_id', $upah_id)
                 ->where('statuscontainer_id', $statuscontainer_id)
                 ->where('container_id', $container_id)
                 ->first();
-            return $query;
+            if ($statuskandang == $idstatuskandang) {
+                $data = [
+                    'nominalkenek' => $query->nominalkenek - $nominalkenekkandang,
+                    'nominalkomisi' => $query->nominalkomisi - $nominalkomisikandang,
+                    'nominalsupir' => $query->nominalsupir - $nominalsupirkandang,
+                ];
+            } else {
+
+                $data = [
+                    'nominalkenek' => $query->nominalkenek,
+                    'nominalkomisi' => $query->nominalkomisi,
+                    'nominalsupir' => $query->nominalsupir,
+                ];
+            }
+            return $data;
         } else {
             return [];
         }

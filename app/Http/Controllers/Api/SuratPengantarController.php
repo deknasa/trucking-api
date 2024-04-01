@@ -207,6 +207,7 @@ class SuratPengantarController extends Controller
                 'gandengan_id' => $request->gandengan_id,
                 'statuslongtrip' => $request->statuslongtrip,
                 'statusperalihan' => $request->statusperalihan,
+                'statuskandang' => $request->statuskandang,
                 'nominalperalihan' => $request->nominalperalihan,
                 'persentaseperalihan' => $request->persentaseperalihan,
                 'biayatambahan_id' => $request->biayatambahan_id,
@@ -223,6 +224,7 @@ class SuratPengantarController extends Controller
                 'nominalTagih' => $request->nominalTagih,
                 'komisisupir' => $request->komisisupir,
                 'gajikenek' => $request->gajikenek,
+                'gajisupir' => $request->gajisupir,
                 'tambahan_id' => $request->tambahan_id,
                 'nobukti_tripasal' => $request->nobukti_tripasal ?? '',
             ];

@@ -89,8 +89,10 @@ class UpdateListTripRequest extends FormRequest
         $rulePelanggan = '';
         $ruleGudang = '';
         $idUpahSupir = 0;
+        $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
         if ($trip->statuscontainer_id != 3) {
-            if ($trip->dari_id == 1) {
+
+            if ($trip->dari_id == 1 || $trip->dari_id == $idkandang) {
                 $cekjobtrucking = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', $trip->jobtrucking)->where('id', '<>', request()->id)->first();
                 if ($cekjobtrucking != '') {
                     $idUpahSupir = $trip->upah_id;
@@ -208,32 +210,32 @@ class UpdateListTripRequest extends FormRequest
             $validasiUpah = (new UpahSupirRincian())->cekValidasiInputTripUpah(request()->statuscontainer_id, request()->jenisorder_id, request()->upah_id);
             $getUpah = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->select('zonadari_id', 'zonasampai_id')->where('id', request()->upah_id)->first();
             $validasiDari = '';
-            if(request()->statuslongtrip == 66){
+            if (request()->statuslongtrip == 66) {
                 $validasiDari = (request()->statusupahzona == $getUpahZona->id) ? new ValidasiKotaZonaTrip($getUpah->zonadari_id) : Rule::in($validasiUpah->kotadari_id);
             }
             $validasiSampai = '';
-            if(request()->statuslongtrip == 66){
+            if (request()->statuslongtrip == 66) {
                 $validasiSampai = (request()->statusupahzona == $getUpahZona->id) ? new ValidasiKotaZonaTrip($getUpah->zonasampai_id) : Rule::in($validasiUpah->kotasampai_id);
             }
             $dari_id = $this->dari_id;
             if ($dari_id != null) {
                 $rulesDari_id = [
-                    'dari_id' => ['required', 'numeric', 'min:1', new ExistKota(), $validasiDari]
+                    'dari_id' => ['required', 'numeric', 'min:1', new ExistKota()]
                 ];
             } else if ($dari_id == null && $this->dari != '') {
                 $rulesDari_id = [
-                    'dari_id' => ['required', 'numeric', 'min:1', new ExistKota(), $validasiDari]
+                    'dari_id' => ['required', 'numeric', 'min:1', new ExistKota()]
                 ];
             }
 
             $sampai_id = $this->sampai_id;
             if ($sampai_id != null) {
                 $rulesSampai_id = [
-                    'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota(), $validasiSampai]
+                    'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota()]
                 ];
             } else if ($sampai_id == null && $this->sampai != '') {
                 $rulesSampai_id = [
-                    'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota(), $validasiSampai]
+                    'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota()]
                 ];
             }
         }
@@ -488,7 +490,7 @@ class UpdateListTripRequest extends FormRequest
             $getLongtrip = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS LONGTRIP')->where('text', 'LONGTRIP')->first();
 
             if (request()->statusgudangsama ==  $getGudangSama->id) {
-                if((request()->statuscontainer_id==1 && request()->jenisorder_id == 1) || (request()->statuscontainer_id==1 && request()->jenisorder_id == 4)){
+                if ((request()->statuscontainer_id == 1 && request()->jenisorder_id == 1) || (request()->statuscontainer_id == 1 && request()->jenisorder_id == 4)) {
                     return true;
                 }
             }
@@ -497,7 +499,7 @@ class UpdateListTripRequest extends FormRequest
             }
             return false;
         });
-        
+
         if ((request()->dari_id == 1 && request()->sampai_id == 103) || (request()->dari_id == 103 && request()->sampai_id == 1) || (request()->statuslongtrip == 65)) {
 
 
