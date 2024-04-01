@@ -1895,10 +1895,11 @@ class PengeluaranTruckingHeader extends MyModel
                     $pinjaman = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))->where('kodepengeluaran', "PJT")->first();
                 }
 
+                $getnamasupir = DB::table('supir')->select('namasupir')->where('id', $data['supirheader_id'])->first();
                 for ($i = 0; $i < count($data['nominal']); $i++) {
                     $pjt_supir_id[] = $data['supirheader_id'];
                     $pjt_nominal[] = $data['nominal'][$i];
-                    $pjt_keterangan[] = $data['keterangan'][$i];
+                    $pjt_keterangan[] = "PINJAMAN SUPIR $getnamasupir->namasupir ATAS ".$data['keterangan'][$i];
                 }
                 $pjtRequest = [
                     "tglbukti" => $data['tglbukti'],
@@ -2199,12 +2200,13 @@ class PengeluaranTruckingHeader extends MyModel
                 if ($pengeluaranTruckingDetail->statusPosting != $statusPosting->id) {
                     $pinjaman = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))->where('kodepengeluaran', "PJT")->first();
                 }
+                $getnamasupir = DB::table('supir')->select('namasupir')->where('id', $data['supirheader_id'])->first();
 
                 for ($i = 0; $i < count($data['nominal']); $i++) {
                     $pjt_supir_id[] = $data['supirheader_id'];
                     $pjt_karyawan_id[] = $data['karyawan_id'];
                     $pjt_nominal[] = $data['nominal'][$i];
-                    $pjt_keterangan[] = $data['keterangan'][$i];
+                    $pjt_keterangan[] = "PINJAMAN SUPIR $getnamasupir->namasupir ATAS ".$data['keterangan'][$i];
                 }
                 $pjtRequest = [
                     "tglbukti" => $data['tglbukti'],

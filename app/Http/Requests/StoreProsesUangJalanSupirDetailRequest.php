@@ -12,6 +12,7 @@ use App\Rules\DateTutupBuku;
 use App\Rules\ExistBank;
 use App\Rules\ExistBankProsesUangJalan;
 use App\Rules\ExistBankTransferProsesUangJalan;
+use App\Rules\ValidasiKeteranganProsesUangJalan;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreProsesUangJalanSupirDetailRequest extends FormRequest
@@ -45,7 +46,7 @@ class StoreProsesUangJalanSupirDetailRequest extends FormRequest
             ];
         }
         $rulesDeposito = [];
-        if (request()->nilaideposit > 0 || request()->keterangandeposit != '' || request()->bankdeposit != '') {
+        if (request()->nilaideposit > 0 || request()->bankdeposit != '') {
             $rulesDeposito = [
 
                 'tgldeposit' =>  [
@@ -53,7 +54,7 @@ class StoreProsesUangJalanSupirDetailRequest extends FormRequest
                     new DateTutupBuku(),
                 ],
                 'nilaideposit' => ['required', 'numeric', 'min:0'],
-                'keterangandeposit' => 'required',
+                'keterangandeposit' => ['required', new ValidasiKeteranganProsesUangJalan()],
                 'bankdeposit' => 'required'
             ];
         }

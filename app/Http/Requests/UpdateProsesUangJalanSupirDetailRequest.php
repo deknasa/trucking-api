@@ -16,6 +16,7 @@ use App\Rules\CekNomPinjamanProsesUangJalan;
 use App\Rules\CekTransferProsesUangJalanEdit;
 use App\Rules\ExistBank;
 use App\Rules\ExistBankProsesUangJalan;
+use App\Rules\ValidasiKeteranganProsesUangJalan;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateProsesUangJalanSupirDetailRequest extends FormRequest
@@ -38,10 +39,10 @@ class UpdateProsesUangJalanSupirDetailRequest extends FormRequest
     public function rules()
     {
         $rulesDeposito = [];
-        if (request()->nilaideposit > 0 || request()->keterangandeposit != '' || request()->bankdeposit != '') {
+        if (request()->nilaideposit > 0 || request()->bankdeposit != '') {
             $rulesDeposito = [
                 'nilaideposit' => ['required', 'numeric', 'min:0', new CekDepositProsesUangJalanEdit()],
-                'keterangandeposit' => 'required',
+                'keterangandeposit' =>  ['required', new ValidasiKeteranganProsesUangJalan()],
                 'bankdeposit' => 'required'
             ];
         }
