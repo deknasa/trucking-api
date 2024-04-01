@@ -22,7 +22,7 @@ class CreateServiceinheaderTable extends Migration
             $table->date('tglbukti')->nullable();
             $table->longText('keterangan')->nullable();            
             $table->unsignedBigInteger('trado_id')->nullable();
-            $table->date('tglmasuk')->nullable();
+            $table->datetime('tglmasuk')->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();                  
             $table->integer('statuscetak')->Length(11)->nullable();
             $table->string('userbukacetak',50)->nullable();

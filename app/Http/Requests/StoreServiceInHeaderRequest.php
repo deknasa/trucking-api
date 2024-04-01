@@ -32,7 +32,7 @@ class StoreServiceInHeaderRequest extends FormRequest
             ],
             'trado' => 'required',
             "tglmasuk" => [
-                "required",'date_format:d-m-Y',
+                "required",
                 new DateTutupBuku()
             ],
         ];

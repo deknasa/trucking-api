@@ -256,7 +256,7 @@ class ServiceInHeader extends MyModel
         $serviceInHeader = new ServiceInHeader();
         $serviceInHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $serviceInHeader->trado_id = $data['trado_id'];
-        $serviceInHeader->tglmasuk = date('Y-m-d', strtotime($data['tglmasuk']));
+        $serviceInHeader->tglmasuk = date('Y-m-d H:i:s', strtotime($data['tglmasuk']));
         $serviceInHeader->statusformat =  $format->id;
         $serviceInHeader->statuscetak = $statusCetak->id;
         $serviceInHeader->modifiedby = auth('api')->user()->name;
@@ -330,7 +330,7 @@ class ServiceInHeader extends MyModel
         }
 
         $serviceInHeader->trado_id = $data['trado_id'];
-        $serviceInHeader->tglmasuk = date('Y-m-d', strtotime($data['tglmasuk']));
+        $serviceInHeader->tglmasuk = date('Y-m-d H:i:s', strtotime($data['tglmasuk']));
         $serviceInHeader->modifiedby = auth('api')->user()->name;
         $serviceInHeader->info = html_entity_decode(request()->info);
 
