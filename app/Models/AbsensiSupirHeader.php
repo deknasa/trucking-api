@@ -71,13 +71,13 @@ class AbsensiSupirHeader extends MyModel
     {
         $this->setRequestParameters();
         $defaultmemononapproval = db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
-        ->select(
-            'a.memo'
-        )
-        ->where('a.grp', 'STATUS APPROVAL')
-        ->where('a.subgrp', 'STATUS APPROVAL')
-        ->where('a.text', 'NON APPROVAL')
-        ->first()->memo ?? '';
+            ->select(
+                'a.memo'
+            )
+            ->where('a.grp', 'STATUS APPROVAL')
+            ->where('a.subgrp', 'STATUS APPROVAL')
+            ->where('a.text', 'NON APPROVAL')
+            ->first()->memo ?? '';
 
 
         $query = DB::table($this->table)->from(DB::raw("absensisupirheader with (readuncommitted)"))
@@ -101,7 +101,7 @@ class AbsensiSupirHeader extends MyModel
                 'absensisupirheader.updated_at',
                 db::raw("cast((format(kasgantungheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderkasgantungheader"),
                 db::raw("cast(cast(format((cast((format(kasgantungheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderkasgantungheader"),
-                db::raw("isnull(statusapprovalfinalabsensi.memo,'". $defaultmemononapproval."') as statusapprovalfinalabsensi"),
+                db::raw("isnull(statusapprovalfinalabsensi.memo,'" . $defaultmemononapproval . "') as statusapprovalfinalabsensi"),
                 'absensisupirheader.userapprovalfinalabsensi',
                 'absensisupirheader.tglapprovalfinalabsensi',
 
@@ -178,6 +178,9 @@ class AbsensiSupirHeader extends MyModel
                 $table->dateTime('updated_at')->nullable();
                 $table->dateTime('tgldariheaderkasgantungheader')->nullable();
                 $table->dateTime('tglsampaiheaderkasgantungheader')->nullable();
+                $table->longText('statusapprovalfinalabsensi')->nullable();
+                $table->string('userapprovalfinalabsensi', 50)->nullable();
+                $table->date('tglapprovalfinalabsensi')->nullable();
             });
 
             DB::table($temppengajuan)->insertUsing([
@@ -199,7 +202,10 @@ class AbsensiSupirHeader extends MyModel
                 'created_at',
                 'updated_at',
                 'tgldariheaderkasgantungheader',
-                'tglsampaiheaderkasgantungheader'
+                'tglsampaiheaderkasgantungheader',
+                'statusapprovalfinalabsensi',
+                'userapprovalfinalabsensi',
+                'tglapprovalfinalabsensi',
             ], $query);
 
             $getApprovalPengajuanTripInap = DB::table("absensisupirheader")->from(DB::raw("absensisupirheader with (readuncommitted)"))
@@ -276,6 +282,9 @@ class AbsensiSupirHeader extends MyModel
                 $table->dateTime('updated_at')->nullable();
                 $table->dateTime('tgldariheaderkasgantungheader')->nullable();
                 $table->dateTime('tglsampaiheaderkasgantungheader')->nullable();
+                $table->longText('statusapprovalfinalabsensi')->nullable();
+                $table->string('userapprovalfinalabsensi', 50)->nullable();
+                $table->date('tglapprovalfinalabsensi')->nullable();
             });
 
             DB::table($tempAbsensi)->insertUsing([
@@ -297,7 +306,10 @@ class AbsensiSupirHeader extends MyModel
                 'created_at',
                 'updated_at',
                 'tgldariheaderkasgantungheader',
-                'tglsampaiheaderkasgantungheader'
+                'tglsampaiheaderkasgantungheader',
+                'statusapprovalfinalabsensi',
+                'userapprovalfinalabsensi',
+                'tglapprovalfinalabsensi',
             ], $query);
 
             $awal = date('Y-m-d') . ' 00:00:00';
@@ -367,13 +379,13 @@ class AbsensiSupirHeader extends MyModel
     {
 
         $idapproval = db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
-        ->select(
-            'a.id'
-        )
-        ->where('a.grp', 'STATUS APPROVAL')
-        ->where('a.subgrp', 'STATUS APPROVAL')
-        ->where('a.text', 'APPROVAL')
-        ->first()->id ?? '';
+            ->select(
+                'a.id'
+            )
+            ->where('a.grp', 'STATUS APPROVAL')
+            ->where('a.subgrp', 'STATUS APPROVAL')
+            ->where('a.text', 'APPROVAL')
+            ->first()->id ?? '';
 
         $query = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
             ->select(
@@ -386,7 +398,7 @@ class AbsensiSupirHeader extends MyModel
                 'absensisupirheader.statusapprovaleditabsensi',
                 'absensisupirheader.userbukacetak',
                 'absensisupirheader.jumlahcetak',
-                db::raw("(case when isnull(absensisupirheader.statusapprovalfinalabsensi,0)=".$idapproval ." then 'YA' else 'TIDAK' end) as statusapprovalfinalabsensi"),
+                db::raw("(case when isnull(absensisupirheader.statusapprovalfinalabsensi,0)=" . $idapproval . " then 'YA' else 'TIDAK' end) as statusapprovalfinalabsensi"),
             )
             ->where('id', $id);
         $data = $query->first();
@@ -451,13 +463,13 @@ class AbsensiSupirHeader extends MyModel
         });
 
         $defaultmemononapproval = db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
-        ->select(
-            'a.memo'
-        )
-        ->where('a.grp', 'STATUS APPROVAL')
-        ->where('a.subgrp', 'STATUS APPROVAL')
-        ->where('a.text', 'NON APPROVAL')
-        ->first()->memo ?? '';
+            ->select(
+                'a.memo'
+            )
+            ->where('a.grp', 'STATUS APPROVAL')
+            ->where('a.subgrp', 'STATUS APPROVAL')
+            ->where('a.text', 'NON APPROVAL')
+            ->first()->memo ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("absensisupirheader with (readuncommitted)"))
             ->select(
@@ -476,7 +488,7 @@ class AbsensiSupirHeader extends MyModel
                 'absensisupirheader.modifiedby',
                 'absensisupirheader.created_at',
                 'absensisupirheader.updated_at',
-                db::raw("isnull(statusapprovalfinalabsensi.memo,'". $defaultmemononapproval."') as statusapprovalfinalabsensi"),
+                db::raw("isnull(statusapprovalfinalabsensi.memo,'" . $defaultmemononapproval . "') as statusapprovalfinalabsensi"),
                 'absensisupirheader.userapprovalfinalabsensi',
                 DB::raw('(case when (year(absensisupirheader.tglapprovalfinalabsensi) <= 2000) then null else absensisupirheader.tglapprovalfinalabsensi end ) as tglapprovalfinalabsensi'),
 
@@ -582,13 +594,13 @@ class AbsensiSupirHeader extends MyModel
     public function filter($query, $relationFields = [])
     {
         $defaulttextnonapproval = db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
-        ->select(
-            'a.text'
-        )
-        ->where('a.grp', 'STATUS APPROVAL')
-        ->where('a.subgrp', 'STATUS APPROVAL')
-        ->where('a.text', 'NON APPROVAL')
-        ->first()->text ?? '';
+            ->select(
+                'a.text'
+            )
+            ->where('a.grp', 'STATUS APPROVAL')
+            ->where('a.subgrp', 'STATUS APPROVAL')
+            ->where('a.text', 'NON APPROVAL')
+            ->first()->text ?? '';
 
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
             switch ($this->params['filters']['groupOp']) {
@@ -600,7 +612,7 @@ class AbsensiSupirHeader extends MyModel
                             } else if ($filters['field'] == 'statusapprovaleditabsensi') {
                                 $query = $query->where('statusapprovaleditabsensi.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statusapprovalfinalabsensi') {
-                                $query = $query->whereraw("isnull(statusapprovalfinalabsensi.text,'".$defaulttextnonapproval."') LIKE '%$filters[data]%'");
+                                $query = $query->whereraw("isnull(statusapprovalfinalabsensi.text,'" . $defaulttextnonapproval . "') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'nominal') {
                                 $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapprovaleditabsensi') {
@@ -623,7 +635,7 @@ class AbsensiSupirHeader extends MyModel
                                 } else if ($filters['field'] == 'statusapprovaleditabsensi') {
                                     $query = $query->orWhere('statusapprovaleditabsensi.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'statusapprovalfinalabsensi') {
-                                    $query = $query->orwhereraw("isnull(statusapprovalfinalabsensi.text,'".$defaulttextnonapproval."') LIKE '%$filters[data]%'");
+                                    $query = $query->orwhereraw("isnull(statusapprovalfinalabsensi.text,'" . $defaulttextnonapproval . "') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'nominal') {
                                     $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapprovaleditabsensi') {
@@ -834,22 +846,19 @@ class AbsensiSupirHeader extends MyModel
 
     public function notifApprovalFinal()
     {
-        $tigaHariSebelum = date('Y-m-d',strtotime('-3 days'));
+        $tigaHariSebelum = date('Y-m-d', strtotime('-3 days'));
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
 
-            $absensisupirheader = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
+        $absensisupirheader = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
             ->select(DB::raw("isnull(STRING_AGG(format(tglbukti,'dd-MM-yyyy'), ', '),'') as tglbukti"))
-            ->where('tglbukti', '<',$tigaHariSebelum)
-            ->whereRaw("isNull(statusapprovalfinalabsensi,0) <> ".$statusApproval->id)
+            ->where('tglbukti', '<', $tigaHariSebelum)
+            ->whereRaw("isNull(statusapprovalfinalabsensi,0) <> " . $statusApproval->id)
             ->first();
 
-                return $absensisupirheader;
+        return $absensisupirheader;
+    }
 
-         
-            
-    }            
-     
 
     public function getExport($id)
     {
