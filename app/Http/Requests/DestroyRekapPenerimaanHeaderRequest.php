@@ -31,23 +31,10 @@ class DestroyRekapPenerimaanHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        $controller = new RekapPenerimaanHeaderController;
-        $rekappenerimaanheader = new RekapPenerimaanHeader();
-        // dd('test');
-        $cekdata = $rekappenerimaanheader->cekvalidasiaksi($this->nobukti);
-        
-        $cekdatacetak = $controller->cekvalidasi($this->id);
-        if ($cekdatacetak->original['kodestatus']=='1') {
-                $cekdtcetak=true;
-        } else {
-            $cekdtcetak=false;
-        }
-        
-
-         
+               
     
         return [
-            'id' => [ new ValidasiDestroyRekapPenerimaanHeader($cekdata['kondisi'],$cekdtcetak)],
+            'id' => [ new ValidasiDestroyRekapPenerimaanHeader()],
         ];
     }
 }

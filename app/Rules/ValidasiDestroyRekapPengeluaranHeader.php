@@ -4,6 +4,7 @@ namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
+use App\Http\Controllers\Api\RekapPengeluaranHeaderController;
 
 class ValidasiDestroyRekapPengeluaranHeader implements Rule
 {
@@ -12,15 +13,12 @@ class ValidasiDestroyRekapPengeluaranHeader implements Rule
      *
      * @return void
      */
-    public function __construct($param, $paramcetak)
+    public $kodeerror;
+    public $keterangan;
+    public function __construct()
     {
         
-        $this->kondisi = $param;
-        $this->kondisicetak = $paramcetak;
     }
-
-    public $kondisi;
-    public $kondisicetak;
     /**
      * Determine if the validation rule passes.
      *
@@ -30,16 +28,14 @@ class ValidasiDestroyRekapPengeluaranHeader implements Rule
      */
     public function passes($attribute, $value)
     {
-        if ($this->kondisi == true) {
-            // dd('1');
+        $cekCetak = app(RekapPengeluaranHeaderController::class)->cekvalidasi(request()->id);
+        $getOriginal = $cekCetak->original;
+        if ($getOriginal['error'] == true) {
+            $this->kodeerror = $getOriginal['kodeerror'];
+            $this->keterangan = $getOriginal['message'];
             return false;
-        } else if ($this->kondisicetak == true) {
-            // dd('2');
-            return false;
-        } else {
-            // dd('3');
-            return true;
         }
+        return true;
     }
 
     /**
@@ -49,10 +45,6 @@ class ValidasiDestroyRekapPengeluaranHeader implements Rule
      */
     public function message()
     {
-        if ($this->kondisi == true) {
-            return app(ErrorController::class)->geterror('SATL')->keterangan;
-        } else {
-            return app(ErrorController::class)->geterror('SDC')->keterangan;
-        }
+        return $this->keterangan;
     }
 }

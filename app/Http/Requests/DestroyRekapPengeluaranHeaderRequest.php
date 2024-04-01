@@ -27,22 +27,9 @@ class DestroyRekapPengeluaranHeaderRequest extends FormRequest
      * @return array
      */
     public function rules()
-    {
-        $controller = new RekapPengeluaranHeaderController;
-        $rekappengeluaranheader = new RekapPengeluaranHeader();
-        $cekdata = $rekappengeluaranheader->cekvalidasiaksi($this->nobukti);
-        $cekdatacetak = $controller->cekvalidasi($this->id);
-        if ($cekdatacetak->original['kodestatus']=='1') {
-                $cekdtcetak=true;
-        } else {
-            $cekdtcetak=false;
-        }
-        
-
-         
-    
+    {       
         return [
-            'id' => [ new ValidasiDestroyRekapPengeluaranHeader($cekdata['kondisi'],$cekdtcetak)],
+            'id' => [ new ValidasiDestroyRekapPengeluaranHeader()],
         ];
     }
 }
