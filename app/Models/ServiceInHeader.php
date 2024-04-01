@@ -35,6 +35,8 @@ class ServiceInHeader extends MyModel
         $this->setRequestParameters();
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
+        $trado_id = request()->trado_id ?? '';
+        $serviceout = request()->serviceout ?? '';
         $query = DB::table($this->table)->from(
             DB::raw("serviceinheader with (readuncommitted)")
         )
@@ -64,6 +66,18 @@ class ServiceInHeader extends MyModel
         }
         if ($statusCetak != '') {
             $query->where("serviceinheader.statuscetak", $statusCetak);
+        }
+        if ($serviceout != '') {
+            $query->whereNotIn('serviceinheader.nobukti', function ($query) {
+                $query->select(DB::raw('DISTINCT serviceoutdetail.servicein_nobukti'))
+                ->from('serviceoutdetail')
+                ->whereNotNull('serviceoutdetail.servicein_nobukti')
+                ->where('serviceoutdetail.servicein_nobukti', '!=', '');
+            });
+            if ($trado_id  != '') {
+                $query->where("serviceinheader.trado_id", $trado_id);
+            }
+            
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
