@@ -126,54 +126,54 @@ class LaporanKeteranganPinjamanSupir extends MyModel
                 'updated_at',
             ], $querypenerimaantruckingheader);
 
-            if ((($idstatusposting==$statusposting) || ($statusposting==0)) && ($prosesneraca != 1)) {
-                $querypenerimaantruckingheader = DB::table("penerimaantruckingheader")->from(
-                    DB::raw("penerimaantruckingheader as a with (readuncommitted)")
-                )
+            // if ((($idstatusposting==$statusposting) || ($statusposting==0)) && ($prosesneraca != 1)) {
+            //     $querypenerimaantruckingheader = DB::table("penerimaantruckingheader")->from(
+            //         DB::raw("penerimaantruckingheader as a with (readuncommitted)")
+            //     )
         
-                    ->select(
-                        'a.id',
-                        'a.nobukti',
-                        'a.tglbukti',
-                        'a.keterangan',
-                        'a.penerimaantrucking_id',
-                        'a.bank_id',
-                        'a.supir_id',
-                        'a.coa',
-                        'a.penerimaan_nobukti',
-                        'a.statusformat',
-                        'a.statuscetak',
-                        'a.userbukacetak',
-                        'a.tglbukacetak',
-                        'a.jumlahcetak',
-                        'a.modifiedby',
-                        'a.created_at',
-                        'a.updated_at'
+            //         ->select(
+            //             'a.id',
+            //             'a.nobukti',
+            //             'a.tglbukti',
+            //             'a.keterangan',
+            //             'a.penerimaantrucking_id',
+            //             'a.bank_id',
+            //             'a.supir_id',
+            //             'a.coa',
+            //             'a.penerimaan_nobukti',
+            //             'a.statusformat',
+            //             'a.statuscetak',
+            //             'a.userbukacetak',
+            //             'a.tglbukacetak',
+            //             'a.jumlahcetak',
+            //             'a.modifiedby',
+            //             'a.created_at',
+            //             'a.updated_at'
         
-                    )
-                    ->where('a.tglbukti', '<', $periode)
-                    ->where('a.penerimaantrucking_id', '=', $penerimaantruckingkaryawan_id);
+            //         )
+            //         ->where('a.tglbukti', '<', $periode)
+            //         ->where('a.penerimaantrucking_id', '=', $penerimaantruckingkaryawan_id);
         
-                    DB::table($penerimaanTruckingHeader)->insertUsing([
-                        'id',
-                        'nobukti',
-                        'tglbukti',
-                        'keterangan',
-                        'penerimaantrucking_id',
-                        'bank_id',
-                        'supir_id',
-                        'coa',
-                        'penerimaan_nobukti',
-                        'statusformat',
-                        'statuscetak',
-                        'userbukacetak',
-                        'tglbukacetak',
-                        'jumlahcetak',
-                        'modifiedby',
-                        'created_at',
-                        'updated_at',
-                    ], $querypenerimaantruckingheader);
-            }
+            //         DB::table($penerimaanTruckingHeader)->insertUsing([
+            //             'id',
+            //             'nobukti',
+            //             'tglbukti',
+            //             'keterangan',
+            //             'penerimaantrucking_id',
+            //             'bank_id',
+            //             'supir_id',
+            //             'coa',
+            //             'penerimaan_nobukti',
+            //             'statusformat',
+            //             'statuscetak',
+            //             'userbukacetak',
+            //             'tglbukacetak',
+            //             'jumlahcetak',
+            //             'modifiedby',
+            //             'created_at',
+            //             'updated_at',
+            //         ], $querypenerimaantruckingheader);
+            // }
 
 
      
@@ -356,65 +356,65 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             'posting',
         ], $queryPengeluaranTruckingHeader);
 
-        if ((($idstatusposting==$statusposting) || ($statusposting==0)) && ($prosesneraca != 1)) {
-            $queryPengeluaranTruckingHeader = DB::table("pengeluarantruckingheader")->from(
-                DB::raw("pengeluarantruckingheader as a with (readuncommitted)")
-            )
-                ->select(
-                    'a.id',
-                    'a.nobukti',
-                    'a.tglbukti',
-                    'a.keterangan',
-                    'a.pengeluarantrucking_id',
-                    'a.bank_id',
-                    'a.supir_id',
-                    'a.statusposting',
-                    'a.periodedari',
-                    'a.periodesampai',
-                    'a.coa',
-                    'a.pengeluaran_nobukti',
-                    'a.statusformat',
-                    'a.statuscetak',
-                    'a.userbukacetak',
-                    'a.tglbukacetak',
-                    'a.jumlahcetak',
-                    'a.modifiedby',
-                    'a.created_at',
-                    'a.updated_at',
-                    db::raw("(case when " . $statusposting . "=0 then ' ( '+isnull(e.[text],'')+' ) '  else '' end) as posting"),
+        // if ((($idstatusposting==$statusposting) || ($statusposting==0)) && ($prosesneraca != 1)) {
+        //     $queryPengeluaranTruckingHeader = DB::table("pengeluarantruckingheader")->from(
+        //         DB::raw("pengeluarantruckingheader as a with (readuncommitted)")
+        //     )
+        //         ->select(
+        //             'a.id',
+        //             'a.nobukti',
+        //             'a.tglbukti',
+        //             'a.keterangan',
+        //             'a.pengeluarantrucking_id',
+        //             'a.bank_id',
+        //             'a.supir_id',
+        //             'a.statusposting',
+        //             'a.periodedari',
+        //             'a.periodesampai',
+        //             'a.coa',
+        //             'a.pengeluaran_nobukti',
+        //             'a.statusformat',
+        //             'a.statuscetak',
+        //             'a.userbukacetak',
+        //             'a.tglbukacetak',
+        //             'a.jumlahcetak',
+        //             'a.modifiedby',
+        //             'a.created_at',
+        //             'a.updated_at',
+        //             db::raw("(case when " . $statusposting . "=0 then ' ( '+isnull(e.[text],'')+' ) '  else '' end) as posting"),
     
     
-                )
-                ->leftjoin(db::raw('parameter e with (readuncommitted)'), 'a.statusposting', 'e.id')
-                ->where('a.tglbukti', '<=', $periode)
-                ->where('a.pengeluarantrucking_id', '=', $pengeluarantruckingkaryawan_id)
-                // ->where('a.statusposting', '=', $statusposting);
-                ->whereRaw("(a.statusposting=" . $statusposting . " or " . $statusposting . "=0)");
+        //         )
+        //         ->leftjoin(db::raw('parameter e with (readuncommitted)'), 'a.statusposting', 'e.id')
+        //         ->where('a.tglbukti', '<=', $periode)
+        //         ->where('a.pengeluarantrucking_id', '=', $pengeluarantruckingkaryawan_id)
+        //         // ->where('a.statusposting', '=', $statusposting);
+        //         ->whereRaw("(a.statusposting=" . $statusposting . " or " . $statusposting . "=0)");
     
-            DB::table($pengeluaranTruckingHeader)->insertUsing([
-                'id',
-                'nobukti',
-                'tglbukti',
-                'keterangan',
-                'pengeluarantrucking_id',
-                'bank_id',
-                'supir_id',
-                'statusposting',
-                'periodedari',
-                'periodesampai',
-                'coa',
-                'pengeluaran_nobukti',
-                'statusformat',
-                'statuscetak',
-                'userbukacetak',
-                'tglbukacetak',
-                'jumlahcetak',
-                'modifiedby',
-                'created_at',
-                'updated_at',
-                'posting',
-            ], $queryPengeluaranTruckingHeader);
-        }
+        //     DB::table($pengeluaranTruckingHeader)->insertUsing([
+        //         'id',
+        //         'nobukti',
+        //         'tglbukti',
+        //         'keterangan',
+        //         'pengeluarantrucking_id',
+        //         'bank_id',
+        //         'supir_id',
+        //         'statusposting',
+        //         'periodedari',
+        //         'periodesampai',
+        //         'coa',
+        //         'pengeluaran_nobukti',
+        //         'statusformat',
+        //         'statuscetak',
+        //         'userbukacetak',
+        //         'tglbukacetak',
+        //         'jumlahcetak',
+        //         'modifiedby',
+        //         'created_at',
+        //         'updated_at',
+        //         'posting',
+        //     ], $queryPengeluaranTruckingHeader);
+        // }
 
         $pengeluaranTruckingDetail = '##pengeluaranTruckingDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($pengeluaranTruckingDetail, function ($table) {
@@ -522,58 +522,55 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             'updated_at',
         ], $querypenerimaantruckingheader2);
 
-        if ((($idstatusposting==$statusposting) || ($statusposting==0)) && ($prosesneraca != 1)) {
-            $querypenerimaantruckingheader2 = DB::table("penerimaantruckingheader")->from(
-                DB::raw("penerimaantruckingheader as a with (readuncommitted)")
-            )
-                ->select(
-                    'a.id',
-                    'a.nobukti',
-                    'a.tglbukti',
-                    'a.keterangan',
-                    'a.penerimaantrucking_id',
-                    'a.bank_id',
-                    'a.supir_id',
-                    'a.coa',
-                    'a.penerimaan_nobukti',
-                    'a.statusformat',
-                    'a.statuscetak',
-                    'a.userbukacetak',
-                    'a.tglbukacetak',
-                    'a.jumlahcetak',
-                    'a.modifiedby',
-                    'a.created_at',
-                    'a.updated_at'
+        // if ((($idstatusposting==$statusposting) || ($statusposting==0)) && ($prosesneraca != 1)) {
+        //     $querypenerimaantruckingheader2 = DB::table("penerimaantruckingheader")->from(
+        //         DB::raw("penerimaantruckingheader as a with (readuncommitted)")
+        //     )
+        //         ->select(
+        //             'a.id',
+        //             'a.nobukti',
+        //             'a.tglbukti',
+        //             'a.keterangan',
+        //             'a.penerimaantrucking_id',
+        //             'a.bank_id',
+        //             'a.supir_id',
+        //             'a.coa',
+        //             'a.penerimaan_nobukti',
+        //             'a.statusformat',
+        //             'a.statuscetak',
+        //             'a.userbukacetak',
+        //             'a.tglbukacetak',
+        //             'a.jumlahcetak',
+        //             'a.modifiedby',
+        //             'a.created_at',
+        //             'a.updated_at'
     
-                )
-                ->whereRaw("a.tglbukti='" . $periode . "'")
-                ->where('a.penerimaantrucking_id', '=', $penerimaantruckingkaryawan_id);
+        //         )
+        //         ->whereRaw("a.tglbukti='" . $periode . "'")
+        //         ->where('a.penerimaantrucking_id', '=', $penerimaantruckingkaryawan_id);
     
-            // dump($periode);
-            // dd($penerimaantrucking_id);
-            // dd($querypenerimaantruckingheader2->toSql());
+          
     
-    
-            DB::table($penerimaanTruckingHeader2)->insertUsing([
-                'id',
-                'nobukti',
-                'tglbukti',
-                'keterangan',
-                'penerimaantrucking_id',
-                'bank_id',
-                'supir_id',
-                'coa',
-                'penerimaan_nobukti',
-                'statusformat',
-                'statuscetak',
-                'userbukacetak',
-                'tglbukacetak',
-                'jumlahcetak',
-                'modifiedby',
-                'created_at',
-                'updated_at',
-            ], $querypenerimaantruckingheader2);    
-        }
+        //     DB::table($penerimaanTruckingHeader2)->insertUsing([
+        //         'id',
+        //         'nobukti',
+        //         'tglbukti',
+        //         'keterangan',
+        //         'penerimaantrucking_id',
+        //         'bank_id',
+        //         'supir_id',
+        //         'coa',
+        //         'penerimaan_nobukti',
+        //         'statusformat',
+        //         'statuscetak',
+        //         'userbukacetak',
+        //         'tglbukacetak',
+        //         'jumlahcetak',
+        //         'modifiedby',
+        //         'created_at',
+        //         'updated_at',
+        //     ], $querypenerimaantruckingheader2);    
+        // }
 
 
 
