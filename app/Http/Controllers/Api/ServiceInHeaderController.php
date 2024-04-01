@@ -2,21 +2,23 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Models\ServiceInHeader;
+use DateTime;
+use App\Models\Error;
 use App\Models\Trado;
 use App\Models\Mekanik;
+use App\Models\MyModel;
 use App\Models\Parameter;
-use App\Models\Error;
-use App\Http\Requests\StoreServiceInHeaderRequest;
-use App\Http\Requests\DestroyServiceInHeaderRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Http\Requests\UpdateServiceInHeaderRequest;
 use App\Models\ServiceInDetail;
-use App\Http\Requests\GetIndexRangeRequest;
+use App\Models\ServiceInHeader;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\StoreServiceInHeaderRequest;
+use App\Http\Requests\UpdateServiceInHeaderRequest;
+use App\Http\Requests\DestroyServiceInHeaderRequest;
 
 class ServiceInHeaderController extends Controller
 {
@@ -172,7 +174,12 @@ class ServiceInHeaderController extends Controller
         $statusdatacetak = $pengeluaran->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
-
+        
+        $aksi = request()->aksi ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $pengeluaran->editing_by ?? '';
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         // if ($status == $statusApproval->id) {
         //     $query = Error::from(DB::raw("error with (readuncommitted)"))
         //         ->select('keterangan')
@@ -202,7 +209,41 @@ class ServiceInHeaderController extends Controller
             ];
 
             return response($data);
+        } else if ($useredit != '' && $useredit != $user) {
+           
+            $waktu = (new Parameter())->cekBatasWaktuEdit('Service In Header BUKTI');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+
+                    (new MyModel())->updateEditingBy('ServiceInHeader', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                // return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $pengeluaran->nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => ["keterangan"=>$keterror],
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
         } else {
+            (new MyModel())->updateEditingBy('ServiceInHeader', $id, $aksi);
 
             $data = [
                 'message' => '',

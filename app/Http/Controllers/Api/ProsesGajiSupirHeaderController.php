@@ -2,61 +2,63 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Api\ProsesGajiSupirDetailController as ApiProsesGajiSupirDetailController;
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\ProsesGajiSupirDetailController;
-use App\Http\Requests\DestroyJurnalUmumRequest;
-use App\Http\Requests\DestroyPenerimaanHeaderRequest;
-use App\Http\Requests\DestroyPengeluaranHeaderRequest;
-use App\Http\Requests\DestroyPengembalianKasGantungHeaderRequest;
-use App\Http\Requests\DestroyProsesGajiSupirHeaderRequest;
-use App\Http\Requests\GetIndexRangeRequest;
-use App\Http\Requests\GetRicEditRequest;
-use App\Http\Requests\GetRicRequest;
-use App\Http\Requests\StoreJurnalUmumDetailRequest;
-use App\Http\Requests\StoreJurnalUmumHeaderRequest;
-use App\Http\Requests\StoreLogTrailRequest;
-use App\Http\Requests\StorePenerimaanHeaderRequest;
-use App\Http\Requests\StorePengeluaranHeaderRequest;
-use App\Http\Requests\StorePengembalianKasGantungHeaderRequest;
-use App\Http\Requests\StoreProsesGajiSupirDetailRequest;
-use App\Models\ProsesGajiSupirHeader;
-use App\Http\Requests\StoreProsesGajiSupirHeaderRequest;
-use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
-use App\Http\Requests\UpdatePenerimaanHeaderRequest;
-use App\Http\Requests\UpdatePenerimaanTruckingHeaderRequest;
-use App\Http\Requests\UpdatePengeluaranHeaderRequest;
-use App\Http\Requests\UpdatePengeluaranTruckingHeaderRequest;
-use App\Http\Requests\UpdatePengembalianKasGantungHeaderRequest;
-use App\Http\Requests\UpdateProsesGajiSupirHeaderRequest;
+use DateTime;
+use Exception;
 use App\Models\Bank;
 use App\Models\Error;
-use App\Models\GajiSupirBBM;
-use App\Models\GajiSupirDeposito;
-use App\Models\GajiSupirHeader;
-use App\Models\GajiSupirPelunasanPinjaman;
-use App\Models\GajiSupirPinjaman;
-use App\Models\GajisUpirUangJalan;
-use App\Models\JurnalUmumHeader;
+use App\Models\Supir;
+use App\Models\MyModel;
 use App\Models\LogTrail;
 use App\Models\Parameter;
+use App\Models\GajiSupirBBM;
+use Illuminate\Http\Request;
+use App\Models\SuratPengantar;
+use App\Models\GajiSupirHeader;
+use App\Rules\GetRicEditRequst;
+use App\Models\JurnalUmumHeader;
 use App\Models\PenerimaanHeader;
+use App\Models\GajiSupirDeposito;
+use App\Models\GajiSupirPinjaman;
+use App\Models\PengeluaranHeader;
+use Illuminate\Http\JsonResponse;
+use App\Models\GajisUpirUangJalan;
 use App\Models\PenerimaanTrucking;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\GetRicRequest;
+use App\Models\ProsesGajiSupirDetail;
+use App\Models\ProsesGajiSupirHeader;
+use Illuminate\Database\QueryException;
+use App\Http\Requests\GetRicEditRequest;
 use App\Models\PenerimaanTruckingDetail;
 use App\Models\PenerimaanTruckingHeader;
-use App\Models\PengeluaranHeader;
 use App\Models\PengeluaranTruckingDetail;
 use App\Models\PengeluaranTruckingHeader;
+use App\Models\GajiSupirPelunasanPinjaman;
+use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\PengembalianKasGantungHeader;
-use App\Models\ProsesGajiSupirDetail;
-use App\Models\Supir;
-use App\Models\SuratPengantar;
-use App\Rules\GetRicEditRequst;
-use Exception;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Http\Requests\DestroyJurnalUmumRequest;
+use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use App\Http\Requests\StoreJurnalUmumHeaderRequest;
+use App\Http\Requests\StorePenerimaanHeaderRequest;
+use App\Http\Requests\StorePengeluaranHeaderRequest;
+use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
+use App\Http\Requests\UpdatePenerimaanHeaderRequest;
+use App\Http\Requests\DestroyPenerimaanHeaderRequest;
+use App\Http\Requests\UpdatePengeluaranHeaderRequest;
+use App\Http\Requests\DestroyPengeluaranHeaderRequest;
+use App\Http\Requests\StoreProsesGajiSupirDetailRequest;
+use App\Http\Requests\StoreProsesGajiSupirHeaderRequest;
+use App\Http\Controllers\ProsesGajiSupirDetailController;
+use App\Http\Requests\UpdateProsesGajiSupirHeaderRequest;
+use App\Http\Requests\DestroyProsesGajiSupirHeaderRequest;
+use App\Http\Requests\UpdatePenerimaanTruckingHeaderRequest;
+use App\Http\Requests\UpdatePengeluaranTruckingHeaderRequest;
+use App\Http\Requests\StorePengembalianKasGantungHeaderRequest;
+use App\Http\Requests\UpdatePengembalianKasGantungHeaderRequest;
+use App\Http\Requests\DestroyPengembalianKasGantungHeaderRequest;
+use App\Http\Controllers\Api\ProsesGajiSupirDetailController as ApiProsesGajiSupirDetailController;
 
 class ProsesGajiSupirHeaderController extends Controller
 {
@@ -366,6 +368,8 @@ class ProsesGajiSupirHeaderController extends Controller
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
         $aksi = request()->aksi ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $prosesgaji->editing_by ?? '';
 
         $pengeluaran = $prosesgaji->pengeluaran_nobukti ?? '';
         $idpengeluaran = db::table('pengeluaranheader')->from(db::raw("pengeluaranheader a with (readuncommitted)"))
@@ -426,7 +430,41 @@ class ProsesGajiSupirHeaderController extends Controller
             ];
 
             return response($data);            
+        } else if ($useredit != '' && $useredit != $user) {
+           
+            $waktu = (new Parameter())->cekBatasWaktuEdit('gaji supir header BUKTI');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($prosesgaji->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+
+                    (new MyModel())->updateEditingBy('prosesgajisupirheader', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                // return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $prosesgaji->nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
         } else {
+            (new MyModel())->updateEditingBy('prosesgajisupirheader', $id, $aksi);
 
             $data = [
                 'error' => false,

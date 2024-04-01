@@ -2,43 +2,45 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\SuratPengantar;
-use App\Models\SaldoSuratPengantar;
-use App\Models\SuratPengantarBiayaTambahan;
+use DateTime;
+use Carbon\Carbon;
+use App\Models\Agen;
+use App\Models\Kota;
+use App\Models\Error;
+use App\Models\Supir;
+use App\Models\Tarif;
+use App\Models\Trado;
+use App\Models\MyModel;
+use App\Models\Container;
+use App\Models\Parameter;
 use App\Models\Pelanggan;
 use App\Models\UpahSupir;
-use App\Models\UpahSupirRincian;
-use App\Models\Container;
-use App\Models\StatusContainer;
-use App\Models\Trado;
-use App\Models\Supir;
-use App\Models\Agen;
 use App\Models\JenisOrder;
-use App\Models\Tarif;
 use App\Models\TarifRincian;
-use App\Models\Kota;
-use App\Models\Parameter;
+use Illuminate\Http\Request;
+use App\Models\SuratPengantar;
+use App\Models\OrderanTrucking;
+use App\Models\StatusContainer;
+use App\Models\UpahSupirRincian;
+
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use App\Models\SaldoSuratPengantar;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Models\SuratPengantarBiayaTambahan;
+use App\Http\Requests\ApprovalKaryawanRequest;
+use App\Http\Requests\ApprovalBatalMuatRequest;
+use App\Http\Requests\GetUpahSupirRangeRequest;
+use App\Http\Requests\ApprovalEditTujuanRequest;
 use App\Http\Requests\StoreSuratPengantarRequest;
 use App\Http\Requests\UpdateSuratPengantarRequest;
 use App\Http\Requests\DestroySuratPengantarRequest;
-use App\Http\Requests\StoreLogTrailRequest;
-
-use App\Http\Controllers\Controller;
-use App\Http\Requests\ApprovalBatalMuatRequest;
-use App\Http\Requests\ApprovalEditTujuanRequest;
-use App\Http\Requests\ApprovalKaryawanRequest;
-use App\Http\Requests\GetIndexRangeRequest;
-use App\Models\OrderanTrucking;
-use Carbon\Carbon;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\JsonResponse;
-use App\Http\Requests\GetUpahSupirRangeRequest;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Validator;
-use App\Models\Error;
 
 class SuratPengantarController extends Controller
 {
@@ -463,6 +465,8 @@ class SuratPengantarController extends Controller
         //validasi Hari ini
         // $todayValidation = SuratPengantar::todayValidation($nobukti->id);
         $isEditAble = SuratPengantar::isEditAble($nobukti->id);
+        $user = auth('api')->user()->name;
+        $useredit = $nobukti->editing_by ?? '';
 
         $edit = true;
         // if (!$todayValidation) {
@@ -509,7 +513,43 @@ class SuratPengantarController extends Controller
 
             return response($data);
             
+        } else if ($useredit != '' && $useredit != $user) {
+           
+            $waktu = (new Parameter())->cekBatasWaktuEdit('surat pengantar BUKTI');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($nobukti->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+
+                    (new MyModel())->updateEditingBy('suratpengantar', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                // return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti->nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
         } else {
+            if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                (new MyModel())->updateEditingBy('suratpengantar', $id, $aksi);
+            }
             $data = [
                 'status' => false,
                 'message' => '',

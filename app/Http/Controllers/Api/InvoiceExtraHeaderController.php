@@ -2,30 +2,32 @@
 
 namespace App\Http\Controllers\Api;
 
+use DateTime;
+use App\Models\Error;
+use App\Models\MyModel;
+
 use App\Models\Parameter;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-
-use App\Http\Controllers\Controller;
-use App\Models\InvoiceExtraHeader;
-use App\Models\PiutangHeader;
-use App\Models\JurnalUmumHeader;
-use App\Models\JurnalUmumDetail;
-use App\Models\Error;
 use App\Models\PiutangDetail;
+use App\Models\PiutangHeader;
+use App\Models\JurnalUmumDetail;
+use App\Models\JurnalUmumHeader;
+use Illuminate\Http\JsonResponse;
+use App\Models\InvoiceExtraDetail;
+use App\Models\InvoiceExtraHeader;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+
+use Illuminate\Support\Facades\Schema;
+use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\StorePiutangDetailRequest;
+use App\Http\Requests\StorePiutangHeaderRequest;
+use App\Http\Requests\UpdatePiutangHeaderRequest;
+use App\Http\Requests\StoreInvoiceExtraDetailRequest;
 use App\Http\Requests\StoreInvoiceExtraHeaderRequest;
 use App\Http\Requests\UpdateInvoiceExtraHeaderRequest;
 use App\Http\Requests\DestroyInvoiceExtraHeaderRequest;
-use App\Http\Requests\GetIndexRangeRequest;
-
-use App\Models\InvoiceExtraDetail;
-use Illuminate\Support\Facades\Schema;
-use App\Http\Requests\StoreInvoiceExtraDetailRequest;
-use App\Http\Requests\StoreLogTrailRequest;
-use App\Http\Requests\StorePiutangHeaderRequest;
-use App\Http\Requests\StorePiutangDetailRequest;
-use App\Http\Requests\UpdatePiutangHeaderRequest;
-use Illuminate\Http\JsonResponse;
 
 class InvoiceExtraHeaderController extends Controller
 {
@@ -254,6 +256,8 @@ class InvoiceExtraHeaderController extends Controller
 
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
+        $user = auth('api')->user()->name;
+        $useredit = $pengeluaran->editing_by ?? '';
 
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
@@ -289,7 +293,41 @@ class InvoiceExtraHeaderController extends Controller
             ];
 
             return response($data);
+        } else if ($useredit != '' && $useredit != $user) {
+           
+            $waktu = (new Parameter())->cekBatasWaktuEdit('Invoice Extra Header BUKTI');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+
+                    (new MyModel())->updateEditingBy('InvoiceExtraHeader', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                // return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $pengeluaran->nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
         } else {
+            (new MyModel())->updateEditingBy('InvoiceExtraHeader', $id, $aksi);
 
             $data = [
                 'error' => false,
