@@ -47,7 +47,9 @@ class ServiceInHeader extends MyModel
 
                 'trado.kodetrado as trado_id',
                 'statuscetak.memo as statuscetak',
-
+                'serviceout.nobukti as serviceout_nobukti',
+                db::raw("cast((format(serviceoutheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderserviceout"),
+                db::raw("cast(cast(format((cast((format(serviceoutheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderserviceout"),
                 'serviceinheader.tglmasuk',
                 'serviceinheader.modifiedby',
                 'serviceinheader.created_at',
@@ -55,6 +57,8 @@ class ServiceInHeader extends MyModel
 
             )
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'serviceinheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("serviceoutdetail as serviceout with (readuncommitted)"), 'serviceinheader.nobukti', 'serviceout.servicein_nobukti')
+            ->leftJoin(DB::raw("serviceoutheader with (readuncommitted)"), 'serviceout.serviceout_id', 'serviceoutheader.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceinheader.trado_id', 'trado.id');
         if (request()->tgldari) {
             $query->whereBetween('serviceinheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
