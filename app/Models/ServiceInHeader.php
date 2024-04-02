@@ -35,8 +35,9 @@ class ServiceInHeader extends MyModel
         $this->setRequestParameters();
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
-        $trado_id = request()->trado_id ?? '';
+        $trado_id = request()->trado_id ?? '0';
         $serviceout = request()->serviceout ?? '';
+        $nobukti= request()->nobukti ?? '';
         $query = DB::table($this->table)->from(
             DB::raw("serviceinheader with (readuncommitted)")
         )
@@ -75,15 +76,50 @@ class ServiceInHeader extends MyModel
             $query->where("serviceinheader.statuscetak", $statusCetak);
         }
         if ($serviceout != '') {
-            $query->whereNotIn('serviceinheader.nobukti', function ($query) {
-                $query->select(DB::raw('DISTINCT serviceoutdetail.servicein_nobukti'))
-                    ->from('serviceoutdetail')
-                    ->whereNotNull('serviceoutdetail.servicein_nobukti')
-                    ->where('serviceoutdetail.servicein_nobukti', '!=', '');
+
+            $tempbuktiserviceout = '##tempbuktiserviceout' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempbuktiserviceout, function ($table) {
+                $table->string('nobukti', 50)->nullable();
             });
-            if ($trado_id  != '') {
-                $query->where("serviceinheader.trado_id", $trado_id);
-            }
+
+            $querybuktiserviceout = db::table("serviceoutdetail")->from(db::raw("serviceoutdetail a with (readuncommitted)"))
+            ->select(
+                'a.servicein_nobukti as nobukti',
+            )
+            ->where('a.nobukti',$nobukti)
+            ->groupby('a.servicein_nobukti');
+
+            DB::table($tempbuktiserviceout)->insertUsing([
+                'nobukti',
+            ],  $querybuktiserviceout);
+
+            $querybuktiserviceout = db::table("serviceinheader")->from(db::raw("serviceinheader a with (readuncommitted)"))
+            ->select(
+                'a.nobukti as nobukti',
+            )
+            ->join(db::raw("serviceoutdetail b with (readuncommitted)"),'a.nobukti','b.servicein_nobukti')
+            ->whereraw("b.nobukti<>'".$nobukti."'");
+
+            DB::table($tempbuktiserviceout)->insertUsing([
+                'nobukti',
+            ],  $querybuktiserviceout);            
+
+
+
+            $query->join(db::raw($tempbuktiserviceout. " c"),'serviceinheader.nobukti','c.nobukti');
+            $query->whereraw("isnull(serviceinheader.trado_id,0)=".$trado_id);
+
+
+            // dd($query->tosql());
+            // $query->whereNotIn('serviceinheader.nobukti', function ($query) {
+            //     $query->select(DB::raw('DISTINCT serviceoutdetail.servicein_nobukti'))
+            //         ->from('serviceoutdetail')
+            //         ->whereNotNull('serviceoutdetail.servicein_nobukti')
+            //         ->where('serviceoutdetail.servicein_nobukti', '!=', '');
+            // });
+            // if ($trado_id  != '') {
+            //     $query->where("serviceinheader.trado_id", $trado_id);
+            // }
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
