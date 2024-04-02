@@ -347,7 +347,7 @@ class AbsensiSupirDetail extends MyModel
 
                         $query->addSelect(DB::raw("(trim(trado.kodetrado)+' - '+trim(supir.namasupir)) as tradosupir"))
                             ->where("$this->table.supir_id", '!=', 0)
-                            ->whereRaw("absentrado.kodeabsen is null");
+                            ->whereRaw("(absentrado.kodeabsen is null OR absentrado.kodeabsen='I' OR absentrado.kodeabsen='G')");
                     }
                 }
                 if ($isProsesUangjalan == true) {
