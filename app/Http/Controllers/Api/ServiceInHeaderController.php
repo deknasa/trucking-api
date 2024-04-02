@@ -54,6 +54,7 @@ class ServiceInHeaderController extends Controller
                 'tglbukti' => $request->tglbukti,
                 'trado_id' => $request->trado_id,
                 'tglmasuk' => $request->tglmasuk,
+                'statusserviceout' => $request->statusserviceout,
                 'karyawan_id' => $request->karyawan_id,
                 'keterangan_detail' => $request->keterangan_detail,
             ];
@@ -105,6 +106,7 @@ class ServiceInHeaderController extends Controller
                 'tglbukti' => $request->tglbukti,
                 'trado_id' => $request->trado_id,
                 'tglmasuk' => $request->tglmasuk,
+                'statusserviceout' => $request->statusserviceout,
                 'karyawan_id' => $request->karyawan_id,
                 'keterangan_detail' => $request->keterangan_detail,
             ];
@@ -163,6 +165,16 @@ class ServiceInHeaderController extends Controller
 
             throw $th;
         }
+    }
+
+    public function default()
+    {
+
+        $serviceInHeader = new ServiceInHeader();
+        return response([
+            'status' => true,
+            'data' => $serviceInHeader->default(),
+        ]);
     }
 
     public function cekvalidasi($id)

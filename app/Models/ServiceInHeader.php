@@ -107,6 +107,8 @@ class ServiceInHeader extends MyModel
                 'statuscetak.memo as statuscetak',
 
                 'trado.kodetrado as trado',
+                'statusserviceout.text as statusserviceoutnama',
+                'serviceinheader.statusserviceout',
 
                 'serviceinheader.tglmasuk',
                 'serviceinheader.modifiedby',
@@ -116,6 +118,7 @@ class ServiceInHeader extends MyModel
             )
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'serviceinheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceinheader.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("parameter as statusserviceout with (readuncommitted)"), 'serviceinheader.statusserviceout', 'statusserviceout.id')
             ->where('serviceinheader.id', $id);
 
         $data = $query->first();
@@ -258,6 +261,47 @@ class ServiceInHeader extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
+    public function default()
+    {
+
+
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('statusserviceout')->nullable();
+            $table->string('statusserviceoutnama', 300)->nullable();
+        });
+
+        $statusserviceout = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id',
+                'text'
+            )
+            ->where('grp', '=', 'STATUS SERVICE OUT')
+            ->where('subgrp', '=', 'STATUS SERVICE OUT')
+            ->where('DEFAULT', '=', 'YA')
+            ->first();
+
+        DB::table($tempdefault)->insert(["statusserviceout" => $statusserviceout->id, "statusserviceoutnama" => $statusserviceout->text]);
+
+
+
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'statusserviceout',
+                'statusserviceoutnama'
+            );
+
+        $data = $query->first();
+        // dd($data);
+        return $data;
+    }
+
+
     public function processStore(array $data): ServiceInHeader
     {
         $group = 'SERVICE IN BUKTI';
@@ -275,6 +319,7 @@ class ServiceInHeader extends MyModel
         $serviceInHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $serviceInHeader->trado_id = $data['trado_id'];
         $serviceInHeader->tglmasuk = date('Y-m-d H:i:s', strtotime($data['tglmasuk']));
+        $serviceInHeader->statusserviceout =  $data['statusserviceout'];
         $serviceInHeader->statusformat =  $format->id;
         $serviceInHeader->statuscetak = $statusCetak->id;
         $serviceInHeader->modifiedby = auth('api')->user()->name;
@@ -349,6 +394,7 @@ class ServiceInHeader extends MyModel
 
         $serviceInHeader->trado_id = $data['trado_id'];
         $serviceInHeader->tglmasuk = date('Y-m-d H:i:s', strtotime($data['tglmasuk']));
+        $serviceInHeader->statusserviceout =  $data['statusserviceout'];
         $serviceInHeader->modifiedby = auth('api')->user()->name;
         $serviceInHeader->info = html_entity_decode(request()->info);
 
