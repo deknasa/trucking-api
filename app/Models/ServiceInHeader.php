@@ -50,6 +50,7 @@ class ServiceInHeader extends MyModel
                 'serviceout.nobukti as serviceout_nobukti',
                 db::raw("cast((format(serviceoutheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderserviceout"),
                 db::raw("cast(cast(format((cast((format(serviceoutheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderserviceout"),
+                'parameter_statusserviceout.memo as statusserviceout',
                 'serviceinheader.tglmasuk',
                 'serviceinheader.modifiedby',
                 'serviceinheader.created_at',
@@ -59,7 +60,9 @@ class ServiceInHeader extends MyModel
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'serviceinheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("serviceoutdetail as serviceout with (readuncommitted)"), 'serviceinheader.nobukti', 'serviceout.servicein_nobukti')
             ->leftJoin(DB::raw("serviceoutheader with (readuncommitted)"), 'serviceout.serviceout_id', 'serviceoutheader.id')
-            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceinheader.trado_id', 'trado.id');
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceinheader.trado_id', 'trado.id')
+            ->leftJoin('parameter as parameter_statusserviceout', "serviceinheader.statusserviceout", '=', 'parameter_statusserviceout.id');
+
         if (request()->tgldari) {
             $query->whereBetween('serviceinheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
@@ -74,14 +77,13 @@ class ServiceInHeader extends MyModel
         if ($serviceout != '') {
             $query->whereNotIn('serviceinheader.nobukti', function ($query) {
                 $query->select(DB::raw('DISTINCT serviceoutdetail.servicein_nobukti'))
-                ->from('serviceoutdetail')
-                ->whereNotNull('serviceoutdetail.servicein_nobukti')
-                ->where('serviceoutdetail.servicein_nobukti', '!=', '');
+                    ->from('serviceoutdetail')
+                    ->whereNotNull('serviceoutdetail.servicein_nobukti')
+                    ->where('serviceoutdetail.servicein_nobukti', '!=', '');
             });
             if ($trado_id  != '') {
                 $query->where("serviceinheader.trado_id", $trado_id);
             }
-            
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -105,6 +107,7 @@ class ServiceInHeader extends MyModel
                 'serviceinheader.tglbukti',
                 'serviceinheader.trado_id',
                 'statuscetak.memo as statuscetak',
+                'statusserviceout.memo as statusserviceout',
 
                 'trado.kodetrado as trado',
 
@@ -115,6 +118,7 @@ class ServiceInHeader extends MyModel
 
             )
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'serviceinheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statusserviceout with (readuncommitted)"), 'serviceinheader.statusserviceout', 'statusserviceout.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceinheader.trado_id', 'trado.id')
             ->where('serviceinheader.id', $id);
 
@@ -134,6 +138,8 @@ class ServiceInHeader extends MyModel
             'trado.kodetrado as trado_id',
             $this->table.tglmasuk,
             'statuscetak.memo as statuscetak',
+            'statusserviceout.memo as statusserviceout',
+
 
             $this->table.modifiedby,
             $this->table.created_at,
@@ -142,6 +148,7 @@ class ServiceInHeader extends MyModel
 
         )
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'serviceinheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statusserviceout with (readuncommitted)"), 'serviceinheader.statusserviceout', 'statusserviceout.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceinheader.trado_id', 'trado.id');
     }
 
@@ -155,6 +162,7 @@ class ServiceInHeader extends MyModel
             $table->string('trado_id')->nullable();
             $table->date('tglmasuk')->nullable();
             $table->string('statuscetak', 1000)->nullable();
+            $table->string('statusserviceout', 1000)->nullable();
 
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
@@ -173,7 +181,7 @@ class ServiceInHeader extends MyModel
         }
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti',  'trado_id', 'tglmasuk', 'statuscetak', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti',  'trado_id', 'tglmasuk', 'statuscetak', 'statusserviceout', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -201,6 +209,8 @@ class ServiceInHeader extends MyModel
                                 $query = $query->where('statuscetak.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'trado_id') {
                                 $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'statusserviceout') {
+                                $query = $query->where('parameter_statusserviceout.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglmasuk') {
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
@@ -223,7 +233,9 @@ class ServiceInHeader extends MyModel
                                     $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
                                 } else if ($filters['field'] == 'trado_id') {
                                     $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
-                                } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglmasuk') {
+                                } else if ($filters['field'] == 'statusserviceout') {
+                                    $query = $query->orwhere('parameter_statusserviceout.text', '=', $filters['data']);
+                                    } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglmasuk') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
@@ -277,6 +289,7 @@ class ServiceInHeader extends MyModel
         $serviceInHeader->tglmasuk = date('Y-m-d H:i:s', strtotime($data['tglmasuk']));
         $serviceInHeader->statusformat =  $format->id;
         $serviceInHeader->statuscetak = $statusCetak->id;
+        $serviceInHeader->statusserviceout = $data['statusserviceout'];
         $serviceInHeader->modifiedby = auth('api')->user()->name;
         $serviceInHeader->info = html_entity_decode(request()->info);
         $serviceInHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $serviceInHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
@@ -351,6 +364,8 @@ class ServiceInHeader extends MyModel
         $serviceInHeader->tglmasuk = date('Y-m-d H:i:s', strtotime($data['tglmasuk']));
         $serviceInHeader->modifiedby = auth('api')->user()->name;
         $serviceInHeader->info = html_entity_decode(request()->info);
+        $serviceInHeader->statusserviceout = $data['statusserviceout'];
+
 
         if (!$serviceInHeader->save()) {
             throw new \Exception("Error updating service in header.");
