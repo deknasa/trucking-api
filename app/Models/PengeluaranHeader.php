@@ -412,7 +412,7 @@ class PengeluaranHeader extends MyModel
     }
 
     public function cekvalidasiaksi($nobukti)
-    {        
+    {
         $error = new Error();
         $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
@@ -431,7 +431,7 @@ class PengeluaranHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $jurnal->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $jurnal->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror,
                 'kodeerror' => 'SAPP',
                 'editcoa' => false
             ];
@@ -452,7 +452,7 @@ class PengeluaranHeader extends MyModel
         if (isset($pelunasanhutangheader)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pelunasan hutang <b>'. $pelunasanhutangheader->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti pelunasan hutang <b>' . $pelunasanhutangheader->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Pelunasan Hutang '. $pelunasanhutangheader->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -474,7 +474,7 @@ class PengeluaranHeader extends MyModel
         if (isset($kasGantung)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti kas gantung <b>'. $kasGantung->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti kas gantung <b>' . $kasGantung->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'kas gantung '. $kasGantung->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -496,7 +496,7 @@ class PengeluaranHeader extends MyModel
         if (isset($notaKredit)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti kas gantung <b>'. $notaKredit->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti kas gantung <b>' . $notaKredit->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'kas gantung '. $kasGantung->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -518,7 +518,7 @@ class PengeluaranHeader extends MyModel
         if (isset($absensiApproval)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti absensi supir posting <b>'. $absensiApproval->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti absensi supir posting <b>' . $absensiApproval->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Absensi Supir posting '. $absensiApproval->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -540,7 +540,7 @@ class PengeluaranHeader extends MyModel
         if (isset($prosesUangjalan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti proses uang jalan supir <b>'. $prosesUangjalan->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti proses uang jalan supir <b>' . $prosesUangjalan->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'proses uang jalan supir '. $prosesUangjalan->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -563,7 +563,7 @@ class PengeluaranHeader extends MyModel
             $data = [
                 'kondisi' => true,
                 // 'keterangan' => 'PELUNASAN HUTANG '. $pelunasanHutangHeader->nobukti,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pelunasan hutang <b>'. $pelunasanHutangHeader->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti pelunasan hutang <b>' . $pelunasanHutangHeader->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
@@ -584,7 +584,7 @@ class PengeluaranHeader extends MyModel
         if (isset($pengeluaranTrucking)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pengeluaran trucking <b>'. $pengeluaranTrucking->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti pengeluaran trucking <b>' . $pengeluaranTrucking->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'pengeluaran trucking '. $pengeluaranTrucking->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -606,7 +606,7 @@ class PengeluaranHeader extends MyModel
         if (isset($pengembalianKasbank)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pengembalian kas/bank <b>'. $pengembalianKasbank->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti pengembalian kas/bank <b>' . $pengembalianKasbank->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'pengembalian kas/bank '. $pengembalianKasbank->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -628,7 +628,7 @@ class PengeluaranHeader extends MyModel
         if (isset($prosesGajiSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Proses Gaji Supir <b>'. $prosesGajiSupir->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Proses Gaji Supir <b>' . $prosesGajiSupir->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Proses Gaji Supir '. $prosesGajiSupir->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -650,7 +650,7 @@ class PengeluaranHeader extends MyModel
         if (isset($pendapatanSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Komisi Supir <b>'. $pendapatanSupir->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Komisi Supir <b>' . $pendapatanSupir->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Pendapatan Supir '. $pendapatanSupir->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -673,14 +673,14 @@ class PengeluaranHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Pelunasan Piutang <b>'. $pelunasanPiutang->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Pelunasan Piutang <b>' . $pelunasanPiutang->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Pelunasan Piutang ' . $pelunasanPiutang->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
             goto selesai;
-        }        
-        
+        }
+
         $keteranganerror = $error->cekKeteranganError('TDT');
         $pemutihanSupir = DB::table('pemutihansupirheader')
             ->from(
@@ -695,14 +695,14 @@ class PengeluaranHeader extends MyModel
         if (isset($pemutihanSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pemutihan supir <b>'. $pemutihanSupir->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti pemutihan supir <b>' . $pemutihanSupir->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'kas gantung '. $pemutihanSupir->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
             goto selesai;
         }
-        
+
         $keteranganerror = $error->cekKeteranganError('SCG');
         $pencairangiro = DB::table('pencairangiropengeluaranheader')
             ->from(
@@ -717,7 +717,7 @@ class PengeluaranHeader extends MyModel
         if (isset($pencairangiro)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pencairan giro <b>'. $pencairangiro->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti pencairan giro <b>' . $pencairangiro->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'kas gantung '. $kasGantung->nobukti,
                 'kodeerror' => 'SCG',
                 'editcoa' => false
@@ -740,7 +740,7 @@ class PengeluaranHeader extends MyModel
         if (isset($rekap)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Rekap Pengeluaran <b>'. $rekap->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Rekap Pengeluaran <b>' . $rekap->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Rekap Pengeluaran '. $rekap->nobukti,
                 'kodeerror' => 'SATL',
                 'editcoa' => true
@@ -844,14 +844,14 @@ class PengeluaranHeader extends MyModel
 
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
-        $alatabayargiro=DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
-        ->select (
-            'a.text',
-            'a.memo'
-        )
-        ->where('a.grp','ALAT BAYAR GIRO')
-        ->where('a.subgrp','ALAT BAYAR GIRO')
-        ->first();
+        $alatabayargiro = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.text',
+                'a.memo'
+            )
+            ->where('a.grp', 'ALAT BAYAR GIRO')
+            ->where('a.subgrp', 'ALAT BAYAR GIRO')
+            ->first();
 
 
         $pengeluaranHeader = new PengeluaranHeader();
@@ -891,16 +891,16 @@ class PengeluaranHeader extends MyModel
             'modifiedby' => auth('api')->user()->user
         ]);
 
-        $alatabayarid=$data['alatbayar_id'] ?? 0;
+        $alatabayarid = $data['alatbayar_id'] ?? 0;
         $pengeluaranDetails = [];
         $coadebet_detail = [];
         $coakredit_detail = [];
         $nominal_detail = [];
         $keterangan_detail = [];
         for ($i = 0; $i < count($data['nominal_detail']); $i++) {
-            if ($alatabayarid== $alatabayargiro->text) {
+            if ($alatabayarid == $alatabayargiro->text) {
                 $memo = json_decode($alatabayargiro->memo, true);
-                $coakredit_detail[]= $memo['JURNAL'];
+                $coakredit_detail[] = $memo['JURNAL'];
                 $coaKredit = $memo['JURNAL'];
             } else {
                 $coakredit_detail[] = $querysubgrppengeluaran->coa;
@@ -915,13 +915,13 @@ class PengeluaranHeader extends MyModel
                 'nominal' => $data['nominal_detail'][$i],
                 'coadebet' =>  $data['coadebet'][$i],
                 // 'coakredit' => ($data['coakredit']) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa,
-                 'coakredit' => $coaKredit,
+                'coakredit' => $coaKredit,
                 'keterangan' => $data['keterangan_detail'][$i],
                 'noinvoice' => $data['noinvoice'][$i] ?? '',
                 'bank' => $data['bank_detail'][$i] ?? '',
                 'modifiedby' => auth('api')->user()->name,
             ]);
-            
+
             // $pengeluaranPenerima = (new PengeluaranPenerima())->processStore([
             //     'pengeluaran_id' => $pengeluaranHeader->id,
             //     'nobukti' => $pengeluaranHeader->nobukti,
@@ -930,7 +930,7 @@ class PengeluaranHeader extends MyModel
             $pengeluaranDetails[] = $pengeluaranDetail->toArray();
             $coadebet_detail[] =  $data['coadebet'][$i];
             // $coakredit_detail[] = ($data['coakredit']) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa;
-            
+
             $nominal_detail[] = $data['nominal_detail'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
         }
@@ -971,6 +971,7 @@ class PengeluaranHeader extends MyModel
     {
         $nobuktiOld = $pengeluaranHeader->nobukti;
         $bankid = $data['bank_id'];
+        $from = $data['from'] ?? '';
         $querysubgrppengeluaran = Bank::from(DB::raw("bank with (readuncommitted)"))
             ->select('parameter.grp', 'parameter.subgrp', 'bank.formatpengeluaran', 'bank.coa', 'bank.tipe')
             ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')
@@ -1004,7 +1005,18 @@ class PengeluaranHeader extends MyModel
 
             $pengeluaranHeader->nobukti = $nobukti;
             $pengeluaranHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        } else {
+            if ($from == 'pelunasanhutang') {
+                if ($data['bank_id'] != $pengeluaranHeader->bank_id) {
+
+                    $nobukti = (new RunningNumberService)->get($group, $subGroup, $pengeluaranHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+                    $pengeluaranHeader->nobukti = $nobukti;
+                    $pengeluaranHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+                }
+            }
         }
+
+
 
         $pengeluaranHeader->pelanggan_id = $data['pelanggan_id'] ?? 0;
         $pengeluaranHeader->postingdari = $data['postingdari'] ?? 'ENTRY PENGELUARAN KAS/BANK';
@@ -1046,16 +1058,16 @@ class PengeluaranHeader extends MyModel
         // $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranHeader->nobukti)->lockForUpdate()->delete();
         /*DELETE EXISTING Pengeluaran*/
         $pengeluaranDetail = PengeluaranDetail::where('pengeluaran_id', $pengeluaranHeader->id)->lockForUpdate()->delete();
-        $alatabayargiro=DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
-        ->select (
-            'a.text',
-            'a.memo'
-        )
-        ->where('a.grp','ALAT BAYAR GIRO')
-        ->where('a.subgrp','ALAT BAYAR GIRO')
-        ->first();
+        $alatabayargiro = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.text',
+                'a.memo'
+            )
+            ->where('a.grp', 'ALAT BAYAR GIRO')
+            ->where('a.subgrp', 'ALAT BAYAR GIRO')
+            ->first();
 
-        $alatabayarid=$data['alatbayar_id'] ?? 0;
+        $alatabayarid = $data['alatbayar_id'] ?? 0;
         $pengeluaranDetails = [];
         $coadebet_detail = [];
         $coakredit_detail = [];
@@ -1071,9 +1083,9 @@ class PengeluaranHeader extends MyModel
             // } else {
             //     $coaKredit = $coakredit;
             // } 
-            if ($alatabayarid== $alatabayargiro->text) {
+            if ($alatabayarid == $alatabayargiro->text) {
                 $memo = json_decode($alatabayargiro->memo, true);
-                $coakredit_detail[]= $memo['JURNAL'];
+                $coakredit_detail[] = $memo['JURNAL'];
                 $coaKredit = $memo['JURNAL'];
             } else {
                 $coakredit_detail[] = $querysubgrppengeluaran->coa;
@@ -1132,7 +1144,12 @@ class PengeluaranHeader extends MyModel
         if (isset($getJurnal)) {
             $newJurnal = new JurnalUmumHeader();
             $newJurnal = $newJurnal->find($getJurnal->id);
-            (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+            if($nobuktiOld != $pengeluaranHeader->nobukti){
+                (new JurnalUmumHeader())->processDestroy($getJurnal->id, 'UPDATE PELUNASAN HUTANG');
+                (new JurnalUmumHeader())->processStore($jurnalRequest);
+            }else{
+                (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+            }
         } else {
             $jurnalRequest = [
                 'tanpaprosesnobukti' => 1,

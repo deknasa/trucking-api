@@ -22,6 +22,7 @@ use App\Models\PengeluaranDetail;
 use App\Models\PengeluaranHeader;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalPelunasanHutangRequest;
 use App\Models\PelunasanHutangDetail;
 use App\Models\PelunasanHutangHeader;
 use Illuminate\Support\Facades\Schema;
@@ -75,6 +76,7 @@ class PelunasanHutangHeaderController extends Controller
                 'statusapproval' => $request->statusapproval,
                 'alatbayar_id' => $request->alatbayar_id,
                 'tglcair' => $request->tglcair,
+                'nowarkat' => $request->nowarkat,
                 'hutang_id' => $request->hutang_id,
                 'hutang_nobukti' => $request->hutang_nobukti,
                 'bayar' => $request->bayar,
@@ -138,6 +140,7 @@ class PelunasanHutangHeaderController extends Controller
                 'statusapproval' => $request->statusapproval,
                 'alatbayar_id' => $request->alatbayar_id,
                 'tglcair' => $request->tglcair,
+                'nowarkat' => $request->nowarkat,
                 'hutang_id' => $request->hutang_id,
                 'hutang_nobukti' => $request->hutang_nobukti,
                 'bayar' => $request->bayar,
@@ -264,60 +267,20 @@ class PelunasanHutangHeaderController extends Controller
      * @ClassName
      * @Keterangan APPROVAL DATA
      */
-    public function approval(Request $request)
+    public function approval(ApprovalPelunasanHutangRequest $request)
     {
         DB::beginTransaction();
 
         try {
-            if ($request->bayarId != '') {
+            $data = [
+                'bayarId' => $request->bayarId
+            ];
 
-                $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-                $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
-
-                for ($i = 0; $i < count($request->bayarId); $i++) {
-                    $PelunasanHutang = PelunasanHutangHeader::find($request->bayarId[$i]);
-                    if ($PelunasanHutang->statusapproval == $statusApproval->id) {
-                        $PelunasanHutang->statusapproval = $statusNonApproval->id;
-                        $aksi = $statusNonApproval->text;
-                    } else {
-                        $PelunasanHutang->statusapproval = $statusApproval->id;
-                        $aksi = $statusApproval->text;
-                    }
-
-                    $PelunasanHutang->tglapproval = date('Y-m-d', time());
-                    $PelunasanHutang->userapproval = auth('api')->user()->name;
-
-                    if ($PelunasanHutang->save()) {
-                        $logTrail = [
-                            'namatabel' => strtoupper($PelunasanHutang->getTable()),
-                            'postingdari' => 'APPROVAL HUTANG BAYAR',
-                            'idtrans' => $PelunasanHutang->id,
-                            'nobuktitrans' => $PelunasanHutang->nobukti,
-                            'aksi' => $aksi,
-                            'datajson' => $PelunasanHutang->toArray(),
-                            'modifiedby' => auth('api')->user()->name
-                        ];
-
-                        $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                        $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                    }
-                }
-                DB::commit();
-                return response([
-                    'message' => 'Berhasil'
-                ]);
-            } else {
-                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
-                    ->first();
-                return response([
-                    'errors' => [
-                        'penerimaan' => "PELUNASAN HUTANG $query->keterangan"
-                    ],
-                    'message' => "PELUNASAN HUTANG $query->keterangan",
-                ], 422);
-            }
+            (new PelunasanHutangHeader())->processApproval($data);
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
         } catch (\Throwable $th) {
             throw $th;
         }
@@ -423,17 +386,6 @@ class PelunasanHutangHeaderController extends Controller
 
 
             return response($data);
-        } else if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
-            $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
-            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
-            $data = [
-                'error' => true,
-                'message' => $keterror,
-                'kodeerror' => 'SAP',
-                'statuspesan' => 'warning',
-            ];
-
-            return response($data);
         } else if ($tgltutup >= $PelunasanHutang->tglbukti) {
             $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
             $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' )';
@@ -474,8 +426,7 @@ class PelunasanHutangHeaderController extends Controller
                 ];
 
                 return response($data);
-            }            
-            
+            }
         } else {
 
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
@@ -495,7 +446,7 @@ class PelunasanHutangHeaderController extends Controller
     {
         $hutang = DB::table("pelunasanhutangheader")->from(DB::raw("pelunasanhutangheader"))->where('id', $id)->first();
 
-        $cekdata = (new PelunasanHutangHeader())->cekvalidasiaksi($hutang->nobukti);
+        $cekdata = (new PelunasanHutangHeader())->cekvalidasiaksi($hutang->nobukti, $hutang->pengeluaran_nobukti);
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
                 ->select(
