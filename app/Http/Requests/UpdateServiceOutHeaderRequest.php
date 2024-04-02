@@ -34,7 +34,7 @@ class UpdateServiceOutHeaderRequest extends FormRequest
                 new DateTutupBuku()
             ],            'trado' => 'required',
             'tglkeluar' => [
-                "required",'date_format:d-m-Y',
+                "required",
                 new DateTutupBuku()
             ],
         ];

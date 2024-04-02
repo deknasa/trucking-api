@@ -251,7 +251,7 @@ class ServiceOutHeader extends MyModel
         $serviceout = new ServiceOutHeader();
         $serviceout->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $serviceout->trado_id = $data['trado_id'];
-        $serviceout->tglkeluar = date('Y-m-d', strtotime($data['tglkeluar']));
+        $serviceout->tglkeluar = date('Y-m-d H:i:s', strtotime($data['tglkeluar']));
         $serviceout->statusformat =  $format->id;
         $serviceout->statuscetak = $statusCetak->id;
         $serviceout->modifiedby = auth('api')->user()->name;
@@ -331,7 +331,7 @@ class ServiceOutHeader extends MyModel
         }
 
         $serviceoutheader->trado_id = $data['trado_id'];
-        $serviceoutheader->tglkeluar = date('Y-m-d', strtotime($data['tglkeluar']));
+        $serviceoutheader->tglkeluar = date('Y-m-d H:i:s', strtotime($data['tglkeluar']));
         $serviceoutheader->modifiedby = auth('api')->user()->name;
         $serviceoutheader->info = html_entity_decode(request()->info);
 

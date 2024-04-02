@@ -58,7 +58,7 @@ class ServiceOutHeaderController extends Controller
             $data = [
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                 'trado_id' => $request->trado_id,
-                'tglkeluar' => date('Y-m-d', strtotime($request->tglkeluar)),
+                'tglkeluar' => $request->tglkeluar,
                 'servicein_nobukti' => $request->servicein_nobukti,
                 'keterangan_detail' => $request->keterangan_detail
             ];
@@ -113,7 +113,7 @@ class ServiceOutHeaderController extends Controller
             $data = [
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)) ?? '',
                 'trado_id' => $request->trado_id ?? 0,
-                'tglkeluar' => date('Y-m-d', strtotime($request->tglkeluar)) ?? '',
+                'tglkeluar' =>  $request->tglkeluar,
                 'servicein_nobukti' => $request->servicein_nobukti ?? '',
                 'keterangan_detail' => $request->keterangan_detail ?? ''
             ];

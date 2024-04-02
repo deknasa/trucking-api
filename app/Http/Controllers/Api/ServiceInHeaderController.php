@@ -68,7 +68,7 @@ class ServiceInHeaderController extends Controller
             }
             $serviceInHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $serviceInHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -121,7 +121,7 @@ class ServiceInHeaderController extends Controller
             }
             $serviceInHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $serviceInHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -155,7 +155,7 @@ class ServiceInHeaderController extends Controller
             }
             $serviceInHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $serviceInHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -183,12 +183,13 @@ class ServiceInHeaderController extends Controller
     {
         $pengeluaran = ServiceInHeader::findOrFail($id);
         $status = $pengeluaran->statusapproval;
+        $nobukti = $pengeluaran->nobukti ?? '';
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
         $statusdatacetak = $pengeluaran->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
-        
+
         $aksi = request()->aksi ?? '';
         $user = auth('api')->user()->name;
         $useredit = $pengeluaran->editing_by ?? '';
@@ -209,6 +210,13 @@ class ServiceInHeaderController extends Controller
 
         //     return response($data);
         // } else 
+
+        $queryterpakai = db::table("serviceoutdetail")->from(db::raw("serviceoutdetail a with (readuncommitted)"))
+            ->select(
+                'a.servicein_nobukti'
+            )
+            ->where('a.servicein_nobukti', $nobukti)
+            ->first();
         if ($statusdatacetak == $statusCetak->id) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
@@ -223,8 +231,29 @@ class ServiceInHeaderController extends Controller
             ];
 
             return response($data);
-        } else if ($useredit != '' && $useredit != $user) {
+        } else if (isset($queryterpakai)) {
+            $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
+                ->select(
+                    db::raw("'" . $keterror . "' as keterangan")
+                )
+                ->whereRaw("kodeerror = 'SATL2'")
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah dipakai',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+
            
+        } else if ($useredit != '' && $useredit != $user) {
+
             $waktu = (new Parameter())->cekBatasWaktuEdit('Service In Header BUKTI');
 
             $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
@@ -248,14 +277,13 @@ class ServiceInHeaderController extends Controller
                 $keterror = 'No Bukti <b>' . $pengeluaran->nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
                 $data = [
                     'error' => true,
-                    'message' => ["keterangan"=>$keterror],
+                    'message' => ["keterangan" => $keterror],
                     'kodeerror' => 'SDE',
                     'statuspesan' => 'warning',
                 ];
 
                 return response($data);
-            }            
-            
+            }
         } else {
             (new MyModel())->updateEditingBy('ServiceInHeader', $id, $aksi);
 
@@ -351,7 +379,7 @@ class ServiceInHeaderController extends Controller
     public function report()
     {
     }
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */
