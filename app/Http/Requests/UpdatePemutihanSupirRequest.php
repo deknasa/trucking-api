@@ -7,6 +7,7 @@ use App\Models\PemutihanSupir;
 use App\Rules\DateTutupBuku;
 use App\Rules\ExistBank;
 use App\Rules\ExistSupir;
+use App\Rules\ValidasiDestroyPemutihanSupir;
 use App\Rules\ValidasiHutangList;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -69,6 +70,7 @@ class UpdatePemutihanSupirRequest extends FormRequest
             return false;
         });
         $rules = [
+            'id' => new ValidasiDestroyPemutihanSupir(),
             'nobukti' => [Rule::in($getData->nobukti)],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',

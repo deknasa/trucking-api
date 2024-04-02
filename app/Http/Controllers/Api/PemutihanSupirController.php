@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyPemutihanSupirRequest;
 use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorepemutihansupirdetailRequest;
@@ -13,6 +14,8 @@ use App\Http\Requests\UpdatePemutihanSupirRequest;
 use App\Http\Requests\UpdatePenerimaanHeaderRequest;
 use App\Http\Requests\GetUpahSupirRangeRequest;
 use App\Models\Bank;
+use App\Models\Error;
+use App\Models\MyModel;
 use App\Models\Parameter;
 use App\Models\PemutihanSupirDetail;
 use App\Models\PenerimaanHeader;
@@ -170,7 +173,7 @@ class PemutihanSupirController extends Controller
      * @ClassName 
      * @Keterangan HAPUS DATA
      */
-    public function destroy(Request $request, $id): JsonResponse
+    public function destroy(DestroyPemutihanSupirRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
 
@@ -345,37 +348,141 @@ class PemutihanSupirController extends Controller
     {
         $pemutihanSupir = new PemutihanSupir();
         $pemutihan = PemutihanSupir::from(DB::raw("pemutihansupirheader"))->where('id', $id)->first();
+        $nobukti = $pemutihan->nobukti;
+        // dd($penerimaan
+        $penerimaan = $pemutihan->penerimaan_nobukti ?? '';
+        $idpenerimaan = db::table('penerimaanheader')->from(db::raw("penerimaanheader a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.nobukti', $penerimaan)
+            ->first()->id ?? 0;
+        if ($idpenerimaan != 0) {
+            $validasipenerimaan = app(PenerimaanHeaderController::class)->cekvalidasi($idpenerimaan);
+            $msg = json_decode(json_encode($validasipenerimaan), true)['original']['error'] ?? false;
+            if ($msg == false) {
+                goto cekpengeluaran;
+            } else {
+                return $validasipenerimaan;
+            }
+        }
+
+        cekpengeluaran:
+        $pengeluaran = $pemutihan->pengeluaran_nobukti ?? '';
+        $idpengeluaran = db::table('pengeluaranheader')->from(db::raw("pengeluaranheader a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.nobukti', $pengeluaran)
+            ->first()->id ?? 0;
+        if ($idpengeluaran != 0) {
+            $validasipengeluaran = app(PengeluaranHeaderController::class)->cekvalidasi($idpengeluaran);
+            $msg = json_decode(json_encode($validasipengeluaran), true)['original']['error'] ?? false;
+            if ($msg == false) {
+                goto lanjut;
+            } else {
+                return $validasipengeluaran;
+            }
+        }
+
+        lanjut:
+
+
         $now = date("Y-m-d");
-        if ($pemutihan->tglbukti == $now) {
+        $statusdatacetak = $pemutihan->statuscetak ?? 0;
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        $aksi = request()->aksi ?? '';
+
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
+        $parameter = new Parameter();
+
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
+
+        if ($pemutihan->tglbukti != $now) {
+            $keteranganerror = $error->cekKeteranganError('ETS') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+
 
             $data = [
-                'status' => false,
-                'message' => '',
-                'errors' => '',
-                'kondisi' => true,
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'ETS',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else
+         if ($statusdatacetak == $statusCetak->id) {
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+
+            $data = [
+                'message' => $keterror,
+                'error' => true,
+                'kodeerror' => 'SDC',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else if ($tgltutup >= $pemutihan->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else {
 
-            $query = DB::table('error')
-                ->select(
-                    DB::raw("'PEMUTIHAN SUPIR '+ltrim(rtrim(keterangan)) as keterangan")
-                )
-                ->where('kodeerror', '=', 'ETS')
-                ->get();
-            $keterangan = $query['0'];
             $data = [
-                'status' => false,
-                'message' => $keterangan,
-                'errors' => '',
-                'kondisi' => false,
+                'error' => false,
+                'message' => '',
+                'statuspesan' => 'success',
             ];
 
             return response($data);
         }
     }
 
+    public function cekvalidasiAksi($id)
+    {
+        $cekdata = (new PemutihanSupir())->cekvalidasiaksi($id);
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
+                ->first();
+
+            $data = [
+                'error' => true,
+                'message' => $cekdata['keterangan'],
+                'kodeerror' => $cekdata['kodeerror'],
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else {
+            (new MyModel())->updateEditingBy('pemutihansupirheader', $id, 'EDIT');
+
+            $data = [
+                'error' => false,
+                'message' => '',
+                'statuspesan' => 'success',
+            ];
+
+            return response($data);
+        }
+    }
     public function fieldLength()
     {
         $data = [];
