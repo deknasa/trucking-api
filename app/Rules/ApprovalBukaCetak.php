@@ -41,6 +41,10 @@ class ApprovalBukaCetak implements Rule
         $a = 0;
         $parameter = new Parameter();
 
+        if ($table == 'PEMUTIHANSUPIR') {
+            $table = 'PEMUTIHANSUPIRHEADER';
+        }
+      
         foreach ($databukti as $dataBukti) {
             $getcetak = DB::table($table)->from(DB::raw("$table with (readuncommitted)"))->select('tglbukti', 'nobukti')->where('nobukti', $dataBukti)
                 ->first();
@@ -66,10 +70,6 @@ class ApprovalBukaCetak implements Rule
             goto lanjut;
         }
 
-        if ($table == 'PEMUTIHANSUPIR') {
-            $table = 'PEMUTIHANSUPIRHEADER';
-        }
-      
 
         $allowed = false;
         $tutupBuku = Parameter::where('grp', 'TUTUP BUKU')->where('subgrp', 'TUTUP BUKU')->first();

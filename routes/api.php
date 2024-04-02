@@ -1779,6 +1779,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pemutihansupir/{pemutihanId}/getEditPost', [PemutihanSupirController::class, 'getEditPost'])->whereNumber('pemutihanId');
     Route::get('pemutihansupir/{pemutihanId}/getEditNonPost', [PemutihanSupirController::class, 'getEditNonPost'])->whereNumber('pemutihanId');
     Route::get('pemutihansupir/{pemutihanId}/getDeletePost', [PemutihanSupirController::class, 'getDeletePost'])->whereNumber('pemutihanId');
+    Route::post('pemutihansupir/{id}/cekValidasiAksi', [PemutihanSupirController::class, 'cekValidasiAksi'])->name('pemutihansupir.cekValidasiAksi')->whereNumber('id');
     Route::get('pemutihansupir/{pemutihanId}/getDeleteNonPost', [PemutihanSupirController::class, 'getDeleteNonPost'])->whereNumber('pemutihanId');
     Route::post('pemutihansupir/{id}/cekvalidasi', [PemutihanSupirController::class, 'cekvalidasi'])->name('pemutihansupir.cekvalidasi')->whereNumber('id');
     Route::get('pemutihansupir/field_length', [PemutihanSupirController::class, 'fieldLength']);

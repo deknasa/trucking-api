@@ -681,6 +681,28 @@ class PengeluaranHeader extends MyModel
             goto selesai;
         }        
         
+        $keteranganerror = $error->cekKeteranganError('TDT');
+        $pemutihanSupir = DB::table('pemutihansupirheader')
+            ->from(
+                DB::raw("pemutihansupirheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti',
+                'a.pengeluaran_nobukti'
+            )
+            ->where('a.pengeluaran_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($pemutihanSupir)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pemutihan supir <b>'. $pemutihanSupir->nobukti .'</b> <br> '.$keterangantambahanerror,
+                // 'keterangan' => 'kas gantung '. $pemutihanSupir->nobukti,
+                'kodeerror' => 'TDT',
+                'editcoa' => false
+            ];
+            goto selesai;
+        }
+        
         $keteranganerror = $error->cekKeteranganError('SCG');
         $pencairangiro = DB::table('pencairangiropengeluaranheader')
             ->from(
@@ -808,6 +830,8 @@ class PengeluaranHeader extends MyModel
     public function processStore(array $data): PengeluaranHeader
     {
         $bankid = $data['bank_id'];
+        $manual = $data['manual'] ?? false;
+
         $querysubgrppengeluaran = Bank::from(DB::raw("bank with (readuncommitted)"))
             ->select('parameter.grp', 'parameter.subgrp', 'bank.formatpengeluaran', 'bank.coa', 'bank.tipe')
             ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')
@@ -897,6 +921,12 @@ class PengeluaranHeader extends MyModel
                 'bank' => $data['bank_detail'][$i] ?? '',
                 'modifiedby' => auth('api')->user()->name,
             ]);
+            
+            // $pengeluaranPenerima = (new PengeluaranPenerima())->processStore([
+            //     'pengeluaran_id' => $pengeluaranHeader->id,
+            //     'nobukti' => $pengeluaranHeader->nobukti,
+            //     'penerima_id' =>  $data['penerima_id'][$i],
+            // ]);
             $pengeluaranDetails[] = $pengeluaranDetail->toArray();
             $coadebet_detail[] =  $data['coadebet'][$i];
             // $coakredit_detail[] = ($data['coakredit']) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa;
