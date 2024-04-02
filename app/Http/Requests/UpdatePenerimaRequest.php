@@ -42,8 +42,9 @@ class UpdatePenerimaRequest extends FormRequest
         
         return [
             'namapenerima' => 'required',
-            'npwp' => ['required',new NotInKarakter_(),Rule::unique('penerima')->whereNotIn('id', [$this->id])],
-            'noktp' => ['required',new NotInKarakter_(),Rule::unique('penerima')->whereNotIn('id', [$this->id])],
+            'keterangan' => 'required',
+            'npwp' => [new NotInKarakter_(),Rule::unique('penerima')->where('npwp','!=','')->whereNotIn('id', [$this->id])],
+            'noktp' => [new NotInKarakter_(),Rule::unique('penerima')->where('noktp', '!=', '')->whereNotIn('id', [$this->id])],
             'statusaktif' => ['required', Rule::in($status),'numeric', 'min:1'],
             'statuskaryawan' => ['required', Rule::in($statusKaryawan),'numeric', 'min:1'],
         ];
