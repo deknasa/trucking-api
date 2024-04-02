@@ -34,6 +34,7 @@ class UpdateServiceInHeaderRequest extends FormRequest
                 new DateTutupBuku()
             ],
             'trado' => 'required',
+            'statusserviceoutnama' => 'required',            
             'tglmasuk' => [
                 "required",
                 new DateTutupBuku()
@@ -57,6 +58,7 @@ class UpdateServiceInHeaderRequest extends FormRequest
         return [
             'tglbukti' => 'tanggal bukti',
             'tglmasuk' => 'tanggal masuk',
+            'statusserviceoutnama' => 'status service out',            
             'karyawan.*' => 'karyawan',
             'keterangan_detail.*' => 'keterangan detail'
         ];

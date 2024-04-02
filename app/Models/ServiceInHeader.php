@@ -37,7 +37,7 @@ class ServiceInHeader extends MyModel
         $statusCetak = request()->statuscetak ?? '';
         $trado_id = request()->trado_id ?? '0';
         $serviceout = request()->serviceout ?? '';
-        $nobukti= request()->nobukti ?? '';
+        $nobukti = request()->nobukti ?? '';
         $query = DB::table($this->table)->from(
             DB::raw("serviceinheader with (readuncommitted)")
         )
@@ -76,38 +76,80 @@ class ServiceInHeader extends MyModel
             $query->where("serviceinheader.statuscetak", $statusCetak);
         }
         if ($serviceout != '') {
+            $parameter = new Parameter();
+            $idserviceout = $parameter->cekId('STATUS SERVICE OUT', 'STATUS SERVICE OUT', 'NON SERVICE OUT') ?? 0;
 
             $tempbuktiserviceout = '##tempbuktiserviceout' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempbuktiserviceout, function ($table) {
                 $table->string('nobukti', 50)->nullable();
             });
 
-            $querybuktiserviceout = db::table("serviceoutdetail")->from(db::raw("serviceoutdetail a with (readuncommitted)"))
-            ->select(
-                'a.servicein_nobukti as nobukti',
-            )
-            ->where('a.nobukti',$nobukti)
-            ->groupby('a.servicein_nobukti');
+            // $querybuktiserviceout = db::table("serviceoutdetail")->from(db::raw("serviceoutdetail a with (readuncommitted)"))
+            // ->select(
+            //     'a.servicein_nobukti as nobukti',
+            // )
+            // ->where('a.nobukti',$nobukti)
+            // ->groupby('a.servicein_nobukti');
+
+            // DB::table($tempbuktiserviceout)->insertUsing([
+            //     'nobukti',
+            // ],  $querybuktiserviceout);
+
+            // $querybuktiserviceout = db::table("serviceinheader")->from(db::raw("serviceinheader a with (readuncommitted)"))
+            // ->select(
+            //     'a.nobukti as nobukti',
+            // )
+            // ->join(db::raw("serviceoutdetail b with (readuncommitted)"),'a.nobukti','b.servicein_nobukti')
+            // ->whereraw("isnull(a.statusserviceout,0)<>".$idserviceout)
+            // ->whereraw("isnull(a.trado_id,0)=".$trado_id)
+            // ->whereraw("b.nobukti<>'".$nobukti."'");
+
+            // DB::table($tempbuktiserviceout)->insertUsing([
+            //     'nobukti',
+            // ],  $querybuktiserviceout);            
+
+
+
+            $querybuktiserviceout = db::table("serviceinheader")->from(db::raw("serviceinheader a with (readuncommitted)"))
+                ->select(
+                    'a.nobukti as nobukti',
+                )
+                ->leftjoin(db::raw("serviceoutdetail b with (readuncommitted)"), 'a.nobukti', 'b.servicein_nobukti')
+                ->whereraw("isnull(a.statusserviceout,0)<>" . $idserviceout)
+                ->whereraw("isnull(a.trado_id,0)=" . $trado_id)
+                ->whereraw("isnull(b.nobukti,'')=''");
+
+
 
             DB::table($tempbuktiserviceout)->insertUsing([
                 'nobukti',
             ],  $querybuktiserviceout);
 
-            $querybuktiserviceout = db::table("serviceinheader")->from(db::raw("serviceinheader a with (readuncommitted)"))
-            ->select(
-                'a.nobukti as nobukti',
-            )
-            ->join(db::raw("serviceoutdetail b with (readuncommitted)"),'a.nobukti','b.servicein_nobukti')
-            ->whereraw("b.nobukti<>'".$nobukti."'");
+            $tempbuktiserviceoutdata = '##tempbuktiserviceoutdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempbuktiserviceoutdata, function ($table) {
+                $table->string('nobukti', 50)->nullable();
+            });
+
+            $querybuktiserviceout = db::table("serviceoutdetail")->from(db::raw("serviceoutdetail a with (readuncommitted)"))
+                ->select(
+                    'a.servicein_nobukti as nobukti',
+                )
+                ->where('a.nobukti', $nobukti)
+                ->groupby('a.servicein_nobukti');
 
             DB::table($tempbuktiserviceout)->insertUsing([
                 'nobukti',
-            ],  $querybuktiserviceout);            
+            ],  $querybuktiserviceout);
+
+            
 
 
+            // DB::table($tempbuktiserviceout)->from(db::raw($tempbuktiserviceout ))
+            //     ->join(db::raw($tempbuktiserviceoutdata . " b"),db::raw($tempbuktiserviceout.".nobukti"),'b.nobukti')
+            //     ->delete();
 
-            $query->join(db::raw($tempbuktiserviceout. " c"),'serviceinheader.nobukti','c.nobukti');
-            $query->whereraw("isnull(serviceinheader.trado_id,0)=".$trado_id);
+            $query->join(db::raw($tempbuktiserviceout . " c"), 'serviceinheader.nobukti', 'c.nobukti');
+            $query->whereraw("isnull(serviceinheader.trado_id,0)=" . $trado_id);
 
 
             // dd($query->tosql());
@@ -143,12 +185,10 @@ class ServiceInHeader extends MyModel
                 'serviceinheader.tglbukti',
                 'serviceinheader.trado_id',
                 'statuscetak.memo as statuscetak',
-                'statusserviceout.memo as statusserviceout',
+                'serviceinheader.statusserviceout',
 
                 'trado.kodetrado as trado',
                 'statusserviceout.text as statusserviceoutnama',
-                'serviceinheader.statusserviceout',
-
                 'serviceinheader.tglmasuk',
                 'serviceinheader.modifiedby',
                 'serviceinheader.created_at',
@@ -158,8 +198,9 @@ class ServiceInHeader extends MyModel
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'serviceinheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusserviceout with (readuncommitted)"), 'serviceinheader.statusserviceout', 'statusserviceout.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceinheader.trado_id', 'trado.id')
-            ->leftJoin(DB::raw("parameter as statusserviceout with (readuncommitted)"), 'serviceinheader.statusserviceout', 'statusserviceout.id')
+            ->leftJoin(DB::raw("parameter as astatusserviceout with (readuncommitted)"), 'serviceinheader.statusserviceout', 'astatusserviceout.id')
             ->where('serviceinheader.id', $id);
+
 
         $data = $query->first();
 
@@ -274,7 +315,7 @@ class ServiceInHeader extends MyModel
                                     $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'statusserviceout') {
                                     $query = $query->orwhere('parameter_statusserviceout.text', '=', $filters['data']);
-                                    } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglmasuk') {
+                                } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglmasuk') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
