@@ -37,29 +37,35 @@ class UpdatePelunasanHutangHeaderRequest extends FormRequest
      * @return array
      */
     public function rules()
-    {        
-    
+    {
+
 
         $jumlahdetail = $this->jumlahdetail ?? 0;
 
-        $query=DB::table('pelunasanhutangheader')->from(
+        $query = DB::table('pelunasanhutangheader')->from(
             DB::raw('pelunasanhutangheader a with (readuncommitted)')
         )
-        ->select(
-            'a.tglbukti',
-            'b.namasupplier as supplier',
-            'c.namabank as bank',
-            'd.kodealatbayar as alatbayar',
-        )
-        ->leftJoin(DB::raw("supplier b with (readuncommitted)"), 'a.supplier_id', 'b.id')
-        ->leftJoin(DB::raw("bank c with (readuncommitted)"), 'a.bank_id', 'c.id')
-        ->leftJoin(DB::raw("alatbayar d with (readuncommitted)"), 'a.alatbayar_id', 'd.id')
-        ->where('a.id','=',$this->id)
-        ->first();
-
+            ->select(
+                'a.tglbukti',
+                'b.namasupplier as supplier',
+                'c.namabank as bank',
+                'd.kodealatbayar as alatbayar',
+            )
+            ->leftJoin(DB::raw("supplier b with (readuncommitted)"), 'a.supplier_id', 'b.id')
+            ->leftJoin(DB::raw("bank c with (readuncommitted)"), 'a.bank_id', 'c.id')
+            ->leftJoin(DB::raw("alatbayar d with (readuncommitted)"), 'a.alatbayar_id', 'd.id')
+            ->where('a.id', '=', $this->id)
+            ->first();
+        $alatbayarGiro = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'GIRO')->first();
+        $rulesNoWarkat = [];
+        if (request()->alatbayar_id == $alatbayarGiro->id) {
+            $rulesNoWarkat = [
+                'nowarkat' => 'required'
+            ];
+        }
 
         $rules = [
-            'id' => [ new ValidasiDestroyHutangBayarHeader()],
+            'id' => [new ValidasiDestroyHutangBayarHeader()],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku(),
@@ -68,7 +74,7 @@ class UpdatePelunasanHutangHeaderRequest extends FormRequest
             'tglcair' => [
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku(),
-                'before_or_equal:' . date('d-m-Y'),
+                'after_or_equal:' . request()->tglbukti,
             ],
         ];
         $relatedRequests = [
@@ -90,7 +96,7 @@ class UpdatePelunasanHutangHeaderRequest extends FormRequest
                     new ExistSupplier(),
                     new ValidasiHutangList($jumlahdetail),
                     Rule::in($query->supplier),
-                    new ValidasiHutangPelunasanApproval(),
+                    // new ValidasiHutangPelunasanApproval(),
                     new ValidasiHutangPelunasan()
 
                 ]
@@ -215,41 +221,9 @@ class UpdatePelunasanHutangHeaderRequest extends FormRequest
             $rulesalatbayar_id = [
                 'alatbayar' => [
                     new ExistAlatBayar(),
-                    Rule::in($query->alatbayar),
-
                 ]
             ];
-        } else if ($alatbayar_id != null) {
-            if ($alatbayar_id == 0) {
-                $rulesalatbayar_id = [
-                    'alatbayar_id' => [
-                        'required',
-                        'numeric',
-                        'min:1',
-                        new ExistAlatBayar(),
-                    ]
-
-                ];
-            } else {
-                if ($this->alatbayar == '') {
-                    $rulesalatbayar_id = [
-                        'alatbayar' => [
-                            'required',
-                            new ExistAlatBayar(),
-                        ]
-                    ];
-                }
-            }
-        } else if ($alatbayar_id == null && $this->alatbayar != '') {
-            $rulesalatbayar_id = [
-                'alatbayar_id' => [
-                    'required',
-                    'numeric',
-                    'min:1',
-                    new ExistAlatBayar(),
-                ]
-            ];
-        } else {
+        } else if ($bank_id != '' && $this->bank != '' && ($alatbayar_id == '' || $this->alatbayar == '')) {
             $rulesalatbayar_id = [
                 'alatbayar' => [
                     'required',
@@ -262,8 +236,9 @@ class UpdatePelunasanHutangHeaderRequest extends FormRequest
         $rule = array_merge(
             $rules,
             $rulessupplier_id,
-            $rulesbank_id,
+            // $rulesbank_id,
             $rulesalatbayar_id,
+            $rulesNoWarkat
         );
 
         return $rule;
@@ -272,7 +247,10 @@ class UpdatePelunasanHutangHeaderRequest extends FormRequest
     public function attributes()
     {
 
-        $attributes = [];
+        $attributes = [
+            'tglcair' => 'tgl jatuh tempo',
+            'nowarkat' => 'nowarkat'
+        ];
         $relatedRequests = [
             UpdatePelunasanHutangDetailRequest::class
         ];

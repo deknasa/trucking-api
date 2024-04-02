@@ -33,7 +33,7 @@ class ValidasiDestroyHutangBayarHeader implements Rule
     {
         $pelunasanHutangHeader = new PelunasanHutangHeader();
         $nobukti = PelunasanHutangHeader::from(DB::raw("pelunasanhutangheader"))->where('id', request()->id)->first();
-        $cekdata = $pelunasanHutangHeader->cekvalidasiaksi($nobukti->nobukti);
+        $cekdata = $pelunasanHutangHeader->cekvalidasiaksi($nobukti->nobukti, $nobukti->pengeluaran_nobukti);
         if ($cekdata['kondisi']) {
             $this->kodeerror = $cekdata['kodeerror'];
             $this->keterangan = $cekdata['keterangan'] ;

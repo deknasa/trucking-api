@@ -13,6 +13,7 @@ use App\Rules\ValidasiBankList;
 use App\Models\AlatBayar;
 use App\Rules\ValidasiHutangPelunasan;
 use App\Rules\ValidasiHutangPelunasanApproval;
+use Illuminate\Support\Facades\DB;
 
 class StorePelunasanHutangHeaderRequest extends FormRequest
 {
@@ -35,7 +36,13 @@ class StorePelunasanHutangHeaderRequest extends FormRequest
     {
 
         $jumlahdetail = $this->jumlahdetail ?? 0;
-
+        $alatbayarGiro = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'GIRO')->first();
+        $rulesNoWarkat = [];
+        if (request()->alatbayar_id == $alatbayarGiro->id) {
+            $rulesNoWarkat = [
+                'nowarkat' => 'required'
+            ];
+        }
 
         $rules = [
             'tglbukti' => [
@@ -46,7 +53,7 @@ class StorePelunasanHutangHeaderRequest extends FormRequest
             'tglcair' => [
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku(),
-                'before_or_equal:' . date('d-m-Y'),
+                'after_or_equal:' . request()->tglbukti,
             ],
         ];
         $relatedRequests = [
@@ -67,7 +74,7 @@ class StorePelunasanHutangHeaderRequest extends FormRequest
                 'supplier' => [
                     new ExistSupplier(),
                     new ValidasiHutangList($jumlahdetail),
-                    new ValidasiHutangPelunasanApproval(),
+                    // new ValidasiHutangPelunasanApproval(),
                     new ValidasiHutangPelunasan()
                 ]
             ];
@@ -190,51 +197,16 @@ class StorePelunasanHutangHeaderRequest extends FormRequest
                     new ExistAlatBayar(),
                 ]
             ];
-        } else if ($alatbayar_id != null) {
-            if ($alatbayar_id == 0) {
-                $rulesalatbayar_id = [
-                    'alatbayar_id' => [
-                        'required',
-                        'numeric',
-                        'min:1',
-                        new ExistAlatBayar(),
-                    ]
-
-                ];
-            } else {
-                if ($this->alatbayar == '') {
-                    $rulesalatbayar_id = [
-                        'alatbayar' => [
-                            'required',
-                            new ExistAlatBayar(),
-                        ]
-                    ];
-                }
-            }
-        } else if ($alatbayar_id == null && $this->alatbayar != '') {
-            $rulesalatbayar_id = [
-                'alatbayar_id' => [
-                    'required',
-                    'numeric',
-                    'min:1',
-                    new ExistAlatBayar(),
-                ]
-            ];
-        } else {
-            $rulesalatbayar_id = [
-                'alatbayar' => [
-                    'required',
-                    new ExistAlatBayar(),
-                ]
-            ];
-        }
+        } 
+        
 
 
         $rule = array_merge(
             $rules,
             $rulessupplier_id,
-            $rulesbank_id,
+            // $rulesbank_id,
             $rulesalatbayar_id,
+            $rulesNoWarkat
         );
 
         return $rule;
@@ -243,7 +215,10 @@ class StorePelunasanHutangHeaderRequest extends FormRequest
     public function attributes()
     {
 
-        $attributes = [];
+        $attributes = [
+            'tglcair' => 'tgl jatuh tempo',
+            'nowarkat' => 'nowarkat'
+        ];
         $relatedRequests = [
             StorePelunasanHutangDetailRequest::class
         ];
