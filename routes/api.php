@@ -1259,6 +1259,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('serviceinheader/combo', [ServiceInHeaderController::class, 'combo']);
     Route::get('serviceinheader/grid', [ServiceInHeaderController::class, 'grid']);
     Route::get('serviceinheader/field_length', [ServiceInHeaderController::class, 'fieldLength']);
+    Route::get('serviceinheader/default', [ServiceInHeaderController::class, 'default']);
+
     Route::get('serviceinheader/{id}/printreport', [ServiceInHeaderController::class, 'printReport'])->whereNumber('id');
     Route::get('serviceinheader/{id}/export', [ServiceInHeaderController::class, 'export'])->name('serviceinheader.export')->whereNumber('id');
     Route::post('serviceinheader/addrow', [ServiceInDetailController::class, 'addrow']);
