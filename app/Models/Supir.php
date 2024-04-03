@@ -228,13 +228,13 @@ class Supir extends MyModel
         $formatCabang = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'MANDOR SUPIR')->where('subgrp', 'MANDOR SUPIR')->first();
 
         $defaultmemononapproval = db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
-        ->select(
-            'a.memo'
-        )
-        ->where('a.grp', 'STATUS APPROVAL')
-        ->where('a.subgrp', 'STATUS APPROVAL')
-        ->where('a.text', 'NON APPROVAL')
-        ->first()->memo ?? '';        
+            ->select(
+                'a.memo'
+            )
+            ->where('a.grp', 'STATUS APPROVAL')
+            ->where('a.subgrp', 'STATUS APPROVAL')
+            ->where('a.text', 'NON APPROVAL')
+            ->first()->memo ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -520,13 +520,53 @@ class Supir extends MyModel
     public function findAll($id)
     {
         $defaultmemononapproval = db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
-        ->select(
-            'a.memo'
-        )
-        ->where('a.grp', 'STATUS APPROVAL')
-        ->where('a.subgrp', 'STATUS APPROVAL')
-        ->where('a.text', 'NON APPROVAL')
-        ->first()->memo ?? ''; 
+            ->select(
+                'a.memo'
+            )
+            ->where('a.grp', 'STATUS APPROVAL')
+            ->where('a.subgrp', 'STATUS APPROVAL')
+            ->where('a.text', 'NON APPROVAL')
+            ->first()->memo ?? '';
+
+        $userid = auth('api')->user()->id;
+
+        $acoid = db::table('acos')->from(db::raw("acos a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.class', 'supir')
+            ->where('a.method', 'update')
+            ->first()->id ?? 0;
+
+        $data = (new MyModel())->hakuser($userid, $acoid);
+        if ($data == true) {
+            $hakutama = 1;
+        } else {
+            $hakutama = 0;
+        }
+
+        $tempapproval = '##tempapproval' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempapproval, function ($table) {
+            $table->string('namasupir', 100)->nullable();
+            $table->longText('noktp', 100)->nullable();
+        });
+
+        $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first()->id ?? 0;
+
+        $queryapproval = db::table('approvalsupirketerangan')->from(db::raw("approvalsupirketerangan a with (readuncommitted)"))
+            ->select(
+                'a.namasupir',
+                'a.noktp'
+            )
+            ->whereraw("cast(format(getdate(),'yyyy/MM/dd') as datetime)<=a.tglbatas")
+            ->where('a.statusapproval', $statusApproval)
+            ->orderby('a.namasupir', 'asc');
+
+        DB::table($tempapproval)->insertUsing([
+            'namasupir',
+            'noktp',
+        ],  $queryapproval);
+
 
         $data = Supir::from(DB::raw("supir with (readuncommitted)"))
             ->select(
@@ -577,6 +617,23 @@ class Supir extends MyModel
                 'supir.modifiedby',
                 'supir.created_at',
                 'supir.updated_at',
+                db::raw("(case when " . $hakutama . "=1 or isnull(c.noktp,'')<>'' then '' else 'readonly' end) as noktp_readonly"),
+                db::raw("(case when " . $hakutama . "=1 or isnull(c.noktp,'')<>'' then '' else 'readonly' end) as namasupir_readonly"),
+                db::raw("(case when " . $hakutama . "=1 or isnull(c.noktp,'')<>'' then '' else 'readonly' end) as tgllahir_readonly"),
+                db::raw("(case when " . $hakutama . "=1 or isnull(c.noktp,'')<>'' then '' else 'readonly' end) as alamat_readonly"),
+                db::raw("(case when " . $hakutama . "=1 or isnull(c.noktp,'')<>'' then '' else 'readonly' end) as kota_readonly"),
+                db::raw("(case when " . $hakutama . "=1 or isnull(c.noktp,'')<>'' then '' else 'readonly' end) as nokk_readonly"),
+                db::raw("(case when " . $hakutama . "=1 or isnull(c.noktp,'')<>'' then '' else 'readonly' end) as tglmasuk_readonly"),
+                db::raw("(case when " . $hakutama . "=1 or isnull(c.noktp,'')<>'' then '' else 'readonly' end) as statusaktif_readonly"),
+                db::raw("(case when " . $hakutama . "=1 or isnull(c.noktp,'')<>'' then '' else 'readonly' end) as keterangan_readonly"),
+                db::raw("(case when " . $hakutama . "=1 or isnull(c.noktp,'')<>'' then '' else 'readonly' end) as photodomisili_readonly"),
+                db::raw("(case when " . $hakutama . "=1 or isnull(c.noktp,'')<>'' then '' else 'readonly' end) as photokk_readonly"),
+                db::raw("(case when " . $hakutama . "=1 or isnull(c.noktp,'')<>'' then '' else 'readonly' end) as photoktp_readonly"),
+                db::raw("(case when " . $hakutama . "=1 or isnull(c.noktp,'')<>'' then '' else 'readonly' end) as photosim_readonly"),
+                db::raw("(case when " . $hakutama . "=1 or isnull(c.noktp,'')<>'' then '' else 'readonly' end) as photoskck_readonly"),
+                db::raw("(case when " . $hakutama . "=1 or isnull(c.noktp,'')<>'' then '' else 'readonly' end) as photosupir_readonly"),
+                db::raw("(case when " . $hakutama . "=1 or isnull(c.noktp,'')<>'' then '' else 'readonly' end) as photovaksin_readonly"),
+
                 db::raw("isnull(parameter_statusapprovalhistorymilikmandor.memo,'" . $defaultmemononapproval . "')  as statusapprovalhistorysupirmilikmandor"),
                 'supir.userapprovalhistorysupirmilikmandor as userapprovalhistorysupirmilikmandor',
                 'supir.tglapprovalhistorysupirmilikmandor as tglapprovalhistorysupirmilikmandor',
@@ -589,7 +646,10 @@ class Supir extends MyModel
             ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'supir.mandor_id', 'mandor.id')
             ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id')
             ->leftJoin(DB::raw("parameter as parameter_statusapprovalhistorymilikmandor with (readuncommitted)"), 'supir.statusapprovalhistorysupirmilikmandor', 'parameter_statusapprovalhistorymilikmandor.id')
-
+            ->leftjoin(DB::raw($tempapproval . " as c"), function ($join) {
+                $join->on('supir.namasupir', '=', 'c.namasupir');
+                $join->on('supir.noktp', '=', 'c.noktp');
+            })
             ->where('supir.id', $id)->first();
 
         return $data;
@@ -698,8 +758,8 @@ class Supir extends MyModel
             $table->longtext('statusapprovalhistorysupirmilikmandor')->nullable();
             $table->string('userapprovalhistorysupirmilikmandor', 50)->nullable();
             $table->datetime('tglapprovalhistorysupirmilikmandor')->nullable();
-            $table->datetime('tglupdatehistorysupirmilikmandor')->nullable();            
-            $table->datetime('tglberlakumilikmandor')->nullable();            
+            $table->datetime('tglupdatehistorysupirmilikmandor')->nullable();
+            $table->datetime('tglberlakumilikmandor')->nullable();
 
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
@@ -749,10 +809,10 @@ class Supir extends MyModel
             'statuspostingtnl',
             'mandor_id',
             'statusapprovalhistorysupirmilikmandor',
-            'userapprovalhistorysupirmilikmandor', 
+            'userapprovalhistorysupirmilikmandor',
             'tglapprovalhistorysupirmilikmandor',
-            'tglupdatehistorysupirmilikmandor',            
-            'tglberlakumilikmandor',            
+            'tglupdatehistorysupirmilikmandor',
+            'tglberlakumilikmandor',
             'modifiedby',
             'created_at',
             'updated_at'
@@ -798,9 +858,8 @@ class Supir extends MyModel
                             $query = $query->where('supirlama.namasupir', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'statusapprovalhistorysupirmilikmandor') {
                             $query = $query->where('parameter_statusapprovalhistorysupirmilikmandor.text', '=', $filters['data']);
-
                         } else if ($filters['field'] == 'mandor_id') {
-                            
+
                             $query = $query->where('b.namamandor', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
@@ -838,7 +897,6 @@ class Supir extends MyModel
                                 $query = $query->orwhere('b.namamandor', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statusapprovalhistorysupirmilikmandor') {
                                 $query = $query->orwhere('parameter_statusapprovalhistorysupirmilikmandor.text', '=', $filters['data']);
-    
                             } else if ($filters['field'] == 'supirold_id') {
                                 $query = $query->orWhere('supirlama.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tgllahir' || $filters['field'] == 'tglterbitsim' || $filters['field'] == 'tglexpsim' || $filters['field'] == 'tglmasuk' || $filters['field'] == 'tglberhentisupir' || $filters['field'] == 'tglbatastidakbolehluarkota') {
@@ -1766,7 +1824,7 @@ class Supir extends MyModel
 
         return $Supir;
     }
-                    
+
     public function processApprovalHistoryTradoMilikMandor(array $data)
     {
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
@@ -1812,7 +1870,7 @@ class Supir extends MyModel
         }
 
         return $result;
-    }    
+    }
 
     public function processApprovalSupirLuarKota(array $data)
     {
@@ -1882,7 +1940,7 @@ class Supir extends MyModel
     public function getApprovalLuarKota($id)
     {
         $query = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))
-            ->select('id', 'id as supir_id', 'noktp', 'namasupir', 'statusluarkota','keterangantidakbolehluarkota as keterangan', DB::raw("(case when (year(isnull(supir.tglbatastidakbolehluarkota,'1900-01-01')) <= 2000) then null else supir.tglbatastidakbolehluarkota end ) as tglbatas"))
+            ->select('id', 'id as supir_id', 'noktp', 'namasupir', 'statusluarkota', 'keterangantidakbolehluarkota as keterangan', DB::raw("(case when (year(isnull(supir.tglbatastidakbolehluarkota,'1900-01-01')) <= 2000) then null else supir.tglbatastidakbolehluarkota end ) as tglbatas"))
             ->where('id', $id)
             ->first();
         return $query;
@@ -1909,7 +1967,7 @@ class Supir extends MyModel
                 'a.namasupir',
                 'a.noktp'
             )
-            ->whereRaw("a.tglbatas<'". $date . "'")
+            ->whereRaw("a.tglbatas<'" . $date . "'")
             ->orderby('a.namasupir', 'asc')
             ->orderby('a.noktp', 'asc');
 
@@ -1925,7 +1983,7 @@ class Supir extends MyModel
                 'a.namasupir',
                 'a.noktp'
             )
-            ->whereRaw("a.tglbatas<'". $date . "'")
+            ->whereRaw("a.tglbatas<'" . $date . "'")
             ->orderby('a.namasupir', 'asc')
             ->orderby('a.noktp', 'asc');
         // dd('test');
@@ -1959,10 +2017,10 @@ class Supir extends MyModel
         // dd($statusApp->id);
 
         $supir1 = DB::table('supir')->from(DB::raw("supir a with (readuncommitted)"))
-        ->join(DB::raw($tempapprovalsupirrekap . ' b'), function ($join) {
-            $join->on('a.namasupir', '=', 'b.namasupir');
-            $join->on('a.noktp', '=', 'b.noktp');
-        })        
+            ->join(DB::raw($tempapprovalsupirrekap . ' b'), function ($join) {
+                $join->on('a.namasupir', '=', 'b.namasupir');
+                $join->on('a.noktp', '=', 'b.noktp');
+            })
             ->where('a.statusaktif', $statusAktif->id)
             ->get();
 
@@ -1988,7 +2046,7 @@ class Supir extends MyModel
             $photokk = true;
             $photoskck = true;
             $pdfsuratperjanjian = true;
-           
+
             if (!is_null(json_decode($supir['photosupir']))) {
                 foreach (json_decode($supir['photosupir']) as $value) {
                     if ($value != '') {
@@ -2058,8 +2116,8 @@ class Supir extends MyModel
                 $photokk = false;
             }
 
-            selesai4: 
-            
+            selesai4:
+
             if (!is_null(json_decode($supir['photoskck']))) {
                 foreach (json_decode($supir['photoskck']) as $value) {
                     if ($value != '') {
@@ -2076,7 +2134,7 @@ class Supir extends MyModel
                 $photoskck = false;
             }
 
-            selesai5:  
+            selesai5:
 
             if (!is_null(json_decode($supir['pdfsuratperjanjian']))) {
                 foreach (json_decode($supir['pdfsuratperjanjian']) as $value) {
@@ -2094,7 +2152,7 @@ class Supir extends MyModel
                 $pdfsuratperjanjian = false;
             }
 
-            selesai6:              
+            selesai6:
 
 
             $querygambar = db::table('approvalsupirgambar')->from(db::raw("approvalsupirgambar a with (readuncommitted)"))
@@ -2108,7 +2166,7 @@ class Supir extends MyModel
                 ->first();
 
 
-                if ($photosupir == true || $photokk == true  || $photoktp == true || $photosim == true || $photoskck == true || $pdfsuratperjanjian == true) {
+            if ($photosupir == true || $photokk == true  || $photoktp == true || $photosim == true || $photoskck == true || $pdfsuratperjanjian == true) {
                 if (isset($querygambar)) {
 
                     DB::table($tempsupirgambar)->insert([
@@ -2129,7 +2187,7 @@ class Supir extends MyModel
                 "tgllahir" => $supir['tgllahir'],
             ];
             $key = array_keys($required, null);
-            
+
             $jumlah = count($key);
 
             $queryketerangan = db::table('approvalsupirketerangan')->from(db::raw("approvalsupirketerangan a with (readuncommitted)"))
@@ -2153,19 +2211,19 @@ class Supir extends MyModel
             }
         }
 
-// dd('test');
+        // dd('test');
 
         $query1 = db::table($tempsupirgambar)->from(db::raw($tempsupirgambar . " a"))
             ->select('a.supir_id')
-            ->orderby('a.supir_id','asc')
+            ->orderby('a.supir_id', 'asc')
             ->first();
 
         $query2 = db::table($tempsupirketerangan)->from(db::raw($tempsupirketerangan . " a"))
-        ->select('a.supir_id')
-            ->orderby('a.supir_id','asc')
+            ->select('a.supir_id')
+            ->orderby('a.supir_id', 'asc')
             ->first();
-            // 
-            
+        // 
+
         if (isset($query1)) {
             DB::table('supir')
                 ->from(db::raw("supir"))
@@ -2184,5 +2242,4 @@ class Supir extends MyModel
             }
         }
     }
-
 }
