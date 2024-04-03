@@ -201,7 +201,33 @@ class JobTrucking extends MyModel
             ], $queryjob);
 
 
+            $queryjob = DB::table('saldosuratpengantar')->from(
+                DB::raw("suratpengantar as a with(readuncommitted)")
+            )
+                ->select(
+                    'a.jobtrucking'
+                )
+                ->join(DB::raw("saldoorderantrucking as b with(readuncommitted)"), 'a.jobtrucking', 'b.nobukti')
+                ->leftjoin(db::raw($tempNonTampilJobTrucking . " c"), 'a.jobtrucking', 'c.jobtrucking')
+                ->where('a.container_id', '=', $container_id)
+                ->where('a.jenisorder_id', '=', $jenisorder_id)
+                ->where('a.gandengan_id', '=', $gandengan_id)
+                ->where('a.pelanggan_id', '=', $pelanggan_id)
+                ->where('a.tarif_id', '=', $tarif_id)
+                ->whereRaw("isnull(a.jobtrucking,'')<>''")
+                ->whereRaw("a.sampai_id in (" . $pelabuhan . ") and isnull(B.statusapprovalbukatrip,4)=4")
+                ->whereRaw("isnull(c.jobtrucking,'')=''")
+                ->whereRaw("a.statuscontainer_id not in(" . $statusfullempty . ")");
+            // ->where('a.sampai_id', '=', $pelabuhan->text);
 
+            // dd($queryjob->get());
+
+            DB::table($tempselesai)->insertUsing([
+                'jobtrucking',
+            ], $queryjob);            
+
+
+            // dd(db::table($tempselesai)->get());
 
             $querydata1 = DB::table('suratpengantar')->from(
                 DB::raw("suratpengantar as a with(readuncommitted)")
@@ -344,7 +370,30 @@ class JobTrucking extends MyModel
                 'jobtrucking',
             ], $queryjob);
 
-            // dd(db::table($tempselesai)->get());
+            $queryjob = DB::table('saldosuratpengantar')->from(
+                DB::raw("saldosuratpengantar as a with(readuncommitted)")
+            )
+                ->select(
+                    'a.jobtrucking'
+                )
+                ->leftjoin(db::raw($tempNonTampilJobTrucking . " c1"), 'a.jobtrucking', 'c1.jobtrucking')
+                ->where('a.container_id', '=', $container_id)
+                ->where('a.jenisorder_id', '=', $jenisorder_id)
+                ->where('a.pelanggan_id', '=', $pelanggan_id)
+                ->where('a.tarif_id', '=', $tarif_id)
+                ->whereRaw("isnull(a.jobtrucking,'')<>''")
+                ->whereRaw("a.statuscontainer_id not in(" . $statusfullempty . ")")
+                ->whereRaw("isnull(c1.jobtrucking,'')=''")
+                ->whereRaw("a.sampai_id in ($pelabuhan)");
+
+                            // dd(( $queryjob)->tosql());
+
+
+            DB::table($tempselesai)->insertUsing([
+                'jobtrucking',
+            ], $queryjob);            
+
+            // dd(db::table($tempselesai)->tosql());
 
             $querydata1 = DB::table('suratpengantar')->from(
                 DB::raw("suratpengantar as a with(readuncommitted)")
@@ -416,6 +465,7 @@ class JobTrucking extends MyModel
                 ->leftjoin(DB::raw("kota as kotasd with(readuncommitted)"), 'a.sampai_id', 'kotasd.id')
                 ->leftjoin(DB::raw($tempselesai . " as d"), 'a.jobtrucking', 'd.jobtrucking');
 
+                // dd($querydata1->get());
 
             DB::table($temprekap)->insertUsing([
                 'jobtrucking',
@@ -455,7 +505,7 @@ class JobTrucking extends MyModel
                 ->leftjoin(DB::raw("kota as kotasd with(readuncommitted)"), 'a.sampai_id', 'kotasd.id')
                 ->leftjoin(DB::raw($tempselesai . " as d"), 'a.jobtrucking', 'd.jobtrucking');
 
-
+                // dd(DB::table($temprekap)->get());
             $querydata = DB::table($temprekap)->from(
                 DB::raw($temprekap . " as a ")
             )
@@ -479,6 +529,7 @@ class JobTrucking extends MyModel
                 ->where('a.jenisorder_id', '=', $jenisorder_id)
                 ->where('a.pelanggan_id', '=', $pelanggan_id)
                 ->where('a.tarif_id', '=', $tarif_id);
+                // dd($querydata->get());
                 // dd($querydata->where('a.jobtrucking','JT 0040/III/2024')->get());
             if ($edit == 'true') {
                 $querydata->whereRaw("a.dari_id in ($pelabuhan)");
