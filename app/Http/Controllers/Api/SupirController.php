@@ -1003,4 +1003,13 @@ class SupirController extends Controller
     public function approvalsupirgambar()
     {
     }
+
+           /**
+     * @ClassName 
+     * @Keterangan EDIT DATA USER
+     */
+    public function updateuser()
+    {
+
+    }
 }
