@@ -118,6 +118,7 @@ class Gudang extends MyModel
         // dd($penerimaanStokPg)
         if ($penerimaanstok == $penerimaanStokPg->text) {
             $gudangdari_id = request()->gudangdari_id ?? 0;
+            $gudangke_id = request()->gudangke_id ?? 0;
             $gudangKantor = Gudang::from(DB::raw("gudang with (readuncommitted)"))
                 ->select('id')
                 ->where('gudang', 'GUDANG PIHAK III');
@@ -133,8 +134,8 @@ class Gudang extends MyModel
             }
             $gudangKantor = $gudangKantor->get();
             if (request()->gudangdarike == "dari") {
-                $query->whereNotIn('gudang.id', $gudangKantor);
-                // $query->where('gudang.id','<>', $gudangKantorid->id);
+                $query->whereraw("gudang.id not in(" . $gudangke_id . ")");
+            //     // $query->where('gudang.id','<>', $gudangKantorid->id);
 
             }
         }
