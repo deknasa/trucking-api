@@ -11,6 +11,7 @@ use App\Rules\cekUpahRitasiDariInputTrip;
 use App\Rules\cekUpahRitasiKeInputTrip;
 use App\Rules\cekUpahSupirEditTrip;
 use App\Rules\DateApprovalQuota;
+use App\Rules\DestroyListTrip;
 use App\Rules\ExistAbsensiSupirDetail;
 use App\Rules\ExistAgen;
 use App\Rules\ExistContainer;
@@ -665,8 +666,12 @@ class UpdateListTripRequest extends FormRequest
                 'jobtrucking' => ['required_unless:dari_id,1']
             ];
         }
+        $rulesId = [
+            'id' => new DestroyListTrip()
+        ];
         $rules = array_merge(
             $rules,
+            $rulesId,
             $ritasiRule,
             $rulesAgen_id,
             $rulesContainer_id,

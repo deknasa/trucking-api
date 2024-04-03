@@ -13,6 +13,10 @@ class ListTrip extends MyModel
 
     public function cekValidasi($id)
     {
+
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
         $aksi = request()->aksi;
         $trip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
             ->select('nobukti', 'jobtrucking', 'tglbukti', DB::raw("isnull(approvalbukatanggal_id,0) as approvalbukatanggal_id"))
@@ -25,9 +29,11 @@ class ListTrip extends MyModel
                 ->first();
 
             if (date('Y-m-d H:i:s') > date('Y-m-d H:i:s', strtotime($getTglBatasApproval->tglbatas))) {
+
+                $keteranganerror = $error->cekKeteranganError('LB') ?? '';
                 $data = [
                     'kondisi' => true,
-                    'keterangan' => "BATAS $aksi " . date('d-m-Y H:i:s', strtotime($getTglBatasApproval->tglbatas)),
+                    'keterangan' => $keteranganerror . "<br> BATAS $aksi " . date('d-m-Y H:i:s', strtotime($getTglBatasApproval->tglbatas)) . ' <br> ' . $keterangantambahanerror,
                     'kodeerror' => 'LB',
                 ];
 
@@ -68,9 +74,11 @@ class ListTrip extends MyModel
             }
             $batas = $tanggal . ' ' . $getBatasInput;
             if (date('Y-m-d H:i:s') > $batas) {
+                $keteranganerror = $error->cekKeteranganError('LB') ?? '';
+
                 $data = [
                     'kondisi' => true,
-                    'keterangan' =>  "BATAS $aksi " . date('d-m-Y', strtotime($trip->tglbukti . "+$getBatasHari days")) . ' ' . $getBatasInput,
+                    'keterangan' =>  $keteranganerror . "<br> BATAS $aksi " . date('d-m-Y', strtotime($trip->tglbukti . "+$getBatasHari days")) . ' ' . $getBatasInput . ' <br> ' . $keterangantambahanerror,
                     'kodeerror' => 'LB',
                 ];
 
@@ -85,10 +93,12 @@ class ListTrip extends MyModel
         if ($cekSP->dari_id == 1) {
             $cekJob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', $cekSP->jobtrucking)->where('nobukti', '<>', $nobukti)->first();
             if ($cekJob != '') {
+
+                $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
                 $data = [
                     'kondisi' => true,
-                    'keterangan' => 'trip ' . $cekJob->nobukti,
-                    'kodeerror' => 'SATL',
+                    'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti trip <b>' . $cekJob->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                    'kodeerror' => 'SATL2',
                 ];
 
 
@@ -98,10 +108,11 @@ class ListTrip extends MyModel
         if ($cekSP->statuslongtrip == 65) {
             $cekJob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', $cekSP->jobtrucking)->where('nobukti', '<>', $nobukti)->first();
             if ($cekJob != '') {
+                $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
                 $data = [
                     'kondisi' => true,
-                    'keterangan' => 'trip ' . $cekJob->nobukti,
-                    'kodeerror' => 'SATL',
+                    'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti trip <b>' . $cekJob->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                    'kodeerror' => 'SATL2',
                 ];
 
 
@@ -111,10 +122,12 @@ class ListTrip extends MyModel
 
         $cekJob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('nobukti_tripasal', $nobukti)->first();
         if ($cekJob != '') {
+
+            $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'trip ' . $cekJob->nobukti,
-                'kodeerror' => 'SATL',
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti trip <b>' . $cekJob->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                'kodeerror' => 'SATL2',
             ];
 
 
@@ -133,10 +146,11 @@ class ListTrip extends MyModel
 
 
         if (isset($gajiSupir)) {
+            $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'gaji supir ' . $gajiSupir->nobukti,
-                'kodeerror' => 'SATL',
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti gaji supir <b>' . $gajiSupir->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                'kodeerror' => 'SATL2',
             ];
 
 
@@ -156,10 +170,11 @@ class ListTrip extends MyModel
 
 
         if (isset($ritasi)) {
+            $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'ritasi ' . $ritasi->nobukti,
-                'kodeerror' => 'SATL',
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti ritasi <b>' . $ritasi->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                'kodeerror' => 'SATL2',
             ];
 
 
@@ -199,10 +214,11 @@ class ListTrip extends MyModel
             ->first();
 
         if (isset($query)) {
+            $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'invoice ' . $query->nobukti,
-                'kodeerror' => 'SATL',
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti invoice <b>' . $query->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                'kodeerror' => 'SATL2',
             ];
             goto selesai;
         }
@@ -214,11 +230,12 @@ class ListTrip extends MyModel
             )->where('nobuktitrip', '=', $nobukti)
             ->first();
 
-        if (isset($query)) {
+        if (isset($query)) {            
+            $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'pendapatan supir ' . $query->nobukti,
-                'kodeerror' => 'SATL',
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti pendapatan supir <b>' . $query->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                'kodeerror' => 'SATL2',
             ];
             goto selesai;
         }
@@ -227,16 +244,45 @@ class ListTrip extends MyModel
         if ($cekSP->dari_id == 1) {
             $cekJob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', $cekSP->jobtrucking)->where('nobukti', '<>', $nobukti)->first();
             if ($cekJob != '') {
+                $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
                 $data = [
                     'kondisi' => true,
-                    'keterangan' => 'trip ' . $cekJob->nobukti,
-                    'kodeerror' => 'SATL',
+                    'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti trip <b>' . $cekJob->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                    'kodeerror' => 'SATL2',
                 ];
 
 
                 goto selesai;
             }
         }
+        $tempMandor = '##tempMandor' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempMandor, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('mandor_id')->nullable();
+        });
+
+        $querymandor = DB::table("mandordetail")->from(DB::raw("mandordetail with (readuncommitted)"))
+            ->select('mandor_id')->where('user_id', auth('api')->user()->id);
+        DB::table($tempMandor)->insertUsing([
+            'mandor_id',
+        ],  $querymandor);
+
+        $cektrado = DB::table($tempMandor)->from(DB::raw("$tempMandor as mandor with (readuncommitted)"))
+            ->join('trado', 'trado.mandor_id', 'mandor.mandor_id')
+            ->join('suratpengantar', 'suratpengantar.trado_id', 'trado.id')
+            ->where('suratpengantar.nobukti', $nobukti)
+            ->first();
+
+        if ($cektrado == '') {
+            $keteranganerror = $error->cekKeteranganError('TPH') ?? '';
+            $data = [
+                'kondisi' => true,
+                'keterangan' => $keteranganerror . '<br> trip milik pengurus lain <br> ' . $keterangantambahanerror,
+                'kodeerror' => 'TPH',
+            ];
+            goto selesai;
+        }
+
 
         $data = [
             'kondisi' => false,
@@ -702,7 +748,7 @@ class ListTrip extends MyModel
                 $nominalspr = $nominalSupir;
                 $nominalkenek = $upahsupirRincian->nominalkenek;
                 $nominalkomisi = $trip->komisisupir;
-            }else{
+            } else {
                 $nominalspr = $nominalSupir;
                 $nominalkenek = $trip->gajikenek;
                 $nominalkomisi = $trip->komisisupir;
