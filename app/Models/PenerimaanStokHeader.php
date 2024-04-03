@@ -1156,6 +1156,9 @@ class PenerimaanStokHeader extends MyModel
         $pspk = Parameter::where('grp', 'PSPK STOK')->where('subgrp', 'PSPK STOK')->first();
         $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
         $spbp = DB::table('penerimaanstok')->where('kodepenerimaan', 'SPBP')->first();
+        $pst = Parameter::where('grp', 'PENGEMBALIAN SPAREPART STOK')->where('subgrp', 'PENGEMBALIAN SPAREPART STOK')->first();
+        
+        
 
         $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')->where('format', '=', $statusformat)->first();
         $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
@@ -1312,6 +1315,7 @@ class PenerimaanStokHeader extends MyModel
                 "nobukti" => $penerimaanStokHeader->nobukti,
                 "stok_id" => $data['detail_stok_id'][$i],
                 "qty" => $data['detail_qty'][$i],
+                // "qtyterpakai" => $data['detail_qtyterpakai'][$i],
                 "harga" => $data['detail_harga'][$i],
                 "totalItem" => $data['totalItem'][$i],
                 "totalsebelum" => $data['totalsebelum'][$i] ?? 0,
@@ -1642,6 +1646,48 @@ class PenerimaanStokHeader extends MyModel
             'datajson' => $penerimaanStokDetails,
             'modifiedby' => auth('api')->user()->user,
         ]);
+
+        //  if ($data['penerimaanstok_id'] == $pst->id) {
+        //     $datapst = [
+        //         "tglbukti" => $request->tglbukti,
+        //         "pengeluaranstok" => $request->pengeluaranstok,
+        //         "pengeluaranstok_id" => $request->pengeluaranstok_id,
+        //         "penerimaanstok_nobukti" => $request->penerimaanstok_nobukti,
+        //         "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti,
+        //         "pengeluarantrucking_nobukti" => $request->pengeluarantrucking_nobukti,
+        //         "supplier" => $request->supplier,
+        //         "supplier_id" => $request->supplier_id,
+        //         "kerusakan" => $request->kerusakan,
+        //         "kerusakan_id" => $request->kerusakan_id,
+        //         "supir" => $request->supir,
+        //         "supir_id" => $request->supir_id,
+        //         "servicein_nobukti" => $request->servicein_nobukti,
+        //         "trado" => $request->trado,
+        //         "trado_id" => $request->trado_id,
+        //         "gudang" => $request->gudang,
+        //         "gudang_id" => $request->gudang_id,
+        //         "gandengan" => $request->gandengan,
+        //         "gandengan_id" => $request->gandengan_id,
+        //         "statuspotongretur" => $request->statuspotongretur,
+        //         "bank" => $request->bank,
+        //         "bank_id" => $request->bank_id,
+        //         "tglkasmasuk" => $request->tglkasmasuk,
+        //         "penerimaan_nobukti" => $request->penerimaan_nobukti,
+
+        //         "detail_stok" => $request->detail_stok,
+        //         "detail_stok_id" => $request->detail_stok_id,
+        //         "jlhhari" => $request->jlhhari,
+        //         "detail_statusoli" => $request->detail_statusoli,
+        //         "detail_vulkanisirke" => $request->detail_vulkanisirke,
+        //         "detail_keterangan" => $request->detail_keterangan,
+        //         "detail_statusban" => ($request->statusban) ? $request->statusban : $request->detail_statusban,
+        //         "detail_qty" => $request->detail_qty ?? $request->qty_afkir,
+        //         "detail_harga" => $request->detail_harga,
+        //         "detail_persentasediscount" => $request->detail_persentasediscount,
+        //         "totalItem" => $request->totalItem,
+        //     ];
+        //     $pengeluaranStokHeader = (new PengeluaranStokHeader())->processStore($datapst);
+        //  }
 
         return $penerimaanStokHeader;
     }

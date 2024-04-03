@@ -22,6 +22,7 @@ class CreatePenerimaanstokdetailTable extends Migration
             $table->string('nobukti',50)->nullable();
             $table->unsignedBigInteger('stok_id');
             $table->double('qty', 15,2)->nullable();
+            $table->double('qtyterpakai', 15,2)->nullable();
             $table->double('harga', 15,2)->nullable();
             $table->double('persentasediscount', 15,2)->nullable();
             $table->double('nominaldiscount', 15,2)->nullable();
