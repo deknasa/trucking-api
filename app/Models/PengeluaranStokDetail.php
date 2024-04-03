@@ -31,6 +31,8 @@ class PengeluaranStokDetail extends MyModel
     {
         $this->setRequestParameters();
 
+        $from = request()->from ?? '';
+
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
         if (isset(request()->id)) {
             $query->where("$this->table.id", request()->id);
@@ -155,7 +157,14 @@ class PengeluaranStokDetail extends MyModel
                 ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
                 ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id")
                 ->leftJoin("parameter as statusban", "stok.statusban", "statusban.id");
-    
+            if($from == 'klaim')
+            {
+                $nobuktiStok = DB::table("pengeluaranstokheader")->where('id', request()->pengeluaranstokheader_id)->first()->nobukti ?? '';
+                if($nobuktiStok != ''){
+                    $stok_id = request()->stok_id ?? 0;
+                    $query->whereRaw("pengeluaranstokdetail.stok_id not in (select stok_id from pengeluarantruckingdetail where pengeluaranstok_nobukti='$nobuktiStok' and stok_id != $stok_id)");
+                }
+            }
 
             $this->totalNominal = $query->sum('total');
             $this->filter($query);

@@ -32,6 +32,8 @@ class PengeluaranStokHeader extends MyModel
         $this->setRequestParameters();
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
+        $from = request()->from ?? '';
+        $aksi = request()->aksi ?? '';
 
         $user_id = auth('api')->user()->id ?? 0;
         $proses = request()->proses ?? 'reload';
@@ -386,7 +388,67 @@ class PengeluaranStokHeader extends MyModel
                     });
             }
 
+            if ($from == 'klaim') {
 
+                $pengeluarantrucking_id = request()->pengeluarantrucking_id ?? 0;
+                $tempTrucking = '##tempTrucking' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempTrucking, function ($table) {
+                    $table->unsignedBigInteger('jumlah')->nullable();
+                    $table->string('pengeluaranstok_nobukti')->nullable();
+                });
+
+                $queryklaimtrucking = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
+                    ->select(DB::raw("count(pengeluarantruckingdetail.stok_id) as jumlah, pengeluarantruckingdetail.pengeluaranstok_nobukti"))
+                    ->join(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'pengeluarantruckingdetail.nobukti')
+                    ->where("pengeluarantruckingdetail.pengeluaranstok_nobukti", '!=', "''")
+                    ->whereBetween('pengeluarantruckingheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                    ->where('pengeluarantruckingheader.id', '<>', $pengeluarantrucking_id)
+                    ->groupBy('pengeluarantruckingdetail.pengeluaranstok_nobukti');
+
+                DB::table($tempTrucking)->insertUsing([
+                    'jumlah',
+                    'pengeluaranstok_nobukti',
+                ],  $queryklaimtrucking);
+
+
+                $tempSpk = '##tempSpk' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempSpk, function ($table) {
+                    $table->unsignedBigInteger('jumlah')->nullable();
+                    $table->string('nobukti')->nullable();
+                });
+
+                $tutupbuku = DB::table("parameter")->where('grp', 'TUTUP BUKU')->first()->text ?? '1900/01/01';
+                $queryklaimtrucking = DB::table("pengeluaranstokheader")->from(DB::raw("pengeluaranstokheader with (readuncommitted)"))
+                    ->select(DB::raw("count(pengeluaranstokdetail.stok_id) as jumlah,pengeluaranstokheader.nobukti"))
+                    ->join(DB::raw("pengeluaranstokdetail with (readuncommitted)"), 'pengeluaranstokheader.nobukti', 'pengeluaranstokdetail.nobukti')
+                    ->where("pengeluaranstokheader.pengeluaranstok_id", 1)
+                    ->whereBetween('pengeluaranstokheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                    ->where('pengeluaranstokheader.tglbukti','>',date('Y-m-d',strtotime($tutupbuku)))
+                    ->groupBy('pengeluaranstokheader.nobukti');
+
+                DB::table($tempSpk)->insertUsing([
+                    'jumlah',
+                    'nobukti',
+                ],  $queryklaimtrucking);
+
+                $tempfinalklaim = '##tempfinalklaim' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempfinalklaim, function ($table) {
+                    $table->unsignedBigInteger('jumlah')->nullable();
+                    $table->string('nobukti')->nullable();
+                });
+
+                $queryklaimtrucking = DB::table("$tempSpk")->from(DB::raw("$tempSpk as tempspk with (readuncommitted)"))
+                    ->select(DB::raw("tempspk.jumlah,tempspk.nobukti"))
+                    ->leftJoin(DB::raw("$tempTrucking as temptrucking with (readuncommitted)"), 'tempspk.nobukti', 'temptrucking.pengeluaranstok_nobukti')
+                    ->whereRaw("isnull(temptrucking.jumlah,0) != isnull(tempspk.jumlah,0)");
+                DB::table($tempfinalklaim)->insertUsing([
+                    'jumlah',
+                    'nobukti',
+                ],  $queryklaimtrucking);
+                // dd(DB::table($tempfinalklaim)->get());
+
+                $query->join(DB::raw("$tempfinalklaim as finalklaim with (readuncommitted)"), 'pengeluaranstokheader.nobukti', 'finalklaim.nobukti');
+            }
 
             if (request()->pengeluaranheader_id) {
                 $query->where('pengeluaranstokheader.pengeluaranstok_id', request()->pengeluaranheader_id);
@@ -732,31 +794,31 @@ class PengeluaranStokHeader extends MyModel
 
                         if ($filters['field'] == 'statuscetak') {
                             if ($filters['data']) {
-                                $query = $query->where('a.statuscetak_id' , '=', "$filters[data]");
+                                $query = $query->where('a.statuscetak_id', '=', "$filters[data]");
                             }
-                        // } else if ($filters['field'] == 'pengeluaranstok') {
-                        //     $query = $query->where('pengeluaranstok.kodepengeluaran', 'LIKE', "%$filters[data]%");
-                        // } else if ($filters['field'] == 'gudang') {
-                        //     $query = $query->where('gudang.gudang', 'LIKE', "%$filters[data]%");
-                        // } else if ($filters['field'] == 'gandengan') {
-                        //     $query = $query->where('gandengan.kodegandengan', 'LIKE', "%$filters[data]%");
-                        // } else if ($filters['field'] == 'trado') {
-                        //     $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
-                        // } else if ($filters['field'] == 'supplier') {
-                        //     $query = $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
-                        // } else if ($filters['field'] == 'kerusakan') {
-                        //     $query = $query->where('kerusakan.keterangan', 'LIKE', "%$filters[data]%");
-                        // } else if ($filters['field'] == 'supir') {
-                        //     $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
-                        // } else if ($filters['field'] == 'bank') {
-                        //     $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                            // } else if ($filters['field'] == 'pengeluaranstok') {
+                            //     $query = $query->where('pengeluaranstok.kodepengeluaran', 'LIKE', "%$filters[data]%");
+                            // } else if ($filters['field'] == 'gudang') {
+                            //     $query = $query->where('gudang.gudang', 'LIKE', "%$filters[data]%");
+                            // } else if ($filters['field'] == 'gandengan') {
+                            //     $query = $query->where('gandengan.kodegandengan', 'LIKE', "%$filters[data]%");
+                            // } else if ($filters['field'] == 'trado') {
+                            //     $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                            // } else if ($filters['field'] == 'supplier') {
+                            //     $query = $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
+                            // } else if ($filters['field'] == 'kerusakan') {
+                            //     $query = $query->where('kerusakan.keterangan', 'LIKE', "%$filters[data]%");
+                            // } else if ($filters['field'] == 'supir') {
+                            //     $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            // } else if ($filters['field'] == 'bank') {
+                            //     $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'tglbukti') {
                             $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
-                        // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                         }
                     }
 
@@ -789,8 +851,8 @@ class PengeluaranStokHeader extends MyModel
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
-                            // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->orWhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                             }
                         }
                     });
@@ -1263,7 +1325,7 @@ class PengeluaranStokHeader extends MyModel
         }
         return false;
     }
-    
+
     public function isKeteranganEditAble($id)
     {
         $tidakBolehEdit = DB::table('pengeluaranstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
@@ -1399,22 +1461,22 @@ class PengeluaranStokHeader extends MyModel
         for ($i = 0; $i < count($data['detail_stok_id']); $i++) {
             $pengeluarantrucking_nobukti = $data['pengeluarantrucking_nobukti'] ?? '';
             if ($afkir->id == $data['pengeluaranstok_id']) {
-                    // $kartustok = KartuStok::getlaporan(date('Y-m-d',strtotime(request()->tgldariheader)), date('Y-m-d',strtotime(request()->tglsampaiheader)),$data['detail_stok_id'][$i], $data['detail_stok_id'][$i], $data['gudang_id'], 0,0, 'GUDANG');
-                    // $ks = KartuStok::select('stok_id', DB::raw('SUM(qtymasuk) - SUM(qtykeluar) AS qty'))
-                    // ->where('stok_id',$data['detail_stok_id'][$i])
-                    // ->groupBy('stok_id')
-                    // ->first();
-                    $statusafkir = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS KONDISI BAN')->where('subgrp', 'STATUS KONDISI BAN')->where('text', 'AFKIR')->first();
-                    $statusNonAktif = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'NON AKTIF')->first();
-                    $kelompokAKI = DB::table('kelompok')->from(DB::raw("kelompok with (readuncommitted)"))->where('kodekelompok', 'AKI')->first();
-                    $kelompokBAN = DB::table('kelompok')->from(DB::raw("kelompok with (readuncommitted)"))->where('kodekelompok', 'BAN')->first();
-                    $stok = (new Stok())->find($data['detail_stok_id'][$i]);
-                    if (($kelompokAKI->id == $stok->kelompok_id) || ($kelompokBAN->id == $stok->kelompok_id)) {
-                        $stok->statusaktif = $statusNonAktif->id;
-                    }
-                    $stok->statusban = $statusafkir->id;
-                    $stok->save();
-                    $data['detail_qty'][$i] = 0;
+                // $kartustok = KartuStok::getlaporan(date('Y-m-d',strtotime(request()->tgldariheader)), date('Y-m-d',strtotime(request()->tglsampaiheader)),$data['detail_stok_id'][$i], $data['detail_stok_id'][$i], $data['gudang_id'], 0,0, 'GUDANG');
+                // $ks = KartuStok::select('stok_id', DB::raw('SUM(qtymasuk) - SUM(qtykeluar) AS qty'))
+                // ->where('stok_id',$data['detail_stok_id'][$i])
+                // ->groupBy('stok_id')
+                // ->first();
+                $statusafkir = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS KONDISI BAN')->where('subgrp', 'STATUS KONDISI BAN')->where('text', 'AFKIR')->first();
+                $statusNonAktif = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'NON AKTIF')->first();
+                $kelompokAKI = DB::table('kelompok')->from(DB::raw("kelompok with (readuncommitted)"))->where('kodekelompok', 'AKI')->first();
+                $kelompokBAN = DB::table('kelompok')->from(DB::raw("kelompok with (readuncommitted)"))->where('kodekelompok', 'BAN')->first();
+                $stok = (new Stok())->find($data['detail_stok_id'][$i]);
+                if (($kelompokAKI->id == $stok->kelompok_id) || ($kelompokBAN->id == $stok->kelompok_id)) {
+                    $stok->statusaktif = $statusNonAktif->id;
+                }
+                $stok->statusban = $statusafkir->id;
+                $stok->save();
+                $data['detail_qty'][$i] = 0;
             }
             if ($afkir->id == $data['pengeluaranstok_id']) {
                 $vulkanisirke = 0;
@@ -1733,8 +1795,6 @@ class PengeluaranStokHeader extends MyModel
                         'nominal_detail' => $jurnalnominal_detail,
                         'keterangan_detail' => $jurnalketerangan_detail
                     ];
-
-                   
                 }
 
                 if ($jurnalnominaldetailreal != 0) {
@@ -2102,22 +2162,22 @@ class PengeluaranStokHeader extends MyModel
 
             $pengeluarantrucking_nobukti = $data['pengeluarantrucking_nobukti'] ?? '';
             if ($afkir->id == $data['pengeluaranstok_id']) {
-                    // $kartustok = KartuStok::getlaporan(date('Y-m-d',strtotime(request()->tgldariheader)), date('Y-m-d',strtotime(request()->tglsampaiheader)),$data['detail_stok_id'][$i], $data['detail_stok_id'][$i], $data['gudang_id'], 0,0, 'GUDANG');
-                    // $ks = KartuStok::select('stok_id', DB::raw('SUM(qtymasuk) - SUM(qtykeluar) AS qty'))
-                    // ->where('stok_id',$data['detail_stok_id'][$i])
-                    // ->groupBy('stok_id')
-                    // ->first();
-                    $statusafkir = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS KONDISI BAN')->where('subgrp', 'STATUS KONDISI BAN')->where('text', 'AFKIR')->first();
-                    $statusNonAktif = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'NON AKTIF')->first();
-                    $kelompokAKI = DB::table('kelompok')->from(DB::raw("kelompok with (readuncommitted)"))->where('kodekelompok', 'AKI')->first();
-                    $kelompokBAN = DB::table('kelompok')->from(DB::raw("kelompok with (readuncommitted)"))->where('kodekelompok', 'BAN')->first();
-                    $stok = (new Stok())->find($data['detail_stok_id'][$i]);
-                    $stok->statusban = $statusafkir->id;
-                    if (($kelompokAKI->id == $stok->kelompok_id) || ($kelompokBAN->id == $stok->kelompok_id)) {
-                        $stok->statusaktif = $statusNonAktif->id;
-                    }
-                    $stok->save();
-                    $data['detail_qty'][$i] = 0;
+                // $kartustok = KartuStok::getlaporan(date('Y-m-d',strtotime(request()->tgldariheader)), date('Y-m-d',strtotime(request()->tglsampaiheader)),$data['detail_stok_id'][$i], $data['detail_stok_id'][$i], $data['gudang_id'], 0,0, 'GUDANG');
+                // $ks = KartuStok::select('stok_id', DB::raw('SUM(qtymasuk) - SUM(qtykeluar) AS qty'))
+                // ->where('stok_id',$data['detail_stok_id'][$i])
+                // ->groupBy('stok_id')
+                // ->first();
+                $statusafkir = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS KONDISI BAN')->where('subgrp', 'STATUS KONDISI BAN')->where('text', 'AFKIR')->first();
+                $statusNonAktif = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'NON AKTIF')->first();
+                $kelompokAKI = DB::table('kelompok')->from(DB::raw("kelompok with (readuncommitted)"))->where('kodekelompok', 'AKI')->first();
+                $kelompokBAN = DB::table('kelompok')->from(DB::raw("kelompok with (readuncommitted)"))->where('kodekelompok', 'BAN')->first();
+                $stok = (new Stok())->find($data['detail_stok_id'][$i]);
+                $stok->statusban = $statusafkir->id;
+                if (($kelompokAKI->id == $stok->kelompok_id) || ($kelompokBAN->id == $stok->kelompok_id)) {
+                    $stok->statusaktif = $statusNonAktif->id;
+                }
+                $stok->save();
+                $data['detail_qty'][$i] = 0;
             }
 
             if ($afkir->id ==  $pengeluaranstok_id) {
@@ -2547,7 +2607,7 @@ class PengeluaranStokHeader extends MyModel
 
                             $jurnalmemodebet = json_decode($jurnalselisihfifodebet->memo, true);
                             $jurnalmemokredit = json_decode($jurnalselisihfifokredit->memo, true);
-                            $jurnalcoadebet_detail[] = $jurnalmemokredit['JURNAL']; 
+                            $jurnalcoadebet_detail[] = $jurnalmemokredit['JURNAL'];
                             $jurnalcoakredit_detail[] = $jurnalmemodebet['JURNAL'];
                             $jurnalnominal_detail[] = $jurnalnominaldetail;
                             $jurnalketerangan_detail[] = $keterangan_detail[0];
@@ -3129,13 +3189,13 @@ class PengeluaranStokHeader extends MyModel
             $tutupbuku = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'TUTUP BUKU')->where('subgrp', '=', 'TUTUP BUKU')->first();
             $approval = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where("grp", 'STATUS APPROVAL')->where("text", "APPROVAL")->first();
             $nonApproval = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where("grp", 'STATUS APPROVAL')->where("text", "NON APPROVAL")->first();
-            
-            $query = DB::table('pengeluaranstokheader')->where('tglbataseditketerangan' ,'<',date('Y-m-d H:i:s'))->where('tglbukti', '>', $tutupbuku->text)->where('statusapprovaleditketerangan', $approval->id);
-            $query->update(['statusapprovaleditketerangan'=>$nonApproval->id]);
 
-            $query = DB::table('pengeluaranstokheader')->where('tglbatasedit' ,'<',date('Y-m-d H:i:s'))->where('tglbukti', '>', $tutupbuku->text)->where('statusapprovaledit', $approval->id);
-            $query->update(['statusapprovaledit'=>$nonApproval->id]);
-            
+            $query = DB::table('pengeluaranstokheader')->where('tglbataseditketerangan', '<', date('Y-m-d H:i:s'))->where('tglbukti', '>', $tutupbuku->text)->where('statusapprovaleditketerangan', $approval->id);
+            $query->update(['statusapprovaleditketerangan' => $nonApproval->id]);
+
+            $query = DB::table('pengeluaranstokheader')->where('tglbatasedit', '<', date('Y-m-d H:i:s'))->where('tglbukti', '>', $tutupbuku->text)->where('statusapprovaledit', $approval->id);
+            $query->update(['statusapprovaledit' => $nonApproval->id]);
+
             DB::commit();
         } catch (\Throwable $th) {
             DB::rollBack();
