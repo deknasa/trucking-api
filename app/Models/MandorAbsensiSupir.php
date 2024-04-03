@@ -796,6 +796,9 @@ class MandorAbsensiSupir extends MyModel
         $update = DB::table($tempMandor);
         $update->update(["memo" => '{"MEMO":"AKTIF","SINGKATAN":"A","WARNA":"#009933","WARNATULISAN":"#FFF"}']);
 
+        if (request()->view =="true") {
+            goto hasil;
+        }
         // dump(db::table($tempMandor)->where('trado_id',18)->get());
         // 
         // dd(db::table($tempTrado)->where('kodetrado','1234567890')->get());
@@ -865,7 +868,7 @@ class MandorAbsensiSupir extends MyModel
 
         ]);
 
-
+        hasil:
         $queryhasil = DB::table($tempMandor)->from(DB::raw("$tempMandor as a"))
             ->select(
                 // DB::raw("row_number() Over(Order By a.trado_id) as id"),
