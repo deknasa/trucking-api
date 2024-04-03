@@ -3,6 +3,8 @@
 namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Http\Controllers\Api\ListTripController;
+use App\Models\ListTrip;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
@@ -13,6 +15,8 @@ class DestroyListTrip implements Rule
      *
      * @return void
      */
+    public $kodeerror;
+    public $keterangan;
     public function __construct()
     {
         //
@@ -27,14 +31,14 @@ class DestroyListTrip implements Rule
      */
     public function passes($attribute, $value)
     {
-        $cekSP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('dari_id', 'jobtrucking')->where('id', $value)->first();
-        if ($cekSP->dari_id == 1) {
-            $cekJob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', $cekSP->jobtrucking)->where('id', '<>', $value)->first();
-            if($cekJob != '')
-            {
-                return false;
-            }
+        $cekCetak = app(ListTripController::class)->cekValidasi(request()->id);
+        $getOriginal = $cekCetak->original;
+        if ($getOriginal['kondisi'] == true) {
+            $this->kodeerror = $getOriginal['kondisi'];
+            $this->keterangan = $getOriginal['message'];
+            return false;
         }
+        
         return true;
     }
 
@@ -45,6 +49,6 @@ class DestroyListTrip implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('SATL')->keterangan.' (jobtrucking)';
+        return $this->keterangan;
     }
 }

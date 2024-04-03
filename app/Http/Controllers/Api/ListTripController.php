@@ -13,7 +13,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreMandorTripRequest;
 use App\Http\Requests\UpdateListTripRequest;
+use App\Models\Error;
 use App\Models\ListTrip;
+use App\Models\MyModel;
+use App\Models\Parameter;
+use DateTime;
 
 class ListTripController extends Controller
 {
@@ -139,25 +143,46 @@ class ListTripController extends Controller
     {
         $listTrip = new ListTrip();
         $cekdata = $listTrip->cekValidasi($id);
+        $cektrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+            ->where('id', $id)
+            ->first();
+        $user = auth('api')->user()->name;
+        $useredit = $cektrip->editing_by ?? '';
+
         if ($cekdata['kondisi'] == true) {
-            $query = DB::table('error')
-                ->select(
-                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
-                )
-                ->where('kodeerror', '=', $cekdata['kodeerror'])
-                ->get();
-            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
-                'message' => $keterangan,
+                'message' => $cekdata['keterangan'],
                 'errors' => '',
                 'kondisi' => $cekdata['kondisi'],
             ];
 
             return response($data);
+        } else if ($useredit != '' && $useredit != $user) {
+
+            $waktu = (new Parameter())->cekBatasWaktuEdit('PENGELUARAN KAS/BANK BUKTI');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($cektrip->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+
+            $error = new Error();
+            $keteranganerror =  $error->cekKeteranganError('SDE') ?? '';
+            $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
+            $keterror = 'No Bukti <b>' . $cektrip->nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+            $data = [
+                'kondisi' => true,
+                'message' => $keterror,
+                'kodeerror' => 'SDE',
+                'statuspesan' => 'warning',
+                // 'force' => $force
+            ];
+
+            return response($data);
         } else {
 
+            (new MyModel())->updateEditingBy('suratpengantar', $id, 'EDIT');
             $data = [
                 'status' => false,
                 'message' => '',
