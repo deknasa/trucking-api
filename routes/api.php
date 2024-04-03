@@ -62,7 +62,6 @@ use App\Http\Controllers\Api\HariLiburController;
 use App\Http\Controllers\Api\InputTripController;
 use App\Http\Controllers\Api\JenisEmklController;
 use App\Http\Controllers\Api\KartuStokController;
-use App\Http\Controllers\Api\KartuStokLamaController;
 use App\Http\Controllers\Api\KerusakanController;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ReportAllController;
@@ -86,29 +85,30 @@ use App\Http\Controllers\Api\JobTruckingController;
 use App\Http\Controllers\Api\LaporanStokController;
 use App\Http\Controllers\Api\OrderanEmklController;
 use App\Http\Controllers\Api\ReminderOliController;
-
 use App\Http\Controllers\Api\ReminderSpkController;
+
 use App\Http\Controllers\Api\SubKelompokController;
-
 use App\Http\Controllers\Api\HutangDetailController;
+
 use App\Http\Controllers\Api\HutangHeaderController;
-
 use App\Http\Controllers\Api\OpnameDetailController;
+
 use App\Http\Controllers\Api\OpnameHeaderController;
-
 use App\Http\Controllers\Api\ReminderStokController;
+
 use App\Http\Controllers\Api\ReportNeracaController;
-
 use App\Http\Controllers\Api\SaldoUmurAkiController;
+
 use App\Http\Controllers\Api\TarifRincianController;
-
 use App\Http\Controllers\Api\UbahPasswordController;
-use App\Http\Controllers\CustomValidationController;
 
+use App\Http\Controllers\CustomValidationController;
 use App\Http\Controllers\LaporanKasHarianController;
+
 use App\Http\Controllers\Api\BankPelangganController;
 use App\Http\Controllers\Api\InvoiceDetailController;
 use App\Http\Controllers\Api\InvoiceHeaderController;
+use App\Http\Controllers\Api\KartuStokLamaController;
 use App\Http\Controllers\Api\LaporanNeracaController;
 use App\Http\Controllers\Api\MainAkunPusatController;
 use App\Http\Controllers\Api\PiutangDetailController;
@@ -183,6 +183,7 @@ use App\Http\Controllers\Api\BukaPenerimaanStokController;
 use App\Http\Controllers\Api\InvoiceExtraDetailController;
 use App\Http\Controllers\Api\InvoiceExtraHeaderController;
 use App\Http\Controllers\Api\KaryawanLogAbsensiController;
+use App\Http\Controllers\Api\LaporanKartuPanjarController;
 use App\Http\Controllers\Api\LaporanPiutangGiroController;
 use App\Http\Controllers\Api\LaporanRitasiTradoController;
 use App\Http\Controllers\Api\LaporanTitipanEmklController;
@@ -191,6 +192,7 @@ use App\Http\Controllers\Api\PenerimaanTruckingController;
 use App\Http\Controllers\Api\ProsesAbsensiSupirController;
 use App\Http\Controllers\Api\SaldoAwalBukuBesarController;
 use App\Http\Controllers\Api\TarifDiscountHargaController;
+use App\Http\Controllers\Api\TarifHargaTertentuController;
 use App\Http\Controllers\Api\ApprovalHutangBayarController;
 use App\Http\Controllers\Api\ApprovalSupirGambarController;
 use App\Http\Controllers\Api\ApprovalTradoGambarController;
@@ -222,7 +224,6 @@ use App\Http\Controllers\Api\JurnalUmumPusatHeaderController;
 use App\Http\Controllers\Api\LaporanOrderPembelianController;
 use App\Http\Controllers\Api\LaporanRekapSumbanganController;
 use App\Http\Controllers\Api\LaporanSaldoInventoryController;
-use App\Http\Controllers\Api\LaporanSaldoInventoryLamaController;
 use App\Http\Controllers\Api\PelunasanHutangDetailController;
 use App\Http\Controllers\Api\PelunasanHutangHeaderController;
 use App\Http\Controllers\Api\PendapatanSupirDetailController;
@@ -261,6 +262,8 @@ use App\Http\Controllers\Api\PenerimaanTruckingDetailController;
 use App\Http\Controllers\Api\PenerimaanTruckingHeaderController;
 use App\Http\Controllers\Api\LaporanBanGudangSementaraController;
 use App\Http\Controllers\Api\LaporanEstimasiKasGantungController;
+use App\Http\Controllers\Api\LaporanSaldoInventoryLamaController;
+use App\Http\Controllers\API\MandorAbsensiSupirHistoryController;
 use App\Http\Controllers\Api\PengeluaranStokDetailFifoController;
 use App\Http\Controllers\Api\PengeluaranTruckingDetailController;
 use App\Http\Controllers\Api\PengeluaranTruckingHeaderController;
@@ -271,7 +274,6 @@ use App\Http\Controllers\Api\AbsensiSupirApprovalHeaderController;
 use App\Http\Controllers\Api\ExportLaporanMingguanSupirController;
 use App\Http\Controllers\Api\LaporanKartuHutangPrediksiController;
 use App\Http\Controllers\Api\LaporanKartuPiutangPerAgenController;
-use App\Http\Controllers\Api\LaporanKartuPanjarController;
 use App\Http\Controllers\Api\LaporanSupirLebihDariTradoController;
 use App\Http\Controllers\Api\LaporanTripGandenganDetailController;
 use App\Http\Controllers\Api\ProsesUangJalanSupirDetailController;
@@ -301,7 +303,6 @@ use App\Http\Controllers\Api\SuratPengantarApprovalInputTripController;
 use App\Http\Controllers\Api\ApprovalBukaTanggalSuratPengantarController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
-use App\Http\Controllers\Api\TarifHargaTertentuController;
 
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
@@ -710,6 +711,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('prosesabsensisupir/combo', [ProsesAbsensiSupirController::class, 'combo']);
     Route::get('prosesabsensisupir/field_length', [ProsesAbsensiSupirController::class, 'fieldLength']);
 
+    Route::get('mandorabsensisupirhistory', [MandorAbsensiSupirHistoryController::class, 'index']);
     Route::get('mandorabsensisupir/{tradoId}/cekvalidasi', [MandorAbsensiSupirController::class, 'cekValidasi'])->whereNumber('tradoId');
     Route::get('mandorabsensisupir/{tradoId}/cekvalidasiadd', [MandorAbsensiSupirController::class, 'cekValidasiAdd'])->whereNumber('tradoId');
     Route::patch('mandorabsensisupir/{id}/update', [MandorAbsensiSupirController::class, 'update'])->whereNumber('id');
