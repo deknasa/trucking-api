@@ -187,6 +187,21 @@ class Gandengan extends MyModel
             $query->where('gandengan.statusaktif', '=', $statusaktif->id);
         }
 
+        $penerimaanstok = request()->penerimaanstok_id ?? '';
+        $penerimaanStokPg = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
+
+        if ($penerimaanstok == $penerimaanStokPg->text) {
+            $gandengandari_id = request()->gandengandari_id ?? 0;
+            $gandenganke_id = request()->gandenganke_id ?? 0;        
+            $gandengandarike= request()->gandengandarike ?? '';        
+            if ($gandengandarike == "ke") {
+                $query->whereraw("gandengan.id not in(" . $gandengandari_id . ")");
+            }
+            if ($gandengandarike == "dari") {
+                $query->whereraw("gandengan.id not in(" . $gandenganke_id . ")");
+            }
+        }
+
         if ($asal == 'YA') {
             $query->whereRaw("gandengan.id in (select id from $tempAll)");
         }

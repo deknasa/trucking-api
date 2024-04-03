@@ -346,6 +346,21 @@ class Trado extends MyModel
 
             $query->join(db::raw($temptrado) . ' as absensisupirdetail', 'trado.id', '=', 'absensisupirdetail.trado_id');
         }
+        $penerimaanstok = request()->penerimaanstok_id ?? '';
+        $penerimaanStokPg = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
+
+        if ($penerimaanstok == $penerimaanStokPg->text) {
+            $tradodari_id = request()->tradodari_id ?? 0;
+            $tradoke_id = request()->tradoke_id ?? 0;        
+            $tradodarike= request()->tradodarike ?? '';        
+            if ($tradodarike == "ke") {
+                $query->whereraw("trado.id not in(" . $tradodari_id . ")");
+            }
+            if ($tradodarike == "dari") {
+                $query->whereraw("trado.id not in(" . $tradoke_id . ")");
+            }
+        }
+
 
         $this->filter($query);
 
