@@ -33,6 +33,7 @@ class PengeluaranStokHeader extends MyModel
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
         $from = request()->from ?? '';
+        $cabang = request()->cabang ?? '';
         $aksi = request()->aksi ?? '';
 
         $user_id = auth('api')->user()->id ?? 0;
@@ -396,20 +397,41 @@ class PengeluaranStokHeader extends MyModel
                     $table->unsignedBigInteger('jumlah')->nullable();
                     $table->string('pengeluaranstok_nobukti')->nullable();
                 });
+                if ($cabang == 'TNL') {
 
-                $queryklaimtrucking = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
-                    ->select(DB::raw("count(pengeluarantruckingdetail.stok_id) as jumlah, pengeluarantruckingdetail.pengeluaranstok_nobukti"))
-                    ->join(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'pengeluarantruckingdetail.nobukti')
-                    ->where("pengeluarantruckingdetail.pengeluaranstok_nobukti", '!=', "''")
-                    ->whereBetween('pengeluarantruckingheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
-                    ->where('pengeluarantruckingheader.id', '<>', $pengeluarantrucking_id)
-                    ->groupBy('pengeluarantruckingdetail.pengeluaranstok_nobukti');
+                    $queryklaimtrucking = DB::connection('sqlsrvtas')->table("pengeluarantruckingdetail")
+                        // ->from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
+                        ->select(DB::raw("count(pengeluarantruckingdetail.stoktnl_id) as jumlah, pengeluarantruckingdetail.pengeluaranstoktnl_nobukti as pengeluaranstok_nobukti"))
+                        ->join(DB::raw("trucking.dbo.pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'pengeluarantruckingdetail.nobukti')
+                        ->whereRaw("pengeluarantruckingdetail.pengeluaranstoktnl_nobukti != ''")
+                        ->where("pengeluarantruckingheader.pengeluarantrucking_id", 7)
+                        ->whereBetween('pengeluarantruckingheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                        ->where('pengeluarantruckingheader.id', '<>', $pengeluarantrucking_id)
+                        ->groupBy('pengeluarantruckingdetail.pengeluaranstoktnl_nobukti')->get();
 
-                DB::table($tempTrucking)->insertUsing([
-                    'jumlah',
-                    'pengeluaranstok_nobukti',
-                ],  $queryklaimtrucking);
+                    foreach ($queryklaimtrucking as $item) {
+                        DB::table($tempTrucking)->insert([
+                            'jumlah' => $item->jumlah,
+                            'pengeluaranstok_nobukti' => $item->pengeluaranstok_nobukti,
 
+                        ]);
+                    }
+                } else {
+
+                    $queryklaimtrucking = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
+                        ->select(DB::raw("count(pengeluarantruckingdetail.stok_id) as jumlah, pengeluarantruckingdetail.pengeluaranstok_nobukti"))
+                        ->join(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'pengeluarantruckingdetail.nobukti')
+                        ->where("pengeluarantruckingdetail.pengeluaranstok_nobukti", '!=', "''")
+                        ->where("pengeluarantruckingheader.pengeluarantrucking_id", 7)
+                        ->whereBetween('pengeluarantruckingheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                        ->where('pengeluarantruckingheader.id', '<>', $pengeluarantrucking_id)
+                        ->groupBy('pengeluarantruckingdetail.pengeluaranstok_nobukti');
+
+                    DB::table($tempTrucking)->insertUsing([
+                        'jumlah',
+                        'pengeluaranstok_nobukti',
+                    ],  $queryklaimtrucking);
+                }
 
                 $tempSpk = '##tempSpk' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                 Schema::create($tempSpk, function ($table) {
@@ -423,7 +445,7 @@ class PengeluaranStokHeader extends MyModel
                     ->join(DB::raw("pengeluaranstokdetail with (readuncommitted)"), 'pengeluaranstokheader.nobukti', 'pengeluaranstokdetail.nobukti')
                     ->where("pengeluaranstokheader.pengeluaranstok_id", 1)
                     ->whereBetween('pengeluaranstokheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
-                    ->where('pengeluaranstokheader.tglbukti','>',date('Y-m-d',strtotime($tutupbuku)))
+                    ->where('pengeluaranstokheader.tglbukti', '>', date('Y-m-d', strtotime($tutupbuku)))
                     ->groupBy('pengeluaranstokheader.nobukti');
 
                 DB::table($tempSpk)->insertUsing([
