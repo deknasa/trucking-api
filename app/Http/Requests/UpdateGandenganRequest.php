@@ -53,7 +53,7 @@ class UpdateGandenganRequest extends FormRequest
         $rules = [
             'kodegandengan' => ['required', Rule::unique('gandengan')->whereNotIn('id', [$this->id])],
             'jumlahroda' => ['required'],
-            'jumlahbanserap' => ['required'],
+            // 'jumlahbanserap' => ['required'],
             'statusaktifnama' => ['required'],
         ];
         $rules = array_merge(

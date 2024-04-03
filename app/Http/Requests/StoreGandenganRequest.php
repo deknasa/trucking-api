@@ -55,7 +55,7 @@ class StoreGandenganRequest extends FormRequest
         $rules = [
             'kodegandengan' => ['required', 'unique:gandengan'],
             'jumlahroda' => ['required'],
-            'jumlahbanserap' => ['required'],
+            // 'jumlahbanserap' => ['required'],
             'statusaktifnama' => ['required'],
         ];
         $rules = array_merge(
