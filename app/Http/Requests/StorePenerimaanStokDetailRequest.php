@@ -101,6 +101,16 @@ class StorePenerimaanStokDetailRequest extends FormRequest
                     }
                 },
             ],
+            
+            'detail_nominaldiscount.*' => [
+                'numeric',
+                'nullable',
+                function ($attribute, $value, $fail) use ($spb,$spbs,$pst,$pspk,$spbp){
+                    if((($spb->text == request()->penerimaanstok_id)||($spbs->id == request()->penerimaanstok_id)||($pst->id == request()->penerimaanstok_id) || ($pspk->id == request()->penerimaanstok_id) || ($spbp->id == request()->penerimaanstok_id)) && ($value >  request()->total_sebelum) ){
+                        $fail(app(ErrorController::class)->geterror('SM-ANGKA-100')->keterangan);
+                    }
+                },
+            ],
                 
             'penerimaanstokheader_id.*' => 'required',
             'detail_keterangan.*' => 'required',
@@ -117,6 +127,7 @@ class StorePenerimaanStokDetailRequest extends FormRequest
             'detail_vulkanisirke.*' => 'vulkanisir ke',
             'detail_harga.*' => 'harga',
             'detail_persentasediscount.*' => 'persentase discount',
+            'detail_nominaldiscount.*' => 'nominal discount',
             'total_sebelum.*' => 'total sebelum',
         ];
     }
@@ -139,6 +150,7 @@ class StorePenerimaanStokDetailRequest extends FormRequest
             'penerimaanstokheader_id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
             'detail_keterangan.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
             'detail_persentasediscount.max' => ':attribute' . ' ' . app(ErrorController::class)->geterror('MIN')->keterangan,
+            'detail_nominaldiscount.max' => ':attribute' . ' ' . app(ErrorController::class)->geterror('MIN')->keterangan,
         ];
     }
     

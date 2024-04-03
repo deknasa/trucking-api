@@ -545,6 +545,7 @@ class PenerimaanStokDetail extends MyModel
         $total = ceil(($data['qty'] * $data['harga']));
         $nominaldiscount = $data['totalsebelum'] * ($data['persentasediscount'] / 100);
         // dd($data['totalItem'],$data['totalsebelum'],$nominaldiscount,$total);
+        // dd($data['nominaldiscount'],$nominaldiscount);
         // $total -= $nominaldiscount;
         $penerimaanStokDetail = new PenerimaanStokDetail();
         $penerimaanStokDetail->penerimaanstokheader_id = $data['penerimaanstokheader_id'];
