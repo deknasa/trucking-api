@@ -33,6 +33,7 @@ use App\Models\Error;
 use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
 use App\Models\MyModel;
+use App\Models\PengeluaranPenerima;
 use DateTime;
 use Exception;
 use Illuminate\Database\QueryException;
@@ -88,6 +89,7 @@ class PengeluaranHeaderController extends Controller
                 "postingdari" => $request->postingdari,
                 "statusapproval" => $request->statusapproval,
                 "dibayarke" => $request->dibayarke,
+                "penerima_id" => $request->penerima_id,
                 "alatbayar_id" => $request->alatbayar_id,
                 "userapproval" => $request->userapproval,
                 "tglapproval" => $request->tglapproval,
@@ -104,6 +106,7 @@ class PengeluaranHeaderController extends Controller
                 "keterangan_detail" => $request->keterangan_detail,
                 "noinvoice" => $request->noinvoice,
                 "bank_detail" => $request->bank_detail,
+                "manual" => true,
             ]);
             $pengeluaranHeader->position = $this->getPosition($pengeluaranHeader, $pengeluaranHeader->getTable())->position;
             if ($request->limit == 0) {
@@ -129,11 +132,13 @@ class PengeluaranHeaderController extends Controller
     {
         $data = PengeluaranHeader::findAll($id);
         $detail = PengeluaranDetail::findAll($id);
+        $detailpenerima = PengeluaranPenerima::findAll($id);
 
         return response([
             'status' => true,
             'data' => $data,
-            'detail' => $detail
+            'detail' => $detail,
+            'detailpenerima' => $detailpenerima
         ]);
     }
 
@@ -155,6 +160,7 @@ class PengeluaranHeaderController extends Controller
                 "dibayarke" => $request->dibayarke,
                 "alatbayar_id" => $request->alatbayar_id,
                 "userapproval" => $request->userapproval,
+                "penerima_id" => $request->penerima_id,
                 "tglapproval" => $request->tglapproval,
                 "transferkeac" => $request->transferkeac,
                 "transferkean" => $request->transferkean,
@@ -169,6 +175,7 @@ class PengeluaranHeaderController extends Controller
                 "keterangan_detail" => $request->keterangan_detail,
                 "noinvoice" => $request->noinvoice,
                 "bank_detail" => $request->bank_detail,
+                "manual" => true,
             ]);
             /* Set position and page */
             $pengeluaranHeader->position = $this->getPosition($pengeluaranHeader, $pengeluaranHeader->getTable())->position;
@@ -485,6 +492,9 @@ class PengeluaranHeaderController extends Controller
 
                 return response($data);
             } else {
+                // $cekEnableForceEdit = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
+                // ->where('grp','FORCE EDIT')->first()->text ?? 'TIDAK';
+                // $force = ($cekEnableForceEdit == 'YA') ? true : false;
 
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
                 $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
@@ -493,6 +503,7 @@ class PengeluaranHeaderController extends Controller
                     'message' => $keterror,
                     'kodeerror' => 'SDE',
                     'statuspesan' => 'warning',
+                    // 'force' => $force
                 ];
 
                 return response($data);
