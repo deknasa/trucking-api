@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Http;
 class SupplierController extends Controller
 {
 
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -137,7 +137,8 @@ class SupplierController extends Controller
                 'statusdaftarharga' => $request->statusdaftarharga,
                 'statuspostingtnl' => $request->statuspostingtnl,
                 'kategoriusaha' => $request->kategoriusaha,
-                'from' => $request->from ?? '',
+                'tas_id' => $request->tas_id,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
             $supplier = (new Supplier())->processStore($data);
             if ($request->from == '') {
@@ -149,23 +150,19 @@ class SupplierController extends Controller
                 }
             }
 
-            $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->where('default', 'YA')->first();
 
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-            
+            $data['tas_id'] = $supplier->id;
+
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
-                // posting ke tnl
-                $data['statuspostingtnl'] = $statusBukanTnl->id;
-    
-                $postingTNL = (new Supplier())->postingTnl($data);
+                $this->saveToTnl('supplier', 'add', $data);
             }
             // if ($data['statuspostingtnl'] == $statusTnl->id) {
             //     $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
             //     // posting ke tnl
             //     $data['statuspostingtnl'] = $statusBukanTnl->id;
-    
+
             //     $postingTNL = (new Supplier())->postingTnl($data);
             // }
             DB::commit();
@@ -214,15 +211,26 @@ class SupplierController extends Controller
                 'jabatan' => $request->jabatan,
                 'statusdaftarharga' => $request->statusdaftarharga,
                 'kategoriusaha' => $request->kategoriusaha,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
 
             $supplier = (new Supplier())->processUpdate($supplier, $data);
-            $supplier->position = $this->getPosition($supplier, $supplier->getTable())->position;
-            if ($request->limit == 0) {
-                $supplier->page = ceil($supplier->position / (10));
-            } else {
-                $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
+
+            if ($request->from == '') {
+                $supplier->position = $this->getPosition($supplier, $supplier->getTable())->position;
+                if ($request->limit == 0) {
+                    $supplier->page = ceil($supplier->position / (10));
+                } else {
+                    $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
+                }
             }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $supplier->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('supplier', 'edit', $data);
+            }
+
 
             DB::commit();
 
@@ -246,15 +254,25 @@ class SupplierController extends Controller
 
         try {
             $supplier = (new Supplier())->processDestroy($id);
-            $selected = $this->getPosition($supplier, $supplier->getTable(), true);
-            $supplier->position = $selected->position;
-            $supplier->id = $selected->id;
-            if ($request->limit == 0) {
-                $supplier->page = ceil($supplier->position / (10));
-            } else {
-                $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($supplier, $supplier->getTable(), true);
+                $supplier->position = $selected->position;
+                $supplier->id = $selected->id;
+                if ($request->limit == 0) {
+                    $supplier->page = ceil($supplier->position / (10));
+                } else {
+                    $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
+                }
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
+
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('supplier', 'delete', $data);
+            }
             DB::commit();
 
             return response()->json([
@@ -282,7 +300,7 @@ class SupplierController extends Controller
         ]);
     }
 
-     /**
+    /**
      * @ClassName 
      * @Keterangan APRROVAL DATA
      */
@@ -307,7 +325,7 @@ class SupplierController extends Controller
         }
     }
 
-     /**
+    /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
      */

@@ -363,7 +363,6 @@ class Supplier extends MyModel
             $this->table.namarekening,
             $this->table.jabatan,
             'parameter_statusdaftarharga.text as statusdaftarharga',
-            'statuspostingtnl.text as statuspostingtnl',
             $this->table.kategoriusaha,
             'statusapproval.text as statusapproval',
             $this->table.tglapproval,
@@ -405,7 +404,6 @@ class Supplier extends MyModel
             $table->string('namarekening', 150)->nullable();
             $table->string('jabatan', 150)->nullable();
             $table->string('statusdaftarharga')->nullable();
-            $table->string('statuspostingtnl')->nullable();
             $table->string('kategoriusaha', 150)->nullable();
             $table->string('statusapproval', 150)->nullable();
             $table->date('tglapproval')->nullable();
@@ -421,7 +419,7 @@ class Supplier extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         // dd($models->get());
-        DB::table($temp)->insertUsing(['id', 'namasupplier', 'namakontak', 'top', 'keterangan',  'alamat', 'kota', 'kodepos', 'notelp1', 'notelp2', 'email',  'statusaktif', 'web', 'namapemilik', 'jenisusaha', 'bank', 'coa', 'rekeningbank',  'namarekening', 'jabatan', 'statusdaftarharga', 'statuspostingtnl', 'kategoriusaha', 'statusapproval', 'tglapproval', 'userapproval', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'namasupplier', 'namakontak', 'top', 'keterangan',  'alamat', 'kota', 'kodepos', 'notelp1', 'notelp2', 'email',  'statusaktif', 'web', 'namapemilik', 'jenisusaha', 'bank', 'coa', 'rekeningbank',  'namarekening', 'jabatan', 'statusdaftarharga', 'kategoriusaha', 'statusapproval', 'tglapproval', 'userapproval', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return  $temp;
     }
@@ -529,6 +527,7 @@ class Supplier extends MyModel
         $supplier->statusdaftarharga = $data['statusdaftarharga'];
         $supplier->statuspostingtnl = $data['statuspostingtnl'];
         $supplier->kategoriusaha = $data['kategoriusaha'];
+        $supplier->tas_id = $data['tas_id'] ?? '';
         $supplier->modifiedby = auth('api')->user()->name;
         $supplier->info = html_entity_decode(request()->info);
 

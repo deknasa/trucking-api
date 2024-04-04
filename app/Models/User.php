@@ -279,15 +279,18 @@ class User extends Authenticatable
             "$this->table.id",
             "$this->table.user",
             "$this->table.name",
+            "$this->table.email",
             "cabang.namacabang as cabang_id",
             "$this->table.karyawan_id",
             "$this->table.dashboard",
             "parameter.text as statusaktif",
+            "statusakses.memo as statusakses",
             "$this->table.modifiedby",
             "$this->table.created_at",
             "$this->table.updated_at"
         )
             ->leftJoin('parameter', 'user.statusaktif', '=', 'parameter.id')
+            ->leftJoin('parameter as statusakses', 'user.statusakses', '=', 'statusakses.id')
             ->leftJoin('cabang', 'user.cabang_id', '=', 'cabang.id');
     }
 
@@ -298,10 +301,12 @@ class User extends Authenticatable
             $table->bigInteger('id')->nullable();
             $table->string('user', 255)->nullable();
             $table->string('name', 255)->nullable();
+            $table->longText('email')->nullable();
             $table->string('cabang_id', 300)->nullable();
             $table->bigInteger('karyawan_id')->length(11)->nullable();
             $table->string('dashboard', 255)->nullable();
             $table->string('statusaktif', 300)->nullable();
+            $table->string('statusakses', 300)->nullable();
             $table->string('modifiedby', 30)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -315,7 +320,7 @@ class User extends Authenticatable
         $query = $this->sort($query);
         $models = $this->filter($query);
 
-        DB::table($temp)->insertUsing(['id', 'user', 'name', 'cabang_id', 'karyawan_id', 'dashboard', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'user', 'name','email', 'cabang_id', 'karyawan_id', 'dashboard', 'statusaktif','statusakses', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return  $temp;
     }
