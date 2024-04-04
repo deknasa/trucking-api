@@ -89,8 +89,9 @@ class PenerimaController extends Controller
         try {
             $data = [
                 'namapenerima' => $request->namapenerima,
-                'npwp' => $request->npwp,
-                'noktp' => $request->noktp,
+                'npwp' => $request->npwp ?? '',
+                'noktp' => $request->noktp ?? '',
+                'keterangan' => $request->keterangan,
                 'statusaktif' => $request->statusaktif,
                 'statuskaryawan' => $request->statuskaryawan,
             ];
@@ -135,8 +136,9 @@ class PenerimaController extends Controller
         try {
             $data = [
                 'namapenerima' => $request->namapenerima,
-                'npwp' => $request->npwp,
-                'noktp' => $request->noktp,
+                'npwp' => $request->npwp ?? '',
+                'noktp' => $request->noktp ?? '',
+                'keterangan' => $request->keterangan,
                 'statusaktif' => $request->statusaktif,
                 'statuskaryawan' => $request->statuskaryawan,
             ];
@@ -313,6 +315,10 @@ class PenerimaController extends Controller
                 [
                     'label' => 'No KTP',
                     'index' => 'noktp',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
                 ],
                 [
                     'label' => 'Status Aktif',

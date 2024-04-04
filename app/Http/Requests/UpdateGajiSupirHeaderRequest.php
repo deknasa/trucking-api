@@ -10,6 +10,7 @@ use App\Rules\DateTutupBuku;
 use App\Rules\DestroyGajiSupirNobukti;
 use App\Rules\validasiContSPGajiSupir;
 use App\Rules\ValidasiTambahanGajiSupir;
+use App\Rules\validasiTglBuktiRIC;
 use App\Rules\ValidasiTripGajiSupir;
 use Illuminate\Validation\Rule;
 
@@ -71,6 +72,7 @@ class UpdateGajiSupirHeaderRequest extends FormRequest
             ],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
+                new validasiTglBuktiRIC(),
                 // 'date_equals:' . date('d-m-Y', strtotime($getDataGajiSupir->tglbukti)),
                 new DateTutupBuku()
             ],

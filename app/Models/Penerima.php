@@ -76,6 +76,7 @@ class Penerima extends MyModel
                 'penerima.namapenerima',
                 'penerima.npwp',
                 'penerima.noktp',
+                'penerima.keterangan',
                 'penerima.modifiedby',
                 'parameter_statusaktif.memo as statusaktif',
                 'parameter_statuskaryawan.memo as statuskaryawan',
@@ -177,6 +178,7 @@ class Penerima extends MyModel
             $this->table.namapenerima,
             $this->table.npwp,
             $this->table.noktp,
+            $this->table.keterangan,
             'parameter_statusaktif.text as statusaktif',
             'parameter_statuskaryawan.text as statuskaryawan',
             $this->table.modifiedby,
@@ -196,6 +198,7 @@ class Penerima extends MyModel
             $table->string('namapenerima', 1000)->nullable();
             $table->string('npwp', 1000)->nullable();
             $table->string('noktp', 1000)->nullable();
+            $table->string('keterangan')->nullable();
             $table->string('statusaktif', 1000)->nullable();
             $table->string('statuskaryawan', 1000)->nullable();
             $table->string('modifiedby', 50)->nullable();
@@ -209,7 +212,7 @@ class Penerima extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'namapenerima', 'npwp', 'noktp', 'statusaktif', 'statuskaryawan', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'namapenerima', 'npwp', 'noktp','keterangan', 'statusaktif', 'statuskaryawan', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -226,15 +229,17 @@ class Penerima extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter_statusaktif.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statuskaryawan') {
-                            $query = $query->where('parameter_statuskaryawan.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->where('parameter_statusaktif.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statuskaryawan') {
+                                $query = $query->where('parameter_statuskaryawan.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -242,15 +247,17 @@ class Penerima extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusaktif') {
-                                $query = $query->where('parameter_statusaktif.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'statuskaryawan') {
-                                $query = $query->where('parameter_statuskaryawan.text', '=', "$filters[data]");
-                            } else {
-                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusaktif') {
+                                    $query = $query->where('parameter_statusaktif.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'statuskaryawan') {
+                                    $query = $query->where('parameter_statuskaryawan.text', '=', "$filters[data]");
+                                } else {
+                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
                     });
@@ -279,6 +286,7 @@ class Penerima extends MyModel
         $penerima->namapenerima = $data['namapenerima'];
         $penerima->npwp = $data['npwp'];
         $penerima->noktp = $data['noktp'];
+        $penerima->keterangan = $data['keterangan'];
         $penerima->statusaktif = $data['statusaktif'];
         $penerima->statuskaryawan = $data['statuskaryawan'];
         $penerima->modifiedby = auth('api')->user()->name;
@@ -307,6 +315,7 @@ class Penerima extends MyModel
         $penerima->namapenerima = $data['namapenerima'];
         $penerima->npwp = $data['npwp'];
         $penerima->noktp = $data['noktp'];
+        $penerima->keterangan = $data['keterangan'];
         $penerima->statusaktif = $data['statusaktif'];
         $penerima->statuskaryawan = $data['statuskaryawan'];
         $penerima->modifiedby = auth('api')->user()->name;
@@ -353,7 +362,7 @@ class Penerima extends MyModel
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
-            $penerima = $this->where('id',$data['Id'][$i])->first();
+            $penerima = $this->where('id', $data['Id'][$i])->first();
 
             $penerima->statusaktif = $statusnonaktif->id;
             $penerima->modifiedby = auth('api')->user()->name;

@@ -23,6 +23,7 @@ class CreatePenerimaanstokheaderTable extends Migration
             $table->unsignedBigInteger('penerimaanstok_id')->nullable();
             $table->string('penerimaanstok_nobukti', 50)->nullable();
             $table->string('pengeluaranstok_nobukti', 50)->nullable();
+            $table->string('pengeluaranstokproses_nobukti',50)->nullable();
             $table->string('nobuktisaldo', 50)->nullable();
             $table->date('tglbuktisaldo')->nullable();
             $table->unsignedBigInteger('supplier_id')->nullable();

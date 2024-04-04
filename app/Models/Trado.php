@@ -171,7 +171,8 @@ class Trado extends MyModel
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
         $userid = auth('api')->user()->id;
-        // dd($userid);
+
+
 
         $querymandor = db::table("mandordetail")->from(db::raw("mandordetail a with (readuncommitted)"))
             ->select('a.mandor_id')
@@ -346,6 +347,21 @@ class Trado extends MyModel
 
             $query->join(db::raw($temptrado) . ' as absensisupirdetail', 'trado.id', '=', 'absensisupirdetail.trado_id');
         }
+        $penerimaanstok = request()->penerimaanstok_id ?? '';
+        $penerimaanStokPg = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
+
+        if ($penerimaanstok == $penerimaanStokPg->text) {
+            $tradodari_id = request()->tradodari_id ?? 0;
+            $tradoke_id = request()->tradoke_id ?? 0;
+            $tradodarike = request()->tradodarike ?? '';
+            if ($tradodarike == "ke") {
+                $query->whereraw("trado.id not in(" . $tradodari_id . ")");
+            }
+            if ($tradodarike == "dari") {
+                $query->whereraw("trado.id not in(" . $tradoke_id . ")");
+            }
+        }
+
 
         $this->filter($query);
 
@@ -590,13 +606,95 @@ class Trado extends MyModel
 
     public function findAll($id)
     {
+        $userid = auth('api')->user()->id;
+        // $acoid = db::table('acos')->from(db::raw("acos a with (readuncommitted)"))
+        // ->select (
+        //     'a.id'
+        // )
+        // ->where('a.class','trado')
+        // ->where('a.method','updateuser')
+        // ->first() ->id ?? 0;
+        // // dd($userid);
+
+        // $data=(new MyModel())->hakuser($userid,$acoid);
+        // if ($data==true) {
+        //     $hakuser=1;
+        // } else {
+        //     $hakuser=0;
+        // }
+        $acoid = db::table('acos')->from(db::raw("acos a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.class', 'trado')
+            ->where('a.method', 'update')
+            ->first()->id ?? 0;
+
+        $data = (new MyModel())->hakuser($userid, $acoid);
+        if ($data == true) {
+            $hakutama = 1;
+        } else {
+            $hakutama = 0;
+        }
+
+
+        $tempapproval = '##tempapproval' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempapproval, function ($table) {
+            $table->string('kodetrado', 100)->nullable();
+        });
+
+        $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first()->id ?? 0;
+
+        $queryapproval = db::table('approvaltradoketerangan')->from(db::raw("approvaltradoketerangan a with (readuncommitted)"))
+            ->select(
+                'a.kodetrado',
+            )
+            ->whereraw("cast(format(getdate(),'yyyy/MM/dd') as datetime)<=a.tglbatas")
+            ->where('a.statusapproval', $statusApproval)
+            ->orderby('a.kodetrado', 'asc');
+
+        DB::table($tempapproval)->insertUsing([
+            'kodetrado',
+        ],  $queryapproval);
+
+        // dd(db::table($tempapproval)->get());
+        // dd($hakutama);
+
         $data = DB::table('trado')->select(
             'trado.*',
             'mandor.namamandor as mandor',
-            'supir.namasupir as supir'
+            'supir.namasupir as supir',
+            db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as keterangan_readonly"),
+            db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as kodetrado_readonly"),
+            db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as merk_readonly"),
+            db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as tipe_readonly"),
+            db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as jenis_readonly"),
+            db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as model_readonly"),
+            db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as tahun_readonly"),
+            db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as isisilinder_readonly"),
+            db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as warna_readonly"),
+            db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as norangka_readonly"),
+            db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as nomesin_readonly"),
+            db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as jenisbahanbakar_readonly"),
+            db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as jumlahsumbu_readonly"),
+            db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as statusabsensisupir_readonly"),
+            db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as nomesin_readonly"),
+            db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as jumlahroda_readonly"),
+            db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as jumlahbanserap_readonly"),
+            db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as nostnk_readonly"),
+            db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as statusjenisplat_readonly"),
+            db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as statusaktif_readonly"),
+            db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as statusgerobak_readonly"),
+
+
         )
+        
             ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'trado.mandor_id', 'mandor.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'trado.supir_id', 'supir.id')
+            ->leftjoin(DB::raw($tempapproval . " as c"), function ($join) {
+                $join->on('trado.kodetrado', '=', 'c.kodetrado');
+            })
+
             ->where('trado.id', $id)
             ->first();
 
@@ -743,7 +841,7 @@ class Trado extends MyModel
             $table->datetime('tglupdatehistorytradomiliksupir')->nullable();
             $table->datetime('tglberlakumilikmandor')->nullable();
             $table->datetime('tglberlakumiliksupir')->nullable();
-            
+
             $table->string('photostnk', 1500)->nullable();
             $table->string('photobpkb', 1500)->nullable();
             $table->string('phototrado', 1500)->nullable();
@@ -784,7 +882,7 @@ class Trado extends MyModel
                 // $query->where('trado.mandor_id', $isMandor->mandor_id);
             }
         }
-       
+
         $query = $this->selectColumns($query);
         // dd($query->get());
         $this->sort($query);
@@ -1646,12 +1744,12 @@ class Trado extends MyModel
         return $result;
     }
 
-    public function updateTglGantiAki($trado_id,$tglbukti) {
-        $trado = Trado::where('id',$trado_id)->first();
+    public function updateTglGantiAki($trado_id, $tglbukti)
+    {
+        $trado = Trado::where('id', $trado_id)->first();
         $trado->tglgantiakiterakhir = $tglbukti;
         $trado->save();
         return $trado;
-
     }
 
     public function getHistoryMandor($id)

@@ -255,6 +255,14 @@ class TradoController extends Controller
         return response($data);
     }
 
+       /**
+     * @ClassName 
+     * @Keterangan EDIT DATA USER
+     */
+    public function updateuser()
+    {
+
+    }
     /**
      * @ClassName 
      * @Keterangan EDIT DATA

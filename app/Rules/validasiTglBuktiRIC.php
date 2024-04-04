@@ -3,20 +3,16 @@
 namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
-use App\Http\Controllers\Api\ListTripController;
-use App\Models\ListTrip;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
-class DestroyListTrip implements Rule
+class validasiTglBuktiRIC implements Rule
 {
     /**
      * Create a new rule instance.
      *
      * @return void
      */
-    public $kodeerror;
-    public $keterangan;
     public function __construct()
     {
         //
@@ -31,14 +27,18 @@ class DestroyListTrip implements Rule
      */
     public function passes($attribute, $value)
     {
-        $cekCetak = app(ListTripController::class)->cekValidasi(request()->id);
-        $getOriginal = $cekCetak->original;
-        if ($getOriginal['kondisi'] == true) {
-            $this->kodeerror = $getOriginal['kondisi'];
-            $this->keterangan = $getOriginal['message'];
-            return false;
+        $id = request()->id;
+
+        $cekTgl = DB::table("gajisupirheader")->from(DB::raw("gajisupirheader with (readuncommitted)"))->select("tglbukti")->where('id', $id)->first();
+
+        if($cekTgl != ''){
+            $tglbaru = date('m-Y',strtotime(request()->tglbukti));
+            $tgllama = date('m-Y', strtotime($cekTgl->tglbukti));
+            if($tglbaru != $tgllama){
+                return false;
+            }
         }
-        
+
         return true;
     }
 
@@ -49,6 +49,6 @@ class DestroyListTrip implements Rule
      */
     public function message()
     {
-        return $this->keterangan;
+        return app(ErrorController::class)->geterror('TBB')->keterangan.' DENGAN DATA SEBELUMNYA';
     }
 }

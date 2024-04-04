@@ -29,9 +29,12 @@ class DateUsedSupirTrip implements Rule
      */
     public function passes($attribute, $value)
     {
+        $noktp=request()->noktp ?? '';
+        $namasupir=request()->namasupir ?? '';
+
         $supir = Supir::from(DB::raw("supir with (readuncommitted)"))
-        ->where('noktp',request()->noktp)
-        ->where('namasupir',request()->namasupir)
+        ->where('noktp',$noktp)
+        ->where('namasupir',$namasupir)
         ->first();
 
         $tglabsensi = date('Y-m-d',strtotime($value))." 23:55:59";

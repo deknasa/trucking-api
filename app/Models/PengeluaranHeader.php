@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use App\Services\RunningNumberService;
+use Illuminate\Database\Schema\Blueprint;
 
 class PengeluaranHeader extends MyModel
 {
@@ -36,51 +37,200 @@ class PengeluaranHeader extends MyModel
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
 
-        $query = DB::table($this->table)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
-            ->select(
-                'pengeluaranheader.id',
-                'pengeluaranheader.nobukti',
-                'pengeluaranheader.tglbukti',
-                'pelanggan.namapelanggan as pelanggan_id',
-                'pengeluaranheader.postingdari',
-                'pengeluaranheader.dibayarke',
-                'alatbayar.namaalatbayar as alatbayar_id',
-                'bank.namabank as bank_id',
-                'statusapproval.memo as statusapproval',
-                DB::raw('(case when (year(pengeluaranheader.tglapproval) <= 2000) then null else pengeluaranheader.tglapproval end ) as tglapproval'),
-                'pengeluaranheader.userapproval',
-                'pengeluaranheader.userbukacetak',
-                'pengeluaranheader.transferkeac',
-                'pengeluaranheader.transferkean',
-                'pengeluaranheader.transferkebank',
-                DB::raw('(case when (year(pengeluaranheader.tglbukacetak) <= 2000) then null else pengeluaranheader.tglbukacetak end ) as tglbukacetak'),
-                'statuscetak.memo as statuscetak',
-                'pengeluaranheader.userbukacetak',
-                'pengeluaranheader.penerimaan_nobukti',
-                'pengeluaranheader.jumlahcetak',
-                'pengeluaranheader.modifiedby',
-                'pengeluaranheader.created_at',
-                'pengeluaranheader.updated_at'
+        $user_id = auth('api')->user()->id ?? 0;
+        $proses = request()->proses ?? 'reload';
+        $user = auth('api')->user()->name;
+        $class = 'PengeluaranHeaderController';
 
+        if ($proses == 'reload') {
+            $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel a with (readuncommitted)")
             )
+                ->select(
+                    'id',
+                    'class',
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
 
-            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pengeluaranheader.pelanggan_id', 'pelanggan.id')
-            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pengeluaranheader.alatbayar_id', 'alatbayar.id')
-            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id')
-            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'pengeluaranheader.statusapproval', 'statusapproval.id')
-            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluaranheader.statuscetak', 'statuscetak.id');
-        if (request()->tgldari && request()->tglsampai) {
-            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
-                ->where('pengeluaranheader.bank_id', request()->bank_id);
+            if (isset($querydata)) {
+                Schema::dropIfExists($querydata->namatabel);
+                DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+            }
+
+            DB::table('listtemporarytabel')->insert(
+                [
+                    'class' => $class,
+                    'namatabel' => $temtabel,
+                    'modifiedby' => $user,
+                    'created_at' => date('Y/m/d H:i:s'),
+                    'updated_at' => date('Y/m/d H:i:s'),
+                ]
+            );
+
+
+            Schema::create($temtabel, function (Blueprint $table) {
+                $table->integer('id')->nullable();
+                $table->string('nobukti', 50)->nullable();
+                $table->date('tglbukti')->nullable();
+                $table->string('pelanggan_id', 1000)->nullable();
+                $table->string('postingdari', 1000)->nullable();
+                $table->string('dibayarke', 1000)->nullable();
+                $table->string('alatbayar_id', 50)->nullable();
+                $table->string('bank', 50)->nullable();
+                $table->longtext('penerima')->nullable();
+                $table->longtext('statusapproval')->nullable();
+                $table->string('statusapprovaltext', 200)->nullable();
+                $table->date('tglapproval')->nullable();
+                $table->string('userapproval', 200)->nullable();
+                $table->string('transferkeac', 200)->nullable();
+                $table->string('transferkean', 200)->nullable();
+                $table->string('transferkebank', 200)->nullable();
+                $table->date('tglbukacetak')->nullable();
+                $table->longtext('statuscetak')->nullable();
+                $table->string('statuscetaktext', 200)->nullable();
+                $table->string('userbukacetak', 200)->nullable();
+                $table->string('penerimaan_nobukti', 200)->nullable();
+                $table->integer('jumlahcetak')->nullable();
+                $table->string('modifiedby', 200)->nullable();
+                $table->dateTime('created_at')->nullable();
+                $table->dateTime('updated_at')->nullable();
+            });
+            $tempPenerima = '##tempPenerima' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempPenerima, function ($table) {
+                $table->string('nobukti')->nullable();
+                $table->string('penerima')->nullable();
+            });
+            $getPenerima = DB::table("pengeluaranpenerima")->from(DB::raw("pengeluaranpenerima"))
+                ->select(DB::raw("pengeluaranpenerima.nobukti, STRING_AGG(penerima.namapenerima, ', ') AS penerima"))
+                ->leftJoin(DB::raw("penerima with (readuncommitted)"), 'pengeluaranpenerima.penerima_id', 'penerima.id')
+                ->groupBy("pengeluaranpenerima.nobukti");
+
+            DB::table($tempPenerima)->insertUsing(['nobukti', 'penerima'], $getPenerima);
+
+            $query = DB::table($this->table)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
+                ->select(
+                    'pengeluaranheader.id',
+                    'pengeluaranheader.nobukti',
+                    'pengeluaranheader.tglbukti',
+                    'pelanggan.namapelanggan as pelanggan_id',
+                    'pengeluaranheader.postingdari',
+                    'pengeluaranheader.dibayarke',
+                    'alatbayar.namaalatbayar as alatbayar_id',
+                    'bank.namabank as bank',
+                    'penerima.penerima',
+                    'statusapproval.memo as statusapproval',
+                    'statusapproval.text as statusapprovaltext',
+                    DB::raw('(case when (year(pengeluaranheader.tglapproval) <= 2000) then null else pengeluaranheader.tglapproval end ) as tglapproval'),
+                    'pengeluaranheader.userapproval',
+                    'pengeluaranheader.transferkeac',
+                    'pengeluaranheader.transferkean',
+                    'pengeluaranheader.transferkebank',
+                    DB::raw('(case when (year(pengeluaranheader.tglbukacetak) <= 2000) then null else pengeluaranheader.tglbukacetak end ) as tglbukacetak'),
+                    'statuscetak.memo as statuscetak',
+                    'statuscetak.text as statuscetaktext',
+                    'pengeluaranheader.userbukacetak',
+                    'pengeluaranheader.penerimaan_nobukti',
+                    'pengeluaranheader.jumlahcetak',
+                    'pengeluaranheader.modifiedby',
+                    'pengeluaranheader.created_at',
+                    'pengeluaranheader.updated_at'
+
+                )
+
+                ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pengeluaranheader.pelanggan_id', 'pelanggan.id')
+                ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pengeluaranheader.alatbayar_id', 'alatbayar.id')
+                ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id')
+                ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'pengeluaranheader.statusapproval', 'statusapproval.id')
+                ->leftJoin(DB::raw("$tempPenerima as penerima with (readuncommitted)"), 'pengeluaranheader.nobukti', 'penerima.nobukti')
+                ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluaranheader.statuscetak', 'statuscetak.id');
+            if (request()->tgldari && request()->tglsampai) {
+                $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                    ->where('pengeluaranheader.bank_id', request()->bank_id);
+            }
+            if ($periode != '') {
+                $periode = explode("-", $periode);
+                $query->whereRaw("MONTH(pengeluaranheader.tglbukti) ='" . $periode[0] . "'")
+                    ->whereRaw("year(pengeluaranheader.tglbukti) ='" . $periode[1] . "'");
+            }
+            if ($statusCetak != '') {
+                $query->where("pengeluaranheader.statuscetak", $statusCetak);
+            }
+            DB::table($temtabel)->insertUsing([
+                'id',
+                'nobukti',
+                'tglbukti',
+                'pelanggan_id',
+                'postingdari',
+                'dibayarke',
+                'alatbayar_id',
+                'bank',
+                'penerima',
+                'statusapproval',
+                'statusapprovaltext',
+                'tglapproval',
+                'userapproval',
+                'transferkeac',
+                'transferkean',
+                'transferkebank',
+                'tglbukacetak',
+                'statuscetak',
+                'statuscetaktext',
+                'userbukacetak',
+                'penerimaan_nobukti',
+                'jumlahcetak',
+                'modifiedby',
+                'created_at',
+                'updated_at',
+            ], $query);
+        } else {
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel with (readuncommitted)")
+            )
+                ->select(
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            // dd($querydata);
+            $temtabel = $querydata->namatabel;
         }
-        if ($periode != '') {
-            $periode = explode("-", $periode);
-            $query->whereRaw("MONTH(pengeluaranheader.tglbukti) ='" . $periode[0] . "'")
-                ->whereRaw("year(pengeluaranheader.tglbukti) ='" . $periode[1] . "'");
-        }
-        if ($statusCetak != '') {
-            $query->where("pengeluaranheader.statuscetak", $statusCetak);
-        }
+
+        $query = DB::table($temtabel)->from(DB::raw($temtabel . " a "))
+            ->select(
+                'a.id',
+                'a.nobukti',
+                'a.tglbukti',
+                'a.pelanggan_id',
+                'a.postingdari',
+                'a.dibayarke',
+                'a.alatbayar_id',
+                'a.bank',
+                'a.penerima',
+                'a.statusapproval',
+                'a.statusapprovaltext',
+                'a.tglapproval',
+                'a.userapproval',
+                'a.userbukacetak',
+                'a.transferkeac',
+                'a.transferkean',
+                'a.transferkebank',
+                'a.tglbukacetak',
+                'a.statuscetak',
+                'a.statuscetaktext',
+                'a.userbukacetak',
+                'a.penerimaan_nobukti',
+                'a.jumlahcetak',
+                'a.modifiedby',
+                'a.created_at',
+                'a.updated_at',
+            );
         // dd(request()->limit);
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -128,93 +278,226 @@ class PengeluaranHeader extends MyModel
         return $data;
     }
 
-    public function selectColumns($query)
+    public function selectColumns()
     {
-        return $query->select(
-            DB::raw(
-                "$this->table.id,
-                 $this->table.nobukti,
-                 $this->table.tglbukti,
-                 'pelanggan.namapelanggan as pelanggan_id',
-                 $this->table.postingdari,
-                 $this->table.dibayarke,
-                 'alatbayar.namaalatbayar as alatbayar_id',
-                 'bank.namabank as bank_id',
-                 'statusapproval.text as statusapproval',
-                 $this->table.transferkeac,
-                 $this->table.transferkean,
-                 $this->table.transferkebank,
-                 'statuscetak.text as statuscetak',
-                 $this->table.userbukacetak,
-                 $this->table.tglbukacetak,
-                 $this->table.jumlahcetak,
-                 $this->table.penerimaan_nobukti,
-                 $this->table.modifiedby,
-                 $this->table.created_at,
-                 $this->table.updated_at"
+        $temp = '##tempselect' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temp, function (Blueprint $table) {
+            $table->integer('id')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->string('pelanggan_id', 1000)->nullable();
+            $table->string('postingdari', 1000)->nullable();
+            $table->string('dibayarke', 1000)->nullable();
+            $table->string('alatbayar_id', 50)->nullable();
+            $table->string('bank', 50)->nullable();
+            $table->integer('bank_id')->nullable();
+            $table->longtext('penerima')->nullable();
+            $table->longtext('statusapproval')->nullable();
+            $table->string('statusapprovaltext', 200)->nullable();
+            $table->date('tglapproval')->nullable();
+            $table->string('userapproval', 200)->nullable();
+            $table->string('transferkeac', 200)->nullable();
+            $table->string('transferkean', 200)->nullable();
+            $table->string('transferkebank', 200)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->longtext('statuscetak')->nullable();
+            $table->string('statuscetaktext', 200)->nullable();
+            $table->string('userbukacetak', 200)->nullable();
+            $table->string('penerimaan_nobukti', 200)->nullable();
+            $table->integer('jumlahcetak')->nullable();
+            $table->string('modifiedby', 200)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
+        });
+        $tempPenerima = '##tempPenerima' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempPenerima, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->string('penerima')->nullable();
+        });
+        $getPenerima = DB::table("pengeluaranpenerima")->from(DB::raw("pengeluaranpenerima"))
+            ->select(DB::raw("pengeluaranpenerima.nobukti, STRING_AGG(penerima.namapenerima, ', ') AS penerima"))
+            ->leftJoin(DB::raw("penerima with (readuncommitted)"), 'pengeluaranpenerima.penerima_id', 'penerima.id')
+            ->groupBy("pengeluaranpenerima.nobukti");
+
+        DB::table($tempPenerima)->insertUsing(['nobukti', 'penerima'], $getPenerima);
+
+
+        $query = DB::table($this->table)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
+            ->select(
+                'pengeluaranheader.id',
+                'pengeluaranheader.nobukti',
+                'pengeluaranheader.tglbukti',
+                'pelanggan.namapelanggan as pelanggan_id',
+                'pengeluaranheader.postingdari',
+                'pengeluaranheader.dibayarke',
+                'alatbayar.namaalatbayar as alatbayar_id',
+                'bank.namabank as bank',
+                'pengeluaranheader.bank_id',
+                'penerima.penerima',
+                'statusapproval.memo as statusapproval',
+                'statusapproval.text as statusapprovaltext',
+                DB::raw('(case when (year(pengeluaranheader.tglapproval) <= 2000) then null else pengeluaranheader.tglapproval end ) as tglapproval'),
+                'pengeluaranheader.userapproval',
+                'pengeluaranheader.transferkeac',
+                'pengeluaranheader.transferkean',
+                'pengeluaranheader.transferkebank',
+                DB::raw('(case when (year(pengeluaranheader.tglbukacetak) <= 2000) then null else pengeluaranheader.tglbukacetak end ) as tglbukacetak'),
+                'statuscetak.memo as statuscetak',
+                'statuscetak.text as statuscetaktext',
+                'pengeluaranheader.userbukacetak',
+                'pengeluaranheader.penerimaan_nobukti',
+                'pengeluaranheader.jumlahcetak',
+                'pengeluaranheader.modifiedby',
+                'pengeluaranheader.created_at',
+                'pengeluaranheader.updated_at'
+
             )
-        )
-            ->leftJoin('pelanggan', 'pengeluaranheader.pelanggan_id', 'pelanggan.id')
-            ->leftJoin('alatbayar', 'pengeluaranheader.alatbayar_id', 'alatbayar.id')
-            ->leftJoin('bank', 'pengeluaranheader.bank_id', 'bank.id')
-            ->leftJoin('parameter as statusapproval', 'pengeluaranheader.statusapproval', 'statusapproval.id')
-            ->leftJoin('parameter as statuscetak', 'pengeluaranheader.statuscetak', 'statuscetak.id');
+
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pengeluaranheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pengeluaranheader.alatbayar_id', 'alatbayar.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'pengeluaranheader.statusapproval', 'statusapproval.id')
+            ->leftJoin(DB::raw("$tempPenerima as penerima with (readuncommitted)"), 'pengeluaranheader.nobukti', 'penerima.nobukti')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluaranheader.statuscetak', 'statuscetak.id');
+        DB::table($temp)->insertUsing([
+            'id',
+            'nobukti',
+            'tglbukti',
+            'pelanggan_id',
+            'postingdari',
+            'dibayarke',
+            'alatbayar_id',
+            'bank',
+            'bank_id',
+            'penerima',
+            'statusapproval',
+            'statusapprovaltext',
+            'tglapproval',
+            'userapproval',
+            'transferkeac',
+            'transferkean',
+            'transferkebank',
+            'tglbukacetak',
+            'statuscetak',
+            'statuscetaktext',
+            'userbukacetak',
+            'penerimaan_nobukti',
+            'jumlahcetak',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+        ], $query);
+
+        $query = DB::table($temp)->from(DB::raw($temp . " a "))
+            ->select(
+                'a.id',
+                'a.nobukti',
+                'a.tglbukti',
+                'a.pelanggan_id',
+                'a.postingdari',
+                'a.dibayarke',
+                'a.alatbayar_id',
+                'a.bank',
+                'a.bank_id',
+                'a.penerima',
+                'a.statusapproval',
+                'a.statusapprovaltext',
+                'a.tglapproval',
+                'a.userapproval',
+                'a.transferkeac',
+                'a.transferkean',
+                'a.transferkebank',
+                'a.tglbukacetak',
+                'a.statuscetak',
+                'a.statuscetaktext',
+                'a.userbukacetak',
+                'a.penerimaan_nobukti',
+                'a.jumlahcetak',
+                'a.modifiedby',
+                'a.created_at',
+                'a.updated_at',
+            );
+
+        return $query;
     }
 
     public function createTemp(string $modelTable)
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->nullable();
-            $table->string('nobukti', 1000)->nullable();
+            $table->integer('id')->nullable();
+            $table->string('nobukti', 50)->nullable();
             $table->date('tglbukti')->nullable();
-            $table->string('pelanggan_id', 1000)->nullable()->nullable();
+            $table->string('pelanggan_id', 1000)->nullable();
             $table->string('postingdari', 1000)->nullable();
             $table->string('dibayarke', 1000)->nullable();
-            $table->string('alatbayar_id', 1000)->nullable();
-            $table->string('bank_id', 1000)->nullable();
-            $table->string('statusapproval')->nullable();
-            $table->string('transferkeac')->nullable();
-            $table->string('transferkean')->nullable();
-            $table->string('transferkebank')->nullable();
-            $table->string('statuscetak', 1000)->nullable();
-            $table->string('userbukacetak', 50)->nullable();
+            $table->string('alatbayar_id', 50)->nullable();
+            $table->string('bank', 50)->nullable();
+            $table->integer('bank_id')->nullable();
+            $table->longtext('penerima')->nullable();
+            $table->longtext('statusapproval')->nullable();
+            $table->string('statusapprovaltext', 200)->nullable();
+            $table->date('tglapproval')->nullable();
+            $table->string('userapproval', 200)->nullable();
+            $table->string('transferkeac', 200)->nullable();
+            $table->string('transferkean', 200)->nullable();
+            $table->string('transferkebank', 200)->nullable();
             $table->date('tglbukacetak')->nullable();
-            $table->integer('jumlahcetak')->Length(11)->nullable();
-            $table->string('penerimaan_nobukti')->default();
-            $table->string('modifiedby')->default();
+            $table->longtext('statuscetak')->nullable();
+            $table->string('statuscetaktext', 200)->nullable();
+            $table->string('userbukacetak', 200)->nullable();
+            $table->string('penerimaan_nobukti', 200)->nullable();
+            $table->integer('jumlahcetak')->nullable();
+            $table->string('modifiedby', 200)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
 
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
         $this->setRequestParameters();
-        $query = DB::table($modelTable);
-        $query = $this->selectColumns($query);
+        $query = $this->selectColumns();
         $this->sort($query);
         $models = $this->filter($query);
-        $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])->where($this->table . '.bank_id', request()->bankheader);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pelanggan_id', 'postingdari', 'dibayarke', 'alatbayar_id', 'bank_id', 'statusapproval', 'transferkeac', 'transferkean', 'transferkebank', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'penerimaan_nobukti', 'modifiedby', 'created_at', 'updated_at'], $models);
+        $models =  $query->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])->where('a.bank_id', request()->bankheader);
+        DB::table($temp)->insertUsing([
+            'id',
+            'nobukti',
+            'tglbukti',
+            'pelanggan_id',
+            'postingdari',
+            'dibayarke',
+            'alatbayar_id',
+            'bank',
+            'bank_id',
+            'penerima',
+            'statusapproval',
+            'statusapprovaltext',
+            'tglapproval',
+            'userapproval',
+            'transferkeac',
+            'transferkean',
+            'transferkebank',
+            'tglbukacetak',
+            'statuscetak',
+            'statuscetaktext',
+            'userbukacetak',
+            'penerimaan_nobukti',
+            'jumlahcetak',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+        ], $models);
 
         return $temp;
     }
     public function sort($query)
     {
-        if ($this->params['sortIndex'] == 'pelanggan_id') {
-            return $query->orderBy('pelanggan.namapelanggan', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'alatbayar_id') {
-            return $query->orderBy('alatbayar.namaalatbayar', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'bank_id') {
-            return $query->orderBy('bank.namabank', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'nobukti_pengeluaran') {
-            return $query->orderBy('pengeluaranheader.nobukti', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'tglbukti_pengeluaran') {
-            return $query->orderBy('pengeluaranheader.tglbukti', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'nominal_detail') {
-            return $query->orderBy('pengeluaranheader.nominal', $this->params['sortOrder']);
-        } else {
-            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
-        }
+
+        return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 
     public function filter($query, $relationFields = [])
@@ -225,30 +508,30 @@ class PengeluaranHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] != '') {
                             if ($filters['field'] == 'statusapproval') {
-                                $query = $query->where('statusapproval.text', '=', "$filters[data]");
+                                $query = $query->where('a.statusapprovaltext', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statuscetak') {
-                                $query = $query->where('statuscetak.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'pelanggan_id') {
-                                $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'alatbayar_id') {
-                                $query = $query->where('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'bank_id') {
-                                $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
-                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'tglbukti_pengeluaran') {
-                                $query = $query->whereRaw("format(" . $this->table . ".tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'nobukti_pengeluaran') {
-                                $query = $query->where('pengeluaranheader.nobukti', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'keterangan_detail') {
-                                $query = $query->where('pengeluarandetail.keterangan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'nominal_detail') {
-                                $query = $query->whereRaw("format(c.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                                $query = $query->where('a.statuscetaktext', '=', "$filters[data]");
+                                // } else if ($filters['field'] == 'pelanggan_id') {
+                                //     $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                                // } else if ($filters['field'] == 'alatbayar_id') {
+                                //     $query = $query->where('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
+                                // } else if ($filters['field'] == 'bank_id') {
+                                //     $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                                // } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
+                                //     $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                // } else if ($filters['field'] == 'tglbukti_pengeluaran') {
+                                //     $query = $query->whereRaw("format(" . $this->table . ".tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                // } else if ($filters['field'] == 'nobukti_pengeluaran') {
+                                //     $query = $query->where('pengeluaranheader.nobukti', 'LIKE', "%$filters[data]%");
+                                // } else if ($filters['field'] == 'keterangan_detail') {
+                                //     $query = $query->where('pengeluarandetail.keterangan', 'LIKE', "%$filters[data]%");
+                                // } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                //     $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                // } else if ($filters['field'] == 'nominal_detail') {
+                                //     $query = $query->whereRaw("format(c.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                             }
                         }
                     }
@@ -259,30 +542,30 @@ class PengeluaranHeader extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] != '') {
                                 if ($filters['field'] == 'statusapproval') {
-                                    $query->orWhere('statusapproval.text', '=', "$filters[data]");
+                                    $query->orWhere('a.statusapprovaltext', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'statuscetak') {
-                                    $query->orWhere('statuscetak.text', '=', "$filters[data]");
-                                } else if ($filters['field'] == 'pelanggan_id') {
-                                    $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                                } else if ($filters['field'] == 'alatbayar_id') {
-                                    $query->orWhere('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
-                                } else if ($filters['field'] == 'bank_id') {
-                                    $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                                } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
-                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                                } else if ($filters['field'] == 'tglbukti_pengeluaran') {
-                                    $query = $query->orWhereRaw("format(" . $this->table . ".tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                                } else if ($filters['field'] == 'nobukti_pengeluaran') {
-                                    $query = $query->orWhere('pengeluaranheader.nobukti', 'LIKE', "%$filters[data]%");
-                                } else if ($filters['field'] == 'keterangan_detail') {
-                                    $query = $query->orWhere('pengeluarandetail.keterangan', 'LIKE', "%$filters[data]%");
-                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                                } else if ($filters['field'] == 'nominal_detail') {
-                                    $query = $query->orWhereRaw("format(c.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                                    $query->orWhere('a.statuscetaktext', '=', "$filters[data]");
+                                    // } else if ($filters['field'] == 'pelanggan_id') {
+                                    //     $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                                    // } else if ($filters['field'] == 'alatbayar_id') {
+                                    //     $query->orWhere('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
+                                    // } else if ($filters['field'] == 'bank_id') {
+                                    //     $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                                    // } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
+                                    //     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                    // } else if ($filters['field'] == 'tglbukti_pengeluaran') {
+                                    //     $query = $query->orWhereRaw("format(" . $this->table . ".tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                    // } else if ($filters['field'] == 'nobukti_pengeluaran') {
+                                    //     $query = $query->orWhere('pengeluaranheader.nobukti', 'LIKE', "%$filters[data]%");
+                                    // } else if ($filters['field'] == 'keterangan_detail') {
+                                    //     $query = $query->orWhere('pengeluarandetail.keterangan', 'LIKE', "%$filters[data]%");
+                                    // } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    //     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                    // } else if ($filters['field'] == 'nominal_detail') {
+                                    //     $query = $query->orWhereRaw("format(c.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                                 } else {
                                     // $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                    $query = $query->OrwhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                                 }
                             }
                         }
@@ -412,7 +695,7 @@ class PengeluaranHeader extends MyModel
     }
 
     public function cekvalidasiaksi($nobukti)
-    {        
+    {
         $error = new Error();
         $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
@@ -431,7 +714,7 @@ class PengeluaranHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $jurnal->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $jurnal->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror,
                 'kodeerror' => 'SAPP',
                 'editcoa' => false
             ];
@@ -452,7 +735,7 @@ class PengeluaranHeader extends MyModel
         if (isset($pelunasanhutangheader)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pelunasan hutang <b>'. $pelunasanhutangheader->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti pelunasan hutang <b>' . $pelunasanhutangheader->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Pelunasan Hutang '. $pelunasanhutangheader->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -474,7 +757,7 @@ class PengeluaranHeader extends MyModel
         if (isset($kasGantung)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti kas gantung <b>'. $kasGantung->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti kas gantung <b>' . $kasGantung->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'kas gantung '. $kasGantung->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -496,7 +779,7 @@ class PengeluaranHeader extends MyModel
         if (isset($notaKredit)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti kas gantung <b>'. $notaKredit->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti kas gantung <b>' . $notaKredit->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'kas gantung '. $kasGantung->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -518,7 +801,7 @@ class PengeluaranHeader extends MyModel
         if (isset($absensiApproval)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti absensi supir posting <b>'. $absensiApproval->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti absensi supir posting <b>' . $absensiApproval->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Absensi Supir posting '. $absensiApproval->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -540,7 +823,7 @@ class PengeluaranHeader extends MyModel
         if (isset($prosesUangjalan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti proses uang jalan supir <b>'. $prosesUangjalan->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti proses uang jalan supir <b>' . $prosesUangjalan->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'proses uang jalan supir '. $prosesUangjalan->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -563,7 +846,7 @@ class PengeluaranHeader extends MyModel
             $data = [
                 'kondisi' => true,
                 // 'keterangan' => 'PELUNASAN HUTANG '. $pelunasanHutangHeader->nobukti,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pelunasan hutang <b>'. $pelunasanHutangHeader->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti pelunasan hutang <b>' . $pelunasanHutangHeader->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
@@ -584,7 +867,7 @@ class PengeluaranHeader extends MyModel
         if (isset($pengeluaranTrucking)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pengeluaran trucking <b>'. $pengeluaranTrucking->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti pengeluaran trucking <b>' . $pengeluaranTrucking->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'pengeluaran trucking '. $pengeluaranTrucking->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -606,7 +889,7 @@ class PengeluaranHeader extends MyModel
         if (isset($pengembalianKasbank)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pengembalian kas/bank <b>'. $pengembalianKasbank->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti pengembalian kas/bank <b>' . $pengembalianKasbank->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'pengembalian kas/bank '. $pengembalianKasbank->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -628,7 +911,7 @@ class PengeluaranHeader extends MyModel
         if (isset($prosesGajiSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Proses Gaji Supir <b>'. $prosesGajiSupir->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Proses Gaji Supir <b>' . $prosesGajiSupir->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Proses Gaji Supir '. $prosesGajiSupir->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -650,7 +933,7 @@ class PengeluaranHeader extends MyModel
         if (isset($pendapatanSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Komisi Supir <b>'. $pendapatanSupir->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Komisi Supir <b>' . $pendapatanSupir->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Pendapatan Supir '. $pendapatanSupir->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -673,14 +956,14 @@ class PengeluaranHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Pelunasan Piutang <b>'. $pelunasanPiutang->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Pelunasan Piutang <b>' . $pelunasanPiutang->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Pelunasan Piutang ' . $pelunasanPiutang->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
             goto selesai;
-        }        
-        
+        }
+
         $keteranganerror = $error->cekKeteranganError('TDT');
         $pemutihanSupir = DB::table('pemutihansupirheader')
             ->from(
@@ -695,14 +978,14 @@ class PengeluaranHeader extends MyModel
         if (isset($pemutihanSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pemutihan supir <b>'. $pemutihanSupir->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti pemutihan supir <b>' . $pemutihanSupir->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'kas gantung '. $pemutihanSupir->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
             goto selesai;
         }
-        
+
         $keteranganerror = $error->cekKeteranganError('SCG');
         $pencairangiro = DB::table('pencairangiropengeluaranheader')
             ->from(
@@ -717,7 +1000,7 @@ class PengeluaranHeader extends MyModel
         if (isset($pencairangiro)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pencairan giro <b>'. $pencairangiro->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti pencairan giro <b>' . $pencairangiro->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'kas gantung '. $kasGantung->nobukti,
                 'kodeerror' => 'SCG',
                 'editcoa' => false
@@ -740,7 +1023,7 @@ class PengeluaranHeader extends MyModel
         if (isset($rekap)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Rekap Pengeluaran <b>'. $rekap->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Rekap Pengeluaran <b>' . $rekap->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Rekap Pengeluaran '. $rekap->nobukti,
                 'kodeerror' => 'SATL',
                 'editcoa' => true
@@ -844,14 +1127,14 @@ class PengeluaranHeader extends MyModel
 
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
-        $alatabayargiro=DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
-        ->select (
-            'a.text',
-            'a.memo'
-        )
-        ->where('a.grp','ALAT BAYAR GIRO')
-        ->where('a.subgrp','ALAT BAYAR GIRO')
-        ->first();
+        $alatabayargiro = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.text',
+                'a.memo'
+            )
+            ->where('a.grp', 'ALAT BAYAR GIRO')
+            ->where('a.subgrp', 'ALAT BAYAR GIRO')
+            ->first();
 
 
         $pengeluaranHeader = new PengeluaranHeader();
@@ -891,16 +1174,16 @@ class PengeluaranHeader extends MyModel
             'modifiedby' => auth('api')->user()->user
         ]);
 
-        $alatabayarid=$data['alatbayar_id'] ?? 0;
+        $alatabayarid = $data['alatbayar_id'] ?? 0;
         $pengeluaranDetails = [];
         $coadebet_detail = [];
         $coakredit_detail = [];
         $nominal_detail = [];
         $keterangan_detail = [];
         for ($i = 0; $i < count($data['nominal_detail']); $i++) {
-            if ($alatabayarid== $alatabayargiro->text) {
+            if ($alatabayarid == $alatabayargiro->text) {
                 $memo = json_decode($alatabayargiro->memo, true);
-                $coakredit_detail[]= $memo['JURNAL'];
+                $coakredit_detail[] = $memo['JURNAL'];
                 $coaKredit = $memo['JURNAL'];
             } else {
                 $coakredit_detail[] = $querysubgrppengeluaran->coa;
@@ -915,26 +1198,35 @@ class PengeluaranHeader extends MyModel
                 'nominal' => $data['nominal_detail'][$i],
                 'coadebet' =>  $data['coadebet'][$i],
                 // 'coakredit' => ($data['coakredit']) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa,
-                 'coakredit' => $coaKredit,
+                'coakredit' => $coaKredit,
                 'keterangan' => $data['keterangan_detail'][$i],
                 'noinvoice' => $data['noinvoice'][$i] ?? '',
                 'bank' => $data['bank_detail'][$i] ?? '',
                 'modifiedby' => auth('api')->user()->name,
             ]);
-            
-            // $pengeluaranPenerima = (new PengeluaranPenerima())->processStore([
-            //     'pengeluaran_id' => $pengeluaranHeader->id,
-            //     'nobukti' => $pengeluaranHeader->nobukti,
-            //     'penerima_id' =>  $data['penerima_id'][$i],
-            // ]);
+
             $pengeluaranDetails[] = $pengeluaranDetail->toArray();
             $coadebet_detail[] =  $data['coadebet'][$i];
             // $coakredit_detail[] = ($data['coakredit']) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa;
-            
+
             $nominal_detail[] = $data['nominal_detail'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
         }
 
+
+        if ($manual) {
+            if ($data['penerima_id'] != '') {
+
+                for ($i = 0; $i < count($data['penerima_id']); $i++) {
+
+                    $pengeluaranPenerima = (new PengeluaranPenerima())->processStore([
+                        'pengeluaran_id' => $pengeluaranHeader->id,
+                        'nobukti' => $pengeluaranHeader->nobukti,
+                        'penerima_id' =>  $data['penerima_id'][$i],
+                    ]);
+                }
+            }
+        }
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($pengeluaranDetail->getTable()),
             'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY PENGELUARAN DETAIL'),
@@ -971,6 +1263,9 @@ class PengeluaranHeader extends MyModel
     {
         $nobuktiOld = $pengeluaranHeader->nobukti;
         $bankid = $data['bank_id'];
+        $manual = $data['manual'] ?? false;
+
+        $from = $data['from'] ?? '';
         $querysubgrppengeluaran = Bank::from(DB::raw("bank with (readuncommitted)"))
             ->select('parameter.grp', 'parameter.subgrp', 'bank.formatpengeluaran', 'bank.coa', 'bank.tipe')
             ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')
@@ -1004,7 +1299,18 @@ class PengeluaranHeader extends MyModel
 
             $pengeluaranHeader->nobukti = $nobukti;
             $pengeluaranHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        } else {
+            if ($from == 'pelunasanhutang') {
+                if ($data['bank_id'] != $pengeluaranHeader->bank_id) {
+
+                    $nobukti = (new RunningNumberService)->get($group, $subGroup, $pengeluaranHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+                    $pengeluaranHeader->nobukti = $nobukti;
+                    $pengeluaranHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+                }
+            }
         }
+
+
 
         $pengeluaranHeader->pelanggan_id = $data['pelanggan_id'] ?? 0;
         $pengeluaranHeader->postingdari = $data['postingdari'] ?? 'ENTRY PENGELUARAN KAS/BANK';
@@ -1046,16 +1352,16 @@ class PengeluaranHeader extends MyModel
         // $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranHeader->nobukti)->lockForUpdate()->delete();
         /*DELETE EXISTING Pengeluaran*/
         $pengeluaranDetail = PengeluaranDetail::where('pengeluaran_id', $pengeluaranHeader->id)->lockForUpdate()->delete();
-        $alatabayargiro=DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
-        ->select (
-            'a.text',
-            'a.memo'
-        )
-        ->where('a.grp','ALAT BAYAR GIRO')
-        ->where('a.subgrp','ALAT BAYAR GIRO')
-        ->first();
+        $alatabayargiro = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.text',
+                'a.memo'
+            )
+            ->where('a.grp', 'ALAT BAYAR GIRO')
+            ->where('a.subgrp', 'ALAT BAYAR GIRO')
+            ->first();
 
-        $alatabayarid=$data['alatbayar_id'] ?? 0;
+        $alatabayarid = $data['alatbayar_id'] ?? 0;
         $pengeluaranDetails = [];
         $coadebet_detail = [];
         $coakredit_detail = [];
@@ -1071,9 +1377,9 @@ class PengeluaranHeader extends MyModel
             // } else {
             //     $coaKredit = $coakredit;
             // } 
-            if ($alatabayarid== $alatabayargiro->text) {
+            if ($alatabayarid == $alatabayargiro->text) {
                 $memo = json_decode($alatabayargiro->memo, true);
-                $coakredit_detail[]= $memo['JURNAL'];
+                $coakredit_detail[] = $memo['JURNAL'];
                 $coaKredit = $memo['JURNAL'];
             } else {
                 $coakredit_detail[] = $querysubgrppengeluaran->coa;
@@ -1110,6 +1416,22 @@ class PengeluaranHeader extends MyModel
             'modifiedby' => auth('api')->user()->user,
         ]);
 
+        if ($manual) {
+            PengeluaranPenerima::where('pengeluaran_id', $pengeluaranHeader->id)->lockForUpdate()->delete();
+
+            if ($data['penerima_id'] != '') {
+
+                for ($i = 0; $i < count($data['penerima_id']); $i++) {
+
+                    $pengeluaranPenerima = (new PengeluaranPenerima())->processStore([
+                        'pengeluaran_id' => $pengeluaranHeader->id,
+                        'nobukti' => $pengeluaranHeader->nobukti,
+                        'penerima_id' =>  $data['penerima_id'][$i],
+                    ]);
+                }
+            }
+        }
+
         /*STORE JURNAL*/
         $jurnalRequest = [
             'tanpaprosesnobukti' => 1,
@@ -1132,7 +1454,12 @@ class PengeluaranHeader extends MyModel
         if (isset($getJurnal)) {
             $newJurnal = new JurnalUmumHeader();
             $newJurnal = $newJurnal->find($getJurnal->id);
-            (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+            if ($nobuktiOld != $pengeluaranHeader->nobukti) {
+                (new JurnalUmumHeader())->processDestroy($getJurnal->id, 'UPDATE PELUNASAN HUTANG');
+                (new JurnalUmumHeader())->processStore($jurnalRequest);
+            } else {
+                (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+            }
         } else {
             $jurnalRequest = [
                 'tanpaprosesnobukti' => 1,

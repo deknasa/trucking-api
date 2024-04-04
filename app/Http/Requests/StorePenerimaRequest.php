@@ -42,8 +42,9 @@ class StorePenerimaRequest extends FormRequest
         
         return [
             'namapenerima' => 'required',
-            'npwp' => ['required',new NotInKarakter_(),'unique:penerima'],
-            'noktp' => ['required',new NotInKarakter_(),'unique:penerima'],
+            'keterangan' => 'required',
+            'npwp' => [new NotInKarakter_(),'unique:penerima'],
+            'noktp' => [new NotInKarakter_(),'unique:penerima'],
             'statusaktif' => ['required', Rule::in($status),'numeric', 'min:1'],
             'statuskaryawan' => ['required', Rule::in($statusKaryawan),'numeric', 'min:1'],
         ];

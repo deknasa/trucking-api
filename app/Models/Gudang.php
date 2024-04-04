@@ -78,7 +78,7 @@ class Gudang extends MyModel
             ->where('grp', 'JUDULAN LAPORAN')
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
-            
+
         $aktif = request()->aktif ?? '';
         $penerimaanStokPg = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
         $pengeluaranStokSpk = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
@@ -97,7 +97,7 @@ class Gudang extends MyModel
                 DB::raw("'Laporan Gudang' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gudang.statusaktif', '=', 'parameter.id');
 
@@ -117,28 +117,27 @@ class Gudang extends MyModel
         }
         // dd($penerimaanStokPg)
         if ($penerimaanstok == $penerimaanStokPg->text) {
+            $gudangdari_id = request()->gudangdari_id ?? 0;
+            $gudangke_id = request()->gudangke_id ?? 0;
             $gudangKantor = Gudang::from(DB::raw("gudang with (readuncommitted)"))
-            ->select('id')
-            ->where('gudang','GUDANG PIHAK III');
+                ->select('id')
+                ->where('gudang', 'GUDANG PIHAK III');
 
             $gudangKantorid = Gudang::from(DB::raw("gudang with (readuncommitted)"))
-            ->select('id')
-            ->where('gudang','GUDANG KANTOR')
-            ->first();
+                ->select('id')
+                ->where('gudang', 'GUDANG PIHAK III')
+                ->first();
 
             if (request()->gudangdarike == "ke") {
-                $gudangKantor = $gudangKantor->orWhere('gudang','GUDANG KANTOR');
-       
+                $gudangKantor = $gudangKantor->orWhere('gudang', 'GUDANG KANTOR');
+                $query->whereraw("gudang.id not in(" . $gudangKantorid->id . "," . $gudangdari_id . ")");
             }
             $gudangKantor = $gudangKantor->get();
             if (request()->gudangdarike == "dari") {
-                // $query->whereNotIn('gudang.id', $gudangKantor);
-                $query->where('gudang.id','<>', $gudangKantorid->id);
+                $query->whereraw("gudang.id not in(" . $gudangke_id . ")");
+            //     // $query->where('gudang.id','<>', $gudangKantorid->id);
 
-            } 
-
-
-
+            }
         }
 
         if ($pengeluaranstok == $pengeluaranStokSpk->text) {
@@ -157,7 +156,8 @@ class Gudang extends MyModel
         return $data;
     }
 
-    public function findAll($id) {
+    public function findAll($id)
+    {
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'gudang.id',
@@ -168,10 +168,9 @@ class Gudang extends MyModel
                 'gudang.created_at',
                 'gudang.updated_at',
             )
-            ->where('gudang.id',$id)
+            ->where('gudang.id', $id)
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gudang.statusaktif', '=', 'parameter.id');
-            return $query->first();
-
+        return $query->first();
     }
     public function default()
     {
@@ -181,7 +180,7 @@ class Gudang extends MyModel
             $table->unsignedBigInteger('statusaktif')->nullable();
             $table->string('statusaktifnama')->nullable();
         });
- 
+
         $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
@@ -193,7 +192,7 @@ class Gudang extends MyModel
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
-        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id,"statusaktifnama" => $statusaktif->text]);
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id, "statusaktifnama" => $statusaktif->text]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)

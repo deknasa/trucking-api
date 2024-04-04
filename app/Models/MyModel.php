@@ -190,6 +190,33 @@ class MyModel extends Model
         // }
 
     }
+    public function hakuser($userid, $acoid)
+    {
+
+        $queryrole = db::table("userrole")->from(db::raw("userrole a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->join(db::raw("acl b with (readuncommitted)"), 'a.role_id', 'b.role_id')
+            ->where('a.user_id', $userid)
+            ->where('b.aco_id', $acoid)
+            ->first();
+        if (isset($queryrole)) {
+            return true;
+        } else {
+            $queryuser = db::table("useracl")->from(db::raw("useracl a with (readuncommitted)"))
+                ->select(
+                    'a.id'
+                )
+                ->where('a.user_id', $userid)
+                ->where('a.aco_id', $acoid)
+                ->first();
+            if (isset($queryuser)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public function updateEditingBy($table, $id, $aksi)
     {
@@ -204,16 +231,13 @@ class MyModel extends Model
 
             if ($cekEditingBy == auth('api')->user()->name) {
 
-               $data = DB::table($table)
+                $data = DB::table($table)
                     ->where('id', $id)
                     ->update([
                         'editing_at' => null,
                         'editing_by' => ''
                     ]);
             }
-
-          
-
         } else {
 
             $data = DB::table($table)
