@@ -518,6 +518,13 @@ class HutangHeaderController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan APPROVAL KIRIM BERKAS
+     */
+    public function approvalkirimberkas()
+    {
+    }    
+    /**
+     * @ClassName 
      * @Keterangan EXPORT KE EXCEL
      */
     public function export($id)
