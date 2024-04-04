@@ -1647,47 +1647,72 @@ class PenerimaanStokHeader extends MyModel
             'modifiedby' => auth('api')->user()->user,
         ]);
 
-        //  if ($data['penerimaanstok_id'] == $pst->id) {
-        //     $datapst = [
-        //         "tglbukti" => $request->tglbukti,
-        //         "pengeluaranstok" => $request->pengeluaranstok,
-        //         "pengeluaranstok_id" => $request->pengeluaranstok_id,
-        //         "penerimaanstok_nobukti" => $request->penerimaanstok_nobukti,
-        //         "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti,
-        //         "pengeluarantrucking_nobukti" => $request->pengeluarantrucking_nobukti,
-        //         "supplier" => $request->supplier,
-        //         "supplier_id" => $request->supplier_id,
-        //         "kerusakan" => $request->kerusakan,
-        //         "kerusakan_id" => $request->kerusakan_id,
-        //         "supir" => $request->supir,
-        //         "supir_id" => $request->supir_id,
-        //         "servicein_nobukti" => $request->servicein_nobukti,
-        //         "trado" => $request->trado,
-        //         "trado_id" => $request->trado_id,
-        //         "gudang" => $request->gudang,
-        //         "gudang_id" => $request->gudang_id,
-        //         "gandengan" => $request->gandengan,
-        //         "gandengan_id" => $request->gandengan_id,
-        //         "statuspotongretur" => $request->statuspotongretur,
-        //         "bank" => $request->bank,
-        //         "bank_id" => $request->bank_id,
-        //         "tglkasmasuk" => $request->tglkasmasuk,
-        //         "penerimaan_nobukti" => $request->penerimaan_nobukti,
+        //  proses spk
+         if ($data['penerimaanstok_id'] == $pst->id) {
+            $nobuktipengeluaranstok=$data['pengeluaranstok_nobukti'] ?? '';
+            $queryspkgantung=db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
+            ->select (
+                'a.tglbukti',
+                'a.supir_id',
+                db::raw("isnull(b.namasupir,'') as supir"),
+                'a.trado_id',
+                db::raw("isnull(c.kodetrado,'') as trado"),
+                'a.gandengan_id',
+                db::raw("isnull(d.kodegandengan,'') as gandengan"),
 
-        //         "detail_stok" => $request->detail_stok,
-        //         "detail_stok_id" => $request->detail_stok_id,
-        //         "jlhhari" => $request->jlhhari,
-        //         "detail_statusoli" => $request->detail_statusoli,
-        //         "detail_vulkanisirke" => $request->detail_vulkanisirke,
-        //         "detail_keterangan" => $request->detail_keterangan,
-        //         "detail_statusban" => ($request->statusban) ? $request->statusban : $request->detail_statusban,
-        //         "detail_qty" => $request->detail_qty ?? $request->qty_afkir,
-        //         "detail_harga" => $request->detail_harga,
-        //         "detail_persentasediscount" => $request->detail_persentasediscount,
-        //         "totalItem" => $request->totalItem,
-        //     ];
-        //     $pengeluaranStokHeader = (new PengeluaranStokHeader())->processStore($datapst);
-        //  }
+            )
+            ->leftjoin(db::raw("supir b with (readuncommitted)"),'a.supir_id','b.id')
+            ->leftjoin(db::raw("trado c with (readuncommitted)"),'a.trado_id','c.id')
+            ->where('a.nobukti',$nobuktipengeluaranstok)
+            ->first();
+            if (isset($queryspkgantung)) {
+                $prosestglbukti=$queryspkgantung->tglbukti;
+            } else {
+                $prosestglbukti=$data['tglbukti'];
+            }
+            
+            $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first()->text ?? 0;
+
+            $datapst = [
+                "tglbukti" => $prosestglbukti,
+                "pengeluaranstok" => 'SPK',
+                "pengeluaranstok_id" =>  $spk,
+                "penerimaanstok_nobukti" => '',
+                "pengeluaranstok_nobukti" => '',
+                "pengeluarantrucking_nobukti" => '',
+                "supplier" => '',
+                "supplier_id" => 0,
+                "kerusakan" => '',
+                "kerusakan_id" => 0,
+                "supir" =>  $queryspkgantung->supir ?? '',
+                "supir_id" => $queryspkgantung->supir_id ?? '',
+                "servicein_nobukti" => '',
+                "trado" => $queryspkgantung->trado ?? '',
+                "trado_id" => $queryspkgantung->trado_id ?? 0,
+                "gudang" => '',
+                "gudang_id" => 0,
+                "gandengan" => $queryspkgantung->gandengan ?? '',
+                "gandengan_id" =>$queryspkgantung->gandengan_id ?? 0,
+                "statuspotongretur" => '',
+                "bank" => '',
+                "bank_id" => 0,
+                "tglkasmasuk" => '',
+                "penerimaan_nobukti" => '',
+
+                "detail_stok" => $data['detail_stok'],
+                "detail_stok_id" => $data['detail_stok_id'],
+                "detail_stok_kelompok" => $data['detail_stok_id'],
+                "detail_statusoli" => [],
+                "detail_vulkanisirke" => [],
+                "detail_keterangan" =>  $data['detail_keterangan'],
+                "detail_statusban" => [],
+                "detail_qty" => $data['detail_qtyterpakai'],
+                "detail_harga" => [],
+                "detail_persentasediscount" => [],
+                "totalItem" => [],
+            ];
+            $pengeluaranStokHeader = (new PengeluaranStokHeader())->processStore($datapst);
+         }
 
         return $penerimaanStokHeader;
     }
