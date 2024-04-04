@@ -29,6 +29,7 @@ class CreatePengeluaranstokheaderTable extends Migration
             $table->unsignedBigInteger('supplier_id')->nullable();
             $table->string('pengeluaranstok_nobukti',50)->nullable();
             $table->string('penerimaanstok_nobukti',50)->nullable();
+            $table->string('penerimaanstokproses_nobukti',50)->nullable();            
             $table->string('pengeluarantrucking_nobukti',50)->nullable();
             $table->string('servicein_nobukti',50)->nullable();
             $table->unsignedBigInteger('kerusakan_id')->nullable();
