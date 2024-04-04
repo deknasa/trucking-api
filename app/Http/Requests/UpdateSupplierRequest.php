@@ -27,6 +27,10 @@ class UpdateSupplierRequest extends FormRequest
      */
     public function rules()
     {
+        if (request()->from == 'tas') {
+            return [];
+        } 
+        
         $coaQuery = DB::table('akunpusat')->from(DB::raw('akunpusat with (readuncommitted)'))->select('akunpusat.coa');
         $coaResults = $coaQuery->get();
 
