@@ -41,7 +41,7 @@ class BukaPenerimaanStok extends MyModel
             "bukapenerimaanstok.created_at",
             "bukapenerimaanstok.updated_at",
         )
-        ->leftJoin('penerimaanstok','bukapenerimaanstok.penerimaanstok_id','penerimaanstok.id');
+            ->leftJoin('penerimaanstok', 'bukapenerimaanstok.penerimaanstok_id', 'penerimaanstok.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -70,8 +70,8 @@ class BukaPenerimaanStok extends MyModel
             "bukapenerimaanstok.created_at",
             "bukapenerimaanstok.updated_at",
         )
-        ->where('bukapenerimaanstok.id',$id)
-        ->leftJoin('penerimaanstok','bukapenerimaanstok.penerimaanstok_id','penerimaanstok.id');
+            ->where('bukapenerimaanstok.id', $id)
+            ->leftJoin('penerimaanstok', 'bukapenerimaanstok.penerimaanstok_id', 'penerimaanstok.id');
 
         $data = $query->first();
 
@@ -84,12 +84,24 @@ class BukaPenerimaanStok extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'penerimaanstok') {
+                                $query = $query->where('penerimaanstok.kodepenerimaan', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
                     }
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'penerimaanstok') {
+                                $query = $query->Orwhere('penerimaanstok.kodepenerimaan', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->Orwhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
                     }
                     break;
                 default:
@@ -122,6 +134,7 @@ class BukaPenerimaanStok extends MyModel
             $table->bigInteger('id')->nullable();
             $table->date('tglbukti')->nullable();
             $table->dateTime('penerimaanstok_id')->nullable();
+            $table->string('penerimaanstok', 1000)->nullable();
             $table->dateTime('tglbatas')->nullable();
             $table->string('modifiedby', 1000)->nullable();
             $table->dateTime('created_at')->nullable();
@@ -137,11 +150,12 @@ class BukaPenerimaanStok extends MyModel
             "bukapenerimaanstok.id",
             "bukapenerimaanstok.tglbukti",
             "bukapenerimaanstok.penerimaanstok_id",
+            "penerimaanstok.kodepenerimaan as penerimaanstok",
             "bukapenerimaanstok.tglbatas",
             "bukapenerimaanstok.modifiedby",
             "bukapenerimaanstok.created_at",
             "bukapenerimaanstok.updated_at",
-        );
+        )->leftJoin('penerimaanstok', 'bukapenerimaanstok.penerimaanstok_id', 'penerimaanstok.id');
 
         $query = $this->sort($query);
         $models = $this->filter($query);
@@ -149,6 +163,7 @@ class BukaPenerimaanStok extends MyModel
             'id',
             'tglbukti',
             'penerimaanstok_id',
+            'penerimaanstok',
             'tglbatas',
             'modifiedby',
             'created_at', 'updated_at'
@@ -168,7 +183,7 @@ class BukaPenerimaanStok extends MyModel
         $bukaPenerimaanStok->tglbatas = $tglbatas;
         $bukaPenerimaanStok->modifiedby = auth('api')->user()->name;
         $bukaPenerimaanStok->info = html_entity_decode(request()->info);
-        
+
         if (!$bukaPenerimaanStok->save()) {
             throw new \Exception("Error Update Buka Penerimaan Stok.");
         }
@@ -211,7 +226,7 @@ class BukaPenerimaanStok extends MyModel
     {
         $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
         $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
-        $bukaPenerimaanStok = BukaPenerimaanStok::where('id',$id)->first();
+        $bukaPenerimaanStok = BukaPenerimaanStok::where('id', $id)->first();
         $bukaPenerimaanStok->tglbatas = $tglbatas;
         $bukaPenerimaanStok->save();
         return $bukaPenerimaanStok;
@@ -227,9 +242,9 @@ class BukaPenerimaanStok extends MyModel
             ->where('a.subgrp', '=', 'TUTUP BUKU')
             ->first();
         $approval = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where("grp", 'STATUS APPROVAL')->where("text", "APPROVAL")->first();
-       
+
         $bukaPenerimaanStok = DB::table("bukapenerimaanstok")->from(DB::raw("bukapenerimaanstok with (readuncommitted)"))
-            ->select('bukapenerimaanstok.penerimaanstok_id','bukapenerimaanstok.tglbukti')
+            ->select('bukapenerimaanstok.penerimaanstok_id', 'bukapenerimaanstok.tglbukti')
             ->where('bukapenerimaanstok.tglbukti', '<', date('Y-m-d'))
             ->where('bukapenerimaanstok.tglbatas', '>', date('Y-m-d H:i:s'))
             ->where('bukapenerimaanstok.tglbukti', '>', $tutupbuku->text)
@@ -238,6 +253,4 @@ class BukaPenerimaanStok extends MyModel
 
         return $bukaPenerimaanStok;
     }
-
-
 }
