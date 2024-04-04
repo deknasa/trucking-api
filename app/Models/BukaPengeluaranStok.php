@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Schema;
 class BukaPengeluaranStok extends MyModel
 {
     use HasFactory;
-    
+
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
@@ -41,7 +41,7 @@ class BukaPengeluaranStok extends MyModel
             "bukapengeluaranstok.created_at",
             "bukapengeluaranstok.updated_at",
         )
-        ->leftJoin('pengeluaranstok','bukapengeluaranstok.pengeluaranstok_id','pengeluaranstok.id');
+            ->leftJoin('pengeluaranstok', 'bukapengeluaranstok.pengeluaranstok_id', 'pengeluaranstok.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -70,8 +70,8 @@ class BukaPengeluaranStok extends MyModel
             "bukapengeluaranstok.created_at",
             "bukapengeluaranstok.updated_at",
         )
-        ->where('bukapengeluaranstok.id',$id)
-        ->leftJoin('pengeluaranstok','bukapengeluaranstok.pengeluaranstok_id','pengeluaranstok.id');
+            ->where('bukapengeluaranstok.id', $id)
+            ->leftJoin('pengeluaranstok', 'bukapengeluaranstok.pengeluaranstok_id', 'pengeluaranstok.id');
 
         $data = $query->first();
 
@@ -84,12 +84,24 @@ class BukaPengeluaranStok extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'pengeluaranstok') {
+                                $query = $query->where('pengeluaranstok.kodepengeluaran', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
                     }
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'pengeluaranstok') {
+                                $query = $query->Orwhere('pengeluaranstok.kodepengeluaran', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->Orwhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
                     }
                     break;
                 default:
@@ -122,6 +134,7 @@ class BukaPengeluaranStok extends MyModel
             $table->bigInteger('id')->nullable();
             $table->date('tglbukti')->nullable();
             $table->dateTime('pengeluaranstok_id')->nullable();
+            $table->string('pengeluaranstok', 1000)->nullable();
             $table->dateTime('tglbatas')->nullable();
             $table->string('modifiedby', 1000)->nullable();
             $table->dateTime('created_at')->nullable();
@@ -137,11 +150,14 @@ class BukaPengeluaranStok extends MyModel
             "bukapengeluaranstok.id",
             "bukapengeluaranstok.tglbukti",
             "bukapengeluaranstok.pengeluaranstok_id",
+            "pengeluaranstok.kodepengeluaran as pengeluaranstok",
             "bukapengeluaranstok.tglbatas",
             "bukapengeluaranstok.modifiedby",
             "bukapengeluaranstok.created_at",
             "bukapengeluaranstok.updated_at",
-        );
+        )
+        ->leftJoin('pengeluaranstok', 'bukapengeluaranstok.pengeluaranstok_id', 'pengeluaranstok.id');
+
 
         $query = $this->sort($query);
         $models = $this->filter($query);
@@ -149,6 +165,7 @@ class BukaPengeluaranStok extends MyModel
             'id',
             'tglbukti',
             'pengeluaranstok_id',
+            'pengeluaranstok',
             'tglbatas',
             'modifiedby',
             'created_at', 'updated_at'
@@ -168,7 +185,7 @@ class BukaPengeluaranStok extends MyModel
         $bukaPengeluaranStok->tglbatas = $tglbatas;
         $bukaPengeluaranStok->modifiedby = auth('api')->user()->name;
         $bukaPengeluaranStok->info = html_entity_decode(request()->info);
-        
+
         if (!$bukaPengeluaranStok->save()) {
             throw new \Exception("Error Update Buka Pengeluaran Stok.");
         }
@@ -211,7 +228,7 @@ class BukaPengeluaranStok extends MyModel
     {
         $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
         $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
-        $bukaPengeluaranStok = BukaPengeluaranStok::where('id',$id)->first();
+        $bukaPengeluaranStok = BukaPengeluaranStok::where('id', $id)->first();
         $bukaPengeluaranStok->tglbatas = $tglbatas;
         $bukaPengeluaranStok->save();
         return $bukaPengeluaranStok;
@@ -227,9 +244,9 @@ class BukaPengeluaranStok extends MyModel
             ->where('a.subgrp', '=', 'TUTUP BUKU')
             ->first();
         $approval = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where("grp", 'STATUS APPROVAL')->where("text", "APPROVAL")->first();
-       
+
         $bukaPengeluaranStok = DB::table("bukapengeluaranstok")->from(DB::raw("bukapengeluaranstok with (readuncommitted)"))
-            ->select('bukapengeluaranstok.pengeluaranstok_id','bukapengeluaranstok.tglbukti')
+            ->select('bukapengeluaranstok.pengeluaranstok_id', 'bukapengeluaranstok.tglbukti')
             ->where('bukapengeluaranstok.tglbukti', '<', date('Y-m-d'))
             ->where('bukapengeluaranstok.tglbatas', '>', date('Y-m-d H:i:s'))
             ->where('bukapengeluaranstok.tglbukti', '>', $tutupbuku->text)
@@ -238,6 +255,4 @@ class BukaPengeluaranStok extends MyModel
 
         return $bukaPengeluaranStok;
     }
-
-
 }
