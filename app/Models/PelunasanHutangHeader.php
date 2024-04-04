@@ -380,7 +380,7 @@ class PelunasanHutangHeader extends MyModel
             $table->string('hutang_nobukti');
             $table->date('tglbukti')->nullable();
             $table->bigInteger('bayar')->nullable();
-            $table->string('keterangan')->nullable();
+            $table->longText('keterangan')->nullable();
             $table->bigInteger('potongan')->nullable();
             $table->bigInteger('nominalhutang');
             $table->bigInteger('sisa')->nullable();
@@ -453,7 +453,7 @@ class PelunasanHutangHeader extends MyModel
             $table->string('hutang_nobukti');
             $table->date('tglbukti')->nullable();
             $table->bigInteger('bayar')->nullable();
-            $table->string('keterangan')->nullable();
+            $table->longText('keterangan')->nullable();
             $table->bigInteger('potongan')->nullable();
             $table->bigInteger('nominalhutang');
             $table->bigInteger('sisa')->nullable();
