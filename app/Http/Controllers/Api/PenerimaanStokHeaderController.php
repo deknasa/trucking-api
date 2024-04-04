@@ -112,6 +112,7 @@ class PenerimaanStokHeaderController extends Controller
                 "detail_penerimaanstoknobukti" => $request->detail_penerimaanstoknobukti ?? [],
                 "detail_penerimaanstoknobukti_id" => $request->detail_penerimaanstoknobukti_id ?? [],
                 "detail_persentasediscount" => $request->detail_persentasediscount ?? [],
+                "detail_nominaldiscount" => $request->detail_nominaldiscount ?? [],
                 "totalItem" => $request->totalItem ?? [],
                 "totalsebelum" => $request->total_sebelum ?? [],
             ];
@@ -188,6 +189,7 @@ class PenerimaanStokHeaderController extends Controller
                 "detail_penerimaanstoknobukti" => $request->detail_penerimaanstoknobukti ?? [],
                 "detail_penerimaanstoknobukti_id" => $request->detail_penerimaanstoknobukti_id ?? [],
                 "detail_persentasediscount" => $request->detail_persentasediscount ?? [],
+                "detail_nominaldiscount" => $request->detail_nominaldiscount ?? [],
                 "totalItem" => $request->totalItem ?? [],
                 "totalsebelum" => $request->total_sebelum ?? [],
             ];

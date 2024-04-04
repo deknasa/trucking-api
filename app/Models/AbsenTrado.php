@@ -106,6 +106,7 @@ class AbsenTrado extends MyModel
             $isUsedTrip = (new SuratPengantar())->isUsedTrip($trado_id,$supir_id,date('Y-m-d',strtotime($tglabsensi)));
             if ($isUsedTrip) {
                 $query->where('absentrado.id', 0);
+                $query->orWhere('absentrado.id', 1);
             }
 
         }
