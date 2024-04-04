@@ -147,10 +147,12 @@ class DateApprovalQuota implements Rule
                 $table->unsignedBigInteger('jumlahtrip')->nullable();
             });
 
+            $idtrip = request()->id ?? 0;
             $querySP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
                 ->select('approvalbukatanggal_id', DB::raw("count(nobukti) as jumlahtrip"))
                 ->where('tglbukti', $date)
                 ->whereRaw("isnull(approvalbukatanggal_id,0) != 0")
+                ->where('id','<>', $idtrip)
                 ->groupBy('approvalbukatanggal_id');
 
             DB::table($tempSP)->insertUsing([
@@ -158,7 +160,7 @@ class DateApprovalQuota implements Rule
                 'jumlahtrip'
             ],  $querySP);
 
-
+            // dd($querybukaabsen->get(),$querySP->get());
             // GET APPROVAL BERDASARKAN MANDOR
             $getAll = DB::table("mandordetail")->from(DB::raw("mandordetail as a"))
                 ->select('a.mandor_id', 'c.id', 'c.user_id', 'c.statusapproval', 'c.tglbatas', 'c.jumlahtrip', 'e.namamandor')
@@ -171,7 +173,7 @@ class DateApprovalQuota implements Rule
                 ->whereRaw('isnull(d.jumlahtrip,0) < c.jumlahtrip')
                 ->orderBy('c.tglbatas','desc')
                 ->first();
-
+            // dd($getAll->get());
             if (isset($getAll)) {
                 if ($user_id != $getAll->user_id) {
                     $querycekuser = db::table("mandordetail")->from(db::raw("mandordetail a with (readuncommitted)"))
@@ -197,7 +199,7 @@ class DateApprovalQuota implements Rule
                 return false;
             }
 
-            $suratPengantar = SuratPengantar::where('tglbukti', '=', $date)->whereRaw("approvalbukatanggal_id = $getAll->id")->count();
+            $suratPengantar = SuratPengantar::where('tglbukti', '=', $date)->whereRaw("approvalbukatanggal_id = $getAll->id")->where('id','<>', $idtrip)->count();
             // $cekStatus =  DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip as a with (readuncommitted)"))
             //     ->where('a.tglbukti', $date)
             //     ->where('user_id', $user_id)
