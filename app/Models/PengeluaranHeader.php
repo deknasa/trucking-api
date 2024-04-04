@@ -94,6 +94,10 @@ class PengeluaranHeader extends MyModel
                 $table->longtext('statuscetak')->nullable();
                 $table->string('statuscetaktext', 200)->nullable();
                 $table->string('userbukacetak', 200)->nullable();
+                $table->date('tglkirimberkas')->nullable();
+                $table->longtext('statuskirimberkas')->nullable();
+                $table->string('statuskirimberkastext', 200)->nullable();
+                $table->string('userkirimberkas', 200)->nullable();
                 $table->string('penerimaan_nobukti', 200)->nullable();
                 $table->integer('jumlahcetak')->nullable();
                 $table->string('modifiedby', 200)->nullable();
@@ -134,6 +138,10 @@ class PengeluaranHeader extends MyModel
                     'statuscetak.memo as statuscetak',
                     'statuscetak.text as statuscetaktext',
                     'pengeluaranheader.userbukacetak',
+                    DB::raw('(case when (year(pengeluaranheader.tglkirimberkas) <= 2000) then null else pengeluaranheader.tglkirimberkas end ) as tglkirimberkas'),
+                    'statuskirimberkas.memo as statuskirimberkas',
+                    'statuskirimberkas.text as statuskirimberkastext',
+                    'pengeluaranheader.userkirimberkas',
                     'pengeluaranheader.penerimaan_nobukti',
                     'pengeluaranheader.jumlahcetak',
                     'pengeluaranheader.modifiedby',
@@ -147,6 +155,7 @@ class PengeluaranHeader extends MyModel
                 ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id')
                 ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'pengeluaranheader.statusapproval', 'statusapproval.id')
                 ->leftJoin(DB::raw("$tempPenerima as penerima with (readuncommitted)"), 'pengeluaranheader.nobukti', 'penerima.nobukti')
+                ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'pengeluaranheader.statuskirimberkas', 'statuskirimberkas.id')
                 ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluaranheader.statuscetak', 'statuscetak.id');
             if (request()->tgldari && request()->tglsampai) {
                 $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
@@ -181,6 +190,10 @@ class PengeluaranHeader extends MyModel
                 'statuscetak',
                 'statuscetaktext',
                 'userbukacetak',
+                'tglkirimberkas',
+                'statuskirimberkas',
+                'statuskirimberkastext',
+                'userkirimberkas',
                 'penerimaan_nobukti',
                 'jumlahcetak',
                 'modifiedby',
@@ -225,12 +238,17 @@ class PengeluaranHeader extends MyModel
                 'a.statuscetak',
                 'a.statuscetaktext',
                 'a.userbukacetak',
+                'tglkirimberkas',
+                'statuskirimberkas',
+                'statuskirimberkastext',
+                'userkirimberkas',
                 'a.penerimaan_nobukti',
                 'a.jumlahcetak',
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at',
             );
+            // dd($query->get());
         // dd(request()->limit);
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -267,6 +285,9 @@ class PengeluaranHeader extends MyModel
                 'pengeluaranheader.userbukacetak',
                 'pengeluaranheader.jumlahcetak',
                 'pengeluaranheader.tglbukacetak',
+                'pengeluaranheader.statuskirimberkas',
+                'pengeluaranheader.userbukakirimberkas',
+                'pengeluaranheader.tglbukakirimberkas',
             )
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pengeluaranheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pengeluaranheader.alatbayar_id', 'alatbayar.id')
@@ -303,6 +324,10 @@ class PengeluaranHeader extends MyModel
             $table->longtext('statuscetak')->nullable();
             $table->string('statuscetaktext', 200)->nullable();
             $table->string('userbukacetak', 200)->nullable();
+            $table->date('tglkirimberkas')->nullable();
+            $table->longtext('statuskirimberkas')->nullable();
+            $table->string('statuskirimberkastext', 200)->nullable();
+            $table->string('userkirimberkas', 200)->nullable();
             $table->string('penerimaan_nobukti', 200)->nullable();
             $table->integer('jumlahcetak')->nullable();
             $table->string('modifiedby', 200)->nullable();
@@ -345,6 +370,10 @@ class PengeluaranHeader extends MyModel
                 'statuscetak.memo as statuscetak',
                 'statuscetak.text as statuscetaktext',
                 'pengeluaranheader.userbukacetak',
+                DB::raw('(case when (year(pengeluaranheader.tglkirimberkas) <= 2000) then null else pengeluaranheader.tglkirimberkas end ) as tglkirimberkas'),
+                'statuskirimberkas.memo as statuskirimberkas',
+                'statuskirimberkas.text as statuskirimberkastext',
+                'pengeluaranheader.userkirimberkas',
                 'pengeluaranheader.penerimaan_nobukti',
                 'pengeluaranheader.jumlahcetak',
                 'pengeluaranheader.modifiedby',
@@ -358,7 +387,8 @@ class PengeluaranHeader extends MyModel
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'pengeluaranheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("$tempPenerima as penerima with (readuncommitted)"), 'pengeluaranheader.nobukti', 'penerima.nobukti')
-            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluaranheader.statuscetak', 'statuscetak.id');
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluaranheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'pengeluaranheader.statuskirimberkas', 'statuskirimberkas.id');
         DB::table($temp)->insertUsing([
             'id',
             'nobukti',
@@ -381,6 +411,10 @@ class PengeluaranHeader extends MyModel
             'statuscetak',
             'statuscetaktext',
             'userbukacetak',
+            'tglkirimberkas',
+            'statuskirimberkas',
+            'statuskirimberkastext',
+            'userkirimberkas',
             'penerimaan_nobukti',
             'jumlahcetak',
             'modifiedby',
@@ -411,6 +445,10 @@ class PengeluaranHeader extends MyModel
                 'a.statuscetak',
                 'a.statuscetaktext',
                 'a.userbukacetak',
+                'a.tglkirimberkas',
+                'a.statuskirimberkas',
+                'a.statuskirimberkastext',
+                'a.userkirimberkas',
                 'a.penerimaan_nobukti',
                 'a.jumlahcetak',
                 'a.modifiedby',
@@ -446,6 +484,10 @@ class PengeluaranHeader extends MyModel
             $table->longtext('statuscetak')->nullable();
             $table->string('statuscetaktext', 200)->nullable();
             $table->string('userbukacetak', 200)->nullable();
+            $table->date('tglkirimberkas')->nullable();
+            $table->longtext('statuskirimberkas')->nullable();
+            $table->string('statuskirimberkastext', 200)->nullable();
+            $table->string('userkirimberkas', 200)->nullable();
             $table->string('penerimaan_nobukti', 200)->nullable();
             $table->integer('jumlahcetak')->nullable();
             $table->string('modifiedby', 200)->nullable();
@@ -485,6 +527,10 @@ class PengeluaranHeader extends MyModel
             'statuscetak',
             'statuscetaktext',
             'userbukacetak',
+            'tglkirimberkas',
+            'statuskirimberkas',
+            'statuskirimberkastext',
+            'userkirimberkas',
             'penerimaan_nobukti',
             'jumlahcetak',
             'modifiedby',
@@ -511,6 +557,8 @@ class PengeluaranHeader extends MyModel
                                 $query = $query->where('a.statusapprovaltext', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statuscetak') {
                                 $query = $query->where('a.statuscetaktext', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statuskirimberkas') {
+                                $query = $query->where('a.statuskirimberkastext', '=', "$filters[data]");
                                 // } else if ($filters['field'] == 'pelanggan_id') {
                                 //     $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                                 // } else if ($filters['field'] == 'alatbayar_id') {
@@ -545,6 +593,8 @@ class PengeluaranHeader extends MyModel
                                     $query->orWhere('a.statusapprovaltext', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'statuscetak') {
                                     $query->orWhere('a.statuscetaktext', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statuskirimberkas') {
+                                    $query->orWhere('a.statuskirimberkastext', '=', "$filters[data]");
                                     // } else if ($filters['field'] == 'pelanggan_id') {
                                     //     $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                                     // } else if ($filters['field'] == 'alatbayar_id') {
@@ -1127,6 +1177,7 @@ class PengeluaranHeader extends MyModel
 
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+        $statusKirimBerkas = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSKIRIMBERKAS')->where('text', 'BELUM KIRIM BERKAS')->first();
         $alatabayargiro = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
             ->select(
                 'a.text',
@@ -1156,6 +1207,9 @@ class PengeluaranHeader extends MyModel
         $pengeluaranHeader->statuscetak = $statusCetak->id;
         $pengeluaranHeader->userbukacetak = '';
         $pengeluaranHeader->tglbukacetak = '';
+        $pengeluaranHeader->statuskirimberkas = $statusKirimBerkas->id;
+        $pengeluaranHeader->userkirimberkas = '';
+        $pengeluaranHeader->tglkirimberkas = '';
         $pengeluaranHeader->modifiedby = auth('api')->user()->name;
         $pengeluaranHeader->info = html_entity_decode(request()->info);
         $pengeluaranHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $pengeluaranHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
@@ -1277,6 +1331,7 @@ class PengeluaranHeader extends MyModel
 
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+        $statusKirimBerkas = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSKIRIMBERKAS')->where('text', 'BELUM KIRIM BERKAS')->first();
         $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'PENGELUARAN KAS/BANK')->first();
 
         if (trim($getTgl->text) == 'YA') {
@@ -1328,6 +1383,9 @@ class PengeluaranHeader extends MyModel
         $pengeluaranHeader->statuscetak = $statusCetak->id;
         $pengeluaranHeader->userbukacetak = '';
         $pengeluaranHeader->tglbukacetak = '';
+        $pengeluaranHeader->statuskirimberkas = $statusKirimBerkas->id;
+        $pengeluaranHeader->userkirimberkas = '';
+        $pengeluaranHeader->tglkirimberkas = '';
         $pengeluaranHeader->editing_by = '';
         $pengeluaranHeader->editing_at = null;
         $pengeluaranHeader->modifiedby = auth('api')->user()->name;

@@ -159,6 +159,7 @@ use App\Http\Controllers\Api\ServiceOutHeaderController;
 use App\Http\Controllers\Api\TarikDataAbsensiController;
 use App\Http\Controllers\Api\UpahSupirRincianController;
 use App\Http\Controllers\Api\ApprovalBukaCetakController;
+use App\Http\Controllers\Api\ApprovalKirimBerkasController;
 use App\Http\Controllers\api\ApprovalStokReuseController;
 use App\Http\Controllers\Api\ExportLaporanStokController;
 use App\Http\Controllers\Api\HutangBayarDetailController;
@@ -800,6 +801,9 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('approvalbukacetak/combo', [ApprovalBukaCetakController::class, 'combo']);
     Route::resource('approvalbukacetak', ApprovalBukaCetakController::class)->whereNumber('approvalbukacetak');
+
+    Route::get('approvalkirimberkas/combo', [ApprovalKirimBerkasController::class, 'combo']);
+    Route::resource('approvalkirimberkas', ApprovalKirimBerkasController::class)->whereNumber('approvalkirimberkas');
 
     Route::get('absensisupirapprovalheader/running_number', [AbsensiSupirApprovalHeaderController::class, 'getRunningNumber']);
     Route::get('absensisupirapprovalheader/grid', [AbsensiSupirApprovalHeaderController::class, 'grid']);
