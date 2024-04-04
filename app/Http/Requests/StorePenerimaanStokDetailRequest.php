@@ -106,7 +106,8 @@ class StorePenerimaanStokDetailRequest extends FormRequest
                 'numeric',
                 'nullable',
                 function ($attribute, $value, $fail) use ($spb,$spbs,$pst,$pspk,$spbp){
-                    if((($spb->text == request()->penerimaanstok_id)||($spbs->id == request()->penerimaanstok_id)||($pst->id == request()->penerimaanstok_id) || ($pspk->id == request()->penerimaanstok_id) || ($spbp->id == request()->penerimaanstok_id)) && ($value >  request()->total_sebelum) ){
+                    if((($spb->text == request()->penerimaanstok_id)) && ($value >  request()->total_sebelum) ){
+                        // ||($spbs->id == request()->penerimaanstok_id)|| ($pspk->id == request()->penerimaanstok_id) || ($spbp->id == request()->penerimaanstok_id)
                         $fail(app(ErrorController::class)->geterror('SM-ANGKA-100')->keterangan);
                     }
                 },
