@@ -28,48 +28,47 @@ class StoreSupplierRequest extends FormRequest
     public function rules()
     {
 
-        if (request()->from == '') {
-            $coaQuery = DB::table('akunpusat')->from(DB::raw('akunpusat with (readuncommitted)'))->select('akunpusat.coa');
-            $coaResults = $coaQuery->get();
-
-            $coaName = [];
-            foreach ($coaResults as $coa) {
-                $coaName[] = $coa->coa;
-            }
-
-            $coa = Rule::in($coaName);
-
-
-            $parameter = new Parameter();
-            $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
-            $data = json_decode($data, true);
-            foreach ($data as $item) {
-                $status[] = $item['id'];
-            }
-            $daftarharga = $parameter->getcombodata('STATUS DAFTAR HARGA', 'STATUS DAFTAR HARGA');
-            $daftarharga = json_decode($daftarharga, true);
-            foreach ($daftarharga as $item) {
-                $statusDaftarHarga[] = $item['id'];
-            }
-
-            return [
-                'namasupplier' => ['required', 'unique:supplier'],
-                'namakontak' => 'required',
-                'alamat' => 'required',
-                'kota' => 'required',
-                'top' => ['required', 'numeric', 'min:1'],
-                'notelp1' => 'required|min:10|max:50',
-                'email' => 'email:rfc,dns|nullable',
-                'statusaktif' => ['required', Rule::in($status), 'numeric', 'min:1'],
-                'namapemilik' => 'required',
-                'jenisusaha' => 'required',
-                'ketcoa' => ['required'],
-                'namarekening' => 'required',
-                'statusdaftarharga' => ['required', 'numeric', Rule::in($statusDaftarHarga)],
-            ];
-        } else {
+        if (request()->from == 'tas') {
             return [];
         }
+        $coaQuery = DB::table('akunpusat')->from(DB::raw('akunpusat with (readuncommitted)'))->select('akunpusat.coa');
+        $coaResults = $coaQuery->get();
+
+        $coaName = [];
+        foreach ($coaResults as $coa) {
+            $coaName[] = $coa->coa;
+        }
+
+        $coa = Rule::in($coaName);
+
+
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+        $daftarharga = $parameter->getcombodata('STATUS DAFTAR HARGA', 'STATUS DAFTAR HARGA');
+        $daftarharga = json_decode($daftarharga, true);
+        foreach ($daftarharga as $item) {
+            $statusDaftarHarga[] = $item['id'];
+        }
+
+        return [
+            'namasupplier' => ['required', 'unique:supplier'],
+            'namakontak' => 'required',
+            'alamat' => 'required',
+            'kota' => 'required',
+            'top' => ['required', 'numeric', 'min:1'],
+            'notelp1' => 'required|min:10|max:50',
+            'email' => 'email:rfc,dns|nullable',
+            'statusaktif' => ['required', Rule::in($status), 'numeric', 'min:1'],
+            'namapemilik' => 'required',
+            'jenisusaha' => 'required',
+            'ketcoa' => ['required'],
+            'namarekening' => 'required',
+            'statusdaftarharga' => ['required', 'numeric', Rule::in($statusDaftarHarga)],
+        ];
     }
 
     public function attributes()
@@ -88,7 +87,7 @@ class StoreSupplierRequest extends FormRequest
             'namapemilik' => 'nama pemilik',
             'jenisusaha' => 'jenis usaha',
             'bank' => 'bank',
-            'ketcoa' => 'kode perkiraan',
+            'ketcoa' => 'nama perkiraan',
             'rekeningbank' => 'rekening bank',
             'namarekening' => 'nama rekening',
             'jabatan' => 'jabatan',
