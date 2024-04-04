@@ -406,6 +406,7 @@ class PenerimaanStokDetail extends MyModel
             "satuan.satuan as satuan",
             "PenerimaanStokDetail.stok_id",
             "PenerimaanStokDetail.qty",
+            "PenerimaanStokDetail.qtyterpakai",
             "PenerimaanStokDetail.harga",
             "PenerimaanStokDetail.persentasediscount",
             "PenerimaanStokDetail.penerimaanstok_nobukti",
@@ -559,6 +560,7 @@ class PenerimaanStokDetail extends MyModel
         $penerimaanStokDetail->nobukti = $data['nobukti'];
         $penerimaanStokDetail->stok_id = $data['stok_id'];
         $penerimaanStokDetail->qty = $data['qty'];
+        $penerimaanStokDetail->qtyterpakai = $data['qtyterpakai'];
         $penerimaanStokDetail->harga = $data['harga'];
         $penerimaanStokDetail->nominaldiscount = $nominaldiscount;
         $penerimaanStokDetail->total = $data['totalItem'];

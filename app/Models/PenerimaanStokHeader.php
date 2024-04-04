@@ -753,7 +753,8 @@ class PenerimaanStokHeader extends MyModel
             db::raw("cast((format(pengeluaranstok.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranstok"),
             db::raw("cast(cast(format((cast((format(pengeluaranstok.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranstok"),
             db::raw("d1.kelompok_id as kelompok_id"),
-            DB::raw("'" . $getJudul->text . "' as judul")
+            DB::raw("'" . $getJudul->text . "' as judul"),
+            db::raw("isnull(penerimaanstokheader.pengeluaranstokproses_nobukti,'') as pengeluaranstok_nobukti_proses"),
         );
     }
 
@@ -1306,8 +1307,9 @@ class PenerimaanStokHeader extends MyModel
         $coadebet_detail = [];
         $coakredit_detail = [];
         $nominal_detail = [];
-
+        $datakosong=[];
         for ($i = 0; $i < count($data['detail_harga']); $i++) {
+            $datakosong[]=0;
             $ksqty = $data['detail_qty'][$i] ?? 0;
             $ksnilai = $data['totalItem'][$i] ?? 0;
             $penerimaanStokDetail = (new PenerimaanStokDetail())->processStore($penerimaanStokHeader, [
@@ -1315,7 +1317,7 @@ class PenerimaanStokHeader extends MyModel
                 "nobukti" => $penerimaanStokHeader->nobukti,
                 "stok_id" => $data['detail_stok_id'][$i],
                 "qty" => $data['detail_qty'][$i],
-                // "qtyterpakai" => $data['detail_qtyterpakai'][$i],
+                "qtyterpakai" => $data['detail_qtyterpakai'][$i],
                 "harga" => $data['detail_harga'][$i],
                 "totalItem" => $data['totalItem'][$i],
                 "totalsebelum" => $data['totalsebelum'][$i] ?? 0,
@@ -1648,7 +1650,8 @@ class PenerimaanStokHeader extends MyModel
         ]);
 
         //  proses spk
-         if ($data['penerimaanstok_id'] == $pst->id) {
+        // dd($data['penerimaanstok_id'],$pst->text);
+         if ($data['penerimaanstok_id'] == $pst->text) {
             $nobuktipengeluaranstok=$data['pengeluaranstok_nobukti'] ?? '';
             $queryspkgantung=db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
             ->select (
@@ -1663,6 +1666,7 @@ class PenerimaanStokHeader extends MyModel
             )
             ->leftjoin(db::raw("supir b with (readuncommitted)"),'a.supir_id','b.id')
             ->leftjoin(db::raw("trado c with (readuncommitted)"),'a.trado_id','c.id')
+            ->leftjoin(db::raw("gandengan d with (readuncommitted)"),'a.gandengan_id','d.id')
             ->where('a.nobukti',$nobuktipengeluaranstok)
             ->first();
             if (isset($queryspkgantung)) {
@@ -1678,6 +1682,7 @@ class PenerimaanStokHeader extends MyModel
                 "pengeluaranstok" => 'SPK',
                 "pengeluaranstok_id" =>  $spk,
                 "penerimaanstok_nobukti" => '',
+                "penerimaanstokproses_nobukti" => $penerimaanStokHeader->nobukti,
                 "pengeluaranstok_nobukti" => '',
                 "pengeluarantrucking_nobukti" => '',
                 "supplier" => '',
@@ -1698,20 +1703,37 @@ class PenerimaanStokHeader extends MyModel
                 "bank_id" => 0,
                 "tglkasmasuk" => '',
                 "penerimaan_nobukti" => '',
-
+                "jlhhari" =>  $datakosong,
                 "detail_stok" => $data['detail_stok'],
                 "detail_stok_id" => $data['detail_stok_id'],
-                "detail_stok_kelompok" => $data['detail_stok_id'],
-                "detail_statusoli" => [],
-                "detail_vulkanisirke" => [],
+                "detail_stok_kelompok" => $data['detail_stok_kelompok'],
+                "detail_statusoli" =>  $datakosong,
+                "detail_vulkanisirke" =>  $datakosong,
                 "detail_keterangan" =>  $data['detail_keterangan'],
-                "detail_statusban" => [],
+                "detail_statusban" =>  $datakosong,
                 "detail_qty" => $data['detail_qtyterpakai'],
-                "detail_harga" => [],
-                "detail_persentasediscount" => [],
-                "totalItem" => [],
+                "detail_harga" =>  $datakosong,
+                "detail_persentasediscount" =>  $datakosong,
+            
             ];
-            $pengeluaranStokHeader = (new PengeluaranStokHeader())->processStore($datapst);
+
+            // dd($datapst);
+            (new PengeluaranStokHeader())->processStore($datapst);
+
+            $querycekspk=db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
+            ->select(
+               'a.nobukti'   
+            )
+            ->where('a.penerimaanstokproses_nobukti',$penerimaanStokHeader->nobukti)
+            ->first();
+
+            if (isset($querycekspk)) {
+                DB::table('penerimaanstokheader')
+                ->where('nobukti',$penerimaanStokHeader->nobukti)
+                ->update(['pengeluaranstokproses_nobukti' => $querycekspk->nobukti]);
+            }
+         
+
          }
 
         return $penerimaanStokHeader;
@@ -1739,6 +1761,8 @@ class PenerimaanStokHeader extends MyModel
         $spbp = DB::table('penerimaanstok')->where('kodepenerimaan', 'SPBP')->first();
         $gudangkantor =  Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first()->text;
         $gudangsementara =  Parameter::where('grp', 'GUDANG SEMENTARA')->where('subgrp', 'GUDANG SEMENTARA')->first()->text;
+        $pst = Parameter::where('grp', 'PENGEMBALIAN SPAREPART STOK')->where('subgrp', 'PENGEMBALIAN SPAREPART STOK')->first();
+
 
 
         $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')->where('format', '=', $statusformat)->first();
@@ -1791,6 +1815,7 @@ class PenerimaanStokHeader extends MyModel
 
         $penerimaanStokHeader->penerimaanstok_nobukti   = ($data['penerimaanstok_nobukti'] == null) ? "" : $data['penerimaanstok_nobukti'];
         $penerimaanStokHeader->pengeluaranstok_nobukti  = ($data['pengeluaranstok_nobukti'] == null) ? "" : $data['pengeluaranstok_nobukti'];
+        $penerimaanStokHeader->pengeluaranstokproses_nobukti  = ($data['pengeluaranstokproses_nobukti'] == null) ? "" : $data['pengeluaranstokproses_nobukti'];
         $penerimaanStokHeader->nobon                    = ($data['nobon'] == null) ? "" : $data['nobon'];
         $penerimaanStokHeader->keterangan               = ($data['keterangan'] == null) ? "" : $data['keterangan'];
         $penerimaanStokHeader->coa                      = ($data['coa'] == null) ? "" : $data['coa'];
@@ -1922,9 +1947,9 @@ class PenerimaanStokHeader extends MyModel
         $coakredit_detail = [];
         $nominal_detail = [];
         $keterangan_detail = [];
-
+        $datakosong=[];
         for ($i = 0; $i < count($data['detail_harga']); $i++) {
-
+            $datakosong[]=0;
             $ksqty = $data['detail_qty'][$i] ?? 0;
             $ksnilai = $data['totalItem'][$i] ?? 0;
 
@@ -1933,6 +1958,7 @@ class PenerimaanStokHeader extends MyModel
                 "nobukti" => $penerimaanStokHeader->nobukti,
                 "stok_id" => $data['detail_stok_id'][$i],
                 "qty" => $data['detail_qty'][$i],
+                "qtyterpakai" => $data['detail_qtyterpakai'][$i],
                 "harga" => $data['detail_harga'][$i],
                 "totalItem" => $data['totalItem'][$i],
                 "totalsebelum" => $data['totalsebelum'][$i] ?? 0,
@@ -2265,6 +2291,89 @@ class PenerimaanStokHeader extends MyModel
             }
         }
 
+         //  proses spk
+        // dd($data['penerimaanstok_id'],$pst->text);
+        if ($data['penerimaanstok_id'] == $pst->text) {
+            $nobuktipengeluaranstok=$data['pengeluaranstok_nobukti'] ?? '';
+            $queryspkgantung=db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
+            ->select (
+                'a.tglbukti',
+                'a.supir_id',
+                db::raw("isnull(b.namasupir,'') as supir"),
+                'a.trado_id',
+                db::raw("isnull(c.kodetrado,'') as trado"),
+                'a.gandengan_id',
+                db::raw("isnull(d.kodegandengan,'') as gandengan"),
+
+            )
+            ->leftjoin(db::raw("supir b with (readuncommitted)"),'a.supir_id','b.id')
+            ->leftjoin(db::raw("trado c with (readuncommitted)"),'a.trado_id','c.id')
+            ->leftjoin(db::raw("gandengan d with (readuncommitted)"),'a.gandengan_id','d.id')
+            ->where('a.nobukti',$nobuktipengeluaranstok)
+            ->first();
+            if (isset($queryspkgantung)) {
+                $prosestglbukti=$queryspkgantung->tglbukti;
+            } else {
+                $prosestglbukti=$data['tglbukti'];
+            }
+            
+            $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first()->text ?? 0;
+
+            $datapst = [
+                "tglbukti" => $prosestglbukti,
+                "pengeluaranstok" => 'SPK',
+                "pengeluaranstok_id" =>  $spk,
+                "penerimaanstok_nobukti" => '',
+                "penerimaanstokproses_nobukti" => $penerimaanStokHeader->nobukti,
+                "pengeluaranstok_nobukti" => '',
+                "pengeluarantrucking_nobukti" => '',
+                "supplier" => '',
+                "supplier_id" => 0,
+                "kerusakan" => '',
+                "kerusakan_id" => 0,
+                "supir" =>  $queryspkgantung->supir ?? '',
+                "supir_id" => $queryspkgantung->supir_id ?? '',
+                "servicein_nobukti" => '',
+                "trado" => $queryspkgantung->trado ?? '',
+                "trado_id" => $queryspkgantung->trado_id ?? 0,
+                "gudang" => '',
+                "gudang_id" => 0,
+                "gandengan" => $queryspkgantung->gandengan ?? '',
+                "gandengan_id" =>$queryspkgantung->gandengan_id ?? 0,
+                "statuspotongretur" => '',
+                "bank" => '',
+                "bank_id" => 0,
+                "tglkasmasuk" => '',
+                "penerimaan_nobukti" => '',
+                "jlhhari" =>  $datakosong,
+                "detail_stok" => $data['detail_stok'],
+                "detail_stok_id" => $data['detail_stok_id'],
+                "detail_stok_kelompok" => $data['detail_stok_kelompok'],
+                "detail_statusoli" =>  $datakosong,
+                "detail_vulkanisirke" =>  $datakosong,
+                "detail_keterangan" =>  $data['detail_keterangan'],
+                "detail_statusban" =>  $datakosong,
+                "detail_qty" => $data['detail_qtyterpakai'],
+                "detail_harga" =>  $datakosong,
+                "detail_persentasediscount" =>  $datakosong,
+            
+            ];
+
+            // dd($datapst);
+            $querycekspk=db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
+            ->select(
+               'a.id'   
+            )
+            ->where('a.penerimaanstokproses_nobukti',$penerimaanStokHeader->nobukti)
+            ->first();
+            $idkeluarstok=$querycekspk->id;
+            $pengeluaranStokHeader = PengeluaranStokHeader::findOrFail($idkeluarstok);
+            (new PengeluaranStokHeader())->processUpdate($pengeluaranStokHeader,$datapst);
+
+         
+
+         }
+
         return $penerimaanStokHeader;
     }
 
@@ -2329,6 +2438,12 @@ class PenerimaanStokHeader extends MyModel
 
 
         $penerimaanStokHeader = $penerimaanStokHeader->lockAndDestroy($id);
+        $pst = Parameter::where('grp', 'PENGEMBALIAN SPAREPART STOK')->where('subgrp', 'PENGEMBALIAN SPAREPART STOK')->first();
+
+        if ($penerimaanStokHeader->penerimaanstok_id == $pst->text) {
+            $pengeluaranStokHeader = PengeluaranStokHeader::where('nobukti', $penerimaanStokHeader->pengeluaranstokproses_nobukti)->first();
+            (new PengeluaranStokHeader())->processDestroy($pengeluaranStokHeader->id);
+        }        
 
         $penerimaanStokHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => $penerimaanStokHeader->getTable(),

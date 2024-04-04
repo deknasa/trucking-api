@@ -93,20 +93,22 @@ class PenerimaanStokHeaderController extends Controller
                 "gandengan_id" => $request->gandengan_id ?? null,
                 "gandenganke_id" => $request->gandenganke_id ?? null,
                 "penerimaanstok_nobukti" => $request->penerimaanstok_nobukti ?? null,
+                "penerimaanstokproses_nobukti" => $request->penerimaanstokproses_nobukti ?? null,
                 "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti ?? null,
-                "pengeluaranstokproses_nobukti" => $request->pengeluaranstokproses_nobukti ?? null,
+                "pengeluaranstokproses_nobukti" => $request->pengeluaranstok_nobukti_proses ?? null,
                 "nobon" => $request->nobon ?? null,
                 "keterangan" => $request->keterangan ?? null,
                 "coa" => $request->coa ?? null,
                 "supplier_id" => $request->supplier_id ?? null,
                 "sortname" => $request->sortname ?? null,
                 "sortorder" => $request->sortorder ?? null,
+                "detail_stok" => $request->detail_stok ?? [],
                 "detail_stok_id" => $request->detail_stok_id ?? [],
                 "detail_vulkanisirke" => $request->detail_vulkanisirke ?? [],
                 "detail_keterangan" => $request->detail_keterangan ?? [],
+                "detail_stok_kelompok" => $request->detail_stok_kelompok ?? [],
                 "detail_qty" => $request->detail_qty ?? [],
-                "detail_qtyterpakai" => $request->detail_qty ?? [],
-                // "detail_qtyterpakai" => $request->detail_qtyterpakai ?? [],
+                "detail_qtyterpakai" => $request->detail_qtyterpakai ?? [],
                 "detail_harga" => $request->detail_harga ?? [],
                 "detail_statusban" => ($request->statusban) ? $request->statusban : $request->detail_statusban,
                 "detail_penerimaanstoknobukti" => $request->detail_penerimaanstoknobukti ?? [],
@@ -172,17 +174,21 @@ class PenerimaanStokHeaderController extends Controller
                 "gandenganke_id" => $request->gandenganke_id ?? null,
                 "penerimaanstok_nobukti" => $request->penerimaanstok_nobukti ?? null,
                 "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti ?? null,
+                "pengeluaranstokproses_nobukti" => $request->pengeluaranstok_nobukti_proses ?? null,
                 "nobon" => $request->nobon ?? null,
                 "keterangan" => $request->keterangan ?? null,
                 "coa" => $request->coa ?? null,
                 "supplier_id" => $request->supplier_id ?? null,
                 "sortname" => $request->sortname ?? null,
                 "sortorder" => $request->sortorder ?? null,
+                "detail_stok" => $request->detail_stok ?? [],
+                "detail_stok_kelompok" => $request->detail_stok_kelompok ?? [],
                 "detail_stok_id" => $request->detail_stok_id ?? [],
                 "detail_stok_id_old" => $request->detail_stok_id_old ?? [],
                 "detail_vulkanisirke" => $request->detail_vulkanisirke ?? [],
                 "detail_keterangan" => $request->detail_keterangan ?? [],
                 "detail_qty" => $request->detail_qty ?? [],
+                "detail_qtyterpakai" => $request->detail_qtyterpakai ?? [],
                 "detail_harga" => $request->detail_harga ?? [],
                 "detail_statusban" => ($request->statusban) ? $request->statusban : $request->detail_statusban,
                 "detail_penerimaanstoknobukti" => $request->detail_penerimaanstoknobukti ?? [],
@@ -333,7 +339,7 @@ class PenerimaanStokHeaderController extends Controller
 
         $aksi = request()->aksi ?? '';
         $peneimaan = $penerimaanStokHeader->findOrFail($id);
-        $nobukti=$peneimaan->nobukti ?? '';
+        $nobukti = $peneimaan->nobukti ?? '';
         $user = auth('api')->user()->name;
         $useredit = $peneimaan->editing_by ?? '';
         if (!isset($peneimaan)) {
@@ -362,7 +368,7 @@ class PenerimaanStokHeaderController extends Controller
             ];
             return response($data);
         }
-        
+
 
         $penerimaanstok_id = $peneimaan->penerimaanstok_id;
         $aco_id = db::table("penerimaanstok")->from(db::raw("penerimaanstok a with (readuncommitted)"))
@@ -418,7 +424,7 @@ class PenerimaanStokHeaderController extends Controller
 
 
 
-  
+
 
         // dd($penerimaanstok_id);
         // dd(auth('api')->user()->id);
@@ -635,23 +641,23 @@ class PenerimaanStokHeaderController extends Controller
 
                 if ($useredit != '' && $useredit != $user) {
                     $waktu = (new Parameter())->cekBatasWaktuEdit('Nota Kredit Header BUKTI');
-                    
+
                     $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($peneimaan->editing_at)));
                     $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
                     if ($diffNow->i > $waktu) {
                         if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                             (new MyModel())->updateEditingBy('penerimaanstokheader', $id, $aksi);
                         }
-                        
+
                         $data = [
                             'message' => '',
                             'error' => false,
                             'statuspesan' => 'success',
                         ];
-                        
+
                         // return response($data);
                     } else {
-                        
+
                         $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
                         $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
                         $data = [
@@ -660,16 +666,16 @@ class PenerimaanStokHeaderController extends Controller
                             'kodeerror' => 'SDE',
                             'statuspesan' => 'warning',
                         ];
-                        
+
                         return response($data);
-                    }    
+                    }
                 }
-                
+
                 if (!$isPGUsed) {
                     // if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                        (new MyModel())->updateEditingBy('penerimaanstokheader', $id, $aksi);
+                    (new MyModel())->updateEditingBy('penerimaanstokheader', $id, $aksi);
                     // }
-        
+
                     $data = [
                         'message' => '',
                         'errors' => 'bisa',
