@@ -1420,6 +1420,7 @@ class PengeluaranStokHeader extends MyModel
         $pengeluaranStokHeader->supir_id         = ($data['supir_id'] == null) ? "" : $data['supir_id'];
         $pengeluaranStokHeader->supplier_id         = ($data['supplier_id'] == null) ? "" : $data['supplier_id'];
         $pengeluaranStokHeader->pengeluaranstok_nobukti = ($data['pengeluaranstok_nobukti'] == null) ? "" : $data['pengeluaranstok_nobukti'];
+        $pengeluaranStokHeader->penerimaanstokproses_nobukti  = ($data['penerimaanstokproses_nobukti'] == null) ? "" : $data['penerimaanstokproses_nobukti'];
         $pengeluaranStokHeader->penerimaanstok_nobukti  = $penerimaanstok_nobukti;
         $pengeluaranStokHeader->pengeluarantrucking_nobukti  = $data['pengeluarantrucking_nobukti'];
         $pengeluaranStokHeader->servicein_nobukti    = $servicein_nobukti;
@@ -1510,11 +1511,31 @@ class PengeluaranStokHeader extends MyModel
                 } else {
                     $vulkanisirke = ($data['detail_vulkanisirke']) ? $data['detail_vulkanisirke'][$i] : null ?? 0;
                 }
+            
+                // $data3=[
+                //     "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
+                //     "nobukti" => $pengeluaranStokHeader->nobukti,
+                //     "stok_id" => $data['detail_stok_id'][$i],
+                //     "jlhhari" => $data['jlhhari'],
+                //     "qty" => ($data['detail_qty']) ? $data['detail_qty'][$i] : null,
+                //     "harga" => ($data['detail_harga']) ? $data['detail_harga'][$i] : null,
+                //     "persentasediscount" => ($data['detail_persentasediscount']) ? $data['detail_persentasediscount'][$i] : null,
+                //     'statusoli' => ($fetchFormat->kodepengeluaran == 'SPK') ? $data['detail_statusoli'][$i] : "",
+                //     "vulkanisirke" => $vulkanisirke,
+                //     "statusban" => ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null,
+                //     "detail_keterangan" => ($data['detail_keterangan']) ? $data['detail_keterangan'][$i] : null,
+                //     "detail_statusban" => ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null,
+                //     "trado_id" => ($trado_id == null) ? 0 : $trado_id,
+                //     "gandengan_id" => ($gandengan_id == null) ? 0 : $gandengan_id,
+                //     "gudang_id" => ($gudang_id == null) ? 0 : $gudang_id,
+
+                // ];
+                // dd($data3);
                 $pengeluaranStokDetail = (new PengeluaranStokDetail())->processStore($pengeluaranStokHeader, [
                     "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
                     "nobukti" => $pengeluaranStokHeader->nobukti,
                     "stok_id" => $data['detail_stok_id'][$i],
-                    "jlhhari" => $data['jlhhari'],
+                    "jlhhari" => $data['jlhhari'][$i],
                     "qty" => ($data['detail_qty']) ? $data['detail_qty'][$i] : null,
                     "harga" => ($data['detail_harga']) ? $data['detail_harga'][$i] : null,
                     "persentasediscount" => ($data['detail_persentasediscount']) ? $data['detail_persentasediscount'][$i] : null,
@@ -2218,7 +2239,7 @@ class PengeluaranStokHeader extends MyModel
                 "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
                 "nobukti" => $pengeluaranStokHeader->nobukti,
                 "stok_id" => $data['detail_stok_id'][$i],
-                "jlhhari" => $data['jlhhari'],
+                "jlhhari" => $data['jlhhari'][$i],
                 "qty" => ($data['detail_qty']) ? $data['detail_qty'][$i] : null,
                 "harga" => ($data['detail_harga']) ? $data['detail_harga'][$i] : null,
                 "persentasediscount" => ($data['detail_persentasediscount']) ? $data['detail_persentasediscount'][$i] : null,

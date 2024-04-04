@@ -382,6 +382,28 @@ class PengeluaranStokHeaderController extends Controller
             return response($data);
         }
 
+        $querypenerimaan=db::table("penerimaanstokheader")->from(db::raw("penerimaanstokheader a with (readuncommitted)"))
+        ->select(
+            'a.nobukti'
+        )
+        ->where('a.nobukti',$pengeluaran->penerimaanstokproses_nobukti)
+        ->first();
+
+
+        if (isset($querypenerimaan)) {
+            $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+            $keterror = 'No Bukti <b>' . request()->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+            $data = [
+                'message' => $keterror,
+                'errors' => $keterror,
+                'kodestatus' => '1',
+                'statuspesan' => 'warning',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        }
+
         if ($tgltutup >= $pengeluaran->tglbukti) {
             $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
             $keterangan = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
