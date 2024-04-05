@@ -19,10 +19,10 @@ use App\Http\Requests\UpdateKelompokRequest;
 use App\Http\Requests\DestroyKelompokRequest;
 use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\RangeExportReportRequest;
-
+use App\Models\MyModel;
 class KelompokController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -38,11 +38,43 @@ class KelompokController extends Controller
             ]
         ]);
     }
+    /**
+     * @ClassName 
+     * @Keterangan EDIT DATA USER
+     */
+    public function updateuser()
+    {
+    }
+    
 
-    public function cekValidasi($id)
+    public function cekValidasi($id, request $request)
     {
         $kelompok = new Kelompok();
         $cekdata = $kelompok->cekvalidasihapus($id);
+        $aksi=$request->aksi ?? '';
+        $acoid = db::table('acos')->from(db::raw("acos a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.class', 'kategori')
+            ->where('a.method', 'update')
+            ->first()->id ?? 0;
+        $userid = auth('api')->user()->id;
+
+        $data = (new MyModel())->hakuser($userid, $acoid);
+        if ($data == true) {
+            $hakutama = 1;
+        } else {
+            $hakutama = 0;
+        }
+        if ($aksi == 'edit') {
+            if ($cekdata['kondisi'] == true) {
+                if ($hakutama == 1) {
+                    $cekdata['kondisi'] = false;
+                }
+            }
+        }
+
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
                 ->select(
@@ -94,7 +126,7 @@ class KelompokController extends Controller
             ];
             $kelompok = (new Kelompok())->processStore($data);
             $kelompok->position = $this->getPosition($kelompok, $kelompok->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $kelompok->page = ceil($kelompok->position / (10));
             } else {
                 $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
@@ -137,7 +169,7 @@ class KelompokController extends Controller
 
             $kelompok = (new Kelompok())->processUpdate($kelompok, $data);
             $kelompok->position = $this->getPosition($kelompok, $kelompok->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $kelompok->page = ceil($kelompok->position / (10));
             } else {
                 $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
@@ -168,7 +200,7 @@ class KelompokController extends Controller
             $selected = $this->getPosition($kelompok, $kelompok->getTable(), true);
             $kelompok->position = $selected->position;
             $kelompok->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $kelompok->page = ceil($kelompok->position / (10));
             } else {
                 $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
@@ -254,7 +286,7 @@ class KelompokController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan

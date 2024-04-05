@@ -18,6 +18,7 @@ use App\Http\Requests\UpdateSatuanRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\RangeExportReportRequest;
+use App\Models\MyModel;
 
 class SatuanController extends Controller
 {
@@ -217,6 +218,73 @@ class SatuanController extends Controller
             'data' => $data
         ]);
     }
+
+  /**
+     * @ClassName 
+     * @Keterangan EDIT DATA USER
+     */
+    public function updateuser()
+    {
+    }
+    
+
+    public function cekValidasi($id, request $request)
+    {
+        $satuan = new Satuan();
+        $cekdata = $satuan->cekvalidasihapus($id);
+        $aksi=$request->aksi ?? '';
+        $acoid = db::table('acos')->from(db::raw("acos a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.class', 'kategori')
+            ->where('a.method', 'update')
+            ->first()->id ?? 0;
+        $userid = auth('api')->user()->id;
+
+        $data = (new MyModel())->hakuser($userid, $acoid);
+        if ($data == true) {
+            $hakutama = 1;
+        } else {
+            $hakutama = 0;
+        }
+        if ($aksi == 'edit') {
+            if ($cekdata['kondisi'] == true) {
+                if ($hakutama == 1) {
+                    $cekdata['kondisi'] = false;
+                }
+            }
+        }
+
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
+
+            $data = [
+                'status' => false,
+                'message' => $keterangan,
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
+
+            return response($data);
+        } else {
+            $data = [
+                'status' => false,
+                'message' => '',
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
+
+            return response($data);
+        }
+    }
+
 
     /**
      * @ClassName 

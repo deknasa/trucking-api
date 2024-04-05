@@ -15,6 +15,7 @@ use App\Http\Requests\StoreSubKelompokRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\UpdateSubKelompokRequest;
 use App\Http\Requests\DestroySubKelompokRequest;
+use App\Models\MyModel;
 
 class SubKelompokController extends Controller
 {
@@ -35,10 +36,43 @@ class SubKelompokController extends Controller
         ]);
     }
 
-    public function cekValidasi($id)
+      /**
+     * @ClassName 
+     * @Keterangan EDIT DATA USER
+     */
+    public function updateuser()
+    {
+    }
+
+    public function cekValidasi($id, request $request)
     {
         $subKelompok = new SubKelompok();
         $cekdata = $subKelompok->cekvalidasihapus($id);
+
+        $aksi=$request->aksi ?? '';
+        $acoid = db::table('acos')->from(db::raw("acos a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.class', 'kategori')
+            ->where('a.method', 'update')
+            ->first()->id ?? 0;
+        $userid = auth('api')->user()->id;
+
+        $data = (new MyModel())->hakuser($userid, $acoid);
+        if ($data == true) {
+            $hakutama = 1;
+        } else {
+            $hakutama = 0;
+        }
+        if ($aksi == 'edit') {
+            if ($cekdata['kondisi'] == true) {
+                if ($hakutama == 1) {
+                    $cekdata['kondisi'] = false;
+                }
+            }
+        }
+                
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
                 ->select(
