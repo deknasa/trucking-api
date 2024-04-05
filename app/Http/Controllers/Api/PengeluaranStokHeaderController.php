@@ -113,6 +113,7 @@ class PengeluaranStokHeaderController extends Controller
                 "bank_id" => $request->bank_id,
                 "tglkasmasuk" => $request->tglkasmasuk,
                 "penerimaan_nobukti" => $request->penerimaan_nobukti,
+                "penerimaanstokproses_nobukti" => $request->penerimaanstokproses_nobukti,
 
                 "detail_stok" => $request->detail_stok,
                 "detail_stok_id" => $request->detail_stok_id,
@@ -193,6 +194,7 @@ class PengeluaranStokHeaderController extends Controller
                 "bank_id" => $request->bank_id,
                 "tglkasmasuk" => $request->tglkasmasuk,
                 "penerimaan_nobukti" => $request->penerimaan_nobukti,
+                "penerimaanstokproses_nobukti" => $request->penerimaanstokproses_nobukti,
 
                 "detail_stok" => $request->detail_stok,
                 "detail_stok_id" => $request->detail_stok_id,
