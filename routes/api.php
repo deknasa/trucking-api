@@ -673,6 +673,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('satuan/combo', [SatuanController::class, 'combo']);
     Route::get('satuan/field_length', [SatuanController::class, 'fieldLength']);
     Route::get('satuan/default', [SatuanController::class, 'default']);
+    Route::post('satuan/{id}/cekValidasi', [SatuanController::class, 'cekValidasi'])->name('satuan.cekValidasi')->whereNumber('id');
     Route::get('satuan/export', [SatuanController::class, 'export']);
     Route::get('satuan/report', [SatuanController::class, 'report']);
 

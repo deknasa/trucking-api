@@ -45,10 +45,11 @@ class KategoriController extends Controller
     {
 
         
-        $aksi=$request->aksi ?? '';
+  
         $kategori = new Kategori();
         $cekdata = $kategori->cekvalidasihapus($id);
 
+        $aksi=$request->aksi ?? '';
         $acoid = db::table('acos')->from(db::raw("acos a with (readuncommitted)"))
             ->select(
                 'a.id'

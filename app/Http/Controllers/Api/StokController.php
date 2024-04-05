@@ -19,6 +19,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use Intervention\Image\ImageManagerStatic as Image;
+use App\Models\MyModel;
 
 class StokController extends Controller
 {
@@ -40,10 +41,45 @@ class StokController extends Controller
         ]);
     }
 
-    public function cekValidasi($id)
+        /**
+     * @ClassName 
+     * @Keterangan EDIT DATA USER
+     */
+    public function updateuser()
+    {
+    }
+
+
+    public function cekValidasi($id, request $request)
     {
         $stok = new Stok();
         $cekdata = $stok->cekvalidasihapus($id);
+
+    
+        $aksi=$request->aksi ?? '';
+        $acoid = db::table('acos')->from(db::raw("acos a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.class', 'kategori')
+            ->where('a.method', 'update')
+            ->first()->id ?? 0;
+        $userid = auth('api')->user()->id;
+
+        $data = (new MyModel())->hakuser($userid, $acoid);
+        if ($data == true) {
+            $hakutama = 1;
+        } else {
+            $hakutama = 0;
+        }
+        if ($aksi == 'edit') {
+            if ($cekdata['kondisi'] == true) {
+                if ($hakutama == 1) {
+                    $cekdata['kondisi'] = false;
+                }
+            }
+        }
+
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
                 ->select(
