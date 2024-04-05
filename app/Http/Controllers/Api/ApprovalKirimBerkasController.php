@@ -47,7 +47,7 @@ class ApprovalKirimBerkasController extends Controller
             $request->merge([
                 'year' => $periode[1],
                 'month' => $periode[0],
-                'statuscetak' => $dataCetak->id
+                'statuskirimberkas' => $dataKirimBerkas->id
             ]);
         }
 
@@ -81,7 +81,7 @@ class ApprovalKirimBerkasController extends Controller
 
             return response()->json([
                 'message' => 'Berhasil disimpan',
-                'data' => $approvalBukaCetak
+                'data' => $approvalKirimBerkas
             ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();

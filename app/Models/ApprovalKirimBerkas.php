@@ -30,12 +30,12 @@ class ApprovalKirimBerkas extends Model
 
         if ($data->statuskirimberkas == $statusKirimBerkas->id) {
             $data->statuskirimberkas = $statusBelumKirimBerkas->id;
-        // } else {
-        //     $data->statuskirimberkas = $statusKirimBerkas->id;
+        } else {
+            $data->statuskirimberkas = $statusKirimBerkas->id;
         }
 
-        $data->tglbukakirimberkas = date('Y-m-d', time());
-        $data->userbukakirimberkas = auth('api')->user()->name;
+        $data->tglkirimberkas = date('Y-m-d', time());
+        $data->userkirimberkas = auth('api')->user()->name;
         $data->info = html_entity_decode(request()->info);
         if (!$data->save()) {
             throw new \Exception('Error Buka Kirim Berkas.');
@@ -50,5 +50,5 @@ class ApprovalKirimBerkas extends Model
             'modifiedby' => auth('api')->user()->name,
         ]);
         return $data;
-    }    
+    }
 }

@@ -86,10 +86,10 @@ class ApprovalKirimBerkas implements Rule
         $nobukti1 = '';
         $a = 0;
         foreach ($databukti as $dataBukti) {
-            $getkirimberkas = DB::table($table)->from(DB::raw("$table with (readuncommitted)"))->select('tglbukti', 'nobukti')->where('nobukti', $dataBukti)
-                ->where('statuskirimberkas', $parameter->cekId('STATUSKIRIMBERKAS', 'STATUSKIRIMBERKAS', 'BELUM KIRIM BERKAS'))
+            $getcetak = DB::table($table)->from(DB::raw("$table with (readuncommitted)"))->select('tglbukti', 'nobukti')->where('nobukti', $dataBukti)
+                ->where('statuscetak', $parameter->cekId('STATUSCETAK', 'STATUSCETAK', 'BELUM CETAK'))
                 ->first();
-            if (isset($getkirimberkas)) {
+            if (isset($getcetak)) {
                 if ($a == 0) {
                     $nobukti1 = $nobukti1 . $dataBukti;
                 } else {
@@ -129,10 +129,10 @@ class ApprovalKirimBerkas implements Rule
                 $table = 'PEMUTIHANSUPIRHEADER';
             }
             $allowed = false;
-            $statusBelumKirimBerkas = Parameter::where('grp', '=', 'STATUSKIRIMBERKAS')->where('text', '=', 'KIRIM BERKAS')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
 
             foreach ($value as $val) {
-                $item = DB::table($table)->from(DB::raw("$table with (readuncommitted)"))->select('statuskirimberkas')->where('id', $val)->where('statuskirimberkas', $statusBelumKirimBerkas->id)->first();
+                $item = DB::table($table)->from(DB::raw("$table with (readuncommitted)"))->select('statuscetak')->where('id', $val)->where('statuscetak', $statusBelumCetak->id)->first();
                 if ($item) {
                     $allowed = true;
                 }

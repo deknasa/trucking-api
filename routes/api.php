@@ -344,6 +344,9 @@ route::middleware(['auth:api'])->group(function () {
 });
 
 route::middleware(['auth:api'])->group(function () {
+    Route::get('approvalkirimberkas/combo', [ApprovalKirimBerkasController::class, 'combo']);
+    Route::resource('approvalkirimberkas', ApprovalKirimBerkasController::class)->whereNumber('approvalkirimberkas');
+
     Route::post('bataledit', [Controller::class, 'batalEditingBy']);
     Route::get('jurnalumumpusatheader/importdatacabang', [JurnalUmumPusatHeaderController::class, 'importdatacabang']);
     Route::get('saldoakunpusatdetail/importdatacabang', [SaldoAkunPusatDetailController::class, 'importdatacabang']);
@@ -802,8 +805,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('approvalbukacetak/combo', [ApprovalBukaCetakController::class, 'combo']);
     Route::resource('approvalbukacetak', ApprovalBukaCetakController::class)->whereNumber('approvalbukacetak');
 
-    Route::get('approvalkirimberkas/combo', [ApprovalKirimBerkasController::class, 'combo']);
-    Route::resource('approvalkirimberkas', ApprovalKirimBerkasController::class)->whereNumber('approvalkirimberkas');
 
     Route::get('absensisupirapprovalheader/running_number', [AbsensiSupirApprovalHeaderController::class, 'getRunningNumber']);
     Route::get('absensisupirapprovalheader/grid', [AbsensiSupirApprovalHeaderController::class, 'grid']);
