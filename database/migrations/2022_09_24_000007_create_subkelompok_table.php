@@ -25,6 +25,9 @@ class CreateSubkelompokTable extends Migration
             $table->longText('info')->nullable();
             $table->longText('modifiedby',50)->nullable();
             $table->unsignedBigInteger('tas_id')->nullable();
+            $table->string('editing_by',50)->nullable();            
+            $table->dateTime('editing_at')->nullable();            
+
             $table->timestamps();
 
             $table->foreign('kelompok_id', 'subkelompok_kelompok_kelompok_id_foreign')->references('id')->on('kelompok');

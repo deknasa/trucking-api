@@ -33,6 +33,8 @@ class CreateRitasiTable extends Migration
             $table->unsignedBigInteger('dari_id')->nullable();
             $table->unsignedBigInteger('sampai_id')->nullable();
             $table->unsignedBigInteger('statusformat')->nullable(); 
+            $table->string('editing_by',50)->nullable();            
+            $table->dateTime('editing_at')->nullable();  
             $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
