@@ -20,10 +20,11 @@ use App\Http\Requests\UpdateKategoriRequest;
 use App\Http\Requests\DestroyKategoriRequest;
 use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\RangeExportReportRequest;
+use App\Models\MyModel;
 
 class KategoriController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -40,10 +41,38 @@ class KategoriController extends Controller
         ]);
     }
 
-    public function cekValidasi($id)
+    public function cekValidasi($id, request $request)
     {
+
+        
+        $aksi=$request->aksi ?? '';
         $kategori = new Kategori();
         $cekdata = $kategori->cekvalidasihapus($id);
+
+        $acoid = db::table('acos')->from(db::raw("acos a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.class', 'kategori')
+            ->where('a.method', 'update')
+            ->first()->id ?? 0;
+        $userid = auth('api')->user()->id;
+
+        $data = (new MyModel())->hakuser($userid, $acoid);
+        if ($data == true) {
+            $hakutama = 1;
+        } else {
+            $hakutama = 0;
+        }
+        if ($aksi=='edit') {
+            if ($cekdata['kondisi'] == true) {
+                if ($hakutama == 1) {
+                    $cekdata['kondisi'] = false;
+                }
+            }
+    
+        }
+
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
                 ->select(
@@ -97,7 +126,7 @@ class KategoriController extends Controller
             ];
             $kategori = (new Kategori())->processStore($data);
             $kategori->position = $this->getPosition($kategori, $kategori->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $kategori->page = ceil($kategori->position / (10));
             } else {
                 $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
@@ -140,7 +169,7 @@ class KategoriController extends Controller
             ];
             $kategori = (new Kategori())->processUpdate($kategori, $data);
             $kategori->position = $this->getPosition($kategori, $kategori->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $kategori->page = ceil($kategori->position / (10));
             } else {
                 $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
@@ -171,7 +200,7 @@ class KategoriController extends Controller
             $selected = $this->getPosition($kategori, $kategori->getTable(), true);
             $kategori->position = $selected->position;
             $kategori->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $kategori->page = ceil($kategori->position / (10));
             } else {
                 $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
@@ -257,7 +286,7 @@ class KategoriController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan
@@ -317,5 +346,13 @@ class KategoriController extends Controller
 
             $this->toExcel($judulLaporan, $kategoris, $columns);
         }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan EDIT DATA USER
+     */
+    public function updateuser()
+    {
     }
 }
