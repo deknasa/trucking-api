@@ -35,10 +35,10 @@ class StoreApprovalKirimBerkasRequest extends FormRequest
             $statusKirimBerkas[] = $item['id'];
         }
 
-        $dataCetakUlang = $parameter->getcombodata('CETAKULANG', 'CETAKULANG');
-        $dataCetakUlang = json_decode($dataCetakUlang, true);
-        foreach ($dataCetakUlang as $item) {
-            $statusCetakUlang[] = $item['text'];
+        $dataKirimBerkas = $parameter->getcombodata('CETAKULANG', 'CETAKULANG');
+        $dataKirimBerkas = json_decode($dataKirimBerkas, true);
+        foreach ($dataKirimBerkas as $item) {
+            $statusKirimBerkas[] = $item['text'];
         }
 
         // dd('test');
@@ -46,9 +46,25 @@ class StoreApprovalKirimBerkasRequest extends FormRequest
             // 'tableId' => ['required','min:1',new ApprovalBukaCetak(),new BukaCetakSatuArah()],
             'tableId' => ['required','min:1',new ApprovalKirimBerkas()],
             'periode' => ['required'],
-            'table' => ['required', Rule::in($statusCetakUlang)],
+            'table' => ['required', Rule::in($statusKirimBerkas)],
         ];
         
         return $rules;
+    }
+
+    public function attributes()
+    {
+        return [
+            'tableId' => 'No Bukti',
+        ];
+    }
+
+     public function messages()
+    {
+        $controller = new ErrorController;
+
+        return [
+            'tableId.required' => ':attribute' . ' Harap Di Pilih'  ,
+        ];
     }
 }
