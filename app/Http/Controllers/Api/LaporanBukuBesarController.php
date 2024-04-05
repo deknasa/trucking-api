@@ -44,8 +44,8 @@ class LaporanBukuBesarController extends Controller
             
             $coadari_id = AkunPusat::find($request->coadari_id);
             $coasampai_id = AkunPusat::find($request->coasampai_id);
-            $cabang_id = auth('api')->user()->cabang_id;
-            $cabang = Cabang::find($cabang_id);
+            // $cabang_id = auth('api')->user()->cabang_id;
+            $cabang = Cabang::find($request->cabang_id);
             $dataHeader = [
                 'coadari' => $coadari_id->coa,
                 'coasampai' => $coasampai_id->coa,
@@ -53,9 +53,8 @@ class LaporanBukuBesarController extends Controller
                 'ketcoasampai' => $coasampai_id->keterangancoa,
                 'dari' => $request->dari,
                 'sampai' => $request->sampai,
-                'cabang' => $cabang->namacabang
+                'cabang' => ($cabang == '') ? '' : 'CABANG ' . $cabang->namacabang
             ];
-
          
             return response([
                 'data' => $laporanbukubesar->getReport(),
@@ -78,21 +77,19 @@ class LaporanBukuBesarController extends Controller
           
             $laporanbukubesar = new LaporanBukuBesar();
 
-            
-            $coadari_id = AkunPusat::find($request->coadari_id);
-            $coasampai_id = AkunPusat::find($request->coasampai_id);
-            $cabang_id = auth('api')->user()->cabang_id;
-            $cabang = Cabang::find($cabang_id);
+            $coadari_id = ($request->coadari_id != '') ? AkunPusat::find($request->coadari_id) : '';
+            $coasampai_id = ($request->coasampai_id != '') ? AkunPusat::find($request->coasampai_id) : '';
+            // $cabang_id = auth('api')->user()->cabang_id;
+            $cabang = Cabang::find($request->cabang_id);
             $dataHeader = [
-                'coadari' => $coadari_id->coa,
-                'coasampai' => $coasampai_id->coa,
-                'ketcoadari' => $coadari_id->keterangancoa,
-                'ketcoasampai' => $coasampai_id->keterangancoa,
+                'coadari' => ($coadari_id != '') ? $coadari_id->coa : '',
+                'coasampai' => ($coasampai_id != '') ? $coasampai_id->coa : '',
+                'ketcoadari' => ($coadari_id != '') ? $coadari_id->keterangancoa : '',
+                'ketcoasampai' => ($coasampai_id != '') ? $coasampai_id->keterangancoa : '',
                 'dari' => $request->dari,
                 'sampai' => $request->sampai,
-                'cabang' => $cabang->namacabang
+                'cabang' => ($cabang == '') ? '' : 'CABANG ' . $cabang->namacabang
             ];
-
          
             return response([
                 'data' => $laporanbukubesar->getReport(),

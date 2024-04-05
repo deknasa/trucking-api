@@ -57,8 +57,16 @@ class LaporanPiutangGiroController extends Controller
                 $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
                 $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
             }
+
+            $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+                ->select('cabang.namacabang')
+                ->join("parameter", 'parameter.text', 'cabang.id')
+                ->where('parameter.grp', 'ID CABANG')
+                ->first();
+
             return response([
-                'data' => $laporan_piutanggiro
+                'data' => $laporan_piutanggiro,
+                'namacabang' => 'CABANG ' . $getCabang->namacabang
                 // 'data' => $report
             ]);
         }
@@ -97,8 +105,16 @@ class LaporanPiutangGiroController extends Controller
                 $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
                 $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
             }
+
+            $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+                ->select('cabang.namacabang')
+                ->join("parameter", 'parameter.text', 'cabang.id')
+                ->where('parameter.grp', 'ID CABANG')
+                ->first();
+
             return response([
-                'data' => $laporan_piutanggiro
+                'data' => $laporan_piutanggiro,
+                'namacabang' => 'CABANG ' . $getCabang->namacabang
                 // 'data' => $report
             ]);
         }
