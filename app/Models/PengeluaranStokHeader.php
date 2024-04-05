@@ -1483,7 +1483,7 @@ class PengeluaranStokHeader extends MyModel
 
         for ($i = 0; $i < count($data['detail_stok_id']); $i++) {
             $zqty = ($data['detail_qty']) ? $data['detail_qty'][$i] : null;
-            if ($zqty <> 0) {
+            if ($zqty <> 0 || ($afkir->id == $data['pengeluaranstok_id'])) {
 
 
 
