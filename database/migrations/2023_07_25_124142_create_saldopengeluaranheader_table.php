@@ -35,6 +35,9 @@ class CreateSaldopengeluaranheaderTable extends Migration
             $table->string('transferkean',100)->nullable();
             $table->string('transferkebank',100)->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();
+            $table->integer('statuskirimberkas')->Length(11)->nullable();
+            $table->string('userkirimberkas',50)->nullable();
+            $table->date('tglkirimberkas')->nullable();
             $table->longText('info')->nullable();      
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();

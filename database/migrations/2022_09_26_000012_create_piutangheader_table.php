@@ -33,6 +33,9 @@ class CreatePiutangheaderTable extends Migration
             $table->integer('statuscetak')->Length(11)->nullable();
             $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
+            $table->integer('statuskirimberkas')->Length(11)->nullable();
+            $table->string('userkirimberkas',50)->nullable();
+            $table->date('tglkirimberkas')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->string('editing_by',50)->nullable();            

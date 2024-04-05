@@ -30,6 +30,9 @@ class CreatealatbayarTable extends Migration
             $table->string('tipe', 50)->nullable();
             $table->longText('info')->nullable();
             $table->unsignedBigInteger('tas_id')->nullable();
+            $table->string('editing_by',50)->nullable();            
+            $table->dateTime('editing_at')->nullable();            
+
             $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
 

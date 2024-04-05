@@ -286,8 +286,8 @@ class PengeluaranHeader extends MyModel
                 'pengeluaranheader.jumlahcetak',
                 'pengeluaranheader.tglbukacetak',
                 'pengeluaranheader.statuskirimberkas',
-                'pengeluaranheader.userbukakirimberkas',
-                'pengeluaranheader.tglbukakirimberkas',
+                'pengeluaranheader.userkirimberkas',
+                'pengeluaranheader.tglkirimberkas',
             )
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pengeluaranheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pengeluaranheader.alatbayar_id', 'alatbayar.id')
@@ -1383,9 +1383,6 @@ class PengeluaranHeader extends MyModel
         $pengeluaranHeader->statuscetak = $statusCetak->id;
         $pengeluaranHeader->userbukacetak = '';
         $pengeluaranHeader->tglbukacetak = '';
-        $pengeluaranHeader->statuskirimberkas = $statusKirimBerkas->id;
-        $pengeluaranHeader->userkirimberkas = '';
-        $pengeluaranHeader->tglkirimberkas = '';
         $pengeluaranHeader->editing_by = '';
         $pengeluaranHeader->editing_at = null;
         $pengeluaranHeader->modifiedby = auth('api')->user()->name;
