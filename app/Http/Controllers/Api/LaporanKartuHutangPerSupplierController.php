@@ -45,6 +45,11 @@ class LaporanKartuHutangPerSupplierController extends Controller
 
         $laporan_kartuhutangpersupplier = $laporankartuhutangpersupplier->getReport($dari, $sampai, $supplierdari, $suppliersampai,$prosesneraca);
 
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+        ->select('cabang.namacabang')
+        ->join("parameter", 'parameter.text', 'cabang.id')
+        ->where('parameter.grp', 'ID CABANG')
+        ->first();
         // if ($request->isCheck) {
         //     if (count($laporan_kartuhutangpersupplier) === 0) {
         //         return response([
@@ -65,7 +70,8 @@ class LaporanKartuHutangPerSupplierController extends Controller
             //     $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
             // }
             return response([
-                'data' => $laporan_kartuhutangpersupplier
+                'data' => $laporan_kartuhutangpersupplier,
+                'namacabang' => 'CABANG ' . $getCabang->namacabang
                 // 'data' => $report
             ]);
         // }
@@ -102,8 +108,14 @@ class LaporanKartuHutangPerSupplierController extends Controller
             }
         } else {
 
+            $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+                ->select('cabang.namacabang')
+                ->join("parameter", 'parameter.text', 'cabang.id')
+                ->where('parameter.grp', 'ID CABANG')
+                ->first();
             return response([
-                'data' => $laporan_kartuhutangpersupplier
+                'data' => $laporan_kartuhutangpersupplier,
+                'namacabang' => 'CABANG ' . $getCabang->namacabang
                 // 'data' => $report
             ]);
         }

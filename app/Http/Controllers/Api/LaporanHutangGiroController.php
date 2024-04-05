@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class LaporanHutangGiroController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -59,9 +59,15 @@ class LaporanHutangGiroController extends Controller
                 $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
                 $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
             }
+            $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+                ->select('cabang.namacabang')
+                ->join("parameter", 'parameter.text', 'cabang.id')
+                ->where('parameter.grp', 'ID CABANG')
+                ->first();
 
             return response([
-                'data' => $laporan_hutanggiro
+                'data' => $laporan_hutanggiro,
+                'namacabang' => 'CABANG ' . $getCabang->namacabang
 
             ]);
         }
@@ -95,16 +101,21 @@ class LaporanHutangGiroController extends Controller
                 ]);
             }
         } else {
-       
-       
-        foreach ($laporan_hutanggiro as $item) {
-            $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
-        }
 
-        return response([
-            'data' => $laporan_hutanggiro
-            // 'data' => $report
-        ]);
-    }
+
+            foreach ($laporan_hutanggiro as $item) {
+                $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
+            }
+            $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+                ->select('cabang.namacabang')
+                ->join("parameter", 'parameter.text', 'cabang.id')
+                ->where('parameter.grp', 'ID CABANG')
+                ->first();
+            return response([
+                'data' => $laporan_hutanggiro,
+                'namacabang' => 'CABANG ' . $getCabang->namacabang
+                // 'data' => $report
+            ]);
+        }
     }
 }

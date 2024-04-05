@@ -45,6 +45,11 @@ class ExportLaporanKasHarianController extends Controller
             $export = ExportLaporanKasHarian::getExport($sampai, $jenis);
 
           
+            $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+                ->select('cabang.namacabang')
+                ->join("parameter", 'parameter.text', 'cabang.id')
+                ->where('parameter.grp', 'ID CABANG')
+                ->first();
 
             foreach ($export[0] as $data) {
                 $data->tgl = date('d-m-Y', strtotime($data->tgl));
@@ -53,6 +58,7 @@ class ExportLaporanKasHarianController extends Controller
             return response([
                 'data' => $export[0],
                 'dataDua' => $export[1],
+                'namacabang' => 'CABANG ' . $getCabang->namacabang
             ]);
         }
     }

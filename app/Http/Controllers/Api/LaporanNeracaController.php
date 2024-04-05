@@ -6,12 +6,13 @@ use App\Events\LaporanNeracaEventPusher;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ValidasiLaporanNeracaRequest;
+use App\Models\Cabang;
 use Illuminate\Support\Facades\DB;
 use App\Models\LaporanNeraca;
 
 class LaporanNeracaController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -41,21 +42,25 @@ class LaporanNeracaController extends Controller
             ]);
         } else {
 
-        $sampai = $request->sampai;
-        $eksport = 0;
-        $cabang_id=$request->cabang_id ?? 0;
+            $sampai = $request->sampai;
+            $eksport = 0;
+            $cabang_id = $request->cabang_id ?? 0;
+            $cabang = Cabang::find($request->cabang_id);
+            $dataHeader = [
+                'cabang' => ($cabang == '') ? '' : 'CABANG ' . $cabang->namacabang
+            ];
+            $report = LaporanNeraca::getReport($sampai, $eksport, $cabang_id);
+            // sleep(5);
 
-        $report = LaporanNeraca::getReport($sampai, $eksport,$cabang_id);
-        // sleep(5);
+            return response([
+                'data' => $report,
+                'dataheader' => $dataHeader
+            ]);
 
-        return response([
-            'data' => $report
-        ]);
-
-        // return response([
-        //     'data' => 'asdf',
-        // ]);
-         }
+            // return response([
+            //     'data' => 'asdf',
+            // ]);
+        }
     }
 
     /**
@@ -72,12 +77,17 @@ class LaporanNeracaController extends Controller
 
             $sampai = $request->sampai;
             $eksport = 0;
-            $cabang_id=$request->cabang_id ?? 0;
+            $cabang_id = $request->cabang_id ?? 0;
+            $cabang = Cabang::find($request->cabang_id);
+            $dataHeader = [
+                'cabang' => ($cabang == '') ? '' : 'CABANG ' . $cabang->namacabang
+            ];
 
-            $export = LaporanNeraca::getReport($sampai, $eksport,$cabang_id);
+            $export = LaporanNeraca::getReport($sampai, $eksport, $cabang_id);
 
             return response([
-                'data' => $export
+                'data' => $export,
+                'dataheader' => $dataHeader
             ]);
         }
     }

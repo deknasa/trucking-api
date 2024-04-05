@@ -76,7 +76,7 @@ class LaporanPiutangGiro extends MyModel
         $select_TempPencairan2 = DB::table('penerimaangiroheader')->from(DB::raw("penerimaangiroheader AS A WITH (READUNCOMMITTED)"))
         ->select([
             'a.nobukti',
-            'b.tglbukti',
+            'a.tglbukti',
             'c.nowarkat',
             'c.nominal',
             'c.tgljatuhtempo',
@@ -153,7 +153,7 @@ class LaporanPiutangGiro extends MyModel
         $select_TempPencairan2 = DB::table('penerimaangiroheader')->from(DB::raw("penerimaangiroheader AS A WITH (READUNCOMMITTED)"))
         ->select([
             'a.nobukti',
-            'b.tglbukti',
+            'a.tglbukti',
             'c.nowarkat',
             'c.nominal',
             'c.tgljatuhtempo',

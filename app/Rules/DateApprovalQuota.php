@@ -207,6 +207,19 @@ class DateApprovalQuota implements Rule
             //     ->first();
 
             $now = date('Y-m-d H:i:s');
+            $trip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+            ->select('nobukti', 'jobtrucking', 'tglbukti', DB::raw("isnull(approvalbukatanggal_id,0) as approvalbukatanggal_id"), 'tglbataseditsuratpengantar')
+            ->where('id', $idtrip)
+            ->first();
+
+            if($getAll != ''){
+                if($trip != ''){
+                    
+                    if (date('Y-m-d H:i:s') < date('Y-m-d H:i:s', strtotime($trip->tglbataseditsuratpengantar))) {
+                        return true;
+                    }
+                }
+            }
             if ($now > $getAll->tglbatas) {
                 return false;
             }
