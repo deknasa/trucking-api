@@ -607,6 +607,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('toemail/{id}/cekValidasi', [ToEmailController::class, 'cekValidasi']);
     Route::post('ccemail/{id}/cekValidasi', [CcEmailController::class, 'cekValidasi']);
     Route::post('bccemail/{id}/cekValidasi', [BccEmailController::class, 'cekValidasi']);
+    Route::post('blacklistsupir/{id}/cekValidasi', [BlackListSupirController::class, 'cekValidasi']);
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
