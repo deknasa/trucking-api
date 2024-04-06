@@ -42,12 +42,18 @@ class LaporanTitipanEmklController extends Controller
 
         $laporan_titipanemkl = $laporanTitipanEmkl->getData($tanggal,$tgldari,$tglsampai,$jenisorder);
         
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+        ->select('cabang.namacabang')
+        ->join("parameter", 'parameter.text', 'cabang.id')
+        ->where('parameter.grp', 'ID CABANG')
+        ->first();
         // foreach ($laporan_titipanemkl as $item) {
         //     $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
         //     $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
         // }
         return response([
-            'data' => $laporan_titipanemkl
+            'data' => $laporan_titipanemkl,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
             // 'data' => $report
         ]);
     }
@@ -72,13 +78,19 @@ class LaporanTitipanEmklController extends Controller
 
         $laporan_titipanemkl = $laporanTitipanEmkl->getData($tanggal,$tgldari,$tglsampai,$jenisorder);
         
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+        ->select('cabang.namacabang')
+        ->join("parameter", 'parameter.text', 'cabang.id')
+        ->where('parameter.grp', 'ID CABANG')
+        ->first();
         // foreach ($laporan_titipanemkl as $item) {
         //     $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
         //     $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
         // }
         return response([
             'data' => $laporan_titipanemkl,
-            'jenisorder' => $keteranganjenis
+            'jenisorder' => $keteranganjenis,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
             // 'data' => $report
         ]);
     }

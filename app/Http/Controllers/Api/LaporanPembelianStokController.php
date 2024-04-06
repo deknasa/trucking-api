@@ -62,8 +62,14 @@ class LaporanPembelianStokController extends Controller
                 $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
             }
 
+            $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
             return response([
-                'data' => $laporan_pembelianstok
+                'data' => $laporan_pembelianstok,
+                'namacabang' => 'CABANG ' . $getCabang->namacabang
                 // 'data' => $report
             ]);
         }
@@ -102,9 +108,15 @@ class LaporanPembelianStokController extends Controller
             foreach ($laporan_pembelianstok as $item) {
                 $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
             }
+            $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+                ->select('cabang.namacabang')
+                ->join("parameter", 'parameter.text', 'cabang.id')
+                ->where('parameter.grp', 'ID CABANG')
+                ->first();
 
             return response([
-                'data' => $laporan_pembelianstok
+                'data' => $laporan_pembelianstok,
+                'namacabang' => 'CABANG ' . $getCabang->namacabang
                 // 'data' => $report
             ]);
         }

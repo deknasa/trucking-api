@@ -49,11 +49,18 @@ class LaporanPemakaianBanController extends Controller
             $laporanpemakaianban = new LaporanPemakaianBan();
 
 
+            $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+                ->select('cabang.namacabang')
+                ->join("parameter", 'parameter.text', 'cabang.id')
+                ->where('parameter.grp', 'ID CABANG')
+                ->first();
+
 
 
 
             return response([
                 'data' => $laporanpemakaianban->getReport($dari, $sampai, $posisiAkhir, $jenisLaporan),
+                'namacabang' => 'CABANG ' . $getCabang->namacabang
             ]);
         }
     }
@@ -75,8 +82,15 @@ class LaporanPemakaianBanController extends Controller
 
         $laporan_pemakaian = $laporanpemakaianban->getReport($dari, $sampai, $posisiAkhir, $jenisLaporan);
 
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+        ->select('cabang.namacabang')
+        ->join("parameter", 'parameter.text', 'cabang.id')
+        ->where('parameter.grp', 'ID CABANG')
+        ->first();
+
         return response([
-            'data' => $laporan_pemakaian
+            'data' => $laporan_pemakaian,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
     }
 }
