@@ -47,10 +47,16 @@ class LaporanBanGudangSementaraController extends Controller
 
         $laporanbankgudangsementara = new LaporanBanGudangSementara();
 
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+        ->select('cabang.namacabang')
+        ->join("parameter", 'parameter.text', 'cabang.id')
+        ->where('parameter.grp', 'ID CABANG')
+        ->first();
 
 
         return response([
             'data' => $laporanbankgudangsementara->getReport(),
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
     }
       /**
@@ -60,8 +66,14 @@ class LaporanBanGudangSementaraController extends Controller
     public function export()
     {
         $laporanbankgudangsementara = new LaporanBanGudangSementara();
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
         return response([
             'data' => $laporanbankgudangsementara->getReport(),
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
     }
 }
