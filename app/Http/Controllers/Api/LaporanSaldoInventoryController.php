@@ -171,10 +171,17 @@ class LaporanSaldoInventoryController extends Controller
             $opname = '0';
         }
 
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+        ->select('cabang.namacabang')
+        ->join("parameter", 'parameter.text', 'cabang.id')
+        ->where('parameter.grp', 'ID CABANG')
+        ->first();
+
         return response([
             'data' => $report,
             'opname' => $opname,
-            'judul' => $getJudul->text
+            'judul' => $getJudul->text,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
     }
     /**
@@ -292,8 +299,15 @@ class LaporanSaldoInventoryController extends Controller
         //     ],
 
         // ];
+            $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
+
         return response([
-            'data' => $report
+            'data' => $report,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
     }
 }
