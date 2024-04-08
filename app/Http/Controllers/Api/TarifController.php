@@ -2,29 +2,32 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Tarif;
-use App\Models\TarifRincian;
-use App\Http\Requests\StoreTarifRequest;
-use App\Http\Requests\StoreTarifRincianRequest;
-use App\Http\Requests\UpdateTarifRequest;
-use App\Http\Requests\StoreLogTrailRequest;
-use App\Models\Parameter;
-use App\Models\Container;
+use DateTime;
+use Carbon\Carbon;
 use App\Models\Kota;
 use App\Models\Zona;
+use App\Models\Error;
+use App\Models\Tarif;
+use App\Models\MyModel;
+use App\Models\Container;
+use App\Models\Parameter;
+use App\Models\TarifRincian;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\DestroyTarifRequest;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use App\Http\Requests\GetUpahSupirRangeRequest;
-use Illuminate\Http\JsonResponse;
+use App\Http\Requests\StoreTarifRequest;
+use App\Http\Requests\UpdateTarifRequest;
+use App\Http\Requests\DestroyTarifRequest;
 use App\Http\Requests\ApprovalTarifRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\GetUpahSupirRangeRequest;
+use App\Http\Requests\StoreTarifRincianRequest;
 
 
 class TarifController extends Controller
@@ -51,8 +54,15 @@ class TarifController extends Controller
     public function cekValidasi($id)
     {
         $tarif = new Tarif();
+        $dataMaster = $tarif->where('id',$id)->first();
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $dataMaster->editing_by ?? '';
+        $aksi = request()->aksi ?? '';
+
         $cekdata = $tarif->cekvalidasihapus($id);
-        if ($cekdata['kondisi'] == true) {
+        if ($cekdata['kondisi'] == true && $aksi != 'EDIT') {
             $query = DB::table('error')
                 ->select(
                     DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
@@ -67,9 +77,44 @@ class TarifController extends Controller
                 'errors' => '',
                 'kondisi' => $cekdata['kondisi'],
             ];
-
-            return response($data);
+            goto selesai;
+            
+        } else  if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
+            
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('tarif', $id, $aksi);
+                }
+                
+                $data = [
+                    'status' => false,
+                    'message' => '',
+                    'errors' => '',
+                    'kondisi' => false,
+                    'editblok' => false,
+                ];
+                
+                // return response($data);
+            } else {
+                
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'Data tujuan <b>' . $dataMaster->tujuan . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                
+                $data = [
+                    'status' => true,
+                    'message' => ["keterangan"=>$keterror],
+                    'errors' => '',
+                    'kondisi' => true,
+                    'editblok' => true,
+                ];
+                
+                return response($data);
+            }
         } else {
+            (new MyModel())->updateEditingBy('tarif', $id, $aksi);
             $data = [
                 'status' => false,
                 'message' => '',
@@ -79,6 +124,8 @@ class TarifController extends Controller
 
             return response($data);
         }
+        selesai:
+        return response($data);
     }
 
     public function default()

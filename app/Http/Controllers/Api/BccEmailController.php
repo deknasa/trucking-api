@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\ApprovalKaryawanRequest;
+use DateTime;
+use App\Models\Error;
+use App\Models\MyModel;
 use App\Models\BccEmail;
+use App\Models\Parameter;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreBccEmailRequest;
 use App\Http\Requests\UpdateBccEmailRequest;
-use Illuminate\Support\Facades\DB;
+use App\Http\Requests\ApprovalKaryawanRequest;
 
 class BccEmailController extends Controller
 {
@@ -25,6 +29,63 @@ class BccEmailController extends Controller
                 'totalPages' => $bccEmail->totalPages
             ]
         ]);
+    }
+
+    public function cekValidasi($id)
+    {
+        $dataMaster = BccEmail::where('id',$id)->first();
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $dataMaster->editing_by ?? '';
+        $aksi = request()->aksi ?? '';
+        if ($useredit != '' && $useredit != $user) {
+           
+            $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+
+                    (new MyModel())->updateEditingBy('bccemail', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                // return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'Data <b>' .$dataMaster->email . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
+        } else {
+            
+            (new MyModel())->updateEditingBy('bccemail', $id, $aksi);
+                
+            $data = [
+                'error' => false,
+                'message' => '',
+                'kodeerror' => '',
+                'statuspesan' => 'success',
+            ];
+            
+
+            return response($data);
+        }
     }
     /**
      * @ClassName 
