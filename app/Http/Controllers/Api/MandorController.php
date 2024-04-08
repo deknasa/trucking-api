@@ -2,23 +2,26 @@
 
 namespace App\Http\Controllers\Api;
 
+use DateTime;
+use Carbon\Carbon;
+use App\Models\Error;
 use App\Models\Mandor;
+use App\Models\MyModel;
+use App\Models\Parameter;
+
+use App\Models\MandorDetail;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
 use App\Http\Requests\StoreMandorRequest;
 use App\Http\Requests\UpdateMandorRequest;
 use App\Http\Requests\DestroyMandorRequest;
 use App\Http\Requests\StoreLogTrailRequest;
-use App\Models\Parameter;
-
-use App\Http\Controllers\Controller;
 use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\RangeExportReportRequest;
-use App\Models\MandorDetail;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\QueryException;
 
 class MandorController extends Controller
 {
@@ -42,6 +45,12 @@ class MandorController extends Controller
     public function cekValidasi(Request $request, $id)
     {
         $mandor = new Mandor();
+        $dataMaster = $mandor->where('id',$id)->first();
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $dataMaster->editing_by ?? '';
+        $aksi = request()->aksi ?? '';
         $server = '';
         if ($request->from == 'tas') {
             $id = db::table('mandor')->from(db::raw("mandor a with (readuncommitted)"))
@@ -87,7 +96,40 @@ class MandorController extends Controller
             ];
 
             return response($data);
+        } else  if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('mandor', $id, $aksi);
+                }
+
+                $data = [
+                    'status' => false,
+                    'message' => '',
+                    'errors' => '',
+                    'kondisi' => false,
+                ];
+
+                // return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'Data <b>' . $dataMaster->namamandor . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                
+                $data = [
+                    'status' => true,
+                    'message' => ["keterangan"=>$keterror],
+                    'errors' => '',
+                    'kondisi' => true,
+                ];
+
+                return response($data);
+            }
         } else {
+            (new MyModel())->updateEditingBy('mandor', $id, $aksi);
             $data = [
                 'status' => false,
                 'message' => '',
