@@ -60,8 +60,15 @@ class LaporanSupirLebihDariTradoController extends Controller
         foreach($laporansupirlebih_daritrado as $item){
             $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
         }
+
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
         return response([
-            'data' => $laporansupirlebih_daritrado
+            'data' => $laporansupirlebih_daritrado,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
             // 'data' => $report
         ]);
     }
@@ -94,8 +101,15 @@ class LaporanSupirLebihDariTradoController extends Controller
         foreach($laporansupirlebih_daritrado as $item){
             $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
         }
+
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
         return response([
-            'data' => $laporansupirlebih_daritrado
+            'data' => $laporansupirlebih_daritrado,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
             // 'data' => $report
         ]);
     }

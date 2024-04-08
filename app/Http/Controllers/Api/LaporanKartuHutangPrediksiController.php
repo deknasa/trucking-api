@@ -44,9 +44,17 @@ class LaporanKartuHutangPrediksiController extends Controller
                 'message' => 'tidak ada data'
             ], 500);
         }else{
+            
+            $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+                ->select('cabang.namacabang')
+                ->join("parameter", 'parameter.text', 'cabang.id')
+                ->where('parameter.grp', 'ID CABANG')
+                ->first();
+
             return response([
                 'data' => $dataHutangPrediksi,
-                'message' => 'berhasil'
+                'message' => 'berhasil',
+                'namacabang' => 'CABANG ' . $getCabang->namacabang
             ]);
         }
 
@@ -85,9 +93,16 @@ class LaporanKartuHutangPrediksiController extends Controller
 
         $dataHutangPrediksi = $LaporanKartuHutangPrediksi->getReport($sampai,$dari);
 
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+        ->select('cabang.namacabang')
+        ->join("parameter", 'parameter.text', 'cabang.id')
+        ->where('parameter.grp', 'ID CABANG')
+        ->first();
+
 
         return response([
-            'data' => $dataHutangPrediksi
+            'data' => $dataHutangPrediksi,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
     }
 }

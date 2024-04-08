@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class LaporanRekapSumbanganController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -49,12 +49,18 @@ class LaporanRekapSumbanganController extends Controller
         //         'nobst' => 'BST 0002/II/2023'
         //     ]
         // ];
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
         return response([
-            'data' => $report
+            'data' => $report,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
     }
 
-      /**
+    /**
      * @ClassName
      * @Keterangan EXPORT KE EXCEL
      */
@@ -63,12 +69,18 @@ class LaporanRekapSumbanganController extends Controller
         $dari = $request->dari;
         $sampai = $request->sampai;
 
-        $export = LaporanRekapSumbangan::getReport($dari,$sampai);
+        $export = LaporanRekapSumbangan::getReport($dari, $sampai);
 
-   
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
+
 
         return response([
-            'data' => $export
+            'data' => $export,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
     }
 }

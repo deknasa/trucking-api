@@ -50,14 +50,18 @@ class LaporanUangJalanController extends Controller
     public function report(Request $request)
     {
           // $report = LaporanUangJalan::getReport($sampai, $jenis);
-        // $report = [
+        // $laporan_uang_jalan = [
         //     [
         //         'namasupir' => "CHANDRA ARIANTO",
         //         "tglabsensi" => "2023/01/30",
         //         "nominalambil" => "1000000",
         //         "tglric" => "2023/02/03",
         //         "nobuktiric" => "RIC 0019/II/2023",
-        //         "nominalkembali" => "200000"
+        //         "nominalkembali" => "200000",
+        //         "judulLaporan" => 'LAPORAN UANG JALAN',
+        //         "judul" => 'PT TRANSPORINDO AGUNG SEJAHTERA',
+        //         "usercetak" => 'User : '. auth('api')->user()->name,
+        //         'tglcetak' => 'Tgl Cetak: '. date('d-m-Y H:i:s')
         //     ],
         //     [
         //         'namasupir' => "CHANDRA ARIANTO",
@@ -65,10 +69,19 @@ class LaporanUangJalanController extends Controller
         //         "nominalambil" => "1000000",
         //         "tglric" => "2023/02/03",
         //         "nobuktiric" => "RIC 0019/II/2023",
-        //         "nominalkembali" => "200000"
+        //         "nominalkembali" => "200000",
+        //         "judulLaporan" => 'LAPORAN UANG JALAN',
+        //         "judul" => 'PT TRANSPORINDO AGUNG SEJAHTERA',
+        //         "usercetak" => 'User : '. auth('api')->user()->name,
+        //         'tglcetak' => 'Tgl Cetak: '. date('d-m-Y H:i:s')
         //     ],
         // ];
 
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+        ->select('cabang.namacabang')
+        ->join("parameter", 'parameter.text', 'cabang.id')
+        ->where('parameter.grp', 'ID CABANG')
+        ->first();
         $tgldari = date('Y-m-d', strtotime($request->ricdari));
         $tglsampai = date('Y-m-d', strtotime($request->ricsampai));
         $tglambil_jalandari = date('Y-m-d', strtotime($request->ambildari));
@@ -87,7 +100,8 @@ class LaporanUangJalanController extends Controller
         }
       
         return response([
-            'data' => $laporan_uang_jalan
+            'data' => $laporan_uang_jalan,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
 
     }
@@ -113,8 +127,15 @@ class LaporanUangJalanController extends Controller
         //     $item->ricsampai = date('d-m-Y', strtotime($item->ricsampai));
         // }
       
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+        ->select('cabang.namacabang')
+        ->join("parameter", 'parameter.text', 'cabang.id')
+        ->where('parameter.grp', 'ID CABANG')
+        ->first();
+
         return response([
-            'data' => $laporan_uang_jalan
+            'data' => $laporan_uang_jalan,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
             //   'data' => $export
         ]);
     }

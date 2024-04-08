@@ -67,9 +67,15 @@ class LaporanPembelianController extends Controller
             foreach ($laporan_pembelian as $item) {
                 $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
             }
+            $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+                ->select('cabang.namacabang')
+                ->join("parameter", 'parameter.text', 'cabang.id')
+                ->where('parameter.grp', 'ID CABANG')
+                ->first();
 
             return response([
-                'data' => $laporan_pembelian
+                'data' => $laporan_pembelian,
+                'namacabang' => 'CABANG ' . $getCabang->namacabang
                 // 'data' => $report
             ]);
         }
@@ -108,8 +114,14 @@ class LaporanPembelianController extends Controller
             }
         } else {
 
+            $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
             return response([
-                'data' => $laporan_pembelian
+                'data' => $laporan_pembelian,
+                'namacabang' => 'CABANG ' . $getCabang->namacabang
                 // 'data' => $Export
             ]);
         }

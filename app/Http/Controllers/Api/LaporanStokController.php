@@ -9,8 +9,7 @@ use App\Models\LaporanStok;
 use App\Http\Requests\StoreLaporanStokRequest;
 use App\Http\Requests\UpdateLaporanStokRequest;
 use App\Http\Requests\ValidasiLaporanStokRequest;
-
-
+use Illuminate\Support\Facades\DB;
 
 class LaporanStokController extends Controller
 {
@@ -75,8 +74,14 @@ class LaporanStokController extends Controller
         //     $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
         // }
 
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
         return response([
-            'data' => $laporan_stok
+            'data' => $laporan_stok,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
             // 'data' => $report
         ]);
     }

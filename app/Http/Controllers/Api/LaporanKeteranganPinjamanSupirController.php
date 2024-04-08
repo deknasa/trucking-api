@@ -35,6 +35,11 @@ class LaporanKeteranganPinjamanSupirController extends Controller
         $prosesneraca=0;
 
         $report = LaporanKeteranganPinjamanSupir::getReport($periode, $jenis,$prosesneraca);
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
         // $report = [
         //     [
         //         "tanggal" => "23/2/2023",
@@ -46,7 +51,8 @@ class LaporanKeteranganPinjamanSupirController extends Controller
         //     ]
         // ];
         return response([
-            'data' => $report
+            'data' => $report,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
     }
     
@@ -67,9 +73,15 @@ class LaporanKeteranganPinjamanSupirController extends Controller
            
             $data->tanggal = date('d-m-Y', strtotime($data->tanggal));
         }
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
 
         return response([
-            'data' => $export
+            'data' => $export,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
 
        

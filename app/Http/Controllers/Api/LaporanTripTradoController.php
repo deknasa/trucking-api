@@ -34,6 +34,11 @@ class LaporanTripTradoController extends Controller
         $dari = $request->dari;
 
         $report = LaporanTripTrado::getReport($sampai, $dari);
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
         // $report = [
         //     [
         //         'nopol' => 'BK 2141 PK',
@@ -56,7 +61,8 @@ class LaporanTripTradoController extends Controller
         //     ]
         // ];
         return response([
-            'data' => $report
+            'data' => $report,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
 
     }
@@ -72,9 +78,15 @@ class LaporanTripTradoController extends Controller
     
             $export = LaporanTripTrado::getReport($dari,$sampai);
     
+            $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+                ->select('cabang.namacabang')
+                ->join("parameter", 'parameter.text', 'cabang.id')
+                ->where('parameter.grp', 'ID CABANG')
+                ->first();
     
             return response([
-                'data' => $export
+                'data' => $export,
+                'namacabang' => 'CABANG ' . $getCabang->namacabang
             ]);
         }
 }

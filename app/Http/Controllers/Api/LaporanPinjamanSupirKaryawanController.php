@@ -43,9 +43,17 @@ class LaporanPinjamanSupirKaryawanController extends Controller
                 'message' => 'tidak ada data'
             ], 500);
         } else {
+
+            $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+                ->select('cabang.namacabang')
+                ->join("parameter", 'parameter.text', 'cabang.id')
+                ->where('parameter.grp', 'ID CABANG')
+                ->first();
+
             return response([
                 'data' => $dataPinjSupir,
-                'message' => 'berhasil'
+                'message' => 'berhasil',
+                'namacabang' => 'CABANG ' . $getCabang->namacabang
             ]);
         }
     }
@@ -62,8 +70,16 @@ class LaporanPinjamanSupirKaryawanController extends Controller
 
         $export = LaporanPinjamanSupirKaryawan::getReport($sampai, $prosesneraca);
 
+
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+        ->select('cabang.namacabang')
+        ->join("parameter", 'parameter.text', 'cabang.id')
+        ->where('parameter.grp', 'ID CABANG')
+        ->first();
+
         return response([
-            'data' => $export
+            'data' => $export,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
     }
 }

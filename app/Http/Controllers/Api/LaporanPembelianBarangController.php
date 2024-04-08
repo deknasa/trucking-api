@@ -9,6 +9,7 @@ use App\Models\LaporanPembelianBarang;
 use App\Http\Requests\ValidasiLaporanPembelianBarangRequest;
 use App\Http\Requests\StoreLaporanPembelianBarangRequest;
 use App\Http\Requests\UpdateLaporanPembelianBarangRequest;
+use Illuminate\Support\Facades\DB;
 
 class LaporanPembelianBarangController extends Controller
 {
@@ -72,8 +73,14 @@ class LaporanPembelianBarangController extends Controller
         //     $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
         // }
 
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
         return response([
-            'data' => $laporan_pembelianbarang
+            'data' => $laporan_pembelianbarang,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
             // 'data' => $report
         ]);
     }

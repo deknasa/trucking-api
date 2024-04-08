@@ -17,7 +17,7 @@ class LaporanRekapTitipanEmklController extends Controller
      */
     public function index(Request $request)
     {
-       
+
         $laporanRekapTitipanEmkl = new LaporanRekapTitipanEmkl();
         return response([
             'data' => [],
@@ -36,39 +36,51 @@ class LaporanRekapTitipanEmklController extends Controller
     {
         $tanggal = date('Y-m-d', strtotime($request->periode));
         $laporanRekapTitipanEmkl = new LaporanRekapTitipanEmkl();
-        $prosesneraca=0;
+        $prosesneraca = 0;
 
-        $laporan_titipanemkl = $laporanRekapTitipanEmkl->getData($tanggal,$prosesneraca);
-        
+        $laporan_titipanemkl = $laporanRekapTitipanEmkl->getData($tanggal, $prosesneraca);
+
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
         // foreach ($laporan_titipanemkl as $item) {
         //     $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
         //     $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
         // }
         return response([
-            'data' => $laporan_titipanemkl
+            'data' => $laporan_titipanemkl,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
             // 'data' => $report
         ]);
     }
 
-     /**
+    /**
      * @ClassName
      * @Keterangan EXPORT KE EXCEL
      */
     public function export(LaporanRekapTitipanEmklRequest $request)
     {
 
-            $tanggal = date('Y-m-d', strtotime($request->periode));
+        $tanggal = date('Y-m-d', strtotime($request->periode));
         $laporanRekapTitipanEmkl = new LaporanRekapTitipanEmkl();
-        $prosesneraca=0;
+        $prosesneraca = 0;
 
-        $laporan_titipanemkl = $laporanRekapTitipanEmkl->getData($tanggal,$prosesneraca);
-        
+        $laporan_titipanemkl = $laporanRekapTitipanEmkl->getData($tanggal, $prosesneraca);
+
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
         // foreach ($laporan_titipanemkl as $item) {
         //     $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
         //     $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
         // }
         return response([
-            'data' => $laporan_titipanemkl
+            'data' => $laporan_titipanemkl,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
             // 'data' => $report
         ]);
     }

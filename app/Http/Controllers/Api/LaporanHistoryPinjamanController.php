@@ -45,9 +45,16 @@ class LaporanHistoryPinjamanController extends Controller
                 $item->supirsampai = $supirsampai->namasupir;
             }
         }
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
+
 
         return response([
-            'data' => $laporan_historypinjaman
+            'data' => $laporan_historypinjaman,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
             // 'data' => $report
         ]);
     }
@@ -71,11 +78,18 @@ class LaporanHistoryPinjamanController extends Controller
         foreach ($laporan_historypinjaman as $item) {
             $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
         }
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
+
 
         return response([
             'data' => $laporan_historypinjaman,
             'supirdari' => ($supirdari_id != '') ? $supirdari->namasupir : 'SEMUA',
             'supirsampai' => ($supirsampai_id != '') ? $supirsampai->namasupir : 'SEMUA',
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
             // 'data' => $report
         ]);
     }
