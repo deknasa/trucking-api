@@ -14,39 +14,39 @@ use App\Models\Gudang;
 use App\Models\Trado;
 use App\Models\Stok;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class StokPersediaanController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
     public function index(GetStokPersediaanRequest $request)
     {
-            $stokPersediaan = new StokPersediaan();
-            
-            // dd($request->all());
-            $filter=$request->filter ?? 0;
-            $gudang=$request->gudang ?? '';
-            $gudang_id=$request->gudang_id ?? 0;
-            $trado=$request->trado ?? '';
-            $trado_id=$request->trado_id ?? 0;
-            $gandengan=$request->gandengan ?? '';
-            $gandengan_id=$request->gandengan_id ?? 0;
-            $keterangan=$request->keterangan ?? -1;
-            $data=$request->data ?? 0;
+        $stokPersediaan = new StokPersediaan();
+
+        // dd($request->all());
+        $filter = $request->filter ?? 0;
+        $gudang = $request->gudang ?? '';
+        $gudang_id = $request->gudang_id ?? 0;
+        $trado = $request->trado ?? '';
+        $trado_id = $request->trado_id ?? 0;
+        $gandengan = $request->gandengan ?? '';
+        $gandengan_id = $request->gandengan_id ?? 0;
+        $keterangan = $request->keterangan ?? -1;
+        $data = $request->data ?? 0;
 
 
-            return response([
-                'data' => $stokPersediaan->get($filter,$gudang,$gudang_id,$trado,$trado_id,$gandengan,$gandengan_id,$keterangan,$data),
-                'attributes' => [
-                    'totalRows' => $stokPersediaan->totalRows,
-                    'totalPages' => $stokPersediaan->totalPages
-                ]
-            ]);
-       
+        return response([
+            'data' => $stokPersediaan->get($filter, $gudang, $gudang_id, $trado, $trado_id, $gandengan, $gandengan_id, $keterangan, $data),
+            'attributes' => [
+                'totalRows' => $stokPersediaan->totalRows,
+                'totalPages' => $stokPersediaan->totalPages
+            ]
+        ]);
     }
-    
+
     public function default()
     {
         $persediaan = new StokPersediaan();
@@ -63,49 +63,62 @@ class StokPersediaanController extends Controller
     public function export(Request $request)
     {
         $stokPersediaan = new StokPersediaan();
-        $filter=$request->filter ?? 0;
-        $gudang=$request->gudang ?? '';
-        $gudang_id=$request->gudang_id ?? 0;
-        $trado=$request->trado ?? '';
-        $trado_id=$request->trado_id ?? 0;
-        $gandengan=$request->gandengan ?? '';
-        $gandengan_id=$request->gandengan_id ?? 0;
-        $keterangan=$request->keterangan ?? -1;
-        $data=$request->data ?? 0;
+        $data = $request->data ?? 0;
         $filter = Parameter::find($request->filter);
         if ($filter) {
-            if($filter->text == 'GUDANG'){
+            if ($filter->text == 'GUDANG') {
                 $getdatafilter = Gudang::find($request->datafilter);
-                $datafilter =$getdatafilter->gudang;
-                $gudang=$request->gudang ?? '';
-                $gudang_id=$request->gudang_id ?? 0;
-            } else if($filter->text == 'TRADO'){
+                $datafilter = $getdatafilter->gudang;
+                $gudang = $request->gudang ?? '';
+                $gudang_id = $request->gudang_id ?? 0;
+            } else if ($filter->text == 'TRADO') {
                 $getdatafilter = Trado::find($request->datafilter);
-                $datafilter =$getdatafilter->keterangan;
-                $trado=$request->trado ?? '';
-                $trado_id=$request->trado_id ?? 0;
-            } else if($filter->text == 'GANDENGAN'){
+                $datafilter = $getdatafilter->keterangan;
+                $trado = $request->trado ?? '';
+                $trado_id = $request->trado_id ?? 0;
+            } else if ($filter->text == 'GANDENGAN') {
                 $getdatafilter = Gandengan::find($request->datafilter);
-                $datafilter =$getdatafilter->keterangan;
-                $gandengan=$request->gandengan ?? '';
-                $gandengan_id=$request->gandengan_id ?? 0;
-            } 
+                $datafilter = $getdatafilter->keterangan;
+                $gandengan = $request->gandengan ?? '';
+                $gandengan_id = $request->gandengan_id ?? 0;
+            }
         }
 
         $user = Auth::user();
         $userCetak = $user->name;
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
+
+        $getJudul = DB::table('parameter')
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $report = [
-            'filter' => $filter->text??"",
-            'datafilter' => $datafilter??"",
-            'judul' => 'PT TRANSPORINDO AGUNG SEJAHTERA',
+            'filter' => $filter->text ?? "",
+            'datafilter' => $datafilter ?? "",
+            'judul' => $getJudul->text,
             'judulLaporan' => 'Laporan Stok Persediaan',
             'user' => $userCetak,
             'tglCetak' => date('d-m-Y H:i:s'),
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ];
 
+        $filter = $request->filter ?? 0;
+        $gudang = $request->gudang ?? '';
+        $gudang_id = $request->gudang_id ?? 0;
+        $trado = $request->trado ?? '';
+        $trado_id = $request->trado_id ?? 0;
+        $gandengan = $request->gandengan ?? '';
+        $gandengan_id = $request->gandengan_id ?? 0;
+        $keterangan = $request->keterangan ?? -1;
+        
         return response([
-            'data' => $stokPersediaan->get($filter,$gudang,$gudang_id,$trado,$trado_id,$gandengan,$gandengan_id,$keterangan,$data,$request->forReport),
+            'data' => $stokPersediaan->get($filter, $gudang, $gudang_id, $trado, $trado_id, $gandengan, $gandengan_id, $keterangan, $data, $request->forReport),
             'dataheader' => $report
         ]);
     }
@@ -121,41 +134,53 @@ class StokPersediaanController extends Controller
 
         $filter = Parameter::find($request->filter);
         if ($filter) {
-            if($filter->text == 'GUDANG'){
+            if ($filter->text == 'GUDANG') {
                 $getdatafilter = Gudang::find($request->datafilter);
-                $datafilter =$getdatafilter->gudang;
-            } else if($filter->text == 'TRADO'){
+                $datafilter = $getdatafilter->gudang;
+            } else if ($filter->text == 'TRADO') {
                 $getdatafilter = Trado::find($request->datafilter);
-                $datafilter =$getdatafilter->keterangan;
-            } else if($filter->text == 'GANDENGAN'){
+                $datafilter = $getdatafilter->keterangan;
+            } else if ($filter->text == 'GANDENGAN') {
                 $getdatafilter = Gandengan::find($request->datafilter);
-                $datafilter =$getdatafilter->keterangan;
-            } 
+                $datafilter = $getdatafilter->keterangan;
+            }
         }
+        $filterText = $filter->text ?? '';
 
         $user = Auth::user();
         $userCetak = $user->name;
         // dd($request->all());
-        $filter=$request->filter ?? 0;
-        $gudang=$request->gudang ?? '';
-        $gudang_id=$request->gudang_id ?? 0;
-        $trado=$request->trado ?? '';
-        $trado_id=$request->trado_id ?? 0;
-        $gandengan=$request->gandengan ?? '';
-        $gandengan_id=$request->gandengan_id ?? 0;
-        $keterangan=$request->keterangan ?? -1;
-        $data=$request->data ?? 0;
+        $filter = $request->filter ?? 0;
+        $gudang = $request->gudang ?? '';
+        $gudang_id = $request->gudang_id ?? 0;
+        $trado = $request->trado ?? '';
+        $trado_id = $request->trado_id ?? 0;
+        $gandengan = $request->gandengan ?? '';
+        $gandengan_id = $request->gandengan_id ?? 0;
+        $keterangan = $request->keterangan ?? -1;
+        $data = $request->data ?? 0;
+        $getJudul = DB::table('parameter')
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
         $report = [
-            'filter' => $filter->text??"",
-            'datafilter' => $datafilter??"",
-            'judul' => 'PT TRANSPORINDO AGUNG SEJAHTERA',
+            'filter' => $filterText,
+            'datafilter' => $datafilter ?? "",
+            'judul' => $getJudul->text,
             'judulLaporan' => 'Laporan Stok Persediaan',
             'user' => $userCetak,
             'tglCetak' => date('d-m-Y H:i:s'),
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ];
 
         return response([
-            'data' => $stokPersediaan->get($filter,$gudang,$gudang_id,$trado,$trado_id,$gandengan,$gandengan_id,$keterangan,$data),
+            'data' => $stokPersediaan->get($filter, $gudang, $gudang_id, $trado, $trado_id, $gandengan, $gandengan_id, $keterangan, $data),
             'dataheader' => $report
         ]);
     }

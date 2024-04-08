@@ -7,6 +7,7 @@ use App\Models\TarikDataAbsensi;
 use App\Models\LaporanDataJurnal;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ValidasiLaporanDataJurnalRequest;
+use Illuminate\Support\Facades\DB;
 
 class TarikDataAbsensiController extends Controller
 {
@@ -65,8 +66,16 @@ class TarikDataAbsensiController extends Controller
     {
         $tarikDataAbsensi = new TarikDataAbsensi();
 
+
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+        ->select('cabang.namacabang')
+        ->join("parameter", 'parameter.text', 'cabang.id')
+        ->where('parameter.grp', 'ID CABANG')
+        ->first();
+
         return response([
             'data' => $tarikDataAbsensi->getReport(),
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
         
         

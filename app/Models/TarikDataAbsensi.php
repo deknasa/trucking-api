@@ -16,13 +16,23 @@ class TarikDataAbsensi extends Model
         $dari = date('Y-m-d', strtotime(request()->dari)) ?? '1900/1/1';
         $sampai = date('Y-m-d', strtotime(request()->sampai)) ?? '1900/1/1';
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
 
         $query = DB::table($this->table)->from(DB::raw("absensisupirdetail with (readuncommitted)"));
+
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
         $query->select(
             "header.nobukti as nobukti",
@@ -35,14 +45,16 @@ class TarikDataAbsensi extends Model
             "absensisupirdetail.uangjalan as uangjalan",
             DB::raw("'Laporan Tarik Data Absensi' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
-            
-        )   
-        ->leftjoin(DB::raw("absensisupirheader as header with (readuncommitted)"), "header.id", "absensisupirdetail.absensi_id")
-        ->leftjoin(DB::raw("trado with (readuncommitted)"), "trado.id", "absensisupirdetail.trado_id")
-        ->leftjoin(DB::raw("supir with (readuncommitted)"), "supir.id", "absensisupirdetail.supir_id")
-        ->leftjoin(DB::raw("absentrado with (readuncommitted)"), "absentrado.id", "absensisupirdetail.absen_id")
-        ->whereBetween('header.tglbukti', [$dari, $sampai]);
-        
+            db::raw("'" . $disetujui . "' as disetujui"),
+            db::raw("'" . $diperiksa . "' as diperiksa"),
+
+        )
+            ->leftjoin(DB::raw("absensisupirheader as header with (readuncommitted)"), "header.id", "absensisupirdetail.absensi_id")
+            ->leftjoin(DB::raw("trado with (readuncommitted)"), "trado.id", "absensisupirdetail.trado_id")
+            ->leftjoin(DB::raw("supir with (readuncommitted)"), "supir.id", "absensisupirdetail.supir_id")
+            ->leftjoin(DB::raw("absentrado with (readuncommitted)"), "absentrado.id", "absensisupirdetail.absen_id")
+            ->whereBetween('header.tglbukti', [$dari, $sampai]);
+
         return $query->get();
     }
 }

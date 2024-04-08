@@ -44,9 +44,17 @@ class LaporanKlaimPJTSupirController extends Controller
                 'message' => 'tidak ada data'
             ], 500);
         }else{
+            
+            $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+                ->select('cabang.namacabang')
+                ->join("parameter", 'parameter.text', 'cabang.id')
+                ->where('parameter.grp', 'ID CABANG')
+                ->first();
+
             return response([
                 'data' => $laporan_klaim,
-                'message' => 'berhasil'
+                'message' => 'berhasil',
+                'namacabang' => 'CABANG ' . $getCabang->namacabang
             ]);
         }
     }
@@ -65,8 +73,15 @@ class LaporanKlaimPJTSupirController extends Controller
 
         $laporan_klaim = $laporanKlaim->getReport($sampai,$dari,$kelompok_id);
 
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+        ->select('cabang.namacabang')
+        ->join("parameter", 'parameter.text', 'cabang.id')
+        ->where('parameter.grp', 'ID CABANG')
+        ->first();
+
         return response([
-            'data' => $laporan_klaim
+            'data' => $laporan_klaim,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
     }
 }
