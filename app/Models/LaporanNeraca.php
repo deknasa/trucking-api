@@ -84,6 +84,7 @@ class LaporanNeraca extends MyModel
         }
 
         if ($cabang_id == $getcabangid && $getcabangid != 1) {
+            
             $tglbulan = $tahun . '/' . $bulan . '/1';
             $tgluji = date('Y-m-d', strtotime('+1 months', strtotime($tglbulan)));
             DB::table('akunpusatdetail')
