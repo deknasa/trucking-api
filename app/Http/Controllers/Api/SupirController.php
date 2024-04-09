@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
+use DateTime;
 use Exception;
 use App\Helpers\App;
-use App\Models\Zona;
 
+use App\Models\Zona;
+use App\Models\Error;
 use App\Models\Supir;
+use App\Models\MyModel;
 use App\Models\LogTrail;
 use App\Models\Parameter;
 use Illuminate\Support\Js;
@@ -17,10 +20,9 @@ use App\Models\ApprovalSupirTanpa;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\ApprovalSupirLuarKotaRequest;
+
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
-
 use App\Models\HistorySupirMilikMandor;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Storage;
@@ -29,10 +31,10 @@ use App\Http\Requests\UpdateSupirRequest;
 use App\Http\Requests\ApprovalSupirRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\RangeExportReportRequest;
+use App\Http\Requests\ApprovalSupirLuarKotaRequest;
 use Intervention\Image\ImageManagerStatic as Image;
 use App\Http\Requests\HistorySupirMilikMandorRequest;
 use App\Http\Requests\StoreApprovalSupirTanpaRequest;
-use App\Models\Error;
 
 class SupirController extends Controller
 {
@@ -189,6 +191,14 @@ class SupirController extends Controller
     public function cekValidasi($id)
     {
         $supir = new Supir();
+
+        $dataMaster = $supir->where('id',$id)->first();
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $dataMaster->editing_by ?? '';
+        $aksi = request()->aksi ?? '';
+
         if (request()->aksi == "ApprovalTanpa") {
             $approvalSupirTanpa = (new ApprovalSupirTanpa())->cekApproval($supir->find($id));
             // dd($approvalSupirTanpa);
@@ -229,7 +239,38 @@ class SupirController extends Controller
             ];
 
             return response($data);
+        } else  if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('supir', $id, $aksi);
+                }
+
+                $data = [
+                    'error' => false,
+                    'message' => '',
+                    'statuspesan' => 'success',
+                ];
+
+                // return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'Data <b>' . $dataMaster->namasupir . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }
         } else {
+            (new MyModel())->updateEditingBy('supir', $id, $aksi);
             $data = [
                 'error' => false,
                 'message' => '',

@@ -2,28 +2,31 @@
 
 namespace App\Http\Controllers\Api;
 
+use DateTime;
+use App\Models\Stok;
+use App\Models\Error;
+use App\Models\MyModel;
+
+use App\Models\LogTrail;
+
+use App\Models\Gandengan;
+use App\Models\Parameter;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+
+
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
+
+use Illuminate\Database\QueryException;
+use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StoreGandenganRequest;
 use App\Http\Requests\UpdateGandenganRequest;
 use App\Http\Requests\DestroyGandenganRequest;
 use App\Http\Requests\ApprovalGandenganRequest;
-
-use App\Http\Requests\StoreLogTrailRequest;
-
-use App\Models\Gandengan;
-use App\Models\LogTrail;
-use App\Models\Parameter;
-use App\Models\Stok;
-
-
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
-
-use App\Http\Controllers\Controller;
 use App\Http\Requests\RangeExportReportRequest;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\JsonResponse;
 
 class GandenganController extends Controller
 {
@@ -54,6 +57,12 @@ class GandenganController extends Controller
     {
         $gandengan = new Gandengan();
         $cekdata = $gandengan->cekvalidasihapus($id);
+        $dataMaster = $gandengan->where('id',$id)->first();
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $dataMaster->editing_by ?? '';
+        $aksi = request()->aksi ?? '';
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
                 ->select(
@@ -71,7 +80,40 @@ class GandenganController extends Controller
             ];
 
             return response($data);
+        } else  if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('gandengan', $id, $aksi);
+                }
+
+                $data = [
+                    'status' => false,
+                    'message' => '',
+                    'errors' => '',
+                    'kondisi' => false,
+                ];
+
+                // return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'Data <b>' . $dataMaster->keterangan . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                
+                $data = [
+                    'status' => true,
+                    'message' => ["keterangan"=>$keterror],
+                    'errors' => '',
+                    'kondisi' => true,
+                ];
+
+                return response($data);
+            }
         } else {
+            (new MyModel())->updateEditingBy('gandengan', $id, $aksi);
             $data = [
                 'status' => false,
                 'message' => '',

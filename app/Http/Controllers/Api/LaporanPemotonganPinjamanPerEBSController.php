@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class LaporanPemotonganPinjamanPerEBSController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -32,7 +32,7 @@ class LaporanPemotonganPinjamanPerEBSController extends Controller
     {
         $dari = date('Y-m-d', strtotime($request->dari));
         $sampai = date('Y-m-d', strtotime($request->sampai));
-  
+
         $laporanpemotonganpinjamanperebs = new LaporanPemotonganPinjamanPerEBS();
         // $report = [
         //     [
@@ -48,18 +48,23 @@ class LaporanPemotonganPinjamanPerEBSController extends Controller
         //         'ketpinjamanbersama' => 'Charge bersama semua supir atas Ban yang meledak dgn no ban 1100 - 04924112 pada Gandengan T- 07 Panjang sebesar Rp.740.000,- dibagi 17 supir(PJT 0017/III/2018)'
         //     ]
         // ];
-        $laporan_pemotongan_pinjamanperebs = $laporanpemotonganpinjamanperebs->getReport($dari, $sampai, );
+        $laporan_pemotongan_pinjamanperebs = $laporanpemotonganpinjamanperebs->getReport($dari, $sampai,);
 
-        foreach($laporan_pemotongan_pinjamanperebs as $item){
+        foreach ($laporan_pemotongan_pinjamanperebs as $item) {
             $item->tgldari = date('d-m-Y', strtotime($item->tgldari));
             $item->tglsampai = date('d-m-Y', strtotime($item->tglsampai));
 
             $item->tglbukti = date('d-m-Y', strtotime(substr($item->tglbukti, 0, 10)));
             $item->tanggaldari = date('d-m-Y', strtotime($item->tanggaldari));
-        
         }
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
         return response([
-            'data' => $laporanpemotonganpinjamanperebs->getReport($dari, $sampai)
+            'data' => $laporan_pemotongan_pinjamanperebs,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
     }
 
@@ -71,7 +76,7 @@ class LaporanPemotonganPinjamanPerEBSController extends Controller
     {
         $dari = date('Y-m-d', strtotime($request->dari));
         $sampai = date('Y-m-d', strtotime($request->sampai));
-  
+
         $laporanpemotonganpinjamanperebs = new LaporanPemotonganPinjamanPerEBS();
         // $report = [
         //     [
@@ -87,18 +92,23 @@ class LaporanPemotonganPinjamanPerEBSController extends Controller
         //         'ketpinjamanbersama' => 'Charge bersama semua supir atas Ban yang meledak dgn no ban 1100 - 04924112 pada Gandengan T- 07 Panjang sebesar Rp.740.000,- dibagi 17 supir(PJT 0017/III/2018)'
         //     ]
         // ];
-        $laporan_pemotongan_pinjamanperebs = $laporanpemotonganpinjamanperebs->getReport($dari, $sampai, );
+        $laporan_pemotongan_pinjamanperebs = $laporanpemotonganpinjamanperebs->getReport($dari, $sampai,);
 
-        foreach($laporan_pemotongan_pinjamanperebs as $item){
+        foreach ($laporan_pemotongan_pinjamanperebs as $item) {
             $item->tgldari = date('d-m-Y', strtotime($item->tgldari));
             $item->tglsampai = date('d-m-Y', strtotime($item->tglsampai));
 
             $item->tglbukti = date('d-m-Y', strtotime(substr($item->tglbukti, 0, 10)));
             $item->tanggaldari = date('d-m-Y', strtotime($item->tanggaldari));
-        
         }
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
         return response([
-            'data' => $laporanpemotonganpinjamanperebs->getExport($dari, $sampai)
+            'data' => $laporan_pemotongan_pinjamanperebs,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
     }
 }

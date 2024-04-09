@@ -2,32 +2,35 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Models\UpahSupir;
-use App\Models\UpahSupirRincian;
+use DateTime;
+use App\Helpers\App;
 use App\Models\Kota;
 use App\Models\Zona;
+use App\Models\Error;
+use App\Models\MyModel;
+use App\Models\LogTrail;
 use App\Models\Container;
+use App\Models\Parameter;
+use App\Models\UpahSupir;
+use Illuminate\Http\Request;
 use App\Models\StatusContainer;
+use App\Models\UpahSupirRincian;
+
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StoreUpahSupirRequest;
 use App\Http\Requests\UpdateUpahSupirRequest;
+use App\Http\Requests\DestroyUpahSupirRequest;
+use App\Http\Requests\ApprovalUpahSupirRequest;
+use App\Http\Requests\GetUpahSupirRangeRequest;
 use App\Http\Requests\StoreUpahSupirRincianRequest;
 use App\Http\Requests\UpdateUpahSupirRincianRequest;
-use App\Http\Requests\StoreLogTrailRequest;
-use App\Http\Requests\ApprovalUpahSupirRequest;
-
-use App\Helpers\App;
-use App\Http\Requests\DestroyUpahSupirRequest;
-use App\Http\Requests\GetIndexRangeRequest;
-use App\Http\Requests\GetUpahSupirRangeRequest;
-use Illuminate\Support\Facades\Storage;
-use App\Models\LogTrail;
-use App\Models\Parameter;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Http\JsonResponse;
-use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class UpahSupirController extends Controller
 {
@@ -565,8 +568,15 @@ class UpahSupirController extends Controller
     public function cekValidasi($id)
     {
         $upahSupir = new UpahSupir();
+        $dataMaster = $upahSupir->where('id',$id)->first();
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $dataMaster->editing_by ?? '';
+        $aksi = request()->aksi ?? '';
+
         $cekdata = $upahSupir->cekValidasi($id);
-        if ($cekdata['kondisi'] == true) {
+        if ($cekdata['kondisi'] == true && $aksi != 'EDIT') {
             $query = DB::table('error')
                 ->select(
                     DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
@@ -581,9 +591,45 @@ class UpahSupirController extends Controller
                 'errors' => '',
                 'kondisi' => $cekdata['kondisi'],
             ];
-
-            return response($data);
+            goto selesai;
+            // return response($data);
+        } else  if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
+            
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('upahSupir', $id, $aksi);
+                }
+                
+                $data = [
+                    'status' => false,
+                    'message' => '',
+                    'errors' => '',
+                    'kondisi' => false,
+                    'editblok' => false,
+                ];
+                
+                // return response($data);
+            } else {
+                
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'Data tujuan <b>' . $dataMaster->tujuan . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                
+                $data = [
+                    'status' => true,
+                    'message' => ["keterangan"=>$keterror],
+                    'errors' => '',
+                    'kondisi' => true,
+                    'editblok' => true,
+                ];
+                
+                return response($data);
+            }
         } else {
+
+            (new MyModel())->updateEditingBy('upahSupir', $id, $aksi);
 
             $data = [
                 'status' => false,
@@ -594,6 +640,8 @@ class UpahSupirController extends Controller
 
             return response($data);
         }
+        selesai:
+        return response($data);
     }
 
     /**

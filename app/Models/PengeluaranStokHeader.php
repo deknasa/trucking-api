@@ -1483,7 +1483,7 @@ class PengeluaranStokHeader extends MyModel
 
         for ($i = 0; $i < count($data['detail_stok_id']); $i++) {
             $zqty = ($data['detail_qty']) ? $data['detail_qty'][$i] : null;
-            if ($zqty <> 0) {
+            if ($zqty <> 0 || ($afkir->id == $data['pengeluaranstok_id'])) {
 
 
 
@@ -1535,7 +1535,7 @@ class PengeluaranStokHeader extends MyModel
                     "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
                     "nobukti" => $pengeluaranStokHeader->nobukti,
                     "stok_id" => $data['detail_stok_id'][$i],
-                    "jlhhari" => $data['jlhhari'][$i],
+                    "jlhhari" => ($data['jlhhari']) ? $data['jlhhari'] : null,
                     "qty" => ($data['detail_qty']) ? $data['detail_qty'][$i] : null,
                     "harga" => ($data['detail_harga']) ? $data['detail_harga'][$i] : null,
                     "persentasediscount" => ($data['detail_persentasediscount']) ? $data['detail_persentasediscount'][$i] : null,
@@ -2239,7 +2239,7 @@ class PengeluaranStokHeader extends MyModel
                 "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
                 "nobukti" => $pengeluaranStokHeader->nobukti,
                 "stok_id" => $data['detail_stok_id'][$i],
-                "jlhhari" => $data['jlhhari'][$i],
+                "jlhhari" => ($data['jlhhari']) ? $data['jlhhari'] : null,
                 "qty" => ($data['detail_qty']) ? $data['detail_qty'][$i] : null,
                 "harga" => ($data['detail_harga']) ? $data['detail_harga'][$i] : null,
                 "persentasediscount" => ($data['detail_persentasediscount']) ? $data['detail_persentasediscount'][$i] : null,

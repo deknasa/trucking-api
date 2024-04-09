@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 class LaporanKartuPiutangPerAgenController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -44,19 +44,25 @@ class LaporanKartuPiutangPerAgenController extends Controller
             $sampai = date('Y-m-d', strtotime($request->sampai));
             $agendari = $request->agendari_id ?? 0;
             $agensampai = $request->agensampai_id ?? 0;
-            $prosesneraca=0;
+            $prosesneraca = 0;
 
 
             $laporankartupiutangperagen = new LaporanKartuPiutangPerAgen();
 
 
-            $laporan_piutangperagen = $laporankartupiutangperagen->getReport($dari, $sampai, $agendari, $agensampai,$prosesneraca);
+            $laporan_piutangperagen = $laporankartupiutangperagen->getReport($dari, $sampai, $agendari, $agensampai, $prosesneraca);
             // foreach ($laporan_piutangperagen as $item) {
             //     // $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
             // }
+            $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+                ->select('cabang.namacabang')
+                ->join("parameter", 'parameter.text', 'cabang.id')
+                ->where('parameter.grp', 'ID CABANG')
+                ->first();
 
             return response([
-                'data' => $laporan_piutangperagen
+                'data' => $laporan_piutangperagen,
+                'namacabang' => 'CABANG ' . $getCabang->namacabang
                 // 'data' => $report
             ]);
         }
@@ -72,15 +78,21 @@ class LaporanKartuPiutangPerAgenController extends Controller
         $sampai = date('Y-m-d', strtotime($request->sampai));
         $agendari = $request->agendari_id;
         $agensampai = $request->agensampai_id;
-        $prosesneraca=0;
+        $prosesneraca = 0;
 
         $laporankartupiutangperagen = new LaporanKartuPiutangPerAgen();
 
 
-        $laporan_piutangperagen = $laporankartupiutangperagen->getReport($dari, $sampai, $agendari, $agensampai,$prosesneraca);
+        $laporan_piutangperagen = $laporankartupiutangperagen->getReport($dari, $sampai, $agendari, $agensampai, $prosesneraca);
 
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
         return response([
-            'data' => $laporan_piutangperagen
+            'data' => $laporan_piutangperagen,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
             // 'data' => $report
         ]);
     }

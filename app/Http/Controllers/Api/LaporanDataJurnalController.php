@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\LaporanDataJurnal;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ValidasiLaporanDataJurnalRequest;
+use Illuminate\Support\Facades\DB;
 
 class LaporanDataJurnalController extends Controller
 {
@@ -64,8 +65,14 @@ class LaporanDataJurnalController extends Controller
     {
         $laporanDataJurnal = new LaporanDataJurnal();
 
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+        ->select('cabang.namacabang')
+        ->join("parameter", 'parameter.text', 'cabang.id')
+        ->where('parameter.grp', 'ID CABANG')
+        ->first();
         return response([
             'data' => $laporanDataJurnal->getReport(),
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
         
         

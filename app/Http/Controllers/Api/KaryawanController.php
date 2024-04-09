@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\ApprovalKaryawanRequest;
-use App\Http\Requests\RangeExportReportRequest;
+use DateTime;
+use App\Models\Error;
+use App\Models\MyModel;
 use App\Models\Karyawan;
+use App\Models\Parameter;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreKaryawanRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateKaryawanRequest;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Http\JsonResponse;
+use App\Http\Requests\ApprovalKaryawanRequest;
+use App\Http\Requests\RangeExportReportRequest;
 
 class KaryawanController extends Controller
 {
@@ -45,6 +49,12 @@ class KaryawanController extends Controller
         $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
         $data['tas_id'] = $karyawan->id;
 
+        $dataMaster = $karyawan->where('id',$id)->first();
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $dataMaster->editing_by ?? '';
+        $aksi = request()->aksi ?? '';
         if ($cekStatusPostingTnl->text == 'POSTING TNL') {
             $data=[
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
@@ -71,7 +81,40 @@ class KaryawanController extends Controller
             ];
 
             return response($data);
+        } else  if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('karyawan', $id, $aksi);
+                }
+
+                $data = [
+                    'status' => false,
+                    'message' => '',
+                    'errors' => '',
+                    'kondisi' => false,
+                ];
+
+                // return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'Data <b>' . $dataMaster->namakaryawan . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                
+                $data = [
+                    'status' => true,
+                    'message' => ["keterangan"=>$keterror],
+                    'errors' => '',
+                    'kondisi' => true,
+                ];
+
+                return response($data);
+            }            
         } else {
+            (new MyModel())->updateEditingBy('karyawan', $id, $aksi);
             $data = [
                 'status' => false,
                 'message' => '',

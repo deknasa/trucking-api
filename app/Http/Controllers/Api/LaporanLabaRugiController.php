@@ -5,12 +5,13 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ValidasiLaporanLabaRugiRequest;
+use App\Models\Cabang;
 use Illuminate\Support\Facades\DB;
 use App\Models\LaporanLabaRugi;
 
 class LaporanLabaRugiController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -37,20 +38,25 @@ class LaporanLabaRugiController extends Controller
 
         $laporanlabarugi = new LaporanLabaRugi();
 
-        $laporan_labarugi = $laporanlabarugi->getReport($bulan, $tahun,$cabang_id);
+        $laporan_labarugi = $laporanlabarugi->getReport($bulan, $tahun, $cabang_id);
+
+        $cabang = Cabang::find($request->cabang_id);
+        $dataHeader = [
+            'cabang' => ($cabang == '') ? '' : 'CABANG ' . $cabang->namacabang
+        ];
 
         if (count($laporan_labarugi) == 0) {
             return response([
                 'data' => $laporan_labarugi,
                 'message' => 'tidak ada data'
             ], 500);
-        }else{
+        } else {
             return response([
                 'data' => $laporan_labarugi,
+                'dataheader' => $dataHeader,
                 'message' => 'berhasil'
             ]);
         }
-        
     }
 
     /**
@@ -66,7 +72,7 @@ class LaporanLabaRugiController extends Controller
         $laporanlabarugi = new LaporanLabaRugi();
 
 
-        $laporan_labarugi = $laporanlabarugi->getReport($bulan, $tahun,$cabang_id);
+        $laporan_labarugi = $laporanlabarugi->getReport($bulan, $tahun, $cabang_id);
         // foreach($laporan_labarugi as $item){
         //     $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
         //     $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
@@ -77,9 +83,15 @@ class LaporanLabaRugiController extends Controller
                 'data' => $laporan_labarugi,
                 'message' => 'tidak ada data'
             ], 500);
-        }else{
+        } else {
+
+            $cabang = Cabang::find($request->cabang_id);
+            $dataHeader = [
+                'cabang' => ($cabang == '') ? '' : 'CABANG ' . $cabang->namacabang
+            ];
             return response([
                 'data' => $laporan_labarugi,
+                'dataheader' => $dataHeader,
                 'message' => 'berhasil'
             ]);
         }

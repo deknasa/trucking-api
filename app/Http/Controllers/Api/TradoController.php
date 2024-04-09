@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
+use DateTime;
 use stdClass;
-use App\Helpers\App;
 
+use App\Helpers\App;
 use App\Models\Stok;
+use App\Models\Error;
 use App\Models\Trado;
+use App\Models\MyModel;
 use App\Models\LogTrail;
 use App\Models\Parameter;
 use Illuminate\Http\Request;
@@ -33,7 +36,6 @@ use Intervention\Image\ImageManagerStatic as Image;
 use App\Http\Requests\HistoryTradoMilikSupirRequest;
 use App\Http\Requests\HistoryTradoMilikMandorRequest;
 use App\Http\Requests\StoreApprovalTradoTanpaRequest;
-use App\Models\Error;
 
 class TradoController extends Controller
 {
@@ -71,6 +73,12 @@ class TradoController extends Controller
             ];
             return response($data);
         }
+        $dataMaster = $trado->where('id',$id)->first();
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $dataMaster->editing_by ?? '';
+        $aksi = request()->aksi ?? '';
 
         $cekdata = $trado->cekvalidasihapus($id);
         if ($cekdata['kondisi'] == true) {
@@ -90,7 +98,40 @@ class TradoController extends Controller
             ];
 
             return response($data);
+        } else  if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('trado', $id, $aksi);
+                }
+
+                $data = [
+                    'status' => false,
+                    'message' => '',
+                    'errors' => '',
+                    'kondisi' => false,
+                ];
+
+                // return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'Data <b>' . $dataMaster->kodetrado . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                
+                $data = [
+                    'status' => true,
+                    'message' => ["keterangan"=>$keterror],
+                    'errors' => '',
+                    'kondisi' => true,
+                ];
+
+                return response($data);
+            }
         } else {
+            (new MyModel())->updateEditingBy('trado', $id, $aksi);
             $data = [
                 'status' => false,
                 'message' => '',

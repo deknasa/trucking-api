@@ -35,6 +35,11 @@ class LaporanKasGantungController extends Controller
         
         $laporankasgantung = new LaporanKasGantung();
         
+            $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+                ->select('cabang.namacabang')
+                ->join("parameter", 'parameter.text', 'cabang.id')
+                ->where('parameter.grp', 'ID CABANG')
+                ->first();
         // $report = LaporanKasGantung::getReport($sampai, $jenis);
         // $report = [
         //     [
@@ -57,8 +62,14 @@ class LaporanKasGantungController extends Controller
             ]);
         } else {
  
+            $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+                ->select('cabang.namacabang')
+                ->join("parameter", 'parameter.text', 'cabang.id')
+                ->where('parameter.grp', 'ID CABANG')
+                ->first();
             return response([
-                'data' => $laporankasgantung->getReport($periode, $prosesneraca)
+                'data' => $laporankasgantung->getReport($periode, $prosesneraca),
+                'namacabang' => 'CABANG ' . $getCabang->namacabang
             ]);
         }
     }
@@ -103,8 +114,14 @@ class LaporanKasGantungController extends Controller
         foreach($laporan_kas_gantung as $item){
             $item->tanggal = date('d-m-Y', strtotime($item->tanggal));
         }
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
         return response([
-            'data' => $laporan_kas_gantung
+            'data' => $laporan_kas_gantung,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
             //   'data' => $export
         ]);
     }

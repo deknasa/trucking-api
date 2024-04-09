@@ -35,9 +35,15 @@ class LaporanDepositoSupirController extends Controller
         $prosesneraca=0;
 
         $laporandepositosupir=new LaporanDepositoSupir();
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
         
         return response([
-            'data' => $laporandepositosupir->getReport($sampai, $jenis,$prosesneraca)
+            'data' => $laporandepositosupir->getReport($sampai, $jenis,$prosesneraca),
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
     }
 
@@ -52,9 +58,15 @@ class LaporanDepositoSupirController extends Controller
         $prosesneraca=0;
 
         $laporandepositosupir=new LaporanDepositoSupir();
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
 
         return response([
-            'data' => $laporandepositosupir->getReport($sampai, $jenis,$prosesneraca)
+            'data' => $laporandepositosupir->getReport($sampai, $jenis,$prosesneraca),
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
     }
 }

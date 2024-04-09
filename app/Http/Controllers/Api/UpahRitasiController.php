@@ -2,28 +2,31 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\ApprovalKaryawanRequest;
-use App\Http\Requests\GetUpahSupirRangeRequest;
-use App\Models\UpahRitasi;
-use App\Models\UpahRitasiRincian;
+use DateTime;
 use App\Models\Kota;
 use App\Models\Zona;
+use App\Models\Error;
+use App\Models\MyModel;
+use App\Models\LogTrail;
 use App\Models\Container;
+use App\Models\Parameter;
+use App\Models\UpahRitasi;
+use Illuminate\Http\Request;
 use App\Models\StatusContainer;
+use App\Models\UpahRitasiRincian;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StoreUpahRitasiRequest;
+use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\UpdateUpahRitasiRequest;
+use App\Http\Requests\GetUpahSupirRangeRequest;
 use App\Http\Requests\StoreUpahRitasiRincianRequest;
 use App\Http\Requests\UpdateUpahRitasiRincianRequest;
-use App\Http\Requests\StoreLogTrailRequest;
-use Illuminate\Http\JsonResponse;
-use App\Models\LogTrail;
-use App\Models\Parameter;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class UpahRitasiController extends Controller
 {
@@ -392,8 +395,15 @@ class UpahRitasiController extends Controller
     public function cekValidasi($id)
     {
         $upahRitasi = new UpahRitasi();
+        $dataMaster = $upahRitasi->where('id',$id)->first();
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $dataMaster->editing_by ?? '';
+        $aksi = request()->aksi ?? '';
+        
         $cekdata = $upahRitasi->cekValidasi($id);
-        if ($cekdata['kondisi'] == true) {
+        if ($cekdata['kondisi'] == true && $aksi != 'EDIT') {
             $query = DB::table('error')
                 ->select(
                     DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
@@ -406,8 +416,45 @@ class UpahRitasiController extends Controller
                 'message' =>  $query->keterangan,
                 'statuspesan' => 'warning',
             ];
-            return response($data);
+            goto selesai;
+            // return response($data);
+        } else  if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
+            
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('upahritasi', $id, $aksi);
+                }
+                
+                $data = [
+                    'status' => false,
+                    'message' => '',
+                    'errors' => '',
+                    'kondisi' => false,
+                    'editblok' => false,
+                ];
+                
+                // return response($data);
+            } else {
+                
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'Data tujuan <b>' . $dataMaster->tujuan . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                
+                $data = [
+                    'status' => true,
+                    'message' => ["keterangan"=>$keterror],
+                    'errors' => '',
+                    'kondisi' => true,
+                    'editblok' => true,
+                ];
+                
+                return response($data);
+            }
         } else {
+
+            (new MyModel())->updateEditingBy('upahritasi', $id, $aksi);
 
             $data = [
                 'error' => false,
@@ -417,6 +464,8 @@ class UpahRitasiController extends Controller
 
             return response($data);
         }
+        selesai:
+        return response($data);
     }
     /**
      * @ClassName 

@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class LaporanKasBankController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -41,12 +41,19 @@ class LaporanKasBankController extends Controller
             $dari = $request->dari;
             $sampai = $request->sampai;
             $bank_id = $request->bank_id;
-            $prosesneraca=0;
+            $prosesneraca = 0;
+
+            $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+                ->select('cabang.namacabang')
+                ->join("parameter", 'parameter.text', 'cabang.id')
+                ->where('parameter.grp', 'ID CABANG')
+                ->first();
 
 
             $laporankasbank = new LaporanKasBank();
             return response([
-                'data' => $laporankasbank->getReport($dari, $sampai, $bank_id, $prosesneraca)
+                'data' => $laporankasbank->getReport($dari, $sampai, $bank_id, $prosesneraca),
+                'namacabang' => 'CABANG ' . $getCabang->namacabang
             ]);
         }
     }
@@ -65,11 +72,19 @@ class LaporanKasBankController extends Controller
             $dari = $request->dari;
             $sampai = $request->sampai;
             $bank_id = $request->bank_id;
-            $prosesneraca=0;
+            $prosesneraca = 0;
+
+
+            $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+                ->select('cabang.namacabang')
+                ->join("parameter", 'parameter.text', 'cabang.id')
+                ->where('parameter.grp', 'ID CABANG')
+                ->first();
 
             $laporankasbank = new LaporanKasBank();
             return response([
-                'data' => $laporankasbank->getReport($dari, $sampai, $bank_id, $prosesneraca)
+                'data' => $laporankasbank->getReport($dari, $sampai, $bank_id, $prosesneraca),
+                'namacabang' => 'CABANG ' . $getCabang->namacabang
             ]);
         }
     }
