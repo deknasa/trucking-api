@@ -34,8 +34,15 @@ class LaporanHistorySupirMilikMandorController extends Controller
 
 
         $laporan = new LaporanHistorySupirMilikMandor();
+
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
         return response([
-            'data' => $laporan->getReport($supir_id)
+            'data' => $laporan->getReport($supir_id),
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
     }
 
@@ -48,8 +55,15 @@ class LaporanHistorySupirMilikMandorController extends Controller
         $supir_id = $request->supir_id ?? 0;
 
         $laporan = new LaporanHistorySupirMilikMandor();
+
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
         return response([
-            'data' => $laporan->getReport($supir_id)
+            'data' => $laporan->getReport($supir_id),
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
     }
 }

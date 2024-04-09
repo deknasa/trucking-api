@@ -34,8 +34,14 @@ class LaporanHistoryTradoMilikMandorController extends Controller
 
 
         $laporan = new LaporanHistoryTradoMilikMandor();
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
         return response([
-            'data' => $laporan->getReport($trado_id)
+            'data' => $laporan->getReport($trado_id),
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
     }
 
@@ -48,8 +54,14 @@ class LaporanHistoryTradoMilikMandorController extends Controller
         $trado_id = $request->trado_id ?? 0;
 
         $laporan = new LaporanHistoryTradoMilikMandor();
+        $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
+            ->select('cabang.namacabang')
+            ->join("parameter", 'parameter.text', 'cabang.id')
+            ->where('parameter.grp', 'ID CABANG')
+            ->first();
         return response([
-            'data' => $laporan->getReport($trado_id)
+            'data' => $laporan->getReport($trado_id),
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
     }
 }
