@@ -148,6 +148,55 @@ class ApprovalKirimBerkas implements Rule
 
             $keterror = '';
         }
+
+        // STATUSKIRIMBERKAS	STATUSKIRIMBERKAS		BELUM KIRIM BERKAS
+        $defaultidbelumkirimberkas = db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+        ->select(
+            'a.id'
+        )
+        ->where('a.grp', 'STATUSKIRIMBERKAS')
+        ->where('a.subgrp', 'STATUSKIRIMBERKAS')
+        ->where('a.text', 'BELUM KIRIM BERKAS')
+        ->first()->id ?? '';
+
+
+        $data1 = '';
+        $a = 0;
+        $b = 0;
+        $ketstatus = '';
+        foreach ($databukti as $dataBukti) {
+            $getstatus = DB::table($table)->from(DB::raw($table ." a with (readuncommitted)"))->select(db::raw("isnull(a.statuskirimberkas,".$defaultidbelumkirimberkas.") as statuskirimberkas"), 'a.nobukti')->where('a.nobukti', $dataBukti)
+                ->first();
+
+            if ($a == 0) {
+                $data1 = $getstatus->statuskirimberkas ?? '';
+            } else {
+                if ($data1 != $getstatus->statuskirimberkas) {
+                    $ketstatus = $parameter->cekdataText($getstatus->statuskirimberkas) ?? '';
+                    if ($b == 0) {
+                        $nobukti1 = $nobukti1 . $dataBukti;
+                    } else {
+                        $nobukti1 = $nobukti1 . ', ' . $dataBukti;
+                    }
+                    $b = $b + 1;
+                }
+            }
+            $a = $a + 1;
+        }
+
+
+        if ($b >= 1) {
+            $allowed = false;
+            $error = new Error();
+            $keteranganerror = $error->cekKeteranganError('ASB') ?? '';
+
+            $this->keterror = 'No Bukti <b>' . $nobukti1 . '</b> Status ' . $ketstatus . ' <br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+            // dd($this->keterror);
+            // return $allowed;
+            goto lanjut;
+        }
+
+        // 
         lanjut:
         return $allowed;
     }

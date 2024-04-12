@@ -321,6 +321,11 @@ class PenerimaanHeader extends MyModel
                 'penerimaanheader.userbukacetak',
                 DB::raw('(case when (year(penerimaanheader.tglbukacetak) <= 2000) then null else penerimaanheader.tglbukacetak end ) as tglberkas'),
                 'penerimaanheader.jumlahcetak',
+                DB::raw('(case when (year(penerimaanheader.tglkirimberkas) <= 2000) then null else penerimaanheader.tglkirimberkas end ) as tglkirimberkas'),
+                'statuskirimberkas.memo as statuskirimberkas',
+                'statuskirimberkas.text as statuskirimberkastext',
+                'penerimaanheader.userkirimberkas',
+
                 'penerimaanheader.modifiedby',
                 'penerimaanheader.created_at',
                 'penerimaanheader.updated_at',
@@ -331,6 +336,7 @@ class PenerimaanHeader extends MyModel
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaanheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaanheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'penerimaanheader.statuskirimberkas', 'statuskirimberkas.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaanheader.statuscetak', 'statuscetak.id');
         if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
@@ -552,6 +558,9 @@ class PenerimaanHeader extends MyModel
             $this->table.userbukacetak,
             $this->table.tglbukacetak,
             $this->table.jumlahcetak,
+            statuskirimberkas.text as statuskirimberkas,
+            $this->table.userkirimberkas,
+            $this->table.tglkirimberkas,            
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
@@ -560,7 +569,9 @@ class PenerimaanHeader extends MyModel
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaanheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaanheader.statusapproval', 'statusapproval.id')
-            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaanheader.statuscetak', 'statuscetak.id');
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaanheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'penerimaanheader.statuskirimberkas', 'statuskirimberkas.id');
+
     }
 
     public function createTemp(string $modelTable)
@@ -582,6 +593,9 @@ class PenerimaanHeader extends MyModel
             $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
             $table->integer('jumlahcetak')->Length(11)->nullable();
+            $table->longtext('statuskirimberkas')->nullable();
+            $table->string('userkirimberkas', 200)->nullable();
+            $table->date('tglkirimberkas')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -598,7 +612,7 @@ class PenerimaanHeader extends MyModel
         $models = $this->filter($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])->where($this->table . '.bank_id', request()->bankheader);
         DB::table($temp)->insertUsing([
-            'id', 'nobukti', 'tglbukti', 'agen_id', 'bank_id', 'postingdari', 'diterimadari', 'tgllunas',  'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'
+            'id', 'nobukti', 'tglbukti', 'agen_id', 'bank_id', 'postingdari', 'diterimadari', 'tgllunas',  'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak','statuskirimberkas', 'userkirimberkas', 'tglkirimberkas', 'modifiedby', 'created_at', 'updated_at'
         ], $models);
 
 
@@ -636,6 +650,8 @@ class PenerimaanHeader extends MyModel
                                 $query = $query->where('statusapproval.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statuscetak') {
                                 $query = $query->where('statuscetak.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statuskirimberkas') {
+                                $query = $query->where('statuskirimberkas.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'pelanggan_id') {
                                 $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'bank_id') {
@@ -675,6 +691,8 @@ class PenerimaanHeader extends MyModel
                                     $query = $query->orWhere('statusapproval.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'statuscetak') {
                                     $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statuskirimberkas') {
+                                    $query = $query->orWhere('statuskirimberkas.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'pelanggan_id') {
                                     $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'bank_id') {
@@ -853,6 +871,7 @@ class PenerimaanHeader extends MyModel
 
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statuscetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+        $statusKirimBerkas = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSKIRIMBERKAS')->where('text', 'BELUM KIRIM BERKAS')->first();
 
         $penerimaanHeader = new PenerimaanHeader();
 
@@ -867,6 +886,9 @@ class PenerimaanHeader extends MyModel
         $penerimaanHeader->statusapproval = $statusApproval->id;
         $penerimaanHeader->statuscetak = $statuscetak->id;
         $penerimaanHeader->modifiedby = auth('api')->user()->name;
+        $penerimaanHeader->statuskirimberkas = $statusKirimBerkas->id;
+        $penerimaanHeader->userkirimberkas = '';
+        $penerimaanHeader->tglkirimberkas = '';
         $penerimaanHeader->info = html_entity_decode(request()->info);
         $penerimaanHeader->statusformat = $data['statusformat'] ?? $querysubgrppenerimaan->formatpenerimaan;
         $penerimaanHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $penerimaanHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
