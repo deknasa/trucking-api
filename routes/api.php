@@ -55,6 +55,7 @@ use App\Http\Controllers\Api\AkunPusatController;
 use App\Http\Controllers\Api\AkuntansiController;
 use App\Http\Controllers\Api\AlatBayarController;
 use App\Http\Controllers\Api\ContainerController;
+use App\Http\Controllers\Api\QtyTambahGantiOliController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ExportRicController;
 use App\Http\Controllers\Api\GandenganController;
@@ -378,6 +379,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('jenisorder', JenisOrderController::class)->whereNumber('jenisorder');
     Route::resource('statuscontainer', StatusContainerController::class)->parameters(['statuscontainer' => 'statusContainer'])->whereNumber('statusContainer');
     Route::resource('container', ContainerController::class)->whereNumber('container');
+    Route::resource('qtytambahgantioli', QtyTambahGantiOliController::class)->whereNumber('qtytambahgantioli');
     Route::resource('tarifdiscountharga', TarifDiscountHargaController::class)->whereNumber('tarifdiscountharga');
     Route::resource('tarifhargatertentu', TarifHargaTertentuController::class)->whereNumber('tarifhargatertentu');
     Route::resource('shipper', ShipperController::class)->whereNumber('shipper');
@@ -504,6 +506,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('kerusakan/approvalnonaktif', [KerusakanController::class, 'approvalnonaktif']);
     Route::post('mandor/approvalnonaktif', [MandorController::class, 'approvalnonaktif']);
     Route::post('container/approvalnonaktif', [ContainerController::class, 'approvalnonaktif']);
+    Route::post('qtytambahgantioli/approvalnonaktif', [QtyTambahGantiOliController::class, 'approvalnonaktif']);
     Route::post('statuscontainer/approvalnonaktif', [StatusContainerController::class, 'approvalnonaktif']);
     Route::post('kota/approvalnonaktif', [KotaController::class, 'approvalnonaktif']);
     Route::post('zona/approvalnonaktif', [ZonaController::class, 'approvalnonaktif']);
@@ -897,6 +900,16 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('container/{id}/cekValidasi', [ContainerController::class, 'cekValidasi'])->name('container.cekValidasi')->whereNumber('id');
     Route::get('container/export', [ContainerController::class, 'export']);
     Route::get('container/report', [ContainerController::class, 'report']);
+
+
+    Route::get('qtytambahgantioli/field_length', [QtyTambahGantiOliController::class, 'fieldLength']);
+    Route::get('qtytambahgantioli/combostatus', [QtyTambahGantiOliController::class, 'combostatus']);
+    Route::get('qtytambahgantioli/getPosition2', [QtyTambahGantiOliController::class, 'getPosition2']);
+    Route::get('qtytambahgantioli/default', [QtyTambahGantiOliController::class, 'default']);
+    Route::post('qtytambahgantioli/{id}/cekValidasi', [QtyTambahGantiOliController::class, 'cekValidasi'])->name('qtytambahgantioli.cekValidasi')->whereNumber('id');
+    Route::get('qtytambahgantioli/export', [QtyTambahGantiOliController::class, 'export']);
+    Route::get('qtytambahgantioli/report', [QtyTambahGantiOliController::class, 'report']);
+
 
     Route::get('tarifdiscountharga/field_length', [TarifDiscountHargaController::class, 'fieldLength']);
     Route::get('tarifdiscountharga/combostatus', [TarifDiscountHargaController::class, 'combostatus']);
