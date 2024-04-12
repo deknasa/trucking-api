@@ -46,7 +46,13 @@ class QtyTambahGantiOli extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
-        $aktif = request()->aktif ?? '';
+            $aktif = request()->aktif ?? '';
+            $islookup = request()->isLookup ?? false;
+            $stok_id = request()->stok_id ?? 0;
+            $statusoli = request()->statusoli ?? '';
+
+            // dd($stok_id);
+
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -82,6 +88,23 @@ class QtyTambahGantiOli extends MyModel
 
             $query->where('qtytambahgantioli.statusaktif', '=', $statusaktif->id);
         }
+
+        if ($islookup == true) {
+            $queryservicerutin=db::table('stok')->from(db::raw("stok a with (readuncommitted)"))
+            ->select(
+                db::raw("isnull(a.statusservicerutin,0) as statusservicerutin")
+            )
+            ->where('a.id',$stok_id)
+            ->first();
+            
+            if (isset($queryservicerutin)) {
+                $statusservicerutin=$queryservicerutin->statusservicerutin ?? 0;
+
+                $query->where('qtytambahgantioli.statusservicerutin', $statusservicerutin);                
+                $query->where('qtytambahgantioli.statusoli', $statusoli);                
+            }
+        }
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
