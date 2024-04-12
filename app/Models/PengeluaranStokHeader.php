@@ -91,6 +91,8 @@ class PengeluaranStokHeader extends MyModel
                 $table->integer('kerusakan_id')->nullable();
                 $table->longText('statuscetak')->nullable();
                 $table->integer('statuscetak_id')->nullable();
+                $table->longText('statuskirimberkas')->nullable();
+                $table->integer('statuskirimberkas_id')->nullable();
                 $table->integer('statusformat')->nullable();
                 $table->integer('statuspotongretur')->nullable();
                 $table->integer('bank_id')->nullable();
@@ -113,6 +115,7 @@ class PengeluaranStokHeader extends MyModel
                 $table->string('judul', 200)->nullable();
                 $table->string('tglcetak', 200)->nullable();
                 $table->string('usercetak', 100)->nullable();
+                
                 $table->date('tgldariheaderpenerimaanstok')->nullable();
                 $table->date('tglsampaiheaderpenerimaanstok')->nullable();
                 $table->date('tgldariheaderpenerimaanheader')->nullable();
@@ -352,6 +355,7 @@ class PengeluaranStokHeader extends MyModel
                 ->leftJoin('parameter as statusedit', 'pengeluaranstokheader.statusapprovaledit', 'statusedit.id')
                 ->leftJoin('parameter as statuseditketerangan', 'pengeluaranstokheader.statusapprovaleditketerangan', 'statuseditketerangan.id')
                 ->leftJoin('parameter as statuscetak', 'pengeluaranstokheader.statuscetak', 'statuscetak.id')
+                ->leftJoin('parameter as statuskirimberkas', 'pengeluaranstokheader.statuskirimberkas', 'statuskirimberkas.id')
                 ->leftJoin(db::raw($temppenerimaanstokheader . " as penerimaan"), 'pengeluaranstokheader.penerimaanstok_nobukti', 'penerimaan.nobukti')
                 ->leftJoin(db::raw($temppenerimaanstokheader . " as penerimaanheader"), 'pengeluaranstokheader.penerimaan_nobukti', 'penerimaanheader.nobukti')
                 ->leftJoin(db::raw($temppelunasanhutangheader . " as pelunasanhutangheader"), 'pengeluaranstokheader.hutangbayar_nobukti', 'pelunasanhutangheader.nobukti')
@@ -509,6 +513,8 @@ class PengeluaranStokHeader extends MyModel
                     'kerusakan_id' => $item['kerusakan_id'],
                     'statuscetak' => $item['statuscetak'],
                     'statuscetak_id' => $item['statuscetak_id'],
+                    'statuskirimberkas' => $item['statuskirimberkas'],
+                    'statuskirimberkas_id' => $item['statuskirimberkas_id'],
                     'statusformat' => $item['statusformat'],
                     'statuspotongretur' => $item['statuspotongretur'],
                     'bank_id' => $item['bank_id'],
@@ -637,6 +643,8 @@ class PengeluaranStokHeader extends MyModel
                 'a.kerusakan_id',
                 'a.statuscetak',
                 'a.statuscetak_id',
+                'a.statuskirimberkas',
+                'a.statuskirimberkas_id',
                 'a.statusformat',
                 'a.statuspotongretur',
                 'a.bank_id',
@@ -760,6 +768,8 @@ class PengeluaranStokHeader extends MyModel
             $table->integer('kerusakan_id')->length(11)->nullable();
             $table->string('statuscetak', 1500)->nullable();
             $table->integer('statuscetak_id')->length(11)->nullable();
+            $table->string('statuskirimberkas', 1500)->nullable();
+            $table->integer('statuskirimberkas_id')->length(11)->nullable();
             $table->integer('statusformat')->length(11)->nullable();
             $table->integer('statuspotongretur')->length(11)->nullable();
             $table->integer('bank_id')->length(11)->nullable();
@@ -818,22 +828,10 @@ class PengeluaranStokHeader extends MyModel
                             if ($filters['data']) {
                                 $query = $query->where('a.statuscetak_id', '=', "$filters[data]");
                             }
-                            // } else if ($filters['field'] == 'pengeluaranstok') {
-                            //     $query = $query->where('pengeluaranstok.kodepengeluaran', 'LIKE', "%$filters[data]%");
-                            // } else if ($filters['field'] == 'gudang') {
-                            //     $query = $query->where('gudang.gudang', 'LIKE', "%$filters[data]%");
-                            // } else if ($filters['field'] == 'gandengan') {
-                            //     $query = $query->where('gandengan.kodegandengan', 'LIKE', "%$filters[data]%");
-                            // } else if ($filters['field'] == 'trado') {
-                            //     $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
-                            // } else if ($filters['field'] == 'supplier') {
-                            //     $query = $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
-                            // } else if ($filters['field'] == 'kerusakan') {
-                            //     $query = $query->where('kerusakan.keterangan', 'LIKE', "%$filters[data]%");
-                            // } else if ($filters['field'] == 'supir') {
-                            //     $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
-                            // } else if ($filters['field'] == 'bank') {
-                            //     $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'statuskirimberkas') {
+                                if ($filters['data']) {
+                                    $query = $query->where('a.statuskirimberkas_id', '=', "$filters[data]");
+                                }
                         } else if ($filters['field'] == 'tglbukti') {
                             $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
@@ -868,7 +866,16 @@ class PengeluaranStokHeader extends MyModel
                             // } else if ($filters['field'] == 'bank') {
                             //     $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                             // } else 
-                            if ($filters['field'] == 'tglbukti') {
+                            if ($filters['field'] == 'statuscetak') {
+                                if ($filters['data']) {
+                                    $query = $query->Orwhere('a.statuscetak_id', '=', "$filters[data]");
+                                }
+                            } else if ($filters['field'] == 'statuskirimberkas') {
+                                    if ($filters['data']) {
+                                        $query = $query->Orwhere('a.statuskirimberkas_id', '=', "$filters[data]");
+                                    }
+    
+                            } else if ($filters['field'] == 'tglbukti') {
                                 $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
@@ -901,6 +908,8 @@ class PengeluaranStokHeader extends MyModel
             $table->integer('id')->nullable();
             $table->longText('statuscetak')->nullable();
             $table->integer('statuscetak_id')->nullable();
+            $table->longText('statuskirimberkas')->nullable();
+            $table->integer('statuskirimberkas_id')->nullable();
             $table->string('nobukti', 1000)->nullable();
             $table->dateTime('tglbukti')->nullable();
             $table->string('gudang', 50)->nullable();
@@ -930,6 +939,8 @@ class PengeluaranStokHeader extends MyModel
             "pengeluaranstokheader.id",
             'statuscetak.text as statuscetak',
             "statuscetak.id as  statuscetak_id",
+            'statuskirimberkas.text as statuskirimberkas',
+            "statuskirimberkas.id as  statuskirimberkas_id",
             "pengeluaranstokheader.nobukti",
             "pengeluaranstokheader.tglbukti",
             "gudang.gudang as gudang",
@@ -961,12 +972,15 @@ class PengeluaranStokHeader extends MyModel
             ->leftJoin('kerusakan', 'pengeluaranstokheader.kerusakan_id', 'kerusakan.id')
             ->leftJoin('bank', 'pengeluaranstokheader.bank_id', 'bank.id')
             ->leftJoin('parameter as statuspotongretur', 'pengeluaranstokheader.statuspotongretur', 'statuspotongretur.id')
-            ->leftJoin('parameter as statuscetak', 'pengeluaranstokheader.statuscetak', 'statuscetak.id');
+            ->leftJoin('parameter as statuscetak', 'pengeluaranstokheader.statuscetak', 'statuscetak.id')
+            ->leftJoin('parameter as statuskirimberkas', 'pengeluaranstokheader.statuskirimberkas', 'statuskirimberkas.id');
 
         DB::table($temptable)->insertUsing([
             'id',
             'statuscetak',
             'statuscetak_id',
+            'statuskirimberkas',
+            'statuskirimberkas_id',
             'nobukti',
             'tglbukti',
             'gudang',
@@ -994,6 +1008,8 @@ class PengeluaranStokHeader extends MyModel
                 'a.id',
                 'a.statuscetak',
                 'a.statuscetak_id',
+                'a.statuskirimberkas',
+                'a.statuskirimberkas_id',
                 'a.nobukti',
                 'a.tglbukti',
                 'a.gudang',
@@ -1030,6 +1046,8 @@ class PengeluaranStokHeader extends MyModel
             $table->integer('id')->nullable();
             $table->longText('statuscetak')->nullable();
             $table->integer('statuscetak_id')->nullable();
+            $table->longText('statuskirimberkas')->nullable();
+            $table->integer('statuskirimberkas_id')->nullable();
             $table->string('nobukti', 1000)->nullable();
             $table->dateTime('tglbukti')->nullable();
             $table->string('gudang', 50)->nullable();
@@ -1067,6 +1085,8 @@ class PengeluaranStokHeader extends MyModel
             'id',
             'statuscetak',
             'statuscetak_id',
+            'statuskirimberkas',
+            'statuskirimberkas_id',
             'nobukti',
             'tglbukti',
             'gudang',
@@ -1120,6 +1140,8 @@ class PengeluaranStokHeader extends MyModel
             "$this->table.kerusakan_id",
             'statuscetak.memo as statuscetak',
             'statuscetak.id as statuscetak_id',
+            'statuskirimberkas.memo as statuskirimberkas',
+            'statuskirimberkas.id as statuskirimberkas_id',
             "$this->table.statusformat",
             "$this->table.statuspotongretur",
             "$this->table.bank_id",
@@ -1394,6 +1416,8 @@ class PengeluaranStokHeader extends MyModel
         $gst = Parameter::where('grp', 'GST STOK')->where('subgrp', 'GST STOK')->first();
         $korv = DB::table('pengeluaranstok')->where('kodepengeluaran', 'KORV')->first();
         $afkir = DB::table('pengeluaranstok')->where('kodepengeluaran', 'AFKIR')->first();
+        $statusKirimBerkas = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSKIRIMBERKAS')->where('text', 'BELUM KIRIM BERKAS')->first();
+
 
         if ($korv->id == $data['pengeluaranstok_id']) {
             $data['gudang_id'] =  Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first()->text;
@@ -1433,7 +1457,9 @@ class PengeluaranStokHeader extends MyModel
         $pengeluaranStokHeader->info = html_entity_decode(request()->info);
         $pengeluaranStokHeader->statuscetak        = $statusCetak->id ?? 0;
         $pengeluaranStokHeader->tglbatasedit        = $tglbatasedit;
-
+        $pengeluaranStokHeader->statuskirimberkas = $statusKirimBerkas->id;
+        $pengeluaranStokHeader->userkirimberkas = '';
+        $pengeluaranStokHeader->tglkirimberkas = '';
         $pengeluaranStokHeader->nobukti                  = (new RunningNumberService)->get($group, $subGroup, $pengeluaranStokHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$pengeluaranStokHeader->save()) {
