@@ -809,6 +809,7 @@ class Stok extends MyModel
             'stok.kelompok_id',
             'stok.totalvulkanisir',
             'stok.statusreuse',
+            'stok.statusservicerutin',
             'stok.subkelompok_id',
             'stok.satuan_id',
             'stok.kategori_id',
