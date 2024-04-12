@@ -1202,6 +1202,7 @@ class PengeluaranStokHeader extends MyModel
             ->leftJoin('parameter as statusedit', 'pengeluaranstokheader.statusapprovaledit', 'statusedit.id')
             ->leftJoin('parameter as statuseditketerangan', 'pengeluaranstokheader.statusapprovaleditketerangan', 'statuseditketerangan.id')
             ->leftJoin('parameter as statuscetak', 'pengeluaranstokheader.statuscetak', 'statuscetak.id')
+            ->leftJoin('parameter as statuskirimberkas', 'pengeluaranstokheader.statuskirimberkas', 'statuskirimberkas.id')
             ->leftJoin('penerimaanstokheader as penerimaan', 'pengeluaranstokheader.penerimaanstok_nobukti', 'penerimaan.nobukti')
             ->leftJoin('penerimaanheader', 'pengeluaranstokheader.penerimaan_nobukti', 'penerimaanheader.nobukti')
             ->leftJoin('pelunasanhutangheader', 'pengeluaranstokheader.hutangbayar_nobukti', 'pelunasanhutangheader.nobukti')
