@@ -18,6 +18,10 @@ use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\DestroyAkunPusatRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\TransferAkunPusatRequest;
+use App\Models\MyModel;
+use App\Models\Error;
+use DateTime;
+use App\Models\Parameter;
 
 class AkunPusatController extends Controller
 {
@@ -374,36 +378,93 @@ class AkunPusatController extends Controller
     public function cekValidasi($id)
     {
         $akunPusat = new AkunPusat();
-        $cekdata = $akunPusat->cekValidasi($id);
-        if ($cekdata['kondisi'] == true) {
-            $query = DB::table('error')
-                ->select(
-                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
-                )
-                ->where('kodeerror', '=', $cekdata['kodeerror'])
-                ->get();
-            $keterangan = $query['0'];
+        $cekdata = $akunPusat->cekvalidasihapus($id);
+        $dataMaster = AkunPusat::where('id',$id)->first();
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $dataMaster->editing_by ?? '';
+      
+        $aksi = request()->aksi ?? '';
+
+        if ($useredit != '' && $useredit != $user) {
+           
+            $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+
+                    (new MyModel())->updateEditingBy('akunpusat', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                // return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'Data <b>' . $dataMaster->keterangancoa . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
+
+            } else if ($cekdata['kondisi'] == true) {
+            // $query = DB::table('error')
+            //     ->select(
+            //         DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+            //     )
+            //     ->where('kodeerror', '=', 'SATL')
+            //     ->get();
+            // $keterangan = $query['0'];
+            $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+            $keterror = 'Data <b>' . $dataMaster->keterangancoa . '</b><br>' . $keteranganerror . ' <b> <br> ' . $keterangantambahanerror;
 
             $data = [
-                'status' => false,
-                'message' => $keterangan,
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
+                // 'status' => false,
+                // 'message' => $keterangan,
+                // 'errors' => '',
+                // 'kondisi' => $cekdata['kondisi'],
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'SATL2',
+                'statuspesan' => 'warning',
+
             ];
 
             return response($data);
-        } else {
 
+        } else {
+            if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                (new MyModel())->updateEditingBy('akunpusat', $id, $aksi);
+            }            
             $data = [
-                'status' => true,
+                'error' => false,
                 'message' => '',
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
+                'kodeerror' => '',
+                'statuspesan' => 'success',                
+                // 'status' => false,
+                // 'message' => '',
+                // 'errors' => '',
+                // 'kondisi' => $cekdata['kondisi'],
             ];
 
             return response($data);
         }
     }
+
 
 
     /**

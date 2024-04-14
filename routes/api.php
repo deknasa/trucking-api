@@ -609,6 +609,9 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('pengeluaranheader/approval', [PengeluaranHeaderController::class, 'approval']);
     Route::post('pelunasanhutangheader/approval', [PelunasanHutangHeaderController::class, 'approval']);
     Route::post('cabang/{id}/cekValidasi', [CabangController::class, 'cekValidasi']);
+    Route::post('akuntansi/{id}/cekValidasi', [AkuntansiController::class, 'cekValidasi']);
+    Route::post('typeakuntansi/{id}/cekValidasi', [TypeAkuntansiController::class, 'cekValidasi']);
+    Route::post('maintypeakuntansi/{id}/cekValidasi', [MainTypeAkuntansiController::class, 'cekValidasi']);
     Route::post('harilibur/{id}/cekValidasi', [HariLiburController::class, 'cekValidasi']);
     Route::post('reminderemail/{id}/cekValidasi', [ReminderEmailController::class, 'cekValidasi']);
     Route::post('toemail/{id}/cekValidasi', [ToEmailController::class, 'cekValidasi']);
