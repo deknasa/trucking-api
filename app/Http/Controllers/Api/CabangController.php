@@ -56,7 +56,7 @@ class CabangController extends Controller
             if ($diffNow->i > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
 
-                    (new MyModel())->updateEditingBy('karyawan', $id, $aksi);
+                    (new MyModel())->updateEditingBy('cabang', $id, $aksi);
                 }
 
                 $data = [
@@ -82,7 +82,7 @@ class CabangController extends Controller
             
         } else {
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                (new MyModel())->updateEditingBy('karyawan', $id, $aksi);
+                (new MyModel())->updateEditingBy('cabang', $id, $aksi);
             }
             $data = [
                 'error' => false,
