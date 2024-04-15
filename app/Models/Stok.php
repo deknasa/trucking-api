@@ -94,15 +94,19 @@ class Stok extends MyModel
         $dari = request()->dari ?? '';
         $approveReuse = request()->approveReuse ?? false;
         $kelompok = request()->kelompok_id ?? '';
+        $isLookup = request()->isLookup ?? false;
         $KelompokId_stok = request()->KelompokId ?? '';//dari lookup
         $penerimaanstok_id = request()->penerimaanstok_id ?? '';
         $pengeluaranstok_id = request()->pengeluaranstok_id ?? '';
         $penerimaanstokheader_nobukti = request()->penerimaanstokheader_nobukti ?? '';
+
+        // if ($isLookup==true) {
+        //     goto lanjut:
+        // }
         $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
         $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
         $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
         $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
-
         $tempumuraki = '##tempumuraki' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempumuraki, function ($table) {
             $table->Integer('stok_id')->nullable();
