@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers\Api;
 
+use DateTime;
+use App\Models\Error;
+use App\Models\MyModel;
+use App\Models\Parameter;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use App\Models\TarifHargaTertentu;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\RangeExportReportRequest;
-use App\Models\TarifHargaTertentu;
 use App\Http\Requests\StoreTarifHargaTertentuRequest;
 use App\Http\Requests\UpdateTarifHargaTertentuRequest;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class TarifHargaTertentuController extends Controller
 {
@@ -176,6 +180,62 @@ class TarifHargaTertentuController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+    public function cekValidasi($id)
+    {
+        $dataMaster = TarifHargaTertentu::where('id',$id)->first();
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $dataMaster->editing_by ?? '';
+        $aksi = request()->aksi ?? '';
+        if ($useredit != '' && $useredit != $user) {
+           
+            $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+
+                    (new MyModel())->updateEditingBy('TarifHargaTertentu', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                // return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'Data <b>' .$dataMaster->email . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
+        } else {
+            
+            (new MyModel())->updateEditingBy('TarifHargaTertentu', $id, $aksi);
+                
+            $data = [
+                'error' => false,
+                'message' => '',
+                'kodeerror' => '',
+                'statuspesan' => 'success',
+            ];
+            
+
+            return response($data);
+        }
     }
 
     /**

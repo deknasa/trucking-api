@@ -2,22 +2,25 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\JenisOrder;
-use App\Http\Requests\StoreJenisOrderRequest;
-use App\Http\Requests\UpdateJenisOrderRequest;
-use App\Http\Requests\StoreLogTrailRequest;
+use DateTime;
+use Carbon\Carbon;
+use App\Models\Error;
+use App\Models\MyModel;
 use App\Models\Parameter;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\ApprovalKaryawanRequest;
-use App\Http\Requests\RangeExportReportRequest;
-use Carbon\Carbon;
+use App\Models\JenisOrder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
-use Illuminate\Http\JsonResponse;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\StoreJenisOrderRequest;
+use App\Http\Requests\ApprovalKaryawanRequest;
+use App\Http\Requests\UpdateJenisOrderRequest;
+use App\Http\Requests\RangeExportReportRequest;
 
 class JenisOrderController extends Controller
 {
@@ -40,8 +43,14 @@ class JenisOrderController extends Controller
     public function cekValidasi($id)
     {
         $jenisOrder = new JenisOrder();
+        $dataMaster = $jenisOrder->where('id',$id)->first();
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $dataMaster->editing_by ?? '';
+        $aksi = request()->aksi ?? '';
         $cekdata = $jenisOrder->cekvalidasihapus($id);
-        if ($cekdata['kondisi'] == true) {
+        if ($cekdata['kondisi'] == true && $aksi != 'EDIT') {
             $query = DB::table('error')
                 ->select(
                     DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
@@ -58,7 +67,42 @@ class JenisOrderController extends Controller
             ];
 
             return response($data);
+        } else  if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('jenisOrder', $id, $aksi);
+                }
+
+                $data = [
+                    'status' => false,
+                    'message' => '',
+                    'errors' => '',
+                    'kondisi' => false,
+                    'editblok' => false,
+                ];
+
+                // return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'Data <b>' . $dataMaster->keterangan . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                
+                $data = [
+                    'status' => true,
+                    'message' => $keterror,
+                    'errors' => '',
+                    'kondisi' => true,
+                    'editblok' => true,
+                ];
+
+                return response($data);
+            }
         } else {
+            (new MyModel())->updateEditingBy('jenisOrder', $id, $aksi);
             $data = [
                 'status' => false,
                 'message' => '',
