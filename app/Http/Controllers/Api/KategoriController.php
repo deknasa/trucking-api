@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers\Api;
 
+use DateTime;
 use Carbon\Carbon;
+use App\Models\Error;
+use App\Models\MyModel;
 use App\Models\Kategori;
 use App\Models\Parameter;
 use App\Models\SubKelompok;
+
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
-
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
@@ -20,7 +23,6 @@ use App\Http\Requests\UpdateKategoriRequest;
 use App\Http\Requests\DestroyKategoriRequest;
 use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\RangeExportReportRequest;
-use App\Models\MyModel;
 
 class KategoriController extends Controller
 {
@@ -47,6 +49,13 @@ class KategoriController extends Controller
         
   
         $kategori = new Kategori();
+        $dataMaster = $kategori->where('id',$id)->first();
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $dataMaster->editing_by ?? '';
+        $aksi = request()->aksi ?? '';
+
         $cekdata = $kategori->cekvalidasihapus($id);
 
         $aksi=$request->aksi ?? '';
@@ -91,7 +100,41 @@ class KategoriController extends Controller
             ];
 
             return response($data);
+        } else  if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('kategori', $id, $aksi);
+                }
+                
+                $data = [
+                    'status' => false,
+                    'message' => '',
+                    'errors' => '',
+                    'kondisi' => false,
+                    'editblok' => false,
+                ];
+                
+                // return response($data);
+            } else {
+                
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'Data <b>' . $dataMaster->keterangan . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                
+                $data = [
+                    'status' => true,
+                    'message' => ["keterangan"=>$keterror],
+                    'errors' => '',
+                    'kondisi' => true,
+                    'editblok' => true,
+                ];
+                
+                return response($data);
+            }
         } else {
+            (new MyModel())->updateEditingBy('kategori', $id, $aksi);
             $data = [
                 'status' => false,
                 'message' => '',

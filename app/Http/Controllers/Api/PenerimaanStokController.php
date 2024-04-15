@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use DateTime;
+use App\Models\Error;
+use App\Models\MyModel;
+use App\Models\Parameter;
 use Illuminate\Http\Request;
 use App\Models\PenerimaanStok;
 use Illuminate\Http\JsonResponse;
@@ -37,7 +41,17 @@ class PenerimaanStokController extends Controller
     public function cekValidasi($id)
     {
         $penerimaanStok = new PenerimaanStok();
+        $dataMaster = $penerimaanStok->where('id',$id)->first();
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $dataMaster->editing_by ?? '';
+        $aksi = request()->aksi ?? '';
         $cekdata = $penerimaanStok->cekvalidasihapus($id);
+
+        if ($aksi == 'edit') {
+            $cekdata['kondisi'] = false;
+        }
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
                 ->select(
@@ -55,7 +69,41 @@ class PenerimaanStokController extends Controller
             ];
 
             return response($data);
+        } else  if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('penerimaanStok', $id, $aksi);
+                }
+                
+                $data = [
+                    'status' => false,
+                    'message' => '',
+                    'errors' => '',
+                    'kondisi' => false,
+                    'editblok' => false,
+                ];
+                
+                // return response($data);
+            } else {
+                
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'Data <b>' . $dataMaster->keterangan . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                
+                $data = [
+                    'status' => true,
+                    'message' => ["keterangan"=>$keterror],
+                    'errors' => '',
+                    'kondisi' => true,
+                    'editblok' => true,
+                ];
+                
+                return response($data);
+            }
         } else {
+            (new MyModel())->updateEditingBy('penerimaanStok', $id, $aksi);
             $data = [
                 'status' => false,
                 'message' => '',

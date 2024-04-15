@@ -2,26 +2,29 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\ApprovalKaryawanRequest;
+use DateTime;
+use App\Models\Error;
+use App\Models\Tarif;
+use App\Models\MyModel;
+use App\Models\LogTrail;
+use App\Models\Container;
+use App\Models\Parameter;
+use App\Models\TarifRincian;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use App\Models\TarifDiscountHarga;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
+use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\ApprovalKaryawanRequest;
+use App\Http\Requests\GetUpahSupirRangeRequest;
+use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\StoreTarifDiscountHargaRequest;
 use App\Http\Requests\UpdateTarifDiscountHargaRequest;
 use App\Http\Requests\DestroyTarifDiscountHargaRequest;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Models\LogTrail;
-use App\Models\Parameter;
-use App\Http\Requests\StoreLogTrailRequest;
-use App\Models\Container;
-use App\Models\Tarif;
-use App\Models\TarifRincian;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Http;
-use App\Http\Requests\GetIndexRangeRequest;
-use App\Http\Requests\GetUpahSupirRangeRequest;
-use App\Http\Requests\RangeExportReportRequest;
 
 class TarifDiscountHargaController extends Controller
 {
@@ -39,6 +42,62 @@ class TarifDiscountHargaController extends Controller
                 'totalPages' => $tarifDiscountHarga->totalPages
             ]
         ]);
+    }
+    public function cekValidasi($id)
+    {
+        $dataMaster = TarifDiscountHarga::where('id',$id)->first();
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $dataMaster->editing_by ?? '';
+        $aksi = request()->aksi ?? '';
+        if ($useredit != '' && $useredit != $user) {
+           
+            $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+
+                    (new MyModel())->updateEditingBy('tarifdiscountharga', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                // return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'Data <b>' .$dataMaster->email . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
+        } else {
+            
+            (new MyModel())->updateEditingBy('tarifdiscountharga', $id, $aksi);
+                
+            $data = [
+                'error' => false,
+                'message' => '',
+                'kodeerror' => '',
+                'statuspesan' => 'success',
+            ];
+            
+
+            return response($data);
+        }
     }
 
     public function default()

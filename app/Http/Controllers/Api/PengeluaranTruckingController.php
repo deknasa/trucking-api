@@ -2,19 +2,23 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\ApprovalKaryawanRequest;
+use DateTime;
+use App\Models\Error;
+use App\Models\MyModel;
+use App\Models\Parameter;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use App\Models\PengeluaranTrucking;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
 use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\ApprovalKaryawanRequest;
+use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\StorePengeluaranTruckingRequest;
 use App\Http\Requests\UpdatePengeluaranTruckingRequest;
 use App\Http\Requests\DestroyPengeluaranTruckingRequest;
-use App\Http\Requests\RangeExportReportRequest;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 class PengeluaranTruckingController extends Controller
 {
@@ -47,8 +51,17 @@ class PengeluaranTruckingController extends Controller
     public function cekValidasi($id)
     {
         $pengeluaranTrucking = new PengeluaranTrucking();
+
+        $dataMaster = $pengeluaranTrucking->where('id',$id)->first();
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $dataMaster->editing_by ?? '';
+        $aksi = request()->aksi ?? '';
+
         $cekdata = $pengeluaranTrucking->cekvalidasihapus($id);
-        if ($cekdata['kondisi'] == true) {
+        if ($cekdata['kondisi'] == true && $aksi != 'EDIT') {
+        
             $query = DB::table('error')
                 ->select(
                     DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
@@ -65,7 +78,42 @@ class PengeluaranTruckingController extends Controller
             ];
 
             return response($data);
+        } else  if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->updateEditingBy('pengeluarantrucking', $id, $aksi);
+                }
+                
+                $data = [
+                    'status' => false,
+                    'message' => '',
+                    'errors' => '',
+                    'kondisi' => false,
+                    'editblok' => false,
+                ];
+                
+                // return response($data);
+            } else {
+                
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'Data <b>' . $dataMaster->keterangan . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                
+                $data = [
+                    'status' => true,
+                    'message' => ["keterangan"=>$keterror],
+                    'errors' => '',
+                    'kondisi' => true,
+                    'editblok' => true,
+                ];
+                
+                return response($data);
+            }
         } else {
+            (new MyModel())->updateEditingBy('pengeluarantrucking', $id, $aksi);
+
             $data = [
                 'status' => false,
                 'message' => '',

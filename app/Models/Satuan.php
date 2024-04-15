@@ -23,6 +23,38 @@ class Satuan extends MyModel
         'updated_at',
     ];
 
+    public function cekvalidasihapus($id)
+    {
+
+        $stok = DB::table('stok')
+            ->from(
+                DB::raw("stok as a with (readuncommitted)")
+            )
+            ->select(
+                'a.satuan_id'
+            )
+            ->where('a.satuan_id', '=', $id)
+            ->first();
+        if (isset($stok)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Stok',
+            ];
+
+
+            goto selesai;
+        }
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+
+        selesai:
+        return $data;
+    }
+
     public function get()
     {
         $this->setRequestParameters();

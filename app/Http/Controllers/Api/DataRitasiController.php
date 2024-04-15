@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use DateTime;
+use App\Models\Error;
+use App\Models\MyModel;
 use App\Models\LogTrail;
+
 use App\Models\Parameter;
 use App\Models\DataRitasi;
 use Illuminate\Http\Request;
@@ -10,15 +14,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
-
 use Illuminate\Support\Facades\Schema;
+
 use Illuminate\Database\QueryException;
 use App\Http\Requests\StoreLogTrailRequest;
-use App\Http\Requests\StoreDataRitasiRequest;
 
+use App\Http\Requests\StoreDataRitasiRequest;
 use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\UpdateDataRitasiRequest;
-
 use App\Http\Requests\DestroyDataRitasiRequest;
 use App\Http\Requests\RangeExportReportRequest;
 
@@ -39,6 +42,63 @@ class DataRitasiController extends Controller
                 'totalPages' => $dataritasi->totalPages
             ]
         ]);
+    }
+
+    public function cekValidasi($id)
+    {
+        $dataMaster = DataRitasi::where('id',$id)->first();
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $dataMaster->editing_by ?? '';
+        $aksi = request()->aksi ?? '';
+        if ($useredit != '' && $useredit != $user) {
+           
+            $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+
+                    (new MyModel())->updateEditingBy('dataritasi', $id, $aksi);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                // return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'Data <b>' .$dataMaster->email . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
+        } else {
+            
+            (new MyModel())->updateEditingBy('dataritasi', $id, $aksi);
+                
+            $data = [
+                'error' => false,
+                'message' => '',
+                'kodeerror' => '',
+                'statuspesan' => 'success',
+            ];
+            
+
+            return response($data);
+        }
     }
 
     /**
