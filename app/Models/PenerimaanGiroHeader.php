@@ -48,13 +48,13 @@ class PenerimaanGiroHeader extends MyModel
 
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pencairan giro <b>'. $penerimaan->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti pencairan giro <b>' . $penerimaan->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 'kodeerror' => 'SCG'
             ];
             goto selesai;
         }
 
-        
+
         $pelunasanPiutang = DB::table('pelunasanpiutangheader')
             ->from(
                 DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
@@ -70,7 +70,7 @@ class PenerimaanGiroHeader extends MyModel
 
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pelunasan <b>'. $pelunasanPiutang->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti pelunasan <b>' . $pelunasanPiutang->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -106,6 +106,9 @@ class PenerimaanGiroHeader extends MyModel
                 'statuscetak.memo as statuscetak',
                 DB::raw('(case when (year(penerimaangiroheader.tglbukacetak) <= 2000) then null else penerimaangiroheader.tglbukacetak end ) as tglbukacetak'),
                 'penerimaangiroheader.userbukacetak',
+                DB::raw('(case when (year(penerimaangiroheader.tglkirimberkas) <= 2000) then null else penerimaangiroheader.tglkirimberkas end ) as tglkirimberkas'),
+                'statuskirimberkas.memo as statuskirimberkas',
+                'penerimaangiroheader.userkirimberkas',
                 'penerimaangiroheader.created_at',
                 'penerimaangiroheader.modifiedby',
                 'penerimaangiroheader.updated_at'
@@ -113,6 +116,7 @@ class PenerimaanGiroHeader extends MyModel
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaangiroheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaangiroheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'penerimaangiroheader.statuskirimberkas', 'statuskirimberkas.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaangiroheader.statusapproval', 'statusapproval.id');
         if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
@@ -159,6 +163,9 @@ class PenerimaanGiroHeader extends MyModel
             $this->table.userbukacetak,
             $this->table.tglbukacetak,
             $this->table.jumlahcetak,
+            statuskirimberkas.text as statuskirimberkas,
+            $this->table.userkirimberkas,
+            $this->table.tglkirimberkas,      
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
@@ -166,7 +173,8 @@ class PenerimaanGiroHeader extends MyModel
             )
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaangiroheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaangiroheader.statuscetak', 'statuscetak.id')
-            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaangiroheader.statusapproval', 'statusapproval.id');
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaangiroheader.statusapproval', 'statusapproval.id')
+            ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'penerimaangiroheader.statuskirimberkas', 'statuskirimberkas.id');
     }
 
     public function findAll($id)
@@ -247,6 +255,9 @@ class PenerimaanGiroHeader extends MyModel
             $table->string('userbukacetak', 1000)->nullable();
             $table->dateTime('tglbukacetak')->nullable();
             $table->integer('jumlahcetak')->Length(11)->nullable();
+            $table->longtext('statuskirimberkas')->nullable();
+            $table->string('userkirimberkas', 200)->nullable();
+            $table->date('tglkirimberkas')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -276,7 +287,7 @@ class PenerimaanGiroHeader extends MyModel
             'statuscetak',
             'userbukacetak',
             'tglbukacetak',
-            'jumlahcetak',
+            'jumlahcetak', 'statuskirimberkas', 'userkirimberkas', 'tglkirimberkas',
             'modifiedby',
             'created_at',
             'updated_at'
@@ -374,6 +385,8 @@ class PenerimaanGiroHeader extends MyModel
                                 $query = $query->where('agen.namaagen', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statuscetak') {
                                 $query = $query->where('statuscetak.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statuskirimberkas') {
+                                $query = $query->where('statuskirimberkas.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'agen_id') {
                                 $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'created_at') {
@@ -404,6 +417,8 @@ class PenerimaanGiroHeader extends MyModel
                                     $query->orWhere('statusapproval.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'statuscetak') {
                                     $query->orWhere('statuscetak.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statuskirimberkas') {
+                                    $query = $query->orWhere('statuskirimberkas.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'agen_id') {
                                     $query = $query->orWhere('agen.namaagen', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'tglbukti') {

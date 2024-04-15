@@ -35,7 +35,7 @@ class UpdateNotaDebetHeaderRequest extends FormRequest
     {
         $agen_id = $this->agen_id;
         $rulesAgen_id = [];
-        if ($agen_id != null) {
+        if ($agen_id != null && $agen_id != 0) {
             $rulesAgen_id = [
                 'agen_id' => ['required', 'numeric', 'min:1', new ExistAgen()]
             ];

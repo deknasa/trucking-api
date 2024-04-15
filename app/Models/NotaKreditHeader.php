@@ -55,6 +55,9 @@ class NotaKreditHeader extends MyModel
                 "agen.namaagen as agen",
                 "bank.namabank as bank",
                 "alatbayar.namaalatbayar as alatbayar",
+                DB::raw('(case when (year(notakreditheader.tglkirimberkas) <= 2000) then null else notakreditheader.tglkirimberkas end ) as tglkirimberkas'),
+                'statuskirimberkas.memo as statuskirimberkas',
+                'notakreditheader.userkirimberkas',
                 db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
                 db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
                 db::raw("cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpelunasanpiutangheader"),
@@ -66,6 +69,7 @@ class NotaKreditHeader extends MyModel
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'notakreditheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'notakreditheader.alatbayar_id', 'alatbayar.id')
             ->leftJoin('parameter as statuscetak', 'notakreditheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'notakreditheader.statuskirimberkas', 'statuskirimberkas.id')
             ->leftJoin('parameter', 'notakreditheader.statusapproval', 'parameter.id');
         if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
@@ -258,6 +262,9 @@ class NotaKreditHeader extends MyModel
             $table->string('statuscetak_memo')->nullable();
             $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
+            $table->longtext('statuskirimberkas')->nullable();
+            $table->string('userkirimberkas', 200)->nullable();
+            $table->date('tglkirimberkas')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -293,6 +300,9 @@ class NotaKreditHeader extends MyModel
             "statuscetak_memo",
             "userbukacetak",
             "tglbukacetak",
+            "statuskirimberkas",
+            "userkirimberkas",
+            "tglkirimberkas",
             "modifiedby",
             "created_at",
             "updated_at",
@@ -322,6 +332,9 @@ class NotaKreditHeader extends MyModel
                 "statuscetak.text as  statuscetak_memo",
                 "$this->table.userbukacetak",
                 DB::raw('(case when (year(notakreditheader.tglbukacetak) <= 2000) then null else notakreditheader.tglbukacetak end ) as tglbukacetak'),
+                "statuskirimberkas.text as statuskirimberkas",
+                "$this->table.userkirimberkas",
+                "$this->table.tglkirimberkas",           
                 "$this->table.modifiedby",
                 "$this->table.created_at",
                 "$this->table.updated_at",
@@ -331,7 +344,8 @@ class NotaKreditHeader extends MyModel
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'notakreditheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'notakreditheader.alatbayar_id', 'alatbayar.id')
             ->leftJoin('parameter as statuscetak', 'notakreditheader.statuscetak', 'statuscetak.id')
-            ->leftJoin('parameter', 'notakreditheader.statusapproval', 'parameter.id');
+            ->leftJoin('parameter', 'notakreditheader.statusapproval', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'notakreditheader.statuskirimberkas', 'statuskirimberkas.id');
     }
 
     public function getNotaKredit($id)
@@ -395,6 +409,8 @@ class NotaKreditHeader extends MyModel
                                 $query = $query->where('parameter.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statuscetak_memo') {
                                 $query = $query->where('statuscetak.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statuskirimberkas') {
+                                $query = $query->where('statuskirimberkas.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'agen') {
                                 $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'bank') {
@@ -421,6 +437,8 @@ class NotaKreditHeader extends MyModel
                                     $query = $query->orWhere('parameter.text', '=', $filters['data']);
                                 } else if ($filters['field'] == 'statuscetak_memo') {
                                     $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'statuskirimberkas') {
+                                    $query = $query->orWhere('statuskirimberkas.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'agen') {
                                     $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'bank') {
