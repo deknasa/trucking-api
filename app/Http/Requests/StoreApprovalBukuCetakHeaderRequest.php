@@ -8,6 +8,7 @@ use App\Rules\ApprovalBukaCetak;
 use App\Rules\BukaCetakSatuArah;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
+use App\Rules\validasiBukaCetakKirimBerkas;
 
 class StoreApprovalBukuCetakHeaderRequest extends FormRequest
 {
@@ -45,7 +46,7 @@ class StoreApprovalBukuCetakHeaderRequest extends FormRequest
         // dd('test');
         $rules = [
             // 'tableId' => ['required','min:1',new ApprovalBukaCetak(),new BukaCetakSatuArah()],
-            'tableId' => ['required','min:1',new ApprovalBukaCetak()],
+            'tableId' => ['required','min:1',new ApprovalBukaCetak(), new validasiBukaCetakKirimBerkas()],
             'periode' => ['required'],
             'table' => ['required', Rule::in($statusCetakUlang)],
         ];
