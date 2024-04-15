@@ -27,14 +27,16 @@ class ApprovalKirimBerkas extends Model
         $data = app($model)->findOrFail($id);
         $statusKirimBerkas = Parameter::where('grp', '=', 'STATUSKIRIMBERKAS')->where('text', '=', 'KIRIM BERKAS')->first();
         $statusBelumKirimBerkas = Parameter::where('grp', '=', 'STATUSKIRIMBERKAS')->where('text', '=', 'BELUM KIRIM BERKAS')->first();
-
+        
         if ($data->statuskirimberkas == $statusKirimBerkas->id) {
             $data->statuskirimberkas = $statusBelumKirimBerkas->id;
+            $status = $statusBelumKirimBerkas->text;
         } else {
             $data->statuskirimberkas = $statusKirimBerkas->id;
+            $status = $statusKirimBerkas->text;
         }
 
-        $data->tglkirimberkas = date('Y-m-d', time());
+        $data->tglkirimberkas = date('Y-m-d H:i:s');
         $data->userkirimberkas = auth('api')->user()->name;
         $data->info = html_entity_decode(request()->info);
         if (!$data->save()) {
@@ -45,7 +47,7 @@ class ApprovalKirimBerkas extends Model
             'postingdari' => "KIRIM BERKAS/BELUM KIRIM BERKAS $table->text",
             'idtrans' => $data->id,
             'nobuktitrans' => $data->nobukti,
-            'aksi' => 'KIRIM BERKAS/BELUM KIRIM BERKAS',
+            'aksi' => $status,
             'datajson' => $data->toArray(),
             'modifiedby' => auth('api')->user()->name,
         ]);

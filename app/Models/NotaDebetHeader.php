@@ -33,27 +33,27 @@ class NotaDebetHeader extends MyModel
         $statusCetak = request()->statuscetak ?? '';
 
         $panjar = request()->panjar ?? '';
-        $agen_id= request()->agen_id ?? 0;
+        $agen_id = request()->agen_id ?? 0;
 
-        if ($panjar=='PANJAR') {
+        if ($panjar == 'PANJAR') {
             $tglnow = date('Y-m-d');
 
             $temppanjar = '##temppanjar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($temppanjar, function ($table) {
                 $table->string('nobukti', 50)->nullable();
-                $table->double('nominal')->nullable();                
+                $table->double('nominal')->nullable();
             });
 
             DB::table($temppanjar)->insertUsing([
                 'nobukti',
                 'nominal',
-            ], (new LaporanKartuPanjar())->getSisapanjar($tglnow, $tglnow, 0, 0, 1,$agen_id,$tglnow));
+            ], (new LaporanKartuPanjar())->getSisapanjar($tglnow, $tglnow, 0, 0, 1, $agen_id, $tglnow));
 
             // dd(db::table($temppanjar)->get());
         }
 
-        if ($panjar=='PANJAR') {
-                        // dd(db::table($temppanjar)->get());
+        if ($panjar == 'PANJAR') {
+            // dd(db::table($temppanjar)->get());
 
             $query = DB::table($this->table)->from(
                 DB::raw($this->table . " with (readuncommitted)")
@@ -80,63 +80,70 @@ class NotaDebetHeader extends MyModel
                 "agen.namaagen as agen",
                 "bank.namabank as bank",
                 "alatbayar.namaalatbayar as alatbayar",
+                DB::raw('(case when (year(notadebetheader.tglkirimberkas) <= 2000) then null else notadebetheader.tglkirimberkas end ) as tglkirimberkas'),
+                'statuskirimberkas.memo as statuskirimberkas',
+                'notadebetheader.userkirimberkas',
                 db::raw("cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaanheader"),
                 db::raw("cast(cast(format((cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanheader"),
                 db::raw("cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpelunasanpiutangheader"),
                 db::raw("cast(cast(format((cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpelunasanpiutangheader"),
                 db::raw("isnull(panjar.nominal,0) as nominal")
             )
-    
+
                 ->leftJoin(DB::raw("pelunasanpiutangheader with (readuncommitted)"), 'notadebetheader.pelunasanpiutang_nobukti', '=', 'pelunasanpiutangheader.nobukti')
                 ->leftJoin(DB::raw("penerimaanheader with (readuncommitted)"), 'notadebetheader.penerimaan_nobukti', '=', 'penerimaanheader.nobukti')
                 ->leftJoin(DB::raw("bank with (readuncommitted)"), 'notadebetheader.bank_id', 'bank.id')
                 ->leftJoin(DB::raw("agen with (readuncommitted)"), 'notadebetheader.agen_id', 'agen.id')
                 ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'notadebetheader.alatbayar_id', 'alatbayar.id')
                 ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'notadebetheader.statusapproval', 'parameter.id')
+                ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'notadebetheader.statuskirimberkas', 'statuskirimberkas.id')
                 ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'notadebetheader.statuscetak', 'statuscetak.id')
                 ->Join(DB::raw($temppanjar . " panjar"), 'notadebetheader.nobukti', 'panjar.nobukti');
-
         } else {
-        $query = DB::table($this->table)->from(
-            DB::raw($this->table . " with (readuncommitted)")
-        )->select(
-            "$this->table.id",
-            "$this->table.nobukti",
-            "$this->table.pelunasanpiutang_nobukti",
-            "$this->table.tglbukti",
-            "$this->table.postingdari",
-            "$this->table.statusapproval",
-            "$this->table.tgllunas",
-            "$this->table.userapproval",
-            DB::raw('(case when (year(notadebetheader.tglapproval) <= 2000) then null else notadebetheader.tglapproval end ) as tglapproval'),
-            "$this->table.userbukacetak",
-            DB::raw('(case when (year(notadebetheader.tglbukacetak) <= 2000) then null else notadebetheader.tglbukacetak end ) as tglbukacetak'),
-            "$this->table.statusformat",
-            "$this->table.statuscetak",
-            "$this->table.created_at",
-            "$this->table.updated_at",
-            "statuscetak.memo as statuscetak_memo",
-            "$this->table.modifiedby",
-            "parameter.memo as  statusapproval_memo",
-            "$this->table.penerimaan_nobukti",
-            "agen.namaagen as agen",
-            "bank.namabank as bank",
-            "alatbayar.namaalatbayar as alatbayar",
-            db::raw("cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaanheader"),
-            db::raw("cast(cast(format((cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanheader"),
-            db::raw("cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpelunasanpiutangheader"),
-            db::raw("cast(cast(format((cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpelunasanpiutangheader"),
-            db::raw("0 as nominal")
+            $query = DB::table($this->table)->from(
+                DB::raw($this->table . " with (readuncommitted)")
+            )->select(
+                "$this->table.id",
+                "$this->table.nobukti",
+                "$this->table.pelunasanpiutang_nobukti",
+                "$this->table.tglbukti",
+                "$this->table.postingdari",
+                "$this->table.statusapproval",
+                "$this->table.tgllunas",
+                "$this->table.userapproval",
+                DB::raw('(case when (year(notadebetheader.tglapproval) <= 2000) then null else notadebetheader.tglapproval end ) as tglapproval'),
+                "$this->table.userbukacetak",
+                DB::raw('(case when (year(notadebetheader.tglbukacetak) <= 2000) then null else notadebetheader.tglbukacetak end ) as tglbukacetak'),
+                "$this->table.statusformat",
+                "$this->table.statuscetak",
+                "$this->table.created_at",
+                "$this->table.updated_at",
+                "statuscetak.memo as statuscetak_memo",
+                "$this->table.modifiedby",
+                "parameter.memo as  statusapproval_memo",
+                "$this->table.penerimaan_nobukti",
+                "agen.namaagen as agen",
+                "bank.namabank as bank",
+                "alatbayar.namaalatbayar as alatbayar",
+                DB::raw('(case when (year(notadebetheader.tglkirimberkas) <= 2000) then null else notadebetheader.tglkirimberkas end ) as tglkirimberkas'),
+                'statuskirimberkas.memo as statuskirimberkas',
+                'notadebetheader.userkirimberkas',
+                db::raw("cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaanheader"),
+                db::raw("cast(cast(format((cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanheader"),
+                db::raw("cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpelunasanpiutangheader"),
+                db::raw("cast(cast(format((cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpelunasanpiutangheader"),
+                db::raw("0 as nominal")
 
-        )
+            )
 
-            ->leftJoin(DB::raw("pelunasanpiutangheader with (readuncommitted)"), 'notadebetheader.pelunasanpiutang_nobukti', '=', 'pelunasanpiutangheader.nobukti')
-            ->leftJoin(DB::raw("penerimaanheader with (readuncommitted)"), 'notadebetheader.penerimaan_nobukti', '=', 'penerimaanheader.nobukti')
-            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'notadebetheader.bank_id', 'bank.id')
-            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'notadebetheader.agen_id', 'agen.id')
-            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'notadebetheader.alatbayar_id', 'alatbayar.id')
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'notadebetheader.statusapproval', 'parameter.id')
-            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'notadebetheader.statuscetak', 'statuscetak.id');
+                ->leftJoin(DB::raw("pelunasanpiutangheader with (readuncommitted)"), 'notadebetheader.pelunasanpiutang_nobukti', '=', 'pelunasanpiutangheader.nobukti')
+                ->leftJoin(DB::raw("penerimaanheader with (readuncommitted)"), 'notadebetheader.penerimaan_nobukti', '=', 'penerimaanheader.nobukti')
+                ->leftJoin(DB::raw("bank with (readuncommitted)"), 'notadebetheader.bank_id', 'bank.id')
+                ->leftJoin(DB::raw("agen with (readuncommitted)"), 'notadebetheader.agen_id', 'agen.id')
+                ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'notadebetheader.alatbayar_id', 'alatbayar.id')
+                ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'notadebetheader.statusapproval', 'parameter.id')
+                ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'notadebetheader.statuskirimberkas', 'statuskirimberkas.id')
+                ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'notadebetheader.statuscetak', 'statuscetak.id');
         }
         if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
@@ -182,7 +189,7 @@ class NotaDebetHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' =>  'No Bukti <b>'. $notaDebet->nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti PELUNASAN PIUTANG <b>'. $pelunasanPiutang->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' =>  'No Bukti <b>' . $notaDebet->nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti PELUNASAN PIUTANG <b>' . $pelunasanPiutang->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -204,7 +211,7 @@ class NotaDebetHeader extends MyModel
             if (isset($jurnal)) {
                 $data = [
                     'kondisi' => true,
-                    'keterangan' =>  'No Bukti <b>'. $notaDebet->nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Approval Jurnal <b>'. $jurnal->nobukti .'</b> <br> '.$keterangantambahanerror,
+                    'keterangan' =>  'No Bukti <b>' . $notaDebet->nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Approval Jurnal <b>' . $jurnal->nobukti . '</b> <br> ' . $keterangantambahanerror,
                     'kodeerror' => 'SAPP'
                 ];
                 goto selesai;
@@ -224,7 +231,7 @@ class NotaDebetHeader extends MyModel
             if (isset($jurnal)) {
                 $data = [
                     'kondisi' => true,
-                    'keterangan' =>  'No Bukti <b>'. $notaDebet->nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Approval Jurnal <b>'. $jurnal->nobukti .'</b> <br> '.$keterangantambahanerror,
+                    'keterangan' =>  'No Bukti <b>' . $notaDebet->nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Approval Jurnal <b>' . $jurnal->nobukti . '</b> <br> ' . $keterangantambahanerror,
                     'kodeerror' => 'SAPP'
                 ];
                 goto selesai;
@@ -330,6 +337,9 @@ class NotaDebetHeader extends MyModel
             $table->string('statuscetak_memo')->nullable();
             $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
+            $table->longtext('statuskirimberkas')->nullable();
+            $table->string('userkirimberkas', 200)->nullable();
+            $table->date('tglkirimberkas')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -365,6 +375,9 @@ class NotaDebetHeader extends MyModel
             "statuscetak_memo",
             "userbukacetak",
             "tglbukacetak",
+            "statuskirimberkas",
+            "userkirimberkas",
+            "tglkirimberkas",
             "modifiedby",
             "created_at",
             "updated_at",
@@ -394,6 +407,9 @@ class NotaDebetHeader extends MyModel
                 "statuscetak.text as statuscetak_memo",
                 "$this->table.userbukacetak",
                 DB::raw('(case when (year(notadebetheader.tglbukacetak) <= 2000) then null else notadebetheader.tglbukacetak end ) as tglbukacetak'),
+                "statuskirimberkas.text as statuskirimberkas",
+                "$this->table.userkirimberkas",
+                "$this->table.tglkirimberkas",
                 "$this->table.modifiedby",
                 "$this->table.created_at",
                 "$this->table.updated_at",
@@ -403,8 +419,8 @@ class NotaDebetHeader extends MyModel
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'notadebetheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'notadebetheader.alatbayar_id', 'alatbayar.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'notadebetheader.statusapproval', 'parameter.id')
-            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'notadebetheader.statuscetak', 'statuscetak.id');
-        
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'notadebetheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'notadebetheader.statuskirimberkas', 'statuskirimberkas.id');
     }
 
 
@@ -462,7 +478,7 @@ class NotaDebetHeader extends MyModel
     {
         $panjar = request()->panjar ?? '';
 
-        if ($panjar=='PANJAR') {
+        if ($panjar == 'PANJAR') {
             if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
                 switch ($this->params['filters']['groupOp']) {
                     case "AND":
@@ -472,6 +488,8 @@ class NotaDebetHeader extends MyModel
                                     $query = $query->where('parameter.text', '=', $filters['data']);
                                 } else if ($filters['field'] == 'statuscetak_memo') {
                                     $query = $query->where('statuscetak.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'statuskirimberkas') {
+                                    $query = $query->where('statuskirimberkas.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'agen') {
                                     $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'nominal') {
@@ -490,7 +508,7 @@ class NotaDebetHeader extends MyModel
                                 }
                             }
                         }
-    
+
                         break;
                     case "OR":
                         $query = $query->where(function ($query) {
@@ -500,11 +518,12 @@ class NotaDebetHeader extends MyModel
                                         $query = $query->orWhere('parameter.text', '=', $filters['data']);
                                     } else if ($filters['field'] == 'statuscetak_memo') {
                                         $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
+                                    } else if ($filters['field'] == 'statuskirimberkas') {
+                                        $query = $query->orWhere('statuskirimberkas.text', '=', "$filters[data]");
                                     } else if ($filters['field'] == 'agen') {
                                         $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
                                     } else if ($filters['field'] == 'nominal') {
                                         $query = $query->orwhere('panjar.nominal', 'LIKE', "%$filters[data]%");
-    
                                     } else if ($filters['field'] == 'bank') {
                                         $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                                     } else if ($filters['field'] == 'alatbayar') {
@@ -522,10 +541,10 @@ class NotaDebetHeader extends MyModel
                         });
                         break;
                     default:
-    
+
                         break;
                 }
-    
+
                 $this->totalRows = $query->count();
                 $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
             }
@@ -555,7 +574,7 @@ class NotaDebetHeader extends MyModel
                                 }
                             }
                         }
-    
+
                         break;
                     case "OR":
                         $query = $query->where(function ($query) {
@@ -584,15 +603,15 @@ class NotaDebetHeader extends MyModel
                         });
                         break;
                     default:
-    
+
                         break;
                 }
-    
+
                 $this->totalRows = $query->count();
                 $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
             }
         }
-     
+
         if (request()->cetak && request()->periode) {
             $query->where('notadebetheader.statuscetak', '<>', request()->cetak)
                 ->whereYear('notadebetheader.tglbukti', '=', request()->year)
@@ -751,7 +770,7 @@ class NotaDebetHeader extends MyModel
                 $notaDebetHeader->penerimaan_nobukti = $penerimaanGiroHeader->nobukti;
                 $notaDebetHeader->save();
             }
-            $notaDebetRincian = (new NotaDebetRincian())->processStore($notaDebetHeader, [ 
+            $notaDebetRincian = (new NotaDebetRincian())->processStore($notaDebetHeader, [
                 "agen_id" => $data['agen_id'],
                 "nominal" => $nominal,
             ]);
@@ -1036,7 +1055,7 @@ class NotaDebetHeader extends MyModel
             } else {
 
                 /*STORE JURNAL*/
-                $jurnalRequest = [                    
+                $jurnalRequest = [
                     'tanpaprosesnobukti' => 1,
                     'nobukti' => $notaDebetHeader->nobukti,
                     'tglbukti' => $notaDebetHeader->tglbukti,
