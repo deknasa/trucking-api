@@ -265,6 +265,10 @@ class PengeluaranTruckingHeader extends MyModel
                 $table->longText('statuscetak')->nullable();
                 $table->longText('statuscetaktext')->nullable();
                 $table->string('userbukacetak', 200)->nullable();
+                $table->dateTime('tglkirimberkas')->nullable();
+                $table->longText('statuskirimberkas')->nullable();
+                $table->longText('statuskirimberkastext')->nullable();
+                $table->string('userkirimberkas', 200)->nullable();
                 $table->string('coa', 200)->nullable();
                 $table->date('tgldariheaderpengeluaranheader')->nullable();
                 $table->date('tglsampaiheaderpengeluaranheader')->nullable();
@@ -339,6 +343,10 @@ class PengeluaranTruckingHeader extends MyModel
                     'statuscetak.memo as statuscetak',
                     'statuscetak.text as statuscetaktext',
                     'pengeluarantruckingheader.userbukacetak',
+                    DB::raw('(case when (year(pengeluarantruckingheader.tglkirimberkas) <= 2000) then null else pengeluarantruckingheader.tglkirimberkas end ) as tglkirimberkas'),
+                    'statuskirimberkas.memo as statuskirimberkas',
+                    'statuskirimberkas.text as statuskirimberkastext',
+                    'pengeluarantruckingheader.userkirimberkas',
                     'akunpusat.keterangancoa as coa',
                     db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
                     db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
@@ -356,6 +364,7 @@ class PengeluaranTruckingHeader extends MyModel
                 ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluarantruckingheader.statuscetak', 'statuscetak.id')
                 ->leftJoin(DB::raw("$tempSupir as getsupir with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'getsupir.nobukti')
                 ->leftJoin(DB::raw("parameter as statusposting with (readuncommitted)"), 'pengeluarantruckingheader.statusposting', 'statusposting.id')
+                ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'pengeluarantruckingheader.statuskirimberkas', 'statuskirimberkas.id')                
                 ->leftJoin(DB::raw("$tempurl as penerimaantruckingdetail with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti');
             // ->join(db::raw($temprole . " d "), 'pengeluarantrucking.aco_id', 'd.aco_id');
 
@@ -435,6 +444,10 @@ class PengeluaranTruckingHeader extends MyModel
                     'statuscetak' => $item['statuscetak'],
                     'statuscetaktext' => $item['statuscetaktext'],
                     'userbukacetak' => $item['userbukacetak'],
+                    'tglkirimberkas' => $item['tglkirimberkas'],
+                    'statuskirimberkas' => $item['statuskirimberkas'],
+                    'statuskirimberkastext' => $item['statuskirimberkastext'],
+                    'userkirimberkas' => $item['userkirimberkas'],
                     'coa' => $item['coa'],
                     'tgldariheaderpengeluaranheader' => $item['tgldariheaderpengeluaranheader'],
                     'tglsampaiheaderpengeluaranheader' => $item['tglsampaiheaderpengeluaranheader'],
@@ -478,6 +491,9 @@ class PengeluaranTruckingHeader extends MyModel
                 'a.tglbukacetak',
                 'a.statuscetak',
                 'a.userbukacetak',
+                'a.tglkirimberkas',
+                'a.statuskirimberkas',
+                'a.userkirimberkas',
                 'a.coa',
                 'a.tgldariheaderpengeluaranheader',
                 'a.tglsampaiheaderpengeluaranheader',
@@ -1229,6 +1245,10 @@ class PengeluaranTruckingHeader extends MyModel
             $table->longText('statuscetak')->nullable();
             $table->longText('statuscetaktext')->nullable();
             $table->string('userbukacetak', 200)->nullable();
+            $table->dateTime('tglkirimberkas')->nullable();
+            $table->longText('statuskirimberkas')->nullable();
+            $table->longText('statuskirimberkastext')->nullable();
+            $table->string('userkirimberkas', 200)->nullable();
             $table->string('coa', 200)->nullable();
             $table->date('tgldariheaderpengeluaranheader')->nullable();
             $table->date('tglsampaiheaderpengeluaranheader')->nullable();
@@ -1302,6 +1322,10 @@ class PengeluaranTruckingHeader extends MyModel
                 'statuscetak.memo as statuscetak',
                 'statuscetak.text as statuscetaktext',
                 'pengeluarantruckingheader.userbukacetak',
+                DB::raw('(case when (year(pengeluarantruckingheader.tglkirimberkas) <= 2000) then null else pengeluarantruckingheader.tglkirimberkas end ) as tglkirimberkas'),
+                'statuskirimberkas.memo as statuskirimberkas',
+                'statuskirimberkas.text as statuskirimberkastext',
+                'pengeluarantruckingheader.userkirimberkas',
                 'akunpusat.keterangancoa as coa',
                 db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
                 db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
@@ -1319,6 +1343,7 @@ class PengeluaranTruckingHeader extends MyModel
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluarantruckingheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("$tempSupir as getsupir with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'getsupir.nobukti')
             ->leftJoin(DB::raw("parameter as statusposting with (readuncommitted)"), 'pengeluarantruckingheader.statusposting', 'statusposting.id')
+            ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'pengeluarantruckingheader.statuskirimberkas', 'statuskirimberkas.id')                
             ->leftJoin(DB::raw("$tempurl as penerimaantruckingdetail with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti');
         $afkir = Parameter::from(DB::raw("pengeluaranstok with (readuncommitted)"))->where('kodepengeluaran', 'AFKIR')->first();
 
@@ -1383,6 +1408,10 @@ class PengeluaranTruckingHeader extends MyModel
                 'statuscetak' => $item['statuscetak'],
                 'statuscetaktext' => $item['statuscetaktext'],
                 'userbukacetak' => $item['userbukacetak'],
+                'tglkirimberkas' => $item['tglkirimberkas'],
+                'statuskirimberkas' => $item['statuskirimberkas'],
+                'statuskirimberkastext' => $item['statuskirimberkastext'],
+                'userkirimberkas' => $item['userkirimberkas'],
                 'coa' => $item['coa'],
                 'tgldariheaderpengeluaranheader' => $item['tgldariheaderpengeluaranheader'],
                 'tglsampaiheaderpengeluaranheader' => $item['tglsampaiheaderpengeluaranheader'],
@@ -1415,6 +1444,10 @@ class PengeluaranTruckingHeader extends MyModel
                 'a.statuscetak',
                 'a.statuscetaktext',
                 'a.userbukacetak',
+                'a.tglkirimberkas',
+                'a.statuskirimberkas',
+                'a.statuskirimberkastext',
+                'a.userkirimberkas',
                 'a.coa',
                 'a.tgldariheaderpengeluaranheader',
                 'a.tglsampaiheaderpengeluaranheader',
@@ -1454,6 +1487,10 @@ class PengeluaranTruckingHeader extends MyModel
             $table->longText('statuscetak')->nullable();
             $table->longText('statuscetaktext')->nullable();
             $table->string('userbukacetak', 200)->nullable();
+            $table->dateTime('tglkirimberkas')->nullable();
+            $table->longText('statuskirimberkas')->nullable();
+            $table->longText('statuskirimberkastext')->nullable();
+            $table->string('userkirimberkas', 200)->nullable();
             $table->string('coa', 200)->nullable();
             $table->date('tgldariheaderpengeluaranheader')->nullable();
             $table->date('tglsampaiheaderpengeluaranheader')->nullable();
@@ -1482,7 +1519,7 @@ class PengeluaranTruckingHeader extends MyModel
             $models->where('a.pengeluarantruckingid', request()->pengeluaranheader_id);
         }
 
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pengeluaran_nobukti', 'penerimaantrucking_nobukti','nobuktipenerimaan', 'pengeluarantruckingid', 'pengeluarantrucking_id', 'bank_id', 'trado_id', 'trado', 'tradoheader_id', 'supirheader', 'supir', 'karyawan', 'gandengan', 'pengeluarantrucking_nobukti',  'tglbukacetak', 'statuscetak', 'statuscetaktext', 'userbukacetak', 'coa', 'tgldariheaderpengeluaranheader', 'tglsampaiheaderpengeluaranheader', 'statusposting', 'statuspostingtext', 'qty', 'harga', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pengeluaran_nobukti', 'penerimaantrucking_nobukti','nobuktipenerimaan', 'pengeluarantruckingid', 'pengeluarantrucking_id', 'bank_id', 'trado_id', 'trado', 'tradoheader_id', 'supirheader', 'supir', 'karyawan', 'gandengan', 'pengeluarantrucking_nobukti',  'tglbukacetak', 'statuscetak', 'statuscetaktext', 'userbukacetak','tglkirimberkas', 'statuskirimberkas', 'statuskirimberkastext', 'userkirimberkas', 'coa', 'tgldariheaderpengeluaranheader', 'tglsampaiheaderpengeluaranheader', 'statusposting', 'statuspostingtext', 'qty', 'harga', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
