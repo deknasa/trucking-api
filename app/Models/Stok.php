@@ -94,19 +94,33 @@ class Stok extends MyModel
         $dari = request()->dari ?? '';
         $approveReuse = request()->approveReuse ?? false;
         $kelompok = request()->kelompok_id ?? '';
-        $isLookup = request()->isLookup ?? false;
+        $isLookup = boolval(request()->isLookup) ?? false;
         $KelompokId_stok = request()->KelompokId ?? '';//dari lookup
         $penerimaanstok_id = request()->penerimaanstok_id ?? '';
         $pengeluaranstok_id = request()->pengeluaranstok_id ?? '';
         $penerimaanstokheader_nobukti = request()->penerimaanstokheader_nobukti ?? '';
-
-        // if ($isLookup==true) {
-        //     goto lanjut:
-        // }
+      
         $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
         $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
         $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
         $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
+        
+        $tempumuraki2 = '##tempumuraki2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempumuraki2, function ($table) {
+            $table->Integer('stok_id')->nullable();
+            $table->integer('jumlahhari')->nullable();
+            $table->date('tglawal')->nullable();
+        });
+        $tempvulkan = '##tempvulkan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempvulkan, function ($table) {
+            $table->integer('stok_id')->nullable();
+            $table->integer('vulkan')->nullable();
+        });
+
+        if ($isLookup==true) {
+            goto lanjut;
+        }
+
         $tempumuraki = '##tempumuraki' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempumuraki, function ($table) {
             $table->Integer('stok_id')->nullable();
@@ -120,12 +134,6 @@ class Stok extends MyModel
             'tglawal',
         ], (new SaldoUmurAki())->getallstok());
 
-        $tempumuraki2 = '##tempumuraki2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($tempumuraki2, function ($table) {
-            $table->Integer('stok_id')->nullable();
-            $table->integer('jumlahhari')->nullable();
-            $table->date('tglawal')->nullable();
-        });
 
         $queryaki = db::table($tempumuraki)->from(db::raw($tempumuraki . " a "))
             ->select(
@@ -142,11 +150,6 @@ class Stok extends MyModel
         ],  $queryaki);
 
         //update total vulkanisir
-        $tempvulkan = '##tempvulkan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($tempvulkan, function ($table) {
-            $table->integer('stok_id')->nullable();
-            $table->integer('vulkan')->nullable();
-        });
         
         DB::table($tempvulkan)->insertUsing([
             'stok_id',
@@ -154,7 +157,7 @@ class Stok extends MyModel
         ], $this->getVulkan());
     
         
-
+        lanjut:
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
         $class = 'StokController';
@@ -551,7 +554,7 @@ class Stok extends MyModel
             'Content-Type' => 'application/json',
         ])
 
-            ->get($server . "stok?limit=0&aktif=AKTIF");
+            ->get($server . "stok?limit=0&aktif=AKTIF&isLookup=true");
 
         $data = $getStok->json()['data'];
 
