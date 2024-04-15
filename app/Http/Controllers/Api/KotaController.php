@@ -26,7 +26,7 @@ use App\Http\Requests\RangeExportReportRequest;
 
 class KotaController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -46,7 +46,7 @@ class KotaController extends Controller
     public function cekValidasi($id)
     {
         $kota = new Kota();
-        $dataMaster = $kota->where('id',$id)->first();
+        $dataMaster = $kota->where('id', $id)->first();
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
@@ -80,7 +80,7 @@ class KotaController extends Controller
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                     (new MyModel())->updateEditingBy('kota', $id, $aksi);
                 }
-                
+
                 $data = [
                     'status' => false,
                     'message' => '',
@@ -88,21 +88,21 @@ class KotaController extends Controller
                     'kondisi' => false,
                     'editblok' => false,
                 ];
-                
+
                 // return response($data);
             } else {
-                
+
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
                 $keterror = 'Data <b>' . $dataMaster->kodekota . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
-                
+
                 $data = [
                     'status' => true,
-                    'message' => ["keterangan"=>$keterror],
+                    'message' => ["keterangan" => $keterror],
                     'errors' => '',
                     'kondisi' => true,
                     'editblok' => true,
                 ];
-                
+
                 return response($data);
             }
         } else {
@@ -142,17 +142,26 @@ class KotaController extends Controller
                 'kodekota' => $request->kodekota,
                 'keterangan' => $request->keterangan ?? '',
                 'zona_id' => $request->zona_id,
-                'statusaktif' => $request->statusaktif
+                'statusaktif' => $request->statusaktif,
+                'tas_id' => $request->tas_id,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
 
             $kota = (new Kota())->processStore($data);
-            $kota->position = $this->getPosition($kota, $kota->getTable())->position;
-            if ($request->limit==0) {
-                $kota->page = ceil($kota->position / (10));
-            } else {
-                $kota->page = ceil($kota->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $kota->position = $this->getPosition($kota, $kota->getTable())->position;
+                if ($request->limit == 0) {
+                    $kota->page = ceil($kota->position / (10));
+                } else {
+                    $kota->page = ceil($kota->position / ($request->limit ?? 10));
+                }
             }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $kota->id;
 
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('kota', 'add', $data);
+            }
             DB::commit();
 
             return response([
@@ -181,7 +190,7 @@ class KotaController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateKotaRequest $request, Kota $kota)
+    public function update(UpdateKotaRequest $request, Kota $kotum)
     {
 
         DB::beginTransaction();
@@ -192,16 +201,25 @@ class KotaController extends Controller
                 'kodekota' => $request->kodekota,
                 'keterangan' => $request->keterangan ?? '',
                 'zona_id' => $request->zona_id,
-                'statusaktif' => $request->statusaktif
+                'statusaktif' => $request->statusaktif,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
-
-            $kota = (new Kota())->processUpdate($kota, $data);
-            $kota->position = $this->getPosition($kota, $kota->getTable())->position;
-            if ($request->limit==0) {
-                $kota->page = ceil($kota->position / (10));
-            } else {
-                $kota->page = ceil($kota->position / ($request->limit ?? 10));
+            $kota = (new Kota())->processUpdate($kotum, $data);
+            if ($request->from == '') {
+                $kota->position = $this->getPosition($kota, $kota->getTable())->position;
+                if ($request->limit == 0) {
+                    $kota->page = ceil($kota->position / (10));
+                } else {
+                    $kota->page = ceil($kota->position / ($request->limit ?? 10));
+                }
             }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $kota->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('kota', 'edit', $data);
+            }
+
 
             DB::commit();
 
@@ -225,15 +243,24 @@ class KotaController extends Controller
         DB::beginTransaction();
         try {
             $kota = (new Kota())->processDestroy($id);
-            $selected = $this->getPosition($kota, $kota->getTable(), true);
-            $kota->position = $selected->position;
-            $kota->id = $selected->id;
-            if ($request->limit==0) {
-                $kota->page = ceil($kota->position / (10));
-            } else {
-                $kota->page = ceil($kota->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($kota, $kota->getTable(), true);
+                $kota->position = $selected->position;
+                $kota->id = $selected->id;
+                if ($request->limit == 0) {
+                    $kota->page = ceil($kota->position / (10));
+                } else {
+                    $kota->page = ceil($kota->position / ($request->limit ?? 10));
+                }
             }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
 
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('kota', 'delete', $data);
+            }
             DB::commit();
 
             return response([
@@ -291,7 +318,7 @@ class KotaController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan

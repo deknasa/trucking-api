@@ -354,6 +354,7 @@ class Kota extends MyModel
         $kota->keterangan = $data['keterangan'] ?? '';
         $kota->zona_id = $data['zona_id'];
         $kota->statusaktif = $data['statusaktif'];
+        $kota->tas_id = $data['tas_id'] ?? '';
         $kota->modifiedby = auth('api')->user()->user;
         $kota->info = html_entity_decode(request()->info);
 
@@ -376,7 +377,7 @@ class Kota extends MyModel
 
     public function processUpdate(Kota $kota, array $data): Kota
     {
-        $kota = Kota::find($data['id']);
+        // $kota = Kota::find($data['id']);
         $kota->kodekota = $data['kodekota'];
         $kota->keterangan = $data['keterangan'] ?? '';
         $kota->zona_id = $data['zona_id'];
