@@ -547,6 +547,7 @@ class PiutangHeader extends MyModel
         $statusCetak = Parameter::from(
             DB::raw("parameter with (readuncommitted)")
         )->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+        $getAgen = DB::table("agen")->from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'])->first();
 
         $piutangHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $piutangHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
@@ -562,6 +563,11 @@ class PiutangHeader extends MyModel
         } else {
             $piutangHeader->coadebet = $coa;
             $piutangHeader->coakredit = $coapendapatan;
+            if ($getAgen != '') {
+                if ($getAgen->statusinvoiceextra == 1) {
+                    $piutangHeader->coakredit = $getAgen->coapendapatan;
+                }
+            }
         }
         $piutangHeader->statuscetak = $statusCetak->id;
         $piutangHeader->userbukacetak = '';
@@ -598,8 +604,16 @@ class PiutangHeader extends MyModel
                 $coadebet_detail[] = $getCoa->coa;
                 $coakredit_detail[] = $getCoa->coapendapatan;
             } else {
+                if ($getAgen != '') {
+                    if ($getAgen->statusinvoiceextra == 1) {
+                        $coakredit_detail[] = $getAgen->coapendapatan;
+                    } else {
+                        $coakredit_detail[] = $coapendapatan;
+                    }
+                } else {
+                    $coakredit_detail[] = $coapendapatan;
+                }
                 $coadebet_detail[] = $coa;
-                $coakredit_detail[] = $coapendapatan;
             }
 
             $keterangan_detail[] = $data['keterangan_detail'][$i];
@@ -677,6 +691,7 @@ class PiutangHeader extends MyModel
             ->first();
         $memo = json_decode($param->memo, true);
         $coapendapatan = $memo['JURNAL'];
+        $getAgen = DB::table("agen")->from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'])->first();
 
         $piutangHeader->modifiedby = auth('api')->user()->name;
         $piutangHeader->info = html_entity_decode(request()->info);
@@ -688,7 +703,12 @@ class PiutangHeader extends MyModel
             $piutangHeader->coakredit = $getCoa->coapendapatan;
         } else {
             $piutangHeader->coadebet = $coa;
-            $piutangHeader->coakredit = $coapendapatan;
+            $piutangHeader->coakredit = $coapendapatan; 
+            if ($getAgen != '') {
+                if ($getAgen->statusinvoiceextra == 1) {
+                    $piutangHeader->coakredit = $getAgen->coapendapatan;
+                }
+            }
         }
         $piutangHeader->postingdari = $data['postingdari'] ?? 'EDIT PIUTANG HEADER';
         $piutangHeader->nominal = ($proseslain != 0) ? $data['nominal'] : array_sum($data['nominal_detail']);
@@ -732,7 +752,15 @@ class PiutangHeader extends MyModel
                 $coakredit_detail[] = $getCoa->coapendapatan;
             } else {
                 $coadebet_detail[] = $coa;
-                $coakredit_detail[] = $coapendapatan;
+                if ($getAgen != '') {
+                    if ($getAgen->statusinvoiceextra == 1) {
+                        $coakredit_detail[] = $getAgen->coapendapatan;
+                    } else {
+                        $coakredit_detail[] = $coapendapatan;
+                    }
+                } else {
+                    $coakredit_detail[] = $coapendapatan;
+                }
             }
             $keterangan_detail[] = $data['keterangan_detail'][$i];
             $nominal_detail[] = $data['nominal_detail'][$i];

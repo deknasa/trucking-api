@@ -73,7 +73,7 @@ class UpdateInvoiceExtraHeaderRequest extends FormRequest
             $rulesagen_id = [
                 'agen' => [
                     new ExistAgen(),
-                    Rule::in($query->agen),
+                    // Rule::in($query->agen),
                 ]
             ];
         } else if ($agen_id != null) {
