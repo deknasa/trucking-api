@@ -129,93 +129,29 @@ class MandorAbsensiSupirAllRequest extends FormRequest
                 $rulesBeda
             );
             return $rule;
-
-            // return [
-            //     "$key.tglbukti"=>[
-            //         'required', 'date_format:d-m-Y',
-            //         new DateAllowedAbsenMandor(),
-            //         new DateTutupBuku(),
-            //     ],
-
-            //     "$key.supir_id" => [
-            //         // Aturan validasi untuk supir_id
-            //         // Misalnya, wajib diisi jika kondisi tertentu terpenuhi
-            //         Rule::requiredIf(function () use ($key) {
-            //             // Logika kondisi berdasarkan nilai dari data
-            //             return !empty($this->input("$key.trado_id"));
-            //         }),
-            //     ],
-            //     "$key.absen_id"=>['required'],
-            //     "$key.kodetrado"=>['required'],
-            //     "$key.jam"=>['required'],
-            //     "$key.absentrado"=>['required'],
-            //     "$key.keterangan"=>['required'],
-            // ];
         })->all();
-
-        // $dataValidator = validator($data, [
-        //     '*.tglbukti'=>[
-        //         'required', 'date_format:d-m-Y',
-        //         new DateAllowedAbsenMandor(),
-        //         new DateTutupBuku(),
-
-        //     ],
-
-        //     '*.id'=>['required'],
-        //     '*.trado_id'=>['required'],
-        //     '*.supir_id'=>[
-        //         new MandorAbsensiSupirInputSupirValidasiTrado(),
-        //         // new SupirRequiredConditonAbsen(),
-
-
-
-        //     ],
-        //     '*.namasupir'=>[
-        //         new SupirRequiredConditonAbsen(),
-
-        //         Rule::requiredIf(function () use($data, $supirAbsen){
-        //         dd($data,$this->input('data'));
-        //             // return true;
-        //         }),
-        //         // function ($attribute, $value, $fail) use($data, $supirAbsen) {
-        //         //     $attr = explode('.',$attribute);
-        //         //     $key = $attr[0];
-        //         //     $absen_id = $key.'.absen_id';
-        //         //     $data = json_decode(request()->data, true);
-        //         //     $query = DB::table('parameter')->from(DB::raw("parameter as a with (readuncommitted)"))
-        //         //     ->select('text')
-        //         //     ->join(DB::raw("absentrado as b with (readuncommitted)"), 'a.text', '=', 'b.id')
-        //         //     ->where('a.grp', 'TIDAK ADA SUPIR')
-        //         //     ->where('a.subgrp', 'TIDAK ADA SUPIR')
-        //         //     ->where('b.id', $data[$key]['absen_id'])
-        //         //     ->first();
-        //         //     // dd();
-        //         //     if ((!isset($query) && !($supirAbsen->id == $data[$key]['absen_id'])) && empty($value)) {
-        //         //         // dd(!isset($query) );
-        //         //         $fail($value);
-        //         //     }
-
-        //         // },
-        //     ],
-        //     '*.absen_id'=>['required'],
-        //     '*.kodetrado'=>['required'],
-        //     '*.jam'=>['required'],
-        //     '*.absentrado'=>['required'],
-        //     '*.keterangan'=>['required'],
-
-
-        // ],);
-
-
-
+        $attribute = collect($keys)->mapWithKeys(function ($key) use ($data) {
+            return [
+                "$key.namasupir"=>$data[$key]['kodetrado'],
+                "$key.supir_id"=>"supir",
+            ];
+        })->all();
+        $message = [
+            "*.namasupir.required"=>'Trado<b> :attribute </b>Status Absensi Wajib isi'
+        ];      
         if ($data != []) {
             $validatedMainData = $mainValidator->validated();
         } 
         // dd($data);
-        $validatedDetailData = validator($data, $validaasismass)->validated();
+        $validatedDetailData = validator(
+            $data, $validaasismass,
+            $message,
+            $attribute,
+        )->validated();
         // dd($validatedDetailData);
 
         // dd($rules);
         return $validatedDetailData;
     }
+    
 }
