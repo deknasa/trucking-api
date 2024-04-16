@@ -102,7 +102,7 @@ return [
             'url' => env('DATABASE_URL'),
             'host' => env('DB_HOST', 'web.transporindo.com'),
             'port' => env('DB_PORT', '1450'),
-            'database' => env('DB_DATABASE', 'trucking'),
+            'database' => 'truckinglaraveltnl',
             'username' => env('DB_USERNAME', 'sa'),
             'password' => $local,
             'charset' => 'utf8',

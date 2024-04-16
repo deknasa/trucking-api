@@ -25,6 +25,9 @@ class StoreDataRitasiRequest extends FormRequest
      */
     public function rules()
     {
+        if (request()->from == 'tas') {
+            return [];
+        }
         $parameter = new Parameter();
         $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
         $data = json_decode($data, true);

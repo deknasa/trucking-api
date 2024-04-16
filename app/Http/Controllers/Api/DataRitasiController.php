@@ -132,6 +132,7 @@ class DataRitasiController extends Controller
             $dataritasi->nominal = $request->nominal;
             $dataritasi->statusaktif = $request->statusaktif;
             $dataritasi->modifiedby = auth('api')->user()->name;
+            $dataritasi->tas_id = $request->tas_id;
 
             if ($dataritasi->save()) {
                 $logTrail = [
@@ -149,13 +150,15 @@ class DataRitasiController extends Controller
 
             }
             
-            /* Set position and page */
-            $selected = $this->getPosition($dataritasi, $dataritasi->getTable());
-            $dataritasi->position = $selected->position;
-            if ($request->limit==0) {
-                $dataritasi->page = ceil($dataritasi->position / (10));
-            } else {
-                $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                /* Set position and page */
+                $selected = $this->getPosition($dataritasi, $dataritasi->getTable());
+                $dataritasi->position = $selected->position;
+                if ($request->limit==0) {
+                    $dataritasi->page = ceil($dataritasi->position / (10));
+                } else {
+                    $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
+                }
             }
             
             DB::commit();
@@ -192,6 +195,7 @@ class DataRitasiController extends Controller
             $dataritasi->nominal = $request->nominal;
             $dataritasi->statusaktif = $request->statusaktif;
             $dataritasi->modifiedby = auth('api')->user()->name;
+            $dataritasi->tas_id = $request->tas_id;
 
             if ($dataritasi->save()) {
                 $logTrail = [
@@ -210,13 +214,15 @@ class DataRitasiController extends Controller
                 DB::commit();
             }
 
-            /* Set position and page */
-            $selected = $this->getPosition($dataritasi, $dataritasi->getTable());
-            $dataritasi->position = $selected->position;
-            if ($request->limit==0) {
-                $dataritasi->page = ceil($dataritasi->position / (10));
-            } else {
-                $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                /* Set position and page */
+                $selected = $this->getPosition($dataritasi, $dataritasi->getTable());
+                $dataritasi->position = $selected->position;
+                if ($request->limit==0) {
+                    $dataritasi->page = ceil($dataritasi->position / (10));
+                } else {
+                    $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
+                }
             }
 
             return response([
@@ -257,13 +263,15 @@ class DataRitasiController extends Controller
 
             DB::commit();
 
-            $selected = $this->getPosition($dataritasi, $dataritasi->getTable(), true);
-            $dataritasi->position = $selected->position;
-            $dataritasi->id = $selected->id;
-            if ($request->limit==0) {
-                $dataritasi->page = ceil($dataritasi->position / (10));
-            } else {
-                $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($dataritasi, $dataritasi->getTable(), true);
+                $dataritasi->position = $selected->position;
+                $dataritasi->id = $selected->id;
+                if ($request->limit==0) {
+                    $dataritasi->page = ceil($dataritasi->position / (10));
+                } else {
+                    $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
+                }
             }
 
             return response([
