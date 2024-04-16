@@ -155,7 +155,7 @@ class OrderanTrucking extends MyModel
         });
 
         $querygetsupir = DB::table("suratpengantar")->from(DB::raw("suratpengantar as sp with (readuncommitted)"))
-            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir,', ') as supir"))
+            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir + ' ('+statuscontainer.kodestatuscontainer+')',', ') as supir"))
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'sp.trado_id', 'trado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'sp.supir_id', 'supir.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
@@ -307,7 +307,7 @@ class OrderanTrucking extends MyModel
         });
 
         $querygetsupir = DB::table("suratpengantar")->from(DB::raw("suratpengantar as sp with (readuncommitted)"))
-            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir,', ') as supir"))
+            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir + ' ('+statuscontainer.kodestatuscontainer+')',', ') as supir"))
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'sp.trado_id', 'trado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'sp.supir_id', 'supir.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
@@ -321,7 +321,7 @@ class OrderanTrucking extends MyModel
         ], $querygetsupir);
 
         $querygetsupir = DB::table("saldosuratpengantar")->from(DB::raw("saldosuratpengantar as sp with (readuncommitted)"))
-            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir,', ') as supir"))
+            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir + ' ('+statuscontainer.kodestatuscontainer+')',', ') as supir"))
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'sp.trado_id', 'trado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'sp.supir_id', 'supir.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
@@ -1247,7 +1247,7 @@ class OrderanTrucking extends MyModel
         });
 
         $querygetsupir = DB::table("suratpengantar")->from(DB::raw("suratpengantar as sp with (readuncommitted)"))
-            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir,', ') as supir"))
+            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir + ' ('+statuscontainer.kodestatuscontainer+')',', ') as supir"))
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'sp.trado_id', 'trado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'sp.supir_id', 'supir.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
@@ -1399,7 +1399,7 @@ class OrderanTrucking extends MyModel
         });
 
         $querygetsupir = DB::table("suratpengantar")->from(DB::raw("suratpengantar as sp with (readuncommitted)"))
-            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir,', ') as supir"))
+            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir + ' ('+statuscontainer.kodestatuscontainer+')',', ') as supir"))
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'sp.trado_id', 'trado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'sp.supir_id', 'supir.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
@@ -1413,7 +1413,7 @@ class OrderanTrucking extends MyModel
         ], $querygetsupir);
 
         $querygetsupir = DB::table("saldosuratpengantar")->from(DB::raw("saldosuratpengantar as sp with (readuncommitted)"))
-            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir,', ') as supir"))
+            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir + ' ('+statuscontainer.kodestatuscontainer+')',', ') as supir"))
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'sp.trado_id', 'trado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'sp.supir_id', 'supir.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
