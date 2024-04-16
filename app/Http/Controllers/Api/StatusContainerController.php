@@ -21,7 +21,7 @@ use App\Http\Requests\DestroyStatusContainerRequest;
 
 class StatusContainerController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -41,7 +41,7 @@ class StatusContainerController extends Controller
     public function cekValidasi($id)
     {
         $statusContainer = new StatusContainer();
-        $dataMaster = $statusContainer->where('id',$id)->first();
+        $dataMaster = $statusContainer->where('id', $id)->first();
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
@@ -68,34 +68,34 @@ class StatusContainerController extends Controller
             return response($data);
         } else  if ($useredit != '' && $useredit != $user) {
             $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
-            
+
             $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
             if ($diffNow->i > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                     (new MyModel())->updateEditingBy('statusContainer', $id, $aksi);
                 }
-                
+
                 $data = [
                     'status' => false,
                     'message' => '',
                     'errors' => '',
                     'kondisi' => false,
                 ];
-                
+
                 // return response($data);
             } else {
-                
+
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
                 $keterror = 'Data <b>' . $dataMaster->kodestatuscontainer . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
-                
+
                 $data = [
                     'status' => true,
-                    'message' => ["keterangan"=>$keterror],
+                    'message' => ["keterangan" => $keterror],
                     'errors' => '',
                     'kondisi' => true,
                 ];
-                
+
                 return response($data);
             }
         } else {
@@ -141,14 +141,25 @@ class StatusContainerController extends Controller
             $data = [
                 'kodestatuscontainer' => $request->kodestatuscontainer,
                 'keterangan' => $request->keterangan ?? '',
-                'statusaktif' => $request->statusaktif
+                'statusaktif' => $request->statusaktif,
+                'tas_id' => $request->tas_id,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
             $statusContainer = (new StatusContainer())->processStore($data);
-            $statusContainer->position = $this->getPosition($statusContainer, $statusContainer->getTable())->position;
-            if ($request->limit==0) {
-                $statusContainer->page = ceil($statusContainer->position / (10));
-            } else {
-                $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+
+            if ($request->from == '') {
+                $statusContainer->position = $this->getPosition($statusContainer, $statusContainer->getTable())->position;
+                if ($request->limit == 0) {
+                    $statusContainer->page = ceil($statusContainer->position / (10));
+                } else {
+                    $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+                }
+            }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $statusContainer->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('statuscontainer', 'add', $data);
             }
 
             DB::commit();
@@ -176,14 +187,23 @@ class StatusContainerController extends Controller
             $data = [
                 'kodestatuscontainer' => $request->kodestatuscontainer,
                 'keterangan' => $request->keterangan ?? '',
-                'statusaktif' => $request->statusaktif
+                'statusaktif' => $request->statusaktif,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
             $statusContainer = (new StatusContainer())->processUpdate($statusContainer, $data);
-            $statusContainer->position = $this->getPosition($statusContainer, $statusContainer->getTable())->position;
-            if ($request->limit==0) {
-                $statusContainer->page = ceil($statusContainer->position / (10));
-            } else {
-                $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $statusContainer->position = $this->getPosition($statusContainer, $statusContainer->getTable())->position;
+                if ($request->limit == 0) {
+                    $statusContainer->page = ceil($statusContainer->position / (10));
+                } else {
+                    $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+                }
+            }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $statusContainer->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('statuscontainer', 'edit', $data);
             }
 
             DB::commit();
@@ -210,15 +230,24 @@ class StatusContainerController extends Controller
 
         try {
             $statusContainer = (new StatusContainer())->processDestroy($id);
-            $selected = $this->getPosition($statusContainer, $statusContainer->getTable(), true);
-            $statusContainer->position = $selected->position;
-            $statusContainer->id = $selected->id;
-            if ($request->limit==0) {
-                $statusContainer->page = ceil($statusContainer->position / (10));
-            } else {
-                $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($statusContainer, $statusContainer->getTable(), true);
+                $statusContainer->position = $selected->position;
+                $statusContainer->id = $selected->id;
+                if ($request->limit == 0) {
+                    $statusContainer->page = ceil($statusContainer->position / (10));
+                } else {
+                    $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+                }
             }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
 
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('statuscontainer', 'delete', $data);
+            }
             DB::commit();
 
             return response([
@@ -258,7 +287,7 @@ class StatusContainerController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan
@@ -323,7 +352,7 @@ class StatusContainerController extends Controller
     public function report()
     {
     }
-    
+
     /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF

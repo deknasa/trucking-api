@@ -46,13 +46,13 @@ class ZonaController extends Controller
     public function cekValidasi($id)
     {
         $zona = new Zona();
-        $dataMaster = $zona->where('id',$id)->first();
+        $dataMaster = $zona->where('id', $id)->first();
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
         $useredit = $dataMaster->editing_by ?? '';
         $aksi = request()->aksi ?? '';
-        
+
         $cekdata = $zona->cekvalidasihapus($id);
         if ($cekdata['kondisi'] == true && $aksi != 'EDIT') {
             $query = DB::table('error')
@@ -79,7 +79,7 @@ class ZonaController extends Controller
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                     (new MyModel())->updateEditingBy('zona', $id, $aksi);
                 }
-                
+
                 $data = [
                     'status' => false,
                     'message' => '',
@@ -87,21 +87,21 @@ class ZonaController extends Controller
                     'kondisi' => false,
                     'editblok' => false,
                 ];
-                
+
                 // return response($data);
             } else {
-                
+
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
                 $keterror = 'Data <b>' . $dataMaster->kodezona . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
-                
+
                 $data = [
                     'status' => true,
-                    'message' => ["keterangan"=>$keterror],
+                    'message' => ["keterangan" => $keterror],
                     'errors' => '',
                     'kondisi' => true,
                     'editblok' => true,
                 ];
-                
+
                 return response($data);
             }
         } else {
@@ -138,16 +138,25 @@ class ZonaController extends Controller
             $data = [
                 'zona' => $request->zona,
                 'statusaktif' => $request->statusaktif,
-                'keterangan' => $request->keterangan ?? ''
+                'keterangan' => $request->keterangan ?? '',
+                'tas_id' => $request->tas_id,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
             $zona = (new Zona())->processStore($data);
-            $zona->position = $this->getPosition($zona, $zona->getTable())->position;
-            if ($request->limit == 0) {
-                $zona->page = ceil($zona->position / (10));
-            } else {
-                $zona->page = ceil($zona->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $zona->position = $this->getPosition($zona, $zona->getTable())->position;
+                if ($request->limit == 0) {
+                    $zona->page = ceil($zona->position / (10));
+                } else {
+                    $zona->page = ceil($zona->position / ($request->limit ?? 10));
+                }
             }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $zona->id;
 
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('zona', 'add', $data);
+            }
             DB::commit();
 
             return response([
@@ -180,14 +189,23 @@ class ZonaController extends Controller
             $data = [
                 'zona' => $request->zona,
                 'statusaktif' => $request->statusaktif,
-                'keterangan' => $request->keterangan ?? ''
+                'keterangan' => $request->keterangan ?? '',
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
             $zona = (new Zona())->processUpdate($zona, $data);
-            $zona->position = $this->getPosition($zona, $zona->getTable())->position;
-            if ($request->limit == 0) {
-                $zona->page = ceil($zona->position / (10));
-            } else {
-                $zona->page = ceil($zona->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $zona->position = $this->getPosition($zona, $zona->getTable())->position;
+                if ($request->limit == 0) {
+                    $zona->page = ceil($zona->position / (10));
+                } else {
+                    $zona->page = ceil($zona->position / ($request->limit ?? 10));
+                }
+            }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $zona->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('zona', 'edit', $data);
             }
 
             DB::commit();
@@ -212,15 +230,25 @@ class ZonaController extends Controller
         try {
 
             $zona = (new Zona())->processDestroy($id);
-            $selected = $this->getPosition($zona, $zona->getTable(), true);
-            $zona->position = $selected->position;
-            $zona->id = $selected->id;
-            if ($request->limit == 0) {
-                $zona->page = ceil($zona->position / (10));
-            } else {
-                $zona->page = ceil($zona->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($zona, $zona->getTable(), true);
+                $zona->position = $selected->position;
+                $zona->id = $selected->id;
+                if ($request->limit == 0) {
+                    $zona->page = ceil($zona->position / (10));
+                } else {
+                    $zona->page = ceil($zona->position / ($request->limit ?? 10));
+                }
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
+
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('zona', 'delete', $data);
+            }
             DB::commit();
 
             return response([

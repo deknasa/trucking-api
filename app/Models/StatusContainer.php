@@ -256,7 +256,8 @@ class StatusContainer extends MyModel
         $statusContainer->kodestatuscontainer = $data['kodestatuscontainer'];
         $statusContainer->keterangan = $data['keterangan'] ?? '';
         $statusContainer->statusaktif = $data['statusaktif'];
-        $statusContainer->modifiedby = auth('api')->user()->USER;
+        $statusContainer->tas_id = $data['tas_id'] ?? '';
+        $statusContainer->modifiedby = auth('api')->user()->user;
         $statusContainer->info = html_entity_decode(request()->info);
         $data['sortname'] = $data['sortname'] ?? 'id';
         $data['sortorder'] = $data['sortorder'] ?? 'asc';

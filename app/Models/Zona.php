@@ -259,6 +259,7 @@ class Zona extends MyModel
         $zona->zona = $data['zona'];
         $zona->statusaktif = $data['statusaktif'];
         $zona->keterangan = $data['keterangan'] ?? '';
+        $zona->tas_id = $data['tas_id'] ?? '';
         $zona->modifiedby = auth('api')->user()->user;
         $zona->info = html_entity_decode(request()->info);
         $data['sortname'] = $data['sortname'] ?? 'id';
