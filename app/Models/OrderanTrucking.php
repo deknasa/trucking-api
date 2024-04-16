@@ -48,7 +48,7 @@ class OrderanTrucking extends MyModel
             if (isset($suratPengantar)) {
                 $data = [
                     'kondisi' => true,
-                    'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> sURAT pENGANTAR <b>'. $suratPengantar->nobukti .'</b> <br> '.$keterangantambahanerror,
+                    'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> sURAT pENGANTAR <b>' . $suratPengantar->nobukti . '</b> <br> ' . $keterangantambahanerror,
                     // 'keterangan' => 'Surat Pengantar ' . $suratPengantar->nobukti,
                     'kodeerror' => 'SATL2'
                 ];
@@ -74,7 +74,7 @@ class OrderanTrucking extends MyModel
                 if (isset($gajiSupir)) {
                     $data = [
                         'kondisi' => true,
-                        'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> Rincian Gaji Supir <b>'. $gajiSupir->nobukti .'</b> <br> '.$keterangantambahanerror,
+                        'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> Rincian Gaji Supir <b>' . $gajiSupir->nobukti . '</b> <br> ' . $keterangantambahanerror,
                         // 'keterangan' => 'GAJI SUPIR ' . $gajiSupir->nobukti,
                         'kodeerror' => 'SATL2'
                     ];
@@ -100,9 +100,9 @@ class OrderanTrucking extends MyModel
         if (isset($invoice)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> Invoice <b>'. $invoice->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> Invoice <b>' . $invoice->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'invoice ' . $invoice->nobukti,
-                'kodeerror' => 'SATL2'                
+                'kodeerror' => 'SATL2'
             ];
 
 
@@ -147,6 +147,26 @@ class OrderanTrucking extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+        $tempsupirtrado = '##tempsupirtrado' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsupirtrado, function ($table) {
+            $table->string('jobtrucking', 50)->nullable();
+            $table->longText('trado')->nullable();
+            $table->longText('supir')->nullable();
+        });
+
+        $querygetsupir = DB::table("suratpengantar")->from(DB::raw("suratpengantar as sp with (readuncommitted)"))
+            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir,', ') as supir"))
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'sp.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'sp.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
+            ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'sp.jobtrucking', 'orderantrucking.nobukti')
+            ->whereBetween('orderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->groupBy('sp.jobtrucking');
+        DB::table($tempsupirtrado)->insertUsing([
+            'jobtrucking',
+            'trado',
+            'supir',
+        ], $querygetsupir);
 
         $temporderantrucking = '##temporderantrucking' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temporderantrucking, function ($table) {
@@ -183,6 +203,8 @@ class OrderanTrucking extends MyModel
             $table->string('userapprovaltanpajob', 50)->nullable();
             $table->dateTime('tglbatastanpajoborderantrucking')->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();
+            $table->longText('supir')->nullable();
+            $table->longText('trado')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -225,10 +247,13 @@ class OrderanTrucking extends MyModel
                 'a.userapprovaltanpajob',
                 'a.tglbatastanpajoborderantrucking',
                 'a.statusformat',
+                'b.supir',
+                'b.trado',
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at',
             )
+            ->leftJoin(DB::raw("$tempsupirtrado as b"), 'a.nobukti', 'b.jobtrucking')
             ->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
 
 
@@ -266,11 +291,48 @@ class OrderanTrucking extends MyModel
             'userapprovaltanpajob',
             'tglbatastanpajoborderantrucking',
             'statusformat',
+            'supir',
+            'trado',
             'modifiedby',
             'created_at',
             'updated_at',
 
         ], $queryorderantrucking);
+
+        $tempsupirtrado = '##tempsupirtrado' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsupirtrado, function ($table) {
+            $table->string('jobtrucking', 50)->nullable();
+            $table->longText('trado')->nullable();
+            $table->longText('supir')->nullable();
+        });
+
+        $querygetsupir = DB::table("suratpengantar")->from(DB::raw("suratpengantar as sp with (readuncommitted)"))
+            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir,', ') as supir"))
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'sp.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'sp.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
+            ->leftJoin(DB::raw("saldoorderantrucking with (readuncommitted)"), 'sp.jobtrucking', 'saldoorderantrucking.nobukti')
+            ->whereBetween('saldoorderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->groupBy('sp.jobtrucking');
+        DB::table($tempsupirtrado)->insertUsing([
+            'jobtrucking',
+            'trado',
+            'supir',
+        ], $querygetsupir);
+
+        $querygetsupir = DB::table("saldosuratpengantar")->from(DB::raw("saldosuratpengantar as sp with (readuncommitted)"))
+            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir,', ') as supir"))
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'sp.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'sp.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
+            ->leftJoin(DB::raw("saldoorderantrucking with (readuncommitted)"), 'sp.jobtrucking', 'saldoorderantrucking.nobukti')
+            ->whereBetween('saldoorderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->groupBy('sp.jobtrucking');
+        DB::table($tempsupirtrado)->insertUsing([
+            'jobtrucking',
+            'trado',
+            'supir',
+        ], $querygetsupir);
 
         $queryorderantrucking = DB::table('saldoorderantrucking')->from(
             DB::raw("saldoorderantrucking a with (readuncommitted)")
@@ -301,10 +363,13 @@ class OrderanTrucking extends MyModel
                 'a.tglapprovalbukatrip',
                 'a.userapprovalbukatrip',
                 'a.statusformat',
+                'b.supir',
+                'b.trado',
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at',
             )
+            ->leftJoin(DB::raw("$tempsupirtrado as b"), 'a.nobukti', 'b.jobtrucking')
             ->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
 
 
@@ -334,6 +399,8 @@ class OrderanTrucking extends MyModel
             'tglapprovalbukatrip',
             'userapprovalbukatrip',
             'statusformat',
+            'supir',
+            'trado',
             'modifiedby',
             'created_at',
             'updated_at',
@@ -372,6 +439,8 @@ class OrderanTrucking extends MyModel
                 DB::raw("(case when year(isnull(orderantrucking.tglapprovaltanpajob,'1900/1/1'))<2000 then null else orderantrucking.tglapprovaltanpajob end) as tglapprovaltanpajob"),
                 'orderantrucking.userapprovaltanpajob',
                 DB::raw("(case when year(isnull(orderantrucking.tglbatastanpajoborderantrucking,'1900/1/1 00:00:00.000'))<2000 then null else orderantrucking.tglbatastanpajoborderantrucking end) as tglbatastanpajoborderantrucking"),
+                'orderantrucking.supir',
+                'orderantrucking.trado',
                 'orderantrucking.modifiedby',
                 'orderantrucking.created_at',
                 'orderantrucking.updated_at'
@@ -1168,47 +1237,317 @@ class OrderanTrucking extends MyModel
         return $this->belongsTo(Tarif::class, 'tarif_id');
     }
 
-    public function selectColumns($query)
+    public function selectColumns()
     {
-        return $query->from(
-            DB::raw($this->table . " with (readuncommitted)")
+        $tempsupirtrado = '##tempsupirtrado' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsupirtrado, function ($table) {
+            $table->string('jobtrucking', 50)->nullable();
+            $table->longText('trado')->nullable();
+            $table->longText('supir')->nullable();
+        });
+
+        $querygetsupir = DB::table("suratpengantar")->from(DB::raw("suratpengantar as sp with (readuncommitted)"))
+            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir,', ') as supir"))
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'sp.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'sp.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
+            ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'sp.jobtrucking', 'orderantrucking.nobukti')
+            ->whereBetween('orderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->groupBy('sp.jobtrucking');
+        DB::table($tempsupirtrado)->insertUsing([
+            'jobtrucking',
+            'trado',
+            'supir',
+        ], $querygetsupir);
+
+        $temporderantrucking = '##temporderantrucking' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temporderantrucking, function ($table) {
+            $table->integer('id')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->unsignedBigInteger('container_id')->nullable();
+            $table->unsignedBigInteger('agen_id')->nullable();
+            $table->unsignedBigInteger('jenisorder_id')->nullable();
+            $table->unsignedBigInteger('pelanggan_id')->nullable();
+            $table->unsignedBigInteger('tarif_id')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+            $table->string('nojobemkl', 50)->nullable();
+            $table->string('nocont', 50)->nullable();
+            $table->string('noseal', 50)->nullable();
+            $table->string('nojobemkl2', 50)->nullable();
+            $table->string('nocont2', 50)->nullable();
+            $table->string('noseal2', 50)->nullable();
+            $table->integer('statuslangsir')->length(11)->nullable();
+            $table->integer('statusperalihan')->length(11)->nullable();
+            $table->string('jobtruckingasal', 500)->nullable();
+            $table->integer('statusapprovalnonchargegandengan')->Length(11)->nullable();
+            $table->string('userapprovalnonchargegandengan', 50)->nullable();
+            $table->date('tglapprovalnonchargegandengan')->nullable();
+            $table->integer('statusapprovalbukatrip')->Length(11)->nullable();
+            $table->date('tglapprovalbukatrip')->nullable();
+            $table->string('userapprovalbukatrip', 50)->nullable();
+            $table->integer('statusapprovaledit')->Length(11)->nullable();
+            $table->date('tglapprovaledit')->nullable();
+            $table->string('userapprovaledit', 50)->nullable();
+            $table->dateTime('tglbataseditorderantrucking')->nullable();
+            $table->integer('statusapprovaltanpajob')->Length(11)->nullable();
+            $table->date('tglapprovaltanpajob')->nullable();
+            $table->string('userapprovaltanpajob', 50)->nullable();
+            $table->dateTime('tglbatastanpajoborderantrucking')->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();
+            $table->longText('supir')->nullable();
+            $table->longText('trado')->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
+        });
+
+        $queryorderantrucking = DB::table('orderantrucking')->from(
+            DB::raw("orderantrucking a with (readuncommitted)")
         )
             ->select(
-                DB::raw(
-                    "$this->table.id,
-            $this->table.nobukti,
-            $this->table.tglbukti,
-            'container.keterangan as container_id',
-            'agen.namaagen as agen_id',
-            'jenisorder.keterangan as jenisorder_id',
-            'pelanggan.namapelanggan as pelanggan_id',
-            $this->table.nojobemkl,
-            $this->table.nocont,
-            $this->table.noseal,
-            $this->table.nojobemkl2,
-            $this->table.nocont2,
-            $this->table.noseal2,
-            'statusapprovalbukatrip.text as statusapprovalbukatrip',
-            'param3.text as statusapprovaledit',
-            (case when year(isnull(orderantrucking.tglapprovaledit,'1900/1/1'))<2000 then null else orderantrucking.tglapprovaledit end) as tglapprovaledit,
-            'orderantrucking.userapprovaledit',
-            (case when year(isnull(orderantrucking.tglbataseditorderantrucking,'1900/1/1 00:00:00.000'))<2000 then null else orderantrucking.tglbataseditorderantrucking end) as tglbataseditorderantrucking,
-            'param4.text as statusapprovaltanpajob',
-            (case when year(isnull(orderantrucking.tglapprovaltanpajob,'1900/1/1'))<2000 then null else orderantrucking.tglapprovaltanpajob end) as tglapprovaltanpajob,
-            'orderantrucking.userapprovaltanpajob',
-            (case when year(isnull(orderantrucking.tglbatastanpajoborderantrucking,'1900/1/1 00:00:00.000'))<2000 then null else orderantrucking.tglbatastanpajoborderantrucking end) as tglbatastanpajoborderantrucking,
-            $this->table.modifiedby,
-            $this->table.created_at,
-            $this->table.updated_at"
-                )
+                'a.id',
+                'a.nobukti',
+                'a.tglbukti',
+                'a.container_id',
+                'a.agen_id',
+                'a.jenisorder_id',
+                'a.pelanggan_id',
+                'a.tarif_id',
+                'a.nominal',
+                'a.nojobemkl',
+                'a.nocont',
+                'a.noseal',
+                'a.nojobemkl2',
+                'a.nocont2',
+                'a.noseal2',
+                'a.statuslangsir',
+                'a.statusperalihan',
+                'a.jobtruckingasal',
+                'a.statusapprovalnonchargegandengan',
+                'a.userapprovalnonchargegandengan',
+                'a.tglapprovalnonchargegandengan',
+                'a.statusapprovalbukatrip',
+                'a.tglapprovalbukatrip',
+                'a.userapprovalbukatrip',
+                'a.statusapprovaledit',
+                'a.tglapprovaledit',
+                'a.userapprovaledit',
+                'a.tglbataseditorderantrucking',
+                'a.statusapprovaltanpajob',
+                'a.tglapprovaltanpajob',
+                'a.userapprovaltanpajob',
+                'a.tglbatastanpajoborderantrucking',
+                'a.statusformat',
+                'b.supir',
+                'b.trado',
+                'a.modifiedby',
+                'a.created_at',
+                'a.updated_at',
             )
+            ->leftJoin(DB::raw("$tempsupirtrado as b"), 'a.nobukti', 'b.jobtrucking')
+            ->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+
+
+        DB::table($temporderantrucking)->insertUsing([
+            'id',
+            'nobukti',
+            'tglbukti',
+            'container_id',
+            'agen_id',
+            'jenisorder_id',
+            'pelanggan_id',
+            'tarif_id',
+            'nominal',
+            'nojobemkl',
+            'nocont',
+            'noseal',
+            'nojobemkl2',
+            'nocont2',
+            'noseal2',
+            'statuslangsir',
+            'statusperalihan',
+            'jobtruckingasal',
+            'statusapprovalnonchargegandengan',
+            'userapprovalnonchargegandengan',
+            'tglapprovalnonchargegandengan',
+            'statusapprovalbukatrip',
+            'tglapprovalbukatrip',
+            'userapprovalbukatrip',
+            'statusapprovaledit',
+            'tglapprovaledit',
+            'userapprovaledit',
+            'tglbataseditorderantrucking',
+            'statusapprovaltanpajob',
+            'tglapprovaltanpajob',
+            'userapprovaltanpajob',
+            'tglbatastanpajoborderantrucking',
+            'statusformat',
+            'supir',
+            'trado',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+
+        ], $queryorderantrucking);
+
+        $tempsupirtrado = '##tempsupirtrado' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsupirtrado, function ($table) {
+            $table->string('jobtrucking', 50)->nullable();
+            $table->longText('trado')->nullable();
+            $table->longText('supir')->nullable();
+        });
+
+        $querygetsupir = DB::table("suratpengantar")->from(DB::raw("suratpengantar as sp with (readuncommitted)"))
+            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir,', ') as supir"))
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'sp.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'sp.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
+            ->leftJoin(DB::raw("saldoorderantrucking with (readuncommitted)"), 'sp.jobtrucking', 'saldoorderantrucking.nobukti')
+            ->whereBetween('saldoorderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->groupBy('sp.jobtrucking');
+        DB::table($tempsupirtrado)->insertUsing([
+            'jobtrucking',
+            'trado',
+            'supir',
+        ], $querygetsupir);
+
+        $querygetsupir = DB::table("saldosuratpengantar")->from(DB::raw("saldosuratpengantar as sp with (readuncommitted)"))
+            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir,', ') as supir"))
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'sp.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'sp.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
+            ->leftJoin(DB::raw("saldoorderantrucking with (readuncommitted)"), 'sp.jobtrucking', 'saldoorderantrucking.nobukti')
+            ->whereBetween('saldoorderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->groupBy('sp.jobtrucking');
+        DB::table($tempsupirtrado)->insertUsing([
+            'jobtrucking',
+            'trado',
+            'supir',
+        ], $querygetsupir);
+
+        $queryorderantrucking = DB::table('saldoorderantrucking')->from(
+            DB::raw("saldoorderantrucking a with (readuncommitted)")
+        )
+            ->select(
+                'a.id',
+                'a.nobukti',
+                'a.tglbukti',
+                'a.container_id',
+                'a.agen_id',
+                'a.jenisorder_id',
+                'a.pelanggan_id',
+                'a.tarif_id',
+                'a.nominal',
+                'a.nojobemkl',
+                'a.nocont',
+                'a.noseal',
+                'a.nojobemkl2',
+                'a.nocont2',
+                'a.noseal2',
+                'a.statuslangsir',
+                'a.statusperalihan',
+                'a.jobtruckingasal',
+                'a.statusapprovalnonchargegandengan',
+                'a.userapprovalnonchargegandengan',
+                'a.tglapprovalnonchargegandengan',
+                'a.statusapprovalbukatrip',
+                'a.tglapprovalbukatrip',
+                'a.userapprovalbukatrip',
+                'a.statusformat',
+                'b.supir',
+                'b.trado',
+                'a.modifiedby',
+                'a.created_at',
+                'a.updated_at',
+            )
+            ->leftJoin(DB::raw("$tempsupirtrado as b"), 'a.nobukti', 'b.jobtrucking')
+            ->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+
+
+        DB::table($temporderantrucking)->insertUsing([
+            'id',
+            'nobukti',
+            'tglbukti',
+            'container_id',
+            'agen_id',
+            'jenisorder_id',
+            'pelanggan_id',
+            'tarif_id',
+            'nominal',
+            'nojobemkl',
+            'nocont',
+            'noseal',
+            'nojobemkl2',
+            'nocont2',
+            'noseal2',
+            'statuslangsir',
+            'statusperalihan',
+            'jobtruckingasal',
+            'statusapprovalnonchargegandengan',
+            'userapprovalnonchargegandengan',
+            'tglapprovalnonchargegandengan',
+            'statusapprovalbukatrip',
+            'tglapprovalbukatrip',
+            'userapprovalbukatrip',
+            'statusformat',
+            'supir',
+            'trado',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+
+        ], $queryorderantrucking);
+
+        $query = DB::table($temporderantrucking)->from(
+            DB::raw($temporderantrucking . " as orderantrucking")
+        )
+            ->select(
+                'orderantrucking.id',
+                'orderantrucking.nobukti',
+                'orderantrucking.tglbukti',
+                'container.keterangan as container_id',
+                'agen.namaagen as agen_id',
+                'jenisorder.keterangan as jenisorder_id',
+                'pelanggan.namapelanggan as pelanggan_id',
+                'tarif.tujuan as tarif_id',
+                'orderantrucking.nominal',
+                'orderantrucking.nojobemkl',
+                'orderantrucking.nocont',
+                'orderantrucking.noseal',
+                'orderantrucking.nojobemkl2',
+                'orderantrucking.nocont2',
+                'orderantrucking.noseal2',
+                // 'parameter.memo as statuslangsir',
+                // 'param2.memo as statusperalihan',
+                'statusapprovalbukatrip.memo as statusapprovalbukatrip',
+                'param3.memo as statusapprovaledit',
+                DB::raw("(case when year(isnull(orderantrucking.tglapprovaledit,'1900/1/1'))<2000 then null else orderantrucking.tglapprovaledit end) as tglapprovaledit"),
+                'orderantrucking.userapprovaledit',
+                DB::raw("(case when year(isnull(orderantrucking.tglbataseditorderantrucking,'1900/1/1 00:00:00.000'))<2000 then null else orderantrucking.tglbataseditorderantrucking end) as tglbataseditorderantrucking"),
+                'param4.memo as statusapprovaltanpajob',
+                DB::raw("(case when year(isnull(orderantrucking.tglapprovaltanpajob,'1900/1/1'))<2000 then null else orderantrucking.tglapprovaltanpajob end) as tglapprovaltanpajob"),
+                'orderantrucking.userapprovaltanpajob',
+                DB::raw("(case when year(isnull(orderantrucking.tglbatastanpajoborderantrucking,'1900/1/1 00:00:00.000'))<2000 then null else orderantrucking.tglbatastanpajoborderantrucking end) as tglbatastanpajoborderantrucking"),
+                'orderantrucking.supir',
+                'orderantrucking.trado',
+                'orderantrucking.modifiedby',
+                'orderantrucking.created_at',
+                'orderantrucking.updated_at'
+            )
+            ->whereBetween('orderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'orderantrucking.tarif_id', '=', 'tarif.id')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'orderantrucking.container_id', '=', 'container.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'orderantrucking.agen_id', '=', 'agen.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'orderantrucking.jenisorder_id', '=', 'jenisorder.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'orderantrucking.pelanggan_id', '=', 'pelanggan.id')
+            // ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'orderantrucking.statuslangsir', '=', 'parameter.id')
             ->leftJoin(DB::raw("parameter AS statusapprovalbukatrip with (readuncommitted)"), 'orderantrucking.statusapprovalbukatrip', '=', 'statusapprovalbukatrip.id')
+            // ->leftJoin(DB::raw("parameter AS param2 with (readuncommitted)"), 'orderantrucking.statusperalihan', '=', 'param2.id')
             ->leftJoin(DB::raw("parameter AS param3 with (readuncommitted)"), 'orderantrucking.statusapprovaledit', '=', 'param3.id')
             ->leftJoin(DB::raw("parameter AS param4 with (readuncommitted)"), 'orderantrucking.statusapprovaltanpajob', '=', 'param4.id');
+
+        return $query;
     }
 
     public function createTemp(string $modelTable)
@@ -1222,6 +1561,8 @@ class OrderanTrucking extends MyModel
             $table->string('agen_id', 1000)->nullable();
             $table->string('jenisorder_id', 1000)->nullable();
             $table->string('pelanggan_id', 1000)->nullable();
+            $table->string('tarif_id', 1000)->nullable();
+            $table->float('nominal')->nullable();
             $table->string('nojobemkl', 1000)->nullable();
             $table->string('nocont', 1000)->nullable();
             $table->string('noseal', 1000)->nullable();
@@ -1237,6 +1578,8 @@ class OrderanTrucking extends MyModel
             $table->date('tglapprovaltanpajob')->nullable();
             $table->string('userapprovaltanpajob', 50)->nullable();
             $table->dateTime('tglbatastanpajoborderantrucking')->nullable();
+            $table->longText('supir')->nullable();
+            $table->longText('trado')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -1244,12 +1587,41 @@ class OrderanTrucking extends MyModel
         });
 
         $this->setRequestParameters();
-        $query = DB::table($modelTable);
-        $query = $this->selectColumns($query);
+        $query = $this->selectColumns();
         $this->sort($query);
         $models = $this->filter($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'container_id', 'agen_id', 'jenisorder_id', 'pelanggan_id', 'nojobemkl', 'nocont', 'noseal', 'nojobemkl2', 'nocont2', 'noseal2', 'statusapprovalbukatrip', 'statusapprovaledit', 'tglapprovaledit', 'userapprovaledit', 'tglbataseditorderantrucking', 'statusapprovaltanpajob', 'tglapprovaltanpajob', 'userapprovaltanpajob', 'tglbatastanpajoborderantrucking', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing([
+            'id',
+            'nobukti',
+            'tglbukti',
+            'container_id',
+            'agen_id',
+            'jenisorder_id',
+            'pelanggan_id',
+            'tarif_id',
+            'nominal',
+            'nojobemkl',
+            'nocont',
+            'noseal',
+            'nojobemkl2',
+            'nocont2',
+            'noseal2',
+            'statusapprovalbukatrip',
+            'statusapprovaledit',
+            'tglapprovaledit',
+            'userapprovaledit',
+            'tglbataseditorderantrucking',
+            'statusapprovaltanpajob',
+            'tglapprovaltanpajob',
+            'userapprovaltanpajob',
+            'tglbatastanpajoborderantrucking',
+            'supir',
+            'trado',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+        ], $models);
 
 
         return  $temp;
@@ -1677,10 +2049,10 @@ class OrderanTrucking extends MyModel
 
         $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
         $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
-  
+
         // dd($data['orderanTruckingId']);
         for ($i = 0; $i < count($data['orderanTruckingId']); $i++) {
-            
+
             $orderanTrucking = OrderanTrucking::find($data['orderanTruckingId'][$i]);
             if ($orderanTrucking->statusapprovaledit == $statusApproval->id) {
                 $orderanTrucking->statusapprovaledit = $statusNonApproval->id;
@@ -1697,11 +2069,11 @@ class OrderanTrucking extends MyModel
             }
 
             $orderanTrucking->info = html_entity_decode(request()->info);
-         
+
             if (!$orderanTrucking->save()) {
                 throw new \Exception('Error Un/approval orderan Trucking.');
             }
-        
+
 
             (new LogTrail())->processStore([
                 'namatabel' => strtoupper($orderanTrucking->getTable()),
