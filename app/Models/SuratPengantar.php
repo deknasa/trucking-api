@@ -1762,6 +1762,24 @@ class SuratPengantar extends MyModel
     public function getListTrip()
     {
         $this->setRequestParameters();
+
+        $isMandor = auth()->user()->isMandor();
+        $isAdmin = auth()->user()->isAdmin();
+
+        $userid = auth('api')->user()->id;
+        $querymandor = db::table("mandordetail")->from(db::raw("mandordetail a with (readuncommitted)"))
+            ->select('a.mandor_id')
+            ->where('a.user_id', $userid);
+        $tempmandordetail = '##tempmandordetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempmandordetail, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('mandor_id')->nullable();
+        });
+
+        DB::table($tempmandordetail)->insertUsing([
+            'mandor_id',
+        ],  $querymandor);
+
         $query = DB::table($this->table)->select(
             'suratpengantar.id',
             'suratpengantar.jobtrucking',
@@ -1820,7 +1838,11 @@ class SuratPengantar extends MyModel
             ->leftJoin('mandor as mandorsupir', 'suratpengantar.mandorsupir_id', 'mandorsupir.id')
             ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id')
             ->orderBy('suratpengantar.tglbukti', 'desc');
-
+        if (!$isAdmin) {
+            if ($isMandor) {
+                $query->Join(DB::raw($tempmandordetail . " as mandordetail"), 'trado.mandor_id', 'mandordetail.mandor_id');
+            }
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -2649,7 +2671,7 @@ class SuratPengantar extends MyModel
                     $nominalkenekkandang = 0;
                     $nominalkomisikandang = 0;
                 }
-                
+
                 if ($suratPengantar->statuskandang == $idstatuskandang) {
 
                     $suratPengantar->gajikenek = $upahsupirRincian->nominalkenek - $nominalkenekkandang;
