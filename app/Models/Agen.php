@@ -188,6 +188,7 @@ class Agen extends MyModel
                 'agen.contactperson',
                 'agen.top',
                 'statusapproval.memo as statusapproval',
+                'statusinvoiceextra.memo as statusinvoiceextra',
                 'agen.userapproval',
                 DB::raw('(case when (year(agen.tglapproval) <= 2000) then null else agen.tglapproval end ) as tglapproval'),
                 'statustas.memo as statustas',
@@ -202,6 +203,7 @@ class Agen extends MyModel
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'agen.statusaktif', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'agen.statusapproval', 'statusapproval.id')
+            ->leftJoin(DB::raw("parameter as statusinvoiceextra with (readuncommitted)"), 'agen.statusinvoiceextra', 'statusinvoiceextra.id')
             ->leftJoin(DB::raw("parameter as statustas with (readuncommitted)"), 'agen.statustas', 'statustas.id');
 
         // $controller = new Controller;
@@ -249,6 +251,7 @@ class Agen extends MyModel
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
             $table->unsignedBigInteger('statustas')->nullable();
+            $table->unsignedBigInteger('statusinvoiceextra')->nullable();
             $table->unsignedBigInteger('jenisemkl')->nullable();
             $table->string('keteranganjenisemkl', 255)->nullable();
         });
@@ -290,10 +293,23 @@ class Agen extends MyModel
             )
             ->where('kodejenisemkl', '=', 'TAS')
             ->first();
+            
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('subgrp', '=', 'STATUS AKTIF')
+            ->where('default', '=', '')
+            ->first();
+
+        $iddefaultstatusinvoice = $status->id ?? 0;
         DB::table($tempdefault)->insert(
             [
                 "statusaktif" => $iddefaultstatusaktif, "statustas" => $iddefaultstatustas,
-                "jenisemkl" => $jenisemkl->jenisemkl, "keteranganjenisemkl" => $jenisemkl->keteranganjenisemkl
+                "jenisemkl" => $jenisemkl->jenisemkl, "keteranganjenisemkl" => $jenisemkl->keteranganjenisemkl,"statusinvoiceextra"=>$iddefaultstatusinvoice
             ]
         );
 
@@ -305,6 +321,7 @@ class Agen extends MyModel
                 'statustas',
                 'jenisemkl',
                 'keteranganjenisemkl',
+                'statusinvoiceextra'
             );
 
         $data = $query->first();
@@ -328,6 +345,7 @@ class Agen extends MyModel
                 "agen.contactperson",
                 "agen.top",
                 "agen.statustas",
+                "agen.statusinvoiceextra",
                 "agen.coa",
                 DB::raw("(trim(coa.coa)+' - '+trim(coa.keterangancoa)) as keterangancoa"),
                 DB::raw("(trim(coapendapatan.coa)+' - '+trim(coapendapatan.keterangancoa)) as keterangancoapendapatan"),
@@ -360,6 +378,7 @@ class Agen extends MyModel
             "$this->table.userapproval",
             "$this->table.tglapproval",
             "statustas.text as statustas",
+            "statusinvoiceextra.text as statusinvoiceextra",
             "jenisemkl.keterangan as jenisemkl",
             "$this->table.modifiedby",
             "$this->table.created_at",
@@ -368,6 +387,7 @@ class Agen extends MyModel
             ->leftJoin(DB::raw("parameter as parameter with (readuncommitted)"), "agen.statusaktif", "parameter.id")
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), "agen.statusapproval", "statusapproval.id")
             ->leftJoin(DB::raw("parameter as statustas with (readuncommitted)"), "agen.statustas", "statustas.id")
+            ->leftJoin(DB::raw("parameter as statusinvoiceextra with (readuncommitted)"), "agen.statusinvoiceextra", "statusinvoiceextra.id")
             ->leftJoin(DB::raw("jenisemkl with (readuncommitted)"), "agen.jenisemkl", "jenisemkl.id");
     }
 
@@ -394,6 +414,7 @@ class Agen extends MyModel
             $table->string('userapproval', 1000)->nullable();
             $table->string('tglapproval', 1000)->nullable();
             $table->string('statustas', 1000)->nullable();
+            $table->string('statusinvoiceextra', 1000)->nullable();
             $table->string('jenisemkl', 1000)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -422,6 +443,7 @@ class Agen extends MyModel
             'userapproval',
             'tglapproval',
             'statustas',
+            'statusinvoiceextra',
             'jenisemkl',
             'modifiedby',
             'created_at',
@@ -448,6 +470,8 @@ class Agen extends MyModel
                             $query = $query->where('statusapproval.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statustas') {
                             $query = $query->where('statustas.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusinvoiceextra') {
+                            $query = $query->where('statusinvoiceextra.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'check') {
@@ -468,6 +492,8 @@ class Agen extends MyModel
                                 $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statustas') {
                                 $query = $query->orWhere('statustas.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statusinvoiceextra') {
+                                $query = $query->orWhere('statusinvoiceextra.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'check') {
@@ -507,6 +533,7 @@ class Agen extends MyModel
         $agen->namaagen = $data['namaagen'];
         $agen->keterangan = $data['keterangan'] ?? '';
         $agen->statusaktif = $data['statusaktif'];
+        $agen->statusinvoiceextra = $data['statusinvoiceextra'];
         $agen->namaperusahaan = $data['namaperusahaan'];
         $agen->alamat = $data['alamat'];
         $agen->coa = $data['coa'];
@@ -546,6 +573,7 @@ class Agen extends MyModel
         $agen->namaagen = $data['namaagen'];
         $agen->keterangan = $data['keterangan'] ?? '';
         $agen->statusaktif = $data['statusaktif'];
+        $agen->statusinvoiceextra = $data['statusinvoiceextra'];
         $agen->namaperusahaan = $data['namaperusahaan'];
         $agen->alamat = $data['alamat'];
         $agen->coa = $data['coa'];
