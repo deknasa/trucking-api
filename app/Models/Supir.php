@@ -844,6 +844,8 @@ class Supir extends MyModel
                             $query = $query->where('parameter.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusadaupdategambar') {
                             $query = $query->where('statusadaupdategambar.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusapprovalhistorysupirmilikmandor') {
+                            $query = $query->where('parameter_statusapprovalhistorymilikmandor.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusluarkota') {
                             $query = $query->where('statusluarkota.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statuszonatertentu') {
@@ -883,6 +885,8 @@ class Supir extends MyModel
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'statusadaupdategambar') {
                                 $query = $query->orWhere('statusadaupdategambar.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statusapprovalhistorysupirmilikmandor') {
+                                $query = $query->orwhere('parameter_statusapprovalhistorymilikmandor.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statusluarkota') {
                                 $query = $query->orWhere('statusluarkota.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statuszonatertentu') {
