@@ -327,6 +327,7 @@ class UpahSupirRincian extends MyModel
                     'a.tas_id',
                 )
                 ->whereRaw("cast('" . $tglbukti . "' as datetime)>=a.tglmulaiberlaku")
+                ->where('a.statusaktif',1)
                 ->orderby('a.id', 'asc');
 
             DB::table($temptarif)->insertUsing([
