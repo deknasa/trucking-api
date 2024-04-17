@@ -27,7 +27,7 @@ class ValidasiKlaimPenerimaanStok implements Rule
     public function passes($attribute, $value)
     {
         $attribute = substr($attribute,23);
-        $pengeluaranStok = request()->pengeluaranstok_nobukti[$attribute];
+        $pengeluaranStok = request()->pengeluaranstok_nobukti[$attribute] ?? '';
         if($value == ''){
             if($pengeluaranStok == ''){
                 return false;

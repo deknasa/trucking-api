@@ -132,6 +132,7 @@ class DataRitasiController extends Controller
             $dataritasi->nominal = $request->nominal;
             $dataritasi->statusaktif = $request->statusaktif;
             $dataritasi->modifiedby = auth('api')->user()->name;
+            $dataritasi->tas_id = $request->tas_id;
 
             if ($dataritasi->save()) {
                 $logTrail = [
@@ -149,15 +150,29 @@ class DataRitasiController extends Controller
 
             }
             
-            /* Set position and page */
-            $selected = $this->getPosition($dataritasi, $dataritasi->getTable());
-            $dataritasi->position = $selected->position;
-            if ($request->limit==0) {
-                $dataritasi->page = ceil($dataritasi->position / (10));
-            } else {
-                $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                /* Set position and page */
+                $selected = $this->getPosition($dataritasi, $dataritasi->getTable());
+                $dataritasi->position = $selected->position;
+                if ($request->limit==0) {
+                    $dataritasi->page = ceil($dataritasi->position / (10));
+                } else {
+                    $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
+                }
             }
             
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data = [
+                "statusritasi" => $request->statusritasi,
+                "nominal" => $request->nominal,
+                "statusaktif" => $request->statusaktif,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
+            ];
+            $data['tas_id'] = $dataritasi->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('dataritasi', 'add', $data);
+            }
             DB::commit();
             return response([
                 'status' => true,
@@ -192,6 +207,7 @@ class DataRitasiController extends Controller
             $dataritasi->nominal = $request->nominal;
             $dataritasi->statusaktif = $request->statusaktif;
             $dataritasi->modifiedby = auth('api')->user()->name;
+            $dataritasi->tas_id = $request->tas_id;
 
             if ($dataritasi->save()) {
                 $logTrail = [
@@ -207,18 +223,33 @@ class DataRitasiController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                DB::commit();
             }
 
-            /* Set position and page */
-            $selected = $this->getPosition($dataritasi, $dataritasi->getTable());
-            $dataritasi->position = $selected->position;
-            if ($request->limit==0) {
-                $dataritasi->page = ceil($dataritasi->position / (10));
-            } else {
-                $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                /* Set position and page */
+                $selected = $this->getPosition($dataritasi, $dataritasi->getTable());
+                $dataritasi->position = $selected->position;
+                if ($request->limit==0) {
+                    $dataritasi->page = ceil($dataritasi->position / (10));
+                } else {
+                    $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
+                }
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data = [
+                "statusritasi" => $request->statusritasi,
+                "nominal" => $request->nominal,
+                "statusaktif" => $request->statusaktif,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
+            ];
+            $data['tas_id'] = $dataritasi->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('dataritasi', 'edit', $data);
+            }
+            DB::commit();
+            
             return response([
                 'status' => true,
                 'message' => 'Berhasil diubah',
@@ -255,8 +286,6 @@ class DataRitasiController extends Controller
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-            DB::commit();
-
             $selected = $this->getPosition($dataritasi, $dataritasi->getTable(), true);
             $dataritasi->position = $selected->position;
             $dataritasi->id = $selected->id;
@@ -266,6 +295,15 @@ class DataRitasiController extends Controller
                 $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            
+            $data['tas_id'] = $id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('dataritasi', 'delete', $data);
+            }
+            DB::commit();
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
