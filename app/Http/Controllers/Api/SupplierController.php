@@ -52,12 +52,14 @@ class SupplierController extends Controller
         $supplier = new Supplier();
         $cekdata = $supplier->cekvalidasihapus($id);
         $dataMaster = Supplier::where('id',$id)->first();
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
         $useredit = $dataMaster->editing_by ?? '';
       
-        $aksi = request()->aksi ?? '';
+        $aksi = strtoupper(request()->aksi) ?? '';
 
         if ($useredit != '' && $useredit != $user) {
            
@@ -121,7 +123,20 @@ class SupplierController extends Controller
         } else {
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                 (new MyModel())->updateEditingBy('supplier', $id, $aksi);
-            }            
+            }else{
+                if ($dataMaster->statusapproval == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
+                    $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
+                    $keterror = 'supplier <b>' . $dataMaster->namasupplier . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+                    $data = [
+                        'message' => $keterror,
+                        'error' => true,
+                        'kodeerror' => 'SAP',
+                        'statuspesan' => 'warning',
+                    ];
+        
+                    return response($data);
+                }
+            }       
             $data = [
                 'error' => false,
                 'message' => '',
