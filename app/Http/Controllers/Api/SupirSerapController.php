@@ -42,6 +42,7 @@ class SupirSerapController extends Controller
         try {
             $data = [
                 'tglabsensi' => $request->tglabsensi,
+                'keterangan' => $request->keterangan,
                 'trado_id' => $request->trado_id,
                 'supir_id' => $request->supir_id,
                 'supirserap_id' => $request->supirserap_id,
@@ -84,6 +85,7 @@ class SupirSerapController extends Controller
         try {
             $data = [
                 'tglabsensi' => $request->tglabsensi,
+                'keterangan' => $request->keterangan,
                 'trado_id' => $request->trado_id,
                 'supir_id' => $request->supir_id,
                 'supirserap_id' => $request->supirserap_id,

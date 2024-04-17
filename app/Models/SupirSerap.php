@@ -27,6 +27,7 @@ class SupirSerap extends MyModel
             ->select(
                 'supirserap.id',
                 'supirserap.tglabsensi',
+                'supirserap.keterangan',
                 'trado.kodetrado as trado_id',
                 'supir.namasupir as supir_id',
                 'serap.namasupir as supirserap_id',
@@ -152,6 +153,7 @@ class SupirSerap extends MyModel
             DB::raw(
                 "$this->table.id,
                  $this->table.tglabsensi,
+                 $this->table.keterangan,
                  trado.kodetrado as trado_id,
                  supir.namasupir as supir_id,
                  serap.namasupir as supirserap_id,
@@ -175,6 +177,7 @@ class SupirSerap extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
             $table->date('tglabsensi')->nullable();
+            $table->string('keterangan')->nullable();
             $table->string('trado_id')->nullable();
             $table->string('supir_id')->nullable();
             $table->string('supirserap_id')->nullable();
@@ -191,7 +194,7 @@ class SupirSerap extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'tglabsensi', 'trado_id', 'supir_id', 'supirserap_id', 'statusapproval', 'userapproval', 'tglapproval', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'tglabsensi','keterangan', 'trado_id', 'supir_id', 'supirserap_id', 'statusapproval', 'userapproval', 'tglapproval', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -202,6 +205,7 @@ class SupirSerap extends MyModel
             ->select(
                 'supirserap.id',
                 'supirserap.tglabsensi',
+                'supirserap.keterangan',
                 'supirserap.trado_id',
                 'supirserap.supir_id',
                 'supirserap.supirserap_id',
@@ -233,6 +237,7 @@ class SupirSerap extends MyModel
         $supirSerap->trado_id = $data['trado_id'];
         $supirSerap->supir_id = $data['supir_id'];
         $supirSerap->supirserap_id = $data['supirserap_id'];
+        $supirSerap->keterangan = $data['keterangan'];
         $supirSerap->statusapproval = $statusNonApproval->id;
         $supirSerap->modifiedby = auth('api')->user()->user;
 
@@ -259,6 +264,7 @@ class SupirSerap extends MyModel
         $supirSerap->trado_id = $data['trado_id'];
         $supirSerap->supir_id = $data['supir_id'];
         $supirSerap->supirserap_id = $data['supirserap_id'];
+        $supirSerap->keterangan = $data['keterangan'];
         $supirSerap->modifiedby = auth('api')->user()->user;
 
         if (!$supirSerap->save()) {
