@@ -332,6 +332,11 @@ class ReminderOli extends MyModel
             $table->date('tgl');
         });
 
+
+
+        $parameter = new Parameter();
+        $idgantioli = $parameter->cekId('STATUS OLI', 'STATUS OLI', 'GANTI') ?? 0;
+
         $querypergantian = db::table("pengeluaranstokheader")->from(DB::raw("pengeluaranstokheader a with (readuncommitted)"))
             ->select(
                 db::raw("max(a.nobukti) as nobukti"),
@@ -350,6 +355,7 @@ class ReminderOli extends MyModel
             ->join(db::raw($Tempservicerutin . " d "), 'c.statusservicerutin', 'd.id')
             ->join(db::raw("parameter e with (readuncommitted)"), 'd.id', 'e.id')
             ->where('a.pengeluaranstok_id', $pengeluaranstok_id)
+            ->where('b.statusoli', $idgantioli)
             ->whereraw("isnull(a.trado_id,0)<>0")
             ->groupBy('a.trado_id')
             ->groupBy('e.text');
