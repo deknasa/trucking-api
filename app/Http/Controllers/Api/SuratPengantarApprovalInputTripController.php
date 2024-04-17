@@ -13,7 +13,7 @@ use App\Models\ApprovalBukaTanggalSuratPengantar;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\ApprovalAbsensiFinalTripRequest;
-
+use App\Http\Requests\RequestValidasiTanggalTrip;
 
 class SuratPengantarApprovalInputTripController extends Controller
 {
@@ -161,6 +161,15 @@ class SuratPengantarApprovalInputTripController extends Controller
             'status' => true,
             'data' => $suratPengantarApprovalInputTrip->isTanggalAvaillable()
         ], 201);
+    }
+    public function validasiTanggalTrip(RequestValidasiTanggalTrip $request)
+    {
+        $suratPengantarApprovalInputTrip = new SuratPengantarApprovalInputTrip;
+        $data = $suratPengantarApprovalInputTrip->validasiTanggalTrip(date('Y-m-d',strtotime($request->tglbukti)));
+        return response([
+            'status' => $data['status'],
+            'keterangan' => $data['keterangan']
+        ]);
     }
 
     

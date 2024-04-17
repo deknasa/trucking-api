@@ -296,6 +296,187 @@ class SuratPengantarApprovalInputTrip extends MyModel
         return $bukaAbsensi;
     }
 
+    public function validasiTanggalTrip($tanggal)
+    {
+
+        $error = new Error();
+        $keterangantambahan = $error->cekKeteranganError('SHP') ?? '';
+        $bukaAbsensi = SuratPengantarApprovalInputTrip::where('tglbukti', '=', $tanggal)
+            ->orderBy('id', 'desc')
+            ->first();
+        $today = date('Y-m-d', strtotime("today"));
+        $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JAMBATASINPUTTRIP')->where('subgrp', 'JAMBATASINPUTTRIP')->first();
+        $getBatasHari = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATASHARIINPUTTRIP')->where('subgrp', 'BATASHARIINPUTTRIP')->first()->text;
+
+        if ($tanggal == $today) {
+            $data = [
+                'status' => true,
+                'keterangan' => ''
+            ];
+            return $data;
+        }
+        // if ($getFormat->text == 'FORMAT 2') {
+        if (date('Y-m-d', strtotime($tanggal . "+$getBatasHari days")) . ' ' . $getBatasInput->text > date('Y-m-d H:i:s')) {
+            $data = [
+                'status' => true,
+                'keterangan' => ''
+            ];
+            return $data;
+        }
+        $user_id = auth('api')->user()->id;
+        if ($bukaAbsensi) {
+            // GET APPROVAL INPUTTRIP
+            $tempApp = '##tempApp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempApp, function ($table) {
+                $table->unsignedBigInteger('id')->nullable();
+                $table->date('tglbukti')->nullable();
+                $table->unsignedBigInteger('jumlahtrip')->nullable();
+                $table->unsignedBigInteger('statusapproval')->nullable();
+                $table->unsignedBigInteger('user_id')->nullable();
+                $table->datetime('tglbatas')->nullable();
+            });
+
+            $querybukaabsen = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip with (readuncommitted)"))
+                ->select('id', 'tglbukti', 'jumlahtrip', 'statusapproval', 'user_id', 'tglbatas')
+                ->where('tglbukti', $tanggal);
+            DB::table($tempApp)->insertUsing([
+                'id',
+                'tglbukti',
+                'jumlahtrip',
+                'statusapproval',
+                'user_id',
+                'tglbatas',
+            ],  $querybukaabsen);
+
+            // GET MANDOR DETAIL
+            $tempMandor = '##tempMandor' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempMandor, function ($table) {
+                $table->id();
+                $table->unsignedBigInteger('mandor_id')->nullable();
+            });
+
+            $querymandor = DB::table("mandordetail")->from(DB::raw("mandordetail with (readuncommitted)"))
+                ->select('mandor_id')->where('user_id', $user_id);
+            DB::table($tempMandor)->insertUsing([
+                'mandor_id',
+            ],  $querymandor);
+
+
+            // BUAT TEMPORARY SP GROUP BY TEMPO ID
+            $tempSP = '##tempSP' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempSP, function ($table) {
+                $table->id();
+                $table->unsignedBigInteger('approvalbukatanggal_id')->nullable();
+                $table->unsignedBigInteger('jumlahtrip')->nullable();
+            });
+
+            $querySP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+                ->select('approvalbukatanggal_id', DB::raw("count(nobukti) as jumlahtrip"))
+                ->where('tglbukti', $tanggal)
+                ->whereRaw("isnull(approvalbukatanggal_id,0) != 0")
+                ->groupBy('approvalbukatanggal_id');
+
+            DB::table($tempSP)->insertUsing([
+                'approvalbukatanggal_id',
+                'jumlahtrip'
+            ],  $querySP);
+            $getAll = DB::table("mandordetail")->from(DB::raw("mandordetail as a"))
+                ->select('a.mandor_id', 'c.id', 'c.user_id', 'c.statusapproval', 'c.tglbatas', 'c.jumlahtrip', 'e.namamandor')
+                ->leftJoin(DB::raw("$tempMandor as b with (readuncommitted)"), 'a.mandor_id', 'b.mandor_id')
+                ->leftJoin(DB::raw("$tempApp as c with (readuncommitted)"), 'a.user_id', 'c.user_id')
+                ->leftJoin(DB::raw("$tempSP as d with (readuncommitted)"), 'c.id', 'd.approvalbukatanggal_id')
+                ->leftjoin(db::raw("mandor e "), 'a.mandor_id', 'e.id')
+                ->whereRaw('COALESCE(b.mandor_id, 0) <> 0')
+                ->whereRaw('COALESCE(c.user_id, 0) <> 0')
+                ->whereRaw('isnull(d.jumlahtrip,0) <= c.jumlahtrip')
+                ->orderBy('c.tglbatas', 'desc')
+                ->first();
+            if (isset($getAll)) {
+                if ($user_id != $getAll->user_id) {
+                    $querycekuser = db::table("mandordetail")->from(db::raw("mandordetail a with (readuncommitted)"))
+                        ->select(
+                            'a.user_id'
+                        )
+                        ->where('a.user_id', $user_id)
+                        ->first();
+                    if (!isset($querycekuser)) {
+                        $keteranganerror = $error->cekKeteranganError('TSTB') ?? '';
+                        $keteranganerror2 = $error->cekKeteranganError('BBA') ?? '';
+                        $data = [
+                            'status' => false,
+                            'keterangan' => $keteranganerror . '<br>' . $keteranganerror2 . '<br><b>' . $keterangantambahan . '</b>'
+                        ];
+                        return $data;
+                    }
+                }
+            }
+            if ($getAll == '') {
+
+                $keteranganerror = $error->cekKeteranganError('TSTB') ?? '';
+                $keteranganerror2 = $error->cekKeteranganError('BBA') ?? '';
+                $data = [
+                    'status' => false,
+                    'keterangan' => $keteranganerror . '<br>' . $keteranganerror2 . '<br><b>' . $keterangantambahan . '</b>'
+                ];
+                return $data;
+            }
+
+            $now = date('Y-m-d');
+            $nonApproval = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where("grp", 'STATUS APPROVAL')->where("text", "NON APPROVAL")->first();
+            if ($getAll->statusapproval == $nonApproval->id) {
+                $data = [
+                    'status' => false,
+                    'keterangan' => 'APPROVAL BUKA TANGGAL TRIP BELUM DI APPROVAL <br><b>' . $keterangantambahan . '</b>'
+                ];
+                return $data;
+            }
+
+            $suratPengantar = SuratPengantar::where('tglbukti', '=', $tanggal)->whereRaw("approvalbukatanggal_id = $getAll->id")->count();
+            // dd($getAll,);
+            $now = date('Y-m-d H:i:s');
+            if ($now > $getAll->tglbatas) {
+
+                $keteranganerror = $error->cekKeteranganError('LB') ?? '';
+                $data = [
+                    'status' => false,
+                    'keterangan' => 'APPROVAL BUKA TANGGAL TRIP UNTUK <b>' . date('d-m-Y', strtotime($tanggal)) . "</b> $keteranganerror INPUT <b>" . date('d-m-Y H:i:s', strtotime($getAll->tglbatas)) . '</b><br><b>' . $keterangantambahan . '</b>'
+                ];
+                return $data;
+            }
+
+            if ($getAll->jumlahtrip < ($suratPengantar + 1)) {
+                $keteranganerror = $error->cekKeteranganError('KISH') ?? '';
+                $data = [
+                    'status' => false,
+                    'keterangan' => $keteranganerror.'<br>kuota : ' . $getAll->jumlahtrip . '<br> terpakai : ' . $suratPengantar . '<br><b>' . $keterangantambahan . '</b>'
+                ];
+                return $data;
+            }
+
+            $data = [
+                'status' => true,
+                'keterangan' => ''
+            ];
+            return $data;
+        } else {
+            if (date('Y-m-d', strtotime($tanggal . "+$getBatasHari days")) . ' ' . $getBatasInput->text < date('Y-m-d H:i:s')) {
+
+                $keteranganerror = $error->cekKeteranganError('TSTB') ?? '';
+                $keteranganerror2 = $error->cekKeteranganError('BBA') ?? '';
+                $data = [
+                    'status' => false,
+                    'keterangan' => $keteranganerror . '<br>' . $keteranganerror2 . '<br><b>' . $keterangantambahan . '</b>'
+                ];
+                return $data;
+            }
+        }
+
+        $data = [
+            'status' => true,
+            'keterangan' => ''
+        ];
+        return $data;
+    }
     public function selectColumns($query)
     {
         $tempTerpakai = '##tempTerpakai' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));

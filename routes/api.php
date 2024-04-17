@@ -370,6 +370,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
     Route::resource('harilibur', HariLiburController::class)->whereNumber('harilibur');
     Route::get('suratpengantarapprovalinputtrip/cektanggal', [SuratPengantarApprovalInputTripController::class, 'isTanggalAvaillable']);
+    Route::get('suratpengantarapprovalinputtrip/validasiTanggalTrip', [SuratPengantarApprovalInputTripController::class, 'validasiTanggalTrip']);
     Route::get('suratpengantar/default', [SuratPengantarController::class, 'default']);
     Route::get('saldoumuraki/getUmurAki', [SaldoUmurAkiController::class, 'getUmurAki']);
     Route::get('saldoumuraki/getUmurAkiAll', [SaldoUmurAkiController::class, 'getUmurAkiAll']);
