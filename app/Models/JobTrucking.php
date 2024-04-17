@@ -492,7 +492,7 @@ class JobTrucking extends MyModel
                     'a.jobtrucking',
                     'a.tglbukti',
                     'b.namasupir as supir',
-                    'c.keterangan as trado',
+                    'c.kodetrado as trado',
                     'kotadr.keterangan as kotadari',
                     'kotasd.keterangan as kotasampai',
                     'a.nobukti',
@@ -513,7 +513,7 @@ class JobTrucking extends MyModel
                     'a.jobtrucking',
                     'a.tglbukti',
                     'b.namasupir as supir',
-                    'c.keterangan as trado',
+                    'c.kodetrado as trado',
                     'kotadr.keterangan as kotadari',
                     'kotasd.keterangan as kotasampai',
                     'a.nobukti',
@@ -662,7 +662,7 @@ class JobTrucking extends MyModel
                     'a.jobtrucking',
                     'a.tglbukti',
                     'b.namasupir as supir',
-                    'c.keterangan as trado',
+                    'c.kodetrado as trado',
                     'kotadr.keterangan as kotadari',
                     'kotasd.keterangan as kotasampai',
                     'a.nobukti',
@@ -713,7 +713,7 @@ class JobTrucking extends MyModel
                         } elseif ($filters['field'] == 'supir') {
                             $query = $query->where('b.namasupir', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'trado') {
-                            $query = $query->where('c.keterangan', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('c.kodetrado', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'kotadari') {
                             $query = $query->where('kotadr.keterangan', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'kotasampai') {
@@ -736,7 +736,7 @@ class JobTrucking extends MyModel
                         } elseif ($filters['field'] == 'supir') {
                             $query = $query->Orwhere('b.namasupir', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'trado') {
-                            $query = $query->Orwhere('c.keterangan', 'LIKE', "%$filters[data]%");
+                            $query = $query->Orwhere('c.kodetrado', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'kotadari') {
                             $query = $query->Orwhere('kotadr.keterangan', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'kotasampai') {
