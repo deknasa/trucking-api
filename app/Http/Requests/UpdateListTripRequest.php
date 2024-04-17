@@ -651,6 +651,9 @@ class UpdateListTripRequest extends FormRequest
         if ($getListTampilan->INPUT != '') {
             $getListTampilan = (explode(",", $getListTampilan->INPUT));
             foreach ($getListTampilan as $value) {
+                if($value == 'JOBLANGSIR'){
+                    $value = 'statuslangsir';
+                }
                 if (array_key_exists(trim(strtolower($value)), $rules) == true) {
                     if (trim(strtolower($value)) == 'gandengan') {
                         unset($rulesGandengan_id['gandengan_id']);

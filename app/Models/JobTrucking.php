@@ -386,12 +386,12 @@ class JobTrucking extends MyModel
                 ->whereRaw("isnull(c1.jobtrucking,'')=''")
                 ->whereRaw("a.sampai_id in ($pelabuhan)");
 
-                            // dd(( $queryjob)->tosql());
+            // dd(( $queryjob)->tosql());
 
 
             DB::table($tempselesai)->insertUsing([
                 'jobtrucking',
-            ], $queryjob);            
+            ], $queryjob);
 
             // dd(db::table($tempselesai)->tosql());
 
@@ -422,7 +422,7 @@ class JobTrucking extends MyModel
                 ->leftjoin(db::raw($tempNonTampilJobTrucking . " c1"), 'a.jobtrucking', 'c1.jobtrucking')
                 ->whereRaw("isnull(c1.jobtrucking,'')=''")
                 ->whereRaw("a.statuscontainer_id not in(" . $statusfullempty . ")");
-                    // dd($querydata1->get());
+            // dd($querydata1->get());
 
             DB::table($temprekap)->insertUsing([
                 'jobtrucking',
@@ -465,7 +465,7 @@ class JobTrucking extends MyModel
                 ->leftjoin(DB::raw("kota as kotasd with(readuncommitted)"), 'a.sampai_id', 'kotasd.id')
                 ->leftjoin(DB::raw($tempselesai . " as d"), 'a.jobtrucking', 'd.jobtrucking');
 
-                // dd($querydata1->get());
+            // dd($querydata1->get());
 
             DB::table($temprekap)->insertUsing([
                 'jobtrucking',
@@ -505,7 +505,7 @@ class JobTrucking extends MyModel
                 ->leftjoin(DB::raw("kota as kotasd with(readuncommitted)"), 'a.sampai_id', 'kotasd.id')
                 ->leftjoin(DB::raw($tempselesai . " as d"), 'a.jobtrucking', 'd.jobtrucking');
 
-                // dd(DB::table($temprekap)->get());
+            // dd(DB::table($temprekap)->get());
             $querydata = DB::table($temprekap)->from(
                 DB::raw($temprekap . " as a ")
             )
@@ -529,14 +529,14 @@ class JobTrucking extends MyModel
                 ->where('a.jenisorder_id', '=', $jenisorder_id)
                 ->where('a.pelanggan_id', '=', $pelanggan_id)
                 ->where('a.tarif_id', '=', $tarif_id);
-                // dd($querydata->get());
-                // dd($querydata->where('a.jobtrucking','JT 0040/III/2024')->get());
+            // dd($querydata->get());
+            // dd($querydata->where('a.jobtrucking','JT 0040/III/2024')->get());
             if ($edit == 'true') {
                 $querydata->whereRaw("a.dari_id in ($pelabuhan)");
             }
         }
 
-        $this->filter($querydata);
+        // $this->filter($querydata);
         $querygerobak = DB::table('trado')->from(
             DB::raw("trado as a with (readuncommitted)")
         )
@@ -675,8 +675,10 @@ class JobTrucking extends MyModel
                 ->leftjoin(DB::raw("kota as kotasd with(readuncommitted)"), 'a.sampai_id', 'kotasd.id')
                 ->where('a.nobukti', '=', request()->tripasal);
             $this->filter($querydata);
-        }
+        } else {
 
+            $this->filter($querydata);
+        }
 
         $this->totalRows = $querydata->count();
 
