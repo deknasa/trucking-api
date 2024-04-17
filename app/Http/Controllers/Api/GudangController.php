@@ -151,7 +151,12 @@ class GudangController extends Controller
                     $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
                 }
             }
-
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $gudang->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('gudang', 'add', $data);
+            }
             DB::commit();
 
             return response()->json([
@@ -196,7 +201,12 @@ class GudangController extends Controller
                     $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
                 }
             }
-
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $gudang->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('gudang', 'edit', $data);
+            }
             DB::commit();
             return response()->json([
                 'status' => true,
@@ -228,7 +238,15 @@ class GudangController extends Controller
                     $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
                 }
             }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
 
+            $data['tas_id'] = $id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('gudang', 'delete', $data);
+            }
+            DB::commit();
             DB::commit();
 
             return response()->json([
