@@ -22,6 +22,7 @@ class CreateAgenTable extends Migration
             $table->string('namaagen', 100)->nullable();
             $table->longText('keterangan')->nullable();
             $table->integer('statusaktif')->length(11)->nullable();            
+            $table->integer('statusinvoiceextra')->length(11)->nullable();            
             $table->string('coa', 50)->nullable();
             $table->string('coapendapatan', 50)->nullable();
             $table->string('namaperusahaan', 100)->nullable();
