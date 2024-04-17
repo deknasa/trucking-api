@@ -311,6 +311,7 @@ class Gudang extends MyModel
         $gudang = new Gudang();
         $gudang->gudang = $data['gudang'];
         $gudang->statusaktif = $data['statusaktif'];
+        $gudang->tas_id = $data['tas_id'];
         $gudang->modifiedby = auth('api')->user()->name;
         $gudang->info = html_entity_decode(request()->info);
 
