@@ -138,15 +138,18 @@ class GudangController extends Controller
         try {
             $data = [
                 'gudang' => $request->gudang,
-                'statusaktif' => $request->statusaktif
+                'statusaktif' => $request->statusaktif,
+                'tas_id' => $request->tas_id
             ];
             $gudang = (new Gudang())->processStore($data);
-            $selected = $this->getPosition($gudang, $gudang->getTable());
-            $gudang->position = $selected->position;
-           if ($request->limit==0) {
-                $gudang->page = ceil($gudang->position / (10));
-            } else {
-                $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($gudang, $gudang->getTable());
+                $gudang->position = $selected->position;
+                if ($request->limit==0) {
+                    $gudang->page = ceil($gudang->position / (10));
+                } else {
+                    $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
+                }
             }
 
             DB::commit();
@@ -180,15 +183,18 @@ class GudangController extends Controller
         try {
             $data = [
                 'gudang' => $request->gudang ?? '',
-                'statusaktif' => $request->statusaktif
+                'statusaktif' => $request->statusaktif,
+                'tas_id' => $request->tas_id
             ];
 
             $gudang = (new Gudang())->processUpdate($gudang, $data);
-            $gudang->position = $this->getPosition($gudang, $gudang->getTable())->position;
-           if ($request->limit==0) {
-                $gudang->page = ceil($gudang->position / (10));
-            } else {
-                $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $gudang->position = $this->getPosition($gudang, $gudang->getTable())->position;
+                if ($request->limit==0) {
+                    $gudang->page = ceil($gudang->position / (10));
+                } else {
+                    $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
+                }
             }
 
             DB::commit();
@@ -215,10 +221,12 @@ class GudangController extends Controller
             $selected = $this->getPosition($gudang, $gudang->getTable(), true);
             $gudang->position = $selected->position;
             $gudang->id = $selected->id;
-           if ($request->limit==0) {
-                $gudang->page = ceil($gudang->position / (10));
-            } else {
-                $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                if ($request->limit==0) {
+                    $gudang->page = ceil($gudang->position / (10));
+                } else {
+                    $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
+                }
             }
 
             DB::commit();
