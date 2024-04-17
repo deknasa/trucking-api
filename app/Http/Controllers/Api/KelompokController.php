@@ -179,6 +179,12 @@ class KelompokController extends Controller
                 }
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $kelompok->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('kelompok', 'add', $data);
+            }
             DB::commit();
 
             return response()->json([
@@ -225,6 +231,12 @@ class KelompokController extends Controller
                 }
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $kelompok->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('kelompok', 'edit', $data);
+            }
             DB::commit();
 
             return response()->json([
@@ -257,7 +269,14 @@ class KelompokController extends Controller
                     $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
                 }
             }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
 
+            $data['tas_id'] = $id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('kelompok', 'delete', $data);
+            }
             DB::commit();
 
             return response()->json([
