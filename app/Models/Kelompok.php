@@ -282,6 +282,7 @@ class Kelompok extends MyModel
         $kelompok->kodekelompok = $data['kodekelompok'];
         $kelompok->keterangan = $data['keterangan'] ?? '';
         $kelompok->statusaktif = $data['statusaktif'];
+        $kelompok->tas_id = $data['tas_id'];
         $kelompok->modifiedby = auth('api')->user()->name;
         $kelompok->info = html_entity_decode(request()->info);
 

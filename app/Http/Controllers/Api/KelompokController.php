@@ -166,16 +166,25 @@ class KelompokController extends Controller
             $data = [
                 'kodekelompok' => $request->kodekelompok,
                 'keterangan' => $request->keterangan ?? '',
-                'statusaktif' => $request->statusaktif
+                'statusaktif' => $request->statusaktif,
+                'tas_id' => $request->tas_id
             ];
             $kelompok = (new Kelompok())->processStore($data);
-            $kelompok->position = $this->getPosition($kelompok, $kelompok->getTable())->position;
-            if ($request->limit == 0) {
-                $kelompok->page = ceil($kelompok->position / (10));
-            } else {
-                $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $kelompok->position = $this->getPosition($kelompok, $kelompok->getTable())->position;
+                if ($request->limit == 0) {
+                    $kelompok->page = ceil($kelompok->position / (10));
+                } else {
+                    $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
+                }
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $kelompok->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('kelompok', 'add', $data);
+            }
             DB::commit();
 
             return response()->json([
@@ -208,17 +217,26 @@ class KelompokController extends Controller
             $data = [
                 'kodekelompok' => $request->kodekelompok,
                 'keterangan' => $request->keterangan ?? '',
-                'statusaktif' => $request->statusaktif
+                'statusaktif' => $request->statusaktif,
+                'tas_id' => $request->tas_id
             ];
 
             $kelompok = (new Kelompok())->processUpdate($kelompok, $data);
-            $kelompok->position = $this->getPosition($kelompok, $kelompok->getTable())->position;
-            if ($request->limit == 0) {
-                $kelompok->page = ceil($kelompok->position / (10));
-            } else {
-                $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $kelompok->position = $this->getPosition($kelompok, $kelompok->getTable())->position;
+                if ($request->limit == 0) {
+                    $kelompok->page = ceil($kelompok->position / (10));
+                } else {
+                    $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
+                }
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $kelompok->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('kelompok', 'edit', $data);
+            }
             DB::commit();
 
             return response()->json([
@@ -241,15 +259,24 @@ class KelompokController extends Controller
 
         try {
             $kelompok = (new Kelompok())->processDestroy($id);
-            $selected = $this->getPosition($kelompok, $kelompok->getTable(), true);
-            $kelompok->position = $selected->position;
-            $kelompok->id = $selected->id;
-            if ($request->limit == 0) {
-                $kelompok->page = ceil($kelompok->position / (10));
-            } else {
-                $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($kelompok, $kelompok->getTable(), true);
+                $kelompok->position = $selected->position;
+                $kelompok->id = $selected->id;
+                if ($request->limit == 0) {
+                    $kelompok->page = ceil($kelompok->position / (10));
+                } else {
+                    $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
+                }
             }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
 
+            $data['tas_id'] = $id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('kelompok', 'delete', $data);
+            }
             DB::commit();
 
             return response()->json([
