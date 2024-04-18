@@ -200,6 +200,13 @@ class StokController extends Controller
             } else {
                 $stok->page = ceil($stok->position / ($request->limit ?? 10));
             }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $stok->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('stok', 'add', $data);
+            }
             // $this->stok = $stok;
             DB::commit();
 
@@ -282,6 +289,12 @@ class StokController extends Controller
                 $stok->page = ceil($stok->position / ($request->limit ?? 10));
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $stok->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('stok', 'edit', $data);
+            }
             DB::commit();
 
             return response()->json([
@@ -313,7 +326,12 @@ class StokController extends Controller
             } else {
                 $stok->page = ceil($stok->position / ($request->limit ?? 10));
             }
-
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('stok', 'delete', $data);
+            }
             DB::commit();
 
             return response()->json([
