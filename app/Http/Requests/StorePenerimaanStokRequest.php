@@ -26,6 +26,9 @@ class StorePenerimaanStokRequest extends FormRequest
      */
     public function rules()
     {
+        if (request()->from == 'tas') {
+            return [];
+        }
         $parameter = new Parameter();
         $dataFormat = $parameter->getComboByGroup('PENERIMAN STOK');
         $dataFormat = json_decode($dataFormat, true);

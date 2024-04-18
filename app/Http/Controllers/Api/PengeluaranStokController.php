@@ -142,15 +142,24 @@ class PengeluaranStokController extends Controller
                 'format' => $request->format ?? '',
                 'statushitungstok' => $request->statushitungstok ?? '',
                 'statusaktif' => $request->statusaktif ?? 1,
+                'tas_id' => $request->tas_id
             ];
             $pengeluaranStok = (new PengeluaranStok())->processStore($data);
-            $pengeluaranStok->position = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable())->position;
-            if ($request->limit==0) {
-                $pengeluaranStok->page = ceil($pengeluaranStok->position / (10));
-            } else {
-                $pengeluaranStok->page = ceil($pengeluaranStok->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $pengeluaranStok->position = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable())->position;
+                if ($request->limit==0) {
+                    $pengeluaranStok->page = ceil($pengeluaranStok->position / (10));
+                } else {
+                    $pengeluaranStok->page = ceil($pengeluaranStok->position / ($request->limit ?? 10));
+                }
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $pengeluaranStok->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('pengeluaranstok', 'add', $data);
+            }
             DB::commit();
 
             return response()->json([
@@ -196,13 +205,21 @@ class PengeluaranStokController extends Controller
 
             $pengeluaranStok = PengeluaranStok::findOrFail($id);
             $pengeluaranStok = (new PengeluaranStok())->processUpdate($pengeluaranStok, $data);
-            $pengeluaranStok->position = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable())->position;
-            if ($request->limit==0) {
-                $pengeluaranStok->page = ceil($pengeluaranStok->position / (10));
-            } else {
-                $pengeluaranStok->page = ceil($pengeluaranStok->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $pengeluaranStok->position = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable())->position;
+                if ($request->limit==0) {
+                    $pengeluaranStok->page = ceil($pengeluaranStok->position / (10));
+                } else {
+                    $pengeluaranStok->page = ceil($pengeluaranStok->position / ($request->limit ?? 10));
+                }
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $pengeluaranStok->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('pengeluaranstok', 'edit', $data);
+            }
             DB::commit();
 
             return response()->json([
@@ -240,15 +257,23 @@ class PengeluaranStokController extends Controller
 
         try {
             $pengeluaranStok = (new PengeluaranStok())->processDestroy($id);
-            $selected = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable(), true);
-            $pengeluaranStok->position = $selected->position;
-            $pengeluaranStok->id = $selected->id;
-            if ($request->limit==0) {
-                $pengeluaranStok->page = ceil($pengeluaranStok->position / (10));
-            } else {
-                $pengeluaranStok->page = ceil($pengeluaranStok->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable(), true);
+                $pengeluaranStok->position = $selected->position;
+                $pengeluaranStok->id = $selected->id;
+                if ($request->limit==0) {
+                    $pengeluaranStok->page = ceil($pengeluaranStok->position / (10));
+                } else {
+                    $pengeluaranStok->page = ceil($pengeluaranStok->position / ($request->limit ?? 10));
+                }
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('pengeluaranstok', 'delete', $data);
+            }
             DB::commit();
 
             return response()->json([

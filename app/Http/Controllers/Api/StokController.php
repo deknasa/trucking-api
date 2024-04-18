@@ -191,14 +191,24 @@ class StokController extends Controller
                 'hargabelimin' => $request->hargabelimin,
                 'hargabelimax' => $request->hargabelimax,
                 'gambar' => $request->gambar,
+                'tas_id' => $request->tas_id
 
             ];
             $stok = (new Stok())->processStore($data);
-            $stok->position = $this->getPosition($stok, $stok->getTable())->position;
-            if ($request->limit == 0) {
-                $stok->page = ceil($stok->position / (10));
-            } else {
-                $stok->page = ceil($stok->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $stok->position = $this->getPosition($stok, $stok->getTable())->position;
+                if ($request->limit == 0) {
+                    $stok->page = ceil($stok->position / (10));
+                } else {
+                    $stok->page = ceil($stok->position / ($request->limit ?? 10));
+                }
+            }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $stok->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('stok', 'add', $data);
             }
             // $this->stok = $stok;
             DB::commit();
@@ -275,13 +285,21 @@ class StokController extends Controller
             ];
 
             $stok = (new Stok())->processUpdate($stok, $data);
-            $stok->position = $this->getPosition($stok, $stok->getTable())->position;
-            if ($request->limit == 0) {
-                $stok->page = ceil($stok->position / (10));
-            } else {
-                $stok->page = ceil($stok->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $stok->position = $this->getPosition($stok, $stok->getTable())->position;
+                if ($request->limit == 0) {
+                    $stok->page = ceil($stok->position / (10));
+                } else {
+                    $stok->page = ceil($stok->position / ($request->limit ?? 10));
+                }
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $stok->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('stok', 'edit', $data);
+            }
             DB::commit();
 
             return response()->json([
@@ -305,15 +323,22 @@ class StokController extends Controller
 
         try {
             $stok = (new Stok())->processDestroy($id);
-            $selected = $this->getPosition($stok, $stok->getTable(), true);
-            $stok->position = $selected->position;
-            $stok->id = $selected->id;
-            if ($request->limit == 0) {
-                $stok->page = ceil($stok->position / (10));
-            } else {
-                $stok->page = ceil($stok->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($stok, $stok->getTable(), true);
+                $stok->position = $selected->position;
+                $stok->id = $selected->id;
+                if ($request->limit == 0) {
+                    $stok->page = ceil($stok->position / (10));
+                } else {
+                    $stok->page = ceil($stok->position / ($request->limit ?? 10));
+                }
             }
-
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('stok', 'delete', $data);
+            }
             DB::commit();
 
             return response()->json([

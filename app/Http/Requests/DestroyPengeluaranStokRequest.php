@@ -24,6 +24,9 @@ class DestroyPengeluaranStokRequest extends FormRequest
      */
     public function rules()
     {
+        if (request()->from == 'tas') {
+            return [];
+        }
         return [
             'id' => new ValidasiDestroyPengeluaranStok()
         ];

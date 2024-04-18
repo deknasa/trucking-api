@@ -440,12 +440,22 @@ class PenerimaanStok extends MyModel
 
     public function processStore(array $data): PenerimaanStok
     {
+        $cabang_id = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'ID CABANG')
+        ->where('subgrp', 'ID CABANG')
+        ->first()->text ?? '';
+
+        $cabang_id = (request()->cabang == "kosong") ? null : $cabang_id;
+
         $penerimaanStok = new PenerimaanStok();
         $penerimaanStok->kodepenerimaan = $data['kodepenerimaan'];
         $penerimaanStok->keterangan = $data['keterangan'] ?? '';
         $penerimaanStok->coa = $data['coa'];
         $penerimaanStok->format = $data['format'];
         $penerimaanStok->statushitungstok = $data['statushitungstok'];
+        $penerimaanStok->cabang_id = $cabang_id;
+        $penerimaanStok->tas_id = $data['tas_id'];
         $penerimaanStok->statusaktif = $data['statusaktif'];
         $penerimaanStok->modifiedby = auth('api')->user()->name;
         $penerimaanStok->info = html_entity_decode(request()->info);

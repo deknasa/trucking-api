@@ -27,6 +27,9 @@ class UpdatePengeluaranStokRequest extends FormRequest
      */
     public function rules()
     {
+        if (request()->from == 'tas') {
+            return [];
+        }
         $parameter = new Parameter();
         $pengeluaranStok = $parameter->getComboByGroup('PENGELUARAN STOK');
         $pengeluaranStok = json_decode($pengeluaranStok, true);
