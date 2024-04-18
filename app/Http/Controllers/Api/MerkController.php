@@ -181,6 +181,12 @@ class MerkController extends Controller
                     $merk->page = ceil($merk->position / ($request->limit ?? 10));
                 }
             }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $merk->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('merk', 'add', $data);
+            }
 
             DB::commit();
 
@@ -229,6 +235,12 @@ class MerkController extends Controller
                 }
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $merk->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('merk', 'edit', $data);
+            }
             DB::commit();
 
             return response()->json([
@@ -262,6 +274,12 @@ class MerkController extends Controller
                 }
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('merk', 'delete', $data);
+            }
             DB::commit();
 
             return response()->json([
