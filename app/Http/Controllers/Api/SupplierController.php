@@ -60,6 +60,7 @@ class SupplierController extends Controller
         $useredit = $dataMaster->editing_by ?? '';
       
         $aksi = strtoupper(request()->aksi) ?? '';
+        $aksi =strtoupper($aksi);
         if( $aksi == 'EDIT'){
             $cekdata['kondisi'] = false;
         }

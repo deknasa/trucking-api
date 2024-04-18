@@ -43,6 +43,7 @@ class CustomerController extends Controller
     {
         $agen = new Agen();
         $aksi = request()->aksi ?? '';
+        $aksi =strtoupper($aksi);
         $cekdata = $agen->cekvalidasihapus($id);
         if( $aksi == 'EDIT'){
             $cekdata['kondisi'] = false;
@@ -53,7 +54,7 @@ class CustomerController extends Controller
         $user = auth('api')->user()->name;
         $useredit = $dataMaster->editing_by ?? '';
       
-       
+        // dd($cekdata['kondisi']);
 
         if ($useredit != '' && $useredit != $user) {
            

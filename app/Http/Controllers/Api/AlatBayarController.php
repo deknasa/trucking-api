@@ -55,6 +55,7 @@ class AlatBayarController extends Controller
         $useredit = $dataMaster->editing_by ?? '';
       
         $aksi = request()->aksi ?? '';
+        $aksi =strtoupper($aksi);
         if( $aksi == 'EDIT'){
             $cekdata['kondisi'] = false;
         }
