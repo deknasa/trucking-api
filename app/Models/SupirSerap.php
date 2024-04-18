@@ -29,6 +29,8 @@ class SupirSerap extends MyModel
                 'supirserap.tglabsensi',
                 'supirserap.keterangan',
                 'trado.kodetrado as trado_id',
+                'trado.mandor_id as mandor_id',
+                'mandor.namamandor as mandor',
                 'supir.namasupir as supir_id',
                 'serap.namasupir as supirserap_id',
                 'parameter.memo as statusapproval',
@@ -44,6 +46,7 @@ class SupirSerap extends MyModel
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'supirserap.trado_id', 'trado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'supirserap.supir_id', 'supir.id')
             ->leftJoin(DB::raw("supir as serap with (readuncommitted)"), 'supirserap.supirserap_id', 'serap.id')
+            ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'trado.mandor_id', 'mandor.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'supirserap.statusapproval', 'parameter.id');
 
         if ($forReport) {
@@ -90,6 +93,8 @@ class SupirSerap extends MyModel
                                 $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'supir_id') {
                                 $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'mandor') {
+                                $query = $query->where('mandor.namamandor', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'supirserap_id') {
                                 $query = $query->where('serap.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tglabsensi') {
@@ -114,6 +119,8 @@ class SupirSerap extends MyModel
                                     $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'supir_id') {
                                     $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'mandor') {
+                                    $query = $query->orWhere('mandor.namamandor', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'supirserap_id') {
                                     $query = $query->orWhere('serap.namasupir', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'tglabsensi') {
@@ -154,6 +161,8 @@ class SupirSerap extends MyModel
                 "$this->table.id,
                  $this->table.tglabsensi,
                  $this->table.keterangan,
+                 trado.mandor_id as mandor_id,
+                 mandor.namamandor as mandor,
                  trado.kodetrado as trado_id,
                  supir.namasupir as supir_id,
                  serap.namasupir as supirserap_id,
@@ -168,6 +177,7 @@ class SupirSerap extends MyModel
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'supirserap.trado_id', 'trado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'supirserap.supir_id', 'supir.id')
             ->leftJoin(DB::raw("supir as serap with (readuncommitted)"), 'supirserap.supirserap_id', 'serap.id')
+            ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'trado.mandor_id', 'mandor.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'supirserap.statusapproval', 'parameter.id');
     }
 
@@ -178,6 +188,8 @@ class SupirSerap extends MyModel
             $table->bigInteger('id')->nullable();
             $table->date('tglabsensi')->nullable();
             $table->string('keterangan')->nullable();
+            $table->string('mandor_id')->nullable();
+            $table->string('mandor')->nullable();
             $table->string('trado_id')->nullable();
             $table->string('supir_id')->nullable();
             $table->string('supirserap_id')->nullable();
@@ -194,7 +206,7 @@ class SupirSerap extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'tglabsensi','keterangan', 'trado_id', 'supir_id', 'supirserap_id', 'statusapproval', 'userapproval', 'tglapproval', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'tglabsensi','keterangan','mandor_id','mandor', 'trado_id', 'supir_id', 'supirserap_id', 'statusapproval', 'userapproval', 'tglapproval', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
