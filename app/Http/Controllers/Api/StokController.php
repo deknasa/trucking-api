@@ -191,14 +191,17 @@ class StokController extends Controller
                 'hargabelimin' => $request->hargabelimin,
                 'hargabelimax' => $request->hargabelimax,
                 'gambar' => $request->gambar,
+                'tas_id' => $request->tas_id
 
             ];
             $stok = (new Stok())->processStore($data);
-            $stok->position = $this->getPosition($stok, $stok->getTable())->position;
-            if ($request->limit == 0) {
-                $stok->page = ceil($stok->position / (10));
-            } else {
-                $stok->page = ceil($stok->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $stok->position = $this->getPosition($stok, $stok->getTable())->position;
+                if ($request->limit == 0) {
+                    $stok->page = ceil($stok->position / (10));
+                } else {
+                    $stok->page = ceil($stok->position / ($request->limit ?? 10));
+                }
             }
             // $this->stok = $stok;
             DB::commit();
@@ -275,11 +278,13 @@ class StokController extends Controller
             ];
 
             $stok = (new Stok())->processUpdate($stok, $data);
-            $stok->position = $this->getPosition($stok, $stok->getTable())->position;
-            if ($request->limit == 0) {
-                $stok->page = ceil($stok->position / (10));
-            } else {
-                $stok->page = ceil($stok->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $stok->position = $this->getPosition($stok, $stok->getTable())->position;
+                if ($request->limit == 0) {
+                    $stok->page = ceil($stok->position / (10));
+                } else {
+                    $stok->page = ceil($stok->position / ($request->limit ?? 10));
+                }
             }
 
             DB::commit();
@@ -305,13 +310,15 @@ class StokController extends Controller
 
         try {
             $stok = (new Stok())->processDestroy($id);
-            $selected = $this->getPosition($stok, $stok->getTable(), true);
-            $stok->position = $selected->position;
-            $stok->id = $selected->id;
-            if ($request->limit == 0) {
-                $stok->page = ceil($stok->position / (10));
-            } else {
-                $stok->page = ceil($stok->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($stok, $stok->getTable(), true);
+                $stok->position = $selected->position;
+                $stok->id = $selected->id;
+                if ($request->limit == 0) {
+                    $stok->page = ceil($stok->position / (10));
+                } else {
+                    $stok->page = ceil($stok->position / ($request->limit ?? 10));
+                }
             }
 
             DB::commit();

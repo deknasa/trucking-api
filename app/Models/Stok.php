@@ -1414,6 +1414,7 @@ class Stok extends MyModel
         $stok->vulkanisirawal = $data['vulkanisirawal'];
         $stok->hargabelimin = $data['hargabelimin'];
         $stok->hargabelimax = $data['hargabelimax'];
+        $stok->tas_id = $data['tas_id'];
         $stok->modifiedby = auth('api')->user()->name;
         $stok->info = html_entity_decode(request()->info);
         if ($data['gambar']) {
