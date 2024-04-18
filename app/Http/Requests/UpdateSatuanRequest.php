@@ -24,6 +24,9 @@ class UpdateSatuanRequest extends FormRequest
      */
     public function rules()
     {
+        if (request()->from == 'tas') {
+            return [];
+        }
         return [
             'satuan' => 'required',
             'statusaktif' => 'required',

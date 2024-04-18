@@ -170,13 +170,22 @@ class MerkController extends Controller
                 'kodemerk' => $request->kodemerk,
                 'keterangan' => $request->keterangan ?? '',
                 'statusaktif' => $request->statusaktif,
+                'tas_id' => $request->tas_id
             ];
             $merk = (new Merk())->processStore($data);
-            $merk->position = $this->getPosition($merk, $merk->getTable())->position;
-            if ($request->limit==0) {
-                $merk->page = ceil($merk->position / (10));
-            } else {
-                $merk->page = ceil($merk->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $merk->position = $this->getPosition($merk, $merk->getTable())->position;
+                if ($request->limit==0) {
+                    $merk->page = ceil($merk->position / (10));
+                } else {
+                    $merk->page = ceil($merk->position / ($request->limit ?? 10));
+                }
+            }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $merk->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('merk', 'add', $data);
             }
 
             DB::commit();
@@ -216,13 +225,22 @@ class MerkController extends Controller
             ];
 
             $merk = (new Merk())->processUpdate($merk, $data);
-            $merk->position = $this->getPosition($merk, $merk->getTable())->position;
-            if ($request->limit==0) {
-                $merk->page = ceil($merk->position / (10));
-            } else {
-                $merk->page = ceil($merk->position / ($request->limit ?? 10));
+
+            if ($request->from == '') {
+                $merk->position = $this->getPosition($merk, $merk->getTable())->position;
+                if ($request->limit==0) {
+                    $merk->page = ceil($merk->position / (10));
+                } else {
+                    $merk->page = ceil($merk->position / ($request->limit ?? 10));
+                }
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $merk->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('merk', 'edit', $data);
+            }
             DB::commit();
 
             return response()->json([
@@ -245,15 +263,23 @@ class MerkController extends Controller
 
         try {
             $merk = (new Merk())->processDestroy($id);
-            $selected = $this->getPosition($merk, $merk->getTable(), true);
-            $merk->position = $selected->position;
-            $merk->id = $selected->id;
-            if ($request->limit==0) {
-                $merk->page = ceil($merk->position / (10));
-            } else {
-                $merk->page = ceil($merk->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($merk, $merk->getTable(), true);
+                $merk->position = $selected->position;
+                $merk->id = $selected->id;
+                if ($request->limit==0) {
+                    $merk->page = ceil($merk->position / (10));
+                } else {
+                    $merk->page = ceil($merk->position / ($request->limit ?? 10));
+                }
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('merk', 'delete', $data);
+            }
             DB::commit();
 
             return response()->json([

@@ -263,6 +263,7 @@ class Satuan extends MyModel
         $satuan = new Satuan();
         $satuan->satuan = $data['satuan'];
         $satuan->statusaktif = $data['statusaktif'];
+        $satuan->tas_id = $data['tas_id'];
         $satuan->modifiedby = auth('api')->user()->name;
         // $satuan->info = html_entity_decode(request()->info);
 
