@@ -419,12 +419,21 @@ class PengeluaranStok extends MyModel
 
     public function processStore(array $data): PengeluaranStok
     {
+        $cabang_id = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'ID CABANG')
+        ->where('subgrp', 'ID CABANG')
+        ->first()->text ?? '';
+
+        $cabang_id = (request()->cabang == "kosong") ? null : $cabang_id;
+        
         $pengeluaranStok = new PengeluaranStok();
         $pengeluaranStok->kodepengeluaran = $data['kodepengeluaran'];
         $pengeluaranStok->keterangan = $data['keterangan'] ?? '';
         $pengeluaranStok->coa = $data['coa'];
         $pengeluaranStok->format = $data['format'];
         $pengeluaranStok->statushitungstok = $data['statushitungstok'];
+        $pengeluaranStok->cabang_id = $cabang_id;
         $pengeluaranStok->statusaktif = $data['statusaktif'];
         $pengeluaranStok->modifiedby = auth('api')->user()->name;
         $pengeluaranStok->info = html_entity_decode(request()->info);
