@@ -278,6 +278,7 @@ class SubKelompok extends MyModel
         $subKelompok->keterangan = $data['keterangan'] ?? '';
         $subKelompok->kelompok_id = $data['kelompok_id'];
         $subKelompok->statusaktif = $data['statusaktif'];
+        $subKelompok->tas_id = $data['tas_id'];
         $subKelompok->modifiedby = auth('api')->user()->name;
         $subKelompok->info = html_entity_decode(request()->info);
 
