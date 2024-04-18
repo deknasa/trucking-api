@@ -36,6 +36,7 @@ class StoreSupirSerapRequest extends FormRequest
                 new ValidasiTglSupirSerap()
             ],
             'trado' => 'required',
+            'keterangan' => 'required',
             'supir' => '',
             'supirserap' => ['required', new ValidasiSupirSerap()],
         ];

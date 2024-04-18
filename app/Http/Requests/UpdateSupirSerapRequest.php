@@ -36,6 +36,7 @@ class UpdateSupirSerapRequest extends FormRequest
                 new ValidasiTglSupirSerap()
             ],
             'trado' => 'required',
+            'keterangan' => 'required',
             'supir' => 'required',
             'supirserap' => ['required', new ValidasiSupirSerap()],
         ];
