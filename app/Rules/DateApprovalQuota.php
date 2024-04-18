@@ -152,7 +152,7 @@ class DateApprovalQuota implements Rule
                 ->select('approvalbukatanggal_id', DB::raw("count(nobukti) as jumlahtrip"))
                 ->where('tglbukti', $date)
                 ->whereRaw("isnull(approvalbukatanggal_id,0) != 0")
-                ->where('id','<>', $idtrip)
+                ->where('id', '<>', $idtrip)
                 ->groupBy('approvalbukatanggal_id');
 
             DB::table($tempSP)->insertUsing([
@@ -171,7 +171,7 @@ class DateApprovalQuota implements Rule
                 ->whereRaw('COALESCE(b.mandor_id, 0) <> 0')
                 ->whereRaw('COALESCE(c.user_id, 0) <> 0')
                 ->whereRaw('isnull(d.jumlahtrip,0) < c.jumlahtrip')
-                ->orderBy('c.tglbatas','desc')
+                ->orderBy('c.tglbatas', 'desc')
                 ->first();
             // dd($getAll->get());
             if (isset($getAll)) {
@@ -199,7 +199,7 @@ class DateApprovalQuota implements Rule
                 return false;
             }
 
-            $suratPengantar = SuratPengantar::where('tglbukti', '=', $date)->whereRaw("approvalbukatanggal_id = $getAll->id")->where('id','<>', $idtrip)->count();
+            $suratPengantar = SuratPengantar::where('tglbukti', '=', $date)->whereRaw("approvalbukatanggal_id = $getAll->id")->where('id', '<>', $idtrip)->count();
             // $cekStatus =  DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip as a with (readuncommitted)"))
             //     ->where('a.tglbukti', $date)
             //     ->where('user_id', $user_id)
@@ -208,13 +208,13 @@ class DateApprovalQuota implements Rule
 
             $now = date('Y-m-d H:i:s');
             $trip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-            ->select('nobukti', 'jobtrucking', 'tglbukti', DB::raw("isnull(approvalbukatanggal_id,0) as approvalbukatanggal_id"), 'tglbataseditsuratpengantar')
-            ->where('id', $idtrip)
-            ->first();
+                ->select('nobukti', 'jobtrucking', 'tglbukti', DB::raw("isnull(approvalbukatanggal_id,0) as approvalbukatanggal_id"), 'tglbataseditsuratpengantar')
+                ->where('id', $idtrip)
+                ->first();
 
-            if($getAll != ''){
-                if($trip != ''){
-                    
+            if ($getAll != '') {
+                if ($trip != '') {
+
                     if (date('Y-m-d H:i:s') < date('Y-m-d H:i:s', strtotime($trip->tglbataseditsuratpengantar))) {
                         return true;
                     }
@@ -228,6 +228,19 @@ class DateApprovalQuota implements Rule
                 return false;
             }
             $allowed = true;
+        } else {
+
+            $idtrip = request()->id ?? 0;
+            $trip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+                ->select('nobukti', 'jobtrucking', 'tglbukti', DB::raw("isnull(approvalbukatanggal_id,0) as approvalbukatanggal_id"), 'tglbataseditsuratpengantar')
+                ->where('id', $idtrip)
+                ->first();
+            if ($trip != '') {
+
+                if (date('Y-m-d H:i:s') < date('Y-m-d H:i:s', strtotime($trip->tglbataseditsuratpengantar))) {
+                    return true;
+                }
+            }
         }
         return $allowed;
     }
