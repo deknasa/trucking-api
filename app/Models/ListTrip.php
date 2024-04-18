@@ -19,7 +19,7 @@ class ListTrip extends MyModel
 
         $aksi = request()->aksi;
         $trip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-            ->select('nobukti', 'jobtrucking', 'tglbukti', DB::raw("isnull(approvalbukatanggal_id,0) as approvalbukatanggal_id"), 'tglbataseditsuratpengantar')
+            ->select('nobukti', 'jobtrucking', 'tglbukti', DB::raw("isnull(approvalbukatanggal_id,0) as approvalbukatanggal_id"), 'tglbataseditsuratpengantar','statusapprovaleditsuratpengantar')
             ->where('id', $id)
             ->first();
 
@@ -67,6 +67,9 @@ class ListTrip extends MyModel
                             $kondisi = true;
                             $batasHari += 1;
                         }
+                        if (strtolower($todayIsSunday) != 'sunday' && strtolower($tomorrowIsSunday) != 'sunday') {
+                            $batasHari -= 1;
+                        }
                     } else {
                         $batasHari += 1;
                     }
@@ -75,16 +78,26 @@ class ListTrip extends MyModel
             }
             $batas = $tanggal . ' ' . $getBatasInput;
             if (date('Y-m-d H:i:s') > $batas) {
+                if ($trip->statusapprovaleditsuratpengantar == 3) {
+                    if (date('Y-m-d H:i:s') > date('Y-m-d H:i:s', strtotime($trip->tglbataseditsuratpengantar))) {
+                        $keteranganerror = $error->cekKeteranganError('LB') ?? '';
 
-                if (date('Y-m-d H:i:s') > date('Y-m-d H:i:s', strtotime($trip->tglbataseditsuratpengantar))) {
+                        $data = [
+                            'kondisi' => true,
+                            'keterangan' =>  $keteranganerror . "<br> BATAS $aksi " . date('d-m-Y', strtotime($trip->tglbukti . "+$getBatasHari days")) . ' ' . $getBatasInput . ' <br> ' . $keterangantambahanerror,
+                            'kodeerror' => 'LB',
+                        ];
+
+
+                        goto selesai;
+                    }
+                }else{
                     $keteranganerror = $error->cekKeteranganError('LB') ?? '';
-
                     $data = [
                         'kondisi' => true,
-                        'keterangan' =>  $keteranganerror . "<br> BATAS $aksi " . date('d-m-Y', strtotime($trip->tglbukti . "+$getBatasHari days")) . ' ' . $getBatasInput . ' <br> ' . $keterangantambahanerror,
+                        'keterangan' => $keteranganerror . "<br> BATAS $aksi " . date('d-m-Y', strtotime($trip->tglbukti . "+$getBatasHari days")) . ' ' . $getBatasInput  . ' <br> ' . $keterangantambahanerror,
                         'kodeerror' => 'LB',
                     ];
-
 
                     goto selesai;
                 }

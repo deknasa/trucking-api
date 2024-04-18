@@ -2360,7 +2360,14 @@ class SuratPengantar extends MyModel
             $trado = Trado::find($data['trado_id']);
             $supir = Supir::find($data['supir_id']);
             $edittripmandor = $data['edittripmandor'] ?? 0;
-            $tarif = TarifRincian::where('tarif_id', $data['tarif_id'])->where('container_id', $orderanTrucking->container_id)->first();
+            if($orderanTrucking == ''){
+                $container = $data['container_id'];
+                $pelanggan = $data['pelanggan_id'];
+            } else {
+                $container = $orderanTrucking->container_id;
+                $pelanggan = $orderanTrucking->pelanggan_id;
+            }
+            $tarif = TarifRincian::where('tarif_id', $data['tarif_id'])->where('container_id', $container)->first();
             $tarifNominal = $tarif->nominal ?? 0;
             $upahsupir = UpahSupir::where('id', $data['upah_id'])->first();
 
@@ -2389,7 +2396,7 @@ class SuratPengantar extends MyModel
             // }
             $suratPengantar->jobtrucking = $data['jobtrucking'];
             $suratPengantar->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
-            $suratPengantar->pelanggan_id = $orderanTrucking->pelanggan_id;
+            $suratPengantar->pelanggan_id = $pelanggan;
             $suratPengantar->keterangan = $data['keterangan'] ?? '';
             $suratPengantar->nourutorder = $data['nourutorder'] ?? 1;
             $suratPengantar->upah_id = $upahsupir->id;
@@ -2397,7 +2404,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->sampai_id = $data['sampai_id'];
             $suratPengantar->zonadari_id = $data['zonadari_id'] ?? '';
             $suratPengantar->zonasampai_id = $data['zonasampai_id'] ?? '';
-            $suratPengantar->container_id = $orderanTrucking->container_id;
+            $suratPengantar->container_id = $container;
             $suratPengantar->nocont = $orderanTrucking->nocont;
             $suratPengantar->nocont2 = $orderanTrucking->nocont2 ?? '';
             $suratPengantar->statuscontainer_id = $data['statuscontainer_id'];
@@ -2405,16 +2412,16 @@ class SuratPengantar extends MyModel
             $suratPengantar->trado_id = $data['trado_id'];
             $suratPengantar->supir_id = $data['supir_id'];
             $suratPengantar->gandengan_id = $data['gandengan_id'] ?? 0;
-            $suratPengantar->nojob = $orderanTrucking->nojobemkl;
+            $suratPengantar->nojob = $orderanTrucking->nojobemkl ?? '';
             $suratPengantar->nojob2 = $orderanTrucking->nojobemkl2 ?? '';
-            $suratPengantar->noseal = $orderanTrucking->noseal;
+            $suratPengantar->noseal = $orderanTrucking->noseal ?? '';
             $suratPengantar->noseal2 = $orderanTrucking->noseal2 ?? '';
             $suratPengantar->statuslongtrip = $data['statuslongtrip'];
             $suratPengantar->omset = $tarifNominal;
             $suratPengantar->gajisupir = $data['gajisupir'];
-            $suratPengantar->agen_id = $orderanTrucking->agen_id;
+            $suratPengantar->agen_id = $orderanTrucking->agen_id ?? $data['agen_id'];
             $suratPengantar->penyesuaian = $data['penyesuaian'];
-            $suratPengantar->jenisorder_id = $orderanTrucking->jenisorder_id;
+            $suratPengantar->jenisorder_id = $orderanTrucking->jenisorder_id ?? $data['jenisorder_id'];
             $suratPengantar->statusperalihan = $data['statusperalihan'];
             $suratPengantar->statusupahzona = $data['statusupahzona'];
             $suratPengantar->statuskandang = $data['statuskandang'];
