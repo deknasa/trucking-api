@@ -801,12 +801,18 @@ class SuratPengantar extends MyModel
             $tempTambahan = '##tempTambahan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempTambahan, function ($table) {
                 $table->integer('suratpengantar_id')->nullable();
+                $table->longText('ketextra')->nullable();
+                $table->double('biayaextra', 15, 2)->nullable();
+                $table->double('biayatagih', 15, 2)->nullable();
+                $table->longText('ketextratagih')->nullable();
             });
             $tambahan = DB::table("suratpengantarbiayatambahan")->from(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"))
-                ->select('suratpengantar_id')
+                ->select(DB::raw("suratpengantar_id, STRING_AGG(keteranganbiaya+' ('+ FORMAT(nominal,'#,#0.00')+')',', ') as ketextra, sum(nominal) as biayaextra, sum(nominaltagih) as biayatagih,
+                STRING_AGG(keteranganbiaya+' ('+ FORMAT(nominaltagih,'#,#0.00')+')',', ') as ketextratagih"))
                 ->groupBy('suratpengantar_id');
-            DB::table($tempTambahan)->insertUsing(['suratpengantar_id'], $tambahan);
-            $query->join(DB::raw("$tempTambahan as suratpengantarbiayatambahan with (readuncommitted)"), 'suratpengantar.id', 'suratpengantarbiayatambahan.suratpengantar_id');
+            DB::table($tempTambahan)->insertUsing(['suratpengantar_id', 'ketextra', 'biayaextra', 'biayatagih', 'ketextratagih'], $tambahan);
+            $query->addSelect('suratpengantarbiayatambahan.ketextra', 'suratpengantarbiayatambahan.biayaextra', 'suratpengantarbiayatambahan.biayatagih', 'suratpengantarbiayatambahan.ketextratagih')
+                ->join(DB::raw("$tempTambahan as suratpengantarbiayatambahan with (readuncommitted)"), 'suratpengantar.id', 'suratpengantarbiayatambahan.suratpengantar_id');
         }
         // if (request()->jenisorder_id != null) {
         //     $query->where('suratpengantar.jenisorder_id', request()->jenisorder_id);
@@ -1977,6 +1983,8 @@ class SuratPengantar extends MyModel
             return $query->orderBy('mandortrado.namamandor', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'mandorsupir_id') {
             return $query->orderBy('mandorsupir.namamandor', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'ketextra' || $this->params['sortIndex'] == 'biayaextra' || $this->params['sortIndex'] == 'biayatagih' || $this->params['sortIndex'] == 'ketextratagih') {
+            return $query->orderBy('suratpengantarbiayatambahan.' . $this->params['sortIndex'], $this->params['sortOrder']);
         } else {
             return $query->orderBy('suratpengantar.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
@@ -2015,6 +2023,8 @@ class SuratPengantar extends MyModel
                                 $query = $query->where('mandortrado.namamandor', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'mandorsupir_id') {
                                 $query = $query->where('mandorsupir.namamandor', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'ketextra' || $filters['field'] == 'ketextratagih') {
+                                $query = $query->where('suratpengantarbiayatambahan.'. $filters['field'], 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statuslongtrip') {
                                 $query = $query->where('statuslongtrip.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statusperalihan') {
@@ -2035,6 +2045,8 @@ class SuratPengantar extends MyModel
                                 $query = $query->where('statusapprovalbiayatitipanemkl.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak' || $filters['field'] == 'omset' || $filters['field'] == 'nominalperalihan' || $filters['field'] == 'totalomset') {
                                 $query = $query->whereRaw("format(suratpengantar." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'biayaextra' || $filters['field'] == 'biayatagih') {
+                                $query = $query->whereRaw("format(suratpengantarbiayatambahan." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglsp') {
                                 $query = $query->whereRaw("format(suratpengantar." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
@@ -2073,6 +2085,8 @@ class SuratPengantar extends MyModel
                                     $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'tarif_id') {
                                     $query = $query->orWhere('tarif.tujuan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'ketextra' || $filters['field'] == 'ketextratagih') {
+                                    $query = $query->orWhere('suratpengantarbiayatambahan.'. $filters['field'], 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'mandortrado_id') {
                                     $query = $query->orWhere('mandortrado.namamandor', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'mandorsupir_id') {
@@ -2097,6 +2111,8 @@ class SuratPengantar extends MyModel
                                     $query = $query->orWhere('statusapprovalbiayatitipanemkl.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak' || $filters['field'] == 'omset' || $filters['field'] == 'nominalperalihan' || $filters['field'] == 'totalomset') {
                                     $query = $query->orWhereRaw("format(suratpengantar." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'biayaextra' || $filters['field'] == 'biayatagih') {
+                                    $query = $query->orWhereRaw("format(suratpengantarbiayatambahan." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglsp') {
                                     $query = $query->orWhereRaw("format(suratpengantar." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
@@ -2360,7 +2376,7 @@ class SuratPengantar extends MyModel
             $trado = Trado::find($data['trado_id']);
             $supir = Supir::find($data['supir_id']);
             $edittripmandor = $data['edittripmandor'] ?? 0;
-            if($orderanTrucking == ''){
+            if ($orderanTrucking == '') {
                 $container = $data['container_id'];
                 $pelanggan = $data['pelanggan_id'];
             } else {
