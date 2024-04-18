@@ -280,10 +280,11 @@ class OrderanTruckingController extends Controller
     public function show($id)
     {
         $orderanTrucking = (new OrderanTrucking)->findAll($id);
-
+        $hideCol = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'LOOKUP ORDERAN EMKL')->where('subgrp','PELANGGAN')->first()->text ?? 'YA';
         return response([
             'status' => true,
-            'data' => $orderanTrucking
+            'data' => $orderanTrucking,
+            'orderemklshipper' => $hideCol
         ]);
     }
 
