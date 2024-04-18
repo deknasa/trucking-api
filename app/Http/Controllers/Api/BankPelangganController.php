@@ -47,13 +47,17 @@ class BankPelangganController extends Controller
     {
         $bankpelanggan = new BankPelanggan();
         $cekdata = $bankpelanggan->cekvalidasihapus($id);
+        $aksi = request()->aksi ?? '';
+        if( $aksi == 'EDIT'){
+            $cekdata['kondisi'] = false;
+        }
         $dataMaster = BankPelanggan::where('id',$id)->first();
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
         $useredit = $dataMaster->editing_by ?? '';
       
-        $aksi = request()->aksi ?? '';
+        
 
         if ($useredit != '' && $useredit != $user) {
            

@@ -322,7 +322,9 @@ class MainAkunPusatController extends Controller
         $useredit = $dataMaster->editing_by ?? '';
       
         $aksi = request()->aksi ?? '';
-
+        if( $aksi == 'EDIT'){
+            $cekdata['kondisi'] = false;
+        }
         if ($useredit != '' && $useredit != $user) {
            
             $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');

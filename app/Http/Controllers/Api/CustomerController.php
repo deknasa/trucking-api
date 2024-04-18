@@ -42,14 +42,18 @@ class CustomerController extends Controller
     public function cekValidasi($id)
     {
         $agen = new Agen();
+        $aksi = request()->aksi ?? '';
         $cekdata = $agen->cekvalidasihapus($id);
+        if( $aksi == 'EDIT'){
+            $cekdata['kondisi'] = false;
+        }
         $dataMaster = Agen::where('id',$id)->first();
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
         $useredit = $dataMaster->editing_by ?? '';
       
-        $aksi = request()->aksi ?? '';
+       
 
         if ($useredit != '' && $useredit != $user) {
            
