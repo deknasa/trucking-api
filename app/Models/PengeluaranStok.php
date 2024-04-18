@@ -434,6 +434,7 @@ class PengeluaranStok extends MyModel
         $pengeluaranStok->format = $data['format'];
         $pengeluaranStok->statushitungstok = $data['statushitungstok'];
         $pengeluaranStok->cabang_id = $cabang_id;
+        $pengeluaranStok->tas_id = $data['tas_id'];
         $pengeluaranStok->statusaktif = $data['statusaktif'];
         $pengeluaranStok->modifiedby = auth('api')->user()->name;
         $pengeluaranStok->info = html_entity_decode(request()->info);
