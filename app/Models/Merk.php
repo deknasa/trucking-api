@@ -265,6 +265,7 @@ class Merk extends MyModel
         $merk->kodemerk = $data['kodemerk'];
         $merk->keterangan = $data['keterangan'] ?? '';
         $merk->statusaktif = $data['statusaktif'];
+        $merk->tas_id = $data['tas_id'];
         $merk->modifiedby = auth('api')->user()->name;
         $merk->info = html_entity_decode(request()->info);
 

@@ -170,13 +170,16 @@ class MerkController extends Controller
                 'kodemerk' => $request->kodemerk,
                 'keterangan' => $request->keterangan ?? '',
                 'statusaktif' => $request->statusaktif,
+                'tas_id' => $request->tas_id
             ];
             $merk = (new Merk())->processStore($data);
-            $merk->position = $this->getPosition($merk, $merk->getTable())->position;
-            if ($request->limit==0) {
-                $merk->page = ceil($merk->position / (10));
-            } else {
-                $merk->page = ceil($merk->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $merk->position = $this->getPosition($merk, $merk->getTable())->position;
+                if ($request->limit==0) {
+                    $merk->page = ceil($merk->position / (10));
+                } else {
+                    $merk->page = ceil($merk->position / ($request->limit ?? 10));
+                }
             }
 
             DB::commit();
@@ -216,11 +219,14 @@ class MerkController extends Controller
             ];
 
             $merk = (new Merk())->processUpdate($merk, $data);
-            $merk->position = $this->getPosition($merk, $merk->getTable())->position;
-            if ($request->limit==0) {
-                $merk->page = ceil($merk->position / (10));
-            } else {
-                $merk->page = ceil($merk->position / ($request->limit ?? 10));
+
+            if ($request->from == '') {
+                $merk->position = $this->getPosition($merk, $merk->getTable())->position;
+                if ($request->limit==0) {
+                    $merk->page = ceil($merk->position / (10));
+                } else {
+                    $merk->page = ceil($merk->position / ($request->limit ?? 10));
+                }
             }
 
             DB::commit();
@@ -245,13 +251,15 @@ class MerkController extends Controller
 
         try {
             $merk = (new Merk())->processDestroy($id);
-            $selected = $this->getPosition($merk, $merk->getTable(), true);
-            $merk->position = $selected->position;
-            $merk->id = $selected->id;
-            if ($request->limit==0) {
-                $merk->page = ceil($merk->position / (10));
-            } else {
-                $merk->page = ceil($merk->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($merk, $merk->getTable(), true);
+                $merk->position = $selected->position;
+                $merk->id = $selected->id;
+                if ($request->limit==0) {
+                    $merk->page = ceil($merk->position / (10));
+                } else {
+                    $merk->page = ceil($merk->position / ($request->limit ?? 10));
+                }
             }
 
             DB::commit();
