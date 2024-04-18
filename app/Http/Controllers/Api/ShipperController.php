@@ -48,9 +48,11 @@ class ShipperController extends Controller
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
         $useredit = $dataMaster->editing_by ?? '';
-      
         $aksi = request()->aksi ?? '';
         $aksi =strtoupper($aksi);
+        if( $aksi == 'EDIT'){
+            $cekdata['kondisi'] = false;
+        }
         if ($useredit != '' && $useredit != $user) {
            
             $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
