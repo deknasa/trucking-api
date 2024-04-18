@@ -147,17 +147,23 @@ class OrderanTrucking extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+        
+        $isMandor = auth()->user()->isMandor();
+        $isAdmin = auth()->user()->isAdmin();
+
         $tempsupirtrado = '##tempsupirtrado' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsupirtrado, function ($table) {
             $table->string('jobtrucking', 50)->nullable();
             $table->longText('trado')->nullable();
             $table->longText('supir')->nullable();
+            $table->longText('mandor')->nullable();
         });
 
         $querygetsupir = DB::table("suratpengantar")->from(DB::raw("suratpengantar as sp with (readuncommitted)"))
-            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir + ' ('+statuscontainer.kodestatuscontainer+')',', ') as supir"))
+            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir + ' ('+statuscontainer.kodestatuscontainer+')',', ') as supir, STRING_AGG(mandor.namamandor,', ') as mandor"))
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'sp.trado_id', 'trado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'sp.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'sp.mandortrado_id', 'mandor.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
             ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'sp.jobtrucking', 'orderantrucking.nobukti')
             ->whereBetween('orderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
@@ -166,6 +172,7 @@ class OrderanTrucking extends MyModel
             'jobtrucking',
             'trado',
             'supir',
+            'mandor'
         ], $querygetsupir);
 
         $temporderantrucking = '##temporderantrucking' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -205,6 +212,7 @@ class OrderanTrucking extends MyModel
             $table->unsignedBigInteger('statusformat')->nullable();
             $table->longText('supir')->nullable();
             $table->longText('trado')->nullable();
+            $table->longText('mandor')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -249,6 +257,7 @@ class OrderanTrucking extends MyModel
                 'a.statusformat',
                 'b.supir',
                 'b.trado',
+                'b.mandor',
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at',
@@ -293,6 +302,7 @@ class OrderanTrucking extends MyModel
             'statusformat',
             'supir',
             'trado',
+            'mandor',
             'modifiedby',
             'created_at',
             'updated_at',
@@ -304,12 +314,14 @@ class OrderanTrucking extends MyModel
             $table->string('jobtrucking', 50)->nullable();
             $table->longText('trado')->nullable();
             $table->longText('supir')->nullable();
+            $table->longText('mandor')->nullable();
         });
 
         $querygetsupir = DB::table("suratpengantar")->from(DB::raw("suratpengantar as sp with (readuncommitted)"))
-            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir + ' ('+statuscontainer.kodestatuscontainer+')',', ') as supir"))
+            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir + ' ('+statuscontainer.kodestatuscontainer+')',', ') as supir, STRING_AGG(mandor.namamandor,', ') as mandor"))
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'sp.trado_id', 'trado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'sp.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'sp.mandortrado_id', 'mandor.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
             ->leftJoin(DB::raw("saldoorderantrucking with (readuncommitted)"), 'sp.jobtrucking', 'saldoorderantrucking.nobukti')
             ->whereBetween('saldoorderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
@@ -318,12 +330,14 @@ class OrderanTrucking extends MyModel
             'jobtrucking',
             'trado',
             'supir',
+            'mandor'
         ], $querygetsupir);
 
         $querygetsupir = DB::table("saldosuratpengantar")->from(DB::raw("saldosuratpengantar as sp with (readuncommitted)"))
-            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir + ' ('+statuscontainer.kodestatuscontainer+')',', ') as supir"))
+            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir + ' ('+statuscontainer.kodestatuscontainer+')',', ') as supir, STRING_AGG(mandor.namamandor,', ') as mandor"))
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'sp.trado_id', 'trado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'sp.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'sp.mandortrado_id', 'mandor.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
             ->leftJoin(DB::raw("saldoorderantrucking with (readuncommitted)"), 'sp.jobtrucking', 'saldoorderantrucking.nobukti')
             ->whereBetween('saldoorderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
@@ -332,6 +346,7 @@ class OrderanTrucking extends MyModel
             'jobtrucking',
             'trado',
             'supir',
+            'mandor'
         ], $querygetsupir);
 
         $queryorderantrucking = DB::table('saldoorderantrucking')->from(
@@ -365,6 +380,7 @@ class OrderanTrucking extends MyModel
                 'a.statusformat',
                 'b.supir',
                 'b.trado',
+                'b.mandor',
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at',
@@ -401,6 +417,7 @@ class OrderanTrucking extends MyModel
             'statusformat',
             'supir',
             'trado',
+            'mandor',
             'modifiedby',
             'created_at',
             'updated_at',
@@ -441,6 +458,7 @@ class OrderanTrucking extends MyModel
                 DB::raw("(case when year(isnull(orderantrucking.tglbatastanpajoborderantrucking,'1900/1/1 00:00:00.000'))<2000 then null else orderantrucking.tglbatastanpajoborderantrucking end) as tglbatastanpajoborderantrucking"),
                 'orderantrucking.supir',
                 'orderantrucking.trado',
+                'orderantrucking.mandor',
                 'orderantrucking.modifiedby',
                 'orderantrucking.created_at',
                 'orderantrucking.updated_at'
@@ -467,6 +485,7 @@ class OrderanTrucking extends MyModel
                 ->where('orderantrucking.container_id', $container_id)
                 ->where('orderantrucking.pelanggan_id', $pelanggan_id);
         }
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -1244,12 +1263,14 @@ class OrderanTrucking extends MyModel
             $table->string('jobtrucking', 50)->nullable();
             $table->longText('trado')->nullable();
             $table->longText('supir')->nullable();
+            $table->longText('mandor')->nullable();
         });
 
         $querygetsupir = DB::table("suratpengantar")->from(DB::raw("suratpengantar as sp with (readuncommitted)"))
-            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir + ' ('+statuscontainer.kodestatuscontainer+')',', ') as supir"))
+            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir + ' ('+statuscontainer.kodestatuscontainer+')',', ') as supir, STRING_AGG(mandor.namamandor,', ') as mandor"))
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'sp.trado_id', 'trado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'sp.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'sp.mandortrado_id', 'mandor.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
             ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'sp.jobtrucking', 'orderantrucking.nobukti')
             ->whereBetween('orderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
@@ -1258,6 +1279,7 @@ class OrderanTrucking extends MyModel
             'jobtrucking',
             'trado',
             'supir',
+            'mandor'
         ], $querygetsupir);
 
         $temporderantrucking = '##temporderantrucking' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -1297,6 +1319,7 @@ class OrderanTrucking extends MyModel
             $table->unsignedBigInteger('statusformat')->nullable();
             $table->longText('supir')->nullable();
             $table->longText('trado')->nullable();
+            $table->longText('mandor')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -1341,6 +1364,7 @@ class OrderanTrucking extends MyModel
                 'a.statusformat',
                 'b.supir',
                 'b.trado',
+                'b.mandor',
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at',
@@ -1385,6 +1409,7 @@ class OrderanTrucking extends MyModel
             'statusformat',
             'supir',
             'trado',
+            'mandor',
             'modifiedby',
             'created_at',
             'updated_at',
@@ -1396,12 +1421,14 @@ class OrderanTrucking extends MyModel
             $table->string('jobtrucking', 50)->nullable();
             $table->longText('trado')->nullable();
             $table->longText('supir')->nullable();
+            $table->longText('mandor')->nullable();
         });
 
         $querygetsupir = DB::table("suratpengantar")->from(DB::raw("suratpengantar as sp with (readuncommitted)"))
-            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir + ' ('+statuscontainer.kodestatuscontainer+')',', ') as supir"))
+            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir + ' ('+statuscontainer.kodestatuscontainer+')',', ') as supir, STRING_AGG(mandor.namamandor,', ') as mandor"))
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'sp.trado_id', 'trado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'sp.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'sp.mandortrado_id', 'mandor.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
             ->leftJoin(DB::raw("saldoorderantrucking with (readuncommitted)"), 'sp.jobtrucking', 'saldoorderantrucking.nobukti')
             ->whereBetween('saldoorderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
@@ -1410,12 +1437,14 @@ class OrderanTrucking extends MyModel
             'jobtrucking',
             'trado',
             'supir',
+            'mandor'
         ], $querygetsupir);
 
         $querygetsupir = DB::table("saldosuratpengantar")->from(DB::raw("saldosuratpengantar as sp with (readuncommitted)"))
-            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir + ' ('+statuscontainer.kodestatuscontainer+')',', ') as supir"))
+            ->select(DB::raw("sp.jobtrucking,STRING_AGG(trado.kodetrado + ' ('+statuscontainer.kodestatuscontainer+')',', ') as trado,STRING_AGG(supir.namasupir + ' ('+statuscontainer.kodestatuscontainer+')',', ') as supir, STRING_AGG(mandor.namamandor,', ') as mandor"))
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'sp.trado_id', 'trado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'sp.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'sp.mandortrado_id', 'mandor.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
             ->leftJoin(DB::raw("saldoorderantrucking with (readuncommitted)"), 'sp.jobtrucking', 'saldoorderantrucking.nobukti')
             ->whereBetween('saldoorderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
@@ -1424,6 +1453,7 @@ class OrderanTrucking extends MyModel
             'jobtrucking',
             'trado',
             'supir',
+            'mandor'
         ], $querygetsupir);
 
         $queryorderantrucking = DB::table('saldoorderantrucking')->from(
@@ -1457,6 +1487,7 @@ class OrderanTrucking extends MyModel
                 'a.statusformat',
                 'b.supir',
                 'b.trado',
+                'b.mandor',
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at',
@@ -1493,6 +1524,7 @@ class OrderanTrucking extends MyModel
             'statusformat',
             'supir',
             'trado',
+            'mandor',
             'modifiedby',
             'created_at',
             'updated_at',
@@ -1531,6 +1563,7 @@ class OrderanTrucking extends MyModel
                 DB::raw("(case when year(isnull(orderantrucking.tglbatastanpajoborderantrucking,'1900/1/1 00:00:00.000'))<2000 then null else orderantrucking.tglbatastanpajoborderantrucking end) as tglbatastanpajoborderantrucking"),
                 'orderantrucking.supir',
                 'orderantrucking.trado',
+                'orderantrucking.mandor',
                 'orderantrucking.modifiedby',
                 'orderantrucking.created_at',
                 'orderantrucking.updated_at'
@@ -1580,6 +1613,7 @@ class OrderanTrucking extends MyModel
             $table->dateTime('tglbatastanpajoborderantrucking')->nullable();
             $table->longText('supir')->nullable();
             $table->longText('trado')->nullable();
+            $table->longText('mandor')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -1618,6 +1652,7 @@ class OrderanTrucking extends MyModel
             'tglbatastanpajoborderantrucking',
             'supir',
             'trado',
+            'mandor',
             'modifiedby',
             'created_at',
             'updated_at',
