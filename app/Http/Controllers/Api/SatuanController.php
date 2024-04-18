@@ -68,15 +68,18 @@ class SatuanController extends Controller
         try {
             $data = [
                 'satuan' => $request->satuan,
-                'statusaktif' => $request->statusaktif
+                'statusaktif' => $request->statusaktif,
+                'tas_id' => $request->tas_id
             ];
 
             $satuan = (new Satuan())->processStore($data);
-            $satuan->position = $this->getPosition($satuan, $satuan->getTable())->position;
-            if ($request->limit==0) {
-                $satuan->page = ceil($satuan->position / (10));
-            } else {
-                $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $satuan->position = $this->getPosition($satuan, $satuan->getTable())->position;
+                if ($request->limit==0) {
+                    $satuan->page = ceil($satuan->position / (10));
+                } else {
+                    $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
+                }
             }
 
             DB::commit();
@@ -121,11 +124,13 @@ class SatuanController extends Controller
             ];
 
             $satuan = (new Satuan())->processUpdate($satuan, $data);
-            $satuan->position = $this->getPosition($satuan, $satuan->getTable())->position;
-            if ($request->limit==0) {
-                $satuan->page = ceil($satuan->position / (10));
-            } else {
-                $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $satuan->position = $this->getPosition($satuan, $satuan->getTable())->position;
+                if ($request->limit==0) {
+                    $satuan->page = ceil($satuan->position / (10));
+                } else {
+                    $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
+                }
             }
 
             DB::commit();
@@ -150,13 +155,15 @@ class SatuanController extends Controller
 
         try {
             $satuan = (new Satuan())->processDestroy($id);
-            $selected = $this->getPosition($satuan, $satuan->getTable(), true);
-            $satuan->position = $selected->position;
-            $satuan->id = $selected->id;
-            if ($request->limit==0) {
-                $satuan->page = ceil($satuan->position / (10));
-            } else {
-                $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($satuan, $satuan->getTable(), true);
+                $satuan->position = $selected->position;
+                $satuan->id = $selected->id;
+                if ($request->limit==0) {
+                    $satuan->page = ceil($satuan->position / (10));
+                } else {
+                    $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
+                }
             }
 
             DB::commit();
