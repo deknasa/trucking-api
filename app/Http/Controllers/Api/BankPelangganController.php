@@ -48,6 +48,7 @@ class BankPelangganController extends Controller
         $bankpelanggan = new BankPelanggan();
         $cekdata = $bankpelanggan->cekvalidasihapus($id);
         $aksi = request()->aksi ?? '';
+        $aksi =strtoupper($aksi);
         if( $aksi == 'EDIT'){
             $cekdata['kondisi'] = false;
         }

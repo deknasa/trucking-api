@@ -50,7 +50,7 @@ class ShipperController extends Controller
         $useredit = $dataMaster->editing_by ?? '';
       
         $aksi = request()->aksi ?? '';
-
+        $aksi =strtoupper($aksi);
         if ($useredit != '' && $useredit != $user) {
            
             $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
