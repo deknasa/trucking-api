@@ -137,14 +137,17 @@ class PenerimaanStokController extends Controller
                 'coa' => $request->coa ?? '',
                 'format' => $request->format ?? '',
                 'statusaktif' => $request->statusaktif ?? 1,
+                'tas_id' => $request->tas_id,
                 'statushitungstok' => $request->statushitungstok
             ];
             $penerimaanStok = (new PenerimaanStok())->processStore($data);
-            $penerimaanStok->position = $this->getPosition($penerimaanStok, $penerimaanStok->getTable())->position;
-            if ($request->limit==0) {
-                $penerimaanStok->page = ceil($penerimaanStok->position / (10));
-            } else {
-                $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $penerimaanStok->position = $this->getPosition($penerimaanStok, $penerimaanStok->getTable())->position;
+                if ($request->limit==0) {
+                    $penerimaanStok->page = ceil($penerimaanStok->position / (10));
+                } else {
+                    $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
+                }
             }
 
             DB::commit();
@@ -191,11 +194,13 @@ class PenerimaanStokController extends Controller
 
             $penerimaanStok = PenerimaanStok::findOrFail($id);
             $penerimaanStok = (new PenerimaanStok())->processUpdate($penerimaanStok, $data);
-            $penerimaanStok->position = $this->getPosition($penerimaanStok, $penerimaanStok->getTable())->position;
-            if ($request->limit==0) {
-                $penerimaanStok->page = ceil($penerimaanStok->position / (10));
-            } else {
-                $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $penerimaanStok->position = $this->getPosition($penerimaanStok, $penerimaanStok->getTable())->position;
+                if ($request->limit==0) {
+                    $penerimaanStok->page = ceil($penerimaanStok->position / (10));
+                } else {
+                    $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
+                }
             }
 
             DB::commit();
@@ -235,13 +240,15 @@ class PenerimaanStokController extends Controller
 
         try {
             $penerimaanStok = (new PenerimaanStok())->processDestroy($id);
-            $selected = $this->getPosition($penerimaanStok, $penerimaanStok->getTable(), true);
-            $penerimaanStok->position = $selected->position;
-            $penerimaanStok->id = $selected->id;
-            if ($request->limit==0) {
-                $penerimaanStok->page = ceil($penerimaanStok->position / (10));
-            } else {
-                $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($penerimaanStok, $penerimaanStok->getTable(), true);
+                $penerimaanStok->position = $selected->position;
+                $penerimaanStok->id = $selected->id;
+                if ($request->limit==0) {
+                    $penerimaanStok->page = ceil($penerimaanStok->position / (10));
+                } else {
+                    $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
+                }
             }
 
             DB::commit();

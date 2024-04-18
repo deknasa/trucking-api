@@ -455,6 +455,7 @@ class PenerimaanStok extends MyModel
         $penerimaanStok->format = $data['format'];
         $penerimaanStok->statushitungstok = $data['statushitungstok'];
         $penerimaanStok->cabang_id = $cabang_id;
+        $penerimaanStok->tas_id = $data['tas_id'];
         $penerimaanStok->statusaktif = $data['statusaktif'];
         $penerimaanStok->modifiedby = auth('api')->user()->name;
         $penerimaanStok->info = html_entity_decode(request()->info);
