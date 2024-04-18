@@ -108,8 +108,8 @@ class ReminderOli extends MyModel
             )->groupBy(
                 'nopol',
                 'status',
-            )->orderBy('statusbatas','desc');
-    
+            )->orderBy('statusbatas', 'desc');
+
 
             DB::table($temtabel)->insertUsing([
                 'nopol',
@@ -336,6 +336,8 @@ class ReminderOli extends MyModel
 
         $parameter = new Parameter();
         $idgantioli = $parameter->cekId('STATUS OLI', 'STATUS OLI', 'GANTI') ?? 0;
+        $idservicerutinsaringanhawa = $parameter->cekId('STATUS SERVICE RUTIN', 'STATUS SERVICE RUTIN', 'PERGANTIAN SARINGAN HAWA') ?? 0;
+        $idservicerutinbatere = $parameter->cekId('STATUS SERVICE RUTIN', 'STATUS SERVICE RUTIN', 'PERGANTIAN BATERE') ?? 0;
 
         $querypergantian = db::table("pengeluaranstokheader")->from(DB::raw("pengeluaranstokheader a with (readuncommitted)"))
             ->select(
@@ -357,6 +359,7 @@ class ReminderOli extends MyModel
             ->where('a.pengeluaranstok_id', $pengeluaranstok_id)
             ->where('b.statusoli', $idgantioli)
             ->whereraw("isnull(a.trado_id,0)<>0")
+            ->whereraw("isnull(d.id,0) not in(" . $idservicerutinsaringanhawa . "," . $idservicerutinbatere . ")")
             ->groupBy('a.trado_id')
             ->groupBy('e.text');
 
@@ -368,6 +371,38 @@ class ReminderOli extends MyModel
             'statusreminder',
             'tgl',
         ], $querypergantian);
+
+        $querypergantian = db::table("pengeluaranstokheader")->from(DB::raw("pengeluaranstokheader a with (readuncommitted)"))
+        ->select(
+            db::raw("max(a.nobukti) as nobukti"),
+            'a.trado_id',
+            db::raw("(case when e.text='PERGANTIAN BATERE' then 'PENGGANTIAN AKI'
+                            when e.text='PERGANTIAN OLI GARDAN' then 'PENGGANTIAN OLI GARDAN'
+                            when e.text='PERGANTIAN OLI MESIN' then 'PENGGANTIAN OLI MESIN'
+                            when e.text='PERGANTIAN OLI PERSNELING' then 'PENGGANTIAN OLI PERSNELING'
+                            when e.text='PERGANTIAN SARINGAN HAWA' then 'PENGGANTIAN SARINGAN HAWA'
+                else '' end) as statusreminder
+            "),
+            db::raw("max(a.tglbukti) as tgl"),
+        )
+        ->join(db::raw("pengeluaranstokdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+        ->join(db::raw("stok c with (readuncommitted)"), 'b.stok_id', 'c.id')
+        ->join(db::raw($Tempservicerutin . " d "), 'c.statusservicerutin', 'd.id')
+        ->join(db::raw("parameter e with (readuncommitted)"), 'd.id', 'e.id')
+        ->where('a.pengeluaranstok_id', $pengeluaranstok_id)
+        ->whereraw("isnull(a.trado_id,0)<>0")
+        ->whereraw("isnull(d.id,0) in(" . $idservicerutinsaringanhawa . "," . $idservicerutinbatere . ")")
+        ->groupBy('a.trado_id')
+        ->groupBy('e.text');
+
+    // dd($querypergantian->get());
+
+    DB::table($Temppergantian)->insertUsing([
+        'nobukti',
+        'trado_id',
+        'statusreminder',
+        'tgl',
+    ], $querypergantian);        
 
         DB::update(DB::raw("UPDATE " . $Tempsaldoreminderoli . " SET tglawal=b.tgl,jarak=0 
         from " . $Tempsaldoreminderoli . " a inner join " . $Temppergantian . " b on a.trado_id=b.trado_id and a.statusreminder=b.statusreminder 
@@ -732,22 +767,22 @@ class ReminderOli extends MyModel
             END) as urutid")
             )
             ->Join(DB::raw("trado  b with (readuncommitted)"), 'a.trado_id', 'b.id')
-            ->Join(DB::raw($tempstatus ." e"), 'a.statusreminder',   'e.status')
+            ->Join(DB::raw($tempstatus . " e"), 'a.statusreminder',   'e.status')
             // ->leftJoin(DB::raw($Temppergantian . " c"), 'b.id', 'c.trado_id')
             ->leftjoin(DB::raw($Temppergantian . " c"), function ($join) {
                 $join->on('c.trado_id', '=', 'b.id');
                 $join->on('c.statusreminder', '=', 'e.status');
-            })            
+            })
             // ->Where('b.id', 33)
             ->Where('b.statusaktif', 1);
 
-            // dump(db::table($Tempsaldoreminderoli)->where('trado_id',33)->get());
-            // dump(db::table($Temppergantian)->where('trado_id',33)->get());
+        // dump(db::table($Tempsaldoreminderoli)->where('trado_id',33)->get());
+        // dump(db::table($Temppergantian)->where('trado_id',33)->get());
 
-            // dd($query->get());
-            
+        // dd($query->get());
 
-            // dd(db::table($Tempsaldoreminderolirekap)->where('nopol','B 9211 BEI')->get());
+
+        // dd(db::table($Tempsaldoreminderolirekap)->where('nopol','B 9211 BEI')->get());
 
         DB::table($Tempsaldoreminderolirekap)->insertUsing([
             'nopol',
@@ -770,7 +805,7 @@ class ReminderOli extends MyModel
                 'a.kmperjalanan',
                 'a.statusbatas',
             )
-            
+
             ->orderby('a.urutid', 'desc');
 
 
@@ -797,40 +832,40 @@ class ReminderOli extends MyModel
         });
 
         $tempgorupby = '##tempgorupby' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::create($tempgorupby, function ($table) {
-                $table->id();
-                $table->longText('nopol')->nullable();
-                $table->integer('trado_id')->nullable();
-                $table->date('tanggal')->nullable();
-                $table->string('status', 100)->nullable();
-                $table->double('km', 15, 2)->nullable();
-                $table->double('kmperjalanan', 15, 2)->nullable();
-                $table->integer('statusbatas')->nullable();
-            });
+        Schema::create($tempgorupby, function ($table) {
+            $table->id();
+            $table->longText('nopol')->nullable();
+            $table->integer('trado_id')->nullable();
+            $table->date('tanggal')->nullable();
+            $table->string('status', 100)->nullable();
+            $table->double('km', 15, 2)->nullable();
+            $table->double('kmperjalanan', 15, 2)->nullable();
+            $table->integer('statusbatas')->nullable();
+        });
 
-            DB::table($tempgorupby)->insertUsing([
-                'nopol',
-                'trado_id',
-                'tanggal',
-                'status',
-                'km',
-                'kmperjalanan',
-                'statusbatas'
-            ], $this->getdata());
+        DB::table($tempgorupby)->insertUsing([
+            'nopol',
+            'trado_id',
+            'tanggal',
+            'status',
+            'km',
+            'kmperjalanan',
+            'statusbatas'
+        ], $this->getdata());
 
 
-            $querytempgorupby = DB::table($tempgorupby)->select(
-                'nopol',
-                db::raw('max(tanggal) as tanggal'),
-                'status',
-                db::raw('max(km) as km'),
-                db::raw('max(kmperjalanan) as kmperjalanan'),
-                db::raw('max(isnull(statusbatas,0)) as statusbatas'),
+        $querytempgorupby = DB::table($tempgorupby)->select(
+            'nopol',
+            db::raw('max(tanggal) as tanggal'),
+            'status',
+            db::raw('max(km) as km'),
+            db::raw('max(kmperjalanan) as kmperjalanan'),
+            db::raw('max(isnull(statusbatas,0)) as statusbatas'),
 
-            )->groupBy(
-                'nopol',
-                'status',
-            )->orderBy('statusbatas','desc');
+        )->groupBy(
+            'nopol',
+            'status',
+        )->orderBy('statusbatas', 'desc');
 
         DB::table($tempolimesin)->insertUsing([
             'nopol',
@@ -959,42 +994,42 @@ class ReminderOli extends MyModel
             $table->double('kmperjalanan', 15, 2)->nullable();
             $table->integer('statusbatas')->nullable();
         });
-        
+
         $tempgorupby = '##tempgorupby' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::create($tempgorupby, function ($table) {
-                $table->id();
-                $table->longText('nopol')->nullable();
-                $table->integer('trado_id')->nullable();
-                $table->date('tanggal')->nullable();
-                $table->string('status', 100)->nullable();
-                $table->double('km', 15, 2)->nullable();
-                $table->double('kmperjalanan', 15, 2)->nullable();
-                $table->integer('statusbatas')->nullable();
-            });
+        Schema::create($tempgorupby, function ($table) {
+            $table->id();
+            $table->longText('nopol')->nullable();
+            $table->integer('trado_id')->nullable();
+            $table->date('tanggal')->nullable();
+            $table->string('status', 100)->nullable();
+            $table->double('km', 15, 2)->nullable();
+            $table->double('kmperjalanan', 15, 2)->nullable();
+            $table->integer('statusbatas')->nullable();
+        });
 
-            DB::table($tempgorupby)->insertUsing([
-                'nopol',
-                'trado_id',
-                'tanggal',
-                'status',
-                'km',
-                'kmperjalanan',
-                'statusbatas'
-            ], $this->getdata());
+        DB::table($tempgorupby)->insertUsing([
+            'nopol',
+            'trado_id',
+            'tanggal',
+            'status',
+            'km',
+            'kmperjalanan',
+            'statusbatas'
+        ], $this->getdata());
 
 
-            $querytempgorupby = DB::table($tempgorupby)->select(
-                'nopol',
-                db::raw('max(tanggal) as tanggal'),
-                'status',
-                db::raw('max(km) as km'),
-                db::raw('max(kmperjalanan) as kmperjalanan'),
-                db::raw('max(isnull(statusbatas,0)) as statusbatas'),
+        $querytempgorupby = DB::table($tempgorupby)->select(
+            'nopol',
+            db::raw('max(tanggal) as tanggal'),
+            'status',
+            db::raw('max(km) as km'),
+            db::raw('max(kmperjalanan) as kmperjalanan'),
+            db::raw('max(isnull(statusbatas,0)) as statusbatas'),
 
-            )->groupBy(
-                'nopol',
-                'status',
-            )->orderBy('statusbatas','desc');
+        )->groupBy(
+            'nopol',
+            'status',
+        )->orderBy('statusbatas', 'desc');
         DB::table($tempolipersneling)->insertUsing([
             'nopol',
             'tanggal',
@@ -1125,40 +1160,40 @@ class ReminderOli extends MyModel
         });
 
         $tempgorupby = '##tempgorupby' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::create($tempgorupby, function ($table) {
-                $table->id();
-                $table->longText('nopol')->nullable();
-                $table->integer('trado_id')->nullable();
-                $table->date('tanggal')->nullable();
-                $table->string('status', 100)->nullable();
-                $table->double('km', 15, 2)->nullable();
-                $table->double('kmperjalanan', 15, 2)->nullable();
-                $table->integer('statusbatas')->nullable();
-            });
+        Schema::create($tempgorupby, function ($table) {
+            $table->id();
+            $table->longText('nopol')->nullable();
+            $table->integer('trado_id')->nullable();
+            $table->date('tanggal')->nullable();
+            $table->string('status', 100)->nullable();
+            $table->double('km', 15, 2)->nullable();
+            $table->double('kmperjalanan', 15, 2)->nullable();
+            $table->integer('statusbatas')->nullable();
+        });
 
-            DB::table($tempgorupby)->insertUsing([
-                'nopol',
-                'trado_id',
-                'tanggal',
-                'status',
-                'km',
-                'kmperjalanan',
-                'statusbatas'
-            ], $this->getdata());
+        DB::table($tempgorupby)->insertUsing([
+            'nopol',
+            'trado_id',
+            'tanggal',
+            'status',
+            'km',
+            'kmperjalanan',
+            'statusbatas'
+        ], $this->getdata());
 
 
-            $querytempgorupby = DB::table($tempgorupby)->select(
-                'nopol',
-                db::raw('max(tanggal) as tanggal'),
-                'status',
-                db::raw('max(km) as km'),
-                db::raw('max(kmperjalanan) as kmperjalanan'),
-                db::raw('max(isnull(statusbatas,0)) as statusbatas'),
+        $querytempgorupby = DB::table($tempgorupby)->select(
+            'nopol',
+            db::raw('max(tanggal) as tanggal'),
+            'status',
+            db::raw('max(km) as km'),
+            db::raw('max(kmperjalanan) as kmperjalanan'),
+            db::raw('max(isnull(statusbatas,0)) as statusbatas'),
 
-            )->groupBy(
-                'nopol',
-                'status',
-            )->orderBy('statusbatas','desc');
+        )->groupBy(
+            'nopol',
+            'status',
+        )->orderBy('statusbatas', 'desc');
 
         DB::table($tempoligardan)->insertUsing([
             'nopol',
@@ -1289,40 +1324,40 @@ class ReminderOli extends MyModel
         });
 
         $tempgorupby = '##tempgorupby' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::create($tempgorupby, function ($table) {
-                $table->id();
-                $table->longText('nopol')->nullable();
-                $table->integer('trado_id')->nullable();
-                $table->date('tanggal')->nullable();
-                $table->string('status', 100)->nullable();
-                $table->double('km', 15, 2)->nullable();
-                $table->double('kmperjalanan', 15, 2)->nullable();
-                $table->integer('statusbatas')->nullable();
-            });
+        Schema::create($tempgorupby, function ($table) {
+            $table->id();
+            $table->longText('nopol')->nullable();
+            $table->integer('trado_id')->nullable();
+            $table->date('tanggal')->nullable();
+            $table->string('status', 100)->nullable();
+            $table->double('km', 15, 2)->nullable();
+            $table->double('kmperjalanan', 15, 2)->nullable();
+            $table->integer('statusbatas')->nullable();
+        });
 
-            DB::table($tempgorupby)->insertUsing([
-                'nopol',
-                'trado_id',
-                'tanggal',
-                'status',
-                'km',
-                'kmperjalanan',
-                'statusbatas'
-            ], $this->getdata());
+        DB::table($tempgorupby)->insertUsing([
+            'nopol',
+            'trado_id',
+            'tanggal',
+            'status',
+            'km',
+            'kmperjalanan',
+            'statusbatas'
+        ], $this->getdata());
 
 
-            $querytempgorupby = DB::table($tempgorupby)->select(
-                'nopol',
-                db::raw('max(tanggal) as tanggal'),
-                'status',
-                db::raw('max(km) as km'),
-                db::raw('max(kmperjalanan) as kmperjalanan'),
-                db::raw('max(isnull(statusbatas,0)) as statusbatas'),
+        $querytempgorupby = DB::table($tempgorupby)->select(
+            'nopol',
+            db::raw('max(tanggal) as tanggal'),
+            'status',
+            db::raw('max(km) as km'),
+            db::raw('max(kmperjalanan) as kmperjalanan'),
+            db::raw('max(isnull(statusbatas,0)) as statusbatas'),
 
-            )->groupBy(
-                'nopol',
-                'status',
-            )->orderBy('statusbatas','desc');
+        )->groupBy(
+            'nopol',
+            'status',
+        )->orderBy('statusbatas', 'desc');
 
         DB::table($tempsaringanhawa)->insertUsing([
             'nopol',
@@ -2197,22 +2232,22 @@ class ReminderOli extends MyModel
             END) as urutid")
             )
             ->Join(DB::raw("trado  b with (readuncommitted)"), 'a.trado_id', 'b.id')
-            ->Join(DB::raw($tempstatus ." e"), 'a.statusreminder',   'e.status')
+            ->Join(DB::raw($tempstatus . " e"), 'a.statusreminder',   'e.status')
             // ->leftJoin(DB::raw($Temppergantian . " c"), 'b.id', 'c.trado_id')
             ->leftjoin(DB::raw($Temppergantian . " c"), function ($join) {
                 $join->on('c.trado_id', '=', 'b.id');
                 $join->on('c.statusreminder', '=', 'e.status');
-            })            
+            })
             ->Where('b.id', $trado_id)
             ->Where('b.statusaktif', 1);
 
-            // dump(db::table($Tempsaldoreminderoli)->where('trado_id',33)->get());
-            // dump(db::table($Temppergantian)->where('trado_id',33)->get());
+        // dump(db::table($Tempsaldoreminderoli)->where('trado_id',33)->get());
+        // dump(db::table($Temppergantian)->where('trado_id',33)->get());
 
-            // dd($query->get());
-            
+        // dd($query->get());
 
-            // dd(db::table($Tempsaldoreminderolirekap)->where('nopol','B 9211 BEI')->get());
+
+        // dd(db::table($Tempsaldoreminderolirekap)->where('nopol','B 9211 BEI')->get());
 
         DB::table($Tempsaldoreminderolirekap)->insertUsing([
             'nopol',
@@ -2235,7 +2270,7 @@ class ReminderOli extends MyModel
                 'a.kmperjalanan',
                 'a.statusbatas',
             )
-            
+
             ->orderby('a.urutid', 'desc');
 
 
