@@ -56,6 +56,23 @@ class Zona extends MyModel
             ];
             goto selesai;
         }
+        $kota = DB::table('kota')
+            ->from(
+                DB::raw("kota as a with (readuncommitted)")
+            )
+            ->select(
+                'a.zona_id'
+            )
+            ->where('a.zona_id', '=', $id)
+            ->first();
+        if (isset($kota)) {
+
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'kota',
+            ];
+            goto selesai;
+        }
 
         $data = [
             'kondisi' => false,

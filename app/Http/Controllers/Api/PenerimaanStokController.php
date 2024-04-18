@@ -49,7 +49,7 @@ class PenerimaanStokController extends Controller
         $aksi = request()->aksi ?? '';
         $cekdata = $penerimaanStok->cekvalidasihapus($id);
 
-        if ($aksi == 'edit') {
+        if ($aksi == 'EDIT') {
             $cekdata['kondisi'] = false;
         }
         if ($cekdata['kondisi'] == true) {
