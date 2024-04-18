@@ -74,7 +74,7 @@ class SubKelompokController extends Controller
         } else {
             $hakutama = 0;
         }
-        if ($aksi == 'edit') {
+        if ($aksi == 'EDIT') {
             if ($cekdata['kondisi'] == true) {
                 if ($hakutama == 1) {
                     $cekdata['kondisi'] = false;

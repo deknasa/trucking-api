@@ -51,6 +51,9 @@ class JenisTradoController extends Controller
         $useredit = $dataMaster->editing_by ?? '';
         $aksi = request()->aksi ?? '';
         $cekdata = $jenisTrado->cekvalidasihapus($id);
+        if( $aksi == 'EDIT'){
+            $cekdata['kondisi'] = false;
+        }
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
                 ->select(

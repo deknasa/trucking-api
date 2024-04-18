@@ -60,17 +60,11 @@ class AbsenTradoController extends Controller
         $aksi = request()->aksi ?? '';
         $cekdata = $absenTrado->cekvalidasihapus($id);
         if ($cekdata['kondisi'] == true && $aksi != 'EDIT') {
-            $query = DB::table('error')
-                ->select(
-                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
-                )
-                ->where('kodeerror', '=', 'SATL')
-                ->get();
-            $keterangan = $query['0'];
+            $keterangan = $error->cekKeteranganError('SATL') ?? '';
 
             $data = [
                 'status' => false,
-                'message' => $keterangan,
+                'message' => $keterangan. " (".$cekdata['keterangan'].")",
                 'errors' => '',
                 'kondisi' => $cekdata['kondisi'],
             ];

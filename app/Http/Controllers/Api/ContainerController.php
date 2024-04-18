@@ -62,7 +62,9 @@ class ContainerController extends Controller
         }
         $cekdata = $container->cekvalidasihapus($id);
         $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-
+        if( $aksi == 'edit'){
+            $cekdata['kondisi'] = false;
+        }
         if ($cekdata['kondisi'] == true) {
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
                 $server = ' tas';

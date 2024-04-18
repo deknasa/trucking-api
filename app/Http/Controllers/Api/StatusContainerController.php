@@ -49,6 +49,9 @@ class StatusContainerController extends Controller
         $aksi = request()->aksi ?? '';
 
         $cekdata = $statusContainer->cekvalidasihapus($id);
+        if( $aksi == 'edit'){
+            $cekdata['kondisi'] = false;
+        }
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
                 ->select(

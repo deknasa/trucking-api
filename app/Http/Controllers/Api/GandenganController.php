@@ -63,6 +63,10 @@ class GandenganController extends Controller
         $user = auth('api')->user()->name;
         $useredit = $dataMaster->editing_by ?? '';
         $aksi = request()->aksi ?? '';
+
+        if( $aksi == 'EDIT'){
+            $cekdata['kondisi'] = false;
+        }
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
                 ->select(
