@@ -47,6 +47,7 @@ class BankController extends Controller
     {
         $bank = new Bank();
         $cekdata = $bank->cekvalidasihapus($id);
+        
         $dataMaster = Bank::where('id',$id)->first();
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
@@ -54,7 +55,9 @@ class BankController extends Controller
         $useredit = $dataMaster->editing_by ?? '';
       
         $aksi = request()->aksi ?? '';
-
+        if( $aksi == 'EDIT'){
+            $cekdata['kondisi'] = false;
+        }
         if ($useredit != '' && $useredit != $user) {
            
             $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
