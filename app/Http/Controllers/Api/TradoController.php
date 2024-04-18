@@ -81,6 +81,10 @@ class TradoController extends Controller
         $aksi = request()->aksi ?? '';
 
         $cekdata = $trado->cekvalidasihapus($id);
+        if( $aksi == 'EDIT'){
+            $cekdata['kondisi'] = false;
+        }
+
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
                 ->select(
