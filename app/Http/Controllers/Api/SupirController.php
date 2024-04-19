@@ -982,7 +982,7 @@ class SupirController extends Controller
 
             if (!isset($query)) {
                 $keteranganerror = $error->cekKeteranganError('BAP') ?? '';
-                $keterror = 'No Polisi <b>' . $supir->namasupir  . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+                $keterror = 'Supir <b>' . $supir->namasupir  . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
                 $data = [
                     'error' => true,
                     'message' => $keterror,

@@ -68,7 +68,9 @@ class ListTrip extends MyModel
                             $batasHari += 1;
                         }
                         if (strtolower($todayIsSunday) != 'sunday' && strtolower($tomorrowIsSunday) != 'sunday') {
-                            $batasHari -= 1;
+                            if ($batasHari > 1) {
+                                $batasHari -= 1;
+                            }
                         }
                     } else {
                         $batasHari += 1;
@@ -91,7 +93,7 @@ class ListTrip extends MyModel
 
                         goto selesai;
                     }
-                }else{
+                } else {
                     $keteranganerror = $error->cekKeteranganError('LB') ?? '';
                     $data = [
                         'kondisi' => true,
