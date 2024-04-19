@@ -537,6 +537,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('hutangbayarheader/{id}/cekValidasiAksi', [HutangBayarHeaderController::class, 'cekValidasiAksi'])->name('hutangbayarheader.cekValidasiAksi')->whereNumber('id');
     Route::post('hutangbayarheader/{id}/cekvalidasi', [HutangBayarHeaderController::class, 'cekvalidasi'])->name('hutangbayarheader.cekvalidasi')->whereNumber('id');
     Route::post('serviceinheader/{id}/cekvalidasi', [ServiceInHeaderController::class, 'cekvalidasi'])->name('serviceinheader.cekvalidasi')->whereNumber('id');
+    Route::post('serviceinheader/{id}/cekValidasiAksi', [ServiceInHeaderController::class, 'cekValidasiAksi'])->name('serviceinheader.cekValidasiAksi')->whereNumber('id');
     Route::post('serviceoutheader/{id}/cekvalidasi', [ServiceOutHeaderController::class, 'cekvalidasi'])->name('serviceoutheader.cekvalidasi')->whereNumber('id');
     Route::post('kasgantungheader/{id}/cekValidasiAksi', [KasGantungHeaderController::class, 'cekValidasiAksi'])->name('kasgantungheader.cekValidasiAksi')->whereNumber('id');
     Route::post('kasgantungheader/{id}/cekvalidasi', [KasGantungHeaderController::class, 'cekvalidasi'])->name('kasgantungheader.cekvalidasi')->whereNumber('id');
@@ -620,6 +621,21 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('bccemail/{id}/cekValidasi', [BccEmailController::class, 'cekValidasi']);
     Route::post('blacklistsupir/{id}/cekValidasi', [BlackListSupirController::class, 'cekValidasi']);
     Route::post('dataritasi/{id}/cekValidasi', [DataRitasiController::class, 'cekValidasi']);
+    Route::post('supir/historymandor', [SupirController::class, 'historySupirMandor']);
+    Route::post('supir/approvalsupirtanpa', [SupirController::class, 'StoreApprovalSupirTanpa']);
+    Route::get('supir/{id}/gethistorymandor', [SupirController::class, 'getHistoryMandor']);
+    Route::get('supir/{id}/getlisthistorymandor', [SupirController::class, 'getListHistoryMandor']);
+
+    Route::post('supir/{id}/approvalresign', [SupirController::class, 'approvalSupirResign'])->whereNumber('id');
+    Route::post('trado/historymandor', [TradoController::class, 'historyTradoMandor']);
+    Route::get('trado/{id}/gethistorymandor', [TradoController::class, 'getHistoryMandor']);
+    Route::get('trado/{id}/getlisthistorymandor', [TradoController::class, 'getListHistoryMandor']);
+    Route::post('trado/historysupir', [TradoController::class, 'historyTradoSupir']);
+    Route::get('trado/{id}/gethistorysupir', [TradoController::class, 'getHistorySupir']);
+    Route::get('trado/{id}/getlisthistorysupir', [TradoController::class, 'getListHistorySupir']);
+
+    Route::post('trado/approvaltradotanpa', [TradoController::class, 'StoreApprovalTradoTanpa']);
+    Route::post('trado/{id}/cekvalidasihistory', [TradoController::class, 'cekvalidasihistory'])->name('trado.cekvalidasihistory')->whereNumber('id');
 
 });
 
@@ -865,12 +881,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('logtrail/header', [LogTrailController::class, 'header']);
     Route::resource('logtrail', LogTrailController::class)->whereNumber('logtrail');
 
-    Route::post('trado/historymandor', [TradoController::class, 'historyTradoMandor']);
-    Route::get('trado/{id}/gethistorymandor', [TradoController::class, 'getHistoryMandor']);
-    Route::get('trado/{id}/getlisthistorymandor', [TradoController::class, 'getListHistoryMandor']);
-    Route::post('trado/historysupir', [TradoController::class, 'historyTradoSupir']);
-    Route::get('trado/{id}/gethistorysupir', [TradoController::class, 'getHistorySupir']);
-    Route::get('trado/{id}/getlisthistorysupir', [TradoController::class, 'getListHistorySupir']);
     Route::get('trado/combo', [TradoController::class, 'combo']);
     Route::get('trado/field_length', [TradoController::class, 'fieldLength']);
     Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage'])->whereNumber('id');
@@ -884,8 +894,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('trado/approvalsaringanhawa', [TradoController::class, 'approvalsaringanhawa']);
     Route::post('trado/approvalhistorytradomilikmandor', [TradoController::class, 'approvalhistorytradomilikmandor']);
     Route::post('trado/approvalhistorytradomiliksupir', [TradoController::class, 'approvalhistorytradomiliksupir']);
-    Route::post('trado/approvaltradotanpa', [TradoController::class, 'StoreApprovalTradoTanpa']);
-    Route::post('trado/{id}/cekvalidasihistory', [TradoController::class, 'cekvalidasihistory'])->name('trado.cekvalidasihistory')->whereNumber('id');
 
 
 
@@ -1047,17 +1055,12 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
 
-    Route::post('supir/historymandor', [SupirController::class, 'historySupirMandor']);
-    Route::post('supir/approvalsupirtanpa', [SupirController::class, 'StoreApprovalSupirTanpa']);
-    Route::get('supir/{id}/gethistorymandor', [SupirController::class, 'getHistoryMandor']);
-    Route::get('supir/{id}/getlisthistorymandor', [SupirController::class, 'getListHistoryMandor']);
     Route::get('supir/combo', [SupirController::class, 'combo']);
     Route::get('supir/field_length', [SupirController::class, 'fieldLength']);
     Route::get('supir/getsupirresign', [SupirController::class, 'getSupirResign']);
     Route::get('supir/getImage/{id}/{field}', [SupirController::class, 'getImage'])->whereNumber('id');
     Route::post('supir/upload_image/{id}', [SupirController::class, 'uploadImage'])->whereNumber('id');
     Route::get('supir/default', [SupirController::class, 'default']);
-    Route::post('supir/{id}/approvalresign', [SupirController::class, 'approvalSupirResign'])->whereNumber('id');
     Route::post('supir/{id}/cekValidasi', [SupirController::class, 'cekValidasi'])->name('supir.cekValidasi')->whereNumber('id');
 
     Route::get('supir/export', [SupirController::class, 'export']);

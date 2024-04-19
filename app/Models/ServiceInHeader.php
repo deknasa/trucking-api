@@ -38,6 +38,7 @@ class ServiceInHeader extends MyModel
         $trado_id = request()->trado_id ?? '0';
         $serviceout = request()->serviceout ?? '';
         $nobukti = request()->nobukti ?? '';
+        $from = request()->from ?? '';
         $query = DB::table($this->table)->from(
             DB::raw("serviceinheader with (readuncommitted)")
         )
@@ -163,6 +164,24 @@ class ServiceInHeader extends MyModel
             //     $query->where("serviceinheader.trado_id", $trado_id);
             // }
         }
+
+        if ($from == 'pengeluaranstok') {
+
+            $tempspkservicein = '##tempspkservicein' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempspkservicein, function ($table) {
+                $table->string('servicein_nobukti', 50)->nullable();
+            });
+            $selectspk = DB::table("pengeluaranstokheader")->from(DB::raw("pengeluaranstokheader with (readuncommitted)"))
+                ->select('servicein_nobukti')
+                ->where('servicein_nobukti', '!=', '');
+
+            DB::table($tempspkservicein)->insertUsing([
+                'servicein_nobukti',
+            ],  $selectspk);
+
+            $query->leftJoin(DB::raw("$tempspkservicein as spk with (readuncommitted)"), 'serviceinheader.nobukti', 'spk.servicein_nobukti')
+                ->whereRaw("isnull(spk.servicein_nobukti, '') = ''");
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -175,6 +194,56 @@ class ServiceInHeader extends MyModel
         return $data;
     }
 
+    public function cekvalidasiaksi($nobukti)
+    {
+
+        $error = new Error();
+        $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $queryterpakai = db::table("serviceoutdetail")->from(db::raw("serviceoutdetail a with (readuncommitted)"))
+            ->select(
+                'a.nobukti',
+                'a.servicein_nobukti'
+            )
+            ->where('a.servicein_nobukti', $nobukti)
+            ->first();
+        if (isset($queryterpakai)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'No Bukti <b>' . $queryterpakai->servicein_nobukti . '</b><br>' . $keteranganerror . '<br> service out <b>' . $queryterpakai->nobukti . ' <br> ' . $keterangantambahanerror,
+                // 'keterangan' => 'Approval Jurnal ' . $jurnal->nobukti,
+                'kodeerror' => 'SATL2',
+                'editcoa' => false
+            ];
+            goto selesai;
+        }
+
+        $queryterpakai = db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
+            ->select(
+                'a.nobukti',
+                'a.servicein_nobukti'
+            )
+            ->where('a.servicein_nobukti', $nobukti)
+            ->first();
+        if (isset($queryterpakai)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'No Bukti <b>' . $queryterpakai->servicein_nobukti . '</b><br>' . $keteranganerror . '<br> pengeluaran stok <b>' . $queryterpakai->nobukti . ' <br> ' . $keterangantambahanerror,
+                // 'keterangan' => 'Approval Jurnal ' . $jurnal->nobukti,
+                'kodeerror' => 'SATL2',
+                'editcoa' => false
+            ];
+            goto selesai;
+        }
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
     public function findAll($id)
     {
 
