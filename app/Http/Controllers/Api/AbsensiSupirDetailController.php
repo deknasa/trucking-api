@@ -35,6 +35,7 @@ class AbsensiSupirDetailController extends Controller
             'data' => $absensiSupirDetail->get(),
             'user' => $getuser,
             "totalNominal" => $absensiSupirDetail->totalNominal,
+            "jlhtrip" => $absensiSupirDetail->jlhtrip,
             'attributes' => [
                 'totalRows' => $absensiSupirDetail->totalRows,
                 "totalPages" => $absensiSupirDetail->totalPages,
