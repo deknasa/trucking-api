@@ -5,6 +5,8 @@ namespace App\Rules;
 use Illuminate\Contracts\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
 use App\Http\Controllers\Api\ServiceInHeaderController;
+use App\Models\ServiceInHeader;
+use Illuminate\Support\Facades\DB;
 
 class ValidasiDestroyServiceInHeader implements Rule
 {
@@ -13,9 +15,10 @@ class ValidasiDestroyServiceInHeader implements Rule
      *
      * @return void
      */
+    public $kodeerror;
+    public $keterangan;
     public function __construct()
     {
-        
     }
 
     /**
@@ -27,11 +30,22 @@ class ValidasiDestroyServiceInHeader implements Rule
      */
     public function passes($attribute, $value)
     {
-        $serviceInHeader = app(ServiceInHeaderController::class);
-        $cekdata = $serviceInHeader->cekvalidasi(request()->id);
-        
-        if($cekdata->original['kodestatus'] =="1"){
-          return false;
+
+        $penerimaan = new ServiceInHeader();
+        $nobukti = ServiceInHeader::from(DB::raw("serviceinheader"))->where('id', request()->id)->first();
+        $cekdata = $penerimaan->cekvalidasiaksi($nobukti->nobukti);
+        if ($cekdata['kondisi']) {
+            $this->kodeerror = $cekdata['kodeerror'];
+            $this->keterangan = $cekdata['keterangan'];
+            return false;
+        }
+
+        $cekCetak = app(ServiceInHeaderController::class)->cekvalidasi(request()->id);
+        $getOriginal = $cekCetak->original;
+        if ($getOriginal['error'] == true) {
+            $this->kodeerror = $getOriginal['kodeerror'];
+            $this->keterangan = $getOriginal['message'];
+            return false;
         }
         return true;
     }
@@ -43,6 +57,6 @@ class ValidasiDestroyServiceInHeader implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('SDC')->keterangan;
+        return $this->keterangan;
     }
 }

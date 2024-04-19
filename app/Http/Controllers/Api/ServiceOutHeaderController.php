@@ -65,14 +65,14 @@ class ServiceOutHeaderController extends Controller
 
             $serviceOutHeader = (new ServiceOutHeader())->processStore($data);
             $serviceOutHeader->position = $this->getPosition($serviceOutHeader, $serviceOutHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $serviceOutHeader->page = ceil($serviceOutHeader->position / (10));
             } else {
                 $serviceOutHeader->page = ceil($serviceOutHeader->position / ($request->limit ?? 10));
             }
             $serviceOutHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $serviceOutHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -120,14 +120,14 @@ class ServiceOutHeaderController extends Controller
 
             $serviceOutHeader = (new ServiceOutHeader())->processUpdate($serviceoutheader, $data);
             $serviceOutHeader->position = $this->getPosition($serviceOutHeader, $serviceOutHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $serviceOutHeader->page = ceil($serviceOutHeader->position / (10));
             } else {
                 $serviceOutHeader->page = ceil($serviceOutHeader->position / ($request->limit ?? 10));
             }
             $serviceOutHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $serviceOutHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -154,14 +154,14 @@ class ServiceOutHeaderController extends Controller
             $selected = $this->getPosition($serviceOutHeader, $serviceOutHeader->getTable(), true);
             $serviceOutHeader->position = $selected->position;
             $serviceOutHeader->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $serviceOutHeader->page = ceil($serviceOutHeader->position / (10));
             } else {
                 $serviceOutHeader->page = ceil($serviceOutHeader->position / ($request->limit ?? 10));
             }
             $serviceOutHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $serviceOutHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -205,22 +205,33 @@ class ServiceOutHeaderController extends Controller
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
 
+        $tgltutup = (new Parameter())->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
+
         if ($statusdatacetak == $statusCetak->id) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->whereRaw("kodeerror = 'SDC'")
-                ->get();
-            $keterangan = $query['0'];
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keterror = 'No Bukti <b>' . $pengeluaran->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah cetak',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'SDC',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
-         } else if ($useredit != '' && $useredit != $user) {
-           
+        } else if ($tgltutup >= $pengeluaran->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $pengeluaran->nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else if ($useredit != '' && $useredit != $user) {
+
             $waktu = (new Parameter())->cekBatasWaktuEdit('Service Out Header BUKTI');
 
             $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
@@ -244,25 +255,22 @@ class ServiceOutHeaderController extends Controller
                 $keterror = 'No Bukti <b>' . $pengeluaran->nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
                 $data = [
                     'error' => true,
-                    'message' => ["keterangan"=>$keterror],
+                    'message' => ["keterangan" => $keterror],
                     'kodeerror' => 'SDE',
                     'statuspesan' => 'warning',
                 ];
 
                 return response($data);
-            }            
-            
+            }
         } else {
             (new MyModel())->updateEditingBy('ServiceOutHeader', $id, $aksi);
 
 
             $data = [
+                'error' => false,
                 'message' => '',
-                'errors' => 'belum approve',
-                'kodestatus' => '0',
-                'kodenobukti' => '1'
+                'statuspesan' => 'success',
             ];
-
             return response($data);
         }
     }
@@ -340,7 +348,7 @@ class ServiceOutHeaderController extends Controller
     {
     }
 
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */
@@ -348,7 +356,7 @@ class ServiceOutHeaderController extends Controller
     {
     }
 
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL KIRIM BERKAS
      */
