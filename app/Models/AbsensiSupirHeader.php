@@ -120,7 +120,7 @@ class AbsensiSupirHeader extends MyModel
         $proses = request()->proses ?? '';
         $from = request()->from ?? '';
 
-        if ($proses == 'APPROVALSUPIR') {
+        if ($from == 'APPROVALSUPIR') {
             $tempbelumlengkap = '##tempbelumlengkap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
             Schema::create($tempbelumlengkap, function ($table) {
@@ -149,6 +149,23 @@ class AbsensiSupirHeader extends MyModel
             // dd(db::table($tempbelumlengkap)->get());
             $query->leftjoin(db::raw($tempbelumlengkap . " as tempbelumlengkap"), 'absensisupirheader.nobukti', 'tempbelumlengkap.nobukti')
                 ->whereraw("isnull(tempbelumlengkap.nobukti,'')=''");
+            
+            $absensisupir = '##absensisupir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($absensisupir, function ($table) {
+                $table->string('nobukti', 50)->nullable();
+            });
+            $queryabsensisupir = db::table("absensisupirheader")->from(db::raw("absensisupirheader a with (readuncommitted)"))
+            ->select('a.nobukti as nobukti')
+            ->leftjoin(db::raw("absensisupirapprovalheader b with (readuncommitted)"), 'a.nobukti', 'b.absensisupir_nobukti')
+            ->whereraw("isnull(b.absensisupir_nobukti,'')=''");
+            
+            DB::table($absensisupir)->insertUsing([
+                'nobukti',
+            ],  $queryabsensisupir);
+            $query->join(db::raw($absensisupir . " as tempAbsensi"), 'absensisupirheader.nobukti', 'tempAbsensi.nobukti');
+            
+            // ->whereraw("isnull(tempAbsensi.nobukti,'')=''");
+            // dd(DB::table($absensisupir)->get());
         }
 
         if ($from == 'pengajuantripinap') {
