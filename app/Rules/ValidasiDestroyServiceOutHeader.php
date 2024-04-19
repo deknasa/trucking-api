@@ -13,6 +13,8 @@ class ValidasiDestroyServiceOutHeader implements Rule
      *
      * @return void
      */
+    public $kodeerror;
+    public $keterangan;
     public function __construct()
     {
         
@@ -27,11 +29,12 @@ class ValidasiDestroyServiceOutHeader implements Rule
      */
     public function passes($attribute, $value)
     {
-        $serviceInHeader = app(ServiceOutHeaderController::class);
-        $cekdata = $serviceInHeader->cekvalidasi(request()->id);
-        
-        if($cekdata->original['kodestatus'] =="1"){
-          return false;
+        $cekCetak = app(ServiceOutHeaderController::class)->cekvalidasi(request()->id);
+        $getOriginal = $cekCetak->original;
+        if ($getOriginal['error'] == true) {
+            $this->kodeerror = $getOriginal['kodeerror'];
+            $this->keterangan = $getOriginal['message'];
+            return false;
         }
         return true;
     }
@@ -43,6 +46,6 @@ class ValidasiDestroyServiceOutHeader implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('SDC')->keterangan;
+        return $this->keterangan;
     }
 }

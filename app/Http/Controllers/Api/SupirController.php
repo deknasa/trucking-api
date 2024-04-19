@@ -192,7 +192,7 @@ class SupirController extends Controller
     {
         $supir = new Supir();
 
-        $dataMaster = $supir->where('id',$id)->first();
+        $dataMaster = $supir->where('id', $id)->first();
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
@@ -260,7 +260,7 @@ class SupirController extends Controller
 
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
                 $keterror = 'Data <b>' . $dataMaster->namasupir . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
-                
+
                 $data = [
                     'error' => true,
                     'message' => $keterror,
@@ -959,7 +959,8 @@ class SupirController extends Controller
     {
         $supir = db::table("supir")->from(db::raw("supir a with (readuncommitted)"))
             ->select(
-                'a.namasupir'
+                'a.namasupir',
+                'a.mandor_id'
             )
             ->where('a.id', $id)
             ->first();
@@ -981,6 +982,17 @@ class SupirController extends Controller
                 ->first();
 
             if (!isset($query)) {
+                if ($supir != '') {
+                    if ($supir->mandor_id == '' || $supir->mandor_id == 0) {
+                        $data = [
+                            'error' => false,
+                            'message' => '',
+                            'statuspesan' => 'success',
+                        ];
+
+                        return response($data);
+                    }
+                }
                 $keteranganerror = $error->cekKeteranganError('BAP') ?? '';
                 $keterror = 'Supir <b>' . $supir->namasupir  . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
                 $data = [
@@ -994,7 +1006,7 @@ class SupirController extends Controller
             }
         }
 
-      
+
 
         $data = [
             'error' => false,
@@ -1005,7 +1017,7 @@ class SupirController extends Controller
         return response($data);
     }
 
-     /**
+    /**
      * @ClassName
      * @Keterangan APPROVAL HISTORY SUPIR MILIK MANDOR
      */
@@ -1027,7 +1039,7 @@ class SupirController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
-    }    
+    }
 
     /**
      * @ClassName 
@@ -1045,12 +1057,11 @@ class SupirController extends Controller
     {
     }
 
-           /**
+    /**
      * @ClassName 
      * @Keterangan EDIT DATA USER
      */
     public function updateuser()
     {
-
     }
 }
