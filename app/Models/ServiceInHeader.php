@@ -141,7 +141,7 @@ class ServiceInHeader extends MyModel
                 'nobukti',
             ],  $querybuktiserviceout);
 
-            
+
 
 
             // DB::table($tempbuktiserviceout)->from(db::raw($tempbuktiserviceout ))
@@ -372,8 +372,10 @@ class ServiceInHeader extends MyModel
             ->where('DEFAULT', '=', 'YA')
             ->first();
 
-        DB::table($tempdefault)->insert(["statusserviceout" => $statusserviceout->id, "statusserviceoutnama" => $statusserviceout->text]);
+        if (isset($statusserviceout)) {
 
+            DB::table($tempdefault)->insert(["statusserviceout" => $statusserviceout->id, "statusserviceoutnama" => $statusserviceout->text]);
+        }
 
 
 
