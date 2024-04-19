@@ -1558,6 +1558,9 @@ class PengeluaranStokHeader extends MyModel
 
                 // ];
                 // dd($data3);
+                if (!isset($data['detail_statusban'][$i])) {
+                    $data['detail_statusban'][$i]=null;
+                }
                 $pengeluaranStokDetail = (new PengeluaranStokDetail())->processStore($pengeluaranStokHeader, [
                     "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
                     "nobukti" => $pengeluaranStokHeader->nobukti,

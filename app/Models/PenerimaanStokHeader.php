@@ -36,6 +36,11 @@ class PenerimaanStokHeader extends MyModel
         $cabang = request()->cabang ?? '';
         // dd(request());
 
+        $tempdatastokpg = '##tempdatastokpg' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdatastokpg, function ($table) {
+            $table->string('nobukti',100)->nullable();
+        });
+
         $user_id = auth('api')->user()->id ?? 0;
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
@@ -274,7 +279,22 @@ class PenerimaanStokHeader extends MyModel
                 $query->where('penerimaanstokheader.penerimaanstok_id', '=', $spb->text);
             }
             if (request()->pengeluaranstok_id == $spk->text) {
+
+                $querypkterpakaispk=db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
+                ->select (
+                        'a.penerimaanstok_nobukti as nobukti'
+                )
+                ->where('a.pengeluaranstok_id',$spk->text)
+                ->whereraw("isnull(a.penerimaanstok_nobukti,'')<>''");
+
+                DB::table($tempdatastokpg)->insertUsing([
+                    'nobukti',
+                ], $querypkterpakaispk);
+       
+
                 //jika spk, dan stok_id adalah barang reuse harus ada pg dari tujuan ke gudang sementara untuk diperbaiki
+                $query->leftjoin(db::raw($tempdatastokpg . " datapg"),'penerimaanstokheader.nobukti','datapg.nobukti');
+                $query->whereraw("isnull(datapg.nobukti,'')=''");
                 $query->where('penerimaanstokheader.penerimaanstok_id', '=', $pg->text);
             }
             if (request()->tgldari) {
