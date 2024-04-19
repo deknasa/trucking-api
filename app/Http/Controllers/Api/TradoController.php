@@ -230,7 +230,9 @@ class TradoController extends Controller
     {
         $trado = db::table("trado")->from(db::raw("trado a with (readuncommitted)"))
             ->select(
-                'a.kodetrado'
+                'a.kodetrado',
+                DB::raw("isnull(a.mandor_id,0) as mandor_id"),
+                DB::raw("isnull(a.supir_id,0) as supir_id")
             )
             ->where('a.id', $id)
             ->first();
@@ -252,6 +254,17 @@ class TradoController extends Controller
                 ->first();
 
             if (!isset($query)) {
+                if ($trado != '') {
+                    if ($trado->mandor_id == '' || $trado->mandor_id == 0) {
+                        $data = [
+                            'error' => false,
+                            'message' => '',
+                            'statuspesan' => 'success',
+                        ];
+
+                        return response($data);
+                    }
+                }
                 $keteranganerror = $error->cekKeteranganError('BAP') ?? '';
                 $keterror = 'No Polisi <b>' . $trado->kodetrado  . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
                 $data = [
@@ -278,6 +291,18 @@ class TradoController extends Controller
 
 
             if (!isset($query)) {
+                
+                if ($trado != '') {
+                    if ($trado->supir_id == '' || $trado->supir_id == 0) {
+                        $data = [
+                            'error' => false,
+                            'message' => '',
+                            'statuspesan' => 'success',
+                        ];
+
+                        return response($data);
+                    }
+                }
                 $keteranganerror = $error->cekKeteranganError('BAP') ?? '';
                 $keterror = 'No Polisi <b>' . $trado->kodetrado  . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
                 $data = [
