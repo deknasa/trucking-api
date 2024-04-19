@@ -258,6 +258,15 @@ class AbsensiSupirDetail extends MyModel
                         $join->on("$this->table.trado_id", "=", "c.trado_id");
                     })
                     ->where('trado.statusabsensisupir', $statusabsensi);
+
+                if (request()->from == 'tidaklengkap') {
+                    $query->leftjoin(DB::raw($tempsp . " as tempsp"), function ($join) {
+                        $join->on("$this->table.supir_id", "=", "c.supir_id");
+                        $join->on("$this->table.trado_id", "=", "c.trado_id");
+                    })
+                    ->whereRaw("isnull($this->table.absen_id,0)=0")
+                    ->whereRaw("isnull(tempsp.nobukti,'')=''");
+                }
                 if ($getAbsen) {
 
                     $isMandor = auth()->user()->isMandor();
