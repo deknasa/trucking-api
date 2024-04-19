@@ -127,6 +127,7 @@ class PengeluaranStokHeaderController extends Controller
                 "detail_persentasediscount" => $request->detail_persentasediscount,
                 "totalItem" => $request->totalItem,
             ];
+            // dd($data);
             /* Store header */
             $pengeluaranStokHeader = (new PengeluaranStokHeader())->processStore($data);
             /* Set position and page */

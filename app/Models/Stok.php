@@ -99,6 +99,40 @@ class Stok extends MyModel
         $penerimaanstok_id = request()->penerimaanstok_id ?? '';
         $pengeluaranstok_id = request()->pengeluaranstok_id ?? '';
         $penerimaanstokheader_nobukti = request()->penerimaanstokheader_nobukti ?? '';
+        $StokId_stok = request()->StokId ?? '';//dari lookup
+        $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
+        $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
+        $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
+        $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
+        
+        if ($isLookup==true) {
+            $isLookupint=1;
+        } else {
+            $isLookupint=0;
+        }
+        $tempdatastokpg = '##tempdatastokpg' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdatastokpg, function ($table) {
+            $table->Integer('stok_id')->nullable();
+        });
+        if ($StokId_stok!='') {
+            if (($pg->text == $penerimaanstok_id) || ($spk->text == $pengeluaranstok_id)) {
+        
+            $querysubkelompok=db::table('stok')->from(db::raw("stok a with (readuncommitted)"))
+            ->select(
+                'a.id as stok_id'
+            )
+            ->join(db::raw("subkelompok b with (readuncommitted)"),'a.subkelompok_id','b.id')
+            ->whereraw("(case when isnull(b.kelompokpindahgudang_id,0)=0 then b.kelompok_id else  isnull(b.kelompokpindahgudang_id,0) end)=". $KelompokId_stok);
+
+             
+            // dd($querysubkelompok->get());
+
+            DB::table($tempdatastokpg)->insertUsing([
+                'stok_id',
+            ], $querysubkelompok);
+   
+        }
+        }
 
         // $parameter = new Parameter();
 
@@ -109,11 +143,7 @@ class Stok extends MyModel
         //     $KelompokId_stok ='';  
         // }
       
-        $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
-        $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
-        $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
-        $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
-        
+ 
         $tempumuraki2 = '##tempumuraki2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempumuraki2, function ($table) {
             $table->Integer('stok_id')->nullable();
@@ -344,7 +374,10 @@ class Stok extends MyModel
                     DB::raw("'' as penerimaanstokdetail_total"),
                     'stok.statusaktif as statusaktif_id',
                     'stok.statusreuse as statusreuse_id',
-                    'stok.kelompok_id as kelompok_id',
+                    db::raw("(case when ".$isLookupint."=1 then 
+                        (case when isnull(subkelompok.kelompokpindahgudang_id,0)=0 then stok.kelompok_id else  isnull(subkelompok.kelompokpindahgudang_id,0) end)
+                        else stok.kelompok_id  end) as kelompok_id
+                        "),
                     
                 )
                     ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
@@ -516,7 +549,8 @@ class Stok extends MyModel
         }
         if ($KelompokId_stok != '') {
             if (($pg->text == $penerimaanstok_id) || ($spk->text == $pengeluaranstok_id)) {
-                $query->where('stok.kelompok_id', '=', $KelompokId_stok);
+                $query->join(db::raw($tempdatastokpg . " as stokpg"),'stok.id','stokpg.stok_id');
+                // $query->where('stok.kelompok_id', '=', $KelompokId_stok);
             }
         }
         if ($penerimaanstokheader_nobukti) {
