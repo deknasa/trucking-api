@@ -100,14 +100,14 @@ class Stok extends MyModel
         $pengeluaranstok_id = request()->pengeluaranstok_id ?? '';
         $penerimaanstokheader_nobukti = request()->penerimaanstokheader_nobukti ?? '';
 
-        $parameter = new Parameter();
+        // $parameter = new Parameter();
 
-        $idpg = $parameter->cekText('PG STOK', 'PG STOK') ?? 0;
+        // $idpg = $parameter->cekText('PG STOK', 'PG STOK') ?? 0;
 
-        if ($penerimaanstok_id==$idpg) {
-            $kelompok='';
-            $KelompokId_stok ='';  
-        }
+        // if ($penerimaanstok_id==$idpg) {
+        //     $kelompok='';
+        //     $KelompokId_stok ='';  
+        // }
       
         $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
         $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
