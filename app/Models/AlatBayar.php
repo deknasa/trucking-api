@@ -497,12 +497,14 @@ class AlatBayar extends MyModel
     public function processStore(array $data): AlatBayar
     {
         $alatbayar = new AlatBayar();
+        $getTipeBank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->where('id',$data['bank_id'])->first()->tipe ?? '';
         $alatbayar->kodealatbayar = $data['kodealatbayar'];
         $alatbayar->namaalatbayar = $data['namaalatbayar'];
         $alatbayar->keterangan = $data['keterangan'] ?? '';
         $alatbayar->statuslangsungcair = $data['statuslangsungcair'];
         $alatbayar->statusdefault = $data['statusdefault'];
         $alatbayar->bank_id = $data['bank_id'];
+        $alatbayar->tipe = $getTipeBank;
         $alatbayar->coa = $data['coa'] ?? '';
         $alatbayar->statusaktif = $data['statusaktif'];
         $alatbayar->modifiedby = auth('api')->user()->name;
@@ -528,12 +530,16 @@ class AlatBayar extends MyModel
 
     public function processUpdate(AlatBayar $alatbayar, array $data): AlatBayar
     {
+        
+        $getTipeBank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->where('id',$data['bank_id'])->first()->tipe ?? '';
+
         $alatbayar->kodealatbayar = $data['kodealatbayar'];
         $alatbayar->namaalatbayar = $data['namaalatbayar'];
         $alatbayar->keterangan = $data['keterangan'] ?? '';
         $alatbayar->statuslangsungcair = $data['statuslangsungcair'];
         $alatbayar->statusdefault = $data['statusdefault'];
         $alatbayar->bank_id = $data['bank_id'];
+        $alatbayar->tipe = $getTipeBank;
         $alatbayar->coa = $data['coa'] ?? '';
         $alatbayar->statusaktif = $data['statusaktif'];
         $alatbayar->modifiedby = auth('api')->user()->name;

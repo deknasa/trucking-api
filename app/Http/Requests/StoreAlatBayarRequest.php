@@ -92,12 +92,12 @@ class StoreAlatBayarRequest extends FormRequest
             'statusdefault' => ['required', Rule::in($statusDefault)],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'bank' => 'required',
-            'keterangancoa' => 'required',
+            // 'keterangancoa' => 'required',
         ];
 
         $rule = array_merge(
             $rules,
-            $rulesCoa,
+            // $rulesCoa,
             $rulesBank_id
         );
         
