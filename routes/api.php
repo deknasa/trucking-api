@@ -637,6 +637,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('trado/approvaltradotanpa', [TradoController::class, 'StoreApprovalTradoTanpa']);
     Route::post('trado/{id}/cekvalidasihistory', [TradoController::class, 'cekvalidasihistory'])->name('trado.cekvalidasihistory')->whereNumber('id');
 
+    Route::get('prosesuangjalansupirheader/default', [ProsesUangJalanSupirHeaderController::class, 'default']);
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {

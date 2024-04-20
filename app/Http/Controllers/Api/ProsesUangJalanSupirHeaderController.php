@@ -63,6 +63,15 @@ class ProsesUangJalanSupirHeaderController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        
+        $prosesUangJalanSupir = new ProsesUangJalanSupirHeader();
+        return response([
+            'status' => true,
+            'data' => $prosesUangJalanSupir->default(),
+        ]);
+    }
     /**
      * @ClassName 
      * @Keterangan TAMBAH DATA
