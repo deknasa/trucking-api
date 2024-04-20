@@ -96,6 +96,7 @@ class PenerimaanStokHeader extends MyModel
                 $table->string('coa', 200)->nullable();
                 $table->longText('keterangan')->nullable();
                 $table->integer('kelompok_id')->nullable();
+                $table->integer('stok_id')->nullable();
                 $table->string('modifiedby', 200)->nullable();
                 $table->dateTime('created_at')->nullable();
                 $table->dateTime('updated_at')->nullable();
@@ -406,6 +407,7 @@ class PenerimaanStokHeader extends MyModel
                     'coa' => $item['coa'],
                     'keterangan' => $item['keterangan'],
                     'kelompok_id' => $item['kelompok_id'],
+                    'stok_id' => $item['stok_id'],
                     'modifiedby' => $item['modifiedby'],
                     'created_at' => $item['created_at'],
                     'updated_at' => $item['updated_at'],
@@ -528,6 +530,7 @@ class PenerimaanStokHeader extends MyModel
                 'a.coa',
                 'a.keterangan',
                 'a.kelompok_id',
+                'a.stok_id',
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at',
@@ -764,6 +767,7 @@ class PenerimaanStokHeader extends MyModel
             db::raw("cast((format(pengeluaranstok.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranstok"),
             db::raw("cast(cast(format((cast((format(pengeluaranstok.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranstok"),
             db::raw("d1.kelompok_id as kelompok_id"),
+            db::raw("d1.stok_id as stok_id"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             db::raw("isnull(penerimaanstokheader.pengeluaranstokproses_nobukti,'') as pengeluaranstok_nobukti_proses"),
         );
