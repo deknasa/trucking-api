@@ -70,11 +70,12 @@ class SuratPengantarApprovalInputTrip extends MyModel
             ->leftJoin(DB::raw("$tempTerpakai as b with (readuncommitted)"), 'suratpengantarapprovalinputtrip.id', 'b.approvalbukatanggal_id')
             ->leftJoin(DB::raw("[user] with (readuncommitted)"), 'suratpengantarapprovalinputtrip.user_id', 'user.id');
 
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         $data = $query->get();
 
@@ -448,7 +449,7 @@ class SuratPengantarApprovalInputTrip extends MyModel
                 $keteranganerror = $error->cekKeteranganError('KISH') ?? '';
                 $data = [
                     'status' => false,
-                    'keterangan' => $keteranganerror.'<br>kuota : ' . $getAll->jumlahtrip . '<br> terpakai : ' . $suratPengantar . '<br><b>' . $keterangantambahan . '</b>'
+                    'keterangan' => $keteranganerror . '<br>kuota : ' . $getAll->jumlahtrip . '<br> terpakai : ' . $suratPengantar . '<br><b>' . $keterangantambahan . '</b>'
                 ];
                 return $data;
             }
