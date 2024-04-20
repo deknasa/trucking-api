@@ -71,6 +71,61 @@ class ProsesUangJalanSupirHeader extends MyModel
         return $data;
     }
 
+    public function default()
+    {
+
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('bank_idadjust')->nullable();
+            $table->string('bankadjust', 255)->nullable();
+            $table->unsignedBigInteger('bank_iddeposit')->nullable();
+            $table->string('bankdeposit', 255)->nullable();
+            $table->unsignedBigInteger('bank_idpengembalian')->nullable();
+            $table->string('bankpengembalian', 255)->nullable();
+            $table->unsignedBigInteger('bank_idtransfer')->nullable();
+            $table->string('banktransfer', 255)->nullable();
+        });
+
+        $bank = DB::table('bank')->from(
+            DB::raw('bank with (readuncommitted)')
+        )
+            ->select(
+                'id as bank_id',
+                'namabank as bank',
+                'tipe',
+            )
+            ->where('tipe', '=', 'KAS')
+            ->first();
+
+        $banktransfer = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('bank.id as bank_id', 'bank.namabank as bank')
+            ->join(DB::raw("bank with (readuncommitted)"), 'parameter.text', 'bank.id')
+            ->where('parameter.grp', 'PROSES UANG JALAN SUPIR')
+            ->where('parameter.subgrp', 'BANK TRANSFER')->first();
+
+        DB::table($tempdefault)->insert(
+            ["bank_idadjust" => $bank->bank_id, "bankadjust" => $bank->bank, "bank_iddeposit" => $bank->bank_id, "bankdeposit" => $bank->bank, "bank_idpengembalian" => $bank->bank_id, "bankpengembalian" => $bank->bank, "bank_idtransfer" => $banktransfer->bank_id, "banktransfer" => $banktransfer->bank]
+        );
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'bank_idadjust',
+                'bankadjust',
+                'bank_iddeposit',
+                'bankdeposit',
+                'bank_idpengembalian',
+                'bankpengembalian',
+                'bank_idtransfer',
+                'banktransfer',
+            );
+
+        $data = $query->first();
+
+        return $data;
+    }
+
     public function cekvalidasiaksi($nobukti)
     {
         $error = new Error();
@@ -663,7 +718,7 @@ class ProsesUangJalanSupirHeader extends MyModel
 
         // INSERT PENERIMAAN DARI DEPOSITO
         $bankidDeposit = $data['bank_iddeposit'];
-        if ($bankidDeposit != '') {
+        if ($data['nilaideposit'] > 0) {
             // INSERT PENERIMAAN TRUCKING DEPOSITO
             $fetchFormatDPO = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))
                 ->where('kodepenerimaan', 'DPO')
@@ -717,16 +772,17 @@ class ProsesUangJalanSupirHeader extends MyModel
 
         if ($data['pjt_id']) {
 
+
+            $supirPengembalian = [];
+            $bankidPengembalian = $data['bank_idpengembalian'];
+            // PENERIMAAN TRUCKING HEADER
+            $fetchFormatPJP =  DB::table('penerimaantrucking')
+                ->where('kodepenerimaan', 'PJP')
+                ->first();
+            $statusformaPJP = $fetchFormatPJP->format;
+            $totalpinjaman = 0;
+            $nobuktiPinjaman = '';
             for ($i = 0; $i < count($data['pjt_id']); $i++) {
-                $bankidPengembalian = $data['bank_idpengembalian'];
-
-                // PENERIMAAN TRUCKING HEADER
-                $fetchFormatPJP =  DB::table('penerimaantrucking')
-                    ->where('kodepenerimaan', 'PJP')
-                    ->first();
-                $statusformaPJP = $fetchFormatPJP->format;
-
-                $supirPengembalian = [];
                 $pengeluaranTruckingPengembalian = [];
                 $nominalPengembalian = [];
                 $keteranganPengembalian = [];
@@ -735,49 +791,56 @@ class ProsesUangJalanSupirHeader extends MyModel
                 $pengeluaranTruckingPengembalian[] = $data['pengeluarantruckingheader_nobukti'][$i];
                 $nominalPengembalian[] = $data['nombayar'][$i];
                 $keteranganPengembalian[] = $data['keteranganpinjaman'][$i];
+                $totalpinjaman += $data['nombayar'][$i];
 
-                $penerimaanTruckingHeaderPJP = [
-                    'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-                    'penerimaantrucking_id' => $fetchFormatPJP->id,
-                    'supirheader_id' => $prosesUangJalanSupir->supir_id,
-                    'bank_id' => $bankidPengembalian,
-                    'coa' => $fetchFormatPJP->coapostingkredit,
-                    'penerimaan_nobukti' => '',
-                    'postingdari' => 'ENTRY PROSES UANG JALAN SUPIR',
-                    'diterimadari' => $data['supir'],
-                    'supir_id' => $supirPengembalian,
-                    'pengeluarantruckingheader_nobukti' => $pengeluaranTruckingPengembalian,
-                    'keterangan' => $keteranganPengembalian,
-                    'nominal' => $nominalPengembalian
-                ];
-
-                $dataPenerimaanPinjaman = (new PenerimaanTruckingHeader())->processStore($penerimaanTruckingHeaderPJP);
-
-
-                $datadetail = [
-                    'prosesuangjalansupir_id' => $prosesUangJalanSupir->id,
-                    'nobukti' => $prosesUangJalanSupir->nobukti,
-                    'penerimaantrucking_bank_id' => $bankidPengembalian,
-                    'penerimaantrucking_tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-                    'penerimaantrucking_nobukti' => $dataPenerimaanPinjaman->nobukti,
-                    'pengeluarantrucking_bank_id' => '',
-                    'pengeluarantrucking_tglbukti' => '',
-                    'pengeluarantrucking_nobukti' => '',
-                    'pengembaliankasgantung_bank_id' => '',
-                    'pengembaliankasgantung_tglbukti' => '',
-                    'pengembaliankasgantung_nobukti' => '',
-                    'statusprosesuangjalan' => $statusPengembalian->id,
-                    'nominal' => $data['nombayar'][$i],
-                    'keterangan' => $data['keteranganpinjaman'][$i],
-                    'modifiedby' => $prosesUangJalanSupir->modifiedby,
-
-                ];
-
-                //STORE PROSES UANG JALAN DETAIL
-                $prosesUangJalanSupirDetail = (new ProsesUangJalanSupirDetail())->processStore($prosesUangJalanSupir, $datadetail);
-
-                $prosesUangJalanSupirDetails[] = $prosesUangJalanSupirDetail->toArray();
+                if ($nobuktiPinjaman == '') {
+                    $nobuktiPinjaman = $data['pengeluarantruckingheader_nobukti'][$i];
+                } else {
+                    $nobuktiPinjaman = $nobuktiPinjaman . ', ' . $data['pengeluarantruckingheader_nobukti'][$i];
+                }
             }
+
+
+            $penerimaanTruckingHeaderPJP = [
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'penerimaantrucking_id' => $fetchFormatPJP->id,
+                'supirheader_id' => $prosesUangJalanSupir->supir_id,
+                'bank_id' => $bankidPengembalian,
+                'coa' => $fetchFormatPJP->coapostingkredit,
+                'penerimaan_nobukti' => '',
+                'postingdari' => 'ENTRY PROSES UANG JALAN SUPIR',
+                'diterimadari' => $data['supir'],
+                'supir_id' => $supirPengembalian,
+                'pengeluarantruckingheader_nobukti' => $data['pengeluarantruckingheader_nobukti'],
+                'keterangan' => $data['keteranganpinjaman'],
+                'nominal' => $data['nombayar']
+            ];
+
+            $dataPenerimaanPinjaman = (new PenerimaanTruckingHeader())->processStore($penerimaanTruckingHeaderPJP);
+
+
+            $datadetail = [
+                'prosesuangjalansupir_id' => $prosesUangJalanSupir->id,
+                'nobukti' => $prosesUangJalanSupir->nobukti,
+                'penerimaantrucking_bank_id' => $bankidPengembalian,
+                'penerimaantrucking_tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'penerimaantrucking_nobukti' => $dataPenerimaanPinjaman->nobukti,
+                'pengeluarantrucking_bank_id' => '',
+                'pengeluarantrucking_tglbukti' => '',
+                'pengeluarantrucking_nobukti' => '',
+                'pengembaliankasgantung_bank_id' => '',
+                'pengembaliankasgantung_tglbukti' => '',
+                'pengembaliankasgantung_nobukti' => '',
+                'statusprosesuangjalan' => $statusPengembalian->id,
+                'nominal' => $totalpinjaman,
+                'keterangan' => 'PENGEMBALIAN PINJAMAN ' . $data['supir'] . ' ' . $nobuktiPinjaman,
+                'modifiedby' => $prosesUangJalanSupir->modifiedby,
+
+            ];
+            //STORE PROSES UANG JALAN DETAIL
+            $prosesUangJalanSupirDetail = (new ProsesUangJalanSupirDetail())->processStore($prosesUangJalanSupir, $datadetail);
+
+            $prosesUangJalanSupirDetails[] = $prosesUangJalanSupirDetail->toArray();
         }
         // END PENERIMAAN PENGEMBALIAN PINJAMAN
 
@@ -917,7 +980,6 @@ class ProsesUangJalanSupirHeader extends MyModel
         $editProsesDetailAdjust->update();
 
         $detailLog[] = $editProsesDetailAdjust->toArray();
-
 
         // UPDATE DEPOSITO
         $detailDeposito = $detail->deposito($id);

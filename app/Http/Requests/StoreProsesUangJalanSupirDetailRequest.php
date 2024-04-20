@@ -46,7 +46,7 @@ class StoreProsesUangJalanSupirDetailRequest extends FormRequest
             ];
         }
         $rulesDeposito = [];
-        if (request()->nilaideposit > 0 || request()->bankdeposit != '') {
+        if (request()->nilaideposit > 0 && request()->bankdeposit != '') {
             $rulesDeposito = [
 
                 'tgldeposit' =>  [

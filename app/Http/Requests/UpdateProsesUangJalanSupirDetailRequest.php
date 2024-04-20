@@ -58,9 +58,9 @@ class UpdateProsesUangJalanSupirDetailRequest extends FormRequest
         $rulePengembalian = [];
         if (request()->pjt_id) {
             $rulePengembalian = [
-                'nombayar.*' => ['required', 'numeric', 'gt:0', new CekNomPinjamanProsesUangJalan()],
+                'nombayar.*' => ['required', 'numeric', 'gt:0'],
                 'keteranganpinjaman.*' => 'required',
-                'sisa.*' => ['required', 'numeric', 'min:0', new CekMinusSisaPinjamanProsesUangJalan()],
+                'sisa.*' => ['required', 'numeric', 'min:0'],
                 'bankpengembalian' => 'required'
             ];
         }
