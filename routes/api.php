@@ -609,6 +609,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('penerimaanheader/approval', [PenerimaanHeaderController::class, 'approval']);
     Route::post('pengajuantripinap/approval', [PengajuanTripInapController::class, 'approval']);
     Route::post('pengeluaranheader/approval', [PengeluaranHeaderController::class, 'approval']);
+    Route::post('pindahbuku/approval', [PindahBukuController::class, 'approval']);
     Route::post('pelunasanhutangheader/approval', [PelunasanHutangHeaderController::class, 'approval']);
     Route::post('cabang/{id}/cekValidasi', [CabangController::class, 'cekValidasi']);
     Route::post('akuntansi/{id}/cekValidasi', [AkuntansiController::class, 'cekValidasi']);

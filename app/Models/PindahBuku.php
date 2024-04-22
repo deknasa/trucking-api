@@ -73,7 +73,7 @@ class PindahBuku extends MyModel
 
 
         DB::table($tempdefault)->insert(
-            ["bank_id" => $bank->bank_id, "bank" => $bank->bank,"alatbayar_id" => $alatbayar->alatbayar_id, "alatbayar" => $alatbayar->alatbayar]
+            ["bank_id" => $bank->bank_id, "bank" => $bank->bank, "alatbayar_id" => $alatbayar->alatbayar_id, "alatbayar" => $alatbayar->alatbayar]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -112,6 +112,9 @@ class PindahBuku extends MyModel
                 'pindahbuku.tgljatuhtempo',
                 'pindahbuku.nominal',
                 'pindahbuku.keterangan',
+                DB::raw('(case when (year(pindahbuku.tglapproval) <= 2000) then null else pindahbuku.tglapproval end ) as tglapproval'),
+                'statusapproval.memo as statusapproval',
+                'pindahbuku.userapproval',
                 DB::raw('(case when (year(pindahbuku.tglbukacetak) <= 2000) then null else pindahbuku.tglbukacetak end ) as tglbukacetak'),
                 'statuscetak.memo as statuscetak',
                 'pindahbuku.userbukacetak',
@@ -123,6 +126,7 @@ class PindahBuku extends MyModel
             ->leftJoin(DB::raw("bank as bankdari with (readuncommitted)"), 'pindahbuku.bankdari_id', 'bankdari.id')
             ->leftJoin(DB::raw("bank as bankke with (readuncommitted)"), 'pindahbuku.bankke_id', 'bankke.id')
             ->leftJoin(DB::raw("akunpusat as coadebet with (readuncommitted)"), 'pindahbuku.coadebet', 'coadebet.coa')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'pindahbuku.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pindahbuku.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("akunpusat as coakredit with (readuncommitted)"), 'pindahbuku.coakredit', 'coakredit.coa')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pindahbuku.alatbayar_id', 'alatbayar.id');
@@ -169,6 +173,9 @@ class PindahBuku extends MyModel
                  'statuscetak.text as statuscetak',
                  $this->table.userbukacetak,
                  $this->table.tglbukacetak,
+                 'statusapproval.text as statusapproval',
+                 $this->table.userapproval,
+                 $this->table.tglapproval,
                  $this->table.modifiedby,
                  $this->table.created_at,
                  $this->table.updated_at"
@@ -178,6 +185,7 @@ class PindahBuku extends MyModel
             ->leftJoin(DB::raw("bank as bankke with (readuncommitted)"), 'pindahbuku.bankke_id', 'bankke.id')
             ->leftJoin(DB::raw("akunpusat as coadebet with (readuncommitted)"), 'pindahbuku.coadebet', 'coadebet.coa')
             ->leftJoin(DB::raw("akunpusat as coakredit with (readuncommitted)"), 'pindahbuku.coakredit', 'coakredit.coa')
+            ->leftJoin('parameter as statusapproval', 'pindahbuku.statusapproval', 'statusapproval.id')
             ->leftJoin('parameter as statuscetak', 'pindahbuku.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pindahbuku.alatbayar_id', 'alatbayar.id');
     }
@@ -201,6 +209,9 @@ class PindahBuku extends MyModel
             $table->string('statuscetak', 1000)->nullable();
             $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
+            $table->string('statusapproval', 1000)->nullable();
+            $table->string('userapproval', 50)->nullable();
+            $table->date('tglapproval')->nullable();
             $table->string('modifiedby')->default();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -217,7 +228,7 @@ class PindahBuku extends MyModel
         $models = $this->filter($query);
         $models = $query
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'bankdari', 'bankke', 'coadebet', 'coakredit', 'alatbayar', 'nowarkat', 'tgljatuhtempo', 'nominal', 'keterangan', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'bankdari', 'bankke', 'coadebet', 'coakredit', 'alatbayar', 'nowarkat', 'tgljatuhtempo', 'nominal', 'keterangan', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'statusapproval', 'userapproval', 'tglapproval', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -274,6 +285,8 @@ class PindahBuku extends MyModel
                         if ($filters['field'] != '') {
                             if ($filters['field'] == 'statuscetak') {
                                 $query = $query->where('statuscetak.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statusapproval') {
+                                $query = $query->where('statusapproval.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'bankdari') {
                                 $query = $query->where('bankdari.namabank', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'bankke') {
@@ -304,6 +317,8 @@ class PindahBuku extends MyModel
                             if ($filters['field'] != '') {
                                 if ($filters['field'] == 'statuscetak') {
                                     $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'statusapproval') {
+                                    $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
                                 } else if ($filters['field'] == 'bankdari') {
                                     $query = $query->orWhere('bankdari.namabank', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'bankke') {
@@ -354,22 +369,22 @@ class PindahBuku extends MyModel
             ->first();
 
         $pindahBuku = new PindahBuku();
-        $alatabayargiro=DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
-        ->select (
-            'a.text',
-            'a.memo'
-        )
-        ->where('a.grp','ALAT BAYAR GIRO')
-        ->where('a.subgrp','ALAT BAYAR GIRO')
-        ->first();
+        $alatabayargiro = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.text',
+                'a.memo'
+            )
+            ->where('a.grp', 'ALAT BAYAR GIRO')
+            ->where('a.subgrp', 'ALAT BAYAR GIRO')
+            ->first();
 
         $getCoaKredit = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankdari_id'])->first();
 
-        $alatabayarid=$data['alatbayar_id'] ?? 0;
-        if ($alatabayarid== $alatabayargiro->text) {
+        $alatabayarid = $data['alatbayar_id'] ?? 0;
+        if ($alatabayarid == $alatabayargiro->text) {
             $memo = json_decode($alatabayargiro->memo, true);
             $coakredit_detail[] = $memo['JURNAL'];
-            $coaKredit = $memo['JURNAL'];            
+            $coaKredit = $memo['JURNAL'];
         } else {
             $coaKredit = $getCoaKredit->coa;
             $coakredit_detail[] = $getCoaKredit->coa;
@@ -377,10 +392,12 @@ class PindahBuku extends MyModel
 
         $getCoaDebet = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankke_id'])->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
         $pindahBuku->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $pindahBuku->bankdari_id = $data['bankdari_id'];
         $pindahBuku->bankke_id = $data['bankke_id'];
+        $pindahBuku->statusapproval = $statusApproval->id;
         $pindahBuku->coadebet = $getCoaDebet->coa;
         $pindahBuku->coakredit = $coaKredit;
         $pindahBuku->alatbayar_id = $data['alatbayar_id'];
@@ -451,22 +468,22 @@ class PindahBuku extends MyModel
         } else {
             $nobukti = (new RunningNumberService)->get($group, $subgroup, $pindahBuku->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
         }
-        $alatabayargiro=DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
-        ->select (
-            'a.text',
-            'a.memo'
-        )
-        ->where('a.grp','ALAT BAYAR GIRO')
-        ->where('a.subgrp','ALAT BAYAR GIRO')
-        ->first();
+        $alatabayargiro = DB::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.text',
+                'a.memo'
+            )
+            ->where('a.grp', 'ALAT BAYAR GIRO')
+            ->where('a.subgrp', 'ALAT BAYAR GIRO')
+            ->first();
 
         $getCoaKredit = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankdari_id'])->first();
 
-        $alatabayarid=$data['alatbayar_id'] ?? 0;
-        if ($alatabayarid== $alatabayargiro->text) {
+        $alatabayarid = $data['alatbayar_id'] ?? 0;
+        if ($alatabayarid == $alatabayargiro->text) {
             $memo = json_decode($alatabayargiro->memo, true);
             $coakredit_detail[] = $memo['JURNAL'];
-            $coaKredit = $memo['JURNAL'];            
+            $coaKredit = $memo['JURNAL'];
         } else {
             $coaKredit = $getCoaKredit->coa;
             $coakredit_detail[] = $getCoaKredit->coa;
@@ -605,5 +622,41 @@ class PindahBuku extends MyModel
 
         $data = $query->first();
         return $data;
+    }
+
+    public function approvalData(array $data)
+    {
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+        for ($i = 0; $i < count($data['pindahId']); $i++) {
+            $pengeluaranHeader = PindahBuku::find($data['pindahId'][$i]);
+            if ($pengeluaranHeader->statusapproval == $statusApproval->id) {
+                $pengeluaranHeader->statusapproval = $statusNonApproval->id;
+                $aksi = $statusNonApproval->text;
+            } else {
+                $pengeluaranHeader->statusapproval = $statusApproval->id;
+                $aksi = $statusApproval->text;
+            }
+
+            $pengeluaranHeader->tglapproval = date('Y-m-d', time());
+            $pengeluaranHeader->userapproval = auth('api')->user()->name;
+
+            if (!$pengeluaranHeader->save()) {
+                throw new \Exception("Error approval pindah buku.");
+            }
+
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($pengeluaranHeader->getTable()),
+                'postingdari' => 'APPROVAL PINDAH BUKU',
+                'idtrans' =>  $pengeluaranHeader->id,
+                'nobuktitrans' => $pengeluaranHeader->nobukti,
+                'aksi' => $aksi,
+                'datajson' => $pengeluaranHeader->toArray(),
+                'modifiedby' => auth('api')->user()->name,
+            ]);
+        }
     }
 }
