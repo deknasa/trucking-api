@@ -48,7 +48,7 @@ class StorePelunasanHutangHeaderRequest extends FormRequest
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku(),
-                'before_or_equal:' . date('d-m-Y'),
+                // 'before_or_equal:' . date('d-m-Y'),
             ],
             'tglcair' => [
                 'required', 'date_format:d-m-Y',
