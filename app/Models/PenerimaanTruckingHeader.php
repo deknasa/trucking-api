@@ -1786,6 +1786,9 @@ class PenerimaanTruckingHeader extends MyModel
             $penerimaanTruckingHeader->bank_id = $data['bank_id'];
             $penerimaanTruckingHeader->penerimaan_nobukti = $data['penerimaan_nobukti'];
         }
+        
+        $penerimaanTruckingHeader->editing_by = '';
+        $penerimaanTruckingHeader->editing_at = null;
         if (!$penerimaanTruckingHeader->save()) {
             throw new \Exception("Error storing Penerimaan Trucking header.");
         }

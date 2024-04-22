@@ -456,6 +456,8 @@ class InvoiceExtraHeader extends MyModel
         $invoiceExtraHeader->agen_id = $data['agen_id'];
         $invoiceExtraHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $invoiceExtraHeader->modifiedby = auth('api')->user()->name;
+        $invoiceExtraHeader->editing_by = '';
+        $invoiceExtraHeader->editing_at = null;
         $invoiceExtraHeader->info = html_entity_decode(request()->info);
 
         if (!$invoiceExtraHeader->save()) {

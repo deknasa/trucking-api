@@ -885,6 +885,8 @@ class ProsesUangJalanSupirHeader extends MyModel
         }
 
         $prosesUangJalanSupirHeader->modifiedby = auth('api')->user()->name;
+        $prosesUangJalanSupirHeader->editing_by = '';
+        $prosesUangJalanSupirHeader->editing_at = null;
         $prosesUangJalanSupirHeader->info = html_entity_decode(request()->info);
 
         if (!$prosesUangJalanSupirHeader->save()) {

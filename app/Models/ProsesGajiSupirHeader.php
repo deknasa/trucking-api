@@ -2562,6 +2562,8 @@ class ProsesGajiSupirHeader extends MyModel
         $prosesGajiSupirHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
         $prosesGajiSupirHeader->keterangan = 'PROSES GAJI SUPIR ' . date('d-m-Y', strtotime($data['tgldari'])) . ' s/d ' .  date('d-m-Y', strtotime($data['tglsampai']));
         $prosesGajiSupirHeader->modifiedby = auth('api')->user()->name;
+        $prosesGajiSupirHeader->editing_by = '';
+        $prosesGajiSupirHeader->editing_at = null;
         $prosesGajiSupirHeader->info = html_entity_decode(request()->info);
 
         if (!$prosesGajiSupirHeader->save()) {
