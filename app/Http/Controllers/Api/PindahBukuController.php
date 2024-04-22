@@ -14,6 +14,7 @@ use App\Models\JurnalUmumHeader;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalValidasiApprovalRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePindahBukuRequest;
 use App\Http\Requests\UpdatePindahBukuRequest;
@@ -25,7 +26,7 @@ use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
 class PindahBukuController extends Controller
 {
 
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -219,6 +220,33 @@ class PindahBukuController extends Controller
     }
 
     /**
+     * @ClassName
+     * @Keterangan APPROVAL DATA
+     */
+    public function approval(ApprovalValidasiApprovalRequest $request)
+    {
+        // dd('a');
+
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'pindahId' => $request->pindahId
+            ];
+            $pindahBuku = (new PindahBuku())->approvalData($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
+    }
+
+    /**
      * @ClassName 
      * @Keterangan CETAK DATA
      */
@@ -226,14 +254,14 @@ class PindahBukuController extends Controller
     {
     }
 
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */
     public function approvalbukacetak()
     {
     }
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL KIRIM BERKAS
      */
@@ -289,44 +317,57 @@ class PindahBukuController extends Controller
         }
     }
 
-    
+
     public function cekvalidasi($id)
     {
-        
+
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $pengeluaran = PindahBuku::find($id);
         if (!isset($pengeluaran)) {
             $keteranganerror = $error->cekKeteranganError('DTA') ?? '';
-            $keterror='No Bukti <b>'. request()->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . request()->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
                 'message' => $keterror,
                 'error' => true,
                 'kodeerror' => 'SAP',
                 'statuspesan' => 'warning',
             ];
-    
+
             return response($data);
-    
         }
 
         $nobukti = $pengeluaran->nobukti;
         $statusdatacetak = $pengeluaran->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
-            
-        $tgltutup=(new Parameter())->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
-        $tgltutup=date('Y-m-d', strtotime($tgltutup));
+        $status = $pengeluaran->statusapproval ?? 0;
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+
+        $tgltutup = (new Parameter())->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
         $user = auth('api')->user()->name;
         $useredit = $pengeluaran->editing_by ?? '';
         $aksi = request()->aksi ?? '';
 
         $cekPencairan = DB::table("pencairangiropengeluaranheader")->from(DB::raw("pencairangiropengeluaranheader with (readuncommitted)"))
-        ->where('pengeluaran_nobukti', $nobukti)
-        ->first();
-        if ($statusdatacetak == $statusCetak->id) {
+            ->where('pengeluaran_nobukti', $nobukti)
+            ->first();
+        if ($status == $statusApproval->id) {
+            $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+            $data = [
+                'message' => $keterror,
+                'error' => true,
+                'kodeerror' => 'SAP',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else if ($statusdatacetak == $statusCetak->id) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
-            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
 
             $data = [
                 'message' => $keterror,
@@ -338,7 +379,7 @@ class PindahBukuController extends Controller
             return response($data);
         } else if ($tgltutup >= $pengeluaran->tglbukti) {
             $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
-            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
                 'message' => $keterror,
@@ -346,10 +387,10 @@ class PindahBukuController extends Controller
                 'statuspesan' => 'warning',
             ];
 
-            return response($data);            
-        } else if($cekPencairan != ''){
+            return response($data);
+        } else if ($cekPencairan != '') {
             $keteranganerror = $error->cekKeteranganError('SCG') ?? '';
-            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pencairan giro <b>'. $cekPencairan->nobukti .'</b> <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti pencairan giro <b>' . $cekPencairan->nobukti . '</b> <br> ' . $keterangantambahanerror;
 
             $data = [
                 'error' => true,
@@ -358,7 +399,7 @@ class PindahBukuController extends Controller
                 'statuspesan' => 'warning',
             ];
 
-            return response($data);    
+            return response($data);
         } else if ($useredit != '' && $useredit != $user) {
             $waktu = (new Parameter())->cekBatasWaktuEdit('Pindah Buku BUKTI');
 
@@ -388,8 +429,7 @@ class PindahBukuController extends Controller
                 ];
 
                 return response($data);
-            }            
-            
+            }
         } else {
             (new MyModel())->updateEditingBy('pindahbuku', $id, $aksi);
 

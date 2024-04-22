@@ -28,7 +28,7 @@ class ApprovalValidasiApprovalRequest extends FormRequest
         // ValidasiApproval();
         $rules = [
             // 'tableId' => ['required','min:1',new ApprovalBukaCetak(),new BukaCetakSatuArah()],
-            'bukti' => [new ValidasiApproval()],
+            'bukti' => ['required',new ValidasiApproval()],
         ];
         // dd('test3a');
         return $rules;
@@ -45,7 +45,7 @@ class ApprovalValidasiApprovalRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'bukti.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'bukti.required' => 'NO BUKTI ' . ' ' . $controller->geterror('WP')->keterangan,
         ];
     }
 }
