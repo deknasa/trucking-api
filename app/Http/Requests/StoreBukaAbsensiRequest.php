@@ -36,7 +36,7 @@ class StoreBukaAbsensiRequest extends FormRequest
                 new UniqueTglBukaAbsensi,
                 new DateTutupBuku(),
             ],
-            "user_id"=>["required"]
+            // "user_id"=>["required"]
         ];
     }
 }
