@@ -47,6 +47,7 @@ class UpdatePelunasanHutangHeaderRequest extends FormRequest
         )
             ->select(
                 'a.tglbukti',
+                'a.statusapproval',
                 'b.namasupplier as supplier',
                 'c.namabank as bank',
                 'd.kodealatbayar as alatbayar',
@@ -64,12 +65,17 @@ class UpdatePelunasanHutangHeaderRequest extends FormRequest
             ];
         }
 
+        $tglbuktiApproval = '';
+        if ($query->statusapproval == '3') {
+            $tglbuktiApproval = 'before_or_equal:' . date('d-m-Y');
+        }
+
         $rules = [
             'id' => [new ValidasiDestroyHutangBayarHeader()],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku(),
-                'before_or_equal:' . date('d-m-Y'),
+                $tglbuktiApproval
             ],
             'tglcair' => [
                 'required', 'date_format:d-m-Y',
@@ -95,7 +101,7 @@ class UpdatePelunasanHutangHeaderRequest extends FormRequest
                 'supplier' => [
                     new ExistSupplier(),
                     new ValidasiHutangList($jumlahdetail),
-                    Rule::in($query->supplier),
+                    // Rule::in($query->supplier),
                     // new ValidasiHutangPelunasanApproval(),
                     new ValidasiHutangPelunasan()
 
