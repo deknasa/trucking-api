@@ -731,6 +731,12 @@ class AbsensiSupirHeader extends MyModel
         }
 
         $bukaAbsensi = BukaAbsensi::where('tglabsensi', '=', $date);
+        $cekUserBukaabsensi = $bukaAbsensi->first();
+        if ($cekUserBukaabsensi) {
+            if (!$cekUserBukaabsensi->mandor_user_id) {
+                return $cekUserBukaabsensi;
+            }
+        }
         $isAdmin = auth()->user()->isAdmin();
 
         if (!$isAdmin) {
