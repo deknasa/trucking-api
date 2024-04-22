@@ -688,7 +688,7 @@ class Trado extends MyModel
 
 
         )
-        
+
             ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'trado.mandor_id', 'mandor.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'trado.supir_id', 'supir.id')
             ->leftjoin(DB::raw($tempapproval . " as c"), function ($join) {
@@ -947,9 +947,9 @@ class Trado extends MyModel
                         } else if ($filters['field'] == 'statusvalidasikendaraan') {
                             $query = $query->where('parameter_statusvalidasikendaraan.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusapprovalhistorytradomilikmandor') {
-                            $query = $query->where('parameter_statusapprovalhistorytradomilikmandor.text', '=', $filters['data']);
+                            $query = $query->where('parameter_statusapprovalhistorymilikmandor.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusapprovalhistorytradomiliksupir') {
-                            $query = $query->where('parameter_statusapprovalhistorytradomilikmandor.text', '=', $filters['data']);
+                            $query = $query->where('parameter_statusapprovalhistorymiliksupir.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'mandor_id') {
                             $query = $query->where('mandor.namamandor', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'supir_id') {
@@ -970,41 +970,42 @@ class Trado extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusaktif') {
-                                $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'statusstandarisasi') {
-                                $query = $query->orWhere('parameter_statusstandarisasi.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'statusjenisplat') {
-                                $query = $query->orWhere('parameter_statusjenisplat.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'statusmutasi') {
-                                $query = $query->orWhere('parameter_statusmutasi.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'statusmobilstoring') {
-                                $query = $query->orWhere('parameter_statusmobilstoring.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'statusappeditban') {
-                                $query = $query->orWhere('parameter_statusappeditban.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'statuslewatvalidasi') {
-                                $query = $query->orWhere('parameter_statuslewatvalidasi.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'statusabsensisupir') {
-                                $query = $query->orWhere('parameter_statusabsensisupir.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'statusvalidasikendaraan') {
-                                $query = $query->orWhere('parameter_statusvalidasikendaraan.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'statusapprovalhistorytradomilikmandor') {
-                                $query = $query->orwhereRaw('parameter_statusapprovalhistorytradomilikmandor.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'statusapprovalhistorytradomiliksupir') {
-                                $query = $query->orwhereRaw('parameter_statusapprovalhistorytradomilikmandor.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'mandor_id') {
-                                $query = $query->orWhere('mandor.namamandor', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'supir_id') {
-                                $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglserviceopname' || $filters['field'] == 'tglpajakstnk' || $filters['field'] == 'tglstnkmati' || $filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglspeksimati' || $filters['field'] == 'tglgantiakiterakhir' || $filters['field'] == 'tglakhirgantioli') {
-                                $query = $query->orWhereRaw("format((case when year(isnull($this->table." . $filters['field'] . ",'1900/1/1'))<2000 then null else trado." . $filters['field'] . " end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'check') {
-                                $query = $query->whereRaw('1 = 1');
-                            } else {
-                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            if ($filters['field'] != 'check') {
+
+                                if ($filters['field'] == 'statusaktif') {
+                                    $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'statusstandarisasi') {
+                                    $query = $query->orWhere('parameter_statusstandarisasi.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'statusjenisplat') {
+                                    $query = $query->orWhere('parameter_statusjenisplat.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'statusmutasi') {
+                                    $query = $query->orWhere('parameter_statusmutasi.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'statusmobilstoring') {
+                                    $query = $query->orWhere('parameter_statusmobilstoring.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'statusappeditban') {
+                                    $query = $query->orWhere('parameter_statusappeditban.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'statuslewatvalidasi') {
+                                    $query = $query->orWhere('parameter_statuslewatvalidasi.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'statusabsensisupir') {
+                                    $query = $query->orWhere('parameter_statusabsensisupir.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'statusvalidasikendaraan') {
+                                    $query = $query->orWhere('parameter_statusvalidasikendaraan.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'statusapprovalhistorytradomilikmandor') {
+                                    $query = $query->orWhere('parameter_statusapprovalhistorymilikmandor.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'statusapprovalhistorytradomiliksupir') {
+                                    $query = $query->orWhere('parameter_statusapprovalhistorymiliksupir.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'mandor_id') {
+                                    $query = $query->orWhere('mandor.namamandor', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'supir_id') {
+                                    $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglserviceopname' || $filters['field'] == 'tglpajakstnk' || $filters['field'] == 'tglstnkmati' || $filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglspeksimati' || $filters['field'] == 'tglgantiakiterakhir' || $filters['field'] == 'tglakhirgantioli') {
+                                    $query = $query->orWhereRaw("format((case when year(isnull($this->table." . $filters['field'] . ",'1900/1/1'))<2000 then null else trado." . $filters['field'] . " end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
                     });
