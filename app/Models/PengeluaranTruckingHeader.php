@@ -2143,6 +2143,8 @@ class PengeluaranTruckingHeader extends MyModel
         $pengeluaranTruckingHeader->container_id = $data['containerheader_id'] ?? '';
         $pengeluaranTruckingHeader->statusformat = $data['statusformat'] ?? $format->id;
         $pengeluaranTruckingHeader->modifiedby = auth('api')->user()->name;
+        $pengeluaranTruckingHeader->editing_by = '';
+        $pengeluaranTruckingHeader->editing_at = null;
         $pengeluaranTruckingHeader->info = html_entity_decode(request()->info);
 
         if (!$pengeluaranTruckingHeader->save()) {

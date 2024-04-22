@@ -2255,6 +2255,8 @@ class GajiSupirHeader extends MyModel
 
         $gajiSupirHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $gajiSupirHeader->nobukti = $nobukti;
+        $gajiSupirHeader->editing_by = '';
+        $gajiSupirHeader->editing_at = null;
 
         $gajiSupirHeader->modifiedby = auth('api')->user()->name;
         $gajiSupirHeader->info = html_entity_decode(request()->info);

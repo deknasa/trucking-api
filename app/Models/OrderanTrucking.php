@@ -1899,6 +1899,8 @@ class OrderanTrucking extends MyModel
         $orderanTrucking->statusperalihan = $data['statusperalihan'];
         $orderanTrucking->statusapprovalbukatrip = $defaultapproval->id;
         $orderanTrucking->statusapprovaledit = $defaultapproval->id;
+        $orderanTrucking->editing_by = '';
+        $orderanTrucking->editing_at = null;
 
         $orderanTrucking->modifiedby = auth('api')->user()->name;
         $orderanTrucking->info = html_entity_decode(request()->info);

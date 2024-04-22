@@ -2487,6 +2487,8 @@ class SuratPengantar extends MyModel
             $suratPengantar->gudang = $data['gudang'];
             $suratPengantar->lokasibongkarmuat = $data['lokasibongkarmuat'];
             $suratPengantar->nobukti_tripasal = $data['nobukti_tripasal'];
+            $suratPengantar->editing_by = '';
+            $suratPengantar->editing_at = null;
             $suratPengantar->modifiedby = auth('api')->user()->name;
             $suratPengantar->info = html_entity_decode(request()->info);
             $suratPengantar->statusedittujuan = $statusTidakBolehEditTujuan->id;
