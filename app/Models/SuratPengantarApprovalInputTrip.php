@@ -460,8 +460,37 @@ class SuratPengantarApprovalInputTrip extends MyModel
             ];
             return $data;
         } else {
-            if (date('Y-m-d', strtotime($tanggal . "+$getBatasHari days")) . ' ' . $getBatasInput->text < date('Y-m-d H:i:s')) {
-
+            $batasHari = $getBatasHari;
+            $date = date('Y-m-d', strtotime($tanggal));
+    
+            $kondisi = true;
+            if ($getBatasHari != 0) {
+    
+                while ($kondisi) {
+                    $cekHarilibur = DB::table("harilibur")->from(DB::raw("harilibur with (readuncommitted)"))
+                        ->where('tgl', $date)
+                        ->first();
+    
+                    $todayIsSunday = date('l', strtotime($date));
+                    $tomorrowIsSunday = date('l', strtotime($date . "+1 days"));
+                    if ($cekHarilibur == '') {
+                        $kondisi = false;
+                        $allowed = true;
+                        if (strtolower($todayIsSunday) == 'sunday') {
+                            $kondisi = true;
+                            $batasHari += 1;
+                        }
+                        if (strtolower($tomorrowIsSunday) == 'sunday') {
+                            $kondisi = true;
+                            $batasHari += 1;
+                        }
+                    } else {
+                        $batasHari += 1;
+                    }
+                    $date = date('Y-m-d', strtotime($tanggal . "+$batasHari days"));
+                }
+            }
+            if (date('Y-m-d H:i:s') > $date . ' ' . $getBatasInput->text) {
                 $keteranganerror = $error->cekKeteranganError('TSTB') ?? '';
                 $keteranganerror2 = $error->cekKeteranganError('BBA') ?? '';
                 $data = [
@@ -470,6 +499,16 @@ class SuratPengantarApprovalInputTrip extends MyModel
                 ];
                 return $data;
             }
+            // if (date('Y-m-d', strtotime($tanggal . "+$getBatasHari days")) . ' ' . $getBatasInput->text < date('Y-m-d H:i:s')) {
+
+            //     $keteranganerror = $error->cekKeteranganError('TSTB') ?? '';
+            //     $keteranganerror2 = $error->cekKeteranganError('BBA') ?? '';
+            //     $data = [
+            //         'status' => false,
+            //         'keterangan' => $keteranganerror . '<br>' . $keteranganerror2 . '<br><b>' . $keterangantambahan . '</b>'
+            //     ];
+            //     return $data;
+            // }
         }
 
         $data = [

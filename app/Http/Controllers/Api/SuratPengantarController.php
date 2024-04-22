@@ -523,11 +523,10 @@ class SuratPengantarController extends Controller
             $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($nobukti->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
             if ($diffNow->i > $waktu) {
-                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                if ($aksi == 'DELETE' || $aksi == 'EDIT') {
 
                     (new MyModel())->updateEditingBy('suratpengantar', $id, $aksi);
                 }
-
                 $data = [
                     'message' => '',
                     'error' => false,
@@ -536,7 +535,6 @@ class SuratPengantarController extends Controller
 
                 // return response($data);
             } else {
-
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
                 $keterror = 'No Bukti <b>' . $nobukti->nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
                 $data = [
@@ -550,7 +548,7 @@ class SuratPengantarController extends Controller
             }            
             
         } else {
-            if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+            if ($aksi == 'DELETE' || $aksi == 'EDIT') {
                 (new MyModel())->updateEditingBy('suratpengantar', $id, $aksi);
             }
             $data = [
