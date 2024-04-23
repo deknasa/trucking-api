@@ -1003,6 +1003,11 @@ class PencairanGiroPengeluaranHeader extends MyModel
 
                     $dataDetail = DB::table("penerimaangirodetail")->from(DB::raw("penerimaangirodetail with (readuncommitted)"))->where('nobukti', $data['nobukti'][$i])->get();
 
+                    $alatBayar = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', 'ALAT BAYAR GIRO')
+                    ->where('grp', 'ALAT BAYAR GIRO')
+                    ->first()->text;
+
                     $noWarkat = [];
                     $tglJatuhTempo = [];
                     $nominalDetail = [];
@@ -1023,6 +1028,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                         'tglbukti' => $tglLunas,
                         'pelanggan_id' => 0,
                         'agen_id' => $dataHeader->agen_id,
+                        'alatbayar_id' => $alatBayar,
                         'postingdari' => 'ENTRY PENCAIRAN GIRO',
                         'diterimadari' => 'PENCAIRAN GIRO',
                         'penerimaangiro_nobukti' => $dataHeader->nobukti,

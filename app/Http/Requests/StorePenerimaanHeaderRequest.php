@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistAlatBayar;
 use App\Rules\ExistBank;
 use App\Rules\ExistPelanggan;
 use App\Rules\ValidasiTotalDetail;
@@ -41,19 +42,31 @@ class StorePenerimaanHeaderRequest extends FormRequest
             ];
         }
         
-        $pelanggan_id = $this->pelanggan_id;
-        $rulesPelanggan_id = [];
-        if ($pelanggan_id != null) {
-
-            $rulesPelanggan_id = [
-                'pelanggan' => ['required'],
-                'pelanggan_id' => ['required', 'numeric', 'min:1', new ExistPelanggan()]
+        $alatbayar_id = $this->alatbayar_id;
+        $rulesAlatbayar_id = [];
+        if ($alatbayar_id != null) {
+            $rulesAlatbayar_id = [
+                'alatbayar_id' => ['required', 'numeric', 'min:1', new ExistAlatBayar()]
             ];
-        } else if ($pelanggan_id == null && $this->pelanggan != '') {
-            $rulesPelanggan_id = [
-                'pelanggan_id' => ['required', 'numeric', 'min:1', new ExistPelanggan()]
+        } else if ($alatbayar_id == null && $this->alatbayar != '') {
+            $rulesAlatbayar_id = [
+                'alatbayar_id' => ['required', 'numeric', 'min:1', new ExistAlatBayar()]
             ];
         }
+
+        // $pelanggan_id = $this->pelanggan_id;
+        // $rulesPelanggan_id = [];
+        // if ($pelanggan_id != null) {
+
+        //     $rulesPelanggan_id = [
+        //         'pelanggan' => ['required'],
+        //         'pelanggan_id' => ['required', 'numeric', 'min:1', new ExistPelanggan()]
+        //     ];
+        // } else if ($pelanggan_id == null && $this->pelanggan != '') {
+        //     $rulesPelanggan_id = [
+        //         'pelanggan_id' => ['required', 'numeric', 'min:1', new ExistPelanggan()]
+        //     ];
+        // }
 
         $rules = [
             'tglbukti' => [
@@ -67,7 +80,7 @@ class StorePenerimaanHeaderRequest extends FormRequest
                 'before_or_equal:' . date('d-m-Y')
             ],
             // 'cabang' => 'required',
-            // 'statuskas' => 'required',
+            'alatbayar' => 'required',
             'bank'   => ['required', new ValidasiTotalDetail()],
             // 'noresi' => 'required'
         ];
@@ -80,7 +93,7 @@ class StorePenerimaanHeaderRequest extends FormRequest
                 $rules,
                 (new $relatedRequest)->rules(),
                 $rulesBank_id,
-                $rulesPelanggan_id
+                $rulesAlatbayar_id
             );
         }
 

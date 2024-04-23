@@ -37,6 +37,8 @@ class PenerimaanHeader extends MyModel
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('bank_id')->nullable();
             $table->string('bank', 255)->nullable();
+            $table->unsignedBigInteger('alatbayar_id')->nullable();
+            $table->string('alatbayar', 255)->nullable();
         });
 
 
@@ -46,14 +48,40 @@ class PenerimaanHeader extends MyModel
             ->select(
                 'id as bank_id',
                 'namabank as bank',
+                'tipe'
 
             )
             ->where('id', '=', $bankId)
             ->first();
 
 
+        $statusdefault = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS DEFAULT')
+            ->where('subgrp', '=', 'STATUS DEFAULT')
+            ->where('text', '=', 'DEFAULT')
+            ->first();
+
+        $alatbayardefault = $statusdefault->id ?? 0;
+
+        $alatbayar = DB::table('alatbayar')->from(
+            DB::raw('alatbayar with (readuncommitted)')
+        )
+            ->select(
+                'id as alatbayar_id',
+                'namaalatbayar as alatbayar',
+
+            )
+            ->where('statusdefault', '=', $alatbayardefault)
+            ->where('tipe', $bank->tipe)
+            ->first();
+
         DB::table($tempdefault)->insert(
-            ["bank_id" => $bank->bank_id, "bank" => $bank->bank]
+            ["bank_id" => $bank->bank_id, "bank" => $bank->bank, "alatbayar_id" => $alatbayar->alatbayar_id, "alatbayar" => $alatbayar->alatbayar]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -61,7 +89,9 @@ class PenerimaanHeader extends MyModel
         )
             ->select(
                 'bank_id',
-                'bank'
+                'bank',
+                'alatbayar_id',
+                'alatbayar',
             );
 
         $data = $query->first();
@@ -99,7 +129,7 @@ class PenerimaanHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $jurnal->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $jurnal->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Approval Jurnal ' . $jurnal->nobukti,
                 'kodeerror' => 'SAPP',
                 'editcoa' => false
@@ -123,7 +153,7 @@ class PenerimaanHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Pelunasan Piutang <b>'. $pelunasanPiutang->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Pelunasan Piutang <b>' . $pelunasanPiutang->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Pelunasan Piutang ' . $pelunasanPiutang->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -145,7 +175,7 @@ class PenerimaanHeader extends MyModel
         if (isset($penerimaanTrucking)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti penerimaan trucking <b>'. $penerimaanTrucking->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti penerimaan trucking <b>' . $penerimaanTrucking->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'penerimaan trucking ' . $penerimaanTrucking->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -168,7 +198,7 @@ class PenerimaanHeader extends MyModel
         if (isset($pengembalianKasgantung)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pengembalian kas gantung <b>'. $pengembalianKasgantung->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti pengembalian kas gantung <b>' . $pengembalianKasgantung->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'pengembalian kas gantung ' . $pengembalianKasgantung->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -190,7 +220,7 @@ class PenerimaanHeader extends MyModel
         if (isset($prosesUangjalan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti proses uang jalan supir <b>'. $prosesUangjalan->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti proses uang jalan supir <b>' . $prosesUangjalan->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'proses uang jalan supir ' . $prosesUangjalan->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -212,7 +242,7 @@ class PenerimaanHeader extends MyModel
         if (isset($pengeluaranStok)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pengeluaran stok <b>'. $pengeluaranStok->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti pengeluaran stok <b>' . $pengeluaranStok->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'pengeluaran stok ' . $pengeluaranStok->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -234,7 +264,7 @@ class PenerimaanHeader extends MyModel
         if (isset($pemutihanSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pemutihan supir <b>'. $pemutihanSupir->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti pemutihan supir <b>' . $pemutihanSupir->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'pemutihan supir ' . $pemutihanSupir->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -257,7 +287,7 @@ class PenerimaanHeader extends MyModel
         if (isset($cekGiro)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti GIRO <b>'. $cekGiro->penerimaangiro_nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti GIRO <b>' . $cekGiro->penerimaangiro_nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'pemutihan supir ' . $pemutihanSupir->nobukti,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
@@ -279,7 +309,7 @@ class PenerimaanHeader extends MyModel
         if (isset($rekap)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> Rekap Penerimaan <b>'. $rekap->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> Rekap Penerimaan <b>' . $rekap->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Rekap Penerimaan ' . $rekap->nobukti,
                 'kodeerror' => 'SATL2',
                 'editcoa' => true
@@ -308,7 +338,7 @@ class PenerimaanHeader extends MyModel
                 'penerimaanheader.id',
                 'penerimaanheader.nobukti',
                 'penerimaanheader.tglbukti',
-                'pelanggan.namapelanggan as pelanggan_id',
+                'alatbayar.namaalatbayar as alatbayar_id',
                 'agen.namaagen as agen_id',
                 'bank.namabank as bank_id',
                 'penerimaanheader.postingdari',
@@ -333,7 +363,7 @@ class PenerimaanHeader extends MyModel
             )
 
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaanheader.statusapproval', 'statusapproval.id')
-            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaanheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'penerimaanheader.alatbayar_id', 'alatbayar.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaanheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'penerimaanheader.statuskirimberkas', 'statuskirimberkas.id')
@@ -525,14 +555,17 @@ class PenerimaanHeader extends MyModel
                 'penerimaanheader.diterimadari',
                 'penerimaanheader.tgllunas',
                 'penerimaanheader.bank_id',
-                'bank.namabank as bank'
+                'bank.namabank as bank',
+                'penerimaanheader.alatbayar_id',
+                'alatbayar.namaalatbayar as alatbayar'
             )
             ->leftjoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaanheader.pelanggan_id', 'pelanggan.id')
-            ->join(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
+            ->leftjoin(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
+            ->leftjoin(DB::raw("alatbayar with (readuncommitted)"), 'penerimaanheader.alatbayar_id', 'alatbayar.id')
             ->where('penerimaanheader.id', '=', $id)
             ->first();
 
-        // dd($data);
+
         return $data;
     }
 
@@ -548,6 +581,7 @@ class PenerimaanHeader extends MyModel
             $this->table.tglbukti,
             agen.namaagen as agen_id,
             bank.namabank as bank_id,
+            alatbayar.namaalatbayar as alatbayar_id,
             $this->table.postingdari,
             $this->table.diterimadari,
             $this->table.tgllunas,
@@ -567,11 +601,11 @@ class PenerimaanHeader extends MyModel
                 )
             )
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaanheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'penerimaanheader.alatbayar_id', 'alatbayar.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaanheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaanheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'penerimaanheader.statuskirimberkas', 'statuskirimberkas.id');
-
     }
 
     public function createTemp(string $modelTable)
@@ -583,6 +617,7 @@ class PenerimaanHeader extends MyModel
             $table->date('tglbukti', 1000)->nullable();
             $table->string('agen_id', 1000)->nullable()->nullable();
             $table->string('bank_id', 1000)->nullable();
+            $table->string('alatbayar_id', 1000)->nullable();
             $table->string('postingdari', 1000)->nullable();
             $table->string('diterimadari', 1000)->nullable();
             $table->date('tgllunas', 1000)->nullable();
@@ -612,7 +647,7 @@ class PenerimaanHeader extends MyModel
         $models = $this->filter($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])->where($this->table . '.bank_id', request()->bankheader);
         DB::table($temp)->insertUsing([
-            'id', 'nobukti', 'tglbukti', 'agen_id', 'bank_id', 'postingdari', 'diterimadari', 'tgllunas',  'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak','statuskirimberkas', 'userkirimberkas', 'tglkirimberkas', 'modifiedby', 'created_at', 'updated_at'
+            'id', 'nobukti', 'tglbukti', 'agen_id', 'bank_id','alatbayar_id', 'postingdari', 'diterimadari', 'tgllunas',  'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'statuskirimberkas', 'userkirimberkas', 'tglkirimberkas', 'modifiedby', 'created_at', 'updated_at'
         ], $models);
 
 
@@ -626,8 +661,8 @@ class PenerimaanHeader extends MyModel
             return $query->orderBy('bank.namabank', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'agen_id') {
             return $query->orderBy('agen.namaagen', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'pelanggan_id') {
-            return $query->orderBy('pelanggan.namapelanggan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'alatbayar_id') {
+            return $query->orderBy('alatbayar.namaalatbayar', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'nobukti_penerimaan') {
             return $query->orderBy('penerimaanheader.nobukti', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'tglbukti_penerimaan') {
@@ -652,8 +687,8 @@ class PenerimaanHeader extends MyModel
                                 $query = $query->where('statuscetak.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statuskirimberkas') {
                                 $query = $query->where('statuskirimberkas.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'pelanggan_id') {
-                                $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'alatbayar_id') {
+                                $query = $query->where('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'bank_id') {
                                 $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'agen_id') {
@@ -693,8 +728,8 @@ class PenerimaanHeader extends MyModel
                                     $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'statuskirimberkas') {
                                     $query = $query->orWhere('statuskirimberkas.text', '=', "$filters[data]");
-                                } else if ($filters['field'] == 'pelanggan_id') {
-                                    $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'alatbayar_id') {
+                                    $query = $query->orWhere('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'bank_id') {
                                     $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'agen_id') {
@@ -873,6 +908,31 @@ class PenerimaanHeader extends MyModel
         $statuscetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
         $statusKirimBerkas = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSKIRIMBERKAS')->where('text', 'BELUM KIRIM BERKAS')->first();
 
+        $statusdefault = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS DEFAULT')
+            ->where('subgrp', '=', 'STATUS DEFAULT')
+            ->where('text', '=', 'DEFAULT')
+            ->first();
+
+        $alatbayardefault = $statusdefault->id ?? 0;
+
+        $alatbayar = DB::table('alatbayar')->from(
+            DB::raw('alatbayar with (readuncommitted)')
+        )
+            ->select(
+                'id as alatbayar_id',
+                'namaalatbayar as alatbayar',
+
+            )
+            ->where('statusdefault', '=', $alatbayardefault)
+            ->where('tipe', $querysubgrppenerimaan->tipe)
+            ->first();
+
         $penerimaanHeader = new PenerimaanHeader();
 
         $penerimaanHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
@@ -882,6 +942,7 @@ class PenerimaanHeader extends MyModel
         $penerimaanHeader->diterimadari = $data['diterimadari'] ?? '';
         $penerimaanHeader->tgllunas = date('Y-m-d', strtotime($data['tgllunas']));
         $penerimaanHeader->bank_id = $data['bank_id'] ?? '';
+        $penerimaanHeader->alatbayar_id = $data['alatbayar_id'] ?? $alatbayar->alatbayar_id;
         $penerimaanHeader->penerimaangiro_nobukti = $data['penerimaangiro_nobukti'] ?? '';
         $penerimaanHeader->statusapproval = $statusApproval->id;
         $penerimaanHeader->statuscetak = $statuscetak->id;
@@ -1012,14 +1073,14 @@ class PenerimaanHeader extends MyModel
         }
 
         $penerimaanHeader->pelanggan_id = $data['pelanggan_id'] ?? '';
-        $penerimaanHeader->postingdari = $data['postingdari'] ?? '';
+        $penerimaanHeader->postingdari = $data['postingdari'] ?? 'EDIT PENERIMAAN KAS/BANK';
         $penerimaanHeader->diterimadari = $data['diterimadari'] ?? '';
         $penerimaanHeader->tgllunas = date('Y-m-d', strtotime($data['tgllunas']));
         $penerimaanHeader->bank_id = $data['bank_id'] ?? '';
         $penerimaanHeader->penerimaangiro_nobukti = $data['penerimaangiro_nobukti'] ?? '';
         $penerimaanHeader->modifiedby = auth('api')->user()->name;
         $penerimaanHeader->editing_by = '';
-        $penerimaanHeader->editing_at = null;        
+        $penerimaanHeader->editing_at = null;
         $penerimaanHeader->info = html_entity_decode(request()->info);
         $penerimaanHeader->agen_id = $data['agen_id'] ?? '';
 
