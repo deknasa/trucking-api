@@ -50,8 +50,9 @@ class BukaAbsensiController extends Controller
             $bukaAbsensi = (new BukaAbsensi())->processStore($data);
             /* Set position and page */
             $bukaAbsensi->position = $this->getPosition($bukaAbsensi, $bukaAbsensi->getTable())->position;
-            $bukaAbsensi->page = ceil($bukaAbsensi->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit == 0) {
+                $bukaAbsensi->page = ceil($bukaAbsensi->position / (10));
+            } else {
                 $bukaAbsensi->page = ceil($bukaAbsensi->position / ($request->limit ?? 10));
             }
 
@@ -149,8 +150,9 @@ class BukaAbsensiController extends Controller
             $bukaAbsensi = (new BukaAbsensi())->processDestroy($id);
             /* Set position and page */
             $bukaAbsensi->position = $this->getPosition($bukaAbsensi, $bukaAbsensi->getTable())->position;
-            $bukaAbsensi->page = ceil($bukaAbsensi->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit == 0) {
+                $bukaAbsensi->page = ceil($bukaAbsensi->position / (10));
+            } else {
                 $bukaAbsensi->page = ceil($bukaAbsensi->position / ($request->limit ?? 10));
             }
 
