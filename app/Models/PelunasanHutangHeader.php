@@ -29,6 +29,34 @@ class PelunasanHutangHeader extends MyModel
     public function get()
     {
 
+        $temppelunasan = '##temppelunasan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temppelunasan, function ($table) {
+            $table->string('nobukti', 100)->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+            $table->double('potongan', 15, 2)->nullable();
+            $table->double('total', 15, 2)->nullable();
+        });
+
+        $query = DB::table('pelunasanhutangdetail')->from(
+            DB::raw("pelunasanhutangdetail as a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti',
+                DB::raw("sum(a.nominal) as nominal"),
+                DB::raw("sum(a.potongan) as potongan"),
+                DB::raw("sum(a.nominal+a.potongan) as total")
+            )
+            ->groupby('nobukti');
+
+        DB::table($temppelunasan)->insertUsing([
+            'nobukti',
+            'nominal',
+            'potongan',
+            'total',
+        ], $query);
+
+        // dd(DB::table($temppelunasan)->get());
+        
         $this->setRequestParameters();
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
@@ -45,6 +73,9 @@ class PelunasanHutangHeader extends MyModel
                 DB::raw('(case when (year(PelunasanHutangheader.tglapproval) <= 2000) then null else PelunasanHutangheader.tglapproval end ) as tglapproval'),
                 DB::raw('(case when (year(PelunasanHutangheader.tglbukacetak) <= 2000) then null else PelunasanHutangheader.tglbukacetak end ) as tglbukacetak'),
                 'statuscetak.memo as statuscetak',
+                'c.nominal as nominal',
+                'c.potongan as potongan',
+                'c.total as total',
                 'PelunasanHutangheader.userbukacetak',
                 'PelunasanHutangheader.nowarkat',
                 'PelunasanHutangheader.jumlahcetak',
@@ -65,6 +96,7 @@ class PelunasanHutangHeader extends MyModel
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'PelunasanHutangheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'PelunasanHutangheader.supplier_id', 'supplier.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'PelunasanHutangheader.alatbayar_id', 'alatbayar.id')
+            ->leftJoin(DB::raw($temppelunasan . " as c"), 'pelunasanHutangheader.nobukti', 'c.nobukti')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'PelunasanHutangheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'PelunasanHutangheader.statusapproval', 'statusapproval.id');
         if (request()->tgldari) {
@@ -130,6 +162,32 @@ class PelunasanHutangHeader extends MyModel
 
     public function selectColumns($query)
     { //sesuaikan dengan createtemp
+        $temppelunasan = '##temppelunasanSel' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temppelunasan, function ($table) {
+            $table->string('nobukti', 100)->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+            $table->double('potongan', 15, 2)->nullable();
+            $table->double('total', 15, 2)->nullable();
+        });
+
+        $querytemppelunasan = DB::table('pelunasanhutangdetail')->from(
+            DB::raw("pelunasanhutangdetail as a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti',
+                DB::raw("sum(a.nominal) as nominal"),
+                DB::raw("sum(a.potongan) as potongan"),
+                DB::raw("sum(a.nominal+a.potongan) as total")
+            )
+            ->groupby('a.nobukti');
+
+        DB::table($temppelunasan)->insertUsing([
+            'nobukti',
+            'nominal',
+            'potongan',
+            'total',
+        ], $querytemppelunasan);
+
         return $query->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
@@ -145,6 +203,9 @@ class PelunasanHutangHeader extends MyModel
                 $this->table.tglapproval,
                 $this->table.tglbukacetak,
                 'statuscetak.memo as statuscetak',
+                'c.nominal as nominal',
+                'c.potongan as potongan',
+                'c.total as total',
                 $this->table.userbukacetak,
                 $this->table.jumlahcetak,
                 $this->table.nowarkat,
@@ -162,6 +223,7 @@ class PelunasanHutangHeader extends MyModel
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'PelunasanHutangheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'PelunasanHutangheader.supplier_id', 'supplier.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'PelunasanHutangheader.alatbayar_id', 'alatbayar.id')
+            ->leftJoin(DB::raw($temppelunasan . " as c"), 'PelunasanHutangheader.nobukti', 'c.nobukti')
             ->join(DB::raw("parameter as statuscetak with (readuncommitted)"), 'PelunasanHutangheader.statuscetak', 'statuscetak.id')
             ->join(DB::raw("parameter as statusapproval with (readuncommitted)"), 'PelunasanHutangheader.statusapproval', 'statusapproval.id');
     }
@@ -180,6 +242,9 @@ class PelunasanHutangHeader extends MyModel
             $table->date('tglapproval')->nullable();
             $table->date('tglbukacetak')->nullable();
             $table->string('statuscetak', 1000)->nullable();
+            $table->string('nominal',100)->nullable();
+            $table->string('potongan',100)->nullable();
+            $table->string('total',100)->nullable();
             $table->string('userbukacetak', 50)->nullable();
             $table->integer('jumlahcetak')->Length(11)->nullable();
             $table->string('nowarkat')->nullable();
@@ -203,7 +268,7 @@ class PelunasanHutangHeader extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pengeluaran_nobukti', 'coa', 'userapproval', 'statusapproval',  'tglapproval','tglbukacetak', 'statuscetak', 'userbukacetak',  'jumlahcetak','nowarkat', 'bank_id', 'supplier_id','alatbayar_id', 'tglcair', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','pengeluaran_nobukti','coa','userapproval','statusapproval','tglapproval','tglbukacetak','statuscetak','nominal','potongan','total','userbukacetak','jumlahcetak','nowarkat','bank_id','supplier_id','alatbayar_id','tglcair','modifiedby','created_at','updated_at'], $models);
 
 
         return  $temp;
@@ -241,6 +306,10 @@ class PelunasanHutangHeader extends MyModel
                                 $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'alatbayar_id') {
                                 $query = $query->where('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->whereRaw("format(c.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'potongan') {
+                                $query = $query->whereRaw("format(c.potongan, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglcair' || $filters['field'] == 'tglbukacetak') {
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at' || $filters['field'] == 'tglapproval') {
@@ -267,6 +336,10 @@ class PelunasanHutangHeader extends MyModel
                                     $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'alatbayar_id') {
                                     $query = $query->orWhere('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'nominal') {
+                                    $query = $query->orWhereRaw("format(c.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'potongan') {
+                                    $query = $query->orWhereRaw("format(c.potongan, '#,#0.00') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgljatuhtempo' || $filters['field'] == 'tglbukacetak') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at' || $filters['field'] == 'tglapproval') {
