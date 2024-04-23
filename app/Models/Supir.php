@@ -1175,6 +1175,7 @@ class Supir extends MyModel
             $supir->tgllahir = date('Y-m-d', strtotime($data['tgllahir']));
             $supir->tglterbitsim = date('Y-m-d', strtotime($data['tglterbitsim']));
             $supir->statuspostingtnl = $data['statuspostingtnl'];
+            $supir->tglberhentisupir = date('Y-m-d', strtotime("1900-01-01"));
             $supir->modifiedby = auth('api')->user()->user;
             $supir->info = html_entity_decode(request()->info);
             if ($data['mandor_id'] != 0) {
