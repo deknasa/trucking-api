@@ -1094,7 +1094,13 @@ class Supir extends MyModel
             $statusBlackList = DB::table('parameter')->where('grp', 'BLACKLIST SUPIR')->where('default', 'YA')->first();
             $batasBulan = DB::table('parameter')->where('grp', 'BATAS BULAN SUPIR BARU LUAR KOTA')->where('subgrp', 'BATAS BULAN SUPIR BARU LUAR KOTA')->first();
             $tglmasuk = date('Y-m-d', strtotime($data['tglmasuk']));
-            $tglBatasLuarKota = (date('Y-m-d', strtotime("+$batasBulan->text months", strtotime($tglmasuk))));
+            $isBolehLuarKota = DB::table("parameter")->where('grp', 'VALIDASI SUPIR')->where('subgrp', 'BOLEH LUAR KOTA')->first()->text ?? 'TIDAK';
+            if ($isBolehLuarKota == 'YA') {
+                $tglBatasLuarKota = null;
+            } else {
+                $tglBatasLuarKota = (date('Y-m-d', strtotime("+$batasBulan->text months", strtotime($tglmasuk))));
+            }
+
 
             $isMandor = auth()->user()->isMandor();
             $userid = auth('api')->user()->id;
@@ -1333,11 +1339,16 @@ class Supir extends MyModel
             $supir->pdfsuratperjanjian = $data['pdfsuratperjanjian'];
 
             if ($oldTglMasuk != date('Y-m-d', strtotime($data['tglmasuk']))) {
-                $batasBulan = DB::table('parameter')->where('grp', 'BATAS BULAN SUPIR BARU LUAR KOTA')->where('subgrp', 'BATAS BULAN SUPIR BARU LUAR KOTA')->first();
-                $tglmasuk = date('Y-m-d', strtotime($data['tglmasuk']));
-                $tglBatasLuarKota = (date('Y-m-d', strtotime("+$batasBulan->text months", strtotime($tglmasuk))));
+                $isBolehLuarKota = DB::table("parameter")->where('grp', 'VALIDASI SUPIR')->where('subgrp', 'BOLEH LUAR KOTA')->first()->text ?? 'TIDAK';
+                if ($isBolehLuarKota != 'YA') {
 
-                $supir->tglbatastidakbolehluarkota = $tglBatasLuarKota;
+
+                    $batasBulan = DB::table('parameter')->where('grp', 'BATAS BULAN SUPIR BARU LUAR KOTA')->where('subgrp', 'BATAS BULAN SUPIR BARU LUAR KOTA')->first();
+                    $tglmasuk = date('Y-m-d', strtotime($data['tglmasuk']));
+                    $tglBatasLuarKota = (date('Y-m-d', strtotime("+$batasBulan->text months", strtotime($tglmasuk))));
+
+                    $supir->tglbatastidakbolehluarkota = $tglBatasLuarKota;
+                }
             }
 
             if (!$supir->save()) {
@@ -1425,39 +1436,54 @@ class Supir extends MyModel
         } else if ($getToken->getStatusCode() == '200') {
 
             $access_token = json_decode($getToken, TRUE)['access_token'];
-
-            foreach ($photoSupir as $imagePath) {
-                $supirBase64[] = base64_encode(file_get_contents(storage_path("app/supir/profil/" . $imagePath)));
+            if ($photoSupir != '') {
+                foreach ($photoSupir as $imagePath) {
+                    $supirBase64[] = base64_encode(file_get_contents(storage_path("app/supir/profil/" . $imagePath)));
+                }
+                $data['photosupir'] = $supirBase64;
             }
-            foreach ($photoKtp as $imagePath) {
-                $ktpBase64[] = base64_encode(file_get_contents(storage_path("app/supir/ktp/" . $imagePath)));
+            if ($photoKtp != '') {
+                foreach ($photoKtp as $imagePath) {
+                    $ktpBase64[] = base64_encode(file_get_contents(storage_path("app/supir/ktp/" . $imagePath)));
+                }
+                $data['photoktp'] = $ktpBase64;
             }
-            foreach ($photoSim as $imagePath) {
-                $simBase64[] = base64_encode(file_get_contents(storage_path("app/supir/sim/" . $imagePath)));
+            if ($photoSim != '') {
+                foreach ($photoSim as $imagePath) {
+                    $simBase64[] = base64_encode(file_get_contents(storage_path("app/supir/sim/" . $imagePath)));
+                }
+                $data['photosim'] = $simBase64;
             }
-            foreach ($photoKk as $imagePath) {
-                $kkBase64[] = base64_encode(file_get_contents(storage_path("app/supir/kk/" . $imagePath)));
+            if ($photoKk != '') {
+                foreach ($photoKk as $imagePath) {
+                    $kkBase64[] = base64_encode(file_get_contents(storage_path("app/supir/kk/" . $imagePath)));
+                }
+                $data['photokk'] = $kkBase64;
             }
-            foreach ($photoSkck as $imagePath) {
-                $skckBase64[] = base64_encode(file_get_contents(storage_path("app/supir/skck/" . $imagePath)));
+            if ($photoSkck != '') {
+                foreach ($photoSkck as $imagePath) {
+                    $skckBase64[] = base64_encode(file_get_contents(storage_path("app/supir/skck/" . $imagePath)));
+                }
+                $data['photoskck'] = $skckBase64;
             }
-            foreach ($photoDomisili as $imagePath) {
-                $domisiliBase64[] = base64_encode(file_get_contents(storage_path("app/supir/domisili/" . $imagePath)));
+            if ($photoDomisili != '') {
+                foreach ($photoDomisili as $imagePath) {
+                    $domisiliBase64[] = base64_encode(file_get_contents(storage_path("app/supir/domisili/" . $imagePath)));
+                }
+                $data['photodomisili'] = $domisiliBase64;
             }
-            foreach ($photoVaksin as $imagePath) {
-                $vaksinBase64[] = base64_encode(file_get_contents(storage_path("app/supir/vaksin/" . $imagePath)));
+            if ($photoVaksin != '') {
+                foreach ($photoVaksin as $imagePath) {
+                    $vaksinBase64[] = base64_encode(file_get_contents(storage_path("app/supir/vaksin/" . $imagePath)));
+                }
+                $data['photovaksin'] = $vaksinBase64;
             }
-            foreach ($photoPDF as $imagePath) {
-                $pdfBase64[] = base64_encode(file_get_contents(storage_path("app/supir/suratperjanjian/" . $imagePath)));
+            if ($photoPDF != '') {
+                foreach ($photoPDF as $imagePath) {
+                    $pdfBase64[] = base64_encode(file_get_contents(storage_path("app/supir/suratperjanjian/" . $imagePath)));
+                }
+                $data['pdfsuratperjanjian'] = $pdfBase64;
             }
-            $data['photosupir'] = $supirBase64;
-            $data['photoktp'] = $ktpBase64;
-            $data['photosim'] = $simBase64;
-            $data['photokk'] = $kkBase64;
-            $data['photoskck'] = $skckBase64;
-            $data['photodomisili'] = $domisiliBase64;
-            $data['photovaksin'] = $vaksinBase64;
-            $data['pdfsuratperjanjian'] = $pdfBase64;
             $data['from'] = 'jkt';
             $copySupir = Http::withHeaders([
                 'Accept' => 'application/json',
