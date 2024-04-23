@@ -58,7 +58,9 @@ class UpdatePenerimaanHeaderRequest extends FormRequest
             ],
             'tgllunas'  => ['required','before_or_equal:'.date('d-m-Y'),],
             'bank'   => ['required', new ValidasiTotalDetail()],
-            'bank_id' => ['required', Rule::in($getDataPenerimaan->bank_id)]
+            'bank_id' => ['required', Rule::in($getDataPenerimaan->bank_id)],
+            'alatbayar'   => ['required'],
+            'alatbayar_id' => ['required', Rule::in($getDataPenerimaan->alatbayar_id)]
         ];
         $relatedRequests = [
             UpdatePenerimaanDetailRequest::class
