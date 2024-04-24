@@ -32,7 +32,6 @@ class ValidasiTambahanGajiSupir implements Rule
         $listTrip = '';
 
         $cekStatus = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'SURAT PENGANTAR BIAYA TAMBAHAN')->first();
-
         if ($cekStatus->text == 'YA') {
             $dataTrip = request()->rincian_nobukti;
             if ($dataTrip != '') {
@@ -47,13 +46,30 @@ class ValidasiTambahanGajiSupir implements Rule
 
                     if ($query != '') {
                         $allowed = false;
-
                         if (strpos($listTrip, $nobukti) === false) {
                             // If it doesn't exist, append the current element
                             if ($listTrip == '') {
                                 $listTrip = $nobukti;
                             } else {
                                 $listTrip = $listTrip . ', ' . $nobukti;
+                            }
+                        }
+                    } else {
+
+                        $queryTambahan = DB::table("saldosuratpengantarbiayatambahan")->from(DB::raw("saldosuratpengantarbiayatambahan as a with (readuncommitted)"))
+                            ->join(DB::raw("saldosuratpengantar as b with (readuncommitted)"), 'a.suratpengantar_id', 'b.id')
+                            ->where('b.nobukti', $nobukti)
+                            ->where('a.statusapproval', 4)
+                            ->first();
+                        if ($queryTambahan != '') {
+                            $allowed = false;
+                            if (strpos($listTrip, $nobukti) === false) {
+                                // If it doesn't exist, append the current element
+                                if ($listTrip == '') {
+                                    $listTrip = $nobukti;
+                                } else {
+                                    $listTrip = $listTrip . ', ' . $nobukti;
+                                }
                             }
                         }
                     }
