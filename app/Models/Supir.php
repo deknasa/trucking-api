@@ -346,6 +346,8 @@ class Supir extends MyModel
             if (!$absensiSupirHeader) {
                 return $query->where('supir.id', 0)->get();
             }
+            
+            $statusapproval = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
             $parameter = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->select('text')
                 ->where('grp', '=', 'ABSENSI SUPIR SERAP')
@@ -353,6 +355,7 @@ class Supir extends MyModel
             $values = array_column($parameter->toArray(), 'text');
             $result = implode(',', $values);
             $query->whereRaw("supir.id not in (select supirold_id from absensisupirdetail where absensi_id=$absensiSupirHeader->id and absen_id IN ($result) )");
+            $query->where("supir.statusapproval",$statusapproval->id);
         }
         if ($isProsesUangjalan == true) {
             $query->addSelect(DB::raw("absensisupirdetail.uangjalan"))
