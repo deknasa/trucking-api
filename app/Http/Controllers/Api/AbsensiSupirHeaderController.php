@@ -74,11 +74,14 @@ class AbsensiSupirHeaderController extends Controller
                 $absensiSupirHeader->tglapprovaleditabsensi = date('Y-m-d', strtotime("1900-01-01"));
                 $absensiSupirHeader->userapprovaleditabsensi = '';
                 $absensiSupirHeader->tglbataseditabsensi = null;
+                $absensiSupirHeader->tglbataseditabsensiadmin = null;
                 $aksi = $statusTidakBolehEdit->text;
             } else {
-                $tglbtas = date("Y-m-d", strtotime('today'));
-                $tglbtas = date("Y-m-d H:i:s", strtotime($tglbtas . ' 23:59:00'));
+                $jam_batas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'JAMBATASAPPROVAL')->where('subgrp', 'JAMBATASAPPROVAL')->first()->text ?? '23:59:59';
+                $tglbtas = (new AbsensiSupirHeader())->getTomorrowDate();
+                $tglbtas = date("Y-m-d H:i:s", strtotime($tglbtas .' '. $jam_batas));
                 $absensiSupirHeader->tglbataseditabsensi = $tglbtas;
+                $absensiSupirHeader->tglbataseditabsensiadmin = $tglbtas;
                 $absensiSupirHeader->statusapprovaleditabsensi = $statusBolehEdit->id;
                 $aksi = $statusBolehEdit->text;
                 $absensiSupirHeader->tglapprovaleditabsensi = date("Y-m-d", strtotime('today'));
@@ -545,9 +548,10 @@ class AbsensiSupirHeaderController extends Controller
             }
 
             //validasi Hari ini
-            $todayValidation = AbsensiSupirHeader::todayValidation($absensisupir->tglbukti);
+            $todayValidation = (new AbsensiSupirHeader())->todayValidation($absensisupir->tglbukti);
+            // dd($todayValidation);
             if (!$todayValidation) {
-                $jam_batas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'BATAS JAM EDIT ABSENSI')->where('subgrp', 'BATAS JAM EDIT ABSENSI')->first();
+                $jam_batas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'JAMBATASAPPROVAL')->where('subgrp', 'JAMBATASAPPROVAL')->first();
                 $batas = date('d-m-Y', strtotime($absensisupir->tglbukti));
 
                 $keteranganerror = $error->cekKeteranganError('SLBE') ?? '';
