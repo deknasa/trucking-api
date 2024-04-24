@@ -20,10 +20,45 @@ class JobTrucking extends MyModel
         // dump(request()->container_id);
         // dd(request()->jenisorder_id);
 
+        $userid = auth('api')->user()->id;
+
+        $querymandor = db::table("mandordetail")->from(db::raw("mandordetail a with (readuncommitted)"))
+            ->select('a.mandor_id')
+            ->where('a.user_id', $userid);
+
+        $tempmandordetaillogin = '##mandordetaillogin' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempmandordetaillogin, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('mandor_id')->nullable();
+        });
+        DB::table($tempmandordetaillogin)->insertUsing([
+            'mandor_id',
+        ],  $querymandor);
+
+        $querymandor = DB::table('mandordetail as a')
+            ->leftJoin(DB::raw($tempmandordetaillogin . ' as b'), 'a.mandor_id', '=', 'b.mandor_id')
+            ->whereRaw('COALESCE(b.mandor_id, 0) <> 0')
+            ->select('a.mandor_id');
+
+
+        $tempmandordetail = '##tempmandordetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempmandordetail, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('mandor_id')->nullable();
+        });
+
+        DB::table($tempmandordetail)->insertUsing([
+            'mandor_id',
+        ],  $querymandor);
+
+        // dd(db::table($tempmandordetail)->get());
+
         $container_id = request()->container_id ?? 0;
         $jenisorder_id = request()->jenisorder_id ?? 0;
         $gandengan_id = request()->gandengan_id ?? 0;
         $pelanggan_id = request()->pelanggan_id ?? 0;
+        $tglbukti = request()->tglbukti ?? '02-04-2024';
+        $date = date('Y-m-d', strtotime($tglbukti));
         if (request()->tarif_id == 'undefined') {
             $tarif_id = 0;
         } else {
@@ -110,7 +145,7 @@ class JobTrucking extends MyModel
             ->first();
         $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
         $pelabuhan = $pelabuhan->text . ',' . $idkandang;
-                
+
         $isPulangLongtrip = request()->isPulangLongtrip ?? '';
         if ($isPulangLongtrip == true) {
             if ($tripasal != '') {
@@ -224,7 +259,7 @@ class JobTrucking extends MyModel
 
             DB::table($tempselesai)->insertUsing([
                 'jobtrucking',
-            ], $queryjob);            
+            ], $queryjob);
 
 
             // dd(db::table($tempselesai)->get());
@@ -503,6 +538,7 @@ class JobTrucking extends MyModel
                 ->leftjoin(DB::raw("trado as c with(readuncommitted)"), 'a.trado_id', 'c.id')
                 ->leftjoin(DB::raw("kota as kotadr with(readuncommitted)"), 'a.dari_id', 'kotadr.id')
                 ->leftjoin(DB::raw("kota as kotasd with(readuncommitted)"), 'a.sampai_id', 'kotasd.id')
+                // ->join(DB::raw($tempmandordetail . " as d1"), 'c.mandor_id', 'd1.mandor_id') //untuk surabaya dan jakarta
                 ->leftjoin(DB::raw($tempselesai . " as d"), 'a.jobtrucking', 'd.jobtrucking');
 
             // dd(DB::table($temprekap)->get());
@@ -525,6 +561,8 @@ class JobTrucking extends MyModel
                 ->leftjoin(DB::raw("kota as kotadr with(readuncommitted)"), 'a.dari_id', 'kotadr.id')
                 ->leftjoin(DB::raw("kota as kotasd with(readuncommitted)"), 'a.sampai_id', 'kotasd.id')
                 ->leftjoin(DB::raw($tempselesai . " as d"), 'a.jobtrucking', 'd.jobtrucking')
+                // ->join(DB::raw($tempmandordetail . " as d1"), 'c.mandor_id', 'd1.mandor_id') //untuk surabaya dan jakarta
+                
                 ->where('a.container_id', '=', $container_id)
                 ->where('a.jenisorder_id', '=', $jenisorder_id)
                 ->where('a.pelanggan_id', '=', $pelanggan_id)
@@ -547,7 +585,7 @@ class JobTrucking extends MyModel
             ->where('a.statusgerobak', '=', $statusgerobak->id)
             ->first();
         $idtrip = request()->idtrip ?? '';
-        
+
         if ($isGandengan->text == 'TIDAK') {
             goto tidakgandengan2;
         }
@@ -676,6 +714,16 @@ class JobTrucking extends MyModel
                 ->where('a.nobukti', '=', request()->tripasal);
             $this->filter($querydata);
         } else {
+
+            // dd($querydata->tosql());
+            $querydata->join(DB::raw("absensisupirheader as d2 with (readuncommitted)"), 'a.tglbukti', 'd2.tglbukti'); //untuk surabaya dan jakarta
+            $querydata->join(DB::raw("absensisupirdetail as d3 with (readuncommitted)"), function ($join)  {
+                        $join->on('d2.nobukti', '=', 'd3.nobukti');
+                        $join->on('a.trado_id', '=', 'd3.trado_id');
+                    });                        
+            // $querydata->join(DB::raw("absensisupirdetail as d3 with (readuncommitted)"), 'd2.nobukti', 'd3.nobukti'); //untuk surabaya dan jakarta
+            $querydata->join(DB::raw($tempmandordetail . " as d1"), 'd3.mandor_id', 'd1.mandor_id'); //untuk surabaya dan jakarta
+            $querydata->where('d2.tglbukti',$date); //untuk surabaya dan jakarta
 
             $this->filter($querydata);
         }

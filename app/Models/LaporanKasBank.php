@@ -68,6 +68,7 @@ class LaporanKasBank extends MyModel
             $awalcek = $awalsaldo;
         }
 
+        // dd($awalcek);
         $tglawalcek = $awalcek;
         $tglakhircek = $akhircek;
         $bulan1 = date('m-Y', strtotime($awalcek));
