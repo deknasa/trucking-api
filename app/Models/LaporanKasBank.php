@@ -37,7 +37,11 @@ class LaporanKasBank extends MyModel
         $bank_id = $bank_id;
 
         // rekap ke saldo awal bank
-        $tglsaldo = '2023-10-01';
+
+        $parameter = new Parameter();
+
+        $tglsaldo = $parameter->cekText('SALDO', 'SALDO') ?? '1900-01-01';
+        $tglsaldo = date('Y-m-d', strtotime($tglsaldo . ' +1 day'));
         $awalsaldo = date('Y-m-d', strtotime($tglsaldo));
 
         $tutupbuku = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
