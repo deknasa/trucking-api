@@ -19,10 +19,27 @@ class ListTrip extends MyModel
 
         $aksi = request()->aksi;
         $trip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-            ->select('nobukti', 'jobtrucking', 'tglbukti', DB::raw("isnull(approvalbukatanggal_id,0) as approvalbukatanggal_id"), 'tglbataseditsuratpengantar','statusapprovaleditsuratpengantar')
+            ->select('nobukti', 'jobtrucking', 'tglbukti', DB::raw("isnull(approvalbukatanggal_id,0) as approvalbukatanggal_id"), 'tglbataseditsuratpengantar', 'statusapprovaleditsuratpengantar')
             ->where('id', $id)
             ->first();
 
+
+        $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JAMBATASINPUTTRIP')->where('subgrp', 'JAMBATASINPUTTRIP')->first()->text;
+        $getBatasHari = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATASHARIINPUTTRIP')->where('subgrp', 'BATASHARIINPUTTRIP')->first()->text;
+
+        $tglbatasdelete = date('d-m-Y', strtotime($trip->tglbukti . "+$getBatasHari days")) . ' ' . $getBatasInput;
+
+        if ($aksi == 'DELETE' && date('Y-m-d H:i:s') > $tglbatasdelete) {
+            $keteranganerror = $error->cekKeteranganError('TBH') ?? '';
+            $keteranganerrortambahan = $error->cekKeteranganError('SHP') ?? '';
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'trip <b>' . $trip->nobukti . '</b><br>' . $keteranganerror . '<br>' . $keteranganerrortambahan,
+                'kodeerror' => 'SHP',
+            ];
+
+            goto selesai;
+        }
         $nobukti = $trip->nobukti;
         $jobtrucking = $trip->jobtrucking;
 
@@ -192,7 +209,7 @@ class ListTrip extends MyModel
                 goto selesai;
             }
         }
-        
+
         if ($trip->approvalbukatanggal_id > 0) {
             $getTglBatasApproval = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip with (readuncommitted)"))
                 ->where('id', $trip->approvalbukatanggal_id)
@@ -211,11 +228,8 @@ class ListTrip extends MyModel
                 }
             }
         } else {
-
-            $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JAMBATASINPUTTRIP')->where('subgrp', 'JAMBATASINPUTTRIP')->first()->text;
-            $getBatasHari = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATASHARIINPUTTRIP')->where('subgrp', 'BATASHARIINPUTTRIP')->first()->text;
             $tanggal = date('Y-m-d', strtotime($trip->tglbukti));
-            
+
             $batasHari = $getBatasHari;
             $kondisi = true;
             if ($getBatasHari != 0) {
