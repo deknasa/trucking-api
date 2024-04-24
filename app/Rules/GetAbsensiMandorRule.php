@@ -33,7 +33,7 @@ class GetAbsensiMandorRule implements Rule
         $this->errorid=1;
         $allow = true;
         $date = date('Y-m-d', strtotime($value));
-        $todayValidation = AbsensiSupirHeader::todayValidation($date);
+        $todayValidation = (new AbsensiSupirHeader())->todayValidation($date);
         //check apakah tanggal hari ini jika true  maka tidak masuk if
         if(!$todayValidation){
             $isBukaTanggalValidation = (new AbsensiSupirHeader())->isBukaTanggalValidation($date);

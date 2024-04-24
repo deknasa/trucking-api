@@ -1391,7 +1391,7 @@ class MandorAbsensiSupir extends MyModel
         if ($isDateAllowedMandor && isset($bukaabsensi->tglbatas)) {
             $tglbataseditabsensi = $bukaabsensi->tglbatas;
         }
-        if (AbsensiSupirHeader::todayValidation(date('Y-m-d', strtotime($tglbukti)))) {
+        if ((new AbsensiSupirHeader)->todayValidation(date('Y-m-d', strtotime($tglbukti)))) {
             $query_jam = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'BATAS JAM EDIT ABSENSI')->where('subgrp', 'BATAS JAM EDIT ABSENSI')->first();
             $jam = substr($query_jam->text, 0, 2);
             $menit = substr($query_jam->text, 3, 2);

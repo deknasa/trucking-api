@@ -33,6 +33,7 @@ class CreateabsensisupirheaderTable extends Migration
             $table->string('userapprovaleditabsensi',50)->nullable();
             $table->date('tglapprovaleditabsensi')->nullable();
             $table->dateTime('tglbataseditabsensi')->nullable();
+            $table->dateTime('tglbataseditabsensiadmin')->nullable();
             $table->integer('statusapprovalpengajuantripinap')->Length(11)->nullable();
             $table->string('userapprovalpengajuantripinap',50)->nullable();
             $table->date('tglapprovalpengajuantripinap')->nullable();
