@@ -84,6 +84,30 @@ class SupirController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan APPROVAL Kacab
+     */
+    public function approval(ApprovalSupirRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new Supir())->processApproval($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
      * @Keterangan APPROVAL SUPIR LUAR KOTA
      */
     public function approvalSupirLuarKota(ApprovalSupirLuarKotaRequest $request)

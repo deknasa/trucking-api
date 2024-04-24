@@ -277,6 +277,7 @@ class Supir extends MyModel
                 DB::raw('(case when (year(supir.tglberhentisupir) <= 2000) then null else supir.tglberhentisupir end ) as tglberhentisupir'),
                 db::raw("cast((format(pemutihansupir.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpemutihansupir"),
                 db::raw("cast(cast(format((cast((format(pemutihansupir.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpemutihansupir"),
+                'statusapproval.memo as statusapproval',
                 'supir.modifiedby',
                 'supir.created_at',
                 'supir.updated_at',
@@ -300,6 +301,7 @@ class Supir extends MyModel
             ->leftJoin(DB::raw("parameter as statuszonatertentu with (readuncommitted)"), 'supir.statuszonatertentu', '=', 'statuszonatertentu.id')
             ->leftJoin(DB::raw("parameter as statusblacklist with (readuncommitted)"), 'supir.statusblacklist', '=', 'statusblacklist.id')
             ->leftJoin(DB::raw("parameter as statuspostingtnl with (readuncommitted)"), 'supir.statuspostingtnl', '=', 'statuspostingtnl.id')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'supir.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("pemutihansupirheader as pemutihansupir with (readuncommitted)"), 'supir.pemutihansupir_nobukti', '=', 'pemutihansupir.nobukti')
             ->leftJoin(DB::raw("parameter as parameter_statusapprovalhistorymilikmandor with (readuncommitted)"), 'supir.statusapprovalhistorysupirmilikmandor', 'parameter_statusapprovalhistorymilikmandor.id')
             ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id')
@@ -846,6 +848,8 @@ class Supir extends MyModel
                             $query = $query->where('statusadaupdategambar.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusapprovalhistorysupirmilikmandor') {
                             $query = $query->where('parameter_statusapprovalhistorymilikmandor.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusapproval') {
+                            $query = $query->where('statusapproval.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusluarkota') {
                             $query = $query->where('statusluarkota.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statuszonatertentu') {
@@ -887,6 +891,8 @@ class Supir extends MyModel
                                 $query = $query->orWhere('statusadaupdategambar.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statusapprovalhistorysupirmilikmandor') {
                                 $query = $query->orwhere('parameter_statusapprovalhistorymilikmandor.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statusapproval') {
+                                $query = $query->orwhere('statusapproval.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statusluarkota') {
                                 $query = $query->orWhere('statusluarkota.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statuszonatertentu') {
@@ -1939,6 +1945,43 @@ class Supir extends MyModel
         }
 
 
+        return $supir;
+    }
+
+
+    public function processApproval(array $data)
+    {
+
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $supir = Supir::find($data['Id'][$i]);
+
+            if ($supir->statusapproval == $statusApproval->id) {
+                $supir->statusapproval = $statusNonApproval->id;
+                $aksi = $statusNonApproval->text;
+            } else {
+                $supir->statusapproval = $statusApproval->id;
+                $aksi = $statusApproval->text;
+            }
+
+            $supir->tglapproval = date('Y-m-d', time());
+            $supir->userapproval = auth('api')->user()->name;
+            if ($supir->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($supir->getTable()),
+                    'postingdari' => 'APPROVAL supir',
+                    'idtrans' => $supir->id,
+                    'nobuktitrans' => $supir->id,
+                    'aksi' => $aksi,
+                    'datajson' => $supir->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+        
         return $supir;
     }
 
