@@ -275,7 +275,9 @@ class AbsensiSupirDetail extends MyModel
                     if (!$isAdmin) {
                         if ($isMandor) {
                             // $query->where('trado.mandor_id', $isMandor->mandor_id);
-                            $query->Join(DB::raw($tempmandordetail . " as mandordetail"), 'trado.mandor_id', 'mandordetail.mandor_id');
+                            $query->Join(DB::raw($tempmandordetail . " as mandordetail"), "$this->table.mandor_id", 'mandordetail.mandor_id');
+
+                            // dd($query->get());
                         }
                     }
 
@@ -353,14 +355,15 @@ class AbsensiSupirDetail extends MyModel
                             $query->whereRaw("absensisupirdetail.trado_id in (select trado_id from $tempPengajuan where id <> $id)");
                         }
                     } else {
-
+                    
                         $query->addSelect(DB::raw("(trim(trado.kodetrado)+' - '+trim(supir.namasupir)) as tradosupir"))
                             ->where("$this->table.supir_id", '!=', 0)
                             ->whereRaw("(absentrado.kodeabsen is null OR absentrado.kodeabsen='I' OR absentrado.kodeabsen='G')");
+                            // dd($query->get());
                     }
                 }
                 if ($isProsesUangjalan == true) {
-
+                    // dd($query->get());
                     $aksi = request()->aksi;
                     $uangJalanId = request()->uangJalanId ?? 0;
                     $absensiId = request()->absensi_id ?? 0;
@@ -394,6 +397,7 @@ class AbsensiSupirDetail extends MyModel
                         $query->whereRaw("absensisupirdetail.supir_id not in (select supir_id from $tempProsesUangjalan where id <> $uangJalanId)");
                     }
                 }
+                         
                 $this->totalRows = $query->count();
                 $this->totalNominal = $query->sum('uangjalan');
                 $this->jlhtrip = $query->sum('c.jumlah');
@@ -1346,6 +1350,12 @@ class AbsensiSupirDetail extends MyModel
     public function processStore(AbsensiSupirHeader $absensiSupirHeader, array $data): AbsensiSupirDetail
     {
 
+        $ytrado_id=$data['trado_id'] ?? 0;
+        $mandor_id=db::table("trado")->from(db::raw("trado a with (readuncommitted)"))
+        ->select('a.mandor_id')
+        ->where('a.id',$ytrado_id)
+        ->first()->mandor_id ?? 0;
+
         $parameter = new Parameter();
         $idstatusnonsupirserap = $parameter->cekId('SUPIR SERAP', 'SUPIR SERAP', 'TIDAK') ?? 0;
 
@@ -1360,6 +1370,7 @@ class AbsensiSupirDetail extends MyModel
         $absensiSupirDetail->uangjalan = $data['uangjalan'] ?? '';
         $absensiSupirDetail->keterangan = $data['keterangan'] ?? '';
         $absensiSupirDetail->modifiedby = $data['modifiedby'] ?? '';
+        $absensiSupirDetail->mandor_id = $mandor_id ?? 0;
         $absensiSupirDetail->statussupirserap = $data['statussupirserap'] ?? $idstatusnonsupirserap;
 
         if (!$absensiSupirDetail->save()) {
@@ -1369,6 +1380,16 @@ class AbsensiSupirDetail extends MyModel
     }
     public function processUpdate(AbsensiSupirDetail $absensiSupirDetail, array $data): AbsensiSupirDetail
     {
+        $ytrado_id=$data['trado_id'] ?? 0;
+
+        // dd($ytrado_id);
+        $mandor_id=db::table("trado")->from(db::raw("trado a with (readuncommitted)"))
+        ->select('a.mandor_id')
+        ->where('a.id',$ytrado_id)
+        ->first()->mandor_id ?? 0;
+
+        // dd($mandor_id);
+
         $absensiSupirDetail->absensi_id = $data['absensi_id'] ?? '';
         $absensiSupirDetail->nobukti = $data['nobukti'] ?? '';
         $absensiSupirDetail->trado_id = $data['trado_id'] ?? '';
@@ -1379,6 +1400,7 @@ class AbsensiSupirDetail extends MyModel
         $absensiSupirDetail->uangjalan = $data['uangjalan'] ?? '';
         $absensiSupirDetail->keterangan = $data['keterangan'] ?? '';
         $absensiSupirDetail->modifiedby = $data['modifiedby'] ?? '';
+        // $absensiSupirDetail->mandor_id = $mandor_id ?? 0;
 
         if (!$absensiSupirDetail->save()) {
             throw new \Exception("Gagal menyimpan absensi supir detail.");
