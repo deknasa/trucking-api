@@ -31,7 +31,9 @@ use App\Http\Requests\UpdateSupirRequest;
 use App\Http\Requests\ApprovalSupirRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\RangeExportReportRequest;
+use App\Http\Requests\ApprovalSupirKacabRequest;
 use App\Http\Requests\ApprovalSupirLuarKotaRequest;
+use App\Http\Requests\ApprovalSupirNonAktifRequest;
 use Intervention\Image\ImageManagerStatic as Image;
 use App\Http\Requests\HistorySupirMilikMandorRequest;
 use App\Http\Requests\StoreApprovalSupirTanpaRequest;
@@ -81,6 +83,30 @@ class SupirController extends Controller
         }
     }
 
+
+    /**
+     * @ClassName 
+     * @Keterangan APPROVAL Kacab
+     */
+    public function approval(ApprovalSupirKacabRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new Supir())->processApproval($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
 
     /**
      * @ClassName 
@@ -889,7 +915,7 @@ class SupirController extends Controller
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
      */
-    public function approvalnonaktif(ApprovalSupirRequest $request)
+    public function approvalnonaktif(ApprovalSupirNonAktifRequest $request)
     {
         DB::beginTransaction();
 

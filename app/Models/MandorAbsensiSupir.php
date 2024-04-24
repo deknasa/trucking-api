@@ -516,6 +516,7 @@ class MandorAbsensiSupir extends MyModel
             $table->integer('id');
             $table->string('namasupir', 100)->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
+            $table->integer('statusapproval')->length(11)->nullable();
             // $table->unsignedBigInteger('supirold_id')->nullable();
             $table->longText('keterangan')->nullable();
             $table->unsignedBigInteger('mandor_id')->nullable();
@@ -524,6 +525,7 @@ class MandorAbsensiSupir extends MyModel
         });
         $statusaktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
         $statusnonaktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'NON AKTIF')->first();
+        $statusapproval = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
 
         $parameter = new Parameter();
         $miliktrado = $parameter->cekText('SUPIR MILIK TRADO', 'SUPIR MILIK TRADO') ?? 'TIDAK';
@@ -533,6 +535,7 @@ class MandorAbsensiSupir extends MyModel
                 'a.id',
                 'a.namasupir',
                 'a.statusaktif',
+                'a.statusapproval',
                 // 'a.supirold_id',
                 'a.keterangan',
                 'a.mandor_id',
@@ -541,6 +544,7 @@ class MandorAbsensiSupir extends MyModel
             )
             // ->leftJoin(DB::raw("trado as b with (readuncommitted)"), 'b.supir_id', 'a.id')
             // ->whereRaw("isnull(b.tglberlakumiliksupir,'1900/1/1')<='" . $date . "'")
+            ->where('a.statusapproval', $statusapproval->id)
             ->where('a.statusaktif', $statusaktif->id);
         // if ($miliktrado=='YA') {
         //     $querysupir->where('b.statusaktif', $statusaktif->id); // dijakarta tidak aktifkan
@@ -550,6 +554,7 @@ class MandorAbsensiSupir extends MyModel
             'id',
             'namasupir',
             'statusaktif',
+            'statusapproval',
             // 'supirold_id',
             'keterangan',
             'mandor_id',
@@ -562,6 +567,7 @@ class MandorAbsensiSupir extends MyModel
             'a.id',
             'a.namasupir',
             DB::raw($statusaktif->id . ' as statusaktif'),
+            'a.statusapproval',
             // 'a.supirold_id',
             'a.keterangan',
             'a.mandor_id',
@@ -577,6 +583,7 @@ class MandorAbsensiSupir extends MyModel
             'id',
             'namasupir',
             'statusaktif',
+            'statusapproval',
             // 'supirold_id',
             'keterangan',
             'mandor_id',
@@ -589,6 +596,7 @@ class MandorAbsensiSupir extends MyModel
             $table->integer('id');
             $table->string('namasupir', 100)->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
+            $table->integer('statusapproval')->length(11)->nullable();
             // $table->unsignedBigInteger('supirold_id')->nullable();
             $table->longText('keterangan')->nullable();
             $table->unsignedBigInteger('mandor_id')->nullable();
@@ -601,6 +609,7 @@ class MandorAbsensiSupir extends MyModel
                 'a.id',
                 'a.namasupir',
                 'a.statusaktif',
+                'a.statusapproval',
                 // 'a.supirold_id',
                 'a.keterangan',
                 'a.mandor_id',
@@ -620,6 +629,7 @@ class MandorAbsensiSupir extends MyModel
             'id',
             'namasupir',
             'statusaktif',
+            'statusapproval',
             // 'supirold_id',
             'keterangan',
             'mandor_id',
