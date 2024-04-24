@@ -94,6 +94,7 @@ class CreateSaldosuratpengantarTable extends Migration
             $table->string('userapprovalbiayatitipanemkl', 50)->nullable();
             $table->date('tglapprovalbiayatitipanemkl')->nullable();            
             $table->date('tglbatasbiayatitipanemkl')->nullable();            
+            $table->string('statusric', 50)->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
