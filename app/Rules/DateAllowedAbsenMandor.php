@@ -31,7 +31,7 @@ class DateAllowedAbsenMandor implements Rule
         $today = date('Y-m-d', strtotime("today"));
         $allowed = false ;
         $bukaAbsensi = BukaAbsensi::where('tglabsensi', '=', $date)->first();
-        $todayValidation = AbsensiSupirHeader::todayValidation($date);
+        $todayValidation = (new AbsensiSupirHeader)->todayValidation($date);
         $isDateAllowed = MandorAbsensiSupir::isDateAllowedMandor($date);
 
         if($todayValidation){
