@@ -112,7 +112,6 @@ class UpdateTarifRequest extends FormRequest
             'statussistemton' => ['required', Rule::in($statusTon)],
             'tglmulaiberlaku' => [
                 'required', 'date_format:d-m-Y',
-                'before_or_equal:' . date('d-m-Y'),
             ],
             'kota' => ['required', ($check['kondisi']) ? Rule::in($dataTarif->kota) : ''],
         ];

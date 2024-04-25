@@ -190,8 +190,6 @@ class UpdateUpahSupirRequest extends FormRequest
             'zonasampai' => ['required_if:statusupahzona,=,' . $getUpahZona->id, new ValidasiZonaUpahZona($getUpahZona->id)],
             'tglmulaiberlaku' => [
                 'required', 'date_format:d-m-Y',
-                'before:' . $tglBatasAkhir,
-                'after_or_equal:' . date('d-m-Y', strtotime($dataUpahSupir->tglmulaiberlaku))
             ],
             'gambar.*' => ['image', 'min:100']
         ];

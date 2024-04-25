@@ -207,8 +207,6 @@ class StoreUpahSupirRequest extends FormRequest
                 'statusupahzona' => ['required', Rule::in($statusUpahZona)],
                 'tglmulaiberlaku' => [
                     'required', 'date_format:d-m-Y',
-                    'after:' . $tglbatasawal,
-                    'before:' . $tglbatasakhir,
                 ],
                 'statuspostingtnl' => ['required', Rule::in($statusPostingTnl)],
             ];
