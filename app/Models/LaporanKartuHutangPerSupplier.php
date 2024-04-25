@@ -111,7 +111,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             )
             ->join(db::raw("pelunasanhutangdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(db::raw($temphutangsaldo . " c "), 'b.hutang_nobukti', 'c.nobukti')
-            ->whereRaw("a.tglbukti<'" . $dari1 . "'")
+            ->whereRaw("a.tglbukti<'" . $dari1 . "' and a.tglbukti>'".$tglsaldo."'")
             ->groupby('c.nobukti');
 
         DB::table($temppelunasansaldo)->insertUsing([
