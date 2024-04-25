@@ -32,7 +32,7 @@ class DateAllowedAbsen implements Rule
         $today = date('Y-m-d', strtotime("today"));
         $allowed = true ;
         $bukaAbsensi = BukaAbsensi::where('tglabsensi', '=', $date)->first();
-        $todayValidation = AbsensiSupirHeader::todayValidation($date);
+        $todayValidation = (new AbsensiSupirHeader)->todayValidation($date);
         //check apakah tanggal hari ini jika true  maka tidak masuk if
         if(!$todayValidation){
             $absensiSupirHeader = (new AbsensiSupirHeader())->where('tglbukti',$date)->first();
