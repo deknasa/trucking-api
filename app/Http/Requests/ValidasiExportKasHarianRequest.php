@@ -30,7 +30,7 @@ class ValidasiExportKasHarianRequest extends FormRequest
             'periode' => [
                 'required', 'date_format:m-Y',
             ],
-            'bank' => ['required', new ExistBank()]
+            // 'bank' => ['required', new ExistBank()]
         ];
     }
 }

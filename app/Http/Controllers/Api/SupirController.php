@@ -169,9 +169,12 @@ class SupirController extends Controller
                     'message' => 'NO KTP SUPIR ' . $query->keterangan . " ($getSupir->namasupir)"
                 ], 500);
             } else {
-
+                $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+                $statusapproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
                 if ($request->action == "approve") {
                     $supir->tglberhentisupir = date('Y-m-d', strtotime($request->tglberhentisupir));
+                    $supir->statusaktif = $statusaktif->id;
+                    $supir->statusapproval = $statusapproval->id;
                     $aksi = "APPROVED SUPIR RESIGN";
                     // $supir->keteranganberhentisupir = ($request->keteranganberhentisupir == null) ? "" : $request->keteranganberhentisupir;
                     $supir->keteranganberhentisupir = $request->keteranganberhentisupir;
