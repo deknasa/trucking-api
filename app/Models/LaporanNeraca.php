@@ -84,7 +84,7 @@ class LaporanNeraca extends MyModel
         }
 
         if ($cabang_id == $getcabangid && $getcabangid != 1) {
-            
+
             $tglbulan = $tahun . '/' . $bulan . '/1';
             $tgluji = date('Y-m-d', strtotime('+1 months', strtotime($tglbulan)));
             DB::table('akunpusatdetail')
@@ -1216,12 +1216,44 @@ class LaporanNeraca extends MyModel
                     db::raw("sum(nominal) as nominal")
                 )->first()->nominal ?? 0;
 
-            DB::table($tempperkiraanbanding)->insert(
+            $parameter = new Parameter();
+
+            $cabang = $parameter->cekText('ID CABANG', 'ID CABANG') ?? '0';
+
+            $tempcabangpiutanglain = '##tempcabangpiutanglain' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempcabangpiutanglain, function ($table) {
+                $table->integer('id')->nullable();
+            });
+
+            DB::table($tempcabangpiutanglain)->insert(
                 [
-                    'coa' =>  $memo['JURNAL'],
-                    'nominal' => $piutanglain,
+                    'id' =>  3,
                 ]
             );
+
+            DB::table($tempcabangpiutanglain)->insert(
+                [
+                    'id' =>  7,
+                ]
+            );
+
+            $querycabang = db::table($tempcabangpiutanglain)->from(db::raw($tempcabangpiutanglain . " a"))
+                ->select(
+                    'a.id'
+                )
+                ->where('a.id', $cabang)
+                ->first();
+            if (isset($querycabang)) {
+                DB::table($tempperkiraanbanding)->insert(
+                    [
+                        'coa' =>  $memo['JURNAL'],
+                        'nominal' => $piutanglain,
+                    ]
+                );
+            }
+
+
+
 
             // Deposito Supir
 
