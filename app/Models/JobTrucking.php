@@ -52,7 +52,7 @@ class JobTrucking extends MyModel
         ],  $querymandor);
 
         // dd(db::table($tempmandordetail)->get());
-
+        // dd(request()->tglbukti);
         $container_id = request()->container_id ?? 0;
         $jenisorder_id = request()->jenisorder_id ?? 0;
         $gandengan_id = request()->gandengan_id ?? 0;
@@ -716,14 +716,47 @@ class JobTrucking extends MyModel
         } else {
 
             // dd($querydata->tosql());
-            $querydata->join(DB::raw("absensisupirheader as d2 with (readuncommitted)"), 'a.tglbukti', 'd2.tglbukti'); //untuk surabaya dan jakarta
-            $querydata->join(DB::raw("absensisupirdetail as d3 with (readuncommitted)"), function ($join)  {
-                        $join->on('d2.nobukti', '=', 'd3.nobukti');
-                        $join->on('a.trado_id', '=', 'd3.trado_id');
-                    });                        
-            // $querydata->join(DB::raw("absensisupirdetail as d3 with (readuncommitted)"), 'd2.nobukti', 'd3.nobukti'); //untuk surabaya dan jakarta
-            $querydata->join(DB::raw($tempmandordetail . " as d1"), 'd3.mandor_id', 'd1.mandor_id'); //untuk surabaya dan jakarta
-            $querydata->where('d2.tglbukti',$date); //untuk surabaya dan jakarta
+
+            $temprekapdata2 = '##temprekapdata2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temprekapdata2, function ($table) {
+                $table->integer('trado_id')->nullable();
+            });
+
+            $querycek= DB::table($temprekap)->from(
+                DB::raw($temprekap . " as a"))
+            ->select(
+                'a.trado_id'
+            )
+            ->join(DB::raw("absensisupirheader as d2 with (readuncommitted)"), 'a.tglbukti', 'd2.tglbukti')            
+            ->join(DB::raw("absensisupirdetail as d3 with (readuncommitted)"), function ($join)  {
+                $join->on('d2.nobukti', '=', 'd3.nobukti');
+                $join->on('a.trado_id', '=', 'd3.trado_id');
+            })
+            ->join(DB::raw($tempmandordetail . " as d1"), 'd3.mandor_id', 'd1.mandor_id')
+            ->where('d2.tglbukti',$date)
+            ->where('a.trado_id',$trado_id)
+            ->groupby('a.trado_id');
+
+            DB::table($temprekapdata2)->insertUsing([
+                'trado_id',
+            ], $querycek);
+
+            // dd(db::table($temprekapdata2)->get());
+            // dd($trado_id);
+            $querydata->join(DB::raw($temprekapdata2 . "  as d2 "), 'a.trado_id', 'd2.trado_id'); //untuk surabaya dan jakarta
+            $querydata->whereraw("a.tglbukti<='". $date ."'"); //untuk surabaya dan jakarta
+
+            // dd($querydata->tosql());
+ 
+
+            // $querydata->join(DB::raw("absensisupirheader as d2 with (readuncommitted)"), 'a.tglbukti', 'd2.tglbukti'); //untuk surabaya dan jakarta
+            // $querydata->join(DB::raw("absensisupirdetail as d3 with (readuncommitted)"), function ($join)  {
+            //             $join->on('d2.nobukti', '=', 'd3.nobukti');
+            //             $join->on('a.trado_id', '=', 'd3.trado_id');
+            //         });                        
+            // // $querydata->join(DB::raw("absensisupirdetail as d3 with (readuncommitted)"), 'd2.nobukti', 'd3.nobukti'); //untuk surabaya dan jakarta
+            // $querydata->join(DB::raw($tempmandordetail . " as d1"), 'd3.mandor_id', 'd1.mandor_id'); //untuk surabaya dan jakarta
+            // $querydata->where('d2.tglbukti',$date); //untuk surabaya dan jakarta
 
             $this->filter($querydata);
         }
