@@ -374,7 +374,7 @@ class PelunasanHutangHeaderController extends Controller
         $user = auth('api')->user()->name;
         $useredit = $PelunasanHutang->editing_by ?? '';
 
-        if ($statusdatacetak == $statusCetak->id) {
+        if ($statusdatacetak == $statusCetak->id && !($status == $statusApproval->id)) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
             $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
