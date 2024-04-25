@@ -119,8 +119,6 @@ class StoreTarifRequest extends FormRequest
                 'statussistemton' => ['required', Rule::in($statusTon)],
                 'tglmulaiberlaku' => [
                     'required', 'date_format:d-m-Y',
-                    'after:' . $tglbatasawal,
-                    'before:' . $tglbatasakhir,
                 ],
                 'kota' => 'required',
                 'statuspostingtnl' => ['required', Rule::in($statusPostingTnl)],

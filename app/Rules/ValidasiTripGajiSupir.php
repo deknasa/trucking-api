@@ -37,11 +37,16 @@ class ValidasiTripGajiSupir implements Rule
                 $cekTripExist = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
                     ->where('nobukti', $dataTrip[$i])->first();
                 if ($cekTripExist == '') {
-                    $empty++;
-                    if ($listTrip == '') {
-                        $listTrip = $dataTrip[$i];
-                    } else {
-                        $listTrip = $listTrip . ', ' . $dataTrip[$i];
+
+                    $cekSaldoTripExist = DB::table("saldosuratpengantar")->from(DB::raw("saldosuratpengantar with (readuncommitted)"))
+                        ->where('nobukti', $dataTrip[$i])->first();
+                    if ($cekSaldoTripExist == '') {
+                        $empty++;
+                        if ($listTrip == '') {
+                            $listTrip = $dataTrip[$i];
+                        } else {
+                            $listTrip = $listTrip . ', ' . $dataTrip[$i];
+                        }
                     }
                 }
             }

@@ -147,7 +147,7 @@ class OrderanTrucking extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-        
+
         $isMandor = auth()->user()->isMandor();
         $isAdmin = auth()->user()->isAdmin();
 
@@ -2091,36 +2091,39 @@ class OrderanTrucking extends MyModel
         for ($i = 0; $i < count($data['orderanTruckingId']); $i++) {
 
             $orderanTrucking = OrderanTrucking::find($data['orderanTruckingId'][$i]);
-            if ($orderanTrucking->statusapprovaledit == $statusApproval->id) {
-                $orderanTrucking->statusapprovaledit = $statusNonApproval->id;
-                $orderanTrucking->tglapprovaledit = '';
-                $orderanTrucking->userapprovaledit = '';
-                $orderanTrucking->tglbataseditorderantrucking = '';
-                $aksi = $statusNonApproval->text;
-            } else {
-                $orderanTrucking->statusapprovaledit = $statusApproval->id;
-                $orderanTrucking->tglapprovaledit = date('Y-m-d H:i:s');
-                $orderanTrucking->userapprovaledit = auth('api')->user()->name;
-                $orderanTrucking->tglbataseditorderantrucking = $tglbatas;
-                $aksi = $statusApproval->text;
+            if ($orderanTrucking != '') {
+
+                if ($orderanTrucking->statusapprovaledit == $statusApproval->id) {
+                    $orderanTrucking->statusapprovaledit = $statusNonApproval->id;
+                    $orderanTrucking->tglapprovaledit = '';
+                    $orderanTrucking->userapprovaledit = '';
+                    $orderanTrucking->tglbataseditorderantrucking = '';
+                    $aksi = $statusNonApproval->text;
+                } else {
+                    $orderanTrucking->statusapprovaledit = $statusApproval->id;
+                    $orderanTrucking->tglapprovaledit = date('Y-m-d H:i:s');
+                    $orderanTrucking->userapprovaledit = auth('api')->user()->name;
+                    $orderanTrucking->tglbataseditorderantrucking = $tglbatas;
+                    $aksi = $statusApproval->text;
+                }
+
+                $orderanTrucking->info = html_entity_decode(request()->info);
+
+                if (!$orderanTrucking->save()) {
+                    throw new \Exception('Error Un/approval orderan Trucking.');
+                }
+
+
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($orderanTrucking->getTable()),
+                    'postingdari' => "UN/APPROVAL orderan Trucking",
+                    'idtrans' => $orderanTrucking->id,
+                    'nobuktitrans' => $orderanTrucking->nobukti,
+                    'aksi' => $aksi,
+                    'datajson' => $orderanTrucking->toArray(),
+                    'modifiedby' => auth('api')->user()->name,
+                ]);
             }
-
-            $orderanTrucking->info = html_entity_decode(request()->info);
-
-            if (!$orderanTrucking->save()) {
-                throw new \Exception('Error Un/approval orderan Trucking.');
-            }
-
-
-            (new LogTrail())->processStore([
-                'namatabel' => strtoupper($orderanTrucking->getTable()),
-                'postingdari' => "UN/APPROVAL orderan Trucking",
-                'idtrans' => $orderanTrucking->id,
-                'nobuktitrans' => $orderanTrucking->nobukti,
-                'aksi' => $aksi,
-                'datajson' => $orderanTrucking->toArray(),
-                'modifiedby' => auth('api')->user()->name,
-            ]);
             $result[] = $orderanTrucking;
         }
 

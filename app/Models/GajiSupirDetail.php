@@ -174,7 +174,7 @@ class GajiSupirDetail extends MyModel
                 db::raw("(gajisupirdetail.gajisupir+gajisupirdetail.gajikenek+gajisupirdetail.komisisupir+gajisupirdetail.biayatambahan) as total"),
 
             )
-            ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'suratpengantar.nobukti')
+            ->join(DB::raw("suratpengantar with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'suratpengantar.nobukti')
             ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'suratpengantar.dari_id', 'dari.id')
             ->leftJoin(DB::raw("kota as sampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'sampai.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
@@ -208,6 +208,37 @@ class GajiSupirDetail extends MyModel
         });
 
         $tes = DB::table($temp)->insertUsing(['nobukti', 'suratpengantar_nobukti', 'tglsp', 'dari', 'sampai', 'trado', 'nocont', 'nosp', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiayatambahan', 'total'], $fetch);
+
+
+        $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
+            ->select(
+                'gajisupirdetail.nobukti as nobukti',
+                'gajisupirdetail.suratpengantar_nobukti',
+                'saldosuratpengantar.tglbukti as tglsp',
+                'dari.keterangan as dari',
+                'sampai.keterangan as sampai',
+                'trado.kodetrado as trado',
+                'saldosuratpengantar.nocont',
+                'saldosuratpengantar.nosp',
+                DB::raw("(case when gajisupirdetail.uangmakanberjenjang IS NULL then 0 else gajisupirdetail.uangmakanberjenjang end) as uangmakanberjenjang"),
+                'gajisupirdetail.gajisupir',
+                'gajisupirdetail.gajikenek',
+                'gajisupirdetail.komisisupir',
+                'gajisupirdetail.tolsupir',
+                'gajisupirdetail.gajiritasi as upahritasi',
+                'gajisupirdetail.biayatambahan as biayaextra',
+                'gajisupirdetail.keteranganbiayatambahan',
+                db::raw("(gajisupirdetail.gajisupir+gajisupirdetail.gajikenek+gajisupirdetail.komisisupir+gajisupirdetail.biayatambahan) as total"),
+
+            )
+            ->join(DB::raw("saldosuratpengantar with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'saldosuratpengantar.nobukti')
+            ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'saldosuratpengantar.dari_id', 'dari.id')
+            ->leftJoin(DB::raw("kota as sampai with (readuncommitted)"), 'saldosuratpengantar.sampai_id', 'sampai.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'saldosuratpengantar.trado_id', 'trado.id')
+
+            ->where('gajisupirdetail.suratpengantar_nobukti', '!=', '-')
+            ->where('gajisupirdetail.gajisupir_id', request()->gajisupir_id);
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'suratpengantar_nobukti', 'tglsp', 'dari', 'sampai', 'trado', 'nocont', 'nosp', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'biayaextra', 'keteranganbiayatambahan', 'total'], $fetch);
 
         $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
             ->select(
