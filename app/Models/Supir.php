@@ -1100,6 +1100,7 @@ class Supir extends MyModel
     {
         try {
             $statusAdaUpdateGambar = DB::table('parameter')->where('grp', 'STATUS ADA UPDATE GAMBAR')->where('default', 'YA')->first();
+            $statusApprovalDefault = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('default', 'YA')->first();
             $statusLuarKota = DB::table('parameter')->where('grp', 'STATUS LUAR KOTA')->where('default', 'YA')->first();
             $statusZonaTertentu = DB::table('parameter')->where('grp', 'ZONA TERTENTU')->where('default', 'YA')->first();
             $statusBlackList = DB::table('parameter')->where('grp', 'BLACKLIST SUPIR')->where('default', 'YA')->first();
@@ -1191,6 +1192,7 @@ class Supir extends MyModel
             $supir->plafondeposito = str_replace(',', '', $data['plafondeposito']) ?? 0;
             $supir->tgllahir = date('Y-m-d', strtotime($data['tgllahir']));
             $supir->tglterbitsim = date('Y-m-d', strtotime($data['tglterbitsim']));
+            $supir->statusapproval = $statusApprovalDefault->id;
             $supir->statuspostingtnl = $data['statuspostingtnl'];
             $supir->tglberhentisupir = date('Y-m-d', strtotime("1900-01-01"));
             $supir->modifiedby = auth('api')->user()->user;
