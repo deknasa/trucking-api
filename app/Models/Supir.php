@@ -704,7 +704,7 @@ class Supir extends MyModel
                 $this->table.tglapprovalhistorysupirmilikmandor as tglapprovalhistorysupirmilikmandor,
                 $this->table.tglupdatehistorysupirmilikmandor as tglupdatehistorysupirmilikmandor,                
                 $this->table.tglberlakumilikmandor as tglberlakumilikmandor,
-
+                'statusapproval.memo as statusapproval',
                 $this->table.modifiedby,
                 $this->table.created_at,
                 $this->table.updated_at"
@@ -714,6 +714,7 @@ class Supir extends MyModel
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'supir.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'supir.statusluarkota', '=', 'statusluarkota.id')
             ->leftJoin(DB::raw("parameter as statusblacklist with (readuncommitted)"), 'supir.statusblacklist', '=', 'statusblacklist.id')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'supir.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statuspostingtnl with (readuncommitted)"), 'supir.statuspostingtnl', '=', 'statuspostingtnl.id')
             ->leftJoin(DB::raw("parameter as parameter_statusapprovalhistorymilikmandor with (readuncommitted)"), 'supir.statusapprovalhistorysupirmilikmandor', 'parameter_statusapprovalhistorymilikmandor.id')
 
@@ -765,7 +766,7 @@ class Supir extends MyModel
             $table->datetime('tglapprovalhistorysupirmilikmandor')->nullable();
             $table->datetime('tglupdatehistorysupirmilikmandor')->nullable();
             $table->datetime('tglberlakumilikmandor')->nullable();
-
+            $table->longtext('statusapproval')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -818,6 +819,7 @@ class Supir extends MyModel
             'tglapprovalhistorysupirmilikmandor',
             'tglupdatehistorysupirmilikmandor',
             'tglberlakumilikmandor',
+            'statusapproval',
             'modifiedby',
             'created_at',
             'updated_at'
@@ -1098,6 +1100,7 @@ class Supir extends MyModel
     {
         try {
             $statusAdaUpdateGambar = DB::table('parameter')->where('grp', 'STATUS ADA UPDATE GAMBAR')->where('default', 'YA')->first();
+            $statusApprovalDefault = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('default', 'YA')->first();
             $statusLuarKota = DB::table('parameter')->where('grp', 'STATUS LUAR KOTA')->where('default', 'YA')->first();
             $statusZonaTertentu = DB::table('parameter')->where('grp', 'ZONA TERTENTU')->where('default', 'YA')->first();
             $statusBlackList = DB::table('parameter')->where('grp', 'BLACKLIST SUPIR')->where('default', 'YA')->first();
@@ -1189,6 +1192,7 @@ class Supir extends MyModel
             $supir->plafondeposito = str_replace(',', '', $data['plafondeposito']) ?? 0;
             $supir->tgllahir = date('Y-m-d', strtotime($data['tgllahir']));
             $supir->tglterbitsim = date('Y-m-d', strtotime($data['tglterbitsim']));
+            $supir->statusapproval = $statusApprovalDefault->id;
             $supir->statuspostingtnl = $data['statuspostingtnl'];
             $supir->tglberhentisupir = date('Y-m-d', strtotime("1900-01-01"));
             $supir->modifiedby = auth('api')->user()->user;
