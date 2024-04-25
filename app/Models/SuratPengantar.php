@@ -934,6 +934,16 @@ class SuratPengantar extends MyModel
                 DB::table($tempJobAwal)->insertUsing([
                     'jobtrucking',
                 ],  $queryJobtruckingAwal);
+                $queryJobtruckingAwal = DB::table('saldosuratpengantar')->from(db::raw("saldosuratpengantar a with (readuncommitted)"))
+                    ->select(
+                        'a.jobtrucking'
+                    )
+                    ->whereraw("a.dari_id = 1");
+
+                DB::table($tempJobAwal)->insertUsing([
+                    'jobtrucking',
+                ],  $queryJobtruckingAwal);
+
 
                 $tempJobAkhir = '##tempJobAkhir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                 Schema::create($tempJobAkhir, function ($table) {
@@ -949,6 +959,17 @@ class SuratPengantar extends MyModel
                 DB::table($tempJobAkhir)->insertUsing([
                     'jobtrucking',
                 ],  $queryJobtruckingAkhir);
+
+                $queryJobtruckingAkhir = DB::table('saldosuratpengantar')->from(db::raw("saldosuratpengantar a with (readuncommitted)"))
+                    ->select(
+                        'a.jobtrucking'
+                    )
+                    ->whereraw("a.sampai_id = 1");
+
+                DB::table($tempJobAkhir)->insertUsing([
+                    'jobtrucking',
+                ],  $queryJobtruckingAkhir);
+
                 $tempJobFinal = '##tempJobFinal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                 Schema::create($tempJobFinal, function ($table) {
                     $table->string('jobtrucking', 50)->nullable();
@@ -965,8 +986,11 @@ class SuratPengantar extends MyModel
 
                 $container_id = request()->container_id ?? 0;
                 $pelanggan_id = request()->pelanggan_id ?? 0;
-
-                $query->leftjoin(db::raw($tempJobFinal . " jobfinal"), 'suratpengantar.jobtrucking', 'jobfinal.jobtrucking')
+        //         dd($query->where('suratpengantar.nobukti','TRP 1301/III/2024')->get(),
+        //     DB::table($tempJobFinal)->get(),
+        // DB::table($tempTripAsal)->get());
+                $query
+                ->leftjoin(db::raw($tempJobFinal . " jobfinal"), 'suratpengantar.jobtrucking', 'jobfinal.jobtrucking')
                     ->leftjoin(db::raw($tempTripAsal . " a"), 'suratpengantar.nobukti', 'a.nobukti_tripasal')
                     ->whereRaw("isnull(a.nobukti_tripasal,'')=''")
                     ->whereRaw("isnull(jobfinal.jobtrucking,'')!='' ")
