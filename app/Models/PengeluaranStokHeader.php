@@ -2265,6 +2265,10 @@ class PengeluaranStokHeader extends MyModel
                 $vulkanisirke = ($data['detail_vulkanisirke']) ? $data['detail_vulkanisirke'][$i] : null ?? 0;
             }
 
+            if ($spk->text ==  $pengeluaranstok_id) {
+                $data['detail_statusban'] = null;
+            }
+
             $pengeluaranStokDetail = (new PengeluaranStokDetail())->processStore($pengeluaranStokHeader, [
                 "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
                 "nobukti" => $pengeluaranStokHeader->nobukti,
