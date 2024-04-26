@@ -709,7 +709,7 @@ class PengeluaranHeader extends MyModel
             ->whereRaw("pengeluaranheader.nobukti not in (select pengeluaran_nobukti from rekappengeluarandetail)")
             ->groupBy('pengeluaranheader.nobukti')
             ->groupBy('pengeluaranheader.tglbukti');
-        dd($query->toSql(), $bank, $tglbukti);
+            
         Schema::create($temp, function ($table) {
             $table->string('nobukti_pengeluaran')->nullable();
             $table->date('tglbukti_pengeluaran')->nullable();
