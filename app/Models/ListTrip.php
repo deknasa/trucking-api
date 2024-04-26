@@ -27,7 +27,8 @@ class ListTrip extends MyModel
         $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JAMBATASINPUTTRIP')->where('subgrp', 'JAMBATASINPUTTRIP')->first()->text;
         $getBatasHari = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATASHARIINPUTTRIP')->where('subgrp', 'BATASHARIINPUTTRIP')->first()->text;
 
-        $tglbatasdelete = date('d-m-Y', strtotime($trip->tglbukti . "+$getBatasHari days")) . ' ' . $getBatasInput;
+        $tglbatasdelete = date('Y-m-d', strtotime($trip->tglbukti . "+$getBatasHari days")) . ' ' . $getBatasInput;
+
 
         if ($aksi == 'DELETE' && date('Y-m-d H:i:s') > $tglbatasdelete) {
             $keteranganerror = $error->cekKeteranganError('TBH') ?? '';
@@ -60,7 +61,7 @@ class ListTrip extends MyModel
             }
         }
         if ($cekSP->statuslongtrip == 65) {
-            $cekJob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', $cekSP->jobtrucking)->where('nobukti', '<>', $nobukti)->first();
+            $cekJob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', $cekSP->jobtrucking)->where('nobukti', '<>', $nobukti)->where('jobtrucking', '<>', '')->first();
             if ($cekJob != '') {
                 $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
                 $data = [
@@ -478,6 +479,52 @@ class ListTrip extends MyModel
         $trip = SuratPengantar::findOrFail($id);
         $isDifferent = false;
         $isTripPulang = false;
+        if ($data['jobtrucking'] == '') {
+            $statusperalihan = DB::table('parameter')->from(
+                DB::raw("parameter as a with (readuncommitted)")
+            )
+                ->select(
+                    'a.id'
+                )
+                ->where('a.grp', '=', 'STATUS PERALIHAN')
+                ->where('a.subgrp', '=', 'STATUS PERALIHAN')
+                ->where('a.text', '=', 'BUKAN PERALIHAN')
+                ->first();
+            $statuslangsir = DB::table('parameter')->from(
+                DB::raw("parameter as a with (readuncommitted)")
+            )
+                ->select(
+                    'a.id'
+                )
+                ->where('a.grp', '=', 'STATUS LANGSIR')
+                ->where('a.subgrp', '=', 'STATUS LANGSIR')
+                ->where('a.text', '=', 'BUKAN LANGSIR')
+                ->first();
+
+            $tglBatasEdit = date('Y-m-d', strtotime($data['tglbukti'])) . ' ' . '12:00:00';
+            $orderan = [
+                'tglbukti' => $data['tglbukti'],
+                'container_id' => $data['container_id'],
+                'agen_id' => $data['agen_id'],
+                'jenisorder_id' => $data['jenisorder_id'],
+                'pelanggan_id' => $data['pelanggan_id'],
+                'tarifrincian_id' => $data['tarifrincian_id'],
+                'nojobemkl' =>  '',
+                'nocont' =>   '',
+                'noseal' =>  '',
+                'nojobemkl2' => '',
+                'nocont2' => '',
+                'noseal2' => '',
+                'statuslangsir' => $statuslangsir->id,
+                'statusperalihan' => $statusperalihan->id,
+                'tglbataseditorderantrucking' => $tglBatasEdit,
+                'inputtripmandor' =>  '1',
+            ];
+            $orderanTrucking = (new OrderanTrucking())->processStore($orderan);
+            $trip->jobtrucking = $orderanTrucking->nobukti;
+            goto trip;
+        }
+
         if ($trip->statuscontainer_id != 3) {
             if ($trip->dari_id != 1) {
                 $cek = [$trip->agen_id, $trip->jenisorder_id, $trip->statuscontainer_id, $trip->container_id, $trip->upah_id, $trip->pelanggan_id];
@@ -664,6 +711,7 @@ class ListTrip extends MyModel
             }
         }
 
+        trip:
         $upahsupirRincian = DB::table('UpahSupirRincian')->from(
             DB::Raw("UpahSupirRincian with (readuncommitted)")
         )

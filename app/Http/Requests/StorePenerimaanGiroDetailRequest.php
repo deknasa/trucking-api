@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\validasiBankPenerimaanGiro;
+use App\Rules\validasiNoWarkatPenerimaanGiro;
 use App\Rules\ValidateTglJatuhTempoPenerimaanGiro;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -32,9 +34,9 @@ class StorePenerimaanGiroDetailRequest extends FormRequest
             'keterangan_detail' => 'required|array',
             'keterangan_detail.*' => 'required',
             'bank' => 'required|array',
-            'bank.*' => 'required',
+            'bank.*' => ['required', new validasiBankPenerimaanGiro()],
             'nowarkat' => 'required|array',
-            'nowarkat.*' => 'required',
+            'nowarkat.*' => ['required', new validasiNoWarkatPenerimaanGiro()],
         ];
     }
 
