@@ -338,6 +338,8 @@ class PenerimaanStokHeaderController extends Controller
         $penerimaanStokHeader  = new PenerimaanStokHeader();
         $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
         $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
+        $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
+        $pgdo = Parameter::where('grp', 'DO STOK')->where('subgrp', 'DO STOK')->first();
 
         $aksi = request()->aksi ?? '';
         $peneimaan = $penerimaanStokHeader->findOrFail($id);
@@ -531,6 +533,9 @@ class PenerimaanStokHeaderController extends Controller
                 ];
             }
             $todayValidation = $penerimaanStokHeader->todayValidation($peneimaan->tglbukti);
+            if ($pg->text == $peneimaan->penerimaanstok_id || $pgdo->text == $peneimaan->penerimaanstok_id) {
+                $todayValidation = true;
+            }
             if (!$todayValidation) {
                 // $query = Error::from(DB::raw("error with (readuncommitted)"))
                 //     ->select('keterangan')
