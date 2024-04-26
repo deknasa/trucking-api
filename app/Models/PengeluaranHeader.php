@@ -77,6 +77,7 @@ class PengeluaranHeader extends MyModel
                 $table->integer('id')->nullable();
                 $table->string('nobukti', 50)->nullable();
                 $table->date('tglbukti')->nullable();
+                $table->double('nominal', 15, 2)->nullable();
                 $table->string('pelanggan_id', 1000)->nullable();
                 $table->string('postingdari', 1000)->nullable();
                 $table->string('dibayarke', 1000)->nullable();
@@ -115,12 +116,26 @@ class PengeluaranHeader extends MyModel
                 ->groupBy("pengeluaranpenerima.nobukti");
 
             DB::table($tempPenerima)->insertUsing(['nobukti', 'penerima'], $getPenerima);
-
+            $tempNominal = '##tempNominal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempNominal, function ($table) {
+                $table->string('nobukti')->nullable();
+                $table->double('nominal', 15, 2)->nullable();
+            });
+            $getNominal = DB::table("pengeluarandetail")->from(DB::raw("pengeluarandetail with (readuncommitted)"))
+                ->select(DB::raw("pengeluaranheader.nobukti,SUM(pengeluarandetail.nominal) AS nominal"))
+                ->join(DB::raw("pengeluaranheader with (readuncommitted)"), 'pengeluaranheader.id', 'pengeluarandetail.pengeluaran_id')
+                ->groupBy("pengeluaranheader.nobukti");
+            if (request()->tgldari && request()->tglsampai) {
+                $getNominal->whereBetween('pengeluaranheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                    ->where('pengeluaranheader.bank_id', request()->bank_id);
+            }
+            DB::table($tempNominal)->insertUsing(['nobukti', 'nominal'], $getNominal);
             $query = DB::table($this->table)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
                 ->select(
                     'pengeluaranheader.id',
                     'pengeluaranheader.nobukti',
                     'pengeluaranheader.tglbukti',
+                    'nominal.nominal',
                     'pelanggan.namapelanggan as pelanggan_id',
                     'pengeluaranheader.postingdari',
                     'pengeluaranheader.dibayarke',
@@ -155,6 +170,7 @@ class PengeluaranHeader extends MyModel
                 ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id')
                 ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'pengeluaranheader.statusapproval', 'statusapproval.id')
                 ->leftJoin(DB::raw("$tempPenerima as penerima with (readuncommitted)"), 'pengeluaranheader.nobukti', 'penerima.nobukti')
+                ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'pengeluaranheader.nobukti', 'nominal.nobukti')
                 ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'pengeluaranheader.statuskirimberkas', 'statuskirimberkas.id')
                 ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluaranheader.statuscetak', 'statuscetak.id');
             if (request()->tgldari && request()->tglsampai) {
@@ -173,6 +189,7 @@ class PengeluaranHeader extends MyModel
                 'id',
                 'nobukti',
                 'tglbukti',
+                'nominal',
                 'pelanggan_id',
                 'postingdari',
                 'dibayarke',
@@ -220,6 +237,7 @@ class PengeluaranHeader extends MyModel
                 'a.id',
                 'a.nobukti',
                 'a.tglbukti',
+                'a.nominal',
                 'a.pelanggan_id',
                 'a.postingdari',
                 'a.dibayarke',
@@ -248,7 +266,7 @@ class PengeluaranHeader extends MyModel
                 'a.created_at',
                 'a.updated_at',
             );
-            // dd($query->get());
+        // dd($query->get());
         // dd(request()->limit);
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -306,6 +324,7 @@ class PengeluaranHeader extends MyModel
             $table->integer('id')->nullable();
             $table->string('nobukti', 50)->nullable();
             $table->date('tglbukti')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
             $table->string('pelanggan_id', 1000)->nullable();
             $table->string('postingdari', 1000)->nullable();
             $table->string('dibayarke', 1000)->nullable();
@@ -346,12 +365,27 @@ class PengeluaranHeader extends MyModel
 
         DB::table($tempPenerima)->insertUsing(['nobukti', 'penerima'], $getPenerima);
 
+        $tempNominal = '##tempNominal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempNominal, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+        $getNominal = DB::table("pengeluarandetail")->from(DB::raw("pengeluarandetail with (readuncommitted)"))
+            ->select(DB::raw("pengeluaranheader.nobukti,SUM(pengeluarandetail.nominal) AS nominal"))
+            ->join(DB::raw("pengeluaranheader with (readuncommitted)"), 'pengeluaranheader.id', 'pengeluarandetail.pengeluaran_id')
+            ->groupBy("pengeluaranheader.nobukti");
+        if (request()->tgldariheader && request()->tglsampaiheader) {
+            $getNominal->whereBetween('pengeluaranheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])
+                ->where('pengeluaranheader.bank_id', request()->bank_id);
+        }
+        DB::table($tempNominal)->insertUsing(['nobukti', 'nominal'], $getNominal);
 
         $query = DB::table($this->table)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
             ->select(
                 'pengeluaranheader.id',
                 'pengeluaranheader.nobukti',
                 'pengeluaranheader.tglbukti',
+                'nominal.nominal',
                 'pelanggan.namapelanggan as pelanggan_id',
                 'pengeluaranheader.postingdari',
                 'pengeluaranheader.dibayarke',
@@ -387,12 +421,14 @@ class PengeluaranHeader extends MyModel
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'pengeluaranheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("$tempPenerima as penerima with (readuncommitted)"), 'pengeluaranheader.nobukti', 'penerima.nobukti')
+            ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'pengeluaranheader.nobukti', 'nominal.nobukti')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluaranheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'pengeluaranheader.statuskirimberkas', 'statuskirimberkas.id');
         DB::table($temp)->insertUsing([
             'id',
             'nobukti',
             'tglbukti',
+            'nominal',
             'pelanggan_id',
             'postingdari',
             'dibayarke',
@@ -427,6 +463,7 @@ class PengeluaranHeader extends MyModel
                 'a.id',
                 'a.nobukti',
                 'a.tglbukti',
+                'a.nominal',
                 'a.pelanggan_id',
                 'a.postingdari',
                 'a.dibayarke',
@@ -466,6 +503,7 @@ class PengeluaranHeader extends MyModel
             $table->integer('id')->nullable();
             $table->string('nobukti', 50)->nullable();
             $table->date('tglbukti')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
             $table->string('pelanggan_id', 1000)->nullable();
             $table->string('postingdari', 1000)->nullable();
             $table->string('dibayarke', 1000)->nullable();
@@ -509,6 +547,7 @@ class PengeluaranHeader extends MyModel
             'id',
             'nobukti',
             'tglbukti',
+            'nominal',
             'pelanggan_id',
             'postingdari',
             'dibayarke',
@@ -565,18 +604,18 @@ class PengeluaranHeader extends MyModel
                                 //     $query = $query->where('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
                                 // } else if ($filters['field'] == 'bank_id') {
                                 //     $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
-                                // } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
-                                //     $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
+                                $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                                 // } else if ($filters['field'] == 'tglbukti_pengeluaran') {
                                 //     $query = $query->whereRaw("format(" . $this->table . ".tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                                 // } else if ($filters['field'] == 'nobukti_pengeluaran') {
                                 //     $query = $query->where('pengeluaranheader.nobukti', 'LIKE', "%$filters[data]%");
                                 // } else if ($filters['field'] == 'keterangan_detail') {
                                 //     $query = $query->where('pengeluarandetail.keterangan', 'LIKE', "%$filters[data]%");
-                                // } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                //     $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                                // } else if ($filters['field'] == 'nominal_detail') {
-                                //     $query = $query->whereRaw("format(c.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->whereRaw("format(a.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -601,18 +640,18 @@ class PengeluaranHeader extends MyModel
                                     //     $query->orWhere('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
                                     // } else if ($filters['field'] == 'bank_id') {
                                     //     $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                                    // } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
-                                    //     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
+                                    $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                                     // } else if ($filters['field'] == 'tglbukti_pengeluaran') {
                                     //     $query = $query->orWhereRaw("format(" . $this->table . ".tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                                     // } else if ($filters['field'] == 'nobukti_pengeluaran') {
                                     //     $query = $query->orWhere('pengeluaranheader.nobukti', 'LIKE', "%$filters[data]%");
                                     // } else if ($filters['field'] == 'keterangan_detail') {
                                     //     $query = $query->orWhere('pengeluarandetail.keterangan', 'LIKE', "%$filters[data]%");
-                                    // } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                    //     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                                    // } else if ($filters['field'] == 'nominal_detail') {
-                                    //     $query = $query->orWhereRaw("format(c.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'nominal') {
+                                    $query = $query->orWhereRaw("format(a.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                                 } else {
                                     // $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                     $query = $query->OrwhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -670,7 +709,7 @@ class PengeluaranHeader extends MyModel
             ->whereRaw("pengeluaranheader.nobukti not in (select pengeluaran_nobukti from rekappengeluarandetail)")
             ->groupBy('pengeluaranheader.nobukti')
             ->groupBy('pengeluaranheader.tglbukti');
-
+        dd($query->toSql(), $bank, $tglbukti);
         Schema::create($temp, function ($table) {
             $table->string('nobukti_pengeluaran')->nullable();
             $table->date('tglbukti_pengeluaran')->nullable();

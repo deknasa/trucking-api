@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Services\RunningNumberService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -89,48 +90,192 @@ class PenerimaanGiroHeader extends MyModel
         $this->setRequestParameters();
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
-        $query = DB::table($this->table)->from(DB::raw("penerimaangiroheader with (readuncommitted)"))
-            ->select(
-                'penerimaangiroheader.id',
-                'penerimaangiroheader.nobukti',
-                'penerimaangiroheader.tglbukti',
-                'pelanggan.namapelanggan as pelanggan_id',
-                'agen.namaagen as agen_id',
-                'penerimaangiroheader.postingdari',
-                'penerimaangiroheader.diterimadari',
-                'penerimaangiroheader.tgllunas',
-                'statusapproval.memo as statusapproval',
-                DB::raw('(case when (year(penerimaangiroheader.tglapproval) <= 2000) then null else penerimaangiroheader.tglapproval end ) as tglapproval'),
-                'penerimaangiroheader.userapproval',
-                'penerimaangiroheader.created_at',
-                'statuscetak.memo as statuscetak',
-                DB::raw('(case when (year(penerimaangiroheader.tglbukacetak) <= 2000) then null else penerimaangiroheader.tglbukacetak end ) as tglbukacetak'),
-                'penerimaangiroheader.userbukacetak',
-                DB::raw('(case when (year(penerimaangiroheader.tglkirimberkas) <= 2000) then null else penerimaangiroheader.tglkirimberkas end ) as tglkirimberkas'),
-                'statuskirimberkas.memo as statuskirimberkas',
-                'penerimaangiroheader.userkirimberkas',
-                'penerimaangiroheader.created_at',
-                'penerimaangiroheader.modifiedby',
-                'penerimaangiroheader.updated_at'
+
+        $user_id = auth('api')->user()->id ?? 0;
+        $proses = request()->proses ?? 'reload';
+        $user = auth('api')->user()->name;
+        $class = 'PengeluaranHeaderController';
+        if ($proses == 'reload') {
+            $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel a with (readuncommitted)")
             )
-            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
-            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaangiroheader.agen_id', 'agen.id')
-            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaangiroheader.statuscetak', 'statuscetak.id')
-            ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'penerimaangiroheader.statuskirimberkas', 'statuskirimberkas.id')
-            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaangiroheader.statusapproval', 'statusapproval.id');
-        if (request()->tgldari && request()->tglsampai) {
-            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+                ->select(
+                    'id',
+                    'class',
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            if (isset($querydata)) {
+                Schema::dropIfExists($querydata->namatabel);
+                DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+            }
+
+            DB::table('listtemporarytabel')->insert(
+                [
+                    'class' => $class,
+                    'namatabel' => $temtabel,
+                    'modifiedby' => $user,
+                    'created_at' => date('Y/m/d H:i:s'),
+                    'updated_at' => date('Y/m/d H:i:s'),
+                ]
+            );
+
+
+            Schema::create($temtabel, function (Blueprint $table) {
+                $table->integer('id')->nullable();
+                $table->string('nobukti', 50)->nullable();
+                $table->date('tglbukti')->nullable();
+                $table->double('nominal', 15, 2)->nullable();
+                $table->string('agen_id', 1000)->nullable();
+                $table->string('postingdari', 1000)->nullable();
+                $table->string('diterimadari', 1000)->nullable();
+                $table->date('tgllunas', 1000)->nullable();
+                $table->longtext('statusapproval')->nullable();
+                $table->string('statusapprovaltext', 200)->nullable();
+                $table->date('tglapproval')->nullable();
+                $table->string('userapproval', 200)->nullable();
+                $table->longtext('statuscetak')->nullable();
+                $table->string('statuscetaktext', 200)->nullable();
+                $table->date('tglbukacetak')->nullable();
+                $table->string('userbukacetak', 200)->nullable();
+                $table->date('tglkirimberkas')->nullable();
+                $table->longtext('statuskirimberkas')->nullable();
+                $table->string('statuskirimberkastext', 200)->nullable();
+                $table->string('userkirimberkas', 200)->nullable();
+                $table->dateTime('created_at')->nullable();
+                $table->string('modifiedby', 200)->nullable();
+                $table->dateTime('updated_at')->nullable();
+            });
+
+            $tempNominal = '##tempNominal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempNominal, function ($table) {
+                $table->string('nobukti')->nullable();
+                $table->double('nominal', 15, 2)->nullable();
+            });
+            $getNominal = DB::table("penerimaangirodetail")->from(DB::raw("penerimaangirodetail with (readuncommitted)"))
+                ->select(DB::raw("penerimaangiroheader.nobukti,SUM(penerimaangirodetail.nominal) AS nominal"))
+                ->join(DB::raw("penerimaangiroheader with (readuncommitted)"), 'penerimaangiroheader.id', 'penerimaangirodetail.penerimaangiro_id')
+                ->groupBy("penerimaangiroheader.nobukti");
+            if (request()->tgldari && request()->tglsampai) {
+                $getNominal->whereBetween('penerimaangiroheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+            }
+            DB::table($tempNominal)->insertUsing(['nobukti', 'nominal'], $getNominal);
+
+            $query = DB::table($this->table)->from(DB::raw("penerimaangiroheader with (readuncommitted)"))
+                ->select(
+                    'penerimaangiroheader.id',
+                    'penerimaangiroheader.nobukti',
+                    'penerimaangiroheader.tglbukti',
+                    'nominal.nominal',
+                    'agen.namaagen as agen_id',
+                    'penerimaangiroheader.postingdari',
+                    'penerimaangiroheader.diterimadari',
+                    'penerimaangiroheader.tgllunas',
+                    'statusapproval.memo as statusapproval',
+                    'statusapproval.text as statusapprovaltext',
+                    DB::raw('(case when (year(penerimaangiroheader.tglapproval) <= 2000) then null else penerimaangiroheader.tglapproval end ) as tglapproval'),
+                    'penerimaangiroheader.userapproval',
+                    'statuscetak.memo as statuscetak',
+                    'statuscetak.text as statuscetaktext',
+                    DB::raw('(case when (year(penerimaangiroheader.tglbukacetak) <= 2000) then null else penerimaangiroheader.tglbukacetak end ) as tglbukacetak'),
+                    'penerimaangiroheader.userbukacetak',
+                    DB::raw('(case when (year(penerimaangiroheader.tglkirimberkas) <= 2000) then null else penerimaangiroheader.tglkirimberkas end ) as tglkirimberkas'),
+                    'statuskirimberkas.memo as statuskirimberkas',
+                    'statuskirimberkas.text as statuskirimberkastext',
+                    'penerimaangiroheader.userkirimberkas',
+                    'penerimaangiroheader.created_at',
+                    'penerimaangiroheader.modifiedby',
+                    'penerimaangiroheader.updated_at'
+                )
+                ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
+                ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaangiroheader.agen_id', 'agen.id')
+                ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaangiroheader.statuscetak', 'statuscetak.id')
+                ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'penerimaangiroheader.nobukti', 'nominal.nobukti')
+                ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'penerimaangiroheader.statuskirimberkas', 'statuskirimberkas.id')
+                ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaangiroheader.statusapproval', 'statusapproval.id');
+            if (request()->tgldari && request()->tglsampai) {
+                $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+            }
+
+            if ($periode != '') {
+                $periode = explode("-", $periode);
+                $query->whereRaw("MONTH(penerimaangiroheader.tglbukti) ='" . $periode[0] . "'")
+                    ->whereRaw("year(penerimaangiroheader.tglbukti) ='" . $periode[1] . "'");
+            }
+            if ($statusCetak != '') {
+                $query->where("penerimaangiroheader.statuscetak", $statusCetak);
+            }
+            DB::table($temtabel)->insertUsing([
+                'id',
+                'nobukti',
+                'tglbukti',
+                'nominal',
+                'agen_id',
+                'postingdari',
+                'diterimadari',
+                'tgllunas',
+                'statusapproval',
+                'statusapprovaltext',
+                'tglapproval',
+                'userapproval',
+                'statuscetak',
+                'statuscetaktext',
+                'tglbukacetak',
+                'userbukacetak',
+                'tglkirimberkas',
+                'statuskirimberkas',
+                'statuskirimberkastext',
+                'userkirimberkas',
+                'created_at',
+                'modifiedby',
+                'updated_at',
+            ], $query);
+        } else {
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel with (readuncommitted)")
+            )
+                ->select(
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            // dd($querydata);
+            $temtabel = $querydata->namatabel;
         }
 
-        if ($periode != '') {
-            $periode = explode("-", $periode);
-            $query->whereRaw("MONTH(penerimaangiroheader.tglbukti) ='" . $periode[0] . "'")
-                ->whereRaw("year(penerimaangiroheader.tglbukti) ='" . $periode[1] . "'");
-        }
-        if ($statusCetak != '') {
-            $query->where("penerimaangiroheader.statuscetak", $statusCetak);
-        }
-
+        $query = DB::table($temtabel)->from(DB::raw($temtabel . " a "))
+            ->select(
+                'a.id',
+                'a.nobukti',
+                'a.tglbukti',
+                'a.nominal',
+                'a.agen_id',
+                'a.postingdari',
+                'a.diterimadari',
+                'a.tgllunas',
+                'a.statusapproval',
+                'a.statusapprovaltext',
+                'a.tglapproval',
+                'a.userapproval',
+                'a.statuscetak',
+                'a.statuscetaktext',
+                'a.tglbukacetak',
+                'a.userbukacetak',
+                'a.tglkirimberkas',
+                'a.statuskirimberkas',
+                'a.statuskirimberkastext',
+                'a.userkirimberkas',
+                'a.created_at',
+                'a.modifiedby',
+                'a.updated_at',
+            );
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
@@ -142,39 +287,140 @@ class PenerimaanGiroHeader extends MyModel
         return $data;
     }
 
-    public function selectColumns($query)
+    public function selectColumns()
     {
-        return $query->from(
-            DB::raw($this->table . " with (readuncommitted)")
-        )
+        $temp = '##tempselect' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temp, function (Blueprint $table) {
+            $table->integer('id')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+            $table->string('agen_id', 1000)->nullable();
+            $table->string('postingdari', 1000)->nullable();
+            $table->string('diterimadari', 1000)->nullable();
+            $table->date('tgllunas', 1000)->nullable();
+            $table->longtext('statusapproval')->nullable();
+            $table->string('statusapprovaltext', 200)->nullable();
+            $table->date('tglapproval')->nullable();
+            $table->string('userapproval', 200)->nullable();
+            $table->longtext('statuscetak')->nullable();
+            $table->string('statuscetaktext', 200)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->string('userbukacetak', 200)->nullable();
+            $table->date('tglkirimberkas')->nullable();
+            $table->longtext('statuskirimberkas')->nullable();
+            $table->string('statuskirimberkastext', 200)->nullable();
+            $table->string('userkirimberkas', 200)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->string('modifiedby', 200)->nullable();
+            $table->dateTime('updated_at')->nullable();
+        });
+
+        $tempNominal = '##tempNominal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempNominal, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+        $getNominal = DB::table("penerimaangirodetail")->from(DB::raw("penerimaangirodetail with (readuncommitted)"))
+            ->select(DB::raw("penerimaangiroheader.nobukti,SUM(penerimaangirodetail.nominal) AS nominal"))
+            ->join(DB::raw("penerimaangiroheader with (readuncommitted)"), 'penerimaangiroheader.id', 'penerimaangirodetail.penerimaangiro_id')
+            ->groupBy("penerimaangiroheader.nobukti");
+        if (request()->tgldari && request()->tglsampai) {
+            $getNominal->whereBetween('penerimaangiroheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        DB::table($tempNominal)->insertUsing(['nobukti', 'nominal'], $getNominal);
+
+
+        $query = DB::table($this->table)->from(DB::raw("penerimaangiroheader with (readuncommitted)"))
             ->select(
-                DB::raw(
-                    "$this->table.id,
-            $this->table.nobukti,
-            $this->table.tglbukti,
-            agen.namaagen as agen_id,
-            $this->table.postingdari,
-            $this->table.diterimadari,
-            $this->table.tgllunas,
-            statusapproval.text as statusapproval,
-            $this->table.userapproval,
-            $this->table.tglapproval,
-            statuscetak.text as statuscetak,
-            $this->table.userbukacetak,
-            $this->table.tglbukacetak,
-            $this->table.jumlahcetak,
-            statuskirimberkas.text as statuskirimberkas,
-            $this->table.userkirimberkas,
-            $this->table.tglkirimberkas,      
-            $this->table.modifiedby,
-            $this->table.created_at,
-            $this->table.updated_at"
-                )
+                'penerimaangiroheader.id',
+                'penerimaangiroheader.nobukti',
+                'penerimaangiroheader.tglbukti',
+                'nominal.nominal',
+                'agen.namaagen as agen_id',
+                'penerimaangiroheader.postingdari',
+                'penerimaangiroheader.diterimadari',
+                'penerimaangiroheader.tgllunas',
+                'statusapproval.memo as statusapproval',
+                'statusapproval.text as statusapprovaltext',
+                DB::raw('(case when (year(penerimaangiroheader.tglapproval) <= 2000) then null else penerimaangiroheader.tglapproval end ) as tglapproval'),
+                'penerimaangiroheader.userapproval',
+                'statuscetak.memo as statuscetak',
+                'statuscetak.text as statuscetaktext',
+                DB::raw('(case when (year(penerimaangiroheader.tglbukacetak) <= 2000) then null else penerimaangiroheader.tglbukacetak end ) as tglbukacetak'),
+                'penerimaangiroheader.userbukacetak',
+                DB::raw('(case when (year(penerimaangiroheader.tglkirimberkas) <= 2000) then null else penerimaangiroheader.tglkirimberkas end ) as tglkirimberkas'),
+                'statuskirimberkas.memo as statuskirimberkas',
+                'statuskirimberkas.text as statuskirimberkastext',
+                'penerimaangiroheader.userkirimberkas',
+                'penerimaangiroheader.created_at',
+                'penerimaangiroheader.modifiedby',
+                'penerimaangiroheader.updated_at'
             )
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaangiroheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaangiroheader.statuscetak', 'statuscetak.id')
-            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaangiroheader.statusapproval', 'statusapproval.id')
-            ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'penerimaangiroheader.statuskirimberkas', 'statuskirimberkas.id');
+            ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'penerimaangiroheader.nobukti', 'nominal.nobukti')
+            ->leftJoin(DB::raw("parameter as statuskirimberkas with (readuncommitted)"), 'penerimaangiroheader.statuskirimberkas', 'statuskirimberkas.id')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaangiroheader.statusapproval', 'statusapproval.id');
+        if (request()->tgldariheader && request()->tglsampaiheader) {
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+        }
+
+        DB::table($temp)->insertUsing([
+            'id',
+            'nobukti',
+            'tglbukti',
+            'nominal',
+            'agen_id',
+            'postingdari',
+            'diterimadari',
+            'tgllunas',
+            'statusapproval',
+            'statusapprovaltext',
+            'tglapproval',
+            'userapproval',
+            'statuscetak',
+            'statuscetaktext',
+            'tglbukacetak',
+            'userbukacetak',
+            'tglkirimberkas',
+            'statuskirimberkas',
+            'statuskirimberkastext',
+            'userkirimberkas',
+            'created_at',
+            'modifiedby',
+            'updated_at',
+        ], $query);
+
+        $query = DB::table($temp)->from(DB::raw($temp . " a "))
+            ->select(
+                'a.id',
+                'a.nobukti',
+                'a.tglbukti',
+                'a.nominal',
+                'a.agen_id',
+                'a.postingdari',
+                'a.diterimadari',
+                'a.tgllunas',
+                'a.statusapproval',
+                'a.statusapprovaltext',
+                'a.tglapproval',
+                'a.userapproval',
+                'a.statuscetak',
+                'a.statuscetaktext',
+                'a.tglbukacetak',
+                'a.userbukacetak',
+                'a.tglkirimberkas',
+                'a.statuskirimberkas',
+                'a.statuskirimberkastext',
+                'a.userkirimberkas',
+                'a.created_at',
+                'a.modifiedby',
+                'a.updated_at',
+            );
+
+        return $query;
     }
 
     public function findAll($id)
@@ -241,25 +487,28 @@ class PenerimaanGiroHeader extends MyModel
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->nullable();
-            $table->string('nobukti', 1000)->nullable();
-            $table->date('tglbukti', 1000)->nullable();
+            $table->integer('id')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
             $table->string('agen_id', 1000)->nullable();
             $table->string('postingdari', 1000)->nullable();
             $table->string('diterimadari', 1000)->nullable();
             $table->date('tgllunas', 1000)->nullable();
-            $table->string('statusapproval', 1000)->nullable();
-            $table->string('userapproval', 1000)->nullable();
-            $table->dateTime('tglapproval')->nullable();
-            $table->string('statuscetak', 1000)->nullable();
-            $table->string('userbukacetak', 1000)->nullable();
-            $table->dateTime('tglbukacetak')->nullable();
-            $table->integer('jumlahcetak')->Length(11)->nullable();
-            $table->longtext('statuskirimberkas')->nullable();
-            $table->string('userkirimberkas', 200)->nullable();
+            $table->longtext('statusapproval')->nullable();
+            $table->string('statusapprovaltext', 200)->nullable();
+            $table->date('tglapproval')->nullable();
+            $table->string('userapproval', 200)->nullable();
+            $table->longtext('statuscetak')->nullable();
+            $table->string('statuscetaktext', 200)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->string('userbukacetak', 200)->nullable();
             $table->date('tglkirimberkas')->nullable();
-            $table->string('modifiedby', 50)->nullable();
+            $table->longtext('statuskirimberkas')->nullable();
+            $table->string('statuskirimberkastext', 200)->nullable();
+            $table->string('userkirimberkas', 200)->nullable();
             $table->dateTime('created_at')->nullable();
+            $table->string('modifiedby', 200)->nullable();
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
@@ -268,29 +517,34 @@ class PenerimaanGiroHeader extends MyModel
             request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
         }
         $this->setRequestParameters();
-        $query = DB::table($modelTable);
-        $query = $this->selectColumns($query);
+        $query = $this->selectColumns();
         $this->sort($query);
         $models = $this->filter($query);
-        $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+        $models =  $query->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
         DB::table($temp)->insertUsing([
             'id',
             'nobukti',
             'tglbukti',
+            'nominal',
             'agen_id',
             'postingdari',
             'diterimadari',
             'tgllunas',
             'statusapproval',
-            'userapproval',
+            'statusapprovaltext',
             'tglapproval',
+            'userapproval',
             'statuscetak',
-            'userbukacetak',
+            'statuscetaktext',
             'tglbukacetak',
-            'jumlahcetak', 'statuskirimberkas', 'userkirimberkas', 'tglkirimberkas',
-            'modifiedby',
+            'userbukacetak',
+            'tglkirimberkas',
+            'statuskirimberkas',
+            'statuskirimberkastext',
+            'userkirimberkas',
             'created_at',
-            'updated_at'
+            'modifiedby',
+            'updated_at',
         ], $models);
 
 
@@ -300,11 +554,11 @@ class PenerimaanGiroHeader extends MyModel
 
     public function sort($query)
     {
-        if ($this->params['sortIndex'] == 'agen_id') {
-            return $query->orderBy('agen.namaagen', $this->params['sortOrder']);
-        } else {
-            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
-        }
+        // if ($this->params['sortIndex'] == 'agen_id') {
+        //     return $query->orderBy('agen.namaagen', $this->params['sortOrder']);
+        // } else {
+        return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        // }
     }
 
     public function getPenerimaan()
@@ -380,30 +634,26 @@ class PenerimaanGiroHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] != '') {
                             if ($filters['field'] == 'statusapproval') {
-                                $query = $query->where('statusapproval.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'agen_id') {
-                                $query = $query->where('agen.namaagen', '=', "$filters[data]");
+                                $query = $query->where('a.statusapprovaltext', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statuscetak') {
-                                $query = $query->where('statuscetak.text', '=', "$filters[data]");
+                                $query = $query->where('a.statuscetaktext', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statuskirimberkas') {
-                                $query = $query->where('statuskirimberkas.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'agen_id') {
-                                $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
+                                $query = $query->where('a.statuskirimberkastext', '=', "$filters[data]");
                             } else if ($filters['field'] == 'created_at') {
-                                $query = $query->whereRaw("format($this->table.created_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
+                                $query = $query->whereRaw("format(a.created_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
                             } else if ($filters['field'] == 'updated_at') {
-                                $query = $query->whereRaw("format($this->table.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
+                                $query = $query->whereRaw("format(a.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
                             } else if ($filters['field'] == 'tgllunas') {
-                                $query = $query->whereRaw("format($this->table.tgllunas,'dd-MM-yyyy') like '%$filters[data]%'");
+                                $query = $query->whereRaw("format(a.tgllunas,'dd-MM-yyyy') like '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti') {
-                                $query = $query->whereRaw("format($this->table.tglbukti,'dd-MM-yyyy') like '%$filters[data]%'");
+                                $query = $query->whereRaw("format(a.tglbukti,'dd-MM-yyyy') like '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglapproval') {
-                                $query = $query->whereRaw("format($this->table.tglapproval,'dd-MM-yyyy') like '%$filters[data]%'");
+                                $query = $query->whereRaw("format(a.tglapproval,'dd-MM-yyyy') like '%$filters[data]%'");
                             } else if ($filters['field'] == 'nominal') {
-                                $query = $query->whereRaw("format(c.nominal,'#,#0.00') like '%$filters[data]%'");
+                                $query = $query->whereRaw("format(a.nominal,'#,#0.00') like '%$filters[data]%'");
                             } else {
                                 // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                             }
                         }
                     }
@@ -414,32 +664,26 @@ class PenerimaanGiroHeader extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] != '') {
                                 if ($filters['field'] == 'statusapproval') {
-                                    $query->orWhere('statusapproval.text', '=', "$filters[data]");
+                                    $query->orWhere('a.statusapprovaltext', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'statuscetak') {
-                                    $query->orWhere('statuscetak.text', '=', "$filters[data]");
+                                    $query->orWhere('a.statuscetaktext', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'statuskirimberkas') {
-                                    $query = $query->orWhere('statuskirimberkas.text', '=', "$filters[data]");
-                                } else if ($filters['field'] == 'agen_id') {
-                                    $query = $query->orWhere('agen.namaagen', '=', "$filters[data]");
-                                } else if ($filters['field'] == 'tglbukti') {
-                                    $query->orWhere($this->table . '.tglbukti', '=', date('Y-m-d', strtotime($filters['data'])));
-                                } else if ($filters['field'] == 'agen_id') {
-                                    $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                                    $query = $query->orWhere('a.statuskirimberkastext', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'created_at') {
-                                    $query = $query->orWhereRaw("format($this->table.created_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
+                                    $query = $query->orWhereRaw("format(a.created_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
                                 } else if ($filters['field'] == 'updated_at') {
-                                    $query = $query->orWhereRaw("format($this->table.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
+                                    $query = $query->orWhereRaw("format(a.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
                                 } else if ($filters['field'] == 'tgllunas') {
-                                    $query = $query->orWhereRaw("format($this->table.tgllunas,'dd-MM-yyyy') like '%$filters[data]%'");
+                                    $query = $query->orWhereRaw("format(a.tgllunas,'dd-MM-yyyy') like '%$filters[data]%'");
                                 } else if ($filters['field'] == 'tglbukti') {
-                                    $query = $query->orWhereRaw("format($this->table.tglbukti,'dd-MM-yyyy') like '%$filters[data]%'");
+                                    $query = $query->orWhereRaw("format(a.tglbukti,'dd-MM-yyyy') like '%$filters[data]%'");
                                 } else if ($filters['field'] == 'tglapproval') {
-                                    $query = $query->orWhereRaw("format($this->table.tglapproval,'dd-MM-yyyy') like '%$filters[data]%'");
+                                    $query = $query->orWhereRaw("format(a.tglapproval,'dd-MM-yyyy') like '%$filters[data]%'");
                                 } else if ($filters['field'] == 'nominal') {
-                                    $query = $query->orWhereRaw("format(c.nominal,'#,#0.00') like '%$filters[data]%'");
+                                    $query = $query->orWhereRaw("format(a.nominal,'#,#0.00') like '%$filters[data]%'");
                                 } else {
                                     // $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                    $query = $query->OrwhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                                 }
                             }
                         }
