@@ -1113,7 +1113,7 @@ class Supir extends MyModel
                 $tglBatasLuarKota = (date('Y-m-d', strtotime("+$batasBulan->text months", strtotime($tglmasuk))));
             }
 
-
+            $supirlama_id = request()->id ?? null;
             $isMandor = auth()->user()->isMandor();
             $userid = auth('api')->user()->id;
             if ($isMandor) {
@@ -1196,6 +1196,7 @@ class Supir extends MyModel
             $supir->statuspostingtnl = $data['statuspostingtnl'];
             $supir->tglberhentisupir = date('Y-m-d', strtotime("1900-01-01"));
             $supir->modifiedby = auth('api')->user()->user;
+            $supir->supirlama_id = $supirlama_id;
             $supir->info = html_entity_decode(request()->info);
             if ($data['mandor_id'] != 0) {
                 $supir->tglberlakumilikmandor = date('Y-m-d');
@@ -1593,6 +1594,8 @@ class Supir extends MyModel
         if ($getPemutihan != '') {
             $nobuktiPemutihan = $getPemutihan->nobukti;
         }
+        $parameter = new Parameter();
+        $statusNonAktif = $parameter->cekId('STATUS AKTIF', 'STATUS AKTIF','NON AKTIF');
 
         $query = Supir::from(DB::raw("supir with (readuncommitted)"))
             ->select(
@@ -1601,7 +1604,7 @@ class Supir extends MyModel
                 'supir.alamat',
                 'supir.kota',
                 'supir.telp',
-                'supir.statusaktif',
+                DB::raw($statusNonAktif." as statusaktif"),
                 'supir.pemutihansupir_nobukti',
                 'supir.nominaldepositsa',
                 'supir.depositke',
@@ -1625,7 +1628,7 @@ class Supir extends MyModel
                 'supir.photokk',
                 'supir.photoskck',
                 'supir.photovaksin',
-                'supir.pdfsuratperjanjian',
+                DB::raw(" '' as pdfsuratperjanjian"),
                 'supir.photodomisili',
                 'supir.keteranganresign',
                 'supir.keteranganberhentisupir',
