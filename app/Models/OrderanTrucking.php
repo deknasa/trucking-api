@@ -1273,7 +1273,7 @@ class OrderanTrucking extends MyModel
             ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'sp.mandortrado_id', 'mandor.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
             ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'sp.jobtrucking', 'orderantrucking.nobukti')
-            ->whereBetween('orderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->whereBetween('orderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])
             ->groupBy('sp.jobtrucking');
         DB::table($tempsupirtrado)->insertUsing([
             'jobtrucking',
@@ -1370,7 +1370,7 @@ class OrderanTrucking extends MyModel
                 'a.updated_at',
             )
             ->leftJoin(DB::raw("$tempsupirtrado as b"), 'a.nobukti', 'b.jobtrucking')
-            ->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+            ->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
 
 
         DB::table($temporderantrucking)->insertUsing([
@@ -1431,7 +1431,7 @@ class OrderanTrucking extends MyModel
             ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'sp.mandortrado_id', 'mandor.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
             ->leftJoin(DB::raw("saldoorderantrucking with (readuncommitted)"), 'sp.jobtrucking', 'saldoorderantrucking.nobukti')
-            ->whereBetween('saldoorderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->whereBetween('saldoorderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])
             ->groupBy('sp.jobtrucking');
         DB::table($tempsupirtrado)->insertUsing([
             'jobtrucking',
@@ -1447,7 +1447,7 @@ class OrderanTrucking extends MyModel
             ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'sp.mandortrado_id', 'mandor.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
             ->leftJoin(DB::raw("saldoorderantrucking with (readuncommitted)"), 'sp.jobtrucking', 'saldoorderantrucking.nobukti')
-            ->whereBetween('saldoorderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->whereBetween('saldoorderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])
             ->groupBy('sp.jobtrucking');
         DB::table($tempsupirtrado)->insertUsing([
             'jobtrucking',
@@ -1493,7 +1493,7 @@ class OrderanTrucking extends MyModel
                 'a.updated_at',
             )
             ->leftJoin(DB::raw("$tempsupirtrado as b"), 'a.nobukti', 'b.jobtrucking')
-            ->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+            ->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
 
 
         DB::table($temporderantrucking)->insertUsing([
@@ -1568,7 +1568,7 @@ class OrderanTrucking extends MyModel
                 'orderantrucking.created_at',
                 'orderantrucking.updated_at'
             )
-            ->whereBetween('orderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->whereBetween('orderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])
             ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'orderantrucking.tarif_id', '=', 'tarif.id')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'orderantrucking.container_id', '=', 'container.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'orderantrucking.agen_id', '=', 'agen.id')
@@ -1924,7 +1924,7 @@ class OrderanTrucking extends MyModel
         if (!$inputtripmandor) {
 
             $get = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
-                ->select('id', 'nominalperalihan', 'qtyton', 'nojob', 'nocont', 'noseal', 'nojob2', 'nocont2', 'noseal2', 'pelanggan_id', 'agen_id', 'jenisorder_id', 'container_id')
+                ->select('id','tglbukti', 'nominalperalihan', 'qtyton', 'nojob', 'nocont', 'noseal', 'nojob2', 'nocont2', 'noseal2', 'pelanggan_id', 'agen_id', 'jenisorder_id', 'container_id')
                 ->where('jobtrucking', $orderanTrucking->nobukti)->get();
 
             $datadetail = json_decode($get, true);
@@ -1933,6 +1933,7 @@ class OrderanTrucking extends MyModel
                     $suratPengantar = [
                         'proseslain' => '1',
                         'jobtrucking' => $orderanTrucking->nobukti,
+                        'tglbukti' =>  $item['tglbukti'] ?? '',
                         'nojob' =>  $data['nojobemkl'] ?? '',
                         'nocont' =>  $data['nocont'] ?? '',
                         'noseal' =>  $data['noseal'] ?? '',
