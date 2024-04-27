@@ -499,6 +499,321 @@ class OrderanTrucking extends MyModel
         return $data;
     }
 
+    public function getForLookup()
+    {
+
+        $this->setRequestParameters();
+        $container_id = request()->container_id;
+        $jenisorder_id = request()->jenisorder_id;
+        $pelanggan_id = request()->pelanggan_id;
+        $trado_id = request()->trado_id;
+        $tglbukti = date('Y-m-d', strtotime(request()->tglbukti));
+
+        $tempAwal = '##tempAwal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempAwal, function ($table) {
+            $table->string('jobtrucking', 50)->nullable();
+            $table->unsignedBigInteger('sampai_id')->nullable();
+        });
+        // AMBIL JOB PERGI NORMAL
+        $queryJobtruckingAwal = DB::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
+            ->select(
+                'a.jobtrucking',
+                'a.sampai_id'
+            )
+            ->whereraw("a.dari_id = 1")
+            ->whereraw("a.statuscontainer_id != 3")
+            ->where('a.tglbukti', '<=', $tglbukti)
+            // ->where('a.container_id', $container_id)
+            // ->where('a.jenisorder_id', $jenisorder_id)
+            // ->where('a.pelanggan_id', $pelanggan_id)
+            ->where('a.trado_id', $trado_id);
+
+        DB::table($tempAwal)->insertUsing([
+            'jobtrucking',
+            'sampai_id'
+        ],  $queryJobtruckingAwal);
+        $queryJobtruckingAwal = DB::table('saldosuratpengantar')->from(db::raw("saldosuratpengantar a with (readuncommitted)"))
+            ->select(
+                'a.jobtrucking',
+                'a.sampai_id'
+            )
+            ->whereraw("a.dari_id = 1")
+            ->whereraw("a.statuscontainer_id != 3")
+            ->where('a.tglbukti', '<=', $tglbukti)
+            // ->where('a.container_id', $container_id)
+            // ->where('a.jenisorder_id', $jenisorder_id)
+            // ->where('a.pelanggan_id', $pelanggan_id)
+            ->where('a.trado_id', $trado_id);
+
+        DB::table($tempAwal)->insertUsing([
+            'jobtrucking',
+            'sampai_id'
+        ],  $queryJobtruckingAwal);
+        // AMBIL JOB PULANG
+        $tempAkhir = '##tempAkhir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempAkhir, function ($table) {
+            $table->string('jobtrucking', 50)->nullable();
+            $table->unsignedBigInteger('sampai_id')->nullable();
+        });
+
+        $queryJobtruckingAkhir = DB::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
+            ->select(
+                'a.jobtrucking',
+                'a.dari_id as sampai_id'
+            )
+            ->whereraw("a.sampai_id = 1")
+            ->whereraw("a.statuscontainer_id != 3")
+            // ->where('a.tglbukti', '<=', $tglbukti)
+            // ->where('a.container_id', $container_id)
+            // ->where('a.jenisorder_id', $jenisorder_id)
+            // ->where('a.pelanggan_id', $pelanggan_id)
+            ->where('a.trado_id', $trado_id);
+
+        DB::table($tempAkhir)->insertUsing([
+            'jobtrucking',
+            'sampai_id'
+        ],  $queryJobtruckingAkhir);
+
+        $queryJobtruckingAkhir = DB::table('saldosuratpengantar')->from(db::raw("saldosuratpengantar a with (readuncommitted)"))
+            ->select(
+                'a.jobtrucking',
+                'a.dari_id as sampai_id'
+            )
+            ->whereraw("a.sampai_id = 1")
+            ->whereraw("a.statuscontainer_id != 3")
+            // ->where('a.tglbukti', '<=', $tglbukti)
+            // ->where('a.container_id', $container_id)
+            // ->where('a.jenisorder_id', $jenisorder_id)
+            // ->where('a.pelanggan_id', $pelanggan_id)
+            ->where('a.trado_id', $trado_id);
+
+        DB::table($tempAkhir)->insertUsing([
+            'jobtrucking',
+            'sampai_id'
+        ],  $queryJobtruckingAkhir);
+
+        // AMBIL JOB LONGTRIP
+
+        $tempLongTrip = '##tempLongTrip' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempLongTrip, function ($table) {
+            $table->string('jobtrucking', 50)->nullable();
+            $table->unsignedBigInteger('sampai_id')->nullable();
+        });
+
+        $queryJobtruckingAwal = DB::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
+            ->select(
+                'a.jobtrucking',
+                'a.sampai_id'
+            )
+            ->whereraw("a.statuslongtrip = 65")
+            ->whereraw("a.statuscontainer_id != 3")
+            ->where('a.tglbukti', '<=', $tglbukti)
+            // ->where('a.container_id', $container_id)
+            // ->where('a.jenisorder_id', $jenisorder_id)
+            // ->where('a.pelanggan_id', $pelanggan_id)
+            ->where('a.trado_id', $trado_id);
+
+        DB::table($tempLongTrip)->insertUsing([
+            'jobtrucking',
+            'sampai_id'
+        ],  $queryJobtruckingAwal);
+        $queryJobtruckingAwal = DB::table('saldosuratpengantar')->from(db::raw("saldosuratpengantar a with (readuncommitted)"))
+            ->select(
+                'a.jobtrucking',
+                'a.sampai_id'
+            )
+            ->whereraw("a.statuslongtrip = 65")
+            ->whereraw("a.statuscontainer_id != 3")
+            ->where('a.tglbukti', '<=', $tglbukti)
+            // ->where('a.container_id', $container_id)
+            // ->where('a.jenisorder_id', $jenisorder_id)
+            // ->where('a.pelanggan_id', $pelanggan_id)
+            ->where('a.trado_id', $trado_id);
+
+        DB::table($tempLongTrip)->insertUsing([
+            'jobtrucking',
+            'sampai_id'
+        ],  $queryJobtruckingAwal);
+        
+        $tempJobFinal = '##tempJobFinal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempJobFinal, function ($table) {
+            $table->string('jobtrucking', 50)->nullable();
+            $table->unsignedBigInteger('sampai_id')->nullable();
+        });
+        $queryJobTruckingFinal = DB::table($tempAwal)->from(db::raw("$tempAwal as A"))
+            ->select('A.jobtrucking', 'A.sampai_id')
+            ->leftjoin(db::raw($tempAkhir . " as B"), 'A.jobtrucking', 'B.jobtrucking')
+            ->whereRaw("isnull(B.jobtrucking,'')='' ");
+
+        DB::table($tempJobFinal)->insertUsing([
+            'jobtrucking',
+            'sampai_id'
+        ],  $queryJobTruckingFinal);
+        
+        $queryJobTruckingFinal = DB::table($tempLongTrip)->from(db::raw("$tempLongTrip as A"))
+            ->select('A.jobtrucking', 'A.sampai_id')
+            ->leftjoin(db::raw($tempAkhir . " as B"), 'A.jobtrucking', 'B.jobtrucking')
+            ->whereRaw("isnull(B.jobtrucking,'')='' ");
+
+        DB::table($tempJobFinal)->insertUsing([
+            'jobtrucking',
+            'sampai_id'
+        ],  $queryJobTruckingFinal);
+
+        $temporderantrucking = '##temporderantrucking' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temporderantrucking, function ($table) {
+            $table->integer('id')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->unsignedBigInteger('container_id')->nullable();
+            $table->unsignedBigInteger('agen_id')->nullable();
+            $table->unsignedBigInteger('jenisorder_id')->nullable();
+            $table->unsignedBigInteger('pelanggan_id')->nullable();
+            $table->unsignedBigInteger('sampai_id')->nullable();
+            $table->string('nojobemkl', 50)->nullable();
+            $table->string('nocont', 50)->nullable();
+            $table->string('noseal', 50)->nullable();
+            $table->string('nojobemkl2', 50)->nullable();
+            $table->string('nocont2', 50)->nullable();
+            $table->string('noseal2', 50)->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
+        });
+
+        $queryorderantrucking = DB::table('orderantrucking')->from(
+            DB::raw("orderantrucking a with (readuncommitted)")
+        )
+            ->select(
+                'a.id',
+                'a.nobukti',
+                'a.tglbukti',
+                'a.container_id',
+                'a.agen_id',
+                'a.jenisorder_id',
+                'a.pelanggan_id',
+                'b.sampai_id',
+                'a.nojobemkl',
+                'a.nocont',
+                'a.noseal',
+                'a.nojobemkl2',
+                'a.nocont2',
+                'a.noseal2',
+                'a.modifiedby',
+                'a.created_at',
+                'a.updated_at',
+            )
+            ->join(DB::raw("$tempJobFinal as b"), 'a.nobukti', 'b.jobtrucking')
+            ->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+
+        DB::table($temporderantrucking)->insertUsing([
+            'id',
+            'nobukti',
+            'tglbukti',
+            'container_id',
+            'agen_id',
+            'jenisorder_id',
+            'pelanggan_id',
+            'sampai_id',
+            'nojobemkl',
+            'nocont',
+            'noseal',
+            'nojobemkl2',
+            'nocont2',
+            'noseal2',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+
+        ], $queryorderantrucking);
+
+        $queryorderantrucking = DB::table('saldoorderantrucking')->from(
+            DB::raw("saldoorderantrucking a with (readuncommitted)")
+        )
+            ->select(
+                'a.id',
+                'a.nobukti',
+                'a.tglbukti',
+                'a.container_id',
+                'a.agen_id',
+                'a.jenisorder_id',
+                'a.pelanggan_id',
+                'b.sampai_id',
+                'a.nojobemkl',
+                'a.nocont',
+                'a.noseal',
+                'a.nojobemkl2',
+                'a.nocont2',
+                'a.noseal2',
+                'a.modifiedby',
+                'a.created_at',
+                'a.updated_at',
+            )
+            ->join(DB::raw("$tempJobFinal as b"), 'a.nobukti', 'b.jobtrucking')
+            ->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+
+        DB::table($temporderantrucking)->insertUsing([
+            'id',
+            'nobukti',
+            'tglbukti',
+            'container_id',
+            'agen_id',
+            'jenisorder_id',
+            'pelanggan_id',
+            'sampai_id',
+            'nojobemkl',
+            'nocont',
+            'noseal',
+            'nojobemkl2',
+            'nocont2',
+            'noseal2',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+
+        ], $queryorderantrucking);
+
+        $query = DB::table($temporderantrucking)->from(
+            DB::raw($temporderantrucking . " as orderantrucking")
+        )
+            ->select(
+                'orderantrucking.id',
+                'orderantrucking.nobukti',
+                'orderantrucking.tglbukti',
+                'orderantrucking.container_id as containerid',
+                'container.keterangan as container_id',
+                'agen.namaagen as agen_id',
+                'jenisorder.keterangan as jenisorder_id',
+                'pelanggan.namapelanggan as pelanggan_id',
+                'kota.kodekota as kotasampai_id',
+                'orderantrucking.nojobemkl',
+                'orderantrucking.nocont',
+                'orderantrucking.noseal',
+                'orderantrucking.nojobemkl2',
+                'orderantrucking.nocont2',
+                'orderantrucking.noseal2',
+                'orderantrucking.modifiedby',
+                'orderantrucking.created_at',
+                'orderantrucking.updated_at'
+            )
+            ->whereBetween('orderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->leftJoin(DB::raw("kota with (readuncommitted)"), 'orderantrucking.sampai_id', '=', 'kota.id')
+            ->leftJoin(DB::raw("container with (readuncommitted)"), 'orderantrucking.container_id', '=', 'container.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'orderantrucking.agen_id', '=', 'agen.id')
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'orderantrucking.jenisorder_id', '=', 'jenisorder.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'orderantrucking.pelanggan_id', '=', 'pelanggan.id');
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);
+        $this->filter($query);
+        $this->paginate($query);
+
+
+        $data = $query->get();
+
+        return $data;
+    }
     public function getagentas($id)
     {
         $data = DB::table('agen')
@@ -1924,7 +2239,7 @@ class OrderanTrucking extends MyModel
         if (!$inputtripmandor) {
 
             $get = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
-                ->select('id','tglbukti', 'nominalperalihan', 'qtyton', 'nojob', 'nocont', 'noseal', 'nojob2', 'nocont2', 'noseal2', 'pelanggan_id', 'agen_id', 'jenisorder_id', 'container_id')
+                ->select('id', 'tglbukti', 'nominalperalihan', 'qtyton', 'nojob', 'nocont', 'noseal', 'nojob2', 'nocont2', 'noseal2', 'pelanggan_id', 'agen_id', 'jenisorder_id', 'container_id')
                 ->where('jobtrucking', $orderanTrucking->nobukti)->get();
 
             $datadetail = json_decode($get, true);

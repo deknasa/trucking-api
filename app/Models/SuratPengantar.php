@@ -986,11 +986,11 @@ class SuratPengantar extends MyModel
 
                 $container_id = request()->container_id ?? 0;
                 $pelanggan_id = request()->pelanggan_id ?? 0;
-        //         dd($query->where('suratpengantar.nobukti','TRP 1301/III/2024')->get(),
-        //     DB::table($tempJobFinal)->get(),
-        // DB::table($tempTripAsal)->get());
+                //         dd($query->where('suratpengantar.nobukti','TRP 1301/III/2024')->get(),
+                //     DB::table($tempJobFinal)->get(),
+                // DB::table($tempTripAsal)->get());
                 $query
-                ->leftjoin(db::raw($tempJobFinal . " jobfinal"), 'suratpengantar.jobtrucking', 'jobfinal.jobtrucking')
+                    ->leftjoin(db::raw($tempJobFinal . " jobfinal"), 'suratpengantar.jobtrucking', 'jobfinal.jobtrucking')
                     ->leftjoin(db::raw($tempTripAsal . " a"), 'suratpengantar.nobukti', 'a.nobukti_tripasal')
                     ->whereRaw("isnull(a.nobukti_tripasal,'')=''")
                     ->whereRaw("isnull(jobfinal.jobtrucking,'')!='' ")
@@ -1966,16 +1966,29 @@ class SuratPengantar extends MyModel
         return  $temp;
     }
 
-    public function getOrderanTrucking($id)
+    public function getOrderanTrucking()
     {
-        $data = DB::table('orderantrucking')->select('orderantrucking.*', 'container.keterangan as container', 'agen.namaagen as agen', 'jenisorder.keterangan as jenisorder', 'pelanggan.namapelanggan as pelanggan', 'tarif.tujuan as tarif')
-            ->join('container', 'orderantrucking.container_id', 'container.id')
-            ->join('agen', 'orderantrucking.agen_id', 'agen.id')
-            ->join('jenisorder', 'orderantrucking.jenisorder_id', 'jenisorder.id')
-            ->join('pelanggan', 'orderantrucking.pelanggan_id', 'pelanggan.id')
-            ->join('tarif', 'orderantrucking.tarif_id', 'tarif.id')
-            ->where('orderantrucking.id', $id)
+        $nobukti = request()->nobukti;
+        $data = DB::table('orderantrucking')->select('orderantrucking.*', 'container.keterangan as container', 'agen.namaagen as agen', 'jenisorder.keterangan as jenisorder', 'pelanggan.namapelanggan as pelanggan')
+            ->leftJoin('container', 'orderantrucking.container_id', 'container.id')
+            ->leftJoin('agen', 'orderantrucking.agen_id', 'agen.id')
+            ->leftJoin('jenisorder', 'orderantrucking.jenisorder_id', 'jenisorder.id')
+            ->leftJoin('pelanggan', 'orderantrucking.pelanggan_id', 'pelanggan.id')
+            ->leftJoin('tarif', 'orderantrucking.tarif_id', 'tarif.id')
+            ->where('orderantrucking.nobukti', $nobukti)
             ->first();
+
+        if ($data == '') {
+
+            $data = DB::table('saldoorderantrucking')->select('saldoorderantrucking.*', 'container.keterangan as container', 'agen.namaagen as agen', 'jenisorder.keterangan as jenisorder', 'pelanggan.namapelanggan as pelanggan')
+                ->leftJoin('container', 'saldoorderantrucking.container_id', 'container.id')
+                ->leftJoin('agen', 'saldoorderantrucking.agen_id', 'agen.id')
+                ->leftJoin('jenisorder', 'saldoorderantrucking.jenisorder_id', 'jenisorder.id')
+                ->leftJoin('pelanggan', 'saldoorderantrucking.pelanggan_id', 'pelanggan.id')
+                ->leftJoin('tarif', 'saldoorderantrucking.tarif_id', 'tarif.id')
+                ->where('saldoorderantrucking.nobukti', $nobukti)
+                ->first();
+        }
 
         return $data;
     }
@@ -2048,7 +2061,7 @@ class SuratPengantar extends MyModel
                             } else if ($filters['field'] == 'mandorsupir_id') {
                                 $query = $query->where('mandorsupir.namamandor', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'ketextra' || $filters['field'] == 'ketextratagih') {
-                                $query = $query->where('suratpengantarbiayatambahan.'. $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->where('suratpengantarbiayatambahan.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statuslongtrip') {
                                 $query = $query->where('statuslongtrip.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statusperalihan') {
@@ -2110,7 +2123,7 @@ class SuratPengantar extends MyModel
                                 } else if ($filters['field'] == 'tarif_id') {
                                     $query = $query->orWhere('tarif.tujuan', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'ketextra' || $filters['field'] == 'ketextratagih') {
-                                    $query = $query->orWhere('suratpengantarbiayatambahan.'. $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->orWhere('suratpengantarbiayatambahan.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'mandortrado_id') {
                                     $query = $query->orWhere('mandortrado.namamandor', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'mandorsupir_id') {
@@ -2186,15 +2199,15 @@ class SuratPengantar extends MyModel
         $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $data['upah_id'])->where('container_id', $data['container_id'])->where('statuscontainer_id', $data['statuscontainer_id'])->first();
 
         $trado = Trado::find($data['trado_id']);
-        $ytrado_id=$data['trado_id'] ?? 0;
-        $mandor_id=db::table("absensisupirdetail")->from(db::raw("absensisupirdetail a with (readuncommitted)"))
-        ->select('a.mandor_id')
-        ->join(db::raw("absensisupirheader b with (readuncommitted)"),'a.nobukti','b.nobukti')
-        ->where('a.trado_id',$ytrado_id)
-        ->where('b.tglbukti',date('Y-m-d', strtotime($data['tglbukti'])))
-        ->first();
-        
-        
+        $ytrado_id = $data['trado_id'] ?? 0;
+        $mandor_id = db::table("absensisupirdetail")->from(db::raw("absensisupirdetail a with (readuncommitted)"))
+            ->select('a.mandor_id')
+            ->join(db::raw("absensisupirheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->where('a.trado_id', $ytrado_id)
+            ->where('b.tglbukti', date('Y-m-d', strtotime($data['tglbukti'])))
+            ->first();
+
+
         $supir = Supir::find($data['supir_id']);
         if ($inputTripMandor == 0) {
             $orderanTrucking = OrderanTrucking::where('nobukti', $data['jobtrucking'])->first();
@@ -2404,14 +2417,14 @@ class SuratPengantar extends MyModel
         $statusTidakBolehEditTujuan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT TUJUAN')->where('text', '=', 'TIDAK BOLEH EDIT TUJUAN')->first();
 
         $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
-        $ytrado_id=$data['trado_id'] ?? 0;
+        $ytrado_id = $data['trado_id'] ?? 0;
         // dd(date('Y-m-d', strtotime($data['tglbukti'])));
-        $mandor_id=db::table("absensisupirdetail")->from(db::raw("absensisupirdetail a with (readuncommitted)"))
-        ->select('a.mandor_id')
-        ->join(db::raw("absensisupirheader b with (readuncommitted)"),'a.nobukti','b.nobukti')
-        ->where('a.trado_id',$ytrado_id)
-        ->whereraw("b.tglbukti='".date('Y-m-d', strtotime($data['tglbukti']))."'")
-        ->first();
+        $mandor_id = db::table("absensisupirdetail")->from(db::raw("absensisupirdetail a with (readuncommitted)"))
+            ->select('a.mandor_id')
+            ->join(db::raw("absensisupirheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->where('a.trado_id', $ytrado_id)
+            ->whereraw("b.tglbukti='" . date('Y-m-d', strtotime($data['tglbukti'])) . "'")
+            ->first();
         // dd($mandor_id->tosql());
         // dd($mandor_id);
         if ($prosesLain == 0) {
@@ -2450,7 +2463,7 @@ class SuratPengantar extends MyModel
             //         $nominalSupir = $upahsupirRincian->nominalsupir - $upahsupirRincian->nominalkenek;
             //     }
             // } else {
-            $nominalSupir = $upahsupirRincian->nominalsupir;
+            $nominalSupir = $upahsupirRincian->nominalsupir ?? 0;
             // }
             $suratPengantar->jobtrucking = $data['jobtrucking'];
             $suratPengantar->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
@@ -2463,7 +2476,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->zonadari_id = $data['zonadari_id'] ?? '';
             $suratPengantar->zonasampai_id = $data['zonasampai_id'] ?? '';
             $suratPengantar->container_id = $container;
-            $suratPengantar->nocont = $orderanTrucking->nocont;
+            $suratPengantar->nocont = $orderanTrucking->nocont ?? '';
             $suratPengantar->nocont2 = $orderanTrucking->nocont2 ?? '';
             $suratPengantar->statuscontainer_id = $data['statuscontainer_id'];
             $suratPengantar->statusgandengan = $data['statusgandengan'];
@@ -2503,7 +2516,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->biayatambahan_id = $data['biayatambahan_id'] ?? 0;
             $suratPengantar->nosp = $data['nosp'];
             $suratPengantar->tglsp = date('Y-m-d', strtotime($data['tglbukti']));
-            $suratPengantar->tolsupir = $upahsupirRincian->nominaltol;
+            $suratPengantar->tolsupir = $upahsupirRincian->nominaltol ?? 0;
             $statuscontainer_id = $data['statuscontainer_id'] ?? 0;
             $idfullempty = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
                 ->select(
