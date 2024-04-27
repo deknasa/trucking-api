@@ -639,6 +639,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('trado/approvaltradotanpa', [TradoController::class, 'StoreApprovalTradoTanpa']);
     Route::post('trado/{id}/cekvalidasihistory', [TradoController::class, 'cekvalidasihistory'])->name('trado.cekvalidasihistory')->whereNumber('id');
 
+    Route::get('orderantrucking/get', [OrderanTruckingController::class, 'getForLookup']);
     Route::get('prosesuangjalansupirheader/default', [ProsesUangJalanSupirHeaderController::class, 'default']);
 });
 
@@ -1444,7 +1445,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('suratpengantar/batalmuat', [SuratPengantarController::class, 'approvalBatalMuat'])->whereNumber('id');
     Route::post('suratpengantar/edittujuan', [SuratPengantarController::class, 'approvalEditTujuan'])->whereNumber('id');
     Route::post('suratpengantar/titipanemkl', [SuratPengantarController::class, 'approvalTitipanEmkl']);
-    Route::get('suratpengantar/{id}/getOrderanTrucking', [SuratPengantarController::class, 'getOrderanTrucking'])->whereNumber('id');
+    Route::get('suratpengantar/getOrderanTrucking', [SuratPengantarController::class, 'getOrderanTrucking']);
     Route::get('suratpengantar/getGaji/{dari}/{sampai}/{container}/{statuscontainer}', [SuratPengantarController::class, 'getGaji']);
 
     Route::get('penerimaanheader/{id}/printreport', [PenerimaanHeaderController::class, 'printReport'])->whereNumber('id');

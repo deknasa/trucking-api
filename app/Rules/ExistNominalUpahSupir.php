@@ -30,10 +30,13 @@ class ExistNominalUpahSupir implements Rule
     public function passes($attribute, $value)
     {
         $upahRincian = new UpahSupirRincian();
-        $nominal = $upahRincian->getExistNominalUpahSupir(request()->container_id, request()->statuscontainer_id, request()->upah_id);
-        if ($nominal['status'] == false) {
-            $this->error = $nominal['error'];
-            return false;
+        if (request()->jobtrucking != '') {
+
+            $nominal = $upahRincian->getExistNominalUpahSupir(request()->container_id, request()->statuscontainer_id, request()->upah_id);
+            if ($nominal['status'] == false) {
+                $this->error = $nominal['error'];
+                return false;
+            }
         }
 
         return true;

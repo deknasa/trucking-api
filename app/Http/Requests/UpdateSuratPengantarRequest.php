@@ -169,108 +169,111 @@ class UpdateSuratPengantarRequest extends FormRequest
                     new ExistOrderanTrucking(),
                 ]
             ];
-        } else if ($jobtrucking != null) {
-            if ($jobtrucking == 0) {
+        } 
+        // else if ($jobtrucking != null) {
+        //     if ($jobtrucking == 0) {
 
-                $rulesjobtrucking = [
-                    'jobtrucking' => [
-                        'required',
-                        new ExistOrderanTrucking(),
+        //         $rulesjobtrucking = [
+        //             'jobtrucking' => [
+        //                 'required',
+        //                 new ExistOrderanTrucking(),
 
-                    ]
+        //             ]
 
-                ];
-            } else {
-                if ($this->jobtrucking == '') {
+        //         ];
+        //     } else {
+        //         if ($this->jobtrucking == '') {
 
-                    $rulesjobtrucking = [
-                        'jobtrucking' => [
-                            'required',
-                            new ExistOrderanTrucking(),
-                        ]
-                    ];
-                }
-            }
-        } else if ($jobtrucking == null && $this->jobtrucking != '') {
+        //             $rulesjobtrucking = [
+        //                 'jobtrucking' => [
+        //                     'required',
+        //                     new ExistOrderanTrucking(),
+        //                 ]
+        //             ];
+        //         }
+        //     }
+        // } else if ($jobtrucking == null && $this->jobtrucking != '') {
 
-            $rulesjobtrucking = [
-                'jobtrucking' => [
-                    'required',
-                    new ExistOrderanTrucking(),
-                ]
-            ];
-        } else {
-            $rulesjobtrucking = [
-                'jobtrucking' => [
-                    'required',
-                    new ExistOrderanTrucking(),
-                ]
-            ];
-        }
+        //     $rulesjobtrucking = [
+        //         'jobtrucking' => [
+        //             'required',
+        //             new ExistOrderanTrucking(),
+        //         ]
+        //     ];
+        // } else {
+        //     $rulesjobtrucking = [
+        //         'jobtrucking' => [
+        //             'required',
+        //             new ExistOrderanTrucking(),
+        //         ]
+        //     ];
+        // }
 
 
         $container_id = $this->container_id;
         // dd($container_id);
 
         $rulescontainer_id = [];
-        if ($container_id != '' && $this->container != '') {
-            $rulescontainer_id = [
-                'container' => [
-                    new ExistContainer(),
-                    new ValidasiContainerTripGudangSama($dataTripAsal)
-                ]
-            ];
-        } else if ($container_id == '' && $this->container == '') {
-            $rulescontainer_id = [
-                'container' => [
-                    'required',
-                    new ExistContainer(),
-                ]
-            ];
-        } else if ($container_id != null) {
-            if ($container_id == 0) {
 
+        if ($this->jobtrucking != '') {
+            if ($container_id != '' && $this->container != '') {
                 $rulescontainer_id = [
-                    'container_id' => [
+                    'container' => [
+                        new ExistContainer(),
+                        new ValidasiContainerTripGudangSama($dataTripAsal)
+                    ]
+                ];
+            } else if ($container_id == '' && $this->container == '') {
+                $rulescontainer_id = [
+                    'container' => [
+                        'required',
+                        new ExistContainer(),
+                    ]
+                ];
+            } else if ($container_id != null) {
+                if ($container_id == 0) {
+
+                    $rulescontainer_id = [
+                        'container_id' => [
+                            'required',
+                            'numeric',
+                            'min:1',
+                            new ExistContainer(),
+
+                        ]
+
+                    ];
+                } else {
+                    if ($this->container == '') {
+
+                        $rulescontainer_id = [
+                            'container' => [
+                                'required',
+                                new ExistContainer(),
+                            ]
+                        ];
+                    }
+                }
+            } else if ($container_id == null && ($this->container != '' || $this->container != 0)) {
+                $rulescontainer_id = [
+                    'container' => [
                         'required',
                         'numeric',
                         'min:1',
                         new ExistContainer(),
-
                     ]
-
                 ];
             } else {
-                if ($this->container == '') {
-
-                    $rulescontainer_id = [
-                        'container' => [
-                            'required',
-                            new ExistContainer(),
-                        ]
-                    ];
-                }
+                $rulescontainer_id = [
+                    'container' => [
+                        'required',
+                        'numeric',
+                        'min:1',
+                        new ExistContainer(),
+                    ]
+                ];
             }
-        } else if ($container_id == null && ($this->container != '' || $this->container != 0)) {
-            $rulescontainer_id = [
-                'container' => [
-                    'required',
-                    'numeric',
-                    'min:1',
-                    new ExistContainer(),
-                ]
-            ];
-        } else {
-            $rulescontainer_id = [
-                'container' => [
-                    'required',
-                    'numeric',
-                    'min:1',
-                    new ExistContainer(),
-                ]
-            ];
         }
-
         $tempreminderoli = '##tempreminderoli' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         if (request()->trado_id != '') {
 
@@ -780,15 +783,40 @@ class UpdateSuratPengantarRequest extends FormRequest
 
         $pelanggan_id = $this->pelanggan_id;
         $rulespelanggan_id = [];
-        if ($pelanggan_id != '' && $this->pelanggan != '') {
-            $rulespelanggan_id = [
-                'pelanggan' => [
-                    new ExistPelanggan(),
-                    new ValidasiPelangganTripGudangSama($dataTripAsal)
-                ]
-            ];
-        } else if ($pelanggan_id != null) {
-            if ($pelanggan_id == 0) {
+
+        if ($this->jobtrucking != '') {
+            if ($pelanggan_id != '' && $this->pelanggan != '') {
+                $rulespelanggan_id = [
+                    'pelanggan' => [
+                        new ExistPelanggan(),
+                        new ValidasiPelangganTripGudangSama($dataTripAsal)
+                    ]
+                ];
+            } else if ($pelanggan_id != null) {
+                if ($pelanggan_id == 0) {
+
+                    $rulespelanggan_id = [
+                        'pelanggan_id' => [
+                            'required',
+                            'numeric',
+                            'min:1',
+                            new ExistPelanggan(),
+
+                        ]
+
+                    ];
+                } else {
+                    if ($this->pelanggan == '') {
+
+                        $rulespelanggan_id = [
+                            'pelanggan' => [
+                                'required',
+                                new ExistPelanggan(),
+                            ]
+                        ];
+                    }
+                }
+            } else if ($pelanggan_id == null && $this->pelanggan != '') {
 
                 $rulespelanggan_id = [
                     'pelanggan_id' => [
@@ -796,52 +824,56 @@ class UpdateSuratPengantarRequest extends FormRequest
                         'numeric',
                         'min:1',
                         new ExistPelanggan(),
-
                     ]
-
                 ];
             } else {
-                if ($this->pelanggan == '') {
-
-                    $rulespelanggan_id = [
-                        'pelanggan' => [
-                            'required',
-                            new ExistPelanggan(),
-                        ]
-                    ];
-                }
+                $rulespelanggan_id = [
+                    'pelanggan' => [
+                        'required',
+                        'numeric',
+                        'min:1',
+                        new ExistPelanggan(),
+                    ]
+                ];
             }
-        } else if ($pelanggan_id == null && $this->pelanggan != '') {
-
-            $rulespelanggan_id = [
-                'pelanggan_id' => [
-                    'required',
-                    'numeric',
-                    'min:1',
-                    new ExistPelanggan(),
-                ]
-            ];
-        } else {
-            $rulespelanggan_id = [
-                'pelanggan' => [
-                    'required',
-                    'numeric',
-                    'min:1',
-                    new ExistPelanggan(),
-                ]
-            ];
         }
+
         $agen_id = $this->agen_id;
         $rulesagen_id = [];
-        if ($agen_id != '' && $this->agen != '') {
-            $rulesagen_id = [
-                'agen' => [
-                    new ExistAgen(),
-                    new ValidasiAgenTripGudangSama($dataTripAsal)
-                ]
-            ];
-        } else if ($agen_id != null) {
-            if ($agen_id == 0) {
+        if ($this->jobtrucking != '') {
+
+            if ($agen_id != '' && $this->agen != '') {
+                $rulesagen_id = [
+                    'agen' => [
+                        new ExistAgen(),
+                        new ValidasiAgenTripGudangSama($dataTripAsal)
+                    ]
+                ];
+            } else if ($agen_id != null) {
+                if ($agen_id == 0) {
+
+                    $rulesagen_id = [
+                        'agen_id' => [
+                            'required',
+                            'numeric',
+                            'min:1',
+                            new ExistAgen(),
+
+                        ]
+
+                    ];
+                } else {
+                    if ($this->agen == '') {
+
+                        $rulesagen_id = [
+                            'agen' => [
+                                'required',
+                                new ExistAgen(),
+                            ]
+                        ];
+                    }
+                }
+            } else if ($agen_id == null && $this->agen != '') {
 
                 $rulesagen_id = [
                     'agen_id' => [
@@ -849,52 +881,55 @@ class UpdateSuratPengantarRequest extends FormRequest
                         'numeric',
                         'min:1',
                         new ExistAgen(),
-
                     ]
-
                 ];
             } else {
-                if ($this->agen == '') {
-
-                    $rulesagen_id = [
-                        'agen' => [
-                            'required',
-                            new ExistAgen(),
-                        ]
-                    ];
-                }
+                $rulesagen_id = [
+                    'agen' => [
+                        'required',
+                        'numeric',
+                        'min:1',
+                        new ExistAgen(),
+                    ]
+                ];
             }
-        } else if ($agen_id == null && $this->agen != '') {
-
-            $rulesagen_id = [
-                'agen_id' => [
-                    'required',
-                    'numeric',
-                    'min:1',
-                    new ExistAgen(),
-                ]
-            ];
-        } else {
-            $rulesagen_id = [
-                'agen' => [
-                    'required',
-                    'numeric',
-                    'min:1',
-                    new ExistAgen(),
-                ]
-            ];
         }
 
         $jenisorder_id = $this->jenisorder_id;
         $rulesjenisorder_id = [];
-        if ($jenisorder_id != '' && $this->jenisorder != '') {
-            $rulesjenisorder_id = [
-                'jenisorder' => [
-                    new ExistJenisOrder(), new ValidasiJenisOrderGudangsama()
-                ]
-            ];
-        } else if ($jenisorder_id != null) {
-            if ($jenisorder_id == 0) {
+
+        if ($this->jobtrucking != '') {
+            if ($jenisorder_id != '' && $this->jenisorder != '') {
+                $rulesjenisorder_id = [
+                    'jenisorder' => [
+                        new ExistJenisOrder(), new ValidasiJenisOrderGudangsama()
+                    ]
+                ];
+            } else if ($jenisorder_id != null) {
+                if ($jenisorder_id == 0) {
+
+                    $rulesjenisorder_id = [
+                        'jenisorder_id' => [
+                            'required',
+                            'numeric',
+                            'min:1',
+                            new ExistJenisOrder(),
+
+                        ]
+
+                    ];
+                } else {
+                    if ($this->jenisorder == '') {
+
+                        $rulesjenisorder_id = [
+                            'jenisorder' => [
+                                'required',
+                                new ExistJenisOrder(),
+                            ]
+                        ];
+                    }
+                }
+            } else if ($jenisorder_id == null && $this->jenisorder != '') {
 
                 $rulesjenisorder_id = [
                     'jenisorder_id' => [
@@ -902,40 +937,18 @@ class UpdateSuratPengantarRequest extends FormRequest
                         'numeric',
                         'min:1',
                         new ExistJenisOrder(),
-
                     ]
-
                 ];
             } else {
-                if ($this->jenisorder == '') {
-
-                    $rulesjenisorder_id = [
-                        'jenisorder' => [
-                            'required',
-                            new ExistJenisOrder(),
-                        ]
-                    ];
-                }
+                $rulesjenisorder_id = [
+                    'jenisorder' => [
+                        'required',
+                        'numeric',
+                        'min:1',
+                        new ExistJenisOrder(),
+                    ]
+                ];
             }
-        } else if ($jenisorder_id == null && $this->jenisorder != '') {
-
-            $rulesjenisorder_id = [
-                'jenisorder_id' => [
-                    'required',
-                    'numeric',
-                    'min:1',
-                    new ExistJenisOrder(),
-                ]
-            ];
-        } else {
-            $rulesjenisorder_id = [
-                'jenisorder' => [
-                    'required',
-                    'numeric',
-                    'min:1',
-                    new ExistJenisOrder(),
-                ]
-            ];
         }
 
         $tarifrincian_id = $this->tarifrincian_id;

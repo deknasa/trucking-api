@@ -576,12 +576,12 @@ class SuratPengantarController extends Controller
         ]);
     }
 
-    public function getOrderanTrucking($id)
+    public function getOrderanTrucking()
     {
 
         $suratPengantar = new SuratPengantar();
         return response([
-            "data" => $suratPengantar->getOrderanTrucking($id)
+            "data" => $suratPengantar->getOrderanTrucking()
         ]);
     }
     /**

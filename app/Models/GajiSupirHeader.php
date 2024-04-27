@@ -668,9 +668,9 @@ class GajiSupirHeader extends MyModel
         Schema::create($temp, function ($table) {
             $table->string('nobuktitrip')->nullable();
             $table->date('tglbuktisp')->nullable();
-            $table->string('trado_id');
-            $table->string('dari_id');
-            $table->string('sampai_id');
+            $table->string('trado_id')->nullable();
+            $table->string('dari_id')->nullable();
+            $table->string('sampai_id')->nullable();
             $table->string('nocont')->nullable();
             $table->string('nosp')->nullable();
             $table->bigInteger('container_id')->nullable();

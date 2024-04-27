@@ -51,6 +51,18 @@ class OrderanTruckingController extends Controller
         ]);
     }
 
+    public function getForLookup()
+    {
+        $orderanTrucking = new OrderanTrucking();
+        return response([
+            'data' => $orderanTrucking->getForLookup(),
+            'attributes' => [
+                'totalRows' => $orderanTrucking->totalRows,
+                'totalPages' => $orderanTrucking->totalPages
+            ]
+        ]);
+    }
+
     public function cekValidasi($id, $aksi,Request $request)
     {
 
