@@ -76,7 +76,8 @@ class OpnameHeader extends MyModel
     }
 
 
-    public function getInventory($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter, $prosesneraca,$kelompok){
+    public function getInventory($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter, $prosesneraca, $kelompok)
+    {
         $inventory = (new LaporanSaldoInventory())->getReport($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter, $prosesneraca);
         // dd($inventory->get());
         $tempinevtory = '##tempinevtory' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -102,7 +103,7 @@ class OpnameHeader extends MyModel
             $table->string('disetujui')->nullable();
             $table->string('diperiksa')->nullable();
         });
-        
+
         DB::table($tempinevtory)->insertUsing([
             "header",
             "judul",
@@ -125,21 +126,21 @@ class OpnameHeader extends MyModel
             "diperiksa",
         ], $inventory);
         $data = DB::table($tempinevtory)
-        ->select(
-            'stok_id as id',
-            'stok_id',
-            'namabarang',
-            'stok.kelompok_id as kelompok',
-            'tanggal',
-            db::raw("sum(qty) as qty"),
-            db::raw("0 as qtyfisik"),
+            ->select(
+                'stok_id as id',
+                'stok_id',
+                'namabarang',
+                'stok.kelompok_id as kelompok',
+                'tanggal',
+                db::raw("sum(qty) as qty"),
+                db::raw("0 as qtyfisik"),
             )
             ->leftJoin(DB::raw("stok with (readuncommitted)"), "$tempinevtory.stok_id", 'stok.id')
-            ->groupBy('stok_id','namabarang','tanggal','stok.kelompok_id');
-            if ($kelompok) {
-                $data = $data->where('stok.kelompok_id',$kelompok);
-            }
-        
+            ->groupBy('stok_id', 'namabarang', 'tanggal', 'stok.kelompok_id');
+        if ($kelompok) {
+            $data = $data->where('stok.kelompok_id', $kelompok);
+        }
+
         return $data->get();
     }
 
@@ -155,13 +156,17 @@ class OpnameHeader extends MyModel
             $this->table.tglbukti,
             $this->table.keterangan,
             'gudang.gudang',
+            'parameter.memo as statuscetak',
+            'approval.memo as statusapproval',
             $this->table.userbukacetak,
             $this->table.tglbukacetak,
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at
             ")
-            )
+            )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'opnameheader.statuscetak', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as approval with (readuncommitted)"), 'opnameheader.statusapproval', 'approval.id')
+
             ->leftJoin(DB::raw("gudang with (readuncommitted)"), 'opnameheader.gudang_id', 'gudang.id');
     }
 
@@ -174,6 +179,8 @@ class OpnameHeader extends MyModel
             $table->date('tglbukti')->nullable();
             $table->string('keterangan', 1000)->nullable();
             $table->string('gudang')->nullable();
+            $table->string('statuscetak')->nullable();
+            $table->string('statusapproval')->nullable();
             $table->string('userbukacetak')->nullable();
             $table->date('tglbukacetak')->nullable();
             $table->string('modifiedby')->default();
@@ -192,7 +199,8 @@ class OpnameHeader extends MyModel
         $models = $this->filter($query);
         $models = $query
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'keterangan', 'gudang', 'userbukacetak', 'tglbukacetak', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'keterangan', 'gudang','statuscetak',
+        'statusapproval', 'userbukacetak', 'tglbukacetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -200,21 +208,21 @@ class OpnameHeader extends MyModel
     public function findAll($id)
     {
         $query = DB::table("opnameheader")->from(DB::raw("opnameheader with (readuncommitted)"))
-        ->select(
-            'opnameheader.id',
-            'opnameheader.nobukti',
-            'opnameheader.tglbukti',
-            'opnameheader.keterangan',
-            'opnameheader.gudang_id',
-            'opnameheader.statusapproval',
-            'gudang.gudang',
-            'opnameheader.kelompok_id',
-            'kelompok.kodekelompok as kelompok'
-        )
-        ->leftJoin(DB::raw("gudang with (readuncommitted)"), 'opnameheader.gudang_id', 'gudang.id')
-        ->leftJoin(DB::raw("kelompok with (readuncommitted)"), 'opnameheader.kelompok_id', 'kelompok.id')
-        ->where('opnameheader.id', $id)
-        ->first();
+            ->select(
+                'opnameheader.id',
+                'opnameheader.nobukti',
+                'opnameheader.tglbukti',
+                'opnameheader.keterangan',
+                'opnameheader.gudang_id',
+                'opnameheader.statusapproval',
+                'gudang.gudang',
+                'opnameheader.kelompok_id',
+                'kelompok.kodekelompok as kelompok'
+            )
+            ->leftJoin(DB::raw("gudang with (readuncommitted)"), 'opnameheader.gudang_id', 'gudang.id')
+            ->leftJoin(DB::raw("kelompok with (readuncommitted)"), 'opnameheader.kelompok_id', 'kelompok.id')
+            ->where('opnameheader.id', $id)
+            ->first();
 
         return $query;
     }
@@ -235,6 +243,8 @@ class OpnameHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statuscetak') {
                             $query = $query->where('parameter.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'statusapproval') {
+                            $query = $query->where('approval.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'gudang') {
                             $query = $query->where('gudang.gudang', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'tglbukti') {
@@ -253,6 +263,8 @@ class OpnameHeader extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statuscetak') {
                                 $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusapproval') {
+                                $query = $query->orWhere('approval.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'gudang') {
                                 $query = $query->orWhere('gudang.gudang', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tglbukti') {
@@ -302,7 +314,7 @@ class OpnameHeader extends MyModel
 
         $statusapproval = Parameter::from(
             DB::raw("parameter with (readuncommitted)")
-        )->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();        
+        )->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
         $opnameHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $opnameHeader->keterangan = $data['keterangan'] ?? '';
@@ -358,8 +370,8 @@ class OpnameHeader extends MyModel
         return $opnameHeader;
     }
 
-    
-    public function processUpdate(OpnameHeader $opnameHeader ,array $data): OpnameHeader
+
+    public function processUpdate(OpnameHeader $opnameHeader, array $data): OpnameHeader
     {
         $group = 'OPNAME BUKTI';
         $subGroup = 'OPNAME BUKTI';
