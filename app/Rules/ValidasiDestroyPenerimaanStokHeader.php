@@ -2,6 +2,7 @@
 
 namespace App\Rules;
 
+use App\Models\Parameter;
 use Illuminate\Support\Facades\DB;
 use App\Models\PenerimaanStokHeader;
 use Illuminate\Contracts\Validation\Rule;
@@ -32,6 +33,8 @@ class ValidasiDestroyPenerimaanStokHeader implements Rule
       $penerimaanStokHeader = new PenerimaanStokHeader();
       $data = $penerimaanStokHeader->find($id);
       $spb = DB::table('parameter')->where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
+      $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
+      $pgdo = Parameter::where('grp', 'DO STOK')->where('subgrp', 'DO STOK')->first();
       // if ($penerimaanStokHeader->isOutUsed($id) && ($data->penerimaanstok_id != $spb->text)) {
       //   $this->message = 'SATL';
       //   return false;
@@ -71,6 +74,9 @@ class ValidasiDestroyPenerimaanStokHeader implements Rule
         $this->message = 'SATL';
         $passes = false;
         // return response($data);
+      }
+      if ($pg->text == $data->penerimaanstok_id || $pgdo->text == $data->penerimaanstok_id) {
+        $todayValidation = true;
       }
       $todayValidation = $penerimaanStokHeader->todayValidation($data->tglbukti);
       if (!$todayValidation) {
