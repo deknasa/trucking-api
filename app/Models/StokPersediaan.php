@@ -310,6 +310,7 @@ if ($keterangan>0) {
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $this->sort($query);
         $this->filter($query);
+        // dd("filter ". $filter,"gudang ". $gudang,"gudang_id ". $gudang_id,"trado ". $trado,"trado_id ". $trado_id,"gandengan ". $gandengan,"gandengan_id ". $gandengan_id,"keterangan ". $keterangan,"data ". $data, "forReport ". $forReport);
         if (!$forReport) {
             $this->paginate($query);
         }
