@@ -43,6 +43,22 @@ class RunningNumberService
                 ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                 ->where(DB::raw('statusformat'), '=', $statusformat)
                  ->lockForUpdate()->count();
+            $a = 0;
+            $b = $lastRow;
+            while ($a <= $lastRow) {
+                $nobukti = (new App)->getFormat($text, $a, $bulan,$tgl);
+                
+                $queryCheck = DB::table($table)->where('nobukti',$nobukti)
+                ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                ->where(DB::raw('statusformat'), '=', $statusformat)->first();
+                
+                if (!isset($queryCheck)) {
+                    $lastRow = $a;
+                    $a = $b;
+                }
+                $a++;
+            }    
               
         }
 
@@ -51,6 +67,21 @@ class RunningNumberService
                 ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                 ->where(DB::raw('statusformat'), '=', $statusformat)
                 ->lockForUpdate()->count();
+            $a = 0;
+            $b = $lastRow;
+            while ($a <= $lastRow) {
+                $nobukti = (new App)->getFormat($text, $a, $bulan,$tgl);
+                
+                $queryCheck = DB::table($table)->where('nobukti',$nobukti)
+                ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                ->where(DB::raw('statusformat'), '=', $statusformat)->first();
+                
+                if (!isset($queryCheck)) {
+                    $lastRow = $a;
+                    $a = $b;
+                }
+                $a++;
+            }
         }
         if ($type == '') {
             $lastRow = DB::table($table)
