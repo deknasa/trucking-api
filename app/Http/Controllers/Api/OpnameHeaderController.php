@@ -24,6 +24,7 @@ class OpnameHeaderController extends Controller
      * @ClassName 
      * OpnameHeaderController
      * @Detail OpnameDetailController
+     * @Keterangan TAMPILKAN DATA
      */
     public function index()
     {
