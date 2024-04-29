@@ -1462,7 +1462,11 @@ class Stok extends MyModel
         $stok->modifiedby = auth('api')->user()->name;
         $stok->info = html_entity_decode(request()->info);
         if ($data['gambar']) {
-            $stok->gambar = $this->storeFiles($data['gambar'], 'stok');
+            if(request()->from != ''){
+                $stok->gambar = $this->storeFilesBase64($data['gambar'], 'stok');
+            }else{
+                $stok->gambar = $this->storeFiles($data['gambar'], 'stok');
+            }
         } else {
             $stok->gambar = '';
         }
@@ -1523,7 +1527,11 @@ class Stok extends MyModel
 
         $this->deleteFiles($stok);
         if ($data['gambar']) {
-            $stok->gambar = $this->storeFiles($data['gambar'], 'stok');
+            if(request()->from != ''){
+                $stok->gambar = $this->storeFilesBase64($data['gambar'], 'stok');
+            }else{
+                $stok->gambar = $this->storeFiles($data['gambar'], 'stok');
+            }
         } else {
             $stok->gambar = '';
         }
@@ -1702,6 +1710,21 @@ class Stok extends MyModel
             $originalFileName = $file->hashName();
             $storedFile = Storage::putFileAs($destinationFolder, $file, $originalFileName);
             $resizedFiles = App::imageResize(storage_path("app/$destinationFolder/"), storage_path("app/$storedFile"), $originalFileName);
+
+            $storedFiles[] = $originalFileName;
+        }
+
+        return json_encode($storedFiles);
+    }
+
+    private function storeFilesBase64(array $files, string $destinationFolder): string
+    {
+        $storedFiles = [];
+        foreach ($files as $file) {
+            $originalFileName = "$destinationFolder-" . hash('sha256', $file) . '.jpg';
+            $imageData = base64_decode($file);
+            $storedFile = Storage::put( $destinationFolder . '/' . $originalFileName, $imageData);
+            $resizedFiles = App::imageResize(storage_path("app/$destinationFolder/"), storage_path("app/$destinationFolder/$originalFileName"), $originalFileName);
 
             $storedFiles[] = $originalFileName;
         }
