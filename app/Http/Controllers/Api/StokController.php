@@ -208,6 +208,14 @@ class StokController extends Controller
             $data['tas_id'] = $stok->id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $gambar = json_decode($stok->gambar);
+                if ($gambar != '') {
+                    $supirBase64 = [];
+                    foreach ($gambar as $imagePath) {
+                        $gambarBase64[] = base64_encode(file_get_contents(storage_path("app/stok/" . $imagePath)));
+                    }
+                    $data['gambar'] = $gambarBase64;
+                }
                 $this->saveToTnl('stok', 'add', $data);
             }
             // $this->stok = $stok;
@@ -298,6 +306,14 @@ class StokController extends Controller
             $data['tas_id'] = $stok->id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $gambar = json_decode($stok->gambar);
+                if ($gambar != '') {
+                    $supirBase64 = [];
+                    foreach ($gambar as $imagePath) {
+                        $gambarBase64[] = base64_encode(file_get_contents(storage_path("app/stok/" . $imagePath)));
+                    }
+                    $data['gambar'] = $gambarBase64;
+                }
                 $this->saveToTnl('stok', 'edit', $data);
             }
             DB::commit();
