@@ -798,6 +798,49 @@ class SuratPengantar extends MyModel
         }
 
         if (request()->biayatambahan != '') {
+
+            $tempApprovalTambahan = '##tempApprovalTambahan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempApprovalTambahan, function ($table) {
+                $table->integer('suratpengantar_id')->nullable();
+                $table->integer('statusapproval')->nullable();
+            });
+
+            $parameter = new Parameter();
+            $idstatusapproval = $parameter->cekId('STATUS APPROVAL', 'STATUS APPROVAL', 'APPROVAL') ?? 0;
+            $idstatusnonapproval = $parameter->cekId('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL') ?? 0;
+            $queryapprovaltambahan=db::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
+            ->select(
+                    'b.suratpengantar_id',
+                    db::raw("max(b.statusapproval) as statusapproval")
+            )
+            ->join(db::raw("suratpengantarbiayatambahan b with (readuncommitted)"),'a.id','b.suratpengantar_id')
+            ->where('b.statusapproval',$idstatusnonapproval)
+            ->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->groupby('b.suratpengantar_id');
+
+            DB::table($tempApprovalTambahan)->insertUsing(['suratpengantar_id', 'statusapproval'], $queryapprovaltambahan);
+
+
+          $queryapprovaltambahan=db::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
+            ->select(
+                    'b.suratpengantar_id',
+                    db::raw("max(b.statusapproval) as statusapproval")
+            )
+            ->join(db::raw("suratpengantarbiayatambahan b with (readuncommitted)"),'a.id','b.suratpengantar_id')
+            ->leftjoin(db::raw( $tempApprovalTambahan ." c"),'b.id','c.suratpengantar_id')
+            ->where('b.statusapproval',$idstatusapproval)
+            ->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->whereRaw("isnull(c.suratpengantar_id,0)=0")
+            ->groupby('b.suratpengantar_id');
+            
+            DB::table($tempApprovalTambahan)->insertUsing(['suratpengantar_id', 'statusapproval'], $queryapprovaltambahan);
+
+            
+            $query->addSelect('paramapp.memo as statusapproval')
+            ->join(DB::raw("$tempApprovalTambahan as approvaltambahan with (readuncommitted)"), 'suratpengantar.id', 'approvaltambahan.suratpengantar_id')
+            ->join(DB::raw("parameter  as paramapp"), 'approvaltambahan.statusapproval', 'paramapp.id');
+            // dd('test');
+
             $tempTambahan = '##tempTambahan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempTambahan, function ($table) {
                 $table->integer('suratpengantar_id')->nullable();
@@ -809,6 +852,8 @@ class SuratPengantar extends MyModel
             $tambahan = DB::table("suratpengantarbiayatambahan")->from(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"))
                 ->select(DB::raw("suratpengantar_id, STRING_AGG(keteranganbiaya+' ('+ FORMAT(nominal,'#,#0.00')+')',', ') as ketextra, sum(nominal) as biayaextra, sum(nominaltagih) as biayatagih,
                 STRING_AGG(keteranganbiaya+' ('+ FORMAT(nominaltagih,'#,#0.00')+')',', ') as ketextratagih"))
+                ->join(db::raw("suratpengantar b with (readuncommitted)"),'suratpengantarbiayatambahan.suratpengantar_id','b.id')
+                ->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
                 ->groupBy('suratpengantar_id');
             DB::table($tempTambahan)->insertUsing(['suratpengantar_id', 'ketextra', 'biayaextra', 'biayatagih', 'ketextratagih'], $tambahan);
             $query->addSelect('suratpengantarbiayatambahan.ketextra', 'suratpengantarbiayatambahan.biayaextra', 'suratpengantarbiayatambahan.biayatagih', 'suratpengantarbiayatambahan.ketextratagih')
