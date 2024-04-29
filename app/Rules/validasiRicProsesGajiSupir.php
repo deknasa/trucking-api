@@ -33,17 +33,20 @@ class validasiRicProsesGajiSupir implements Rule
         $empty = 0;
         $listTrip = '';
 
-        for ($i = 0; $i < count($dataric['nobuktiRIC']); $i++) 
-        {
+        for ($i = 0; $i < count($dataric['nobuktiRIC']); $i++) {
             $ric = $dataric['nobuktiRIC'][$i];
             $cekRic = DB::table("gajisupirheader")->from(DB::raw("gajisupirheader with (readuncommitted)"))->where('nobukti', $ric)->first();
-            if($cekRic == ''){
+            if ($cekRic == '') {
+                // $cekSaldoRic = DB::table("saldogajisupirheader")->from(DB::raw("saldogajisupirheader with (readuncommitted)"))->where('nobukti', $ric)->first();
+
+                // if ($cekSaldoRic == '') {
                 $empty++;
-                if($listTrip == ''){
+                if ($listTrip == '') {
                     $listTrip = $ric;
-                }else{
+                } else {
                     $listTrip = $listTrip . ', ' . $ric;
                 }
+                // }
             }
         }
         $this->trip = $listTrip;
@@ -60,6 +63,6 @@ class validasiRicProsesGajiSupir implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('DTA')->keterangan . ' (' . $this->trip.')';
+        return app(ErrorController::class)->geterror('DTA')->keterangan . ' (' . $this->trip . ')';
     }
 }

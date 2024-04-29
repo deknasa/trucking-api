@@ -284,6 +284,7 @@ class StoreUpahSupirRequest extends FormRequest
             'kotasampai' => 'kota sampai',
             'statusaktif' => 'status aktif',
             'statusluarkota' => 'status luar kota',
+            'jarakfullempty' => 'jarak full/empty',
             'tglmulaiberlaku' => 'tanggal mulai berlaku',
             'tglakhirberlaku' => 'tanggal akhir berlaku',
             'container.*' => 'container',
