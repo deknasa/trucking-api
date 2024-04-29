@@ -698,8 +698,14 @@ class UpahSupir extends MyModel
                 'a.jarakfullempty',
                 'a.zona_id',
                 'a.statusaktif',
+                'a.statusaktif_text',
+                'a.statusaktif_id',
                 'a.statusupahzona',
+                'a.statusupahzona_text',
+                'a.statusupahzona_id',
                 'a.statuspostingtnl',
+                'a.statuspostingtnl_text',
+                'a.statuspostingtnl_id',
                 'a.tglmulaiberlaku',
                 'a.gambar',
                 'a.keterangan',
@@ -728,8 +734,14 @@ class UpahSupir extends MyModel
             $table->longText('jarakfullempty')->nullable();
             $table->longText('zona_id')->nullable()->nullable();
             $table->longText('statusaktif')->nullable();
+            $table->longText('statusaktif_text')->nullable();
+            $table->bigInteger('statusaktif_id')->nullable();
             $table->longText('statusupahzona')->nullable();
+            $table->longText('statusupahzona_text')->nullable();
+            $table->bigInteger('statusupahzona_id')->nullable();
             $table->longText('statuspostingtnl')->nullable();
+            $table->longText('statuspostingtnl_text')->nullable();
+            $table->bigInteger('statuspostingtnl_id')->nullable();
             $table->date('tglmulaiberlaku')->nullable();
             $table->longText('gambar')->nullable();
             $table->longText('keterangan')->nullable();
@@ -755,8 +767,14 @@ class UpahSupir extends MyModel
             'jarakfullempty',
             'zona_id',
             'statusaktif',
+            'statusaktif_text',
+            'statusaktif_id',
             'statusupahzona',
+            'statusupahzona_text',
+            'statusupahzona_id',
             'statuspostingtnl',
+            'statuspostingtnl_text',
+            'statuspostingtnl_id',
             'tglmulaiberlaku',
             'gambar',
             'keterangan',

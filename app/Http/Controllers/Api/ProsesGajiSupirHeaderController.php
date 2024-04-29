@@ -299,6 +299,36 @@ class ProsesGajiSupirHeaderController extends Controller
             ]);
         } else {
 
+
+            // $cekRic = DB::table("saldogajisupirheader")->from(DB::raw("saldogajisupirheader with (readuncommitted)"))
+            //     ->whereRaw("tglbukti >= '$dari'")
+            //     ->whereRaw("tglbukti <= '$sampai'")
+            //     ->first();
+            // if ($cekRic) {
+
+            //     $nobukti = $cekRic->nobukti;
+            //     return response([
+            //         'errors' => false,
+            //         'data' => $gajiSupir->getRic($dari, $sampai),
+            //         'attributes' => [
+            //             'totalRows' => $gajiSupir->totalRows,
+            //             'totalPages' => $gajiSupir->totalPages,
+            //             'totalBorongan' => $gajiSupir->totalBorongan,
+            //             'totalUangJalan' => $gajiSupir->totalUangJalan,
+            //             'totalUangBBM' => $gajiSupir->totalUangBBM,
+            //             'totalUangMakan' => $gajiSupir->totalUangMakan,
+            //             'totalUangMakanBerjenjang' => $gajiSupir->totalUangMakanBerjenjang,
+            //             'totalPotPinjaman' => $gajiSupir->totalPotPinjaman,
+            //             'totalPotPinjSemua' => $gajiSupir->totalPotPinjSemua,
+            //             'totalDeposito' => $gajiSupir->totalDeposito,
+            //             'totalKomisi' => $gajiSupir->totalKomisi,
+            //             'totalTol' => $gajiSupir->totalTol,
+            //             'totalGajiSupir' => $gajiSupir->totalGajiSupir,
+            //             'totalGajiKenek' => $gajiSupir->totalGajiKenek,
+            //         ]
+            //     ]);
+            // } else {
+
             return response([
                 'data' => [],
                 'attributes' => [
@@ -306,6 +336,7 @@ class ProsesGajiSupirHeaderController extends Controller
                     'totalPages' => 0,
                 ]
             ]);
+            // }
         }
     }
     public function getEdit(GetRicEditRequest $request, $gajiId)
@@ -389,11 +420,11 @@ class ProsesGajiSupirHeaderController extends Controller
 
         lanjut:
 
-        
+
         $parameter = new Parameter();
 
-        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
-        $tgltutup=date('Y-m-d', strtotime($tgltutup));  
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
 
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
@@ -421,7 +452,7 @@ class ProsesGajiSupirHeaderController extends Controller
             return response($data);
         } else if ($tgltutup >= $prosesgaji->tglbukti) {
             $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
-            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
                 'message' => $keterror,
@@ -429,9 +460,9 @@ class ProsesGajiSupirHeaderController extends Controller
                 'statuspesan' => 'warning',
             ];
 
-            return response($data);            
+            return response($data);
         } else if ($useredit != '' && $useredit != $user) {
-           
+
             $waktu = (new Parameter())->cekBatasWaktuEdit('gaji supir header BUKTI');
 
             $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($prosesgaji->editing_at)));
@@ -461,8 +492,7 @@ class ProsesGajiSupirHeaderController extends Controller
                 ];
 
                 return response($data);
-            }            
-            
+            }
         } else {
             (new MyModel())->updateEditingBy('prosesgajisupirheader', $id, $aksi);
 
@@ -591,7 +621,7 @@ class ProsesGajiSupirHeaderController extends Controller
     public function approvalbukacetak()
     {
     }
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL KIRIM BERKAS
      */
