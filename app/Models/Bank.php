@@ -524,6 +524,7 @@ class Bank extends MyModel
         $bank->statusaktif = $data['statusaktif'];
         $bank->formatpenerimaan = $data['formatpenerimaan'];
         $bank->formatpengeluaran = $data['formatpengeluaran'];
+        $bank->formatcetakan = $data['formatcetakan'];
         $bank->modifiedby = auth('api')->user()->name;
         $bank->info = html_entity_decode(request()->info);
 
@@ -553,6 +554,7 @@ class Bank extends MyModel
         $bank->statusaktif = $data['statusaktif'];
         $bank->formatpenerimaan = $data['formatpenerimaan'];
         $bank->formatpengeluaran = $data['formatpengeluaran'];
+        $bank->formatcetakan = $data['formatcetakan'];
         $bank->modifiedby = auth('api')->user()->name;
         $bank->info = html_entity_decode(request()->info);
 
