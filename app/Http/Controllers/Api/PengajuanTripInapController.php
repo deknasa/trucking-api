@@ -50,11 +50,13 @@ class PengajuanTripInapController extends Controller
             ];
 
             $pengajuanTripInap = (new PengajuanTripInap())->processStore($data);
-            $pengajuanTripInap->position = $this->getPosition($pengajuanTripInap, $pengajuanTripInap->getTable())->position;
-            if ($request->limit == 0) {
-                $pengajuanTripInap->page = ceil($pengajuanTripInap->position / (10));
-            } else {
-                $pengajuanTripInap->page = ceil($pengajuanTripInap->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $pengajuanTripInap->position = $this->getPosition($pengajuanTripInap, $pengajuanTripInap->getTable())->position;
+                if ($request->limit == 0) {
+                    $pengajuanTripInap->page = ceil($pengajuanTripInap->position / (10));
+                } else {
+                    $pengajuanTripInap->page = ceil($pengajuanTripInap->position / ($request->limit ?? 10));
+                }
             }
 
             DB::commit();
