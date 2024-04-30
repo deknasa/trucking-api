@@ -9,6 +9,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\DestroyGajiSupirNobukti;
 use App\Rules\validasiContSPGajiSupir;
+use App\Rules\validasiPemutihanSupirRIC;
 use App\Rules\ValidasiStatusContGajiSupir;
 use App\Rules\ValidasiTambahanGajiSupir;
 use App\Rules\validasiTglBuktiRIC;
@@ -60,7 +61,7 @@ class UpdateGajiSupirHeaderRequest extends FormRequest
         $rules = [
             'id' => new DestroyGajiSupirNobukti(),
             'nobukti' => [Rule::in($getDataGajiSupir->nobukti)],
-            'supir' => ['required',  new ValidasiTripGajiSupir(), new validasiContSPGajiSupir(), new ValidasiTambahanGajiSupir(), new ValidasiStatusContGajiSupir()],
+            'supir' => ['required',  new ValidasiTripGajiSupir(), new validasiContSPGajiSupir(), new ValidasiTambahanGajiSupir(), new ValidasiStatusContGajiSupir(), new validasiPemutihanSupirRIC()],
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
                 'before:'.$tglbatasakhir,
