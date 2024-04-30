@@ -516,6 +516,12 @@ class Bank extends MyModel
 
     public function processStore(array $data): Bank
     {
+
+        $cabang = DB::table('parameter')->where('grp', 'CABANG')->where('subgrp', 'CABANG')->first();
+
+        if ($cabang->text =="JAKARTA") {
+            $data['formatcetakan'] = DB::table('parameter')->where('grp', 'FORMAT CETAKAN BANK')->where('subgrp', 'FORMAT CETAKAN BANK 1')->first()->id;
+        }
         $bank = new Bank();
         $bank->kodebank = $data['kodebank'];
         $bank->namabank = $data['namabank'];
