@@ -1872,6 +1872,37 @@ class Supir extends MyModel
         return $Supir;
     }
 
+    public function processApprovalaktif(array $data)
+    {
+
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $Supir = Supir::find($data['Id'][$i]);
+
+            $Supir->statusaktif = $statusaktif->id;
+            $aksi = $statusaktif->text;
+
+            // dd($Supir);
+            if ($Supir->save()) {
+
+                (new LogTrail())->processStore([
+
+                    'namatabel' => strtoupper($Supir->getTable()),
+                    'postingdari' => 'APPROVAL SUPIR',
+                    'idtrans' => $Supir->id,
+                    'nobuktitrans' => $Supir->id,
+                    'aksi' => $aksi,
+                    'datajson' => $Supir->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+
+        return $Supir;
+    }    
+
     public function processApprovalHistoryTradoMilikMandor(array $data)
     {
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))

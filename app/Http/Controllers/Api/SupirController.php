@@ -938,6 +938,32 @@ class SupirController extends Controller
         }
     }
 
+
+        /**
+     * @ClassName 
+     * @Keterangan APRROVAL AKTIF
+     */
+    public function approvalaktif(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id
+            ];
+            (new Supir())->processApprovalaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+
     public function approvalSupirTanpa()
     {
         $approvalSupirTanpa = new ApprovalSupirTanpa();

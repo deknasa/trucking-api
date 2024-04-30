@@ -493,6 +493,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('supir/approvalblacklist', [SupirController::class, 'approvalBlackListSupir'])->whereNumber('id');
     Route::post('supir/approvalluarkota', [SupirController::class, 'approvalSupirLuarKota'])->whereNumber('id');
     Route::post('supir/approvalnonaktif', [SupirController::class, 'approvalnonaktif']);
+    Route::post('supir/approvalaktif', [SupirController::class, 'approvalaktif']);
     Route::post('supir/approval', [SupirController::class, 'approval']);
     Route::post('supir/approvalhistorysupirmilikmandor', [SupirController::class, 'approvalhistorysupirmilikmandor']);
     Route::post('supir/{id}/cekvalidasihistory', [SupirController::class, 'cekvalidasihistory'])->name('supir.cekvalidasihistory')->whereNumber('id');
