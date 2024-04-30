@@ -200,6 +200,8 @@ class Stok extends MyModel
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
         $class = 'StokController';
+        $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
+        $retur = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
 
         if ($proses == 'reload') {
             $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -276,8 +278,7 @@ class Stok extends MyModel
           
 
             
-            $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
-            $retur = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
+
             if ($penerimaanstokheader_nobukti && $retur->text == $pengeluaranstok_id) {
                 $query = DB::table($this->table)->select(
                     'stok.id',
@@ -554,8 +555,8 @@ class Stok extends MyModel
             }
         }
         if ($penerimaanstokheader_nobukti) {
-    
-            if ($spb->text == $penerimaanstok_id || $retur->text == $pengeluaranstok_id) {
+            if ($retur->text == $pengeluaranstok_id) {
+            // if ($spb->text == $penerimaanstok_id || $retur->text == $pengeluaranstok_id) {
                 $query->leftJoin('penerimaanstokdetail', 'stok.id', 'penerimaanstokdetail.stok_id')
                     ->where('penerimaanstokdetail.nobukti', $penerimaanstokheader_nobukti);
             }

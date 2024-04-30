@@ -1310,6 +1310,7 @@ class PenerimaanStokHeader extends MyModel
 
         $penerimaanStokHeader->nobukti                  = (new RunningNumberService)->get($group, $subGroup, $penerimaanStokHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
+        // dd($penerimaanStokHeader->nobukti,$group, $subGroup, $penerimaanStokHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
         if (!$penerimaanStokHeader->save()) {
             throw new \Exception("Error storing penerimaan Stok Header.");
         }

@@ -41,15 +41,30 @@ class RekapPengeluaranDetail extends MyModel
         //     $query->whereIn('rekappengeluaran_id', request()->whereIn);
         // }
         if (isset(request()->forReport) && request()->forReport) {
-            $query->select(
-                'pengeluarandetail.coadebet',
-                DB::raw('MAX(akunpusat.keterangancoa) AS keterangancoa'),
-                DB::raw("sum(pengeluarandetail.nominal) as nominal"),
-                DB::raw("'' as keterangan"),
-            )
-            ->leftJoin(DB::raw("pengeluarandetail with (readuncommitted)"), $this->table . '.pengeluaran_nobukti', 'pengeluarandetail.nobukti')
-            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarandetail.coadebet', 'akunpusat.coa')
-            ->groupBy('pengeluarandetail.coadebet');
+            $cetakanBank1 = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('id')->where('grp', 'FORMAT CETAKAN BANK')->where('subgrp', 'FORMAT CETAKAN BANK 1')->first();
+            if ($cetakanBank1->id ==request()->formatcetakan) {
+                $query->select(
+                    'pengeluarandetail.coadebet',
+                    DB::raw('MAX(akunpusat.keterangancoa) AS keterangancoa'),
+                    DB::raw("sum(pengeluarandetail.nominal) as nominal"),
+                    DB::raw("'' as keterangan"),
+                )
+                ->leftJoin(DB::raw("pengeluarandetail with (readuncommitted)"), $this->table . '.pengeluaran_nobukti', 'pengeluarandetail.nobukti')
+                ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarandetail.coadebet', 'akunpusat.coa')
+                ->groupBy('pengeluarandetail.coadebet');
+            }else {
+                $query->select(
+                    'pengeluarandetail.coadebet',
+                    "pengeluarandetail.nobukti",
+                    DB::raw('MAX(akunpusat.keterangancoa) AS keterangancoa'),
+                    DB::raw("sum(pengeluarandetail.nominal) as nominal"),
+                    "pengeluarandetail.keterangan",
+                )
+                ->leftJoin(DB::raw("pengeluarandetail with (readuncommitted)"), $this->table . '.pengeluaran_nobukti', 'pengeluarandetail.nobukti')
+                ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarandetail.coadebet', 'akunpusat.coa')
+                ->groupBy('pengeluarandetail.coadebet','pengeluarandetail.nobukti','pengeluarandetail.keterangan');
+            }
+
 
         } else {
                 

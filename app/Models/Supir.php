@@ -1104,6 +1104,7 @@ class Supir extends MyModel
             $statusLuarKota = DB::table('parameter')->where('grp', 'STATUS LUAR KOTA')->where('default', 'YA')->first();
             $statusZonaTertentu = DB::table('parameter')->where('grp', 'ZONA TERTENTU')->where('default', 'YA')->first();
             $statusBlackList = DB::table('parameter')->where('grp', 'BLACKLIST SUPIR')->where('default', 'YA')->first();
+            $cabang = DB::table('parameter')->where('grp', 'CABANG')->where('subgrp', 'CABANG')->first();
             $batasBulan = DB::table('parameter')->where('grp', 'BATAS BULAN SUPIR BARU LUAR KOTA')->where('subgrp', 'BATAS BULAN SUPIR BARU LUAR KOTA')->first();
             $tglmasuk = date('Y-m-d', strtotime($data['tglmasuk']));
             $isBolehLuarKota = DB::table("parameter")->where('grp', 'VALIDASI SUPIR')->where('subgrp', 'BOLEH LUAR KOTA')->first()->text ?? 'TIDAK';
@@ -1111,6 +1112,10 @@ class Supir extends MyModel
                 $tglBatasLuarKota = null;
             } else {
                 $tglBatasLuarKota = (date('Y-m-d', strtotime("+$batasBulan->text months", strtotime($tglmasuk))));
+            }
+
+            if ($cabang->text =="JAKARTA") {
+                $statusApprovalDefault = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
             }
 
             $supirlama_id = request()->id ?? null;
@@ -1640,6 +1645,7 @@ class Supir extends MyModel
             )
             ->where('supir.noktp', $noktp)
             ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id')
+            ->orderBy('supir.id', 'desc')
             ->first();
 
         return $query;
