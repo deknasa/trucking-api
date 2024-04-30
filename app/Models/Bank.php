@@ -519,7 +519,7 @@ class Bank extends MyModel
 
         $cabang = DB::table('parameter')->where('grp', 'CABANG')->where('subgrp', 'CABANG')->first();
 
-        if ($cabang->text =="JAKARTA") {
+        if ($cabang->text != "SURABAYA") {
             $data['formatcetakan'] = DB::table('parameter')->where('grp', 'FORMAT CETAKAN BANK')->where('subgrp', 'FORMAT CETAKAN BANK 1')->first()->id;
         }
         $bank = new Bank();
