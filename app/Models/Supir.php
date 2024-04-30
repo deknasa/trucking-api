@@ -1261,7 +1261,7 @@ class Supir extends MyModel
                         ->where('nobukti', $data['pemutihansupir_nobukti'])
                         ->where('statusposting', 83)
                         ->first();
-                    if ($getPosting != '') {
+                    if ($getPosting->nominal != '') {
 
                         $nominalposting[] = $getPosting->nominal;
                         $keterangan[] = 'PINJAMAN DARI PEMUTIHAN ' . $data['pemutihansupir_nobukti'] . ' (POSTING)';
@@ -1282,7 +1282,7 @@ class Supir extends MyModel
                         ->where('nobukti', $data['pemutihansupir_nobukti'])
                         ->where('statusposting', 84)
                         ->first();
-                    if ($getNonPosting != '') {
+                    if ($getNonPosting->nominal != '') {
 
                         $nominalnonposting[] = $getNonPosting->nominal;
                         $keteranganNon[] = 'PINJAMAN DARI PEMUTIHAN ' . $data['pemutihansupir_nobukti'] . ' (NON POSTING)';

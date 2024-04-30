@@ -754,7 +754,7 @@ class PenerimaanTruckingHeader extends MyModel
         return $temp;
     }
 
-    public function getPinjaman($supir_id)
+    public function getPinjaman($supir_id, $isCekPemutihan = false)
     {
         $tempPribadi = $this->createTempPinjPribadi($supir_id);
 
@@ -774,8 +774,11 @@ class PenerimaanTruckingHeader extends MyModel
             ->where("pengeluarantruckingheader.pengeluarantrucking_id",  1)
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
-
-        return $query->get();
+        if ($isCekPemutihan) {
+            return $query->first();
+        } else {
+            return $query->get();
+        }
     }
     public function getPinjamanKaryawan($karyawan_id)
     {
@@ -1786,7 +1789,7 @@ class PenerimaanTruckingHeader extends MyModel
             $penerimaanTruckingHeader->bank_id = $data['bank_id'];
             $penerimaanTruckingHeader->penerimaan_nobukti = $data['penerimaan_nobukti'];
         }
-        
+
         $penerimaanTruckingHeader->editing_by = '';
         $penerimaanTruckingHeader->editing_at = null;
         if (!$penerimaanTruckingHeader->save()) {

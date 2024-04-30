@@ -196,7 +196,7 @@ class GajiSupirHeader extends MyModel
                     'gajisupirheader.id',
                     'gajisupirheader.nobukti',
                     'gajisupirheader.tglbukti',
-                    'supir.namasupir as supir_id',
+                    'supir.namaalias as supir_id',
                     // 'gajisupirheader.keterangan',
                     DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then c.gajisupir else (gajisupirheader.nominal-isnull(C.biayaextra,0)) end) as gajisupir"),
                     // db::raw("(gajisupirheader.nominal-isnull(C.biayaextra,0)) as nominal"),
@@ -394,7 +394,7 @@ class GajiSupirHeader extends MyModel
                 'gajisupirheader.nobukti',
                 'gajisupirheader.tglbukti',
                 'gajisupirheader.supir_id',
-                'supir.namasupir as supir',
+                'supir.namaalias as supir',
                 'gajisupirheader.tgldari',
                 'gajisupirheader.tglsampai',
                 'gajisupirheader.uangmakanberjenjang as berjenjanguangmakan',
@@ -430,6 +430,7 @@ class GajiSupirHeader extends MyModel
                     "$sp.trado_id",
                     "$sp.dari_id",
                     "$sp.sampai_id",
+                    "$sp.pelanggan_id",
                     "$sp.nocont",
                     "$sp.nosp",
                     "$sp.container",
@@ -634,6 +635,7 @@ class GajiSupirHeader extends MyModel
                 'trado.kodetrado as trado_id',
                 'kotaDari.keterangan as dari_id',
                 'kotaSampai.keterangan as sampai_id',
+                'pelanggan.namapelanggan as pelanggan_id',
                 'suratpengantar.nocont',
                 'suratpengantar.nosp',
                 'suratpengantar.container_id',
@@ -659,6 +661,7 @@ class GajiSupirHeader extends MyModel
             ->leftJoin(DB::raw("ritasi with (readuncommitted)"), 'suratpengantar.nobukti', 'ritasi.suratpengantar_nobukti')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'suratpengantar.container_id', 'container.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'suratpengantar.statuscontainer_id', 'statuscontainer.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'suratpengantar.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("$getBiaya as biayatambahan with (readuncommitted)"), 'suratpengantar.id', 'biayatambahan.suratpengantar_id')
             ->where('suratpengantar.supir_id', $supirId)
             ->where('suratpengantar.tglbukti', '>=', $tglDari)
@@ -671,6 +674,7 @@ class GajiSupirHeader extends MyModel
             $table->string('trado_id')->nullable();
             $table->string('dari_id')->nullable();
             $table->string('sampai_id')->nullable();
+            $table->string('pelanggan_id')->nullable();
             $table->string('nocont')->nullable();
             $table->string('nosp')->nullable();
             $table->bigInteger('container_id')->nullable();
@@ -689,7 +693,7 @@ class GajiSupirHeader extends MyModel
             $table->string('keteranganbiaya')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id','pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
 
         // FETCH SALDO SURATPENGANTAR
 
@@ -701,6 +705,7 @@ class GajiSupirHeader extends MyModel
                 'trado.kodetrado as trado_id',
                 'kotaDari.keterangan as dari_id',
                 'kotaSampai.keterangan as sampai_id',
+                'pelanggan.namapelanggan as pelanggan_id',
                 'saldosuratpengantar.nocont',
                 'saldosuratpengantar.nosp',
                 'saldosuratpengantar.container_id',
@@ -721,6 +726,7 @@ class GajiSupirHeader extends MyModel
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'saldosuratpengantar.trado_id', 'trado.id')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'saldosuratpengantar.container_id', 'container.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'saldosuratpengantar.statuscontainer_id', 'statuscontainer.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'saldosuratpengantar.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("$getBiayaTambahan as biayatambahan with (readuncommitted)"), 'saldosuratpengantar.id', 'biayatambahan.suratpengantar_id')
             ->where('saldosuratpengantar.supir_id', $supirId)
             ->where('saldosuratpengantar.tglbukti', '>=', $tglDari)
@@ -728,7 +734,7 @@ class GajiSupirHeader extends MyModel
             ->where('saldosuratpengantar.statusric', 'YA')
             ->whereRaw("saldosuratpengantar.nobukti not in(select suratpengantar_nobukti from gajisupirdetail)");
 
-        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'biayaextra', 'keteranganbiaya'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id','pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'biayaextra', 'keteranganbiaya'], $fetch);
 
         // fetch ritasi yg tidak ada suratpengantar
         $fetch = Ritasi::from(DB::raw("ritasi with (readuncommitted)"))
@@ -761,6 +767,7 @@ class GajiSupirHeader extends MyModel
                 "$sp.trado_id",
                 "$sp.dari_id",
                 "$sp.sampai_id",
+                "$sp.pelanggan_id",
                 "$sp.nocont",
                 "$sp.nosp",
                 "$sp.container",
@@ -815,6 +822,7 @@ class GajiSupirHeader extends MyModel
                 'trado.kodetrado as trado_id',
                 'kotaDari.keterangan as dari_id',
                 'kotaSampai.keterangan as sampai_id',
+                'pelanggan.namapelanggan as pelanggan_id',
                 'suratpengantar.nocont',
                 'suratpengantar.nosp',
                 'suratpengantar.container_id',
@@ -839,6 +847,7 @@ class GajiSupirHeader extends MyModel
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'suratpengantar.container_id', 'container.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'suratpengantar.statuscontainer_id', 'statuscontainer.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'suratpengantar.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("ritasi with (readuncommitted)"), 'gajisupirdetail.ritasi_nobukti', 'ritasi.nobukti')
             ->where('gajisupirdetail.suratpengantar_nobukti', '!=', '-')
             ->where('gajisupirdetail.gajisupir_id', $gajiId);
@@ -850,6 +859,7 @@ class GajiSupirHeader extends MyModel
             $table->string('trado_id')->nullable();
             $table->string('dari_id')->nullable();
             $table->string('sampai_id')->nullable();
+            $table->string('pelanggan_id')->nullable();
             $table->string('nocont')->nullable();
             $table->string('nosp')->nullable();
             $table->bigInteger('container_id')->nullable();
@@ -869,7 +879,7 @@ class GajiSupirHeader extends MyModel
             $table->string('keteranganbiaya')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id','pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
 
         // SALDO
         $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
@@ -879,6 +889,7 @@ class GajiSupirHeader extends MyModel
                 'trado.kodetrado as trado_id',
                 'kotaDari.keterangan as dari_id',
                 'kotaSampai.keterangan as sampai_id',
+                'pelanggan.namapelanggan as pelanggan_id',
                 'saldosuratpengantar.nocont',
                 'saldosuratpengantar.nosp',
                 'saldosuratpengantar.container_id',
@@ -902,10 +913,11 @@ class GajiSupirHeader extends MyModel
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'saldosuratpengantar.trado_id', 'trado.id')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'saldosuratpengantar.container_id', 'container.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'saldosuratpengantar.statuscontainer_id', 'statuscontainer.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'saldosuratpengantar.pelanggan_id', 'pelanggan.id')
             ->where('gajisupirdetail.suratpengantar_nobukti', '!=', '-')
             ->where('gajisupirdetail.gajisupir_id', $gajiId);
 
-        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti',  'biayaextra', 'keteranganbiaya'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id','pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti',  'biayaextra', 'keteranganbiaya'], $fetch);
 
         $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
             ->select(
@@ -1300,6 +1312,7 @@ class GajiSupirHeader extends MyModel
                 "$tempRIC.trado_id",
                 "$tempRIC.dari_id",
                 "$tempRIC.sampai_id",
+                "$tempRIC.pelanggan_id",
                 "$tempRIC.nocont",
                 "$tempRIC.nosp",
                 "$tempRIC.container",
@@ -1350,6 +1363,7 @@ class GajiSupirHeader extends MyModel
                 'trado.kodetrado as trado_id',
                 'kotaDari.keterangan as dari_id',
                 'kotaSampai.keterangan as sampai_id',
+                'pelanggan.namapelanggan as pelanggan_id',
                 'suratpengantar.nocont',
                 'suratpengantar.nosp',
                 'suratpengantar.container_id',
@@ -1376,6 +1390,7 @@ class GajiSupirHeader extends MyModel
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
             ->leftJoin(DB::raw("ritasi with (readuncommitted)"), 'gajisupirdetail.ritasi_nobukti', 'ritasi.nobukti')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'suratpengantar.container_id', 'container.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'suratpengantar.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'suratpengantar.statuscontainer_id', 'statuscontainer.id')->leftJoin(DB::raw("$getBiaya as biayatambahan with (readuncommitted)"), 'suratpengantar.id', 'biayatambahan.suratpengantar_id')
             ->where('gajisupirdetail.suratpengantar_nobukti', '!=', '-')
             ->where('suratpengantar.tglbukti', '>=', $dari)
@@ -1388,6 +1403,7 @@ class GajiSupirHeader extends MyModel
             $table->string('trado_id')->nullable();
             $table->string('dari_id')->nullable();
             $table->string('sampai_id')->nullable();
+            $table->string('pelanggan_id')->nullable();
             $table->string('nocont')->nullable();
             $table->string('nosp')->nullable();
             $table->bigInteger('container_id')->nullable();
@@ -1407,7 +1423,7 @@ class GajiSupirHeader extends MyModel
             $table->string('keteranganbiaya')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id','pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
 
         // SALDO
         $getSaldoBiaya = $this->createTempSaldoBiayaTambahanEdit($gajiId, $supir_id, $dari, $sampai);
@@ -1418,6 +1434,7 @@ class GajiSupirHeader extends MyModel
                 'trado.kodetrado as trado_id',
                 'kotaDari.keterangan as dari_id',
                 'kotaSampai.keterangan as sampai_id',
+                'pelanggan.namapelanggan as pelanggan_id',
                 'saldosuratpengantar.nocont',
                 'saldosuratpengantar.nosp',
                 'saldosuratpengantar.container_id',
@@ -1442,6 +1459,7 @@ class GajiSupirHeader extends MyModel
             ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'saldosuratpengantar.sampai_id', 'kotaSampai.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'saldosuratpengantar.trado_id', 'trado.id')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'saldosuratpengantar.container_id', 'container.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'saldosuratpengantar.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'saldosuratpengantar.statuscontainer_id', 'statuscontainer.id')
             ->leftJoin(DB::raw("$getSaldoBiaya as biayatambahan with (readuncommitted)"), 'saldosuratpengantar.id', 'biayatambahan.suratpengantar_id')
             ->where('gajisupirdetail.suratpengantar_nobukti', '!=', '-')
@@ -1450,7 +1468,7 @@ class GajiSupirHeader extends MyModel
             ->where('saldosuratpengantar.statusric', 'YA')
             ->where('gajisupirdetail.gajisupir_id', $gajiId);
 
-        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'biayaextra', 'keteranganbiaya'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id','pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'biayaextra', 'keteranganbiaya'], $fetch);
 
         $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
             ->select(
@@ -1489,6 +1507,7 @@ class GajiSupirHeader extends MyModel
                 'trado.kodetrado as trado_id',
                 'kotaDari.keterangan as dari_id',
                 'kotaSampai.keterangan as sampai_id',
+                'pelanggan.namapelanggan as pelanggan_id',
                 'suratpengantar.nocont',
                 'suratpengantar.nosp',
                 'suratpengantar.container_id',
@@ -1512,6 +1531,7 @@ class GajiSupirHeader extends MyModel
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
             ->leftJoin(DB::raw("ritasi with (readuncommitted)"), 'suratpengantar.nobukti', 'ritasi.suratpengantar_nobukti')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'suratpengantar.container_id', 'container.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'suratpengantar.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'suratpengantar.statuscontainer_id', 'statuscontainer.id')
             ->leftJoin(DB::raw("$getBiaya as biayatambahan with (readuncommitted)"), 'suratpengantar.id', 'biayatambahan.suratpengantar_id')
             ->where('suratpengantar.supir_id', $supir_id)
@@ -1522,7 +1542,7 @@ class GajiSupirHeader extends MyModel
                     ->orWhereRaw("ritasi.nobukti not in(select ritasi_nobukti from gajisupirdetail)");
             });
 
-        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id','pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
 
         // SALDO
 
@@ -1534,6 +1554,7 @@ class GajiSupirHeader extends MyModel
                 'trado.kodetrado as trado_id',
                 'kotaDari.keterangan as dari_id',
                 'kotaSampai.keterangan as sampai_id',
+                'pelanggan.namapelanggan as pelanggan_id',
                 'saldosuratpengantar.nocont',
                 'saldosuratpengantar.nosp',
                 'saldosuratpengantar.container_id',
@@ -1554,6 +1575,7 @@ class GajiSupirHeader extends MyModel
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'saldosuratpengantar.trado_id', 'trado.id')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'saldosuratpengantar.container_id', 'container.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'saldosuratpengantar.statuscontainer_id', 'statuscontainer.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'saldosuratpengantar.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("$getSaldoBiaya as biayatambahan with (readuncommitted)"), 'saldosuratpengantar.id', 'biayatambahan.suratpengantar_id')
             ->where('saldosuratpengantar.supir_id', $supir_id)
             ->where('saldosuratpengantar.tglbukti', '>=', $dari)
@@ -1563,7 +1585,7 @@ class GajiSupirHeader extends MyModel
                 $query->whereRaw("saldosuratpengantar.nobukti not in(select suratpengantar_nobukti from gajisupirdetail)");
             });
 
-        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'biayaextra', 'keteranganbiaya'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id','pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'biayaextra', 'keteranganbiaya'], $fetch);
 
         $fetch = Ritasi::from(DB::raw("ritasi with (readuncommitted)"))
             ->select(
