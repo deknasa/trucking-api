@@ -42,24 +42,43 @@ class RunningNumberService
                 ->where(DB::raw('month(tglbukti)'), '=', $bulan)
                 ->where(DB::raw('year(tglbukti)'), '=', $tahun)
                 ->where(DB::raw('statusformat'), '=', $statusformat)
-                 ->lockForUpdate()->count();
+                ->lockForUpdate()->count();
+
+
+            // perubahan
             $a = 0;
             $b = $lastRow;
+            $c = 0;
             while ($a <= $lastRow) {
-                $nobukti = (new App)->getFormat($text, $a, $bulan,$tgl);
-                
-                $queryCheck = DB::table($table)->where('nobukti',$nobukti)
-                ->where(DB::raw('month(tglbukti)'), '=', $bulan)
-                ->where(DB::raw('year(tglbukti)'), '=', $tahun)
-                ->where(DB::raw('statusformat'), '=', $statusformat)->first();
-                
+                $nobukti = (new App)->getFormat($text, $a, $bulan, $tgl);
+
+                $queryCheck = DB::table($table)->where('nobukti', $nobukti)
+                    ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                    ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                    ->where(DB::raw('statusformat'), '=', $statusformat)->first();
+
                 if (!isset($queryCheck)) {
-                    $lastRow = $a;
-                    $a = $b;
+                    if ($a > 1) {
+                        $c = $a - 1;
+                        $nobukticek = (new App)->getFormat($text, $c, $bulan, $tgl);
+
+                        $queryCheckprev = DB::table($table)->where('nobukti', $nobukticek)
+                            ->where(DB::raw('month(tglbukti)'), '=', $bulan)
+                            ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                            ->where('tglbukti', $tgl)
+                            ->where(DB::raw('statusformat'), '=', $statusformat)->first();
+                        if (isset($queryCheckprev)) {
+                            $lastRow = $a;
+                            $a = $b;
+                        } else {
+                            $a = $b;
+                        }
+                    }
                 }
                 $a++;
-            }    
-              
+            }
+            // 
+
         }
 
         if ($type == 'RESET TAHUN') {
@@ -69,16 +88,30 @@ class RunningNumberService
                 ->lockForUpdate()->count();
             $a = 0;
             $b = $lastRow;
+            $c = 0;
             while ($a <= $lastRow) {
-                $nobukti = (new App)->getFormat($text, $a, $bulan,$tgl);
-                
-                $queryCheck = DB::table($table)->where('nobukti',$nobukti)
-                ->where(DB::raw('year(tglbukti)'), '=', $tahun)
-                ->where(DB::raw('statusformat'), '=', $statusformat)->first();
-                
+                $nobukti = (new App)->getFormat($text, $a, $bulan, $tgl);
+
+                $queryCheck = DB::table($table)->where('nobukti', $nobukti)
+                    ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                    ->where(DB::raw('statusformat'), '=', $statusformat)->first();
+
                 if (!isset($queryCheck)) {
-                    $lastRow = $a;
-                    $a = $b;
+                    if ($a > 1) {
+                        $c = $a - 1;
+                        $nobukticek = (new App)->getFormat($text, $c, $bulan, $tgl);
+
+                        $queryCheckprev = DB::table($table)->where('nobukti', $nobukticek)
+                            ->where(DB::raw('year(tglbukti)'), '=', $tahun)
+                            ->where('tglbukti', $tgl)
+                            ->where(DB::raw('statusformat'), '=', $statusformat)->first();
+                        if (isset($queryCheckprev)) {
+                            $lastRow = $a;
+                            $a = $b;
+                        } else {
+                            $a = $b;
+                        }
+                    }
                 }
                 $a++;
             }
@@ -93,7 +126,7 @@ class RunningNumberService
         // ->where('a.nobukti')
 
         // dd($tgl);
-        $runningNumber = (new App)->runningNumber($text, $lastRow, $bulan,$tgl,$table);
+        $runningNumber = (new App)->runningNumber($text, $lastRow, $bulan, $tgl, $table);
         // dd($runningNumber);
         // $nilai = 0;
         // $nomor = $lastRow;

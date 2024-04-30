@@ -941,7 +941,7 @@ class SupirController extends Controller
 
         /**
      * @ClassName 
-     * @Keterangan APRROVAL AKTIF
+     * @Keterangan APPROVAL AKTIF
      */
     public function approvalaktif(Request $request)
     {
