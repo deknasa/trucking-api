@@ -153,16 +153,18 @@ class PengeluaranTruckingHeaderController extends Controller
                 "pemutihansupir_nobukti" => $request->pemutihansupir_nobukti,
             ]);
             /* Set position and page */
-            $pengeluaranTruckingHeader->position = $this->getPosition($pengeluaranTruckingHeader, $pengeluaranTruckingHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / (10));
-            } else {
-                $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+
+                $pengeluaranTruckingHeader->position = $this->getPosition($pengeluaranTruckingHeader, $pengeluaranTruckingHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / (10));
+                } else {
+                    $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
+                }
+                $pengeluaranTruckingHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $pengeluaranTruckingHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $pengeluaranTruckingHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $pengeluaranTruckingHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-
-
+            
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
@@ -1048,7 +1050,7 @@ class PengeluaranTruckingHeaderController extends Controller
     public function approvalbukacetak()
     {
     }
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL KIRIM BERKAS
      */
