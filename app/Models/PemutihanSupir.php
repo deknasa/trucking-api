@@ -100,6 +100,51 @@ class PemutihanSupir extends MyModel
         $error = new Error();
         $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        $pelunasan = DB::table("pemutihansupirheader")->from(DB::raw("pemutihansupirheader"))->where('id', $id)->first();
+
+        $pemutihansupir = DB::table('supir')
+            ->from(
+                DB::raw("supir as a with (readuncommitted)")
+            )
+            ->select(
+                'a.namaalias',
+            )
+            ->where('a.pemutihansupir_nobukti', '=', $pelunasan->nobukti)
+            ->first();
+
+        if (isset($pemutihansupir)) {
+
+            $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'No Bukti <b>' . $pelunasan->nobukti . '</b><br>' . $keteranganerror . ' SUPIR <b>' . $pemutihansupir->namaalias . '</b><br> ' . $keterangantambahanerror,
+                // 'keterangan' => 'Approval Jurnal ' . $pelunasanPiutang->penerimaan_nobukti,
+                'kodeerror' => 'SATL2'
+            ];
+            goto selesai;
+        }
+        
+        $pemutihansupir = DB::table('supir')
+            ->from(
+                DB::raw("supir as a with (readuncommitted)")
+            )
+            ->select(
+                'a.namaalias',
+            )
+            ->where('a.supirlama_id', '=', $pelunasan->supir_id)
+            ->first();
+
+        if (isset($pemutihansupir)) {
+
+            $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'No Bukti <b>' . $pelunasan->nobukti . '</b><br>' . $keteranganerror . ' SUPIR <b>' . $pemutihansupir->namaalias . '</b><br> ' . $keterangantambahanerror,
+                // 'keterangan' => 'Approval Jurnal ' . $pelunasanPiutang->penerimaan_nobukti,
+                'kodeerror' => 'SATL2'
+            ];
+            goto selesai;
+        }
 
         $pelunasan = DB::table("pemutihansupirheader")->from(DB::raw("pemutihansupirheader"))->where('id', $id)->first();
 
@@ -991,7 +1036,7 @@ class PemutihanSupir extends MyModel
             // jurnal kb b.kantor lain
             /*STORE PENGELUARAN*/
             $alatbayar = DB::table("alatbayar")->select('alatbayar.id', 'alatbayar.kodealatbayar')->join('bank', 'alatbayar.tipe', 'bank.tipe')->where('bank.id', $data['bank_id'])->first();
-         
+
             $pengeluaranRequest = [
                 'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
                 'pelanggan_id' => 0,
@@ -1063,6 +1108,53 @@ class PemutihanSupir extends MyModel
             'modifiedby' => $pemutihanSupir->modifiedby,
         ]);
 
+        $getSupirLama = DB::table('supir')->from(DB::raw("supir with (readuncommitted)"))->where('supirlama_id', $data['supir_id'])->first();
+        if (isset($getSupirLama)) {
+            $supir_id[] = $getSupirLama->id;
+            $getPosting = DB::table("pemutihansupirdetail")->from(DB::raw("pemutihansupirdetail with (readuncommitted)"))
+                ->select(DB::raw("sum(nominal) as nominal"))
+                ->where('nobukti', $pemutihanSupir->nobukti)
+                ->where('statusposting', 83)
+                ->first();
+            if ($getPosting->nominal != '') {
+
+                $nominalposting[] = $getPosting->nominal;
+                $keterangan[] = 'PINJAMAN DARI PEMUTIHAN ' . $pemutihanSupir->nobukti . ' (POSTING)';
+
+                $pengeluaranRequest = [
+                    'tglbukti' => date('Y-m-d'),
+                    'pengeluarantrucking_id' => 1,
+                    'statusposting' => 84,
+                    'supir_id' => $supir_id,
+                    'pemutihansupir_nobukti' => $pemutihanSupir->nobukti,
+                    'nominal' => $nominalposting,
+                    'keterangan' => $keterangan
+                ];
+                (new PengeluaranTruckingHeader())->processStore($pengeluaranRequest);
+            }
+            $getNonPosting = DB::table("pemutihansupirdetail")->from(DB::raw("pemutihansupirdetail with (readuncommitted)"))
+                ->select(DB::raw("sum(nominal) as nominal"))
+                ->where('nobukti', $pemutihanSupir->nobukti)
+                ->where('statusposting', 84)
+                ->first();
+
+            if ($getNonPosting->nominal != '') {
+
+                $nominalnonposting[] = $getNonPosting->nominal;
+                $keteranganNon[] = 'PINJAMAN DARI PEMUTIHAN ' . $pemutihanSupir->nobukti . ' (NON POSTING)';
+
+                $pengeluaranRequestNon = [
+                    'tglbukti' => date('Y-m-d'),
+                    'pengeluarantrucking_id' => 1,
+                    'statusposting' => 84,
+                    'supir_id' => $supir_id,
+                    'pemutihansupir_nobukti' => $pemutihanSupir->nobukti,
+                    'nominal' => $nominalnonposting,
+                    'keterangan' => $keteranganNon
+                ];
+                (new PengeluaranTruckingHeader())->processStore($pengeluaranRequestNon);
+            }
+        }
         return $pemutihanSupir;
     }
 
