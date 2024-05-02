@@ -1510,7 +1510,7 @@ class PengeluaranStokHeader extends MyModel
 
         for ($i = 0; $i < count($data['detail_stok_id']); $i++) {
             $zqty = ($data['detail_qty']) ? $data['detail_qty'][$i] : null;
-            if ($zqty <> 0 || ($afkir->id == $data['pengeluaranstok_id'])) {
+            if ($zqty <> 0 || ($afkir->id == $data['pengeluaranstok_id']) || ($korv->id == $data['pengeluaranstok_id'])) {
 
 
 
@@ -1921,6 +1921,7 @@ class PengeluaranStokHeader extends MyModel
                     'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
 
                     'bank_id' => $bank,
+                    'nowarkat' => "",
                     'supplier_id' => $data['supplier_id'],
                     'hutang_nobukti' => [$hutang->nobukti],
                     'statusapproval' => $statusApproval->id ?? 0,
@@ -2640,6 +2641,7 @@ class PengeluaranStokHeader extends MyModel
                     'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
 
                     'bank_id' => $data['bank_id'],
+                    'nowarkat' => "",
                     'supplier_id' => $data['supplier_id'],
                     'hutang_nobukti' => [$hutang->nobukti],
                     'statusapproval' => $statusApproval->id ?? 0,

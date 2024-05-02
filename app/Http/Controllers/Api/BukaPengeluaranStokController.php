@@ -45,11 +45,13 @@ class BukaPengeluaranStokController extends Controller
             ];
             /* Store header */
             $bukaPengeluaranStok = (new BukaPengeluaranStok())->processStore($data);
-            /* Set position and page */
-            $bukaPengeluaranStok->position = $this->getPosition($bukaPengeluaranStok, $bukaPengeluaranStok->getTable())->position;
-            $bukaPengeluaranStok->page = ceil($bukaPengeluaranStok->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->button == 'btnSubmit') {
+                /* Set position and page */
+                $bukaPengeluaranStok->position = $this->getPosition($bukaPengeluaranStok, $bukaPengeluaranStok->getTable())->position;
                 $bukaPengeluaranStok->page = ceil($bukaPengeluaranStok->position / ($request->limit ?? 10));
+                if (isset($request->limit)) {
+                    $bukaPengeluaranStok->page = ceil($bukaPengeluaranStok->position / ($request->limit ?? 10));
+                }
             }
 
             DB::commit();

@@ -59,14 +59,16 @@ class OpnameHeaderController extends Controller
                 'qtyfisik' => $requestData['qtyfisik']
             ];
             $opnameHeader = (new OpnameHeader())->processStore($data);
-            $opnameHeader->position = $this->getPosition($opnameHeader, $opnameHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $opnameHeader->page = ceil($opnameHeader->position / (10));
-            } else {
-                $opnameHeader->page = ceil($opnameHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $opnameHeader->position = $this->getPosition($opnameHeader, $opnameHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $opnameHeader->page = ceil($opnameHeader->position / (10));
+                } else {
+                    $opnameHeader->page = ceil($opnameHeader->position / ($request->limit ?? 10));
+                }
+                $opnameHeader->tgldariheader = date('Y-m-01', strtotime($request->tglbukti));
+                $opnameHeader->tglsampaiheader = date('Y-m-t', strtotime($request->tglbukti));
             }
-            $opnameHeader->tgldariheader = date('Y-m-01', strtotime($request->tglbukti));
-            $opnameHeader->tglsampaiheader = date('Y-m-t', strtotime($request->tglbukti));
             DB::commit();
 
             return response()->json([
