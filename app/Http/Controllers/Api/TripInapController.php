@@ -51,11 +51,13 @@ class TripInapController extends Controller
             ];
 
             $tripInap = (new TripInap())->processStore($data);
-            $tripInap->position = $this->getPosition($tripInap, $tripInap->getTable())->position;
-            if ($request->limit == 0) {
-                $tripInap->page = ceil($tripInap->position / (10));
-            } else {
-                $tripInap->page = ceil($tripInap->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $tripInap->position = $this->getPosition($tripInap, $tripInap->getTable())->position;
+                if ($request->limit == 0) {
+                    $tripInap->page = ceil($tripInap->position / (10));
+                } else {
+                    $tripInap->page = ceil($tripInap->position / ($request->limit ?? 10));
+                }
             }
 
             DB::commit();
@@ -275,7 +277,7 @@ class TripInapController extends Controller
             ];
             return response($data);
         }
-        
+
         $status = $pengajuan->statusapproval;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();

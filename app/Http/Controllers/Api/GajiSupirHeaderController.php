@@ -138,14 +138,15 @@ class GajiSupirHeaderController extends Controller
             $gajiSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $gajiSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
-            $gajiSupirHeader->position = $this->getPosition($gajiSupirHeader, $gajiSupirHeader->getTable())->position;
+            if ($request->button == 'btnSubmit') {
+                $gajiSupirHeader->position = $this->getPosition($gajiSupirHeader, $gajiSupirHeader->getTable())->position;
 
-            if ($request->limit == 0) {
-                $gajiSupirHeader->page = ceil($gajiSupirHeader->position / (10));
-            } else {
-                $gajiSupirHeader->page = ceil($gajiSupirHeader->position / ($request->limit ?? 10));
+                if ($request->limit == 0) {
+                    $gajiSupirHeader->page = ceil($gajiSupirHeader->position / (10));
+                } else {
+                    $gajiSupirHeader->page = ceil($gajiSupirHeader->position / ($request->limit ?? 10));
+                }
             }
-
             DB::commit();
 
             return response()->json([
@@ -411,13 +412,13 @@ class GajiSupirHeaderController extends Controller
 
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
-        
+
         $parameter = new Parameter();
 
-        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
-        $tgltutup=date('Y-m-d', strtotime($tgltutup));        
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
 
-        $aksi=$request->aksi ?? '';
+        $aksi = $request->aksi ?? '';
         $user = auth('api')->user()->name;
         $useredit = $gajisupir->editing_by ?? '';
 
@@ -435,7 +436,7 @@ class GajiSupirHeaderController extends Controller
             return response($data);
         } else if ($tgltutup >= $gajisupir->tglbukti) {
             $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
-            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
                 'message' => $keterror,
@@ -445,7 +446,7 @@ class GajiSupirHeaderController extends Controller
 
             return response($data);
         } else if ($useredit != '' && $useredit != $user) {
-           
+
             $waktu = (new Parameter())->cekBatasWaktuEdit('gaji supir header BUKTI');
 
             $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($gajisupir->editing_at)));
@@ -475,13 +476,12 @@ class GajiSupirHeaderController extends Controller
                 ];
 
                 return response($data);
-            }            
-            
+            }
         } else {
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                 (new MyModel())->updateEditingBy('gajisupirheader', $id, $aksi);
             }
-            
+
             $data = [
                 'error' => false,
                 'message' => '',
@@ -720,7 +720,7 @@ class GajiSupirHeaderController extends Controller
      */
     public function approvalkirimberkas()
     {
-    }    
+    }
 
     /**
      * @ClassName 

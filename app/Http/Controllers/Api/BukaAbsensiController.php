@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 class BukaAbsensiController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -42,25 +42,27 @@ class BukaAbsensiController extends Controller
         try {
 
 
-            $data =[
+            $data = [
                 'tglabsensi' => date('Y-m-d', strtotime($request->tglabsensi)),
                 'user_id' => $request->user_id
             ];
             /* Store header */
             $bukaAbsensi = (new BukaAbsensi())->processStore($data);
-            /* Set position and page */
-            $bukaAbsensi->position = $this->getPosition($bukaAbsensi, $bukaAbsensi->getTable())->position;
-            if ($request->limit == 0) {
-                $bukaAbsensi->page = ceil($bukaAbsensi->position / (10));
-            } else {
-                $bukaAbsensi->page = ceil($bukaAbsensi->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                /* Set position and page */
+                $bukaAbsensi->position = $this->getPosition($bukaAbsensi, $bukaAbsensi->getTable())->position;
+                if ($request->limit == 0) {
+                    $bukaAbsensi->page = ceil($bukaAbsensi->position / (10));
+                } else {
+                    $bukaAbsensi->page = ceil($bukaAbsensi->position / ($request->limit ?? 10));
+                }
             }
 
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $bukaAbsensi
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -71,7 +73,7 @@ class BukaAbsensiController extends Controller
     /**
      * @ClassName
      */
-    public function show(BukaAbsensi $bukaAbsensi,$id)
+    public function show(BukaAbsensi $bukaAbsensi, $id)
     {
         $bukaAbsensi = new BukaAbsensi();
         return response([
@@ -83,15 +85,15 @@ class BukaAbsensiController extends Controller
         ]);
     }
 
-       /**
+    /**
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateBukaAbsensiRequest $request, BukaAbsensi $bukaAbsensi,$id)
+    public function update(UpdateBukaAbsensiRequest $request, BukaAbsensi $bukaAbsensi, $id)
     {
         DB::beginTransaction();
         try {
-            $data =[
+            $data = [
                 'tglabsensi' => date('Y-m-d', strtotime($request->tglabsensi))
             ];
             /* Store header */
@@ -107,7 +109,7 @@ class BukaAbsensiController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $bukaAbsensi
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -118,7 +120,7 @@ class BukaAbsensiController extends Controller
      * @ClassName
      * @Keterangan PERBARUI BATAS TANGGAL
      */
-    public function updateTanggalBatas(ApprovalKaryawanRequest $request,ApprovalAbsensiFinalRequest $request1)
+    public function updateTanggalBatas(ApprovalKaryawanRequest $request, ApprovalAbsensiFinalRequest $request1)
     {
         DB::beginTransaction();
         try {
@@ -126,12 +128,12 @@ class BukaAbsensiController extends Controller
                 'id' => $request->Id
             ];
             $bukaAbsensi = (new BukaAbsensi())->processTanggalBatasUpdate($data);
-        
+
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $bukaAbsensi
-            ], 200);    
+            ], 200);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -160,7 +162,7 @@ class BukaAbsensiController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $bukaAbsensi
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

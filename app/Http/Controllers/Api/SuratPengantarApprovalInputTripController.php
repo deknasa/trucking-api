@@ -17,7 +17,7 @@ use App\Http\Requests\RequestValidasiTanggalTrip;
 
 class SuratPengantarApprovalInputTripController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -49,9 +49,9 @@ class SuratPengantarApprovalInputTripController extends Controller
      * @ClassName 
      * @Keterangan TAMBAH DATA
      */
-    public function store(StoreSuratPengantarApprovalInputTripRequest $request,ApprovalAbsensiFinalTripRequest $request1): JsonResponse
+    public function store(StoreSuratPengantarApprovalInputTripRequest $request, ApprovalAbsensiFinalTripRequest $request1): JsonResponse
     {
-        
+
         DB::beginTransaction();
         try {
             $data = [
@@ -61,11 +61,13 @@ class SuratPengantarApprovalInputTripController extends Controller
                 'user_id' => $request->user_id,
             ];
             $approvalTrip = (new SuratPengantarApprovalInputTrip())->processStore($data);
-            $approvalTrip->position = $this->getPosition($approvalTrip, $approvalTrip->getTable())->position;
-            if ($request->limit==0) {
-                $approvalTrip->page = ceil($approvalTrip->position / (10));
-            } else {
-                $approvalTrip->page = ceil($approvalTrip->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $approvalTrip->position = $this->getPosition($approvalTrip, $approvalTrip->getTable())->position;
+                if ($request->limit == 0) {
+                    $approvalTrip->page = ceil($approvalTrip->position / (10));
+                } else {
+                    $approvalTrip->page = ceil($approvalTrip->position / ($request->limit ?? 10));
+                }
             }
             DB::commit();
 
@@ -92,7 +94,7 @@ class SuratPengantarApprovalInputTripController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateSuratPengantarApprovalInputTripRequest $request, SuratPengantarApprovalInputTrip $suratpengantarapprovalinputtrip,ApprovalAbsensiFinalTripRequest $request1): JsonResponse
+    public function update(UpdateSuratPengantarApprovalInputTripRequest $request, SuratPengantarApprovalInputTrip $suratpengantarapprovalinputtrip, ApprovalAbsensiFinalTripRequest $request1): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -104,7 +106,7 @@ class SuratPengantarApprovalInputTripController extends Controller
             ];
             $approvalBukaTanggal = (new SuratPengantarApprovalInputTrip())->processUpdate($suratpengantarapprovalinputtrip, $data);
             $approvalBukaTanggal->position = $this->getPosition($approvalBukaTanggal, $approvalBukaTanggal->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $approvalBukaTanggal->page = ceil($approvalBukaTanggal->position / (10));
             } else {
                 $approvalBukaTanggal->page = ceil($approvalBukaTanggal->position / ($request->limit ?? 10));
@@ -134,7 +136,7 @@ class SuratPengantarApprovalInputTripController extends Controller
             $selected = $this->getPosition($approvalBukaTanggal, $approvalBukaTanggal->getTable(), true);
             $approvalBukaTanggal->position = $selected->position;
             $approvalBukaTanggal->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $approvalBukaTanggal->page = ceil($approvalBukaTanggal->position / (10));
             } else {
                 $approvalBukaTanggal->page = ceil($approvalBukaTanggal->position / ($request->limit ?? 10));
@@ -165,14 +167,14 @@ class SuratPengantarApprovalInputTripController extends Controller
     public function validasiTanggalTrip(RequestValidasiTanggalTrip $request)
     {
         $suratPengantarApprovalInputTrip = new SuratPengantarApprovalInputTrip;
-        $data = $suratPengantarApprovalInputTrip->validasiTanggalTrip(date('Y-m-d',strtotime($request->tglbukti)));
+        $data = $suratPengantarApprovalInputTrip->validasiTanggalTrip(date('Y-m-d', strtotime($request->tglbukti)));
         return response([
             'status' => $data['status'],
             'keterangan' => $data['keterangan']
         ]);
     }
 
-    
+
     public function fieldLength()
     {
         $data = [];
@@ -203,7 +205,7 @@ class SuratPengantarApprovalInputTripController extends Controller
             throw $th;
         }
     }
-    
+
     public function cekvalidasi($id)
     {
         $aksi = request()->aksi;
