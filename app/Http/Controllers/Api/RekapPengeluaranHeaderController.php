@@ -61,15 +61,16 @@ class RekapPengeluaranHeaderController extends Controller
                 'nominal' => $request->nominal
             ];
             $rekapPengeluaranHeader = (new RekapPengeluaranHeader())->processStore($data);
-            $rekapPengeluaranHeader->position = $this->getPosition($rekapPengeluaranHeader, $rekapPengeluaranHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / (10));
-            } else {
-                $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $rekapPengeluaranHeader->position = $this->getPosition($rekapPengeluaranHeader, $rekapPengeluaranHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / (10));
+                } else {
+                    $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / ($request->limit ?? 10));
+                }
+                $rekapPengeluaranHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $rekapPengeluaranHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $rekapPengeluaranHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $rekapPengeluaranHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-
             DB::commit();
 
             return response()->json([
@@ -207,8 +208,8 @@ class RekapPengeluaranHeaderController extends Controller
         $user = auth('api')->user()->name;
         $useredit = $pengeluaran->editing_by ?? '';
 
-        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
-        $tgltutup=date('Y-m-d', strtotime($tgltutup));
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
 
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
@@ -235,7 +236,7 @@ class RekapPengeluaranHeaderController extends Controller
             return response($data);
         } else if ($tgltutup >= $pengeluaran->tglbukti) {
             $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
-            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
                 'message' => $keterror,
@@ -273,8 +274,7 @@ class RekapPengeluaranHeaderController extends Controller
                 ];
 
                 return response($data);
-            }            
-            
+            }
         } else {
             (new MyModel())->updateEditingBy('rekappengeluaranheader', $id, $aksi);
 
@@ -374,7 +374,7 @@ class RekapPengeluaranHeaderController extends Controller
     public function approvalbukacetak()
     {
     }
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL KIRIM BERKAS
      */

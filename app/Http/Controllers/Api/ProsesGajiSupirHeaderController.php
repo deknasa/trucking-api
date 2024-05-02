@@ -131,15 +131,16 @@ class ProsesGajiSupirHeaderController extends Controller
             ];
 
             $prosesGajiSupirHeader = (new ProsesGajiSupirHeader())->processStore($data);
-            $prosesGajiSupirHeader->position = $this->getPosition($prosesGajiSupirHeader, $prosesGajiSupirHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / (10));
-            } else {
-                $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $prosesGajiSupirHeader->position = $this->getPosition($prosesGajiSupirHeader, $prosesGajiSupirHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / (10));
+                } else {
+                    $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / ($request->limit ?? 10));
+                }
+                $prosesGajiSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $prosesGajiSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $prosesGajiSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $prosesGajiSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-
             DB::commit();
 
             return response()->json([
