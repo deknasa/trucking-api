@@ -64,15 +64,16 @@ class ServiceOutHeaderController extends Controller
             ];
 
             $serviceOutHeader = (new ServiceOutHeader())->processStore($data);
-            $serviceOutHeader->position = $this->getPosition($serviceOutHeader, $serviceOutHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $serviceOutHeader->page = ceil($serviceOutHeader->position / (10));
-            } else {
-                $serviceOutHeader->page = ceil($serviceOutHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $serviceOutHeader->position = $this->getPosition($serviceOutHeader, $serviceOutHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $serviceOutHeader->page = ceil($serviceOutHeader->position / (10));
+                } else {
+                    $serviceOutHeader->page = ceil($serviceOutHeader->position / ($request->limit ?? 10));
+                }
+                $serviceOutHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $serviceOutHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $serviceOutHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $serviceOutHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-
             DB::commit();
 
             return response()->json([

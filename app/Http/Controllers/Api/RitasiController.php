@@ -71,15 +71,16 @@ class RitasiController extends Controller
                 'sampai_id' => $request->sampai_id,
             ];
             $ritasi = (new Ritasi())->processStore($data);
-            $ritasi->position = $this->getPosition($ritasi, $ritasi->getTable())->position;
-            if ($request->limit==0) {
-                $ritasi->page = ceil($ritasi->position / (10));
-            } else {
-                $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $ritasi->position = $this->getPosition($ritasi, $ritasi->getTable())->position;
+                if ($request->limit==0) {
+                    $ritasi->page = ceil($ritasi->position / (10));
+                } else {
+                    $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
+                }
+                $ritasi->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $ritasi->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $ritasi->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $ritasi->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
             DB::commit();
 
             return response()->json([
