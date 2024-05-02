@@ -79,15 +79,17 @@ class HutangHeaderController extends Controller
             ];
             /* Store header */
             $hutangHeader = (new HutangHeader())->processStore($data);
-            /* Set position and page */
-            $hutangHeader->position = $this->getPosition($hutangHeader, $hutangHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $hutangHeader->page = ceil($hutangHeader->position / (10));
-            } else {
-                $hutangHeader->page = ceil($hutangHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                /* Set position and page */
+                $hutangHeader->position = $this->getPosition($hutangHeader, $hutangHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $hutangHeader->page = ceil($hutangHeader->position / (10));
+                } else {
+                    $hutangHeader->page = ceil($hutangHeader->position / ($request->limit ?? 10));
+                }
+                $hutangHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $hutangHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $hutangHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $hutangHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
 
             DB::commit();

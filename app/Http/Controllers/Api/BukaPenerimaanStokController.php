@@ -45,11 +45,13 @@ class BukaPenerimaanStokController extends Controller
             ];
             /* Store header */
             $bukaPenerimaanStok = (new BukaPenerimaanStok())->processStore($data);
-            /* Set position and page */
-            $bukaPenerimaanStok->position = $this->getPosition($bukaPenerimaanStok, $bukaPenerimaanStok->getTable())->position;
-            $bukaPenerimaanStok->page = ceil($bukaPenerimaanStok->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->button == 'btnSubmit') {
+                /* Set position and page */
+                $bukaPenerimaanStok->position = $this->getPosition($bukaPenerimaanStok, $bukaPenerimaanStok->getTable())->position;
                 $bukaPenerimaanStok->page = ceil($bukaPenerimaanStok->position / ($request->limit ?? 10));
+                if (isset($request->limit)) {
+                    $bukaPenerimaanStok->page = ceil($bukaPenerimaanStok->position / ($request->limit ?? 10));
+                }
             }
 
             DB::commit();

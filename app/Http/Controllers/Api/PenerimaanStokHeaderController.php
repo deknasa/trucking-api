@@ -121,15 +121,17 @@ class PenerimaanStokHeaderController extends Controller
             $penerimaanStokHeader = (new PenerimaanStokHeader())->processStore($data);
 
 
-            /* Set position and page */
-            $penerimaanStokHeader->position = $this->getPosition($penerimaanStokHeader, $penerimaanStokHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / (10));
-            } else {
-                $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                /* Set position and page */
+                $penerimaanStokHeader->position = $this->getPosition($penerimaanStokHeader, $penerimaanStokHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / (10));
+                } else {
+                    $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
+                }
+                $penerimaanStokHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $penerimaanStokHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $penerimaanStokHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $penerimaanStokHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
             DB::commit();
             return response()->json([
