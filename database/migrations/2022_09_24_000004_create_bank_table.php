@@ -27,6 +27,7 @@ class CreateBankTable extends Migration
             $table->integer('statusaktif')->length(11)->nullable();
             $table->integer('formatpenerimaan')->length(11)->nullable();
             $table->integer('formatpengeluaran')->length(11)->nullable();
+            $table->integer('formatcetakan')->length(11)->nullable();
             $table->unsignedBigInteger('tas_id')->nullable();
             $table->longText('info')->nullable();
             $table->string('editing_by',50)->nullable();            
