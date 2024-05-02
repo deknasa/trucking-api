@@ -118,14 +118,16 @@ class ProsesUangJalanSupirHeaderController extends Controller
             ];
 
             $prosesUangJalanSupir = (new ProsesUangJalanSupirHeader())->processStore($data);
-            $prosesUangJalanSupir->position = $this->getPosition($prosesUangJalanSupir, $prosesUangJalanSupir->getTable())->position;
-            if ($request->limit == 0) {
-                $prosesUangJalanSupir->page = ceil($prosesUangJalanSupir->position / (10));
-            } else {
-                $prosesUangJalanSupir->page = ceil($prosesUangJalanSupir->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $prosesUangJalanSupir->position = $this->getPosition($prosesUangJalanSupir, $prosesUangJalanSupir->getTable())->position;
+                if ($request->limit == 0) {
+                    $prosesUangJalanSupir->page = ceil($prosesUangJalanSupir->position / (10));
+                } else {
+                    $prosesUangJalanSupir->page = ceil($prosesUangJalanSupir->position / ($request->limit ?? 10));
+                }
+                $prosesUangJalanSupir->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $prosesUangJalanSupir->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $prosesUangJalanSupir->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $prosesUangJalanSupir->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
             DB::commit();
 

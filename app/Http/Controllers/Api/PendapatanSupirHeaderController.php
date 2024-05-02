@@ -85,14 +85,16 @@ class PendapatanSupirHeaderController extends Controller
             ];
 
             $pendapatanSupirHeader = (new PendapatanSupirHeader())->processStore($data);
-            $pendapatanSupirHeader->position = $this->getPosition($pendapatanSupirHeader, $pendapatanSupirHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / (10));
-            } else {
-                $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $pendapatanSupirHeader->position = $this->getPosition($pendapatanSupirHeader, $pendapatanSupirHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / (10));
+                } else {
+                    $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / ($request->limit ?? 10));
+                }
+                $pendapatanSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $pendapatanSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $pendapatanSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $pendapatanSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
             DB::commit();
 

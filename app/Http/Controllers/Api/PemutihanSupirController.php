@@ -148,14 +148,16 @@ class PemutihanSupirController extends Controller
             ];
 
             $pemutihanSupir = (new PemutihanSupir())->processUpdate($pemutihansupir, $data);
-            $pemutihanSupir->position = $this->getPosition($pemutihanSupir, $pemutihanSupir->getTable())->position;
-            if ($request->limit == 0) {
-                $pemutihanSupir->page = ceil($pemutihanSupir->position / (10));
-            } else {
-                $pemutihanSupir->page = ceil($pemutihanSupir->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $pemutihanSupir->position = $this->getPosition($pemutihanSupir, $pemutihanSupir->getTable())->position;
+                if ($request->limit == 0) {
+                    $pemutihanSupir->page = ceil($pemutihanSupir->position / (10));
+                } else {
+                    $pemutihanSupir->page = ceil($pemutihanSupir->position / ($request->limit ?? 10));
+                }
+                $pemutihanSupir->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $pemutihanSupir->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $pemutihanSupir->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $pemutihanSupir->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
             DB::commit();
 

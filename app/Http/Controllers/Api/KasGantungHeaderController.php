@@ -101,14 +101,16 @@ class KasGantungHeaderController extends Controller
 
 
             $kasgantungHeader = (new KasGantungHeader())->processStore($data);
-            $kasgantungHeader->position = $this->getPosition($kasgantungHeader, $kasgantungHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $kasgantungHeader->page = ceil($kasgantungHeader->position / (10));
-            } else {
-                $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $kasgantungHeader->position = $this->getPosition($kasgantungHeader, $kasgantungHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $kasgantungHeader->page = ceil($kasgantungHeader->position / (10));
+                } else {
+                    $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
+                }
+                $kasgantungHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $kasgantungHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $kasgantungHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $kasgantungHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
             DB::commit();
 
