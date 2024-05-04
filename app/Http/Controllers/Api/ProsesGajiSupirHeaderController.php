@@ -262,6 +262,7 @@ class ProsesGajiSupirHeaderController extends Controller
 
     public function getRic(GetRicRequest $request)
     {
+        // dd('test');
         $gajiSupir = new ProsesGajiSupirHeader();
         $dari = date('Y-m-d', strtotime(request()->tgldari));
         $sampai = date('Y-m-d', strtotime(request()->tglsampai));
@@ -271,9 +272,19 @@ class ProsesGajiSupirHeaderController extends Controller
             ->whereRaw("tglbukti <= '$sampai'")
             ->first();
 
+        $cekRicsaldo = db::table("saldogajisupirheader")->from(DB::raw("saldogajisupirheader with (readuncommitted)"))
+            ->whereRaw("tglbukti >= '$dari'")
+            ->whereRaw("tglbukti <= '$sampai'")
+            ->first();
+
         //CEK APAKAH ADA RIC
-        if ($cekRic) {
-            $nobukti = $cekRic->nobukti;
+        if (isset($cekRic) || isset($cekRicsaldo)) {
+            if (isset($cekRic)) {
+                $nobukti = $cekRic->nobukti ?? '';
+            } else {
+                $nobukti = $cekRicsaldo->nobukti ?? '';
+            }
+            
             $cekEBS = ProsesGajiSupirDetail::from(DB::raw("prosesgajisupirdetail with (readuncommitted)"))
                 ->whereRaw("gajisupir_nobukti = '$nobukti'")->first();
 

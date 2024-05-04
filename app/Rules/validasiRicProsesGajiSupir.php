@@ -36,7 +36,9 @@ class validasiRicProsesGajiSupir implements Rule
         for ($i = 0; $i < count($dataric['nobuktiRIC']); $i++) {
             $ric = $dataric['nobuktiRIC'][$i];
             $cekRic = DB::table("gajisupirheader")->from(DB::raw("gajisupirheader with (readuncommitted)"))->where('nobukti', $ric)->first();
-            if ($cekRic == '') {
+            $cekRicsaldo = DB::table("saldogajisupirheader")->from(DB::raw("saldogajisupirheader with (readuncommitted)"))->where('nobukti', $ric)->first();
+
+            if ($cekRic == '' && $cekRicsaldo == '') {
                 // $cekSaldoRic = DB::table("saldogajisupirheader")->from(DB::raw("saldogajisupirheader with (readuncommitted)"))->where('nobukti', $ric)->first();
 
                 // if ($cekSaldoRic == '') {
