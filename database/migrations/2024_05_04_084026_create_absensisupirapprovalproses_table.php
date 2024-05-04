@@ -21,6 +21,7 @@ class CreateAbsensisupirapprovalprosesTable extends Migration
             $table->string('coakaskeluar', 50)->nullable();            
             $table->longText('keterangan')->nullable();
             $table->double('nominal', 15, 2)->nullable();      
+            $table->unsignedBigInteger('statusjeniskendaraan')->nullable();                 
             $table->longText('info')->nullable();
             $table->string('modifiedby', 200)->nullable();                  
             $table->timestamps();

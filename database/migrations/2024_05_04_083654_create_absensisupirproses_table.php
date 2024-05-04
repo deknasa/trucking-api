@@ -20,6 +20,7 @@ class CreateAbsensisupirprosesTable extends Migration
             $table->string('kasgantung_nobukti', 50)->nullable();
             $table->longText('keterangan')->nullable();
             $table->double('nominal', 15, 2)->nullable();
+            $table->unsignedBigInteger('statusjeniskendaraan')->nullable();            
             $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
