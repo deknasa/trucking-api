@@ -27,6 +27,7 @@ class CreateSuratpengantarTable extends Migration
             $table->longText('keterangan')->nullable();
             $table->bigInteger('nourutorder')->nullable();
             $table->unsignedBigInteger('upah_id')->nullable();
+            $table->unsignedBigInteger('upahtangki_id')->nullable();
             $table->unsignedBigInteger('dari_id')->nullable();
             $table->unsignedBigInteger('sampai_id')->nullable();
             $table->longText('penyesuaian')->nullable();
@@ -54,6 +55,7 @@ class CreateSuratpengantarTable extends Migration
             $table->unsignedBigInteger('jenisorderemkl_id')->nullable();
             $table->integer('statusperalihan')->length(11)->nullable();
             $table->unsignedBigInteger('tarif_id')->nullable();
+            $table->unsignedBigInteger('tariftangki_id')->nullable();
             $table->decimal('nominalperalihan', 15, 2)->nullable();
             $table->decimal('persentaseperalihan', 15, 2)->nullable();
             $table->unsignedBigInteger('biayatambahan_id')->nullable();
@@ -104,6 +106,7 @@ class CreateSuratpengantarTable extends Migration
             $table->string('userapprovalbiayatitipanemkl', 50)->nullable();
             $table->date('tglapprovalbiayatitipanemkl')->nullable();
             $table->date('tglbatasbiayatitipanemkl')->nullable();
+            $table->integer('statusjeniskendaraan')->Length(11)->nullable();            
             $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->string('editing_by',50)->nullable();            
