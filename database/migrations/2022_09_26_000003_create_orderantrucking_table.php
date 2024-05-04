@@ -52,6 +52,7 @@ class CreateOrderantruckingTable extends Migration
             $table->string('userapprovaltanpajob',50)->nullable();
             $table->dateTime('tglbatastanpajoborderantrucking')->nullable();            
             $table->unsignedBigInteger('statusformat')->nullable();
+            $table->integer('statusjeniskendaraan')->Length(11)->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->string('editing_by',50)->nullable();            
