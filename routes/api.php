@@ -306,6 +306,7 @@ use App\Http\Controllers\Api\ApprovalBukaTanggalSuratPengantarController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
 use App\Http\Controllers\Api\LaporanArusDanaPusatController;
+use App\Http\Controllers\Api\TripTangkiController;
 
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
@@ -381,6 +382,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('jenisorder', JenisOrderController::class)->whereNumber('jenisorder');
     Route::resource('statuscontainer', StatusContainerController::class)->parameters(['statuscontainer' => 'statusContainer'])->whereNumber('statusContainer');
     Route::resource('container', ContainerController::class)->whereNumber('container');
+    Route::resource('triptangki', TripTangkiController::class)->whereNumber('triptangki');
     Route::resource('qtytambahgantioli', QtyTambahGantiOliController::class)->whereNumber('qtytambahgantioli');
     Route::resource('tarifdiscountharga', TarifDiscountHargaController::class)->whereNumber('tarifdiscountharga');
     Route::resource('tarifhargatertentu', TarifHargaTertentuController::class)->whereNumber('tarifhargatertentu');
@@ -510,6 +512,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('kerusakan/approvalnonaktif', [KerusakanController::class, 'approvalnonaktif']);
     Route::post('mandor/approvalnonaktif', [MandorController::class, 'approvalnonaktif']);
     Route::post('container/approvalnonaktif', [ContainerController::class, 'approvalnonaktif']);
+    Route::post('triptangki/approvalnonaktif', [TripTangkiController::class, 'approvalnonaktif']);
     Route::post('qtytambahgantioli/approvalnonaktif', [QtyTambahGantiOliController::class, 'approvalnonaktif']);
     Route::post('statuscontainer/approvalnonaktif', [StatusContainerController::class, 'approvalnonaktif']);
     Route::post('kota/approvalnonaktif', [KotaController::class, 'approvalnonaktif']);
@@ -2030,6 +2033,12 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporanarusdanapusat/report', [LaporanArusDanaPusatController::class, 'report'])->name('laporanarusdanapusat.report');
     Route::get('laporanarusdanapusat/export', [LaporanArusDanaPusatController::class, 'export'])->name('laporanarusdanapusat.export');
     Route::resource('laporanarusdanapusat', LaporanArusDanaPusatController::class)->whereNumber('laporanarusdanapusat');
+    
+    Route::get('triptangki/field_length', [TripTangkiController::class, 'fieldLength']);
+    Route::get('triptangki/default', [TripTangkiController::class, 'default']);
+    Route::post('triptangki/{id}/cekValidasi', [TripTangkiController::class, 'cekValidasi'])->name('triptangki.cekValidasi')->whereNumber('id');
+    Route::get('triptangki/export', [TripTangkiController::class, 'export']);
+    Route::get('triptangki/report', [TripTangkiController::class, 'report']);
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);
 
