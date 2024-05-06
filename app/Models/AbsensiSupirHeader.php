@@ -1015,6 +1015,7 @@ class AbsensiSupirHeader extends MyModel
                 'keterangan' => $data['keterangan_detail'][$i],
                 'uangjalan' => $data['uangjalan'][$i],
                 'absen_id' => $data['absen_id'][$i] ?? '',
+                'statusjeniskendaraan' => $data['statusjeniskendaraan'][$i] ?? '',
                 'jam' => $data['jam'][$i],
                 'modifiedby' => $absensiSupir->modifiedby,
             ]);
@@ -1165,6 +1166,7 @@ class AbsensiSupirHeader extends MyModel
                 'keterangan' => $data['keterangan_detail'][$i],
                 'uangjalan' => $data['uangjalan'][$i],
                 'absen_id' => $data['absen_id'][$i] ?? '',
+                'statusjeniskendaraan' => $data['statusjeniskendaraan'][$i] ?? '',
                 'jam' => $data['jam'][$i],
                 'modifiedby' => $absensiSupir->modifiedby,
             ]);
