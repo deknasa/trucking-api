@@ -305,6 +305,7 @@ use App\Http\Controllers\Api\SuratPengantarApprovalInputTripController;
 use App\Http\Controllers\Api\ApprovalBukaTanggalSuratPengantarController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
+use App\Http\Controllers\Api\LaporanArusDanaPusatController;
 
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
@@ -642,6 +643,7 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::get('orderantrucking/get', [OrderanTruckingController::class, 'getForLookup']);
     Route::get('prosesuangjalansupirheader/default', [ProsesUangJalanSupirHeaderController::class, 'default']);
+    Route::get('laporanarusdanapusat/mingguan', [LaporanArusDanaPusatController::class, 'mingguan']);
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
@@ -2024,6 +2026,10 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('exportperhitunganbonus/report', [ExportPerhitunganBonusController::class, 'report'])->name('exportperhitunganbonus.report');
     Route::get('exportperhitunganbonus/export', [ExportPerhitunganBonusController::class, 'export'])->name('exportperhitunganbonus.export');
     Route::resource('exportperhitunganbonus', ExportPerhitunganBonusController::class);
+
+    Route::get('laporanarusdanapusat/report', [LaporanArusDanaPusatController::class, 'report'])->name('laporanarusdanapusat.report');
+    Route::get('laporanarusdanapusat/export', [LaporanArusDanaPusatController::class, 'export'])->name('laporanarusdanapusat.export');
+    Route::resource('laporanarusdanapusat', LaporanArusDanaPusatController::class)->whereNumber('laporanarusdanapusat');
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);
 
