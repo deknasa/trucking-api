@@ -29,7 +29,7 @@ class CreateUpahsupirtangkirincianTable extends Migration
 
         });
 
-        DB::statement("ALTER TABLE upahsupirtangkirincian NOCHECK CONSTRAINT tangkirincian_triptangki_triptangki_id_foreign");
+        DB::statement("ALTER TABLE upahsupirtangkirincian NOCHECK CONSTRAINT upahsupirtangkirincian_triptangki_triptangki_id_foreign");
 
     }
 
