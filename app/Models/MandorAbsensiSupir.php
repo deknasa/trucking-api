@@ -1603,4 +1603,54 @@ class MandorAbsensiSupir extends MyModel
         $AbsensiSupirDetail->delete();
         return $AbsensiSupirDetail;
     }
+
+    public function processKasgantung($nobukti) {
+        $detail = AbsensiSupirDetail::where('nobukti',$nobukti)
+        ->select(
+            db::raw("statusjeniskendaraan"),
+            db::raw("count(statusjeniskendaraan) as jlh"),
+        )
+        ->groupBy('statusjeniskendaraan')
+        ->get();
+        $jenisKendaraanTangki = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('id','text')->where('grp', 'STATUS JENIS KENDARAAN')->where('subgrp', 'STATUS JENIS KENDARAAN')->where('text', 'TANGKI')->first();
+        
+        $jenisKendaraanGandengan = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('id','text')->where('grp', 'STATUS JENIS KENDARAAN')->where('subgrp', 'STATUS JENIS KENDARAAN')->where('text', 'GANDENGAN')->first();
+        $uangJalanTangki = 0;
+        $rowTotalTangki = 0;
+        $uangJalanGandengan = 0;
+        $rowTotalGandengan = 0;
+        foreach ($detail as $jenis) {
+            if($jenis->statusjeniskendaraan == $jenisKendaraanTangki->id){
+                $prosesTangki = AbsensiSupirProses::where('nobukti',$nobukti)->where('statusjeniskendaraan',$jenisKendaraanTangki->id)->first();
+                if ($prosesTangki) {
+                    $uangJalanTangki = $prosesTangki->nominal;
+                }
+                $rowTotalTangki = $jenis->jlh;
+                
+            }
+            if($jenis->statusjeniskendaraan == $jenisKendaraanGandengan->id){
+                $prosesGandengan = AbsensiSupirProses::where('nobukti',$nobukti)->where('statusjeniskendaraan',$jenisKendaraanGandengan->id)->first();
+                if ($prosesGandengan) {
+                    $uangJalanGandengan = $prosesGandengan->nominal;
+                }
+                $rowTotalGandengan = $jenis->jlh;
+            }
+        }
+        $absensiSupir = AbsensiSupirHeader::where('nobukti',$nobukti)->first();
+
+        $absensiPorsess = [
+            "absensi_id" => $absensiSupir->id,
+            "nobukti" => $absensiSupir->nobukti,
+            "keterangan" => $absensiSupir->keterangan,
+            "uangJalanTangki" => $uangJalanTangki,
+            "rowTotalTangki" => $rowTotalTangki,
+            "storenominalTangki" => false,
+            "keteranganTangki" => "Absensi Supir tgl " . date('Y-m-d', strtotime($absensiSupir->tglbukti)) . " " . $absensiSupir->nobukti. " Tangki",
+            "uangJalanGandengan" => $uangJalanGandengan,
+            "rowTotalGandengan" => $rowTotalGandengan,
+            "storenominalGandengan" => false,
+            "keteranganGandengan" => "Absensi Supir tgl " . date('Y-m-d', strtotime($absensiSupir->tglbukti)) . " " . $absensiSupir->nobukti. " Gandengan",
+        ];
+        $absensiSupirProses = (new AbsensiSupirProses())->processStore($absensiSupir,$absensiPorsess);
+    }
 }

@@ -135,6 +135,12 @@ class MandorAbsensiSupirController extends Controller
 
                 $AbsensiSupirHeader = (new MandorAbsensiSupir())->processStore($insert);
             }
+            $absensiTangki = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'ABSENSI TANGKI')->where('subgrp', 'ABSENSI TANGKI')->first();
+            if ($absensiTangki->text == 'YA') {
+                (new MandorAbsensiSupir())->processKasgantung($AbsensiSupirHeader->nobukti);
+            }
+            
+            // dd($AbsensiSupirHeader->nobukti);
             // $user = auth('api')->user()->name;
             // $class = 'TemporaryAbsensiSupir';
 
