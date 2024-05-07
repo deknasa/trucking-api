@@ -24,6 +24,7 @@ class CreateAbsensisupirapprovaldetailTable extends Migration
             $table->unsignedBigInteger('trado_id')->nullable();
             $table->unsignedBigInteger('supir_id')->nullable();
             $table->unsignedBigInteger('supirserap_id')->nullable();
+            $table->integer('statusjeniskendaraan')->Length(11)->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 200)->nullable();
             $table->timestamps();

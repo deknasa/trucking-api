@@ -196,6 +196,7 @@ class AbsensiSupirApprovalDetail extends MyModel
         $absensiSupirApprovalDetail->nobukti = $data['nobukti'];
         $absensiSupirApprovalDetail->trado_id = $data['trado_id'];
         $absensiSupirApprovalDetail->supir_id = $data['supir_id'] ?? '';
+        $absensiSupirApprovalDetail->statusjeniskendaraan = $data['statusjeniskendaraan'];
         $absensiSupirApprovalDetail->modifiedby = $data['modifiedby'];
 
         if (!$absensiSupirApprovalDetail->save()) {
