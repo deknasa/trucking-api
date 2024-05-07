@@ -566,6 +566,7 @@ class AbsensiSupirHeader extends MyModel
                 DB::raw("(case when supirutama.id IS NULL then 0 else supirutama.id end) as supir_id"),
 
                 'absensisupirheader.kasgantung_nobukti',
+                'absensisupirdetail.statusjeniskendaraan',
             )
             ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirdetail.absensi_id', 'absensisupirheader.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'absensisupirdetail.trado_id', 'trado.id')

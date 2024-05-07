@@ -74,7 +74,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
                 'uangjalan' => $request->uangjalan,
                 'supir_id' => $request->supir_id,
                 'trado_id' => $request->trado_id,
-                'uangjalan' => $request->uangjalan,
+                'statusjeniskendaraan' => $request->statusjeniskendaraan,
             ];
             /* Store header */
             $absensiSupirApprovalHeader = (new AbsensiSupirApprovalHeader())->processStore($data);
