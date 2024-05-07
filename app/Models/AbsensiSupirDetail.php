@@ -1449,21 +1449,7 @@ class AbsensiSupirDetail extends MyModel
 
         $parameter = new Parameter();
         $idstatusnonsupirserap = $parameter->cekId('SUPIR SERAP', 'SUPIR SERAP', 'TIDAK') ?? 0;
-        if ($data['supir_id'] == 65) {
-            dd([
-                'absensi_id' => $data["absensi_id"],
-            'nobukti' => $data["nobukti"],
-            'trado_id' => $data["trado_id"],
-            'supir_id' => $data["supir_id"],
-            'supirold_id' => $data["supirold_id"],
-            'keterangan' => $data["keterangan"],
-            'uangjalan' => $data["uangjalan"],
-            'absen_id' => $data["absen_id"],
-            'statusjeniskendaraan' => $data["statusjeniskendaraan"],
-            'jam' => $data["jam"],
-            'modifiedby' => $data["modifiedby"]
-            ]);
-        }
+
         $absensiSupirDetail = new AbsensiSupirDetail();
         $absensiSupirDetail->absensi_id = $data['absensi_id'] ?? '';
         $absensiSupirDetail->nobukti = $data['nobukti'] ?? '';
