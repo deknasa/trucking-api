@@ -20,6 +20,7 @@ class CreateTariftangkiTable extends Migration
             $table->string('tujuan',200)->nullable();
             $table->longText('penyesuaian')->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
+            $table->unsignedBigInteger('kota_id')->nullable();
             $table->date('tglmulaiberlaku')->nullable();
             $table->integer('statuspenyesuaianharga')->length(11)->nullable();
             $table->integer('statuspostingtnl')->length(11)->nullable();
