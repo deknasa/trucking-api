@@ -54,7 +54,7 @@ class TripTangkiController extends Controller
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
         $useredit = $dataMaster->editing_by ?? '';
-        $aksi = request()->aksi ?? '';
+        $aksi = strtoupper(request()->aksi) ?? '';
         $cekdata = $triptangki->cekvalidasihapus($id);
         if ($cekdata['kondisi'] == true && $aksi != 'EDIT') {
             $keterangan = $error->cekKeteranganError('SATL') ?? '';
@@ -62,7 +62,7 @@ class TripTangkiController extends Controller
             $data = [
                 'status' => false,
                 'message' => $keterangan . " (" . $cekdata['keterangan'] . ")",
-                'errors' => '',
+                'error' => true,
                 'kondisi' => $cekdata['kondisi'],
             ];
 
@@ -80,7 +80,7 @@ class TripTangkiController extends Controller
                 $data = [
                     'status' => false,
                     'message' => '',
-                    'errors' => '',
+                    'error' => true,
                     'kondisi' => false,
                     'editblok' => false,
                 ];
@@ -94,7 +94,7 @@ class TripTangkiController extends Controller
                 $data = [
                     'status' => true,
                     'message' => $keterror,
-                    'errors' => '',
+                    'error' => true,
                     'kondisi' => true,
                     'editblok' => true,
                 ];
@@ -106,7 +106,7 @@ class TripTangkiController extends Controller
             $data = [
                 'status' => false,
                 'message' => '',
-                'errors' => '',
+                'error' => false,
                 'kondisi' => $cekdata['kondisi'],
             ];
 
