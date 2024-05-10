@@ -29,6 +29,29 @@ class AbsensiSupirApprovalHeader extends MyModel
     {
         $this->setRequestParameters();
 
+        $petik ='"';
+        $url = config('app.url_fe').'pengeluaranstokheader';
+        $absensisupirproses = DB::table("absensisupirapprovalproses")
+            ->from(DB::raw("absensisupirapprovalproses with (readuncommitted)"))
+            ->select(
+                DB::raw("
+                absensisupirapprovalproses.absensisupirapproval_id,
+                absensisupirapprovalproses.nobukti,
+                STRING_AGG(absensisupirapprovalproses.pengeluaran_nobukti, ', ') as pengeluaran_nobukti,
+                STRING_AGG('<a href=$petik".$url."?tgldari='+(format(absensisupirapprovalheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(absensisupirapprovalheader.tglbukti,'yyyy-MM')+'-31')+'$petik class=$petik link-color $petik target=$petik _blank $petik title=$petik '+absensisupirapprovalproses.pengeluaran_nobukti+' $petik>'+absensisupirapprovalproses.pengeluaran_nobukti+'</a>', ',') as url"
+                ))
+            ->join(DB::raw("absensisupirapprovalheader with (readuncommitted)"),'absensisupirapprovalproses.absensisupirapproval_id','absensisupirapprovalheader.id')    
+            ->groupBy("absensisupirapprovalproses.absensisupirapproval_id","absensisupirapprovalproses.nobukti");
+
+        $tempurl = '##tempurl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempurl, function ($table) {
+            $table->bigInteger('id')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->longText('pengeluaran_nobukti')->nullable();
+            $table->longText('url')->nullable();
+        }); 
+        DB::table($tempurl)->insertUsing(['id','nobukti', 'pengeluaran_nobukti','url'], $absensisupirproses);
+                
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )->select(
@@ -49,6 +72,8 @@ class AbsensiSupirApprovalHeader extends MyModel
             db::raw("(case when year(isnull(absensisupirapprovalheader.tglbukacetak,'1900/1/1'))=1900 then null else absensisupirapprovalheader.tglbukacetak end) as tglbukacetak"),
             'absensisupirapprovalheader.userbukacetak',
             'absensisupirapprovalheader.jumlahcetak',
+            'proses.pengeluaran_nobukti as pengeluaran',
+            'proses.url as pengeluaran_url',
             'absensisupirapprovalheader.modifiedby',
             'absensisupirapprovalheader.updated_at',
             'absensisupirapprovalheader.created_at',
@@ -64,6 +89,7 @@ class AbsensiSupirApprovalHeader extends MyModel
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'absensisupirapprovalheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirapprovalheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("pengeluaranheader as pengeluaran with (readuncommitted)"), 'absensisupirapprovalheader.pengeluaran_nobukti', '=', 'pengeluaran.nobukti')
+            ->leftJoin(DB::raw("$tempurl as proses with (readuncommitted)"), 'absensisupirapprovalheader.id', '=', 'proses.id')
             ->leftJoin(DB::raw("absensisupirheader as absensisupir with (readuncommitted)"), 'absensisupirapprovalheader.absensisupir_nobukti', '=', 'absensisupir.nobukti')
             ->leftJoin(DB::raw("parameter as statusformat with (readuncommitted)"), 'absensisupirapprovalheader.statusformat', 'statusformat.id');
 

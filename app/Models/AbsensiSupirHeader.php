@@ -78,8 +78,31 @@ class AbsensiSupirHeader extends MyModel
             ->where('a.subgrp', 'STATUS APPROVAL')
             ->where('a.text', 'NON APPROVAL')
             ->first()->memo ?? '';
+        
+        $petik ='"';
+        $url = config('app.url_fe').'kasgantungheader';
 
+        $absensisupirproses = DB::table("absensisupirproses")
+            ->from(DB::raw("absensisupirproses with (readuncommitted)"))
+            ->select(
+                DB::raw("
+                absensisupirproses.absensi_id,
+                absensisupirproses.nobukti,
+                STRING_AGG(absensisupirproses.kasgantung_nobukti, ', ') as kasgantung_nobukti,
+                STRING_AGG('<a href=$petik".$url."?tgldari='+(format(absensisupirheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(absensisupirheader.tglbukti,'yyyy-MM')+'-31')+'$petik class=$petik link-color $petik target=$petik _blank $petik title=$petik '+absensisupirproses.kasgantung_nobukti+' $petik>'+absensisupirproses.kasgantung_nobukti+'</a>', ',') as url"
+                ))
+            ->join(DB::raw("absensisupirheader with (readuncommitted)"),'absensisupirproses.absensi_id','absensisupirheader.id')    
+            ->groupBy("absensisupirproses.absensi_id","absensisupirproses.nobukti");
 
+            $tempurl = '##tempurl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempurl, function ($table) {
+                $table->bigInteger('id')->nullable();
+                $table->string('nobukti', 50)->nullable();
+                $table->longText('kasgantung_nobukti')->nullable();
+                $table->longText('url')->nullable();
+
+            }); 
+            DB::table($tempurl)->insertUsing(['id','nobukti', 'kasgantung_nobukti','url'], $absensisupirproses);
         $query = DB::table($this->table)->from(DB::raw("absensisupirheader with (readuncommitted)"))
             ->select(
                 'absensisupirheader.id',
@@ -95,6 +118,8 @@ class AbsensiSupirHeader extends MyModel
                 'statusapprovalpengajuantripinap.memo as statusapprovalpengajuantripinap',
                 'absensisupirheader.userapprovalpengajuantripinap',
                 'absensisupirheader.userbukacetak',
+                'proses.kasgantung_nobukti as kasgantung',
+                'proses.url as kasgantung_url',
                 'absensisupirheader.jumlahcetak',
                 'absensisupirheader.modifiedby',
                 'absensisupirheader.created_at',
@@ -110,6 +135,7 @@ class AbsensiSupirHeader extends MyModel
             // request()->tgldari ?? date('Y-m-d',strtotime('today'))
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'absensisupirheader.kasgantung_nobukti', '=', 'kasgantungheader.nobukti')
+            ->leftJoin(DB::raw("$tempurl as proses with (readuncommitted)"), 'absensisupirheader.id', '=', 'proses.id')
             ->leftJoin(DB::raw("parameter as statusapprovalpengajuantripinap with (readuncommitted)"), 'absensisupirheader.statusapprovalpengajuantripinap', 'statusapprovalpengajuantripinap.id')
             ->leftJoin(DB::raw("parameter as statusapprovaleditabsensi with (readuncommitted)"), 'absensisupirheader.statusapprovaleditabsensi', 'statusapprovaleditabsensi.id')
             ->leftJoin(DB::raw("parameter as statusapprovalfinalabsensi with (readuncommitted)"), 'absensisupirheader.statusapprovalfinalabsensi', 'statusapprovalfinalabsensi.id');

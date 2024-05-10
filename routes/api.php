@@ -393,6 +393,9 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('shipper', ShipperController::class)->whereNumber('shipper');
     Route::get('upahsupirrincian/get', [UpahSupirRincianController::class, 'get']);
     Route::get('absensisupirdetail/get', [AbsensiSupirDetailController::class, 'getDetailAbsensi']);
+    Route::get('absensisupirproses/get', [AbsensiSupirDetailController::class, 'getProsesKGT']);
+    Route::get('absensisupirapprovalproses/get', [AbsensiSupirApprovalDetailController::class, 'getProsesKBT']);
+    Route::get('absensisupirapprovalproses/getjurnal', [AbsensiSupirApprovalDetailController::class, 'getProsesJurnal']);
     Route::resource('kota', KotaController::class)->whereNumber('kotum');
     Route::resource('gudang', GudangController::class)->whereNumber('gudang');
     Route::resource('kategori', KategoriController::class)->whereNumber('kategori');
