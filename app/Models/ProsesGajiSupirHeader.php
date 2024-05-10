@@ -2355,6 +2355,7 @@ class ProsesGajiSupirHeader extends MyModel
         $coaDebetPengeluaran = [];
         $keteranganDetailPengeluaran = [];
         $totalKBT = 0;
+       
         for ($i = 0; $i < count($data['rincianId']); $i++) {
             $sp = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
                 ->where('supir_id', $data['supir_id'][$i])->first();
@@ -2382,6 +2383,7 @@ class ProsesGajiSupirHeader extends MyModel
             } else {
                 $totalKBT = $totalKBT + $data['totalborongan'][$i];
             }
+        }
 
             $noWarkat[] = '';
             $tglJatuhTempo[] = $data['tglbukti'];
@@ -2985,7 +2987,7 @@ class ProsesGajiSupirHeader extends MyModel
             }
 
             return $prosesGajiSupirHeader;
-        }
+        
     }
 
     public function processUpdate(ProsesGajiSupirHeader $prosesGajiSupirHeader, array $data): ProsesGajiSupirHeader
