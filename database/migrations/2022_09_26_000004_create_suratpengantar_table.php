@@ -32,6 +32,7 @@ class CreateSuratpengantarTable extends Migration
             $table->unsignedBigInteger('sampai_id')->nullable();
             $table->longText('penyesuaian')->nullable();
             $table->unsignedBigInteger('container_id')->nullable();
+            $table->unsignedBigInteger('triptangki_id')->nullable();
             $table->string('nocont', 50)->nullable();
             $table->string('nocont2', 50)->nullable();
             $table->string('noseal', 50)->nullable();
