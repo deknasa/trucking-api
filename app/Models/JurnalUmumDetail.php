@@ -114,6 +114,9 @@ class JurnalUmumDetail extends MyModel
 
     public function getNominal($nobukti)
     {
+        if (!is_array($nobukti)) {
+            $nobukti = [$nobukti];
+        }
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         $jurnalUmumDetail = JurnalUmumDetail::from(
@@ -123,9 +126,7 @@ class JurnalUmumDetail extends MyModel
                 DB::raw("sum((case when jurnalumumdetail.nominal<=0 then 0 else jurnalumumdetail.nominal end)) as nominaldebet"),
                 DB::raw("sum((case when jurnalumumdetail.nominal>=0 then 0 else abs(jurnalumumdetail.nominal) end)) as nominalkredit"),
             )
-            ->where([
-                ['jurnalumumdetail.nobukti', '=', $nobukti]
-            ]);
+            ->whereIn('jurnalumumdetail.nobukti', $nobukti);
 
 
         Schema::create($temp, function ($table) {
@@ -246,7 +247,15 @@ class JurnalUmumDetail extends MyModel
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         $this->paginate($query);
-        $temp = $this->getNominal($nobukti);
+
+        $queryNominal = DB::table($this->table)->from(DB::raw("absensisupirapprovalproses as proses with (readuncommitted) "));
+        $queryNominal
+        ->select('pengeluaran_nobukti')
+        ->groupBy('pengeluaran_nobukti')
+        ->where( "proses.nobukti", "=", $nobukti);
+        $nominal = json_decode(json_encode($queryNominal->get()),true);
+        
+        $temp = $this->getNominal($nominal);
         $tempNominal = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))->select(DB::raw("sum(nominaldebet) as nominaldebet,sum(nominalkredit) as nominalkredit"))->first();
 
         $this->totalNominalDebet = $tempNominal->nominaldebet;
