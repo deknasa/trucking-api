@@ -189,4 +189,43 @@ class PengeluaranDetail extends MyModel
 
         return $pengeluaranDetail;
     }
+
+    
+    public function getProsesKBTAbsensi($nobukti) {
+        $this->setRequestParameters();
+
+        $query = DB::table($this->table)->from(DB::raw("absensisupirapprovalproses as proses with (readuncommitted) "));
+
+        $query->select(
+            "$this->table.pengeluaran_id",
+            "$this->table.nobukti",
+            "$this->table.nowarkat",
+            "$this->table.nominal",
+            "$this->table.keterangan",
+            "$this->table.noinvoice",
+            "$this->table.bank",
+            DB::raw("(case when year(isnull($this->table.bulanbeban,'1900/1/1'))<2000 then null else $this->table.bulanbeban end) as bulanbeban"),
+            DB::raw("(case when year(isnull($this->table.tgljatuhtempo,'1900/1/1'))<2000 then null else $this->table.tgljatuhtempo end) as tgljatuhtempo"),
+            "debet.keterangancoa as coadebet",
+            "kredit.keterangancoa as coakredit",
+
+        )
+        ->leftJoin(DB::raw("$this->table with (readuncommitted)"), 'proses.pengeluaran_nobukti',$this->table.'.nobukti')
+        ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), "$this->table.coadebet", "debet.coa")
+        ->leftJoin(DB::raw("akunpusat as kredit with (readuncommitted)"), "$this->table.coakredit", "kredit.coa");
+        
+
+        
+        $this->sort($query);
+
+        $query->where( "proses.nobukti", "=", $nobukti);
+        $this->filter($query);
+        
+        $this->totalNominal = $query->sum($this->table .'.nominal');
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->paginate($query);
+        return $query->get();
+    }
 }

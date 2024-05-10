@@ -147,4 +147,8 @@ class AbsensiSupirProses extends Model
             AbsensiSupirProses::where('absensi_id', $absensiSupir->id)->lockForUpdate()->delete();
         }
     }
+
+    public function getKgtAbsensi($nobukti) {
+        
+    }
 }

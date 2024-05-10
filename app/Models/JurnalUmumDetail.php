@@ -217,6 +217,44 @@ class JurnalUmumDetail extends MyModel
         return $query->get();
     }
 
+    public function getProsesKBTAbsensi($nobukti)
+    {
+        $this->setRequestParameters();
+        $query = DB::table($this->table)->from(DB::raw("absensisupirapprovalproses as proses with (readuncommitted) "));
+
+        // $query = JurnalUmumDetail::from(
+        //     DB::raw("jurnalumumdetail with (readuncommitted)")
+        // )
+        $query
+            ->select(
+                'jurnalumumdetail.nobukti as nobukti',
+                'jurnalumumdetail.tglbukti as tglbukti',
+                'jurnalumumdetail.coa as coa',
+                'coa.keterangancoa as keterangancoa',
+                DB::raw("(case when jurnalumumdetail.nominal<=0 then 0 else jurnalumumdetail.nominal end) as nominaldebet"),
+                DB::raw("(case when jurnalumumdetail.nominal>=0 then 0 else abs(jurnalumumdetail.nominal) end) as nominalkredit"),
+                'jurnalumumdetail.keterangan as keterangan'
+            )
+            ->leftJoin(DB::raw("$this->table with (readuncommitted)"), 'proses.pengeluaran_nobukti',$this->table.'.nobukti')
+            ->join(DB::raw("akunpusat as coa with (readuncommitted)"), 'coa.coa', 'jurnalumumdetail.coa');
+
+        $this->sort($query);
+        $query->where( "proses.nobukti", "=", $nobukti);
+        $this->filter($query);
+        // dd($query->toSql());
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->paginate($query);
+        $temp = $this->getNominal($nobukti);
+        $tempNominal = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))->select(DB::raw("sum(nominaldebet) as nominaldebet,sum(nominalkredit) as nominalkredit"))->first();
+
+        $this->totalNominalDebet = $tempNominal->nominaldebet;
+        $this->totalNominalKredit = $tempNominal->nominalkredit;
+
+        return $query->get();
+    }
+
     public function jurnalForRetur($nobukti, $statuspotong)
     {
         $this->setRequestParameters();

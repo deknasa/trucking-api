@@ -150,6 +150,38 @@ class KasGantungDetail extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
+    public function getKgtAbsensi($nobuktiAbsensi) {
+
+        $this->setRequestParameters();
+
+        $query = DB::table($this->table)->from(DB::raw("absensisupirproses as proses with (readuncommitted) "));
+
+        $query
+        ->select([
+            $this->table . '.keterangan',
+            $this->table . '.nominal',
+            $this->table . '.nobukti',
+            'akunpusat.keterangancoa as coa',
+        ])
+
+        ->leftJoin(DB::raw("kasgantungdetail with (readuncommitted)"), $this->table.'.nobukti','proses.kasgantung_nobukti')
+        ->leftJoin(
+            DB::raw("akunpusat with (readuncommitted)"),
+            $this->table . '.coa',
+            'akunpusat.coa'
+        );
+        
+        $query->where('proses.nobukti', '=', $nobuktiAbsensi);
+        $this->sort($query);
+        $this->filter($query);
+        $this->paginate($query);
+        $this->totalNominal = $query->sum($this->table . '.nominal');
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        
+        return $query->get();
+    }
+
     public function processStore(KasgantungHeader $kasGantungHeader, array $data) : KasGantungDetail
     {
         $kasgantungDetail = new KasGantungDetail();
