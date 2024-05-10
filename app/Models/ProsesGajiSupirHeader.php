@@ -2366,23 +2366,23 @@ class ProsesGajiSupirHeader extends MyModel
                 $sptrado_id = $sp->trado_id ?? 0;
             } else {
                 $sptrado_id = $saldosp->trado_id ?? 0;
-
-
-                $prosesGajiSupirDetail = (new ProsesGajiSupirDetail())->processStore($prosesGajiSupirHeader, [
-                    'gajisupir_nobukti' => $data['nobuktiRIC'][$i],
-                    'supir_id' => $data['supir_id'][$i] ?? 0,
-                    'trado_id' => $sptrado_id,
-                    'nominal' => $data['totalborongan'][$i],
-                    'keterangan' => '',
-                ]);
-                $prosesGajiSupirDetails[] = $prosesGajiSupirDetail->toArray();
-
-                if ($isPisahGajiKenek == 'YA') {
-                    $totalKBT = $totalKBT + ($data['totalborongan'][$i] - $data['gajikenek'][$i]);
-                } else {
-                    $totalKBT = $totalKBT + $data['totalborongan'][$i];
-                }
             }
+
+            $prosesGajiSupirDetail = (new ProsesGajiSupirDetail())->processStore($prosesGajiSupirHeader, [
+                'gajisupir_nobukti' => $data['nobuktiRIC'][$i],
+                'supir_id' => $data['supir_id'][$i] ?? 0,
+                'trado_id' => $sptrado_id,
+                'nominal' => $data['totalborongan'][$i],
+                'keterangan' => '',
+            ]);
+            $prosesGajiSupirDetails[] = $prosesGajiSupirDetail->toArray();
+
+            if ($isPisahGajiKenek == 'YA') {
+                $totalKBT = $totalKBT + ($data['totalborongan'][$i] - $data['gajikenek'][$i]);
+            } else {
+                $totalKBT = $totalKBT + $data['totalborongan'][$i];
+            }
+
             $noWarkat[] = '';
             $tglJatuhTempo[] = $data['tglbukti'];
             $nominalDetailPengeluaran[] = $totalKBT;
