@@ -762,6 +762,7 @@ class Stok extends MyModel
             $table->integer('kelompok_id')->nullable();
             $table->double('totalvulkanisir', 15, 2)->nullable();
             $table->integer('statusreuse')->nullable();
+            $table->integer('statusservicerutin')->nullable();
             $table->integer('subkelompok_id')->nullable();
             $table->integer('satuan_id')->nullable();
             $table->integer('kategori_id')->nullable();
