@@ -15,7 +15,7 @@ class CreateTriptangkiTable extends Migration
     {
         Schema::create('triptangki', function (Blueprint $table) {
             $table->id();
-            $table->string('kodetangki',50)->nullable();
+            $table->integer('kodetangki')->nullable();
             $table->longText('keterangan')->nullable();
             $table->integer('statusaktif')->length(11)->nullable();   
             $table->unsignedBigInteger('tas_id')->nullable();
