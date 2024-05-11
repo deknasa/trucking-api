@@ -239,6 +239,200 @@ class UpahSupirTangki extends MyModel
         return $data;
     }
 
+    public function getLookup()
+    {
+
+        $this->setRequestParameters();
+
+        $proses = request()->proses ?? 'reload';
+        $tglbukti = date('Y-m-d', strtotime(request()->tglbukti)) ?? '1900-01-01';
+        $user = auth('api')->user()->name;
+        $class = 'UpahSupirTangkiLookupController';
+        $aktif = request()->aktif ?? '';
+        if ($proses == 'reload') {
+            $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel a with (readuncommitted)")
+            )
+                ->select(
+                    'id',
+                    'class',
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            if (isset($querydata)) {
+                Schema::dropIfExists($querydata->namatabel);
+                DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+            }
+
+            DB::table('listtemporarytabel')->insert(
+                [
+                    'class' => $class,
+                    'namatabel' => $temtabel,
+                    'modifiedby' => $user,
+                    'created_at' => date('Y/m/d H:i:s'),
+                    'updated_at' => date('Y/m/d H:i:s'),
+                ]
+            );
+
+            Schema::create($temtabel, function ($table) {
+                $table->unsignedBigInteger('id')->nullable();
+                $table->unsignedBigInteger('upah_id')->nullable();
+                $table->unsignedBigInteger('tarif_id')->nullable();
+                $table->string('tarif', 200)->nullable();
+                $table->unsignedBigInteger('kotadari_id')->nullable();
+                $table->string('kotadari', 200)->nullable();
+                $table->unsignedBigInteger('kotasampai_id')->nullable();
+                $table->string('kotasampai', 200)->nullable();
+                $table->string('penyesuaian', 200)->nullable();
+                $table->double('jarak', 15, 2)->nullable();
+                $table->longText('statusaktif')->nullable();
+                $table->longText('statusaktif_text')->nullable();
+                $table->date('tglmulaiberlaku')->nullable();
+                $table->string('modifiedby', 50)->nullable();
+                $table->datetime('created_at')->nullable();
+                $table->datetime('updated_at')->nullable();
+                $table->longText('kotadarisampai')->nullable();
+                $table->string('zonadari', 200)->nullable();
+                $table->string('zonasampai', 200)->nullable();
+                $table->string('container', 200)->nullable();
+                $table->string('statuscontainer', 200)->nullable();
+                $table->double('nominalsupir', 15, 2)->nullable();
+                $table->double('nominalkenek', 15, 2)->nullable();
+                $table->double('nominalkomisi', 15, 2)->nullable();
+            });
+
+            $temptariftangki = '##temptariftangki' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temptariftangki, function ($table) {
+                $table->unsignedBigInteger('id')->nullable();
+                $table->string('tujuan', 200)->nullable();
+            });
+            $querytarif = db::table('tariftangki')->from(db::raw("tariftangki a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    'a.tujuan',
+                )
+                ->whereRaw("cast('" . $tglbukti . "' as datetime)>=a.tglmulaiberlaku")
+                ->where('a.statusaktif', 1)
+                ->orderby('a.id', 'asc');
+
+            DB::table($temptariftangki)->insertUsing([
+                'id',
+                'tujuan',
+            ],  $querytarif);
+
+            $queryupahsupir = db::table('upahsupirtangki')->from(db::raw("upahsupirtangki a with (readuncommitted)"))
+                ->select(
+                    DB::raw("row_number() Over(Order By a.id) as id"),
+                    'a.id as upah_id',
+                    'tariftangki.id as tarif_id',
+                    'tariftangki.tujuan as tarif',
+                    'a.kotadari_id',
+                    'kotadari.kodekota as kotadari',
+                    'a.kotasampai_id',
+                    'kotasampai.kodekota as kotasampai',
+                    'a.penyesuaian',
+                    'a.jarak',
+                    'parameter.memo as statusaktif',
+                    'parameter.text as statusaktif_text',
+                    'a.tglmulaiberlaku',
+                    'a.modifiedby',
+                    'a.created_at',
+                    'a.updated_at',
+                    DB::raw("(trim(kotadari.kodekota)+' - '+trim(kotasampai.kodekota)) as kotadarisampai"),
+
+                    DB::raw("null as zonadari"),
+                    DB::raw("null as zonasampai"),
+                    DB::raw("null as container"),
+                    DB::raw("null as statuscontainer"),
+                    DB::raw("0 as nominalsupir"),
+                    DB::raw("0 as nominalkenek"),
+                    DB::raw("0 as nominalkomisi")
+                )
+                ->join(DB::raw("$temptariftangki as tariftangki with (readuncommitted)"), 'a.tariftangki_id', 'tariftangki.id')
+                ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'a.kotadari_id')
+                ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'a.kotasampai_id')
+                ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'a.statusaktif', 'parameter.id')
+                ->whereRaw("cast('" . $tglbukti . "' as datetime)>=a.tglmulaiberlaku")
+                ->where('a.statusaktif', '=', 1)
+                ->orderby('a.id', 'asc');
+
+
+            DB::table($temtabel)->insertUsing([
+                'id',
+                'upah_id',
+                'tarif_id',
+                'tarif',
+                'kotadari_id',
+                'kotadari',
+                'kotasampai_id',
+                'kotasampai',
+                'penyesuaian',
+                'jarak',
+                'statusaktif',
+                'statusaktif_text',
+                'tglmulaiberlaku',
+                'modifiedby',
+                'created_at',
+                'updated_at',
+                'kotadarisampai',
+                'zonadari',
+                'zonasampai',
+                'container',
+                'statuscontainer',
+                'nominalsupir',
+                'nominalkenek',
+                'nominalkomisi',
+            ], $queryupahsupir);
+        } else {
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel with (readuncommitted)")
+            )
+                ->select(
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            $temtabel = $querydata->namatabel;
+        }
+        $query = DB::table(DB::raw($temtabel))->from(
+            DB::raw(DB::raw($temtabel) . " a with (readuncommitted)")
+        )
+            ->select(
+                'a.id',
+                'a.upah_id',
+                'a.tarif_id',
+                'a.tarif',
+                'a.kotadari_id',
+                'a.kotadari',
+                'a.kotasampai_id',
+                'a.kotasampai',
+                'a.penyesuaian',
+                'a.jarak',
+                'a.statusaktif',
+                'a.statusaktif_text',
+                'a.tglmulaiberlaku',
+                'a.modifiedby',
+                'a.created_at',
+                'a.updated_at',
+                'a.kotadarisampai',
+            );
+        $this->filter($query);
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);
+        $this->paginate($query);
+        $data = $query->get();
+        return $data;
+    }
+
 
     public function default()
     {
@@ -432,7 +626,7 @@ class UpahSupirTangki extends MyModel
         return $temp;
     }
 
-    
+
     public function findAll($id)
     {
 
@@ -538,24 +732,24 @@ class UpahSupirTangki extends MyModel
 
         return $query;
     }
-    
+
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    
+
     public function cekValidasi($id)
     {
-      
+
         $sp = DB::table('suratpengantar')
             ->from(
                 DB::raw("suratpengantar as a with (readuncommitted)")
             )
             ->select(
-                'a.upahtangki_id'
+                'a.upahsupirtangki_id'
             )
-            ->where('a.upahtangki_id', '=', $id)
+            ->where('a.upahsupirtangki_id', '=', $id)
             ->first();
         if (isset($sp)) {
             $data = [
@@ -603,7 +797,7 @@ class UpahSupirTangki extends MyModel
 
         return json_encode($storedFiles);
     }
-    
+
     public function processStore(array $data): UpahSupirTangki
     {
         try {
@@ -734,7 +928,7 @@ class UpahSupirTangki extends MyModel
         }
     }
 
-    
+
     public function processDestroy($id): UpahSupirTangki
     {
         $getDetail = UpahSupirTangkiRincian::lockForUpdate()->where('upahsupirtangki_id', $id)->get();
@@ -796,7 +990,7 @@ class UpahSupirTangki extends MyModel
         return $UpahSupir;
     }
 
-    
+
     public function processUpdateTarif(array $data)
     {
         // dd($upahsupir);
@@ -827,5 +1021,21 @@ class UpahSupirTangki extends MyModel
         }
     }
 
+    public function getRincian($idtrip, $upah_id, $tarif_id)
+    {
+        $getTrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('triptangki_id', 'tariftangki_id')->where('id', $idtrip)->first();
+        $query = DB::table("upahsupirtangkirincian")->from(DB::raw("upahsupirtangkirincian with (readuncommitted)"))
+        ->where('upahsupirtangki_id', $upah_id)
+        ->where('triptangki_id', $getTrip->triptangki_id)
+        ->first();
+        $getTarif = DB::table("tariftangki")->from(DB::raw("tariftangki with (readuncommitted)"))->where('id', $tarif_id)->first();
+        $data = [
+            'nominalkenek' => 0,
+            'nominalkomisi' => 0,
+            'nominalsupir' => $query->nominalsupir,
+            'nominaltarif' => $getTarif->nominal,
+        ];
 
+        return $data;
+    }
 }

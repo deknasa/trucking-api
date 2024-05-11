@@ -58,6 +58,7 @@ class ListTripController extends Controller
                 'tglbukti' => $request->tglbukti,
                 'statusupahzona' => $request->statusupahzona,
                 'statuslongtrip' => $request->statuslongtrip,
+                'statusjeniskendaraan' => $request->statusjeniskendaraan,
                 'statuslangsir' => $request->statuslangsir,
                 'statuskandang' => $request->statuskandang,
                 'statusgudangsama' => $request->statusgudangsama,

@@ -659,6 +659,9 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('orderantrucking/get', [OrderanTruckingController::class, 'getForLookup']);
     Route::get('prosesuangjalansupirheader/default', [ProsesUangJalanSupirHeaderController::class, 'default']);
     Route::get('laporanarusdanapusat/mingguan', [LaporanArusDanaPusatController::class, 'mingguan']);
+    
+    Route::get('upahsupirtangki/get', [UpahSupirTangkiController::class, 'get']);
+    Route::post('upahsupirtangki/getrincian', [UpahSupirTangkiController::class, 'getrincian']);
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {

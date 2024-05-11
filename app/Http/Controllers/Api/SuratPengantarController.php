@@ -220,6 +220,8 @@ class SuratPengantarController extends Controller
                 'nosptagihlain' => $request->nosptagihlain,
                 'qtyton' => $request->qtyton,
                 'statusgudangsama' => $request->statusgudangsama,
+                'statusjeniskendaraan' => $request->statusjeniskendaraan,
+                'qtyton' => $request->qtyton,
                 'statusbatalmuat' => $request->statusbatalmuat,
                 'statusupahzona' => $request->statusupahzona,
                 'gudang' => $request->gudang,

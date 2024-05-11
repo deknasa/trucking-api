@@ -77,6 +77,13 @@ class UpahSupirTangkiRincian extends MyModel
     
     public function getAll($id)
     {
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('triptangki_id')->nullable();
+            $table->longText('triptangki')->nullable();
+            $table->double('nominalsupir',15,2)->nullable();      
+
+        });
         $query = DB::table('upahsupirtangkirincian')->from(DB::raw("upahsupirtangkirincian with (readuncommitted)"))
             ->select(
                 'upahsupirtangkirincian.triptangki_id',
@@ -87,9 +94,30 @@ class UpahSupirTangkiRincian extends MyModel
             ->where('upahsupirtangki_id', '=', $id)
             ->orderBy('triptangki.id', 'asc');
 
+            DB::table($temp)->insertUsing([
+                'triptangki_id',
+                'triptangki',
+                'nominalsupir',
+            ], $query);
 
-        $data = $query->get();
+            $query = DB::table('triptangki')->from(DB::raw("triptangki with (readuncommitted)"))
+            ->select(
+                'triptangki.id as triptangki_id',
+                'triptangki.kodetangki as triptangki',
+            )
+            ->whereRaw("id not in (select  triptangki_id from upahsupirtangkirincian where upahsupirtangki_id=$id)");
 
+            DB::table($temp)->insertUsing([
+                'triptangki_id',
+                'triptangki',
+            ], $query);
+
+            $query= DB::table($temp)->select(
+                'triptangki_id',
+                'triptangki',
+                'nominalsupir',
+            );
+            $data = $query->get();
 
         return $data;
     }
