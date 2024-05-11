@@ -430,8 +430,8 @@ class LaporanKasBank extends MyModel
                 'urut' => '1',
                 'urutdetail' => '1',
                 "coa" => "",
-                "tglbukti" => "1900/1/1",
-                "nobukti" => "",
+                "tglbukti" => $dari,
+                "nobukti" => "SALDO AWAL",
                 "keterangan" => "SALDO AWAL",
                 "debet" => "0",
                 "kredit" => "0",
@@ -704,6 +704,10 @@ class LaporanKasBank extends MyModel
             'totalkredit',
         ], $querynominal);
 
+
+        $count=db::table($temprekap)->count();
+     
+
         $queryhasil = DB::table($temprekap)->from(
             $tempsaldo . " as a"
         )
@@ -712,7 +716,7 @@ class LaporanKasBank extends MyModel
                 'a.urutdetail',
                 DB::raw("isnull(b.keterangancoa,'') as keterangancoa"),
                 DB::raw("'" . $querykasbank->namabank . "' as namabank"),
-                DB::raw("(case when year(isnull(a.tglbukti,'1900/1/1')) < '2000' then null else a.tglbukti end) as tglbukti"),
+                DB::raw("(case when year(isnull(a.tglbukti,'1900/1/1')) < '2000' then '" . $dari . "' else a.tglbukti end) as tglbukti"),
                 'a.nobukti',
                 'a.keterangan',
                 'a.debet',
@@ -730,15 +734,20 @@ class LaporanKasBank extends MyModel
             ->orderBy('a.tglbukti', 'Asc')
             ->orderBy('a.id', 'Asc');
 
+        
         if ($prosesneraca == 1) {
             $data = $queryhasil;
         } else {
+            if ( $count>1) {
+                $queryhasil->whereraw("a.nobukti not in ('SALDO AWAL')");
+            }
+
             $dataSaldo = [
                 'urut' => '1',
                 'urutdetail' => '1',
                 "coa" => "",
-                "tglbukti" => "1900/1/1",
-                "nobukti" => "",
+                "tglbukti" =>  $dari,
+                "nobukti" => "SALDO AWAL",
                 "keterangan" => "SALDO AWAL",
                 "debet" => "0",
                 "kredit" => "0",

@@ -72,6 +72,7 @@ class LaporanKasBankController extends Controller
 
             $laporankasbank = new LaporanKasBank();
             $hasil = $laporankasbank->getReport($dari, $sampai, $bank_id, $prosesneraca);
+            //  dd($hasil);
             return response([
                 'data' => $hasil['data'],
                 'datasaldo' => $hasil['dataSaldo'],
