@@ -931,6 +931,7 @@ class OrderanTrucking extends MyModel
                 'orderantrucking.tarif_id as tarifrincian_id',
                 'tarif.tujuan as tarifrincian',
                 'orderantrucking.nominal',
+                'orderantrucking.statusjeniskendaraan',
                 'orderantrucking.nojobemkl',
                 'orderantrucking.nocont',
                 'orderantrucking.noseal',
