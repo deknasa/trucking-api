@@ -2168,6 +2168,7 @@ class OrderanTrucking extends MyModel
         $orderanTrucking->info = html_entity_decode(request()->info);
         $orderanTrucking->tglbataseditorderantrucking = $data['tglbataseditorderantrucking'];
         $orderanTrucking->statusapprovaledit = $defaultapproval->id;
+        $orderanTrucking->statusjeniskendaraan = $data['statusjeniskendaraan'];
         $orderanTrucking->statusformat = $format->id;
 
         // $tarifrincian = TarifRincian::find($data['tarifrincian_id']);

@@ -268,17 +268,19 @@ class AbsensiSupirDetail extends MyModel
                         ->whereRaw("isnull(tempsp.nobukti,'')=''");
                 }
                 if ($getAbsen) {
-
+                    $statusJenisKendaraan = request()->statusjeniskendaraan;
                     $isMandor = auth()->user()->isMandor();
                     $isAdmin = auth()->user()->isAdmin();
 
                     if (!$isAdmin) {
                         if ($isMandor) {
-                            // $query->where('trado.mandor_id', $isMandor->mandor_id);
+                            $query->where("$this->table.statusjeniskendaraan", $statusJenisKendaraan);
                             $query->Join(DB::raw($tempmandordetail . " as mandordetail"), "$this->table.mandor_id", 'mandordetail.mandor_id');
 
                             // dd($query->get());
                         }
+                    }else{                        
+                        $query->where("$this->table.statusjeniskendaraan", $statusJenisKendaraan);
                     }
 
                     if (request()->from == 'pengajuantripinap') {
