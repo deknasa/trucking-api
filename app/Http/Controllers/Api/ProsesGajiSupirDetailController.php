@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Validator;
 
 class ProsesGajiSupirDetailController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -65,8 +65,8 @@ class ProsesGajiSupirDetailController extends Controller
         if (request()->tab == 'potsemua') {
 
             $fetch = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
-            ->join(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupirpelunasanpinjaman.gajisupir_nobukti', 'gajisupirheader.nobukti')
-            ->whereRaw("gajisupir_nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where nobukti='$nobuktiEbs')")
+                ->join(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupirpelunasanpinjaman.gajisupir_nobukti', 'gajisupirheader.nobukti')
+                ->whereRaw("gajisupir_nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where nobukti='$nobuktiEbs')")
                 ->where('gajisupirpelunasanpinjaman.supir_id', '0')
                 ->first();
             if ($fetch != null) {
@@ -79,7 +79,7 @@ class ProsesGajiSupirDetailController extends Controller
         if (request()->tab == 'potpribadi') {
 
             $fetch = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
-            ->join(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupirpelunasanpinjaman.gajisupir_nobukti', 'gajisupirheader.nobukti')
+                ->join(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupirpelunasanpinjaman.gajisupir_nobukti', 'gajisupirheader.nobukti')
                 ->whereRaw("gajisupir_nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where nobukti='$nobuktiEbs')")
                 ->where('gajisupirpelunasanpinjaman.supir_id', '!=', '0')
                 ->first();
@@ -93,7 +93,7 @@ class ProsesGajiSupirDetailController extends Controller
         if (request()->tab == 'deposito') {
 
             $fetch = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))
-            ->join(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupirdeposito.gajisupir_nobukti', 'gajisupirheader.nobukti')
+                ->join(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupirdeposito.gajisupir_nobukti', 'gajisupirheader.nobukti')
                 ->whereRaw("gajisupir_nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where nobukti='$nobuktiEbs')")
                 ->first();
             if ($fetch != null) {
@@ -107,7 +107,7 @@ class ProsesGajiSupirDetailController extends Controller
         if (request()->tab == 'bbm') {
 
             $fetch = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))
-            ->join(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupirbbm.gajisupir_nobukti', 'gajisupirheader.nobukti')
+                ->join(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupirbbm.gajisupir_nobukti', 'gajisupirheader.nobukti')
                 ->whereRaw("gajisupir_nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where nobukti='$nobuktiEbs')")
                 ->first();
             if ($fetch != null) {
@@ -121,8 +121,8 @@ class ProsesGajiSupirDetailController extends Controller
         if (request()->tab == 'ebs') {
 
             $fetch = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))
-            ->join(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupirbbm.gajisupir_nobukti', 'gajisupirheader.nobukti')
-            ->whereRaw("gajisupir_nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where nobukti='$nobuktiEbs')")
+                ->join(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupirbbm.gajisupir_nobukti', 'gajisupirheader.nobukti')
+                ->whereRaw("gajisupir_nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where nobukti='$nobuktiEbs')")
                 ->first();
             if ($fetch != null) {
                 $penerimaantrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
@@ -134,17 +134,31 @@ class ProsesGajiSupirDetailController extends Controller
 
         if (request()->tab == 'pengembalian') {
 
-            $fetch = GajisUpirUangJalan::from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
-                ->select(DB::raw("absensisupirheader.kasgantung_nobukti,kasgantungheader.coakaskeluar, sum(gajisupiruangjalan.nominal) as nominal"))
-                ->join(DB::raw("absensisupirheader with (readuncommitted)"), 'gajisupiruangjalan.absensisupir_nobukti', 'absensisupirheader.nobukti')
-                ->join(DB::raw("kasgantungheader with (readuncommitted)"), 'absensisupirheader.kasgantung_nobukti', 'kasgantungheader.nobukti')
-                ->join(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupiruangjalan.gajisupir_nobukti', 'gajisupirheader.nobukti')
-                ->join(DB::raw("pengembaliankasgantungdetail a with (readuncommitted)"), 'kasgantungheader.nobukti', 'a.kasgantung_nobukti')
-                ->whereRaw("gajisupiruangjalan.gajisupir_nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where nobukti='$nobuktiEbs')")
-                ->groupBy('absensisupirheader.kasgantung_nobukti', 'kasgantungheader.coakaskeluar')
-                ->first();
+            $isTangki = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'ABSENSI TANGKI')->first()->text ?? 'TIDAK';
+            if ($isTangki == 'YA') {
+
+                $fetch = GajisUpirUangJalan::from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
+                    ->select(DB::raw("gajisupiruangjalan.kasgantung_nobukti,kasgantungheader.coakaskeluar, sum(gajisupiruangjalan.nominal) as nominal"))
+                    ->join(DB::raw("kasgantungheader with (readuncommitted)"), 'gajisupiruangjalan.kasgantung_nobukti', 'kasgantungheader.nobukti')
+                    ->join(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupiruangjalan.gajisupir_nobukti', 'gajisupirheader.nobukti')
+                    ->join(DB::raw("pengembaliankasgantungdetail a with (readuncommitted)"), 'kasgantungheader.nobukti', 'a.kasgantung_nobukti')
+                    ->whereRaw("gajisupiruangjalan.gajisupir_nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where nobukti='$nobuktiEbs')")
+                    ->groupBy('gajisupiruangjalan.kasgantung_nobukti', 'kasgantungheader.coakaskeluar')
+                    ->first();
+            } else {
+
+                $fetch = GajisUpirUangJalan::from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
+                    ->select(DB::raw("absensisupirheader.kasgantung_nobukti,kasgantungheader.coakaskeluar, sum(gajisupiruangjalan.nominal) as nominal"))
+                    ->join(DB::raw("absensisupirheader with (readuncommitted)"), 'gajisupiruangjalan.absensisupir_nobukti', 'absensisupirheader.nobukti')
+                    ->join(DB::raw("kasgantungheader with (readuncommitted)"), 'absensisupirheader.kasgantung_nobukti', 'kasgantungheader.nobukti')
+                    ->join(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupiruangjalan.gajisupir_nobukti', 'gajisupirheader.nobukti')
+                    ->join(DB::raw("pengembaliankasgantungdetail a with (readuncommitted)"), 'kasgantungheader.nobukti', 'a.kasgantung_nobukti')
+                    ->whereRaw("gajisupiruangjalan.gajisupir_nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where nobukti='$nobuktiEbs')")
+                    ->groupBy('absensisupirheader.kasgantung_nobukti', 'kasgantungheader.coakaskeluar')
+                    ->first();
                 // dd($fetch);
 
+            }
             if ($fetch != null) {
                 $penerimaantrucking = PengembalianKasGantungHeader::from(DB::raw("pengembaliankasgantungheader with (readuncommitted)"))
                     ->leftJoin(DB::raw("pengembaliankasgantungdetail with (readuncommitted)"), 'pengembaliankasgantungheader.id', 'pengembaliankasgantungdetail.pengembaliankasgantung_id')

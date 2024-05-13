@@ -9,6 +9,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\DestroyGajiSupirNobukti;
 use App\Rules\validasiContSPGajiSupir;
+use App\Rules\validasiJenisKendaraanRIC;
 use App\Rules\validasiPemutihanSupirRIC;
 use App\Rules\ValidasiStatusContGajiSupir;
 use App\Rules\ValidasiTambahanGajiSupir;
@@ -78,6 +79,7 @@ class UpdateGajiSupirHeaderRequest extends FormRequest
                 // 'date_equals:' . date('d-m-Y', strtotime($getDataGajiSupir->tglbukti)),
                 new DateTutupBuku()
             ],
+            'statusjeniskendaraan' => 'required'
         ];
         $relatedRequests = [
             UpdateGajiSupirDetailRequest::class

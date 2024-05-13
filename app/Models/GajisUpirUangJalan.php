@@ -30,6 +30,8 @@ class GajisUpirUangJalan extends MyModel
         $gajiSupirUangJalan->supir_id = $data['supir_id'];
         $gajiSupirUangJalan->trado_id = $data['trado_id'];
         $gajiSupirUangJalan->nominal = $data['nominal'];
+        $gajiSupirUangJalan->statusjeniskendaraan = $data['statusjeniskendaraan'];
+        $gajiSupirUangJalan->kasgantung_nobukti = $data['kasgantung_nobukti'];
 
         if (!$gajiSupirUangJalan->save()) {
             throw new \Exception('Error storing gaji supir uang jalan.');
