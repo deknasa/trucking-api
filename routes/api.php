@@ -662,6 +662,7 @@ route::middleware(['auth:api'])->group(function () {
     
     Route::get('upahsupirtangki/get', [UpahSupirTangkiController::class, 'get']);
     Route::post('upahsupirtangki/getrincian', [UpahSupirTangkiController::class, 'getrincian']);
+    Route::get('gajisupirheader/default', [GajiSupirHeaderController::class, 'default']);
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {

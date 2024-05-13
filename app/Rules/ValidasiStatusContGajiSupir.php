@@ -31,6 +31,12 @@ class ValidasiStatusContGajiSupir implements Rule
         $dataTrip = request()->rincian_nobukti;
         $allowed = true;
         $listTrip = '';
+        $jenisTangki = DB::table('parameter')->from(DB::raw("parameter as a with (readuncommitted)"))
+            ->select('a.id')
+            ->where('a.grp', '=', 'STATUS JENIS KENDARAAN')
+            ->where('a.subgrp', '=', 'STATUS JENIS KENDARAAN')
+            ->where('a.text', '=', 'TANGKI')
+            ->first();
         if ($dataTrip != '') {
             for ($i = 0; $i < count($dataTrip); $i++) {
                 $container_id = request()->rincian_container[$i];
@@ -38,37 +44,39 @@ class ValidasiStatusContGajiSupir implements Rule
                 $upah_id = request()->rincian_upahid[$i];
                 $cekTripExist = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
                     ->where('nobukti', $dataTrip[$i])->first();
-                if ($cekTripExist != '') {
-                    if ($cekTripExist->container_id != $container_id) {
-                        $allowed = false;
-                        if (strpos($listTrip, $dataTrip[$i]) === false) {
-                            // If it doesn't exist, append the current element
-                            if ($listTrip == '') {
-                                $listTrip = $dataTrip[$i];
-                            } else {
-                                $listTrip = $listTrip . ', ' . $dataTrip[$i];
+                if ($cekTripExist->statusjeniskendaraan != $jenisTangki->id) {
+                    if ($cekTripExist != '') {
+                        if ($cekTripExist->container_id != $container_id) {
+                            $allowed = false;
+                            if (strpos($listTrip, $dataTrip[$i]) === false) {
+                                // If it doesn't exist, append the current element
+                                if ($listTrip == '') {
+                                    $listTrip = $dataTrip[$i];
+                                } else {
+                                    $listTrip = $listTrip . ', ' . $dataTrip[$i];
+                                }
                             }
                         }
-                    }
-                    if ($cekTripExist->statuscontainer_id != $statuscontainer_id) {
-                        $allowed = false;
-                        if (strpos($listTrip, $dataTrip[$i]) === false) {
-                            // If it doesn't exist, append the current element
-                            if ($listTrip == '') {
-                                $listTrip = $dataTrip[$i];
-                            } else {
-                                $listTrip = $listTrip . ', ' . $dataTrip[$i];
+                        if ($cekTripExist->statuscontainer_id != $statuscontainer_id) {
+                            $allowed = false;
+                            if (strpos($listTrip, $dataTrip[$i]) === false) {
+                                // If it doesn't exist, append the current element
+                                if ($listTrip == '') {
+                                    $listTrip = $dataTrip[$i];
+                                } else {
+                                    $listTrip = $listTrip . ', ' . $dataTrip[$i];
+                                }
                             }
                         }
-                    }
-                    if ($cekTripExist->upah_id != $upah_id) {
-                        $allowed = false;
-                        if (strpos($listTrip, $dataTrip[$i]) === false) {
-                            // If it doesn't exist, append the current element
-                            if ($listTrip == '') {
-                                $listTrip = $dataTrip[$i];
-                            } else {
-                                $listTrip = $listTrip . ', ' . $dataTrip[$i];
+                        if ($cekTripExist->upah_id != $upah_id) {
+                            $allowed = false;
+                            if (strpos($listTrip, $dataTrip[$i]) === false) {
+                                // If it doesn't exist, append the current element
+                                if ($listTrip == '') {
+                                    $listTrip = $dataTrip[$i];
+                                } else {
+                                    $listTrip = $listTrip . ', ' . $dataTrip[$i];
+                                }
                             }
                         }
                     }
@@ -86,6 +94,6 @@ class ValidasiStatusContGajiSupir implements Rule
      */
     public function message()
     {
-        return 'container / status container / upah '. $this->trip .' '. app(ErrorController::class)->geterror('TSD')->keterangan . ' DATA DI TRIP'.'<br> Silahkan tekan reload';
+        return 'container / status container / upah ' . $this->trip . ' ' . app(ErrorController::class)->geterror('TSD')->keterangan . ' DATA DI TRIP' . '<br> Silahkan tekan reload';
     }
 }
