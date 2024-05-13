@@ -33,12 +33,22 @@ class AbsensiSupirApprovalProses extends Model
         
         $coaDebetApproval = DB::table('parameter')->where('grp', 'JURNAL APPROVAL ABSENSI SUPIR')->where('subgrp', 'DEBET')->first();
         $memoDebet = json_decode($coaDebetApproval->memo, true);
+       
+        $coaKreditApprovalTnl = DB::table('parameter')->where('grp', 'JURNAL APPROVAL ABSENSI SUPIR TNL')->where('subgrp', 'KREDIT')->first();
+        $memoKreditTnl = json_decode($coaKreditApprovalTnl->memo, true);
         
+        $coaDebetApprovalTnl = DB::table('parameter')->where('grp', 'JURNAL APPROVAL ABSENSI SUPIR TNL')->where('subgrp', 'DEBET')->first();
+        $memoDebetTnl = json_decode($coaDebetApprovalTnl->memo, true);
+
+        $jenisKendaraanTangki = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('id','text')->where('grp', 'STATUS JENIS KENDARAAN')->where('subgrp', 'STATUS JENIS KENDARAAN')->where('text', 'TANGKI')->first();
+        $jenisKendaraanGandengan = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('id','text')->where('grp', 'STATUS JENIS KENDARAAN')->where('subgrp', 'STATUS JENIS KENDARAAN')->where('text', 'GANDENGAN')->first();
+
         $absenKGT =  AbsensiSupirProses::where('nobukti',$absensiSupirApprovalHeader->absensisupir_nobukti)->get();
         $bank = DB::table('bank')->where('coa', $memoKredit['JURNAL'])->first();
+        $bankTnl = DB::table('bank')->where('coa', $memoKreditTnl['JURNAL'])->first();
 
         foreach ($absenKGT as $absenproses) {
-                        
+
             $kasGantungDetail = DB::table('kasgantungdetail')->where('nobukti', $absenproses->kasgantung_nobukti)->first();
             $kasGantungRequest = [
                 "tglbukti" => $absensiSupirApprovalHeader->tglbukti,
@@ -51,6 +61,14 @@ class AbsensiSupirApprovalProses extends Model
                 "nominal" => [$kasGantungDetail->nominal],
                 "keterangan_detail" => [$kasGantungDetail->keterangan],
             ];
+            $kreditMemo = $memoKredit['JURNAL'];
+            if ($jenisKendaraanTangki->id == $absenproses->statusjeniskendaraan ) {
+                 $kasGantungRequest["bank_id"] = $bankTnl->id;
+                 $kasGantungRequest["coakredit"] = [$memoKreditTnl['JURNAL']];
+                 $kasGantungRequest["coadebet"] = [$memoDebetTnl['JURNAL']];
+
+                 $kreditMemo = $memoKreditTnl['JURNAL'];
+            }
             $kasGantung = KasGantungHeader::where('nobukti', $absenproses->kasgantung_nobukti)->lockForUpdate()->first();
             $kasGantungHeader = (new KasGantungHeader())->processUpdate($kasGantung, $kasGantungRequest);
             
@@ -58,7 +76,7 @@ class AbsensiSupirApprovalProses extends Model
             $absensiSupirApprovalProses->nobukti = $absensiSupirApprovalHeader->nobukti;
             $absensiSupirApprovalProses->absensisupirapproval_id = $absensiSupirApprovalHeader->id;
             $absensiSupirApprovalProses->pengeluaran_nobukti = $kasGantung->pengeluaran_nobukti;
-            $absensiSupirApprovalProses->coakaskeluar = $memoKredit['JURNAL'];
+            $absensiSupirApprovalProses->coakaskeluar = $kreditMemo;
             $absensiSupirApprovalProses->keterangan = $kasGantungDetail->keterangan;
             $absensiSupirApprovalProses->nominal = $kasGantungDetail->nominal;
             $absensiSupirApprovalProses->statusjeniskendaraan = $absenproses->statusjeniskendaraan;

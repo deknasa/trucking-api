@@ -26,12 +26,11 @@ class AbsensiSupirProses extends Model
     public function processStore(AbsensiSupirHeader $absensiSupir ,array $data) {
         $jenisKendaraanTangki = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('id','text')->where('grp', 'STATUS JENIS KENDARAAN')->where('subgrp', 'STATUS JENIS KENDARAAN')->where('text', 'TANGKI')->first();
         $jenisKendaraanGandengan = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('id','text')->where('grp', 'STATUS JENIS KENDARAAN')->where('subgrp', 'STATUS JENIS KENDARAAN')->where('text', 'GANDENGAN')->first();
-        $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('tipe', '=', 'KAS')->first();
+        
 
         $kasGantungRequest = [
             "tglbukti" => $absensiSupir->tglbukti,
             "penerima" => '',
-            "bank_id" => $bank->id,
             "coakaskeluar" => '',
             "pengeluaran_nobukti" => '',
             "postingdari" => 'Absensi Supir Proses',
@@ -89,6 +88,8 @@ class AbsensiSupirProses extends Model
        
         //jika ada absensi tangki
         if ($data['rowTotalTangki'] >0) {
+            $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('kodebank', '=', 'KAS TRUCKING TNL')->first();
+            $kasGantungRequest["bank_id"] = $bank->id;
             $kasGantungRequest["nominal"] = [$data['uangJalanTangki']];
             $kasGantungRequest["keterangan_detail"] = [$data['keteranganTangki']];
             //update kasgantung jika ada ,tambahkan jika belum ada
@@ -110,6 +111,8 @@ class AbsensiSupirProses extends Model
         }
         //jika ada absensi gandengan
         if ($data['rowTotalGandengan'] >0) {
+            $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('kodebank', '=', 'KAS TRUCKING')->first();
+            $kasGantungRequest["bank_id"] = $bank->id;
             $kasGantungRequest["nominal"] = [$data['uangJalanGandengan']];
             $kasGantungRequest["keterangan_detail"] = [$data['keteranganGandengan']];
             //update kasgantung jika ada ,tambahkan jika belum ada
