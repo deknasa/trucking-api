@@ -698,7 +698,7 @@ class StokController extends Controller
      * @ClassName 
      * @Keterangan APPROVAL AKTIF
      */
-    public function approvalaktif(Request $request)
+    public function approvalaktif(ApprovalKaryawanRequest $request)
     {
         DB::beginTransaction();
 
