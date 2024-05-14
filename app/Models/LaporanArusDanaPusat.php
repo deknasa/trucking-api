@@ -16,6 +16,96 @@ class LaporanArusDanaPusat extends Model
 
     public function getMingguan()
     {
+        $ptahun1 = date('Y', strtotime('-1 years'));
+        $ptahun2 = date('Y');
+
+        $tempBulan = '##tempBulan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempBulan, function ($table) {
+            $table->id();
+            $table->longText('FKode')->nullable();
+            $table->string('FTahun', 1000)->nullable();
+            $table->unsignedBigInteger('FMingguke')->nullable();
+            $table->unsignedBigInteger('FBlnke')->nullable();
+            $table->date('Ftgldr')->nullable();
+            $table->date('Ftglsd')->nullable();
+        });
+
+        while ($ptahun1 <= $ptahun2) {
+            $ptahun = $ptahun1;
+            $pawal = 1;
+            while ($pawal <= 12) {
+                $ptgl1 = date('Y-m-d', strtotime($ptahun . '-' . $pawal . '-01'));
+                $ptgl3 = date('Y-m-d', strtotime($ptahun . '-' . $pawal . '-01' . ' +32 days'));
+                $tahun = date('Y', strtotime($ptgl3));
+                $bulan = date('m', strtotime($ptgl3));
+                $ptgl2 = date('Y-m-d', strtotime($tahun . '-' . $bulan . '-01' . ' -1 days'));
+                $pminggu = 1;
+                $hit = 0;
+                while ($ptgl1 <= $ptgl2) {
+                    if ($hit == 0) {
+                        $ptgldr = $ptgl1;
+                    }
+                    $datepart = DB::select("select datepart(dw," . $ptgl1 . ") as dpart");
+                    $dpart = json_decode(json_encode($datepart), true)[0]['dpart'];
+                    if ($dpart == 7) {
+                        $ptglsd = $ptgl1;
+
+                        DB::table($tempBulan)->insert(
+                            [
+                                'FKode' => 'Minggu Ke ' . $pminggu . ' Bulan ' . $pawal . ' Tahun ' . $ptahun,
+                                'FTahun' => $ptahun,
+                                'FMingguke' => $pminggu,
+                                'FBlnke' => $pawal,
+                                'Ftgldr' => $ptgldr,
+                                'Ftglsd' => $ptglsd,
+                            ]
+                        );
+                        $pminggu = $pminggu + 1;
+                        $hit = -1;
+                    }
+                    if ($ptgl1 == $ptgl2) {
+                        $ptglsd = $ptgl1;
+                        DB::table($tempBulan)->insert(
+                            [
+                                'FKode' => 'Minggu Ke ' . $pminggu . ' Bulan ' . $pawal . ' Tahun ' . $ptahun,
+                                'FTahun' => $ptahun,
+                                'FMingguke' => $pminggu,
+                                'FBlnke' => $pawal,
+                                'Ftgldr' => $ptgldr,
+                                'Ftglsd' => $ptglsd,
+                            ]
+                        );
+                        $pminggu = $pminggu + 1;
+                        $hit = -1;
+                    }
+                    $hit = $hit + 1;
+                    $ptgl1 = date("Y-m-d", strtotime("+1 day", strtotime($ptgl1)));
+                }
+                $pawal = $pawal + 1;
+            }
+            $ptahun1 = $ptahun1 + 1;
+        }
+
+        $query = db::table($tempBulan)->from(db::raw($tempBulan . " a"))
+            ->select(
+                'a.fKode',
+                'a.fTahun',
+                'a.fMingguKe',
+                'a.FBlnke as fBulanKe',
+                'a.fTglDr',
+                'a.fTglSd',
+            )
+            ->orderby('a.id', 'desc')
+            ->get();
+
+        return $query;
+
+        // 
+
+
+    }
+    public function getMingguanoLD()
+    {
         $pTahun1 = date('Y', strtotime('-1 years'));
         $pTahun2 = date('Y');
         // dd($pTahun1,$pTahun2);
@@ -112,6 +202,150 @@ class LaporanArusDanaPusat extends Model
 
     public function getReport($tgldari, $tglsampai, $cabang_id, $minggu)
     {
+        $tempcabang = '##tempcabang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempcabang, function ($table) {
+            $table->id();
+            $table->integer('cabang_id')->nullable();
+            $table->string('coa', 50)->nullable();
+        });
+
+        DB::table($tempcabang)->insert(
+            ['cabang_id' => 2, 'coa' => '05.03.01.02',]
+        );
+        DB::table($tempcabang)->insert(
+            ['cabang_id' => 3, 'coa' => '05.03.01.03',]
+        );
+        DB::table($tempcabang)->insert(
+            ['cabang_id' => 4, 'coa' => '05.03.01.04',]
+        );
+        DB::table($tempcabang)->insert(
+            ['cabang_id' => 5, 'coa' => '05.03.01.05',]
+        );
+        DB::table($tempcabang)->insert(
+            ['cabang_id' => 6, 'coa' => '05.03.01.06',]
+        );
+        DB::table($tempcabang)->insert(
+            ['cabang_id' => 7, 'coa' => '05.03.01.07',]
+        );
+
+        $tempdata = '##tempdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdata, function ($table) {
+            $table->id();
+            $table->integer('urut')->nullable();
+            $table->string('FNJ', 100)->nullable();
+            $table->string('FNTrans', 100)->nullable();
+            $table->date('FTgl')->nullable();
+            $table->string('FCoa', 100)->nullable();
+            $table->longtext('FKetCoa')->nullable();
+            $table->double('FDebet', 15, 2)->nullable();
+            $table->double('FCredit', 15, 2)->nullable();
+            $table->double('FSaldo', 15, 2)->nullable();
+            $table->longtext('FKetD')->nullable();
+            $table->integer('Order')->nullable();
+            $table->unsignedBigInteger('FSeqtime')->nullable();
+        });
+
+        $querytempdata = db::table("jurnalumumpusatdetail")->from(db::raw("jurnalumumpusatdetail D with (readuncommitted)"))
+            ->select(
+                db::raw("2 AS urut"),
+                'D.nobukti as fnj',
+                'D.nobukti as fntrans',
+                'D.tglbukti as ftgl',
+                'CM.coa as fcoa',
+                'CM.keterangancoa as fketcoa',
+                db::raw("CASE SIGN(-1 * D.Nominal) WHEN 1 THEN -1 * D.Nominal ELSE 0 END AS fdebet"),
+                db::raw("CASE SIGN(-1 * D.Nominal) WHEN 1 THEN 0 ELSE D.Nominal END AS fcredit"),
+                db::raw("-1 * D.Nominal AS fsaldo"),
+                db::raw("CASE D.keterangan WHEN '' THEN H.keterangan ELSE D.keterangan END AS FKetD"),
+                db::raw("A.[Order]"),
+                db::raw("0 AS FSeqTime ")
+            )
+            ->join(db::raw("jurnalumumpusatheader H with (readuncommitted)"), 'h.nobukti', 'd.nobukti')
+            ->join(db::raw("akunpusat CM with (readuncommitted)"), 'CM.coa', 'd.coa')
+            ->join(db::raw("typeakuntansi A with (readuncommitted)"), 'A.id', 'CM.type_id')
+            ->join(db::raw($tempcabang . " MC "), 'MC.coa', 'D.coa')
+            ->whereraw("D.tglbukti BETWEEN '" . date('Y-m-d', strtotime($tgldari)) . "' AND '" . date('Y-m-d', strtotime($tglsampai)) . "'");
+
+
+        DB::table($tempdata)->insertUsing([
+            'urut',
+            'FNJ',
+            'FNTrans',
+            'FTgl',
+            'FCoa',
+            'FKetCoa',
+            'FDebet',
+            'FCredit',
+            'FSaldo',
+            'FKetD',
+            'Order',
+            'FSeqtime',
+        ], $querytempdata);
+
+
+        $querytempdata = db::table("jurnalumumdetail")->from(db::raw("jurnalumumdetail D with (readuncommitted)"))
+            ->select(
+                db::raw("2 AS urut"),
+                'D.nobukti as fnj',
+                'D.nobukti as fntrans',
+                'D.tglbukti as ftgl',
+                'CM.coa as fcoa',
+                'CM.keterangancoa as fketcoa',
+                db::raw("CASE SIGN(-1 * D.Nominal) WHEN 1 THEN -1 * D.Nominal ELSE 0 END AS fdebet"),
+                db::raw("CASE SIGN(-1 * D.Nominal) WHEN 1 THEN 0 ELSE D.Nominal END AS fcredit"),
+                db::raw("-1 * D.Nominal AS fsaldo"),
+                db::raw("CASE D.keterangan WHEN '' THEN H.keterangan ELSE D.keterangan END AS FKetD"),
+                db::raw("A.[Order]"),
+                db::raw("0 AS FSeqTime ")
+            )
+            ->join(db::raw("jurnalumumheader H with (readuncommitted)"), 'h.nobukti', 'd.nobukti')
+            ->join(db::raw("akunpusat CM with (readuncommitted)"), 'CM.coa', 'd.coa')
+            ->join(db::raw("typeakuntansi A with (readuncommitted)"), 'A.id', 'CM.type_id')
+            ->join(db::raw($tempcabang . " MC "), 'MC.coa', 'D.coa')
+            ->leftjoin(db::raw($tempdata . " d1"), 'h.nobukti', 'd1.fntrans')
+            ->whereraw("D.tglbukti  BETWEEN '" . date('Y-m-d', strtotime($tgldari)) . "' AND '" . date('Y-m-d', strtotime($tglsampai)) . "'")
+            ->whereraw("isnull(d1.fntrans,'')=''");
+
+
+        DB::table($tempdata)->insertUsing([
+            'urut',
+            'FNJ',
+            'FNTrans',
+            'FTgl',
+            'FCoa',
+            'FKetCoa',
+            'FDebet',
+            'FCredit',
+            'FSaldo',
+            'FKetD',
+            'Order',
+            'FSeqtime',
+        ], $querytempdata);
+
+        $pKdPerkDr = db::table($tempcabang)->from(db::raw($tempcabang . " a"))
+            ->select(
+                'a.coa'
+            )
+            ->where('a.cabang_id', $cabang_id)
+            ->first()->coa ?? '';
+
+        $pKdPerkSd = db::table($tempcabang)->from(db::raw($tempcabang . " a"))
+            ->select(
+                'a.coa'
+            )
+            ->where('a.cabang_id', $cabang_id)
+            ->first()->coa ?? '';
+
+        if ($cabang_id != 0) {
+            DB::delete(DB::raw("delete " . $tempdata . " where fcoa not in('" . $pKdPerkDr . "')"));
+        }
+
+        $namacabang = db::table("cabang")->from(db::raw("cabang a"))
+            ->select(
+                'a.namacabang'
+            )
+            ->where('a.id', $cabang_id)
+            ->first()->namacabang ?? '';
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->select('text')
@@ -119,113 +353,143 @@ class LaporanArusDanaPusat extends Model
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
-        $data = [
-            [
-                'cabang_id' => '2',
-                'namacabang' => 'CABANG MEDAN',
-                'mingguke' => $minggu . 'MINGGU KE 4 BULAN 4 TAHUN 2024',
-                'tanggal' => '2024-04-24',
-                'keterangan' => 'MINGGUAN TRUCKING',
-                'debet' => 0,
-                'kredit' => 90000000,
-                'saldo' => '-90000000',
-                'judulLaporan' => 'ARUS DANA PUSAT - CABANG MINGGUAN',
-                'judul' => $getJudul->text,
-                'tglcetak' => 'Tgl Cetak: ' . date('d-m-Y H:i:s'),
-                'usercetak' => 'User : ' . auth('api')->user()->name
-            ], [
-                'cabang_id' => '2',
-                'namacabang' => 'CABANG MEDAN',
-                'mingguke' => $minggu . 'MINGGU KE 4 BULAN 4 TAHUN 2024',
-                'tanggal' => '2024-04-25',
-                'keterangan' => 'PENYETORAN ATAS PELUNASAN INV 21, 23, 27, 28',
-                'debet' => 183206500,
-                'kredit' => 0,
-                'saldo' => 93206500,
-                'judulLaporan' => 'ARUS DANA PUSAT - CABANG MINGGUAN',
-                'judul' => $getJudul->text,
-                'tglcetak' => 'Tgl Cetak: ' . date('d-m-Y H:i:s'),
-                'usercetak' => 'User : ' . auth('api')->user()->name
-            ], [
-                'cabang_id' => '2',
-                'namacabang' => 'CABANG MEDAN',
-                'mingguke' => $minggu . 'MINGGU KE 4 BULAN 4 TAHUN 2024',
-                'tanggal' => '2024-04-26',
-                'keterangan' => 'MINGGUAN TRUCKING',
-                'debet' => 0,
-                'kredit' => 90000000,
-                'saldo' => 3206500,
-                'judulLaporan' => 'ARUS DANA PUSAT - CABANG MINGGUAN',
-                'judul' => $getJudul->text,
-                'tglcetak' => 'Tgl Cetak: ' . date('d-m-Y H:i:s'),
-                'usercetak' => 'User : ' . auth('api')->user()->name
-            ], [
-                'cabang_id' => '3',
-                'namacabang' => 'CABANG JAKARTA',
-                'mingguke' => $minggu . 'MINGGU KE 4 BULAN 4 TAHUN 2024',
-                'tanggal' => '2024-04-24',
-                'keterangan' => 'B. KOMISI ROBERT BLN FEB  2024',
-                'debet' => 0,
-                'kredit' => 25216264,
-                'saldo' => '-25216264',
-                'judulLaporan' => 'ARUS DANA PUSAT - CABANG MINGGUAN',
-                'judul' => $getJudul->text,
-                'tglcetak' => 'Tgl Cetak: ' . date('d-m-Y H:i:s'),
-                'usercetak' => 'User : ' . auth('api')->user()->name
-            ], [
-                'cabang_id' => '3',
-                'namacabang' => 'CABANG JAKARTA',
-                'mingguke' => $minggu . 'MINGGU KE 4 BULAN 4 TAHUN 2024',
-                'tanggal' => '2024-04-24',
-                'keterangan' => 'MINGGUAN TRUCKING',
-                'debet' => 0,
-                'kredit' => 100000000,
-                'saldo' => '-125216264',
-                'judulLaporan' => 'ARUS DANA PUSAT - CABANG MINGGUAN',
-                'judul' => $getJudul->text,
-                'tglcetak' => 'Tgl Cetak: ' . date('d-m-Y H:i:s'),
-                'usercetak' => 'User : ' . auth('api')->user()->name
-            ], [
-                'cabang_id' => '3',
-                'namacabang' => 'CABANG JAKARTA',
-                'mingguke' => $minggu . 'MINGGU KE 4 BULAN 4 TAHUN 2024',
-                'tanggal' => '2024-04-26',
-                'keterangan' => 'MINGGUAN TRUCKING',
-                'debet' => 0,
-                'kredit' => 100000000,
-                'saldo' => '-225216264',
-                'judulLaporan' => 'ARUS DANA PUSAT - CABANG MINGGUAN',
-                'judul' => $getJudul->text,
-                'tglcetak' => 'Tgl Cetak: ' . date('d-m-Y H:i:s'),
-                'usercetak' => 'User : ' . auth('api')->user()->name
-            ], [
-                'cabang_id' => '4',
-                'namacabang' => 'CABANG SURABAYA',
-                'mingguke' => $minggu . 'MINGGU KE 4 BULAN 4 TAHUN 2024',
-                'tanggal' => '2024-04-24',
-                'keterangan' => 'B. KOMISI CITRA BLN FEB  2024',
-                'debet' => 0,
-                'kredit' => 6427173,
-                'saldo' => '-6427173',
-                'judulLaporan' => 'ARUS DANA PUSAT - CABANG MINGGUAN',
-                'judul' => $getJudul->text,
-                'tglcetak' => 'Tgl Cetak: ' . date('d-m-Y H:i:s'),
-                'usercetak' => 'User : ' . auth('api')->user()->name
-            ], [
-                'cabang_id' => '4',
-                'namacabang' => 'CABANG SURABAYA',
-                'mingguke' => $minggu . 'MINGGU KE 4 BULAN 4 TAHUN 2024',
-                'tanggal' => '2024-04-26',
-                'keterangan' => 'MINGGUAN TRUCKING',
-                'debet' => 0,
-                'kredit' => 130000000,
-                'saldo' => '-136427173',
-                'judulLaporan' => 'ARUS DANA PUSAT - CABANG MINGGUAN',
-                'judul' => $getJudul->text,
-                'tglcetak' => 'Tgl Cetak: ' . date('d-m-Y H:i:s'),
-                'usercetak' => 'User : ' . auth('api')->user()->name
-            ]
-        ];
+        $query = db::table($tempdata)->from(db::raw($tempdata . " a"))
+            ->select(
+                db::raw($cabang_id . " as cabang_id"),
+                db::raw("'" . $namacabang . "' as namacabang"),
+                db::raw("'" . $minggu . "' as mingguke"),
+                'a.FTgl as tanggal',
+                'a.FDebet as debet',
+                'a.FCredit as kredit',
+                'a.FSaldo as saldo',
+                'a.FKetD as keterangan',
+                DB::raw("'ARUS DANA PUSAT - CABANG MINGGUAN' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            )
+            ->orderby('a.id', 'desc')
+            ->get();
+
+        //  return $query;
+
+        // 
+
+
+
+
+
+
+
+        $data = $query;
+
+        // $data = [
+        //     [
+        //         'cabang_id' => '2',
+        //         'namacabang' => 'CABANG MEDAN',
+        //         'mingguke' => $minggu . 'MINGGU KE 4 BULAN 4 TAHUN 2024',
+        //         'tanggal' => '2024-04-24',
+        //         'keterangan' => 'MINGGUAN TRUCKING',
+        //         'debet' => 0,
+        //         'kredit' => 90000000,
+        //         'saldo' => '-90000000',
+        //         'judulLaporan' => 'ARUS DANA PUSAT - CABANG MINGGUAN',
+        //         'judul' => $getJudul->text,
+        //         'tglcetak' => 'Tgl Cetak: ' . date('d-m-Y H:i:s'),
+        //         'usercetak' => 'User : ' . auth('api')->user()->name
+        //     ], [
+        //         'cabang_id' => '2',
+        //         'namacabang' => 'CABANG MEDAN',
+        //         'mingguke' => $minggu . 'MINGGU KE 4 BULAN 4 TAHUN 2024',
+        //         'tanggal' => '2024-04-25',
+        //         'keterangan' => 'PENYETORAN ATAS PELUNASAN INV 21, 23, 27, 28',
+        //         'debet' => 183206500,
+        //         'kredit' => 0,
+        //         'saldo' => 93206500,
+        //         'judulLaporan' => 'ARUS DANA PUSAT - CABANG MINGGUAN',
+        //         'judul' => $getJudul->text,
+        //         'tglcetak' => 'Tgl Cetak: ' . date('d-m-Y H:i:s'),
+        //         'usercetak' => 'User : ' . auth('api')->user()->name
+        //     ], [
+        //         'cabang_id' => '2',
+        //         'namacabang' => 'CABANG MEDAN',
+        //         'mingguke' => $minggu . 'MINGGU KE 4 BULAN 4 TAHUN 2024',
+        //         'tanggal' => '2024-04-26',
+        //         'keterangan' => 'MINGGUAN TRUCKING',
+        //         'debet' => 0,
+        //         'kredit' => 90000000,
+        //         'saldo' => 3206500,
+        //         'judulLaporan' => 'ARUS DANA PUSAT - CABANG MINGGUAN',
+        //         'judul' => $getJudul->text,
+        //         'tglcetak' => 'Tgl Cetak: ' . date('d-m-Y H:i:s'),
+        //         'usercetak' => 'User : ' . auth('api')->user()->name
+        //     ], [
+        //         'cabang_id' => '3',
+        //         'namacabang' => 'CABANG JAKARTA',
+        //         'mingguke' => $minggu . 'MINGGU KE 4 BULAN 4 TAHUN 2024',
+        //         'tanggal' => '2024-04-24',
+        //         'keterangan' => 'B. KOMISI ROBERT BLN FEB  2024',
+        //         'debet' => 0,
+        //         'kredit' => 25216264,
+        //         'saldo' => '-25216264',
+        //         'judulLaporan' => 'ARUS DANA PUSAT - CABANG MINGGUAN',
+        //         'judul' => $getJudul->text,
+        //         'tglcetak' => 'Tgl Cetak: ' . date('d-m-Y H:i:s'),
+        //         'usercetak' => 'User : ' . auth('api')->user()->name
+        //     ], [
+        //         'cabang_id' => '3',
+        //         'namacabang' => 'CABANG JAKARTA',
+        //         'mingguke' => $minggu . 'MINGGU KE 4 BULAN 4 TAHUN 2024',
+        //         'tanggal' => '2024-04-24',
+        //         'keterangan' => 'MINGGUAN TRUCKING',
+        //         'debet' => 0,
+        //         'kredit' => 100000000,
+        //         'saldo' => '-125216264',
+        //         'judulLaporan' => 'ARUS DANA PUSAT - CABANG MINGGUAN',
+        //         'judul' => $getJudul->text,
+        //         'tglcetak' => 'Tgl Cetak: ' . date('d-m-Y H:i:s'),
+        //         'usercetak' => 'User : ' . auth('api')->user()->name
+        //     ], [
+        //         'cabang_id' => '3',
+        //         'namacabang' => 'CABANG JAKARTA',
+        //         'mingguke' => $minggu . 'MINGGU KE 4 BULAN 4 TAHUN 2024',
+        //         'tanggal' => '2024-04-26',
+        //         'keterangan' => 'MINGGUAN TRUCKING',
+        //         'debet' => 0,
+        //         'kredit' => 100000000,
+        //         'saldo' => '-225216264',
+        //         'judulLaporan' => 'ARUS DANA PUSAT - CABANG MINGGUAN',
+        //         'judul' => $getJudul->text,
+        //         'tglcetak' => 'Tgl Cetak: ' . date('d-m-Y H:i:s'),
+        //         'usercetak' => 'User : ' . auth('api')->user()->name
+        //     ], [
+        //         'cabang_id' => '4',
+        //         'namacabang' => 'CABANG SURABAYA',
+        //         'mingguke' => $minggu . 'MINGGU KE 4 BULAN 4 TAHUN 2024',
+        //         'tanggal' => '2024-04-24',
+        //         'keterangan' => 'B. KOMISI CITRA BLN FEB  2024',
+        //         'debet' => 0,
+        //         'kredit' => 6427173,
+        //         'saldo' => '-6427173',
+        //         'judulLaporan' => 'ARUS DANA PUSAT - CABANG MINGGUAN',
+        //         'judul' => $getJudul->text,
+        //         'tglcetak' => 'Tgl Cetak: ' . date('d-m-Y H:i:s'),
+        //         'usercetak' => 'User : ' . auth('api')->user()->name
+        //     ], [
+        //         'cabang_id' => '4',
+        //         'namacabang' => 'CABANG SURABAYA',
+        //         'mingguke' => $minggu . 'MINGGU KE 4 BULAN 4 TAHUN 2024',
+        //         'tanggal' => '2024-04-26',
+        //         'keterangan' => 'MINGGUAN TRUCKING',
+        //         'debet' => 0,
+        //         'kredit' => 130000000,
+        //         'saldo' => '-136427173',
+        //         'judulLaporan' => 'ARUS DANA PUSAT - CABANG MINGGUAN',
+        //         'judul' => $getJudul->text,
+        //         'tglcetak' => 'Tgl Cetak: ' . date('d-m-Y H:i:s'),
+        //         'usercetak' => 'User : ' . auth('api')->user()->name
+        //     ]
+        // ];
 
         return $data;
     }

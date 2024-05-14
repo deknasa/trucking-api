@@ -738,9 +738,9 @@ class LaporanKasBank extends MyModel
         if ($prosesneraca == 1) {
             $data = $queryhasil;
         } else {
-            if ( $count>1) {
-                $queryhasil->whereraw("a.nobukti not in ('SALDO AWAL')");
-            }
+            // if ( $count>1) {
+            //     $queryhasil->whereraw("a.nobukti not in ('SALDO AWAL')");
+            // }
 
             $dataSaldo = [
                 'urut' => '1',
