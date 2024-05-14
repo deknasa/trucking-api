@@ -446,8 +446,8 @@ class NotaKreditHeaderController extends Controller
 
             if ($notaKreditHeader->statuscetak != $statusSudahCetak->id) {
                 $notaKreditHeader->statuscetak = $statusSudahCetak->id;
-                $notaKreditHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $notaKreditHeader->userbukacetak = auth('api')->user()->name;
+                // $notaKreditHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $notaKreditHeader->userbukacetak = auth('api')->user()->name;
                 $notaKreditHeader->jumlahcetak = $notaKreditHeader->jumlahcetak + 1;
                 if ($notaKreditHeader->save()) {
                     $logTrail = [

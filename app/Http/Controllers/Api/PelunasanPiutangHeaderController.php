@@ -405,8 +405,8 @@ class PelunasanPiutangHeaderController extends Controller
 
             if ($pelunasanpiutang->statuscetak != $statusSudahCetak->id) {
                 $pelunasanpiutang->statuscetak = $statusSudahCetak->id;
-                $pelunasanpiutang->tglbukacetak = date('Y-m-d H:i:s');
-                $pelunasanpiutang->userbukacetak = auth('api')->user()->name;
+                // $pelunasanpiutang->tglbukacetak = date('Y-m-d H:i:s');
+                // $pelunasanpiutang->userbukacetak = auth('api')->user()->name;
                 $pelunasanpiutang->jumlahcetak = $pelunasanpiutang->jumlahcetak + 1;
                 if ($pelunasanpiutang->save()) {
                     $logTrail = [

@@ -300,8 +300,8 @@ class PelunasanHutangHeaderController extends Controller
 
             if ($PelunasanHutang->statuscetak != $statusSudahCetak->id) {
                 $PelunasanHutang->statuscetak = $statusSudahCetak->id;
-                $PelunasanHutang->tglbukacetak = date('Y-m-d H:i:s');
-                $PelunasanHutang->userbukacetak = auth('api')->user()->name;
+                // $PelunasanHutang->tglbukacetak = date('Y-m-d H:i:s');
+                // $PelunasanHutang->userbukacetak = auth('api')->user()->name;
                 $PelunasanHutang->jumlahcetak = $PelunasanHutang->jumlahcetak + 1;
 
                 if ($PelunasanHutang->save()) {

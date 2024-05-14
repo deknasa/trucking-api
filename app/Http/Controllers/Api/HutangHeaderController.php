@@ -298,8 +298,8 @@ class HutangHeaderController extends Controller
 
             if ($hutangHeader->statuscetak != $statusSudahCetak->id) {
                 $hutangHeader->statuscetak = $statusSudahCetak->id;
-                $hutangHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $hutangHeader->userbukacetak = auth('api')->user()->name;
+                // $hutangHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $hutangHeader->userbukacetak = auth('api')->user()->name;
                 $hutangHeader->jumlahcetak = $hutangHeader->jumlahcetak + 1;
                 if ($hutangHeader->save()) {
                     $logTrail = [

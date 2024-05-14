@@ -344,8 +344,8 @@ class RekapPenerimaanHeaderController extends Controller
 
             if ($rekapPenerimaan->statuscetak != $statusSudahCetak->id) {
                 $rekapPenerimaan->statuscetak = $statusSudahCetak->id;
-                $rekapPenerimaan->tglbukacetak = date('Y-m-d H:i:s');
-                $rekapPenerimaan->userbukacetak = auth('api')->user()->name;
+                // $rekapPenerimaan->tglbukacetak = date('Y-m-d H:i:s');
+                // $rekapPenerimaan->userbukacetak = auth('api')->user()->name;
                 $rekapPenerimaan->jumlahcetak = $rekapPenerimaan->jumlahcetak + 1;
                 if ($rekapPenerimaan->save()) {
                     $logTrail = [
