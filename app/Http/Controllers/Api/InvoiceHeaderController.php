@@ -407,8 +407,8 @@ class InvoiceHeaderController extends Controller
 
             if ($invoiceHeader->statuscetak != $statusSudahCetak->id) {
                 $invoiceHeader->statuscetak = $statusSudahCetak->id;
-                $invoiceHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $invoiceHeader->userbukacetak = auth('api')->user()->name;
+                // $invoiceHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $invoiceHeader->userbukacetak = auth('api')->user()->name;
                 $invoiceHeader->jumlahcetak = $invoiceHeader->jumlahcetak + 1;
                 if ($invoiceHeader->save()) {
                     $logTrail = [

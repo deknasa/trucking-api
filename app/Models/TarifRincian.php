@@ -349,35 +349,53 @@ class TarifRincian extends MyModel
             $id = 0;
         }
         $container_id = request()->container_id;
-        $query = Tarif::from(DB::raw("$this->table with (readuncommitted)"))
-            ->select(
-                'tarif.id',
-                'tarifrincian.id as tarifrincian_id',
-                'container.kodecontainer as container_id',
-                'tarifrincian.nominal as nominal',
-                'tarif.tujuan',
-                'parameter.memo as statusaktif',
-                'sistemton.memo as statussistemton',
-                'kota.kodekota as kota_id',
-                'zona.zona as zona_id',
-                'tarif.tglmulaiberlaku',
-                'p.memo as statuspenyesuaianharga',
-                'tarifrincian.modifiedby',
-                'tarifrincian.created_at',
-                'tarifrincian.updated_at'
-            )
-            ->leftJoin(DB::raw("tarif  with (readuncommitted)"), 'tarif.id', '=', 'tarifrincian.tarif_id')
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'tarif.statusaktif', '=', 'parameter.id')
-            ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
-            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
-            ->leftJoin(DB::raw("container with (readuncommitted)"), 'container.id', '=', "tarifrincian.container_id")
-            ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
-            ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id')
-            ->where('tarifrincian.container_id', $container_id)
-            ->where('tarifrincian.tarif_id', '=', $id);
+        $statusjeniskendaraan = request()->statusjeniskendaraan;
 
-        $data = $query->first();
+        $jenisTangki = DB::table('parameter')->from(DB::raw("parameter as a with (readuncommitted)"))
+            ->select('a.id')
+            ->where('a.grp', '=', 'STATUS JENIS KENDARAAN')
+            ->where('a.subgrp', '=', 'STATUS JENIS KENDARAAN')
+            ->where('a.text', '=', 'TANGKI')
+            ->first();
+        if ($statusjeniskendaraan == $jenisTangki->id) {
+            $getTon = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+                ->select(DB::raw("cast(ISNULL(qtyton,0) as float) as qtyton"))->where('id', request()->idtrip)->first();
+            $query = DB::table("tariftangki")->from(DB::raw("tariftangki with (readuncommitted)"))
+                ->select(DB::raw("(ROUND((nominal * $getTon->qtyton) / 100, 0) * 100) AS nominal"))
+                ->where('id', $id);
 
+            $data = $query->first();
+        } else {
+
+            $query = Tarif::from(DB::raw("$this->table with (readuncommitted)"))
+                ->select(
+                    'tarif.id',
+                    'tarifrincian.id as tarifrincian_id',
+                    'container.kodecontainer as container_id',
+                    'tarifrincian.nominal as nominal',
+                    'tarif.tujuan',
+                    'parameter.memo as statusaktif',
+                    'sistemton.memo as statussistemton',
+                    'kota.kodekota as kota_id',
+                    'zona.zona as zona_id',
+                    'tarif.tglmulaiberlaku',
+                    'p.memo as statuspenyesuaianharga',
+                    'tarifrincian.modifiedby',
+                    'tarifrincian.created_at',
+                    'tarifrincian.updated_at'
+                )
+                ->leftJoin(DB::raw("tarif  with (readuncommitted)"), 'tarif.id', '=', 'tarifrincian.tarif_id')
+                ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'tarif.statusaktif', '=', 'parameter.id')
+                ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
+                ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
+                ->leftJoin(DB::raw("container with (readuncommitted)"), 'container.id', '=', "tarifrincian.container_id")
+                ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
+                ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id')
+                ->where('tarifrincian.container_id', $container_id)
+                ->where('tarifrincian.tarif_id', '=', $id);
+
+            $data = $query->first();
+        }
 
         return $data;
     }

@@ -589,7 +589,8 @@ class TarifTangki extends MyModel
         $query = DB::table('tariftangki')->from(DB::raw("tariftangki with (readuncommitted)"))
             ->select(
                 'tariftangki.id',
-                'parent.tujuan as parent_id',
+                DB::raw("(case when tariftangki.parent_id=0 then null else tariftangki.parent_id end) as parent_id"),
+                'parent.tujuan as parent',
                 db::raw("isnull(kotadari.keterangan,'')+(case when isnull(kotasampai.keterangan,'')='' then '' else ' - ' +isnull(kotasampai.keterangan,'') end)+ 
                 (case when isnull(upahsupirtangki.penyesuaian,'')='' then '' else ' ( ' +isnull(upahsupirtangki.penyesuaian,'')+ ' ) ' end) as upahsupirtangki
                 "),

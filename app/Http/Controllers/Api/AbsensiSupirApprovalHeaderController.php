@@ -448,8 +448,8 @@ class AbsensiSupirApprovalHeaderController extends Controller
 
             if ($absensisupirapproval->statuscetak != $statusSudahCetak->id) {
                 $absensisupirapproval->statuscetak = $statusSudahCetak->id;
-                $absensisupirapproval->tglbukacetak = date('Y-m-d H:i:s');
-                $absensisupirapproval->userbukacetak = auth('api')->user()->name;
+                // $absensisupirapproval->tglbukacetak = date('Y-m-d H:i:s');
+                // $absensisupirapproval->userbukacetak = auth('api')->user()->name;
                 $absensisupirapproval->jumlahcetak = $absensisupirapproval->jumlahcetak + 1;
                 if ($absensisupirapproval->save()) {
                     $logTrail = [

@@ -305,8 +305,8 @@ class PenerimaanTruckingHeaderController extends Controller
 
             if ($penerimaanTruckingHeader->statuscetak != $statusSudahCetak->id) {
                 $penerimaanTruckingHeader->statuscetak = $statusSudahCetak->id;
-                $penerimaanTruckingHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $penerimaanTruckingHeader->userbukacetak = auth('api')->user()->name;
+                // $penerimaanTruckingHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $penerimaanTruckingHeader->userbukacetak = auth('api')->user()->name;
                 $penerimaanTruckingHeader->jumlahcetak = $penerimaanTruckingHeader->jumlahcetak + 1;
                 if ($penerimaanTruckingHeader->save()) {
                     $logTrail = [

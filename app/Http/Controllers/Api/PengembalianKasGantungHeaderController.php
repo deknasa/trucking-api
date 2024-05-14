@@ -458,8 +458,8 @@ class PengembalianKasGantungHeaderController extends Controller
 
             if ($pengembalianKasGantung->statuscetak != $statusSudahCetak->id) {
                 $pengembalianKasGantung->statuscetak = $statusSudahCetak->id;
-                $pengembalianKasGantung->tglbukacetak = date('Y-m-d H:i:s');
-                $pengembalianKasGantung->userbukacetak = auth('api')->user()->name;
+                // $pengembalianKasGantung->tglbukacetak = date('Y-m-d H:i:s');
+                // $pengembalianKasGantung->userbukacetak = auth('api')->user()->name;
                 $pengembalianKasGantung->jumlahcetak = $pengembalianKasGantung->jumlahcetak + 1;
                 if ($pengembalianKasGantung->save()) {
                     $logTrail = [

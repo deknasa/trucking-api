@@ -88,6 +88,25 @@ class TripTangki extends MyModel
             goto selesai;
         }
 
+        $suratpengantar = DB::table('suratpengantar')
+            ->from(
+                DB::raw("suratpengantar as a with (readuncommitted)")
+            )
+            ->select(
+                'a.triptangki_id'
+            )
+            ->where('a.triptangki_id', '=', $id)
+            ->first();
+
+        if (isset($suratpengantar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'surat pengantar',
+            ];
+
+            goto selesai;
+        }
+
         $data = [
             'kondisi' => false,
             'keterangan' => '',

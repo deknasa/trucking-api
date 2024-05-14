@@ -293,8 +293,8 @@ class PindahBukuController extends Controller
 
             if ($pindahBuku->statuscetak != $statusSudahCetak->id) {
                 $pindahBuku->statuscetak = $statusSudahCetak->id;
-                $pindahBuku->tglbukacetak = date('Y-m-d H:i:s');
-                $pindahBuku->userbukacetak = auth('api')->user()->name;
+                // $pindahBuku->tglbukacetak = date('Y-m-d H:i:s');
+                // $pindahBuku->userbukacetak = auth('api')->user()->name;
                 $pindahBuku->jumlahcetak = $pindahBuku->jumlahcetak + 1;
                 if ($pindahBuku->save()) {
                     $logTrail = [

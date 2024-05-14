@@ -627,8 +627,8 @@ class JurnalUmumHeaderController extends Controller
 
             if ($jurnalUmum->statuscetak != $statusSudahCetak->id) {
                 $jurnalUmum->statuscetak = $statusSudahCetak->id;
-                $jurnalUmum->tglbukacetak = date('Y-m-d H:i:s');
-                $jurnalUmum->userbukacetak = auth('api')->user()->name;
+                // $jurnalUmum->tglbukacetak = date('Y-m-d H:i:s');
+                // $jurnalUmum->userbukacetak = auth('api')->user()->name;
                 $jurnalUmum->jumlahcetak = $jurnalUmum->jumlahcetak + 1;
                 if ($jurnalUmum->save()) {
                     $logTrail = [

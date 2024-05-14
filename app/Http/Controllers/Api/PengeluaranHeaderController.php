@@ -311,8 +311,8 @@ class PengeluaranHeaderController extends Controller
 
             if ($pengeluaranHeader->statuscetak != $statusSudahCetak->id) {
                 $pengeluaranHeader->statuscetak = $statusSudahCetak->id;
-                $pengeluaranHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $pengeluaranHeader->userbukacetak = auth('api')->user()->name;
+                // $pengeluaranHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $pengeluaranHeader->userbukacetak = auth('api')->user()->name;
                 $pengeluaranHeader->jumlahcetak = $pengeluaranHeader->jumlahcetak + 1;
                 if ($pengeluaranHeader->save()) {
                     $logTrail = [

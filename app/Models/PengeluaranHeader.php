@@ -1637,7 +1637,7 @@ class PengeluaranHeader extends MyModel
                 'statuscetak.memo as statuscetak',
                 'statuscetak.id as  statuscetak_id',
                 'pengeluaranheader.jumlahcetak',
-                DB::raw("'Laporan Pengeluaran' as judulLaporan"),
+                DB::raw("'Bukti Pengeluaran' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")

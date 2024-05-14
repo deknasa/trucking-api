@@ -246,8 +246,8 @@ class KasGantungHeaderController extends Controller
 
             if ($kasgantungHeader->statuscetak != $statusSudahCetak->id) {
                 $kasgantungHeader->statuscetak = $statusSudahCetak->id;
-                $kasgantungHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $kasgantungHeader->userbukacetak = auth('api')->user()->name;
+                // $kasgantungHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $kasgantungHeader->userbukacetak = auth('api')->user()->name;
                 $kasgantungHeader->jumlahcetak = $kasgantungHeader->jumlahcetak + 1;
                 if ($kasgantungHeader->save()) {
                     $logTrail = [

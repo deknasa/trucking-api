@@ -314,8 +314,8 @@ class ServiceOutHeaderController extends Controller
 
             if ($serviceOutHeader->statuscetak != $statusSudahCetak->id) {
                 $serviceOutHeader->statuscetak = $statusSudahCetak->id;
-                $serviceOutHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $serviceOutHeader->userbukacetak = auth('api')->user()->name;
+                // $serviceOutHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $serviceOutHeader->userbukacetak = auth('api')->user()->name;
                 $serviceOutHeader->jumlahcetak = $serviceOutHeader->jumlahcetak + 1;
                 if ($serviceOutHeader->save()) {
                     $logTrail = [
