@@ -351,8 +351,8 @@ class InvoiceExtraHeaderController extends Controller
 
             if ($invoiceExtraHeader->statuscetak != $statusSudahCetak->id) {
                 $invoiceExtraHeader->statuscetak = $statusSudahCetak->id;
-                $invoiceExtraHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $invoiceExtraHeader->userbukacetak = auth('api')->user()->name;
+                // $invoiceExtraHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $invoiceExtraHeader->userbukacetak = auth('api')->user()->name;
                 $invoiceExtraHeader->jumlahcetak = $invoiceExtraHeader->jumlahcetak + 1;
                 if ($invoiceExtraHeader->save()) {
                     $logTrail = [

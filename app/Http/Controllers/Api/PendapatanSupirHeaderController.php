@@ -303,8 +303,8 @@ class PendapatanSupirHeaderController extends Controller
 
             if ($pendapatanSupirHeader->statuscetak != $statusSudahCetak->id) {
                 $pendapatanSupirHeader->statuscetak = $statusSudahCetak->id;
-                $pendapatanSupirHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $pendapatanSupirHeader->userbukacetak = auth('api')->user()->name;
+                // $pendapatanSupirHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $pendapatanSupirHeader->userbukacetak = auth('api')->user()->name;
                 $pendapatanSupirHeader->jumlahcetak = $pendapatanSupirHeader->jumlahcetak + 1;
                 if ($pendapatanSupirHeader->save()) {
                     $logTrail = [

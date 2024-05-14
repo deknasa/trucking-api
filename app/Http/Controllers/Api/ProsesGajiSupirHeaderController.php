@@ -668,8 +668,8 @@ class ProsesGajiSupirHeaderController extends Controller
 
             if ($prosesGajiSupirHeader->statuscetak != $statusSudahCetak->id) {
                 $prosesGajiSupirHeader->statuscetak = $statusSudahCetak->id;
-                $prosesGajiSupirHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $prosesGajiSupirHeader->userbukacetak = auth('api')->user()->name;
+                // $prosesGajiSupirHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $prosesGajiSupirHeader->userbukacetak = auth('api')->user()->name;
                 $prosesGajiSupirHeader->jumlahcetak = $prosesGajiSupirHeader->jumlahcetak + 1;
                 if ($prosesGajiSupirHeader->save()) {
                     $logTrail = [

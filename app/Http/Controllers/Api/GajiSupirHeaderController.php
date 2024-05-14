@@ -686,8 +686,8 @@ class GajiSupirHeaderController extends Controller
 
             if ($gajisupir->statuscetak != $statusSudahCetak->id) {
                 $gajisupir->statuscetak = $statusSudahCetak->id;
-                $gajisupir->tglbukacetak = date('Y-m-d H:i:s');
-                $gajisupir->userbukacetak = auth('api')->user()->name;
+                // $gajisupir->tglbukacetak = date('Y-m-d H:i:s');
+                // $gajisupir->userbukacetak = auth('api')->user()->name;
                 $gajisupir->jumlahcetak = $gajisupir->jumlahcetak + 1;
                 if ($gajisupir->save()) {
                     $logTrail = [
