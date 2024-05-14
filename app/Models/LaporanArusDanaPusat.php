@@ -97,6 +97,8 @@ class LaporanArusDanaPusat extends Model
             )
             ->orderby('a.id', 'desc')
             ->get();
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         return $query;
 
