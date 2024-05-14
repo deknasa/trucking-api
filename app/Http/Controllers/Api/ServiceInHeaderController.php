@@ -332,8 +332,8 @@ class ServiceInHeaderController extends Controller
 
             if ($serviceInHeader->statuscetak != $statusSudahCetak->id) {
                 $serviceInHeader->statuscetak = $statusSudahCetak->id;
-                $serviceInHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $serviceInHeader->userbukacetak = auth('api')->user()->name;
+                // $serviceInHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $serviceInHeader->userbukacetak = auth('api')->user()->name;
                 $serviceInHeader->jumlahcetak = $serviceInHeader->jumlahcetak + 1;
                 if ($serviceInHeader->save()) {
                     $logTrail = [
