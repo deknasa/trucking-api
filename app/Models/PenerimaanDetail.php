@@ -120,6 +120,7 @@ class PenerimaanDetail extends MyModel
             ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), 'penerimaandetail.bankpelanggan_id', 'bankpelanggan.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'penerimaandetail.coakredit', 'akunpusat.coa')
             ->where('penerimaandetail.penerimaan_id', $id)
+            ->orderBy('penerimaandetail.id')
             ->get();
 
         //  dd($detail);
