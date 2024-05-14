@@ -297,6 +297,8 @@ class LaporanArusDanaPusat extends MyModel
             $table->longtext('FKetD')->nullable();
             $table->integer('Order')->nullable();
             $table->unsignedBigInteger('FSeqtime')->nullable();
+            $table->string('cabang', 100)->nullable();
+            $table->integer('cabang_id')->nullable();
         });
 
         $querytempdata = db::table("jurnalumumpusatdetail")->from(db::raw("jurnalumumpusatdetail D with (readuncommitted)"))
@@ -312,12 +314,15 @@ class LaporanArusDanaPusat extends MyModel
                 db::raw("-1 * D.Nominal AS fsaldo"),
                 db::raw("CASE D.keterangan WHEN '' THEN H.keterangan ELSE D.keterangan END AS FKetD"),
                 db::raw("A.[Order]"),
-                db::raw("0 AS FSeqTime ")
+                db::raw("0 AS FSeqTime "),
+                'c.namacabang as cabang',
+                'c.id as cabang_id',
             )
             ->join(db::raw("jurnalumumpusatheader H with (readuncommitted)"), 'h.nobukti', 'd.nobukti')
             ->join(db::raw("akunpusat CM with (readuncommitted)"), 'CM.coa', 'd.coa')
             ->join(db::raw("typeakuntansi A with (readuncommitted)"), 'A.id', 'CM.type_id')
             ->join(db::raw($tempcabang . " MC "), 'MC.coa', 'D.coa')
+            ->join(db::raw("cabang c "), 'mc.cabang_id', 'c.id')
             ->whereraw("D.tglbukti BETWEEN '" . date('Y-m-d', strtotime($tgldari)) . "' AND '" . date('Y-m-d', strtotime($tglsampai)) . "'");
 
 
@@ -334,6 +339,8 @@ class LaporanArusDanaPusat extends MyModel
             'FKetD',
             'Order',
             'FSeqtime',
+            'cabang',
+            'cabang_id'
         ], $querytempdata);
 
         
@@ -352,13 +359,16 @@ class LaporanArusDanaPusat extends MyModel
                 db::raw("-1 * D.Nominal AS fsaldo"),
                 db::raw("CASE D.keterangan WHEN '' THEN H.keterangan ELSE D.keterangan END AS FKetD"),
                 db::raw("A.[Order]"),
-                db::raw("0 AS FSeqTime ")
+                db::raw("0 AS FSeqTime "),
+                'c.namacabang as cabang',
+                'c.id as cabang_id',
             )
             ->join(db::raw("jurnalumumheader H with (readuncommitted)"), 'h.nobukti', 'd.nobukti')
             ->join(db::raw("akunpusat CM with (readuncommitted)"), 'CM.coa', 'd.coa')
             ->join(db::raw("typeakuntansi A with (readuncommitted)"), 'A.id', 'CM.type_id')
             ->join(db::raw($tempcabang . " MC "), 'MC.coa', 'D.coa')
             ->leftjoin(db::raw($tempdata . " d1"), 'h.nobukti', 'd1.fntrans')
+            ->join(db::raw("cabang c "), 'mc.cabang_id', 'c.id')
             ->whereraw("D.tglbukti  BETWEEN '" . date('Y-m-d', strtotime($tgldari)) . "' AND '" . date('Y-m-d', strtotime($tglsampai)) . "'")
             ->whereraw("isnull(d1.fntrans,'')=''");
 
@@ -376,6 +386,8 @@ class LaporanArusDanaPusat extends MyModel
             'FKetD',
             'Order',
             'FSeqtime',
+            'cabang',
+            'cabang_id'
         ], $querytempdata);
 
         $pKdPerkDr = db::table($tempcabang)->from(db::raw($tempcabang . " a"))
@@ -409,28 +421,52 @@ class LaporanArusDanaPusat extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
-        $query = db::table($tempdata)->from(db::raw($tempdata . " a"))
-            ->select(
-                db::raw($cabang_id . " as cabang_id"),
-                db::raw("'" . $namacabang . "' as namacabang"),
-                db::raw("'" . $minggu . "' as mingguke"),
-                'a.FTgl as tanggal',
-                'a.FDebet as debet',
-                'a.FCredit as kredit',
-                'a.FSaldo as saldo',
-                'a.FKetD as keterangan',
-                DB::raw("'ARUS DANA PUSAT - CABANG MINGGUAN' as judulLaporan"),
-                DB::raw("'" . $getJudul->text . "' as judul"),
-                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
-            )
-            ->orderby('a.id', 'desc')
-            ->get();
+            // dd($cabang_id);
+            if ($cabang_id !=0 ) {
+                $query = db::table($tempdata)->from(db::raw($tempdata . " a"))
+                ->select(
+                    db::raw($cabang_id . " as cabang_id"),
+                    db::raw("'" . $namacabang . "' as namacabang"),
+                    db::raw("'" . $minggu . "' as mingguke"),
+                    'a.FTgl as tanggal',
+                    'a.FDebet as debet',
+                    'a.FCredit as kredit',
+                    'a.FSaldo as saldo',
+                    'a.FKetD as keterangan',
+                    DB::raw("'ARUS DANA PUSAT - CABANG MINGGUAN' as judulLaporan"),
+                    DB::raw("'" . $getJudul->text . "' as judul"),
+                    DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                    DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                )
+                ->orderby('a.cabang_id','asc')
+                ->orderby('a.id','asc')
+                ->get();
+            } else {
+                $query = db::table($tempdata)->from(db::raw($tempdata . " a"))
+                ->select(
+                    db::raw("a.cabang_id as cabang_id"),
+                    db::raw("a.cabang as namacabang"),
+                    db::raw("'" . $minggu . "' as mingguke"),
+                    'a.FTgl as tanggal',
+                    'a.FDebet as debet',
+                    'a.FCredit as kredit',
+                    'a.FSaldo as saldo',
+                    'a.FKetD as keterangan',
+                    DB::raw("'ARUS DANA PUSAT - CABANG MINGGUAN' as judulLaporan"),
+                    DB::raw("'" . $getJudul->text . "' as judul"),
+                    DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                    DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                )
+                ->orderby('a.cabang_id','asc')
+                ->orderby('a.id','asc')
+                ->get();
+            }
+            // dd($query);
+
 
         //  return $query;
 
         // 
-
 
 
 
