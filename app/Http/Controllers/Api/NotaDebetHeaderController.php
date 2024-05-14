@@ -448,8 +448,8 @@ class NotaDebetHeaderController extends Controller
 
             if ($notaDebetHeader->statuscetak != $statusSudahCetak->id) {
                 $notaDebetHeader->statuscetak = $statusSudahCetak->id;
-                $notaDebetHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $notaDebetHeader->userbukacetak = auth('api')->user()->name;
+                // $notaDebetHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $notaDebetHeader->userbukacetak = auth('api')->user()->name;
                 $notaDebetHeader->jumlahcetak = $notaDebetHeader->jumlahcetak + 1;
                 if ($notaDebetHeader->save()) {
                     $logTrail = [
