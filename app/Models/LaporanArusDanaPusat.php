@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+
 use Carbon\Carbon;
 use DateTime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,12 +11,13 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class LaporanArusDanaPusat extends Model
+class LaporanArusDanaPusat extends MyModel
 {
     use HasFactory;
 
     public function getMingguan()
     {
+        $this->setRequestParameters();
         $ptahun1 = date('Y', strtotime('-1 years'));
         $ptahun2 = date('Y');
 
