@@ -53,7 +53,7 @@ class UpdatePenerimaanHeaderRequest extends FormRequest
             'nobukti' => [Rule::in($getDataPenerimaan->nobukti)],
             'tglbukti' => [
                 'required','date_format:d-m-Y',
-                'before_or_equal:'.date('d-m-Y'),
+                // 'before_or_equal:'.date('d-m-Y'),
                 new DateTutupBuku()
             ],
             'tgllunas'  => ['required','before_or_equal:'.date('d-m-Y'),],
