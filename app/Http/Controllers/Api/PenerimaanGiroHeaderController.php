@@ -257,8 +257,8 @@ class PenerimaanGiroHeaderController extends Controller
 
             if ($penerimaanGiro->statuscetak != $statusSudahCetak->id) {
                 $penerimaanGiro->statuscetak = $statusSudahCetak->id;
-                $penerimaanGiro->tglbukacetak = date('Y-m-d H:i:s');
-                $penerimaanGiro->userbukacetak = auth('api')->user()->name;
+                // $penerimaanGiro->tglbukacetak = date('Y-m-d H:i:s');
+                // $penerimaanGiro->userbukacetak = auth('api')->user()->name;
                 $penerimaanGiro->jumlahcetak = $penerimaanGiro->jumlahcetak + 1;
                 if ($penerimaanGiro->save()) {
                     $logTrail = [

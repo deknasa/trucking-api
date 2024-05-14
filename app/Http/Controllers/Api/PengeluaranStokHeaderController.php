@@ -825,8 +825,8 @@ class PengeluaranStokHeaderController extends Controller
 
             if ($pengeluaranStokHeader->statuscetak != $statusSudahCetak->id) {
                 $pengeluaranStokHeader->statuscetak = $statusSudahCetak->id;
-                $pengeluaranStokHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $pengeluaranStokHeader->userbukacetak = auth('api')->user()->name;
+                // $pengeluaranStokHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $pengeluaranStokHeader->userbukacetak = auth('api')->user()->name;
                 $pengeluaranStokHeader->jumlahcetak = $pengeluaranStokHeader->jumlahcetak + 1;
                 if ($pengeluaranStokHeader->save()) {
                     $logTrail = [
