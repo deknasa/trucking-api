@@ -27,7 +27,7 @@ class LaporanArusDanaPusat extends MyModel
             $table->longText('FKode')->nullable();
             $table->string('FTahun', 1000)->nullable();
             $table->unsignedBigInteger('FMingguke')->nullable();
-            $table->unsignedBigInteger('FBlnke')->nullable();
+            $table->unsignedBigInteger('fBulanKe')->nullable();
             $table->date('Ftgldr')->nullable();
             $table->date('Ftglsd')->nullable();
         });
@@ -57,7 +57,7 @@ class LaporanArusDanaPusat extends MyModel
                                 'FKode' => 'Minggu Ke ' . $pminggu . ' Bulan ' . $pawal . ' Tahun ' . $ptahun,
                                 'FTahun' => $ptahun,
                                 'FMingguke' => $pminggu,
-                                'FBlnke' => $pawal,
+                                'fBulanKe' => $pawal,
                                 'Ftgldr' => $ptgldr,
                                 'Ftglsd' => $ptglsd,
                             ]
@@ -72,7 +72,7 @@ class LaporanArusDanaPusat extends MyModel
                                 'FKode' => 'Minggu Ke ' . $pminggu . ' Bulan ' . $pawal . ' Tahun ' . $ptahun,
                                 'FTahun' => $ptahun,
                                 'FMingguke' => $pminggu,
-                                'FBlnke' => $pawal,
+                                'fBulanKe' => $pawal,
                                 'Ftgldr' => $ptgldr,
                                 'Ftglsd' => $ptglsd,
                             ]
@@ -93,19 +93,17 @@ class LaporanArusDanaPusat extends MyModel
                 'a.fKode',
                 'a.fTahun',
                 'a.fMingguKe',
-                'a.FBlnke as fBulanKe',
+                'a.fBulanKe',
                 'a.fTglDr',
                 'a.fTglSd',
-            )
-            ->orderby('a.id', 'desc')
-            ->get();
+            );
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
 
-        return $query;
+        return $query->get();
 
         // 
 
@@ -282,6 +280,7 @@ class LaporanArusDanaPusat extends MyModel
         DB::table($tempcabang)->insert(
             ['cabang_id' => 7, 'coa' => '05.03.01.07',]
         );
+        
 
         $tempdata = '##tempdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdata, function ($table) {
@@ -336,6 +335,8 @@ class LaporanArusDanaPusat extends MyModel
             'Order',
             'FSeqtime',
         ], $querytempdata);
+
+        
 
 
         $querytempdata = db::table("jurnalumumdetail")->from(db::raw("jurnalumumdetail D with (readuncommitted)"))
