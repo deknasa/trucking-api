@@ -17,6 +17,7 @@ class CreateTradotambahanabsensiTable extends Migration
             $table->id();
             $table->date ('tglabsensi')->nullable();
             $table->unsignedBigInteger('trado_id')->nullable();
+            $table->unsignedBigInteger('supir_id')->nullable();
             $table->integer('statusjeniskendaraan')->Length(11)->nullable();
             $table->integer('statusapproval')->Length(11)->nullable();
             $table->date('tglapproval')->nullable();
