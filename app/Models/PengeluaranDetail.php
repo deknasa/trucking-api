@@ -36,6 +36,23 @@ class PengeluaranDetail extends MyModel
                 "$this->table.nominal",
                 "$this->table.keterangan",
                 "$this->table.noinvoice as invoice_nobukti",
+                "$this->table.nowarkat",
+                db::raw("format(pengeluarandetail.tgljatuhtempo,'dd/')+
+                    (case when month(pengeluarandetail.tgljatuhtempo)=1 then 'JAN'
+                          when month(pengeluarandetail.tgljatuhtempo)=2 then 'FEB'
+                          when month(pengeluarandetail.tgljatuhtempo)=3 then 'MAR'
+                          when month(pengeluarandetail.tgljatuhtempo)=4 then 'APR'
+                          when month(pengeluarandetail.tgljatuhtempo)=5 then 'MAY'
+                          when month(pengeluarandetail.tgljatuhtempo)=6 then 'JUN'
+                          when month(pengeluarandetail.tgljatuhtempo)=7 then 'JUL'
+                          when month(pengeluarandetail.tgljatuhtempo)=8 then 'AGU'
+                          when month(pengeluarandetail.tgljatuhtempo)=9 then 'SEP'
+                          when month(pengeluarandetail.tgljatuhtempo)=10 then 'OKT'
+                          when month(pengeluarandetail.tgljatuhtempo)=11 then 'NOV'
+                          when month(pengeluarandetail.tgljatuhtempo)=12 then 'DES' ELSE '' END)
+
+                    +format(pengeluarandetail.tgljatuhtempo,'/yy')   as tgljatuhtempoformat"),
+
             )
                 ->leftJoin(DB::raw("pengeluaranheader as header with (readuncommitted)"), "header.id", "$this->table.pengeluaran_id")
                 ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), "debet.coa", "$this->table.coadebet");
