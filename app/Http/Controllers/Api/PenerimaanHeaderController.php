@@ -519,8 +519,8 @@ class PenerimaanHeaderController extends Controller
 
             if ($penerimaanHeader->statuscetak != $statusSudahCetak->id) {
                 $penerimaanHeader->statuscetak = $statusSudahCetak->id;
-                $penerimaanHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $penerimaanHeader->userbukacetak = auth('api')->user()->name;
+                // $penerimaanHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $penerimaanHeader->userbukacetak = auth('api')->user()->name;
                 $penerimaanHeader->jumlahcetak = $penerimaanHeader->jumlahcetak + 1;
                 if ($penerimaanHeader->save()) {
                     $logTrail = [
