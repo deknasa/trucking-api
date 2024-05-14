@@ -447,8 +447,8 @@ class PengeluaranTruckingHeaderController extends Controller
 
             if ($pengeluaranTruckingHeader->statuscetak != $statusSudahCetak->id) {
                 $pengeluaranTruckingHeader->statuscetak = $statusSudahCetak->id;
-                $pengeluaranTruckingHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $pengeluaranTruckingHeader->userbukacetak = auth('api')->user()->name;
+                // $pengeluaranTruckingHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $pengeluaranTruckingHeader->userbukacetak = auth('api')->user()->name;
                 $pengeluaranTruckingHeader->jumlahcetak = $pengeluaranTruckingHeader->jumlahcetak + 1;
                 if ($pengeluaranTruckingHeader->save()) {
                     $logTrail = [
