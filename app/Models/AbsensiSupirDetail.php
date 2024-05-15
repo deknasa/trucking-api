@@ -1478,7 +1478,7 @@ class AbsensiSupirDetail extends MyModel
 
         $parameter = new Parameter();
         $idstatusnonsupirserap = $parameter->cekId('SUPIR SERAP', 'SUPIR SERAP', 'TIDAK') ?? 0;
-        $idstatustambahantrado=$parameter->cekId('TAMBAHAN TRADO ABSENSI','TAMBAHAN TRADO ABSENSI','YA') ?? 0;
+        $idstatustambahantrado=$parameter->cekId('TAMBAHAN TRADO ABSENSI','TAMBAHAN TRADO ABSENSI','TIDAK') ?? 0;
 
         $absensiSupirDetail = new AbsensiSupirDetail();
         $absensiSupirDetail->absensi_id = $data['absensi_id'] ?? '';
