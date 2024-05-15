@@ -175,6 +175,13 @@ class KategoriController extends Controller
             } else {
                 $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
             }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $kategori->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('kategori', 'add', $data);
+            }
             DB::commit();
 
             return response()->json([
@@ -219,6 +226,12 @@ class KategoriController extends Controller
                 $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $kategori->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('kategori', 'edit', $data);
+            }
             DB::commit();
 
             return response()->json([
@@ -248,6 +261,13 @@ class KategoriController extends Controller
                 $kategori->page = ceil($kategori->position / (10));
             } else {
                 $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
+            }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('kategori', 'delete', $data);
             }
             DB::commit();
 
