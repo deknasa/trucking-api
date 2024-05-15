@@ -75,14 +75,16 @@ class NotaDebetHeaderController extends Controller
                 'nominallebihbayar' => $request->nominal_detail
             ];
             $notaDebetHeader = (new NotaDebetHeader())->processStore($data);
-            $notaDebetHeader->position = $this->getPosition($notaDebetHeader, $notaDebetHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $notaDebetHeader->page = ceil($notaDebetHeader->position / (10));
-            } else {
-                $notaDebetHeader->page = ceil($notaDebetHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $notaDebetHeader->position = $this->getPosition($notaDebetHeader, $notaDebetHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $notaDebetHeader->page = ceil($notaDebetHeader->position / (10));
+                } else {
+                    $notaDebetHeader->page = ceil($notaDebetHeader->position / ($request->limit ?? 10));
+                }
+                $notaDebetHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $notaDebetHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $notaDebetHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $notaDebetHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             DB::commit();
 
             return response()->json([
@@ -446,8 +448,8 @@ class NotaDebetHeaderController extends Controller
 
             if ($notaDebetHeader->statuscetak != $statusSudahCetak->id) {
                 $notaDebetHeader->statuscetak = $statusSudahCetak->id;
-                $notaDebetHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $notaDebetHeader->userbukacetak = auth('api')->user()->name;
+                // $notaDebetHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $notaDebetHeader->userbukacetak = auth('api')->user()->name;
                 $notaDebetHeader->jumlahcetak = $notaDebetHeader->jumlahcetak + 1;
                 if ($notaDebetHeader->save()) {
                     $logTrail = [

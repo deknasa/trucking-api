@@ -1104,6 +1104,7 @@ class Supir extends MyModel
             $statusLuarKota = DB::table('parameter')->where('grp', 'STATUS LUAR KOTA')->where('default', 'YA')->first();
             $statusZonaTertentu = DB::table('parameter')->where('grp', 'ZONA TERTENTU')->where('default', 'YA')->first();
             $statusBlackList = DB::table('parameter')->where('grp', 'BLACKLIST SUPIR')->where('default', 'YA')->first();
+            $cabang = DB::table('parameter')->where('grp', 'CABANG')->where('subgrp', 'CABANG')->first();
             $batasBulan = DB::table('parameter')->where('grp', 'BATAS BULAN SUPIR BARU LUAR KOTA')->where('subgrp', 'BATAS BULAN SUPIR BARU LUAR KOTA')->first();
             $tglmasuk = date('Y-m-d', strtotime($data['tglmasuk']));
             $isBolehLuarKota = DB::table("parameter")->where('grp', 'VALIDASI SUPIR')->where('subgrp', 'BOLEH LUAR KOTA')->first()->text ?? 'TIDAK';
@@ -1111,6 +1112,10 @@ class Supir extends MyModel
                 $tglBatasLuarKota = null;
             } else {
                 $tglBatasLuarKota = (date('Y-m-d', strtotime("+$batasBulan->text months", strtotime($tglmasuk))));
+            }
+
+            if ($cabang->text =="JAKARTA") {
+                $statusApprovalDefault = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
             }
 
             $supirlama_id = request()->id ?? null;
@@ -1261,7 +1266,7 @@ class Supir extends MyModel
                         ->where('nobukti', $data['pemutihansupir_nobukti'])
                         ->where('statusposting', 83)
                         ->first();
-                    if ($getPosting != '') {
+                    if ($getPosting->nominal != '') {
 
                         $nominalposting[] = $getPosting->nominal;
                         $keterangan[] = 'PINJAMAN DARI PEMUTIHAN ' . $data['pemutihansupir_nobukti'] . ' (POSTING)';
@@ -1282,7 +1287,7 @@ class Supir extends MyModel
                         ->where('nobukti', $data['pemutihansupir_nobukti'])
                         ->where('statusposting', 84)
                         ->first();
-                    if ($getNonPosting != '') {
+                    if ($getNonPosting->nominal != '') {
 
                         $nominalnonposting[] = $getNonPosting->nominal;
                         $keteranganNon[] = 'PINJAMAN DARI PEMUTIHAN ' . $data['pemutihansupir_nobukti'] . ' (NON POSTING)';
@@ -1640,6 +1645,7 @@ class Supir extends MyModel
             )
             ->where('supir.noktp', $noktp)
             ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id')
+            ->orderBy('supir.id', 'desc')
             ->first();
 
         return $query;
@@ -1871,6 +1877,37 @@ class Supir extends MyModel
 
         return $Supir;
     }
+
+    public function processApprovalaktif(array $data)
+    {
+
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $Supir = Supir::find($data['Id'][$i]);
+
+            $Supir->statusaktif = $statusaktif->id;
+            $aksi = $statusaktif->text;
+
+            // dd($Supir);
+            if ($Supir->save()) {
+
+                (new LogTrail())->processStore([
+
+                    'namatabel' => strtoupper($Supir->getTable()),
+                    'postingdari' => 'APPROVAL SUPIR',
+                    'idtrans' => $Supir->id,
+                    'nobuktitrans' => $Supir->id,
+                    'aksi' => $aksi,
+                    'datajson' => $Supir->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+
+        return $Supir;
+    }    
 
     public function processApprovalHistoryTradoMilikMandor(array $data)
     {

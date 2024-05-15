@@ -55,7 +55,6 @@ use App\Http\Controllers\Api\AkunPusatController;
 use App\Http\Controllers\Api\AkuntansiController;
 use App\Http\Controllers\Api\AlatBayarController;
 use App\Http\Controllers\Api\ContainerController;
-use App\Http\Controllers\Api\QtyTambahGantiOliController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ExportRicController;
 use App\Http\Controllers\Api\GandenganController;
@@ -78,6 +77,7 @@ use App\Http\Controllers\Api\LogAbsensiController;
 use App\Http\Controllers\Api\MandorTripController;
 use App\Http\Controllers\Api\PindahBukuController;
 use App\Http\Controllers\Api\SupirSerapController;
+use App\Http\Controllers\Api\TripTangkiController;
 use App\Http\Controllers\Api\UpahRitasiController;
 use App\Http\Controllers\Api\BukaAbsensiController;
 use App\Http\Controllers\Api\ExpAsuransiController;
@@ -89,23 +89,24 @@ use App\Http\Controllers\Api\ReminderOliController;
 use App\Http\Controllers\Api\ReminderSpkController;
 
 use App\Http\Controllers\Api\SubKelompokController;
+use App\Http\Controllers\Api\TarifTangkiController;
+
 use App\Http\Controllers\Api\HutangDetailController;
-
 use App\Http\Controllers\Api\HutangHeaderController;
+
 use App\Http\Controllers\Api\OpnameDetailController;
-
 use App\Http\Controllers\Api\OpnameHeaderController;
+
 use App\Http\Controllers\Api\ReminderStokController;
-
 use App\Http\Controllers\Api\ReportNeracaController;
+
 use App\Http\Controllers\Api\SaldoUmurAkiController;
-
 use App\Http\Controllers\Api\TarifRincianController;
+
 use App\Http\Controllers\Api\UbahPasswordController;
-
 use App\Http\Controllers\CustomValidationController;
-use App\Http\Controllers\LaporanKasHarianController;
 
+use App\Http\Controllers\LaporanKasHarianController;
 use App\Http\Controllers\Api\BankPelangganController;
 use App\Http\Controllers\Api\InvoiceDetailController;
 use App\Http\Controllers\Api\InvoiceHeaderController;
@@ -140,6 +141,7 @@ use App\Http\Controllers\Api\ServiceInDetailController;
 use App\Http\Controllers\Api\ServiceInHeaderController;
 use App\Http\Controllers\Api\SpkHarianDetailController;
 use App\Http\Controllers\Api\StatusContainerController;
+use App\Http\Controllers\Api\UpahSupirTangkiController;
 use App\Http\Controllers\Api\ImportDataCabangController;
 use App\Http\Controllers\Api\JurnalUmumDetailController;
 use App\Http\Controllers\Api\JurnalUmumHeaderController;
@@ -160,7 +162,6 @@ use App\Http\Controllers\Api\ServiceOutHeaderController;
 use App\Http\Controllers\Api\TarikDataAbsensiController;
 use App\Http\Controllers\Api\UpahSupirRincianController;
 use App\Http\Controllers\Api\ApprovalBukaCetakController;
-use App\Http\Controllers\Api\ApprovalKirimBerkasController;
 use App\Http\Controllers\api\ApprovalStokReuseController;
 use App\Http\Controllers\Api\ExportLaporanStokController;
 use App\Http\Controllers\Api\HutangBayarDetailController;
@@ -176,6 +177,7 @@ use App\Http\Controllers\Api\MainTypeAkuntansiController;
 use App\Http\Controllers\Api\PengajuanTripInapController;
 use App\Http\Controllers\Api\PengeluaranDetailController;
 use App\Http\Controllers\Api\PengeluaranHeaderController;
+use App\Http\Controllers\Api\QtyTambahGantiOliController;
 use App\Http\Controllers\Api\ReminderSpkDetailController;
 use App\Http\Controllers\Api\UpahRitasiRincianController;
 use App\Http\Controllers\Api\AbsensiSupirDetailController;
@@ -196,12 +198,14 @@ use App\Http\Controllers\Api\SaldoAwalBukuBesarController;
 use App\Http\Controllers\Api\TarifDiscountHargaController;
 use App\Http\Controllers\Api\TarifHargaTertentuController;
 use App\Http\Controllers\Api\ApprovalHutangBayarController;
+use App\Http\Controllers\Api\ApprovalKirimBerkasController;
 use App\Http\Controllers\Api\ApprovalSupirGambarController;
 use App\Http\Controllers\Api\ApprovalTradoGambarController;
 use App\Http\Controllers\Api\BukaPengeluaranStokController;
 use App\Http\Controllers\Api\InvoiceLunasKePusatController;
 use App\Http\Controllers\Api\LaporanPemakaianBanController;
 use App\Http\Controllers\Api\PengeluaranTruckingController;
+use App\Http\Controllers\Api\LaporanArusDanaPusatController;
 use App\Http\Controllers\Api\LaporanDepositoSupirController;
 use App\Http\Controllers\Api\LaporanKlaimPJTSupirController;
 use App\Http\Controllers\Api\LaporanMingguanSupirController;
@@ -216,6 +220,7 @@ use App\Http\Controllers\Api\PenerimaanStokDetailController;
 use App\Http\Controllers\Api\PenerimaanStokHeaderController;
 use App\Http\Controllers\Api\SaldoAkunPusatDetailController;
 use App\Http\Controllers\Api\StatusGandenganTruckController;
+use App\Http\Controllers\Api\TradoTambahanAbsensiController;
 use App\Http\Controllers\Api\ApprovalInvoiceHeaderController;
 use App\Http\Controllers\Api\ExportPemakaianBarangController;
 use App\Http\Controllers\Api\ExportPembelianBarangController;
@@ -250,6 +255,7 @@ use App\Http\Controllers\Api\PelunasanPiutangDetailController;
 use App\Http\Controllers\Api\PelunasanPiutangHeaderController;
 use App\Http\Controllers\Api\RekapPengeluaranDetailController;
 use App\Http\Controllers\Api\RekapPengeluaranHeaderController;
+use App\Http\Controllers\Api\UpahSupirTangkiRincianController;
 use App\Http\Controllers\Api\ApprovalPendapatanSupirController;
 use App\Http\Controllers\Api\ApprovalSupirKeteranganController;
 use App\Http\Controllers\Api\ApprovalTradoKeteranganController;
@@ -333,6 +339,7 @@ Route::get('trado/image/{field}/{filename}/{type}/{aksi}', [TradoController::cla
 Route::get('stok/{filename}/{type}', [StokController::class, 'getImage']);
 Route::get('stokpusat/{cabang}/{filename}/{type}', [StokPusatController::class, 'getImage']);
 Route::get('upahsupir/{filename}/{type}', [UpahSupirController::class, 'getImage']);
+Route::get('upahsupirtangki/{filename}/{type}', [UpahSupirTangkiController::class, 'getImage']);
 Route::get('parameter/getparamrequest', [ParameterController::class, 'getparamrequest']);
 Route::get('importdatacabang/testkoneksi', [ImportDataCabangController::class, 'testkoneksi']);
 Route::get('stok/getGambar', [StokController::class, 'getGambar']);
@@ -380,12 +387,16 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('jenisorder', JenisOrderController::class)->whereNumber('jenisorder');
     Route::resource('statuscontainer', StatusContainerController::class)->parameters(['statuscontainer' => 'statusContainer'])->whereNumber('statusContainer');
     Route::resource('container', ContainerController::class)->whereNumber('container');
+    Route::resource('triptangki', TripTangkiController::class)->whereNumber('triptangki');
     Route::resource('qtytambahgantioli', QtyTambahGantiOliController::class)->whereNumber('qtytambahgantioli');
     Route::resource('tarifdiscountharga', TarifDiscountHargaController::class)->whereNumber('tarifdiscountharga');
     Route::resource('tarifhargatertentu', TarifHargaTertentuController::class)->whereNumber('tarifhargatertentu');
     Route::resource('shipper', ShipperController::class)->whereNumber('shipper');
     Route::get('upahsupirrincian/get', [UpahSupirRincianController::class, 'get']);
     Route::get('absensisupirdetail/get', [AbsensiSupirDetailController::class, 'getDetailAbsensi']);
+    Route::get('absensisupirproses/get', [AbsensiSupirDetailController::class, 'getProsesKGT']);
+    Route::get('absensisupirapprovalproses/get', [AbsensiSupirApprovalDetailController::class, 'getProsesKBT']);
+    Route::get('absensisupirapprovalproses/getjurnal', [AbsensiSupirApprovalDetailController::class, 'getProsesJurnal']);
     Route::resource('kota', KotaController::class)->whereNumber('kotum');
     Route::resource('gudang', GudangController::class)->whereNumber('gudang');
     Route::resource('kategori', KategoriController::class)->whereNumber('kategori');
@@ -396,6 +407,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('satuan', SatuanController::class)->whereNumber('satuan');
     Route::resource('zona', ZonaController::class)->whereNumber('zona');
     Route::resource('tarif', TarifController::class)->whereNumber('tarif');
+    Route::resource('tariftangki', TarifTangkiController::class)->whereNumber('tariftangki');
     Route::resource('tarifrincian', TarifRincianController::class)->whereNumber('tarifrincian');
     Route::resource('orderantrucking', OrderanTruckingController::class)->whereNumber('orderantrucking');
     Route::resource('chargegandengan', ChargeGandenganController::class)->whereNumber('chargegandengan');
@@ -407,6 +419,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('mekanik', MekanikController::class)->whereNumber('mekanik');
     Route::resource('upahsupir', UpahSupirController::class)->whereNumber('upahsupir');
     Route::resource('upahsupirrincian', UpahSupirRincianController::class)->whereNumber('upahsupirrincian');
+    Route::resource('upahsupirtangki', UpahSupirTangkiController::class)->whereNumber('upahsupirtangki');
+    Route::resource('upahsupirtangkirincian', UpahSupirTangkiRincianController::class)->whereNumber('upahsupirtangkirincian');
     Route::post('cabang/{cabang}/approvalkonensi', [CabangController::class, 'approvalKonensi']);
     Route::resource('cabang', CabangController::class)->whereNumber('cabang');
     Route::resource('gandengan', GandenganController::class)->whereNumber('gandengan');
@@ -493,6 +507,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('supir/approvalblacklist', [SupirController::class, 'approvalBlackListSupir'])->whereNumber('id');
     Route::post('supir/approvalluarkota', [SupirController::class, 'approvalSupirLuarKota'])->whereNumber('id');
     Route::post('supir/approvalnonaktif', [SupirController::class, 'approvalnonaktif']);
+    Route::post('supir/approvalaktif', [SupirController::class, 'approvalaktif']);
     Route::post('supir/approval', [SupirController::class, 'approval']);
     Route::post('supir/approvalhistorysupirmilikmandor', [SupirController::class, 'approvalhistorysupirmilikmandor']);
     Route::post('supir/{id}/cekvalidasihistory', [SupirController::class, 'cekvalidasihistory'])->name('supir.cekvalidasihistory')->whereNumber('id');
@@ -508,6 +523,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('kerusakan/approvalnonaktif', [KerusakanController::class, 'approvalnonaktif']);
     Route::post('mandor/approvalnonaktif', [MandorController::class, 'approvalnonaktif']);
     Route::post('container/approvalnonaktif', [ContainerController::class, 'approvalnonaktif']);
+    Route::post('triptangki/approvalnonaktif', [TripTangkiController::class, 'approvalnonaktif']);
     Route::post('qtytambahgantioli/approvalnonaktif', [QtyTambahGantiOliController::class, 'approvalnonaktif']);
     Route::post('statuscontainer/approvalnonaktif', [StatusContainerController::class, 'approvalnonaktif']);
     Route::post('kota/approvalnonaktif', [KotaController::class, 'approvalnonaktif']);
@@ -569,7 +585,9 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('pengeluarantrucking/approvalnonaktif', [PengeluaranTruckingController::class, 'approvalnonaktif']);
     Route::post('penerimaantrucking/approvalnonaktif', [PenerimaanTruckingController::class, 'approvalnonaktif']);
     Route::post('tarif/approvalnonaktif', [TarifController::class, 'approvalnonaktif']);
+    Route::post('tariftangki/approvalnonaktif', [TarifTangkiController::class, 'approvalnonaktif']);
     Route::post('upahsupir/approvalnonaktif', [UpahSupirController::class, 'approvalnonaktif']);
+    Route::post('upahsupirtangki/approvalnonaktif', [UpahSupirTangkiController::class, 'approvalnonaktif']);
     Route::post('upahsupir/getrincian', [UpahSupirController::class, 'getRincian']);
     Route::post('customer/approvalnonaktif', [CustomerController::class, 'approvalnonaktif']);
     Route::post('gandengan/approvalnonaktif', [GandenganController::class, 'approvalnonaktif']);
@@ -606,6 +624,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('supir/approvalluarkota', [SupirController::class, 'approvalLuarKota']);
     Route::post('pencairangiropengeluaranheader/updateTgl', [PencairanGiroPengeluaranHeaderController::class, 'updateTglJatuhTempo']);
     Route::post('supirserap/approval', [SupirSerapController::class, 'approval']);
+    Route::post('tradotambahanabsensi/approval', [TradoTambahanAbsensiController::class, 'approval']);
     Route::post('customer/approval', [CustomerController::class, 'approval']);
     Route::post('penerimaanheader/approval', [PenerimaanHeaderController::class, 'approval']);
     Route::post('pengajuantripinap/approval', [PengajuanTripInapController::class, 'approval']);
@@ -641,6 +660,13 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::get('orderantrucking/get', [OrderanTruckingController::class, 'getForLookup']);
     Route::get('prosesuangjalansupirheader/default', [ProsesUangJalanSupirHeaderController::class, 'default']);
+    Route::get('laporanarusdanapusat/mingguan', [LaporanArusDanaPusatController::class, 'mingguan']);
+    
+    Route::get('upahsupirtangki/get', [UpahSupirTangkiController::class, 'get']);
+    Route::post('upahsupirtangki/getrincian', [UpahSupirTangkiController::class, 'getrincian']);
+    Route::get('gajisupirheader/default', [GajiSupirHeaderController::class, 'default']);
+    
+    Route::post('stok/approvalaktif', [StokController::class, 'approvalaktif']);
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
@@ -1992,6 +2018,11 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('supirserap/export', [SupirSerapController::class, 'export'])->whereNumber('id');
     Route::get('supirserap/field_length', [SupirSerapController::class, 'fieldLength']);
     Route::resource('supirserap', SupirSerapController::class)->whereNumber('supirserap');
+    
+    Route::post('tradotambahanabsensi/{id}/cekvalidasi', [TradoTambahanAbsensiController::class, 'cekvalidasi'])->whereNumber('id');
+    Route::get('tradotambahanabsensi/export', [TradoTambahanAbsensiController::class, 'export'])->whereNumber('id');
+    Route::get('tradotambahanabsensi/field_length', [TradoTambahanAbsensiController::class, 'fieldLength']);
+    Route::resource('tradotambahanabsensi', TradoTambahanAbsensiController::class)->whereNumber('tradotambahanabsensi');
 
     Route::get('laporanbiayasupir/export', [LaporanBiayaSupirController::class, 'export'])->name('laporanbiayasupir.export');
     Route::resource('laporanbiayasupir', LaporanBiayaSupirController::class)->whereNumber('laporanbiayasupir');
@@ -2023,6 +2054,29 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('exportperhitunganbonus/report', [ExportPerhitunganBonusController::class, 'report'])->name('exportperhitunganbonus.report');
     Route::get('exportperhitunganbonus/export', [ExportPerhitunganBonusController::class, 'export'])->name('exportperhitunganbonus.export');
     Route::resource('exportperhitunganbonus', ExportPerhitunganBonusController::class);
+
+    Route::get('laporanarusdanapusat/report', [LaporanArusDanaPusatController::class, 'report'])->name('laporanarusdanapusat.report');
+    Route::get('laporanarusdanapusat/export', [LaporanArusDanaPusatController::class, 'export'])->name('laporanarusdanapusat.export');
+    Route::resource('laporanarusdanapusat', LaporanArusDanaPusatController::class)->whereNumber('laporanarusdanapusat');
+    
+    Route::get('triptangki/field_length', [TripTangkiController::class, 'fieldLength']);
+    Route::get('triptangki/default', [TripTangkiController::class, 'default']);
+    Route::post('triptangki/{id}/cekValidasi', [TripTangkiController::class, 'cekValidasi'])->name('triptangki.cekValidasi')->whereNumber('id');
+    Route::get('triptangki/export', [TripTangkiController::class, 'export']);
+    Route::get('triptangki/report', [TripTangkiController::class, 'report']);
+    
+    Route::get('tariftangki/field_length', [TarifTangkiController::class, 'fieldLength']);
+    Route::get('tariftangki/default', [TarifTangkiController::class, 'default']);
+    Route::get('tariftangki/getExport', [TarifTangkiController::class, 'export']);
+    Route::post('tariftangki/{id}/cekValidasi', [TarifTangkiController::class, 'cekValidasi'])->name('tariftangki.cekValidasi')->whereNumber('id');
+    
+    Route::get('upahsupirtangki/field_length', [UpahSupirTangkiController::class, 'fieldLength']);
+    Route::get('upahsupirtangki/default', [UpahSupirTangkiController::class, 'default']);
+    Route::get('upahsupirtangki/export', [UpahSupirTangkiController::class, 'export']);
+    Route::post('upahsupirtangki/{id}/cekValidasi', [UpahSupirTangkiController::class, 'cekValidasi'])->name('upahsupirtangki.cekValidasi')->whereNumber('id');
+    Route::get('upahsupirtangkirincian/setuprow', [UpahSupirTangkiRincianController::class, 'setUpRow']);
+    Route::get('upahsupirtangkirincian/setuprowshow/{id}', [UpahSupirTangkiRincianController::class, 'setUpRowExcept'])->whereNumber('id');
+
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);
 

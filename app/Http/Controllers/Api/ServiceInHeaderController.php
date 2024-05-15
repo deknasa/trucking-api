@@ -60,15 +60,16 @@ class ServiceInHeaderController extends Controller
                 'keterangan_detail' => $request->keterangan_detail,
             ];
             $serviceInHeader = (new ServiceInHeader())->processStore($data);
-            $serviceInHeader->position = $this->getPosition($serviceInHeader, $serviceInHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $serviceInHeader->page = ceil($serviceInHeader->position / (10));
-            } else {
-                $serviceInHeader->page = ceil($serviceInHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $serviceInHeader->position = $this->getPosition($serviceInHeader, $serviceInHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $serviceInHeader->page = ceil($serviceInHeader->position / (10));
+                } else {
+                    $serviceInHeader->page = ceil($serviceInHeader->position / ($request->limit ?? 10));
+                }
+                $serviceInHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $serviceInHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $serviceInHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $serviceInHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-
             DB::commit();
 
             return response()->json([
@@ -331,8 +332,8 @@ class ServiceInHeaderController extends Controller
 
             if ($serviceInHeader->statuscetak != $statusSudahCetak->id) {
                 $serviceInHeader->statuscetak = $statusSudahCetak->id;
-                $serviceInHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $serviceInHeader->userbukacetak = auth('api')->user()->name;
+                // $serviceInHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $serviceInHeader->userbukacetak = auth('api')->user()->name;
                 $serviceInHeader->jumlahcetak = $serviceInHeader->jumlahcetak + 1;
                 if ($serviceInHeader->save()) {
                     $logTrail = [

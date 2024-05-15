@@ -958,6 +958,7 @@ class LaporanNeraca extends MyModel
             Schema::create($tempkas, function ($table) {
                 $table->id();
                 $table->integer('urut')->nullable();
+                $table->integer('urutdetail')->nullable();
                 $table->string('keterangancoa', 500)->nullable();
                 $table->string('namabank', 500)->nullable();
                 $table->date('tglbukti')->nullable();
@@ -965,6 +966,8 @@ class LaporanNeraca extends MyModel
                 $table->longText('keterangan')->nullable();
                 $table->double('debet')->nullable();
                 $table->double('kredit')->nullable();
+                $table->double('totaldebet')->nullable();
+                $table->double('totalkredit')->nullable();
                 $table->double('saldo')->nullable();
                 $table->string('judullaporan', 500)->nullable();
                 $table->string('judul', 500)->nullable();
@@ -985,6 +988,7 @@ class LaporanNeraca extends MyModel
                 ->first()->text ?? 0;
             DB::table($tempkas)->insertUsing([
                 'urut',
+                'urutdetail',
                 'keterangancoa',
                 'namabank',
                 'tglbukti',
@@ -992,6 +996,8 @@ class LaporanNeraca extends MyModel
                 'keterangan',
                 'debet',
                 'kredit',
+                'totaldebet',
+                'totalkredit',
                 'saldo',
                 'judullaporan',
                 'judul',
@@ -1007,6 +1013,7 @@ class LaporanNeraca extends MyModel
             Schema::create($tempbank, function ($table) {
                 $table->id();
                 $table->integer('urut')->nullable();
+                $table->integer('urutdetail')->nullable();
                 $table->string('keterangancoa', 500)->nullable();
                 $table->string('namabank', 500)->nullable();
                 $table->date('tglbukti')->nullable();
@@ -1014,6 +1021,8 @@ class LaporanNeraca extends MyModel
                 $table->longText('keterangan')->nullable();
                 $table->double('debet')->nullable();
                 $table->double('kredit')->nullable();
+                $table->double('totaldebet')->nullable();
+                $table->double('totalkredit')->nullable();
                 $table->double('saldo')->nullable();
                 $table->string('judullaporan', 500)->nullable();
                 $table->string('judul', 500)->nullable();
@@ -1033,6 +1042,7 @@ class LaporanNeraca extends MyModel
                 ->first()->text ?? 0;
             DB::table($tempbank)->insertUsing([
                 'urut',
+                'urutdetail',
                 'keterangancoa',
                 'namabank',
                 'tglbukti',
@@ -1040,6 +1050,8 @@ class LaporanNeraca extends MyModel
                 'keterangan',
                 'debet',
                 'kredit',
+                'totaldebet',
+                'totalkredit',
                 'saldo',
                 'judullaporan',
                 'judul',

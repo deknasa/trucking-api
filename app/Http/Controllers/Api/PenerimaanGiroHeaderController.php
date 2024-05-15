@@ -95,14 +95,16 @@ class PenerimaanGiroHeaderController extends Controller
                 'bulanbeban' => $request->bulanbeban,
             ];
             $penerimaanGiroHeader = (new PenerimaanGiroHeader())->processStore($data);
-            $penerimaanGiroHeader->position = $this->getPosition($penerimaanGiroHeader, $penerimaanGiroHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / (10));
-            } else {
-                $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $penerimaanGiroHeader->position = $this->getPosition($penerimaanGiroHeader, $penerimaanGiroHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / (10));
+                } else {
+                    $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / ($request->limit ?? 10));
+                }
+                $penerimaanGiroHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $penerimaanGiroHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $penerimaanGiroHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $penerimaanGiroHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             DB::commit();
 
             return response()->json([
@@ -255,8 +257,8 @@ class PenerimaanGiroHeaderController extends Controller
 
             if ($penerimaanGiro->statuscetak != $statusSudahCetak->id) {
                 $penerimaanGiro->statuscetak = $statusSudahCetak->id;
-                $penerimaanGiro->tglbukacetak = date('Y-m-d H:i:s');
-                $penerimaanGiro->userbukacetak = auth('api')->user()->name;
+                // $penerimaanGiro->tglbukacetak = date('Y-m-d H:i:s');
+                // $penerimaanGiro->userbukacetak = auth('api')->user()->name;
                 $penerimaanGiro->jumlahcetak = $penerimaanGiro->jumlahcetak + 1;
                 if ($penerimaanGiro->save()) {
                     $logTrail = [
@@ -287,24 +289,23 @@ class PenerimaanGiroHeaderController extends Controller
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
 
         $pengeluaran = PenerimaanGiroHeader::find($id);
-        
+
         if (!isset($pengeluaran)) {
             $keteranganerror = $error->cekKeteranganError('DTA') ?? '';
-            $keterror='No Bukti <b>'. request()->nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . request()->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
                 'message' => $keterror,
                 'error' => true,
                 'kodeerror' => 'SAP',
                 'statuspesan' => 'warning',
             ];
-    
+
             return response($data);
-    
         }
-        $nobukti=$pengeluaran->nobukti ?? '';
-        
-        $tgltutup=(new Parameter())->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
-        $tgltutup=date('Y-m-d', strtotime($tgltutup));        
+        $nobukti = $pengeluaran->nobukti ?? '';
+
+        $tgltutup = (new Parameter())->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
 
         $status = $pengeluaran->statusapproval;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
@@ -318,7 +319,7 @@ class PenerimaanGiroHeaderController extends Controller
 
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
-            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
                 'message' => $keterror,
                 'error' => true,
@@ -329,7 +330,7 @@ class PenerimaanGiroHeaderController extends Controller
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
-            $keterror='No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
 
             $data = [
                 'message' => $keterror,
@@ -341,7 +342,7 @@ class PenerimaanGiroHeaderController extends Controller
             return response($data);
         } else if ($tgltutup >= $pengeluaran->tglbukti) {
             $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
-            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
                 'message' => $keterror,
@@ -349,7 +350,7 @@ class PenerimaanGiroHeaderController extends Controller
                 'statuspesan' => 'warning',
             ];
 
-            return response($data);            
+            return response($data);
         } else if ($useredit != '' && $useredit != $user) {
             $waktu = (new Parameter())->cekBatasWaktuEdit('Penerimaan Giro Header BUKTI');
 
@@ -379,8 +380,7 @@ class PenerimaanGiroHeaderController extends Controller
                 ];
 
                 return response($data);
-            }            
-            
+            }
         } else {
 
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
@@ -450,7 +450,7 @@ class PenerimaanGiroHeaderController extends Controller
     {
     }
 
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL KIRIM BERKAS
      */
@@ -538,7 +538,7 @@ class PenerimaanGiroHeaderController extends Controller
 
 
             event(new NewNotification(json_encode([
-                'message' => "FORM INI SUDAH TIDAK BISA DIEDIT. SEDANG DIEDIT OLEH ".$edit->editing_by,
+                'message' => "FORM INI SUDAH TIDAK BISA DIEDIT. SEDANG DIEDIT OLEH " . $edit->editing_by,
                 'olduser' => $edit->oldeditingby,
                 'user' => $edit->editing_by,
                 'id' => $request->id
@@ -551,5 +551,4 @@ class PenerimaanGiroHeaderController extends Controller
             'data' => $edit
         ]);
     }
-
 }

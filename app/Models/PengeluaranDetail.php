@@ -36,6 +36,23 @@ class PengeluaranDetail extends MyModel
                 "$this->table.nominal",
                 "$this->table.keterangan",
                 "$this->table.noinvoice as invoice_nobukti",
+                "$this->table.nowarkat",
+                db::raw("format(pengeluarandetail.tgljatuhtempo,'dd/')+
+                    (case when month(pengeluarandetail.tgljatuhtempo)=1 then 'JAN'
+                          when month(pengeluarandetail.tgljatuhtempo)=2 then 'FEB'
+                          when month(pengeluarandetail.tgljatuhtempo)=3 then 'MAR'
+                          when month(pengeluarandetail.tgljatuhtempo)=4 then 'APR'
+                          when month(pengeluarandetail.tgljatuhtempo)=5 then 'MAY'
+                          when month(pengeluarandetail.tgljatuhtempo)=6 then 'JUN'
+                          when month(pengeluarandetail.tgljatuhtempo)=7 then 'JUL'
+                          when month(pengeluarandetail.tgljatuhtempo)=8 then 'AGU'
+                          when month(pengeluarandetail.tgljatuhtempo)=9 then 'SEP'
+                          when month(pengeluarandetail.tgljatuhtempo)=10 then 'OKT'
+                          when month(pengeluarandetail.tgljatuhtempo)=11 then 'NOV'
+                          when month(pengeluarandetail.tgljatuhtempo)=12 then 'DES' ELSE '' END)
+
+                    +format(pengeluarandetail.tgljatuhtempo,'/yy')   as tgljatuhtempoformat"),
+
             )
                 ->leftJoin(DB::raw("pengeluaranheader as header with (readuncommitted)"), "header.id", "$this->table.pengeluaran_id")
                 ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), "debet.coa", "$this->table.coadebet");
@@ -90,7 +107,8 @@ class PengeluaranDetail extends MyModel
                 DB::raw("(case when year(cast(pengeluarandetail.bulanbeban as datetime))='1900' then '' else format(pengeluarandetail.bulanbeban,'yyyy-MM-dd') end) as bulanbeban"),
             )
             ->join(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarandetail.coadebet', 'akunpusat.coa')
-            ->where("pengeluarandetail.pengeluaran_id", $id);
+            ->where("pengeluarandetail.pengeluaran_id", $id)
+            ->orderBy('pengeluarandetail.id');
 
         $data = $query->get();
 
@@ -188,5 +206,44 @@ class PengeluaranDetail extends MyModel
         }
 
         return $pengeluaranDetail;
+    }
+
+    
+    public function getProsesKBTAbsensi($nobukti) {
+        $this->setRequestParameters();
+
+        $query = DB::table($this->table)->from(DB::raw("absensisupirapprovalproses as proses with (readuncommitted) "));
+
+        $query->select(
+            "$this->table.pengeluaran_id",
+            "$this->table.nobukti",
+            "$this->table.nowarkat",
+            "$this->table.nominal",
+            "$this->table.keterangan",
+            "$this->table.noinvoice",
+            "$this->table.bank",
+            DB::raw("(case when year(isnull($this->table.bulanbeban,'1900/1/1'))<2000 then null else $this->table.bulanbeban end) as bulanbeban"),
+            DB::raw("(case when year(isnull($this->table.tgljatuhtempo,'1900/1/1'))<2000 then null else $this->table.tgljatuhtempo end) as tgljatuhtempo"),
+            "debet.keterangancoa as coadebet",
+            "kredit.keterangancoa as coakredit",
+
+        )
+        ->leftJoin(DB::raw("$this->table with (readuncommitted)"), 'proses.pengeluaran_nobukti',$this->table.'.nobukti')
+        ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), "$this->table.coadebet", "debet.coa")
+        ->leftJoin(DB::raw("akunpusat as kredit with (readuncommitted)"), "$this->table.coakredit", "kredit.coa");
+        
+
+        
+        $this->sort($query);
+
+        $query->where( "proses.nobukti", "=", $nobukti);
+        $this->filter($query);
+        
+        $this->totalNominal = $query->sum($this->table .'.nominal');
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->paginate($query);
+        return $query->get();
     }
 }

@@ -608,8 +608,16 @@ class Tarif extends MyModel
                 'tarif.id',
                 DB::raw("(case when tarif.parent_id=0 then null else tarif.parent_id end) as parent_id"),
                 'parent.tujuan as parent',
-                DB::raw("(case when tarif.upahsupir_id=0 then null else tarif.upahsupir_id end) as upahsupir_id"),
-                "$tempUpahsupir.kotasampai_id as upahsupir",
+                // DB::raw("(case when tarif.upahsupir_id=0 then null else tarif.upahsupir_id end) as upahsupir_id"),
+                // "$tempUpahsupir.kotasampai_id as upah",     
+                
+                db::raw("isnull(kotadari.keterangan,'')+(case when isnull(kotasampai.keterangan,'')='' then '' else ' - ' +isnull(kotasampai.keterangan,'') end)+ 
+                (case when isnull(upahsupir.penyesuaian,'')='' then '' else ' ( ' +isnull(upahsupir.penyesuaian,'')+ ' ) ' end) as upah
+                "),
+                'kotadari.keterangan as dari',
+                'kotasampai.keterangan as sampai',
+                'upahsupir.penyesuaian as penyesuaianupah',
+                'upahsupir.id as upah_id',
                 DB::raw("TRIM(tarif.tujuan) as tujuan"),
                 'tarif.penyesuaian',
                 'tarif.statusaktif',
@@ -629,7 +637,11 @@ class Tarif extends MyModel
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'tarif.jenisorder_id', '=', 'jenisorder.id')
             ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
-            ->leftJoin(DB::raw("$tempUpahsupir with (readuncommitted)"), 'tarif.upahsupir_id', '=', "$tempUpahsupir.id")
+            
+            ->leftJoin(DB::raw("upahsupir as upahsupir with (readuncommitted)"), 'upahsupir.tarif_id', '=', 'tarif.id')
+            ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
+            ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
+            // ->leftJoin(DB::raw("$tempUpahsupir with (readuncommitted)"), 'tarif.upahsupir_id', '=', "$tempUpahsupir.id")
 
             ->where('tarif.id', $id);
 

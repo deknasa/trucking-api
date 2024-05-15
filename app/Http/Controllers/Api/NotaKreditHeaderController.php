@@ -74,14 +74,16 @@ class NotaKreditHeaderController extends Controller
                 'potongan' => $request->nominal_detail
             ];
             $notaKreditHeader = (new NotaKreditHeader())->processStore($data);
-            $notaKreditHeader->position = $this->getPosition($notaKreditHeader, $notaKreditHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $notaKreditHeader->page = ceil($notaKreditHeader->position / (10));
-            } else {
-                $notaKreditHeader->page = ceil($notaKreditHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $notaKreditHeader->position = $this->getPosition($notaKreditHeader, $notaKreditHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $notaKreditHeader->page = ceil($notaKreditHeader->position / (10));
+                } else {
+                    $notaKreditHeader->page = ceil($notaKreditHeader->position / ($request->limit ?? 10));
+                }
+                $notaKreditHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $notaKreditHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $notaKreditHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $notaKreditHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             DB::commit();
 
             return response()->json([
@@ -444,8 +446,8 @@ class NotaKreditHeaderController extends Controller
 
             if ($notaKreditHeader->statuscetak != $statusSudahCetak->id) {
                 $notaKreditHeader->statuscetak = $statusSudahCetak->id;
-                $notaKreditHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $notaKreditHeader->userbukacetak = auth('api')->user()->name;
+                // $notaKreditHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $notaKreditHeader->userbukacetak = auth('api')->user()->name;
                 $notaKreditHeader->jumlahcetak = $notaKreditHeader->jumlahcetak + 1;
                 if ($notaKreditHeader->save()) {
                     $logTrail = [

@@ -48,11 +48,35 @@ class LaporanKasBankController extends Controller
                 ->join("parameter", 'parameter.text', 'cabang.id')
                 ->where('parameter.grp', 'ID CABANG')
                 ->first();
+            $disetujui = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->select('text')
+                ->where('grp', 'DISETUJUI')
+                ->where('subgrp', 'DISETUJUI')
+                ->first();
+            $diperiksa = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->select('text')
+                ->where('grp', 'DISETUJUI')
+                ->where('subgrp', 'DIPERIKSA')
+                ->first();
+            $dibuat = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->select('text')
+                ->where('grp', 'DISETUJUI')
+                ->where('subgrp', 'DIBUAT')
+                ->first();
 
+            $infoPemeriksa = [
+                'dibuat' => $dibuat->text,
+                'diperiksa' => $diperiksa->text,
+                'disetujui' => $disetujui->text,
+            ];
 
             $laporankasbank = new LaporanKasBank();
+            $hasil = $laporankasbank->getReport($dari, $sampai, $bank_id, $prosesneraca);
+            //  dd($hasil);
             return response([
-                'data' => $laporankasbank->getReport($dari, $sampai, $bank_id, $prosesneraca),
+                'data' => $hasil['data'],
+                'datasaldo' => $hasil['dataSaldo'],
+                'infopemeriksa' => $infoPemeriksa,
                 'namacabang' => 'CABANG ' . $getCabang->namacabang
             ]);
         }
@@ -82,8 +106,9 @@ class LaporanKasBankController extends Controller
                 ->first();
 
             $laporankasbank = new LaporanKasBank();
+            $hasil = $laporankasbank->getReport($dari, $sampai, $bank_id, $prosesneraca);
             return response([
-                'data' => $laporankasbank->getReport($dari, $sampai, $bank_id, $prosesneraca),
+                'data' => $hasil['data'],
                 'namacabang' => 'CABANG ' . $getCabang->namacabang
             ]);
         }

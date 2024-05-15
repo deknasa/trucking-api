@@ -130,15 +130,17 @@ class PengeluaranStokHeaderController extends Controller
             // dd($data);
             /* Store header */
             $pengeluaranStokHeader = (new PengeluaranStokHeader())->processStore($data);
-            /* Set position and page */
-            $pengeluaranStokHeader->position = $this->getPosition($pengeluaranStokHeader, $pengeluaranStokHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / (10));
-            } else {
-                $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                /* Set position and page */
+                $pengeluaranStokHeader->position = $this->getPosition($pengeluaranStokHeader, $pengeluaranStokHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / (10));
+                } else {
+                    $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / ($request->limit ?? 10));
+                }
+                $pengeluaranStokHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $pengeluaranStokHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $pengeluaranStokHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $pengeluaranStokHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
             DB::commit();
             return response()->json([
@@ -823,8 +825,8 @@ class PengeluaranStokHeaderController extends Controller
 
             if ($pengeluaranStokHeader->statuscetak != $statusSudahCetak->id) {
                 $pengeluaranStokHeader->statuscetak = $statusSudahCetak->id;
-                $pengeluaranStokHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $pengeluaranStokHeader->userbukacetak = auth('api')->user()->name;
+                // $pengeluaranStokHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $pengeluaranStokHeader->userbukacetak = auth('api')->user()->name;
                 $pengeluaranStokHeader->jumlahcetak = $pengeluaranStokHeader->jumlahcetak + 1;
                 if ($pengeluaranStokHeader->save()) {
                     $logTrail = [

@@ -84,16 +84,17 @@ class PelunasanHutangHeaderController extends Controller
                 'keterangan' => $request->keterangan,
                 // 'coadebet' =>$request->coadebet,
             ]);
-            /* Set position and page */
-            $PelunasanHutangHeader->position = $this->getPosition($PelunasanHutangHeader, $PelunasanHutangHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $PelunasanHutangHeader->page = ceil($PelunasanHutangHeader->position / (10));
-            } else {
-                $PelunasanHutangHeader->page = ceil($PelunasanHutangHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                /* Set position and page */
+                $PelunasanHutangHeader->position = $this->getPosition($PelunasanHutangHeader, $PelunasanHutangHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $PelunasanHutangHeader->page = ceil($PelunasanHutangHeader->position / (10));
+                } else {
+                    $PelunasanHutangHeader->page = ceil($PelunasanHutangHeader->position / ($request->limit ?? 10));
+                }
+                $PelunasanHutangHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $PelunasanHutangHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $PelunasanHutangHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $PelunasanHutangHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-
 
             DB::commit();
             return response()->json([
@@ -299,8 +300,8 @@ class PelunasanHutangHeaderController extends Controller
 
             if ($PelunasanHutang->statuscetak != $statusSudahCetak->id) {
                 $PelunasanHutang->statuscetak = $statusSudahCetak->id;
-                $PelunasanHutang->tglbukacetak = date('Y-m-d H:i:s');
-                $PelunasanHutang->userbukacetak = auth('api')->user()->name;
+                // $PelunasanHutang->tglbukacetak = date('Y-m-d H:i:s');
+                // $PelunasanHutang->userbukacetak = auth('api')->user()->name;
                 $PelunasanHutang->jumlahcetak = $PelunasanHutang->jumlahcetak + 1;
 
                 if ($PelunasanHutang->save()) {

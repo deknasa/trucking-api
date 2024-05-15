@@ -95,15 +95,17 @@ class PengembalianKasGantungHeaderController extends Controller
                 "kasgantung_nobukti" => $request->kasgantung_nobukti ?? [],
                 "kasgantungdetail_id" => $request->kasgantungdetail_id ?? [],
             ]);
-            /* Set position and page */
-            $pengembalianKasGantungHeader->position = $this->getPosition($pengembalianKasGantungHeader, $pengembalianKasGantungHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / (10));
-            } else {
-                $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                /* Set position and page */
+                $pengembalianKasGantungHeader->position = $this->getPosition($pengembalianKasGantungHeader, $pengembalianKasGantungHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / (10));
+                } else {
+                    $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / ($request->limit ?? 10));
+                }
+                $pengembalianKasGantungHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $pengembalianKasGantungHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $pengembalianKasGantungHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $pengembalianKasGantungHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
             DB::commit();
             return response()->json([
@@ -456,8 +458,8 @@ class PengembalianKasGantungHeaderController extends Controller
 
             if ($pengembalianKasGantung->statuscetak != $statusSudahCetak->id) {
                 $pengembalianKasGantung->statuscetak = $statusSudahCetak->id;
-                $pengembalianKasGantung->tglbukacetak = date('Y-m-d H:i:s');
-                $pengembalianKasGantung->userbukacetak = auth('api')->user()->name;
+                // $pengembalianKasGantung->tglbukacetak = date('Y-m-d H:i:s');
+                // $pengembalianKasGantung->userbukacetak = auth('api')->user()->name;
                 $pengembalianKasGantung->jumlahcetak = $pengembalianKasGantung->jumlahcetak + 1;
                 if ($pengembalianKasGantung->save()) {
                     $logTrail = [

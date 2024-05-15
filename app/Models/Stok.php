@@ -200,6 +200,8 @@ class Stok extends MyModel
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
         $class = 'StokController';
+        $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
+        $retur = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
 
         if ($proses == 'reload') {
             $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -276,8 +278,7 @@ class Stok extends MyModel
           
 
             
-            $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
-            $retur = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
+
             if ($penerimaanstokheader_nobukti && $retur->text == $pengeluaranstok_id) {
                 $query = DB::table($this->table)->select(
                     'stok.id',
@@ -554,8 +555,8 @@ class Stok extends MyModel
             }
         }
         if ($penerimaanstokheader_nobukti) {
-    
-            if ($spb->text == $penerimaanstok_id || $retur->text == $pengeluaranstok_id) {
+            if ($retur->text == $pengeluaranstok_id) {
+            // if ($spb->text == $penerimaanstok_id || $retur->text == $pengeluaranstok_id) {
                 $query->leftJoin('penerimaanstokdetail', 'stok.id', 'penerimaanstokdetail.stok_id')
                     ->where('penerimaanstokdetail.nobukti', $penerimaanstokheader_nobukti);
             }
@@ -761,6 +762,7 @@ class Stok extends MyModel
             $table->integer('kelompok_id')->nullable();
             $table->double('totalvulkanisir', 15, 2)->nullable();
             $table->integer('statusreuse')->nullable();
+            $table->integer('statusservicerutin')->nullable();
             $table->integer('subkelompok_id')->nullable();
             $table->integer('satuan_id')->nullable();
             $table->integer('kategori_id')->nullable();
@@ -1993,4 +1995,35 @@ class Stok extends MyModel
         return $queryvulkan;
        
     }
+    
+    public function processApprovalaktif(array $data)
+    {
+
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $stok = Stok::find($data['Id'][$i]);
+
+            $stok->statusaktif = $statusaktif->id;
+            $aksi = $statusaktif->text;
+
+            // dd($stok);
+            if ($stok->save()) {
+
+                (new LogTrail())->processStore([
+
+                    'namatabel' => strtoupper($stok->getTable()),
+                    'postingdari' => 'APPROVAL STOK',
+                    'idtrans' => $stok->id,
+                    'nobuktitrans' => $stok->id,
+                    'aksi' => $aksi,
+                    'datajson' => $stok->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+
+        return $stok;
+    }    
 }

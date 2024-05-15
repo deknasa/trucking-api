@@ -83,6 +83,15 @@ class GajiSupirHeaderController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $gajiSupir = new GajiSupirHeader();
+        return response([
+            'status' => true,
+            'data' => $gajiSupir->default(),
+        ]);
+    }
+
     /**
      * @ClassName 
      * @Keterangan TAMBAH DATA
@@ -104,6 +113,7 @@ class GajiSupirHeaderController extends Controller
                 'nomDeposito' => $request->nomDeposito,
                 'voucher' => $request->voucher,
                 'uangmakanberjenjang' => $request->uangmakanberjenjang,
+                'statusjeniskendaraan' => $request->statusjeniskendaraan,
                 'uangmakanharian' => $request->uangmakanharian,
                 'rincian_nobukti' => $request->rincian_nobukti,
                 'rincian_ritasi' => $request->rincian_ritasi,
@@ -138,14 +148,15 @@ class GajiSupirHeaderController extends Controller
             $gajiSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $gajiSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
-            $gajiSupirHeader->position = $this->getPosition($gajiSupirHeader, $gajiSupirHeader->getTable())->position;
+            if ($request->button == 'btnSubmit') {
+                $gajiSupirHeader->position = $this->getPosition($gajiSupirHeader, $gajiSupirHeader->getTable())->position;
 
-            if ($request->limit == 0) {
-                $gajiSupirHeader->page = ceil($gajiSupirHeader->position / (10));
-            } else {
-                $gajiSupirHeader->page = ceil($gajiSupirHeader->position / ($request->limit ?? 10));
+                if ($request->limit == 0) {
+                    $gajiSupirHeader->page = ceil($gajiSupirHeader->position / (10));
+                } else {
+                    $gajiSupirHeader->page = ceil($gajiSupirHeader->position / ($request->limit ?? 10));
+                }
             }
-
             DB::commit();
 
             return response()->json([
@@ -199,6 +210,7 @@ class GajiSupirHeaderController extends Controller
                 'voucher' => $request->voucher,
                 'uangmakanharian' => $request->uangmakanharian,
                 'uangmakanberjenjang' => $request->uangmakanberjenjang,
+                'statusjeniskendaraan' => $request->statusjeniskendaraan,
                 'rincian_nobukti' => $request->rincian_nobukti,
                 'rincian_ritasi' => $request->rincian_ritasi,
                 'rincian_komisisupir' => $request->rincian_komisisupir,
@@ -292,6 +304,7 @@ class GajiSupirHeaderController extends Controller
         $dari = $request->tgldari;
         $sampai = $request->tglsampai;
         $supir_id = $request->supir_id;
+        $statusjeniskendaraan = $request->statusjeniskendaraan;
         $tglDari = date('Y-m-d', strtotime($dari));
         $tglSampai = date('Y-m-d', strtotime($sampai));
 
@@ -308,7 +321,7 @@ class GajiSupirHeaderController extends Controller
 
             return response([
                 'errors' => false,
-                'data' => $gajiSupir->getTrip($supir_id, $tglDari, $tglSampai),
+                'data' => $gajiSupir->getTrip($supir_id, $tglDari, $tglSampai, $statusjeniskendaraan),
                 'attributes' => [
                     'totalRows' => $gajiSupir->totalRows,
                     'totalPages' => $gajiSupir->totalPages,
@@ -352,9 +365,10 @@ class GajiSupirHeaderController extends Controller
         $aksi = request()->aksi;
         if ($aksi == 'edit') {
             $supir_id = request()->supir_id;
+            $statusjeniskendaraan = request()->statusjeniskendaraan;
             $dari = date('Y-m-d', strtotime(request()->tgldari));
             $sampai = date('Y-m-d', strtotime(request()->tglsampai));
-            $data = $gajisupir->getAllEditTrip($gajiId, $supir_id, $dari, $sampai);
+            $data = $gajisupir->getAllEditTrip($gajiId, $supir_id, $dari, $sampai, $statusjeniskendaraan);
         } else {
             $data = $gajisupir->getEditTrip($gajiId);
         }
@@ -411,13 +425,13 @@ class GajiSupirHeaderController extends Controller
 
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
-        
+
         $parameter = new Parameter();
 
-        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
-        $tgltutup=date('Y-m-d', strtotime($tgltutup));        
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
 
-        $aksi=$request->aksi ?? '';
+        $aksi = $request->aksi ?? '';
         $user = auth('api')->user()->name;
         $useredit = $gajisupir->editing_by ?? '';
 
@@ -435,7 +449,7 @@ class GajiSupirHeaderController extends Controller
             return response($data);
         } else if ($tgltutup >= $gajisupir->tglbukti) {
             $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
-            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
                 'message' => $keterror,
@@ -445,7 +459,7 @@ class GajiSupirHeaderController extends Controller
 
             return response($data);
         } else if ($useredit != '' && $useredit != $user) {
-           
+
             $waktu = (new Parameter())->cekBatasWaktuEdit('gaji supir header BUKTI');
 
             $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($gajisupir->editing_at)));
@@ -475,13 +489,12 @@ class GajiSupirHeaderController extends Controller
                 ];
 
                 return response($data);
-            }            
-            
+            }
         } else {
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                 (new MyModel())->updateEditingBy('gajisupirheader', $id, $aksi);
             }
-            
+
             $data = [
                 'error' => false,
                 'message' => '',
@@ -596,10 +609,11 @@ class GajiSupirHeaderController extends Controller
     {
         $gajiSupir = new GajiSupirHeader();
 
+        $statusjeniskendaraan = request()->statusjeniskendaraan;
         $supir_id = request()->supir_id;
         $tglDari = date('Y-m-d', strtotime(request()->tgldari));
         $tglSampai = date('Y-m-d', strtotime(request()->tglsampai));
-        $data = $gajiSupir->getAbsensi($supir_id, $tglDari, $tglSampai);
+        $data = $gajiSupir->getAbsensi($supir_id, $tglDari, $tglSampai, $statusjeniskendaraan);
         if ($data != null) {
             return response([
                 'errors' => false,
@@ -629,9 +643,10 @@ class GajiSupirHeaderController extends Controller
         $aksi = request()->aksi;
         if ($aksi == 'edit') {
             $supir_id = request()->supir_id;
+            $statusjeniskendaraan = request()->statusjeniskendaraan;
             $dari = date('Y-m-d', strtotime(request()->tgldari));
             $sampai = date('Y-m-d', strtotime(request()->tglsampai));
-            $data = $gajisupir->getAllEditAbsensi($gajiId, $supir_id, $dari, $sampai);
+            $data = $gajisupir->getAllEditAbsensi($gajiId, $supir_id, $dari, $sampai, $statusjeniskendaraan);
         } else {
             $data = $gajisupir->getEditAbsensi($gajiId);
         }
@@ -671,8 +686,8 @@ class GajiSupirHeaderController extends Controller
 
             if ($gajisupir->statuscetak != $statusSudahCetak->id) {
                 $gajisupir->statuscetak = $statusSudahCetak->id;
-                $gajisupir->tglbukacetak = date('Y-m-d H:i:s');
-                $gajisupir->userbukacetak = auth('api')->user()->name;
+                // $gajisupir->tglbukacetak = date('Y-m-d H:i:s');
+                // $gajisupir->userbukacetak = auth('api')->user()->name;
                 $gajisupir->jumlahcetak = $gajisupir->jumlahcetak + 1;
                 if ($gajisupir->save()) {
                     $logTrail = [
@@ -720,7 +735,7 @@ class GajiSupirHeaderController extends Controller
      */
     public function approvalkirimberkas()
     {
-    }    
+    }
 
     /**
      * @ClassName 

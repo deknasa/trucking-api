@@ -95,14 +95,16 @@ class PenerimaanHeaderController extends Controller
                 'penerimaangiro_nobukti' => $request->penerimaangiro_nobukti,
             ];
             $penerimaanHeader = (new penerimaanHeader())->processStore($data);
-            $penerimaanHeader->position = $this->getPosition($penerimaanHeader, $penerimaanHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $penerimaanHeader->page = ceil($penerimaanHeader->position / (10));
-            } else {
-                $penerimaanHeader->page = ceil($penerimaanHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $penerimaanHeader->position = $this->getPosition($penerimaanHeader, $penerimaanHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $penerimaanHeader->page = ceil($penerimaanHeader->position / (10));
+                } else {
+                    $penerimaanHeader->page = ceil($penerimaanHeader->position / ($request->limit ?? 10));
+                }
+                $penerimaanHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $penerimaanHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $penerimaanHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $penerimaanHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
             DB::commit();
 
@@ -517,8 +519,8 @@ class PenerimaanHeaderController extends Controller
 
             if ($penerimaanHeader->statuscetak != $statusSudahCetak->id) {
                 $penerimaanHeader->statuscetak = $statusSudahCetak->id;
-                $penerimaanHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $penerimaanHeader->userbukacetak = auth('api')->user()->name;
+                // $penerimaanHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $penerimaanHeader->userbukacetak = auth('api')->user()->name;
                 $penerimaanHeader->jumlahcetak = $penerimaanHeader->jumlahcetak + 1;
                 if ($penerimaanHeader->save()) {
                     $logTrail = [

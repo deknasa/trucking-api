@@ -70,6 +70,7 @@ class InvoiceHeaderController extends Controller
 
         try {
             $requestData = json_decode($request->detail, true);
+            // dd($requestData);
             $data = [
                 'tglbukti' => $request->tglbukti,
                 'tglterima' => $request->tglterima,
@@ -90,15 +91,17 @@ class InvoiceHeaderController extends Controller
                 'jenisorder' => $request->jenisorder
             ];
             $invoiceHeader = (new InvoiceHeader())->processStore($data);
-            $invoiceHeader->position = $this->getPosition($invoiceHeader, $invoiceHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $invoiceHeader->page = ceil($invoiceHeader->position / (10));
-            } else {
-                $invoiceHeader->page = ceil($invoiceHeader->position / ($request->limit ?? 10));
-            }
-            $invoiceHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $invoiceHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
+            if ($request->button == 'btnSubmit') {
+                $invoiceHeader->position = $this->getPosition($invoiceHeader, $invoiceHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $invoiceHeader->page = ceil($invoiceHeader->position / (10));
+                } else {
+                    $invoiceHeader->page = ceil($invoiceHeader->position / ($request->limit ?? 10));
+                }
+                $invoiceHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $invoiceHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            }
             DB::commit();
 
             return response()->json([
@@ -404,8 +407,8 @@ class InvoiceHeaderController extends Controller
 
             if ($invoiceHeader->statuscetak != $statusSudahCetak->id) {
                 $invoiceHeader->statuscetak = $statusSudahCetak->id;
-                $invoiceHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $invoiceHeader->userbukacetak = auth('api')->user()->name;
+                // $invoiceHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $invoiceHeader->userbukacetak = auth('api')->user()->name;
                 $invoiceHeader->jumlahcetak = $invoiceHeader->jumlahcetak + 1;
                 if ($invoiceHeader->save()) {
                     $logTrail = [
@@ -500,7 +503,7 @@ class InvoiceHeaderController extends Controller
 
             return response($data);
         } else if ($useredit != '' && $useredit != $user) {
-           
+
             $waktu = (new Parameter())->cekBatasWaktuEdit('Invoice Header BUKTI');
 
             $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
@@ -530,8 +533,7 @@ class InvoiceHeaderController extends Controller
                 ];
 
                 return response($data);
-            }            
-            
+            }
         } else {
             (new MyModel())->updateEditingBy('InvoiceHeader', $id, $aksi);
 
@@ -594,7 +596,7 @@ class InvoiceHeaderController extends Controller
     {
     }
 
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL KIRIM BERKAS
      */

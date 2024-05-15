@@ -78,8 +78,31 @@ class AbsensiSupirHeader extends MyModel
             ->where('a.subgrp', 'STATUS APPROVAL')
             ->where('a.text', 'NON APPROVAL')
             ->first()->memo ?? '';
+        
+        $petik ='"';
+        $url = config('app.url_fe').'kasgantungheader';
 
+        $absensisupirproses = DB::table("absensisupirproses")
+            ->from(DB::raw("absensisupirproses with (readuncommitted)"))
+            ->select(
+                DB::raw("
+                absensisupirproses.absensi_id,
+                absensisupirproses.nobukti,
+                STRING_AGG(absensisupirproses.kasgantung_nobukti, ', ') as kasgantung_nobukti,
+                STRING_AGG('<a href=$petik".$url."?tgldari='+(format(absensisupirheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(absensisupirheader.tglbukti,'yyyy-MM')+'-31')+'$petik class=$petik link-color $petik target=$petik _blank $petik title=$petik '+absensisupirproses.kasgantung_nobukti+' $petik>'+absensisupirproses.kasgantung_nobukti+'</a>', ',') as url"
+                ))
+            ->join(DB::raw("absensisupirheader with (readuncommitted)"),'absensisupirproses.absensi_id','absensisupirheader.id')    
+            ->groupBy("absensisupirproses.absensi_id","absensisupirproses.nobukti");
 
+            $tempurl = '##tempurl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempurl, function ($table) {
+                $table->bigInteger('id')->nullable();
+                $table->string('nobukti', 50)->nullable();
+                $table->longText('kasgantung_nobukti')->nullable();
+                $table->longText('url')->nullable();
+
+            }); 
+            DB::table($tempurl)->insertUsing(['id','nobukti', 'kasgantung_nobukti','url'], $absensisupirproses);
         $query = DB::table($this->table)->from(DB::raw("absensisupirheader with (readuncommitted)"))
             ->select(
                 'absensisupirheader.id',
@@ -95,6 +118,8 @@ class AbsensiSupirHeader extends MyModel
                 'statusapprovalpengajuantripinap.memo as statusapprovalpengajuantripinap',
                 'absensisupirheader.userapprovalpengajuantripinap',
                 'absensisupirheader.userbukacetak',
+                'proses.kasgantung_nobukti as kasgantung',
+                'proses.url as kasgantung_url',
                 'absensisupirheader.jumlahcetak',
                 'absensisupirheader.modifiedby',
                 'absensisupirheader.created_at',
@@ -110,6 +135,7 @@ class AbsensiSupirHeader extends MyModel
             // request()->tgldari ?? date('Y-m-d',strtotime('today'))
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'absensisupirheader.kasgantung_nobukti', '=', 'kasgantungheader.nobukti')
+            ->leftJoin(DB::raw("$tempurl as proses with (readuncommitted)"), 'absensisupirheader.id', '=', 'proses.id')
             ->leftJoin(DB::raw("parameter as statusapprovalpengajuantripinap with (readuncommitted)"), 'absensisupirheader.statusapprovalpengajuantripinap', 'statusapprovalpengajuantripinap.id')
             ->leftJoin(DB::raw("parameter as statusapprovaleditabsensi with (readuncommitted)"), 'absensisupirheader.statusapprovaleditabsensi', 'statusapprovaleditabsensi.id')
             ->leftJoin(DB::raw("parameter as statusapprovalfinalabsensi with (readuncommitted)"), 'absensisupirheader.statusapprovalfinalabsensi', 'statusapprovalfinalabsensi.id');
@@ -566,6 +592,7 @@ class AbsensiSupirHeader extends MyModel
                 DB::raw("(case when supirutama.id IS NULL then 0 else supirutama.id end) as supir_id"),
 
                 'absensisupirheader.kasgantung_nobukti',
+                'absensisupirdetail.statusjeniskendaraan',
             )
             ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirdetail.absensi_id', 'absensisupirheader.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'absensisupirdetail.trado_id', 'trado.id')
@@ -1005,6 +1032,11 @@ class AbsensiSupirHeader extends MyModel
         }
 
         $uangJalan = 0;
+        $uangJalanGandengan = 0;
+        $uangJalanTangki = 0;
+        $rowTotalTangki =0;
+        $rowTotalGandengan =0;
+        $jenisKendaraanTangki = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('id','text')->where('grp', 'STATUS JENIS KENDARAAN')->where('subgrp', 'STATUS JENIS KENDARAAN')->where('text', 'TANGKI')->first();
         for ($i = 0; $i < count($data['trado_id']); $i++) {
             $absensiSupirDetail = AbsensiSupirDetail::processStore($absensiSupir, [
                 'absensi_id' => $absensiSupir->id,
@@ -1015,11 +1047,19 @@ class AbsensiSupirHeader extends MyModel
                 'keterangan' => $data['keterangan_detail'][$i],
                 'uangjalan' => $data['uangjalan'][$i],
                 'absen_id' => $data['absen_id'][$i] ?? '',
+                'statusjeniskendaraan' => $data['statusjeniskendaraan'][$i] ?? '',
                 'jam' => $data['jam'][$i],
                 'modifiedby' => $absensiSupir->modifiedby,
             ]);
             $absensiSupirDetails[] = $absensiSupirDetail->toArray();
             $uangJalan += $data['uangjalan'][$i];
+            if ($jenisKendaraanTangki->id == $data['statusjeniskendaraan'][$i]) {
+                $uangJalanTangki += $data['uangjalan'][$i];
+                $rowTotalTangki++;
+            }else{
+                $uangJalanGandengan += $data['uangjalan'][$i];
+                $rowTotalGandengan++;
+            }
         }
 
         $storeKasgantung = true;
@@ -1038,24 +1078,45 @@ class AbsensiSupirHeader extends MyModel
         /*STORE KAS GANTUNG*/
         if ($storeKasgantung) {
 
-            $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('tipe', '=', 'KAS')->first();
+            $absensiTangki = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'ABSENSI TANGKI')->where('subgrp', 'ABSENSI TANGKI')->first();
 
-            $kasGantungRequest = [
-                "tglbukti" => $data['tglbukti'],
-                "penerima" => '',
-                "bank_id" => $bank->id,
-                "coakaskeluar" => '',
-                "pengeluaran_nobukti" => '',
-                "postingdari" => 'ENTRY ABSENSI SUPIR',
-                'proseslain' => 'absensisupir',
-                "nominal" => [$uangJalan],
-                "keterangan_detail" => ["Absensi Supir tgl " . date('Y-m-d', strtotime($data['tglbukti'])) . " " . $absensiSupir->nobukti],
-            ];
+            if ($absensiTangki->text == 'YA') {
+                $absensiPorsess = [
+                    "absensi_id" => $absensiSupir->id,
+                    "nobukti" => $absensiSupir->nobukti,
+                    "keterangan" => $absensiSupir->keterangan,
+                    "uangJalanTangki" => $uangJalanTangki,
+                    "rowTotalTangki" => $rowTotalTangki,
+                    "storenominalTangki" => true,
+                    "keteranganTangki" => "Absensi Supir tgl " . date('Y-m-d', strtotime($data['tglbukti'])) . " " . $absensiSupir->nobukti. " Tangki",
+                    "uangJalanGandengan" => $uangJalanGandengan,
+                    "rowTotalGandengan" => $rowTotalGandengan,
+                    "storenominalGandengan" => true,
+                    "keteranganGandengan" => "Absensi Supir tgl " . date('Y-m-d', strtotime($data['tglbukti'])) . " " . $absensiSupir->nobukti. " Gandengan",
+                ];
+                $absensiSupirProses = (new AbsensiSupirProses())->processStore($absensiSupir,$absensiPorsess);
+            }else{
+                $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('tipe', '=', 'KAS')->first();
+    
+                $kasGantungRequest = [
+                    "tglbukti" => $data['tglbukti'],
+                    "penerima" => '',
+                    "bank_id" => $bank->id,
+                    "coakaskeluar" => '',
+                    "pengeluaran_nobukti" => '',
+                    "postingdari" => 'ENTRY ABSENSI SUPIR',
+                    'proseslain' => 'absensisupir',
+                    "nominal" => [$uangJalan],
+                    "keterangan_detail" => ["Absensi Supir tgl " . date('Y-m-d', strtotime($data['tglbukti'])) . " " . $absensiSupir->nobukti],
+                ];
+    
+                $kasgantungHeader = (new KasGantungHeader())->processStore($kasGantungRequest);
+                
+                $absensiSupir->kasgantung_nobukti = $kasgantungHeader->nobukti;
+                $absensiSupir->save();
+            }
 
-            $kasgantungHeader = (new KasGantungHeader())->processStore($kasGantungRequest);
-
-            $absensiSupir->kasgantung_nobukti = $kasgantungHeader->nobukti;
-            $absensiSupir->save();
+           
         }
 
         $absensiSupirLogTrail = (new LogTrail())->processStore([
@@ -1154,6 +1215,11 @@ class AbsensiSupirHeader extends MyModel
             throw new \Exception("Error storing pengeluaran Stok Detail.");
         }
         $uangJalan = 0;
+        $uangJalanGandengan = 0;
+        $uangJalanTangki = 0;
+        $rowTotalTangki =0;
+        $rowTotalGandengan =0;
+        $jenisKendaraanTangki = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('id','text')->where('grp', 'STATUS JENIS KENDARAAN')->where('subgrp', 'STATUS JENIS KENDARAAN')->where('text', 'TANGKI')->first();
 
         for ($i = 0; $i < count($data['trado_id']); $i++) {
             $absensiSupirDetail = AbsensiSupirDetail::processStore($absensiSupir, [
@@ -1165,11 +1231,19 @@ class AbsensiSupirHeader extends MyModel
                 'keterangan' => $data['keterangan_detail'][$i],
                 'uangjalan' => $data['uangjalan'][$i],
                 'absen_id' => $data['absen_id'][$i] ?? '',
+                'statusjeniskendaraan' => $data['statusjeniskendaraan'][$i] ?? '',
                 'jam' => $data['jam'][$i],
                 'modifiedby' => $absensiSupir->modifiedby,
             ]);
             $absensiSupirDetails[] = $absensiSupirDetail->toArray();
             $uangJalan += $data['uangjalan'][$i];
+            if ($jenisKendaraanTangki->id == $data['statusjeniskendaraan'][$i]) {
+                $uangJalanTangki += $data['uangjalan'][$i];
+                $rowTotalTangki++;
+            }else{
+                $uangJalanGandengan += $data['uangjalan'][$i];
+                $rowTotalGandengan++;
+            }
         }
 
         $storeKasgantung = true;
@@ -1187,21 +1261,41 @@ class AbsensiSupirHeader extends MyModel
 
         /*STORE KAS GANTUNG*/
         if ($storeKasgantung) {
-            $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('tipe', '=', 'KAS')->first();
 
-            $kasGantungRequest = [
-                "tglbukti" => $data['tglbukti'],
-                "penerima" => null,
-                "bank_id" => $bank->id,
-                "coakaskeluar" => null,
-                "pengeluaran_nobukti" => null,
-                "postingdari" => 'ENTRY ABSENSI SUPIR',
-                "nominal" => [$uangJalan],
-                "keterangan_detail" => ["Absensi Supir tgl " . date('Y-m-d', strtotime($data['tglbukti'])) . " " . $absensiSupir->nobukti],
-            ];
+            $absensiTangki = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'ABSENSI TANGKI')->where('subgrp', 'ABSENSI TANGKI')->first();
 
-            $kasGantungHeader = KasGantungHeader::from(DB::raw("kasgantungheader with (readuncommitted)"))->where('nobukti', $absensiSupir->kasgantung_nobukti)->first();
-            $kasGantungHeader = (new KasGantungHeader())->processUpdate($kasGantungHeader, $kasGantungRequest);
+            if ($absensiTangki->text == 'YA') {
+                $absensiPorsess = [
+                    "absensi_id" => $absensiSupir->id,
+                    "nobukti" => $absensiSupir->nobukti,
+                    "keterangan" => $absensiSupir->keterangan,
+                    "uangJalanTangki" => $uangJalanTangki,
+                    "rowTotalTangki" => $rowTotalTangki,
+                    "storenominalTangki" => true,
+                    "keteranganTangki" => "Absensi Supir tgl " . date('Y-m-d', strtotime($data['tglbukti'])) . " " . $absensiSupir->nobukti. " Tangki",
+                    "uangJalanGandengan" => $uangJalanGandengan,
+                    "rowTotalGandengan" => $rowTotalGandengan,
+                    "storenominalGandengan" => true,
+                    "keteranganGandengan" => "Absensi Supir tgl " . date('Y-m-d', strtotime($data['tglbukti'])) . " " . $absensiSupir->nobukti. " Gandengan",
+                ];
+                $absensiSupirProses = (new AbsensiSupirProses())->processStore($absensiSupir,$absensiPorsess);
+            }else{
+                $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('tipe', '=', 'KAS')->first();
+                $kasGantungRequest = [
+                    "tglbukti" => $data['tglbukti'],
+                    "penerima" => null,
+                    "bank_id" => $bank->id,
+                    "coakaskeluar" => null,
+                    "pengeluaran_nobukti" => null,
+                    "postingdari" => 'ENTRY ABSENSI SUPIR',
+                    "nominal" => [$uangJalan],
+                    "keterangan_detail" => ["Absensi Supir tgl " . date('Y-m-d', strtotime($data['tglbukti'])) . " " . $absensiSupir->nobukti],
+                ];
+    
+                $kasGantungHeader = KasGantungHeader::from(DB::raw("kasgantungheader with (readuncommitted)"))->where('nobukti', $absensiSupir->kasgantung_nobukti)->first();
+                $kasGantungHeader = (new KasGantungHeader())->processUpdate($kasGantungHeader, $kasGantungRequest);
+            }
+
         }
 
         $date = date('Y-m-d', strtotime($absensiSupir->tglbukti));
@@ -1256,7 +1350,11 @@ class AbsensiSupirHeader extends MyModel
         if ($kasGantungHeader) {
             (new KasGantungHeader())->processDestroy($kasGantungHeader->id, ($postingdari == "") ? $postingdari : strtoupper('DELETE ABSENSI SUPIR detail'));
         }
-
+        
+        $absensiTangki = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'ABSENSI TANGKI')->where('subgrp', 'ABSENSI TANGKI')->first();
+        if ($absensiTangki->text == 'YA') {
+            (new AbsensiSupirProses())->processDestroy($absensiSupir, ($postingdari == "") ? $postingdari : strtoupper('DELETE ABSENSI SUPIR detail'));
+        }
         $absensiSupir = $absensiSupir->lockAndDestroy($id);
         $hutangLogTrail = (new LogTrail())->processStore([
             'namatabel' => $this->table,

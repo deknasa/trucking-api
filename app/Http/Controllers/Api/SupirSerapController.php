@@ -48,11 +48,13 @@ class SupirSerapController extends Controller
                 'supirserap_id' => $request->supirserap_id,
             ];
             $supirSerap = (new SupirSerap())->processStore($data);
-            $supirSerap->position = $this->getPosition($supirSerap, $supirSerap->getTable())->position;
-            if ($request->limit == 0) {
-                $supirSerap->page = ceil($supirSerap->position / (10));
-            } else {
-                $supirSerap->page = ceil($supirSerap->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $supirSerap->position = $this->getPosition($supirSerap, $supirSerap->getTable())->position;
+                if ($request->limit == 0) {
+                    $supirSerap->page = ceil($supirSerap->position / (10));
+                } else {
+                    $supirSerap->page = ceil($supirSerap->position / ($request->limit ?? 10));
+                }
             }
             DB::commit();
 
@@ -159,11 +161,11 @@ class SupirSerapController extends Controller
             $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
             for ($i = 0; $i < count($data['serapId']); $i++) {
-                $supirSerap = (new SupirSerap())->processApproval(["serapId"=>$data['serapId'][$i]]);
+                $supirSerap = (new SupirSerap())->processApproval(["serapId" => $data['serapId'][$i]]);
                 if ($supirSerap) {
                     if ($supirSerap->statusapproval == $statusApproval->id) {
                         (new SupirSerap())->processStoreToAbsensi($supirSerap);
-                    }else{
+                    } else {
                         (new SupirSerap())->processDestroyToAbsensi($supirSerap);
                     }
                 }
@@ -255,7 +257,7 @@ class SupirSerapController extends Controller
                     ->where('supirserap.id', $id)
                     ->first();
                 $keterangan = 'supir serap ' . $data->namasupir . ' di trado ' . $data->kodetrado . ' tgl ' . date('d-m-Y', strtotime($data->tglabsensi)) . ' SUDAH DIINPUT DI ABSENSI ' . $query->nobukti;
-               
+
                 $data = [
                     'error' => true,
                     'message' => $keterangan,

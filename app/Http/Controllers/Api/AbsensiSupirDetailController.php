@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreAbsensiSupirDetailRequest;
-use App\Http\Requests\StoreLogTrailRequest;
-use App\Models\AbsensiSupirDetail;
-use App\Models\AbsensiSupirHeader;
-use App\Models\SuratPengantar;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Models\SuratPengantar;
+use App\Models\KasGantungDetail;
+use App\Models\AbsensiSupirDetail;
+use App\Models\AbsensiSupirHeader;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\StoreAbsensiSupirDetailRequest;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 
@@ -277,6 +278,19 @@ class AbsensiSupirDetailController extends Controller
     public function destroy(AbsensiSupirDetail $absensiSupirDetail)
     {
         // 
+    }
+
+    public function getProsesKGT(Request $request){
+        $KasGantungDetail = new KasGantungDetail;
+        return response([
+            'data' => $KasGantungDetail->getKgtAbsensi($request->nobukti),
+            
+            'attributes' => [
+                'totalRows' => $KasGantungDetail->totalRows,
+                "totalPages" => $KasGantungDetail->totalPages,
+            ]
+
+        ]);
     }
     // public function index2(Request $request)
     // {

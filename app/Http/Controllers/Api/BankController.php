@@ -161,6 +161,7 @@ class BankController extends Controller
                 'statusaktif' => $request->statusaktif,
                 'formatpenerimaan' => $request->formatpenerimaan,
                 'formatpengeluaran' => $request->formatpengeluaran,
+                'formatcetakan' => $request->formatcetakan,
             ];
 
             $bank = (new Bank())->processStore($data);
@@ -208,6 +209,7 @@ class BankController extends Controller
                 'statusaktif' => $request->statusaktif,
                 'formatpenerimaan' => $request->formatpenerimaan,
                 'formatpengeluaran' => $request->formatpengeluaran,
+                'formatcetakan' => $request->formatcetakan,
             ];
 
             $bank = (new Bank())->processUpdate($bank, $data);

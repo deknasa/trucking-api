@@ -73,14 +73,16 @@ class PindahBukuController extends Controller
                 'keterangan' => $request->keterangan,
             ];
             $pindahBuku = (new PindahBuku())->processStore($data);
-            $pindahBuku->position = $this->getPosition($pindahBuku, $pindahBuku->getTable())->position;
-            if ($request->limit == 0) {
-                $pindahBuku->page = ceil($pindahBuku->position / (10));
-            } else {
-                $pindahBuku->page = ceil($pindahBuku->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $pindahBuku->position = $this->getPosition($pindahBuku, $pindahBuku->getTable())->position;
+                if ($request->limit == 0) {
+                    $pindahBuku->page = ceil($pindahBuku->position / (10));
+                } else {
+                    $pindahBuku->page = ceil($pindahBuku->position / ($request->limit ?? 10));
+                }
+                $pindahBuku->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $pindahBuku->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $pindahBuku->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $pindahBuku->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             DB::commit();
 
             return response()->json([
@@ -291,8 +293,8 @@ class PindahBukuController extends Controller
 
             if ($pindahBuku->statuscetak != $statusSudahCetak->id) {
                 $pindahBuku->statuscetak = $statusSudahCetak->id;
-                $pindahBuku->tglbukacetak = date('Y-m-d H:i:s');
-                $pindahBuku->userbukacetak = auth('api')->user()->name;
+                // $pindahBuku->tglbukacetak = date('Y-m-d H:i:s');
+                // $pindahBuku->userbukacetak = auth('api')->user()->name;
                 $pindahBuku->jumlahcetak = $pindahBuku->jumlahcetak + 1;
                 if ($pindahBuku->save()) {
                     $logTrail = [

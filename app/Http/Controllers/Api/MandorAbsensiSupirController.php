@@ -40,6 +40,7 @@ class MandorAbsensiSupirController extends Controller
                 'total' => $mandorabsensisupir->totalPages,
                 'records' => $mandorabsensisupir->totalRows,
                 'tradosupir' => $mandorabsensisupir->isTradoMilikSupir(),
+                'defaultJenis' => $mandorabsensisupir->defaultJenis(),
             ]
         ]);
     }
@@ -48,6 +49,7 @@ class MandorAbsensiSupirController extends Controller
      * @ClassName 
      * @Keterangan TAMBAH DATA
      */
+    // public function store(Request $request)
     public function store(MandorAbsensiSupirAllRequest $request,MandorAbsensiSupirAllSupirSerapRequest $request1)
     {
         $data = json_decode(request()->data, true);
@@ -105,6 +107,7 @@ class MandorAbsensiSupirController extends Controller
                 $table->unsignedBigInteger('supir_id')->nullable();
                 $table->longText('keterangan')->nullable();
                 $table->unsignedBigInteger('absen_id')->nullable();
+                $table->unsignedBigInteger('statusjeniskendaraan')->nullable();
                 $table->unsignedBigInteger('supirold_id')->nullable();
                 $table->unsignedBigInteger('deleted_id')->nullable();
             });
@@ -124,6 +127,7 @@ class MandorAbsensiSupirController extends Controller
                     "supirold_id" => $key['supirold_id'],
                     "keterangan" => $key['keterangan'],
                     "absen_id" => $key['absen_id'],
+                    "statusjeniskendaraan" => $key['statusjeniskendaraan'],
                     "deleted_id" => $deleted_id,
                     "id" => $key['id'],
                     // "jam" => $key['jam'],
@@ -131,6 +135,12 @@ class MandorAbsensiSupirController extends Controller
 
                 $AbsensiSupirHeader = (new MandorAbsensiSupir())->processStore($insert);
             }
+            $absensiTangki = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'ABSENSI TANGKI')->where('subgrp', 'ABSENSI TANGKI')->first();
+            if ($absensiTangki->text == 'YA') {
+                (new MandorAbsensiSupir())->processKasgantung($AbsensiSupirHeader->nobukti);
+            }
+            
+            // dd($AbsensiSupirHeader->nobukti);
             // $user = auth('api')->user()->name;
             // $class = 'TemporaryAbsensiSupir';
 
@@ -294,6 +304,7 @@ class MandorAbsensiSupirController extends Controller
                 "supir_id" => $request->supir_id,
                 "keterangan" => $request->keterangan,
                 "absen_id" => $request->absen_id,
+                "statusjeniskendaraan" => $request->statusjeniskendaraan,
                 "jam" => $request->jam,
             ];
             $AbsensiSupirDetail = AbsensiSupirDetail::findOrFail($id);

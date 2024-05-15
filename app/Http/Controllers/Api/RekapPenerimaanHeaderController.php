@@ -68,14 +68,16 @@ class RekapPenerimaanHeaderController extends Controller
             ];
 
             $rekapPenerimaanHeader = (new RekapPenerimaanHeader())->processStore($data);
-            $rekapPenerimaanHeader->position = $this->getPosition($rekapPenerimaanHeader, $rekapPenerimaanHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / (10));
-            } else {
-                $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $rekapPenerimaanHeader->position = $this->getPosition($rekapPenerimaanHeader, $rekapPenerimaanHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / (10));
+                } else {
+                    $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / ($request->limit ?? 10));
+                }
+                $rekapPenerimaanHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $rekapPenerimaanHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $rekapPenerimaanHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $rekapPenerimaanHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
             DB::commit();
 
@@ -342,8 +344,8 @@ class RekapPenerimaanHeaderController extends Controller
 
             if ($rekapPenerimaan->statuscetak != $statusSudahCetak->id) {
                 $rekapPenerimaan->statuscetak = $statusSudahCetak->id;
-                $rekapPenerimaan->tglbukacetak = date('Y-m-d H:i:s');
-                $rekapPenerimaan->userbukacetak = auth('api')->user()->name;
+                // $rekapPenerimaan->tglbukacetak = date('Y-m-d H:i:s');
+                // $rekapPenerimaan->userbukacetak = auth('api')->user()->name;
                 $rekapPenerimaan->jumlahcetak = $rekapPenerimaan->jumlahcetak + 1;
                 if ($rekapPenerimaan->save()) {
                     $logTrail = [

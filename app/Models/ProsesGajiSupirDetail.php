@@ -121,6 +121,24 @@ class ProsesGajiSupirDetail extends MyModel
                     'biayaextra',
                 ], $queryric);
 
+                $queryric = db::table("saldogajisupirdetail")->from(db::raw("saldogajisupirdetail a with (readuncommitted)"))
+                    ->select(
+                        'b.gajisupir_nobukti',
+                        db::raw("sum(a.gajisupir) as gajisupir"),
+                        db::raw("sum(a.gajikenek) as gajikenek"),
+                        db::raw("sum(a.biayatambahan) as biayaextra"),
+                    )
+                    ->join(db::raw("prosesgajisupirdetail b with (readuncommitted)"), 'a.nobukti', 'b.gajisupir_nobukti')
+                    ->where('b.prosesgajisupir_id', request()->prosesgajisupir_id)
+                    ->groupby("b.gajisupir_nobukti");
+
+                DB::table($tempric1)->insertUsing([
+                    'gajisupir_nobukti',
+                    'gajisupir',
+                    'gajikenek',
+                    'biayaextra',
+                ], $queryric);
+
                 $queryebs = db::table("prosesgajisupirdetail")->from(db::raw("prosesgajisupirdetail a with (readuncommitted)"))
                     ->select(
                         'a.id',
@@ -130,26 +148,44 @@ class ProsesGajiSupirDetail extends MyModel
                         'supir.namasupir as supir_id',
                         'trado.kodetrado as trado_id',
 
-                        DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then gajisupirheader.total else (gajisupirheader.total+gajisupirheader.komisisupir+isnull(d.gajikenek,0)) end) as total"),
-                        'gajisupirheader.uangjalan',
-                        'gajisupirheader.bbm',
-                        'gajisupirheader.uangmakanharian',
-                        'gajisupirheader.potonganpinjaman',
-                        'gajisupirheader.potonganpinjamansemua',
-                        'gajisupirheader.deposito',
-                        'gajisupirheader.komisisupir',
-                        'gajisupirheader.tolsupir',
-                        DB::raw("(case when gajisupirheader.uangmakanberjenjang IS NULL then 0 else gajisupirheader.uangmakanberjenjang end) as uangmakanberjenjang"),
+                        DB::raw("(case when isnull(gajisupirheader.nobukti,'')='' then
+                            (case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then 
+                            saldogajisupirheader.total else (saldogajisupirheader.total+saldogajisupirheader.komisisupir+isnull(d.gajikenek,0)) end)
+                        else
+                            (case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then 
+                                gajisupirheader.total else (gajisupirheader.total+gajisupirheader.komisisupir+isnull(d.gajikenek,0)) end)
+                        end) as total"),
+                        db::raw("(case when isnull(gajisupirheader.nobukti,'')='' then saldogajisupirheader.uangjalan  else gajisupirheader.uangjalan end) as uangjalan"),
+                        db::raw("(case when isnull(gajisupirheader.nobukti,'')='' then saldogajisupirheader.bbm  else gajisupirheader.bbm end) as bbm"),
+                        db::raw("(case when isnull(gajisupirheader.nobukti,'')='' then saldogajisupirheader.uangmakanharian  else gajisupirheader.uangmakanharian end) as uangmakanharian"),
+                        db::raw("(case when isnull(gajisupirheader.nobukti,'')='' then saldogajisupirheader.potonganpinjaman  else gajisupirheader.potonganpinjaman end) as potonganpinjaman"),
+                        db::raw("(case when isnull(gajisupirheader.nobukti,'')='' then saldogajisupirheader.potonganpinjamansemua  else gajisupirheader.potonganpinjamansemua end) as potonganpinjamansemua"),
+                        db::raw("(case when isnull(gajisupirheader.nobukti,'')='' then saldogajisupirheader.deposito  else gajisupirheader.deposito end) as deposito"),
+                        db::raw("(case when isnull(gajisupirheader.nobukti,'')='' then saldogajisupirheader.komisisupir  else gajisupirheader.komisisupir end) as komisisupir"),
+                        db::raw("(case when isnull(gajisupirheader.nobukti,'')='' then saldogajisupirheader.tolsupir  else gajisupirheader.tolsupir end) as tolsupir"),
+                        db::raw("(case when isnull(gajisupirheader.nobukti,'')='' then 
+                        (case when saldogajisupirheader.uangmakanberjenjang IS NULL then 0 else saldogajisupirheader.uangmakanberjenjang end)
+                        else (case when gajisupirheader.uangmakanberjenjang IS NULL then 0 else gajisupirheader.uangmakanberjenjang end) 
+                        end) as uangmakanberjenjang"),
                         db::raw("isnull(d.gajisupir,0) as gajisupir"),
                         db::raw("isnull(d.gajikenek,0) as gajikenek"),
                         db::raw("isnull(d.biayaextra,0) as biayaextra"),
-                        db::raw("cast((format(gajisupirheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheadergajisupirheaderheader"),
-                        db::raw("cast(cast(format((cast((format(gajisupirheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheadergajisupirheaderheader"),
+                        db::raw("(case when isnull(gajisupirheader.nobukti,'')='' then 
+                        cast((format(saldogajisupirheader.tglbukti,'yyyy/MM')+'/1') as date)
+                        else 
+                        cast((format(gajisupirheader.tglbukti,'yyyy/MM')+'/1') as date)
+                        end) as tgldariheadergajisupirheaderheader"),
+                        db::raw("(case when isnull(gajisupirheader.nobukti,'')='' then 
+                        cast(cast(format((cast((format(saldogajisupirheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date)
+                            else 
+                            cast(cast(format((cast((format(gajisupirheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) end) as tglsampaiheadergajisupirheaderheader"),
+
                     )
                     ->leftJoin(DB::raw("supir with (readuncommitted)"), 'a.supir_id', 'supir.id')
                     ->leftJoin(DB::raw("trado with (readuncommitted)"), 'a.trado_id', 'trado.id')
                     ->leftJoin(DB::raw("prosesgajisupirheader with (readuncommitted)"), 'a.nobukti', 'prosesgajisupirheader.nobukti')
                     ->leftJoin(DB::raw("gajisupirheader with (readuncommitted)"), 'a.gajisupir_nobukti', 'gajisupirheader.nobukti')
+                    ->leftJoin(DB::raw("saldogajisupirheader with (readuncommitted)"), 'a.gajisupir_nobukti', 'saldogajisupirheader.nobukti')
                     ->leftJoin(DB::raw($tempric1 . " d"), 'a.gajisupir_nobukti', 'd.gajisupir_nobukti')
                     ->where('a.prosesgajisupir_id', '=', request()->prosesgajisupir_id);
 

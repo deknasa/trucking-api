@@ -108,14 +108,16 @@ class PengeluaranHeaderController extends Controller
                 "bank_detail" => $request->bank_detail,
                 "manual" => true,
             ]);
-            $pengeluaranHeader->position = $this->getPosition($pengeluaranHeader, $pengeluaranHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $pengeluaranHeader->page = ceil($pengeluaranHeader->position / (10));
-            } else {
-                $pengeluaranHeader->page = ceil($pengeluaranHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $pengeluaranHeader->position = $this->getPosition($pengeluaranHeader, $pengeluaranHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $pengeluaranHeader->page = ceil($pengeluaranHeader->position / (10));
+                } else {
+                    $pengeluaranHeader->page = ceil($pengeluaranHeader->position / ($request->limit ?? 10));
+                }
+                $pengeluaranHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $pengeluaranHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $pengeluaranHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $pengeluaranHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             DB::commit();
 
             return response()->json([
@@ -309,8 +311,8 @@ class PengeluaranHeaderController extends Controller
 
             if ($pengeluaranHeader->statuscetak != $statusSudahCetak->id) {
                 $pengeluaranHeader->statuscetak = $statusSudahCetak->id;
-                $pengeluaranHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $pengeluaranHeader->userbukacetak = auth('api')->user()->name;
+                // $pengeluaranHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $pengeluaranHeader->userbukacetak = auth('api')->user()->name;
                 $pengeluaranHeader->jumlahcetak = $pengeluaranHeader->jumlahcetak + 1;
                 if ($pengeluaranHeader->save()) {
                     $logTrail = [
@@ -575,7 +577,7 @@ class PengeluaranHeaderController extends Controller
      */
     public function approvalkirimberkas()
     {
-    }    
+    }
 
 
     /**

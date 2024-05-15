@@ -575,6 +575,9 @@ class KasGantungHeader extends MyModel
 
 
             $alatbayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('bank_id', $bank->id)->first();
+            if ($bank->tipe == 'KAS'){
+                $alatbayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('tipe', $bank->tipe)->first();
+            }
 
 
             (new LogTrail())->processStore([
@@ -771,6 +774,9 @@ class KasGantungHeader extends MyModel
             }
 
             $alatbayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('bank_id', $bank->id)->first();
+            if ($bank->tipe == 'KAS'){
+                $alatbayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('tipe', $bank->tipe)->first();
+            }
 
 
 

@@ -68,15 +68,16 @@ class InvoiceExtraHeaderController extends Controller
                 'keterangan_detail' => $request->keterangan_detail,
             ];
             $invoiceExtra = (new InvoiceExtraHeader())->processStore($data);
-            $invoiceExtra->position = $this->getPosition($invoiceExtra, $invoiceExtra->getTable())->position;
-            if ($request->limit == 0) {
-                $invoiceExtra->page = ceil($invoiceExtra->position / (10));
-            } else {
-                $invoiceExtra->page = ceil($invoiceExtra->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $invoiceExtra->position = $this->getPosition($invoiceExtra, $invoiceExtra->getTable())->position;
+                if ($request->limit == 0) {
+                    $invoiceExtra->page = ceil($invoiceExtra->position / (10));
+                } else {
+                    $invoiceExtra->page = ceil($invoiceExtra->position / ($request->limit ?? 10));
+                }
+                $invoiceExtra->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $invoiceExtra->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $invoiceExtra->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $invoiceExtra->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-
             DB::commit();
 
             return response()->json([
@@ -272,7 +273,7 @@ class InvoiceExtraHeaderController extends Controller
 
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
-           $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
             $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
@@ -294,7 +295,7 @@ class InvoiceExtraHeaderController extends Controller
 
             return response($data);
         } else if ($useredit != '' && $useredit != $user) {
-           
+
             $waktu = (new Parameter())->cekBatasWaktuEdit('Invoice Extra Header BUKTI');
 
             $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
@@ -324,8 +325,7 @@ class InvoiceExtraHeaderController extends Controller
                 ];
 
                 return response($data);
-            }            
-            
+            }
         } else {
             (new MyModel())->updateEditingBy('InvoiceExtraHeader', $id, $aksi);
 
@@ -351,8 +351,8 @@ class InvoiceExtraHeaderController extends Controller
 
             if ($invoiceExtraHeader->statuscetak != $statusSudahCetak->id) {
                 $invoiceExtraHeader->statuscetak = $statusSudahCetak->id;
-                $invoiceExtraHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $invoiceExtraHeader->userbukacetak = auth('api')->user()->name;
+                // $invoiceExtraHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $invoiceExtraHeader->userbukacetak = auth('api')->user()->name;
                 $invoiceExtraHeader->jumlahcetak = $invoiceExtraHeader->jumlahcetak + 1;
                 if ($invoiceExtraHeader->save()) {
                     $logTrail = [
@@ -429,7 +429,7 @@ class InvoiceExtraHeaderController extends Controller
      */
     public function approvalkirimberkas()
     {
-    }    
+    }
     /**
      * @ClassName 
      * @Keterangan EXPORT KE EXCEL

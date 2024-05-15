@@ -117,6 +117,7 @@ class ProsesGajiSupirHeaderController extends Controller
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                 'tgldari' => date('Y-m-d', strtotime($request->tgldari)),
                 'tglsampai' => date('Y-m-d', strtotime($request->tglsampai)),
+                'statusjeniskendaraan' => $request->statusjeniskendaraan,
                 'bank_id' => $request->bank_id,
                 'rincianId' => $requestData['rincianId'],
                 'nobuktiRIC' => $requestData['nobuktiRIC'],
@@ -131,15 +132,16 @@ class ProsesGajiSupirHeaderController extends Controller
             ];
 
             $prosesGajiSupirHeader = (new ProsesGajiSupirHeader())->processStore($data);
-            $prosesGajiSupirHeader->position = $this->getPosition($prosesGajiSupirHeader, $prosesGajiSupirHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / (10));
-            } else {
-                $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $prosesGajiSupirHeader->position = $this->getPosition($prosesGajiSupirHeader, $prosesGajiSupirHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / (10));
+                } else {
+                    $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / ($request->limit ?? 10));
+                }
+                $prosesGajiSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $prosesGajiSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $prosesGajiSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $prosesGajiSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-
             DB::commit();
 
             return response()->json([
@@ -161,7 +163,7 @@ class ProsesGajiSupirHeaderController extends Controller
         $deposito = $proses->showDeposito($id);
         $bbm = $proses->showBBM($id);
         $Uangjalan = $proses->showUangjalan($id);
-        $getTrip = $proses->getEdit($id, '');
+        $getTrip = $proses->getEdit($id, '', $prosesGajiSupirHeader->statusjeniskendaraan);
 
         return response([
             'status' => true,
@@ -190,6 +192,7 @@ class ProsesGajiSupirHeaderController extends Controller
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                 'tgldari' => date('Y-m-d', strtotime($request->tgldari)),
                 'tglsampai' => date('Y-m-d', strtotime($request->tglsampai)),
+                'statusjeniskendaraan' => $request->statusjeniskendaraan,
                 'bank_id' => $request->bank_id,
                 'rincianId' => $requestData['rincianId'],
                 'nobuktiRIC' => $requestData['nobuktiRIC'],
@@ -262,24 +265,36 @@ class ProsesGajiSupirHeaderController extends Controller
 
     public function getRic(GetRicRequest $request)
     {
+        // dd('test');
         $gajiSupir = new ProsesGajiSupirHeader();
         $dari = date('Y-m-d', strtotime(request()->tgldari));
         $sampai = date('Y-m-d', strtotime(request()->tglsampai));
+        $statusjeniskendaraan = request()->statusjeniskendaraan;
 
         $cekRic = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))
             ->whereRaw("tglbukti >= '$dari'")
             ->whereRaw("tglbukti <= '$sampai'")
             ->first();
 
+        $cekRicsaldo = db::table("saldogajisupirheader")->from(DB::raw("saldogajisupirheader with (readuncommitted)"))
+            ->whereRaw("tglbukti >= '$dari'")
+            ->whereRaw("tglbukti <= '$sampai'")
+            ->first();
+
         //CEK APAKAH ADA RIC
-        if ($cekRic) {
-            $nobukti = $cekRic->nobukti;
+        if (isset($cekRic) || isset($cekRicsaldo)) {
+            if (isset($cekRic)) {
+                $nobukti = $cekRic->nobukti ?? '';
+            } else {
+                $nobukti = $cekRicsaldo->nobukti ?? '';
+            }
+
             $cekEBS = ProsesGajiSupirDetail::from(DB::raw("prosesgajisupirdetail with (readuncommitted)"))
                 ->whereRaw("gajisupir_nobukti = '$nobukti'")->first();
 
             return response([
                 'errors' => false,
-                'data' => $gajiSupir->getRic($dari, $sampai),
+                'data' => $gajiSupir->getRic($dari, $sampai, $statusjeniskendaraan),
                 'attributes' => [
                     'totalRows' => $gajiSupir->totalRows,
                     'totalPages' => $gajiSupir->totalPages,
@@ -299,6 +314,36 @@ class ProsesGajiSupirHeaderController extends Controller
             ]);
         } else {
 
+
+            // $cekRic = DB::table("saldogajisupirheader")->from(DB::raw("saldogajisupirheader with (readuncommitted)"))
+            //     ->whereRaw("tglbukti >= '$dari'")
+            //     ->whereRaw("tglbukti <= '$sampai'")
+            //     ->first();
+            // if ($cekRic) {
+
+            //     $nobukti = $cekRic->nobukti;
+            //     return response([
+            //         'errors' => false,
+            //         'data' => $gajiSupir->getRic($dari, $sampai),
+            //         'attributes' => [
+            //             'totalRows' => $gajiSupir->totalRows,
+            //             'totalPages' => $gajiSupir->totalPages,
+            //             'totalBorongan' => $gajiSupir->totalBorongan,
+            //             'totalUangJalan' => $gajiSupir->totalUangJalan,
+            //             'totalUangBBM' => $gajiSupir->totalUangBBM,
+            //             'totalUangMakan' => $gajiSupir->totalUangMakan,
+            //             'totalUangMakanBerjenjang' => $gajiSupir->totalUangMakanBerjenjang,
+            //             'totalPotPinjaman' => $gajiSupir->totalPotPinjaman,
+            //             'totalPotPinjSemua' => $gajiSupir->totalPotPinjSemua,
+            //             'totalDeposito' => $gajiSupir->totalDeposito,
+            //             'totalKomisi' => $gajiSupir->totalKomisi,
+            //             'totalTol' => $gajiSupir->totalTol,
+            //             'totalGajiSupir' => $gajiSupir->totalGajiSupir,
+            //             'totalGajiKenek' => $gajiSupir->totalGajiKenek,
+            //         ]
+            //     ]);
+            // } else {
+
             return response([
                 'data' => [],
                 'attributes' => [
@@ -306,18 +351,20 @@ class ProsesGajiSupirHeaderController extends Controller
                     'totalPages' => 0,
                 ]
             ]);
+            // }
         }
     }
     public function getEdit(GetRicEditRequest $request, $gajiId)
     {
         $prosesgajisupir = new ProsesGajiSupirHeader();
         $aksi = $request->aksi;
+        $statusjeniskendaraan = $request->statusjeniskendaraan;
         if ($aksi == 'edit') {
             $dari = date('Y-m-d', strtotime(request()->tgldari));
             $sampai = date('Y-m-d', strtotime(request()->tglsampai));
-            $data = $prosesgajisupir->getAllEdit($gajiId, $dari, $sampai, $aksi);
+            $data = $prosesgajisupir->getAllEdit($gajiId, $dari, $sampai, $aksi, $statusjeniskendaraan);
         } else {
-            $data = $prosesgajisupir->getEdit($gajiId, $aksi);
+            $data = $prosesgajisupir->getEdit($gajiId, $aksi, $statusjeniskendaraan);
         }
 
         return response([
@@ -389,11 +436,11 @@ class ProsesGajiSupirHeaderController extends Controller
 
         lanjut:
 
-        
+
         $parameter = new Parameter();
 
-        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
-        $tgltutup=date('Y-m-d', strtotime($tgltutup));  
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
 
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
@@ -421,7 +468,7 @@ class ProsesGajiSupirHeaderController extends Controller
             return response($data);
         } else if ($tgltutup >= $prosesgaji->tglbukti) {
             $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
-            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
                 'message' => $keterror,
@@ -429,9 +476,9 @@ class ProsesGajiSupirHeaderController extends Controller
                 'statuspesan' => 'warning',
             ];
 
-            return response($data);            
+            return response($data);
         } else if ($useredit != '' && $useredit != $user) {
-           
+
             $waktu = (new Parameter())->cekBatasWaktuEdit('gaji supir header BUKTI');
 
             $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($prosesgaji->editing_at)));
@@ -461,8 +508,7 @@ class ProsesGajiSupirHeaderController extends Controller
                 ];
 
                 return response($data);
-            }            
-            
+            }
         } else {
             (new MyModel())->updateEditingBy('prosesgajisupirheader', $id, $aksi);
 
@@ -591,7 +637,7 @@ class ProsesGajiSupirHeaderController extends Controller
     public function approvalbukacetak()
     {
     }
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL KIRIM BERKAS
      */
@@ -622,8 +668,8 @@ class ProsesGajiSupirHeaderController extends Controller
 
             if ($prosesGajiSupirHeader->statuscetak != $statusSudahCetak->id) {
                 $prosesGajiSupirHeader->statuscetak = $statusSudahCetak->id;
-                $prosesGajiSupirHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $prosesGajiSupirHeader->userbukacetak = auth('api')->user()->name;
+                // $prosesGajiSupirHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $prosesGajiSupirHeader->userbukacetak = auth('api')->user()->name;
                 $prosesGajiSupirHeader->jumlahcetak = $prosesGajiSupirHeader->jumlahcetak + 1;
                 if ($prosesGajiSupirHeader->save()) {
                     $logTrail = [

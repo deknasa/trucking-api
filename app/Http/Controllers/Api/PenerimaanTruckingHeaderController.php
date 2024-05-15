@@ -88,15 +88,17 @@ class PenerimaanTruckingHeaderController extends Controller
                 "ebs" => false,
                 "from" => $request->from,
             ]);
-            /* Set position and page */
-            $penerimaanTruckingHeader->position = $this->getPosition($penerimaanTruckingHeader, $penerimaanTruckingHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / (10));
-            } else {
-                $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                /* Set position and page */
+                $penerimaanTruckingHeader->position = $this->getPosition($penerimaanTruckingHeader, $penerimaanTruckingHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / (10));
+                } else {
+                    $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
+                }
+                $penerimaanTruckingHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $penerimaanTruckingHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $penerimaanTruckingHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $penerimaanTruckingHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
             DB::commit();
             return response()->json([
@@ -303,8 +305,8 @@ class PenerimaanTruckingHeaderController extends Controller
 
             if ($penerimaanTruckingHeader->statuscetak != $statusSudahCetak->id) {
                 $penerimaanTruckingHeader->statuscetak = $statusSudahCetak->id;
-                $penerimaanTruckingHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $penerimaanTruckingHeader->userbukacetak = auth('api')->user()->name;
+                // $penerimaanTruckingHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $penerimaanTruckingHeader->userbukacetak = auth('api')->user()->name;
                 $penerimaanTruckingHeader->jumlahcetak = $penerimaanTruckingHeader->jumlahcetak + 1;
                 if ($penerimaanTruckingHeader->save()) {
                     $logTrail = [
@@ -621,5 +623,5 @@ class PenerimaanTruckingHeaderController extends Controller
      */
     public function approvalkirimberkas()
     {
-    }    
+    }
 }

@@ -12,6 +12,7 @@ class ValidasiKotaUpahZona implements Rule
      *
      * @return void
      */
+    public $statusZonaId;
     public function __construct($statusZonaId)
     {
         $this->statusZonaId = $statusZonaId;

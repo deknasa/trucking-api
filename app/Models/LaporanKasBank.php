@@ -313,6 +313,7 @@ class LaporanKasBank extends MyModel
         Schema::create($tempsaldo, function ($table) {
             $table->id();
             $table->double('urut', 15, 2)->nullable();
+            $table->double('urutdetail', 15, 2)->nullable();
             $table->string('coa', 1000)->nullable();
             $table->dateTime('tglbukti')->nullable();
             $table->string('nobukti', 100)->nullable();
@@ -427,9 +428,10 @@ class LaporanKasBank extends MyModel
         DB::table($tempsaldo)->insert(
             array(
                 'urut' => '1',
+                'urutdetail' => '1',
                 "coa" => "",
-                "tglbukti" => "1900/1/1",
-                "nobukti" => "",
+                "tglbukti" => $dari,
+                "nobukti" => "SALDO AWAL",
                 "keterangan" => "SALDO AWAL",
                 "debet" => "0",
                 "kredit" => "0",
@@ -442,6 +444,7 @@ class LaporanKasBank extends MyModel
         )
             ->select(
                 DB::raw("2 as urut"),
+                DB::raw('ROW_NUMBER() OVER (PARTITION BY A.nobukti ORDER BY b.id) as urutdetail'),
                 'b.coakredit as coa',
                 'a.tglbukti',
                 'a.nobukti',
@@ -461,6 +464,7 @@ class LaporanKasBank extends MyModel
 
         DB::table($tempsaldo)->insertUsing([
             'urut',
+            'urutdetail',
             'coa',
             'tglbukti',
             'nobukti',
@@ -475,6 +479,7 @@ class LaporanKasBank extends MyModel
         )
             ->select(
                 DB::raw("3 as urut"),
+                DB::raw("1 as urutdetail"),
                 'a.coakredit as coa',
                 'a.tglbukti',
                 'a.nobukti',
@@ -493,6 +498,7 @@ class LaporanKasBank extends MyModel
 
         DB::table($tempsaldo)->insertUsing([
             'urut',
+            'urutdetail',
             'coa',
             'tglbukti',
             'nobukti',
@@ -507,6 +513,7 @@ class LaporanKasBank extends MyModel
         )
             ->select(
                 DB::raw("4 as urut"),
+                DB::raw('ROW_NUMBER() OVER (PARTITION BY A.nobukti ORDER BY b.id) as urutdetail'),
                 'b.coadebet as coa',
                 'a.tglbukti',
                 'a.nobukti',
@@ -526,6 +533,7 @@ class LaporanKasBank extends MyModel
 
         DB::table($tempsaldo)->insertUsing([
             'urut',
+            'urutdetail',
             'coa',
             'tglbukti',
             'nobukti',
@@ -540,6 +548,7 @@ class LaporanKasBank extends MyModel
             )
                 ->select(
                     DB::raw("5 as urut"),
+                    DB::raw('ROW_NUMBER() OVER (PARTITION BY A.nobukti ORDER BY b.id) as urutdetail'),
                     'b.coadebet as coa',
                     'a.tglbukti',
                     'a.nobukti',
@@ -560,6 +569,7 @@ class LaporanKasBank extends MyModel
             // dd($bankpengembaliankepusat->id);
             DB::table($tempsaldo)->insertUsing([
                 'urut',
+                'urutdetail',
                 'coa',
                 'tglbukti',
                 'nobukti',
@@ -575,6 +585,7 @@ class LaporanKasBank extends MyModel
         )
             ->select(
                 DB::raw("6 as urut"),
+                DB::raw("1 as urutdetail"),
                 'a.coadebet as coa',
                 'a.tglbukti',
                 'a.nobukti',
@@ -593,6 +604,7 @@ class LaporanKasBank extends MyModel
 
         DB::table($tempsaldo)->insertUsing([
             'urut',
+            'urutdetail',
             'coa',
             'tglbukti',
             'nobukti',
@@ -607,6 +619,7 @@ class LaporanKasBank extends MyModel
         Schema::create($temprekap, function ($table) {
             $table->id();
             $table->double('urut', 15, 2)->nullable();
+            $table->double('urutdetail', 15, 2)->nullable();
             $table->string('coa', 1000)->nullable();
             $table->dateTime('tglbukti')->nullable();
             $table->string('nobukti', 100)->nullable();
@@ -621,6 +634,7 @@ class LaporanKasBank extends MyModel
         )
             ->select(
                 'a.urut',
+                'a.urutdetail',
                 'a.coa',
                 'a.tglbukti',
                 'a.nobukti',
@@ -638,6 +652,7 @@ class LaporanKasBank extends MyModel
 
         DB::table($temprekap)->insertUsing([
             'urut',
+            'urutdetail',
             'coa',
             'tglbukti',
             'nobukti',
@@ -663,20 +678,51 @@ class LaporanKasBank extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
-            // dd(db::table($temprekap)->orderby('id','asc')->get());
+        // dd(db::table($tempsaldo)->orderby('id','asc')->get());
+
+
+
+        $tempnominal = '##tempnominal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempnominal, function ($table) {
+            $table->string('nobukti', 100)->nullable();
+            $table->double('totaldebet', 15, 2)->nullable();
+            $table->double('totalkredit', 15, 2)->nullable();
+        });
+
+        $querynominal = DB::table($tempsaldo)->from(
+            $tempsaldo . " as a"
+        )
+            ->select(
+                'a.nobukti',
+                DB::raw("sum(a.debet) as totaldebet"),
+                DB::raw("sum(a.kredit) as totalkredit"),
+            )
+            ->groupBy('a.nobukti');
+        DB::table($tempnominal)->insertUsing([
+            'nobukti',
+            'totaldebet',
+            'totalkredit',
+        ], $querynominal);
+
+
+        $count=db::table($temprekap)->count();
+     
 
         $queryhasil = DB::table($temprekap)->from(
             $tempsaldo . " as a"
         )
             ->select(
                 'a.urut',
+                'a.urutdetail',
                 DB::raw("isnull(b.keterangancoa,'') as keterangancoa"),
                 DB::raw("'" . $querykasbank->namabank . "' as namabank"),
-                DB::raw("(case when year(isnull(a.tglbukti,'1900/1/1')) < '2000' then null else a.tglbukti end) as tglbukti"),
+                DB::raw("(case when year(isnull(a.tglbukti,'1900/1/1')) < '2000' then '" . $dari . "' else a.tglbukti end) as tglbukti"),
                 'a.nobukti',
                 'a.keterangan',
                 'a.debet',
                 'a.kredit',
+                'c.totaldebet',
+                'c.totalkredit',
                 DB::raw("sum ((isnull(a.saldo,0)+isnull(a.debet,0))-isnull(a.Kredit,0)) over (order by a.tglbukti,a.id) as saldo"),
                 DB::raw("'Laporan Buku Kas Bank' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
@@ -684,13 +730,33 @@ class LaporanKasBank extends MyModel
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftjoin(DB::raw("akunpusat as b with (readuncommitted)"), 'a.coa', 'b.coa')
+            ->leftjoin(DB::raw("$tempnominal as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
             ->orderBy('a.tglbukti', 'Asc')
             ->orderBy('a.id', 'Asc');
 
+        
         if ($prosesneraca == 1) {
             $data = $queryhasil;
         } else {
-            $data = $queryhasil->get();
+            // if ( $count>1) {
+            //     $queryhasil->whereraw("a.nobukti not in ('SALDO AWAL')");
+            // }
+
+            $dataSaldo = [
+                'urut' => '1',
+                'urutdetail' => '1',
+                "coa" => "",
+                "tglbukti" =>  $dari,
+                "nobukti" => "SALDO AWAL",
+                "keterangan" => "SALDO AWAL",
+                "debet" => "0",
+                "kredit" => "0",
+                "saldo" => $saldoawal ?? 0,
+            ];
+            $data = [
+                "data" => $queryhasil->get(),
+                "dataSaldo" => $dataSaldo,
+            ];
         }
 
         // dd($data);

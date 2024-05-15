@@ -110,14 +110,16 @@ class PelunasanPiutangHeaderController extends Controller
                 'statusnotadebet' => $request->statusnotadebet
             ];
             $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processStore($data);
-            $pelunasanPiutangHeader->position = $this->getPosition($pelunasanPiutangHeader, $pelunasanPiutangHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / (10));
-            } else {
-                $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $pelunasanPiutangHeader->position = $this->getPosition($pelunasanPiutangHeader, $pelunasanPiutangHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / (10));
+                } else {
+                    $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / ($request->limit ?? 10));
+                }
+                $pelunasanPiutangHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $pelunasanPiutangHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $pelunasanPiutangHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $pelunasanPiutangHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             DB::commit();
 
             return response()->json([
@@ -403,8 +405,8 @@ class PelunasanPiutangHeaderController extends Controller
 
             if ($pelunasanpiutang->statuscetak != $statusSudahCetak->id) {
                 $pelunasanpiutang->statuscetak = $statusSudahCetak->id;
-                $pelunasanpiutang->tglbukacetak = date('Y-m-d H:i:s');
-                $pelunasanpiutang->userbukacetak = auth('api')->user()->name;
+                // $pelunasanpiutang->tglbukacetak = date('Y-m-d H:i:s');
+                // $pelunasanpiutang->userbukacetak = auth('api')->user()->name;
                 $pelunasanpiutang->jumlahcetak = $pelunasanpiutang->jumlahcetak + 1;
                 if ($pelunasanpiutang->save()) {
                     $logTrail = [

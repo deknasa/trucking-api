@@ -225,7 +225,8 @@ class PiutangHeaderController extends Controller
             if ($piutangHeader->statuscetak != $statusSudahCetak->id) {
                 $piutangHeader->statuscetak = $statusSudahCetak->id;
                 $piutangHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $piutangHeader->userbukacetak = auth('api')->user()->name;
+                // $piutangHeader->userbukacetak = auth('api')->user()->name;
+                $piutangHeader->jumlahcetak = $piutangHeader->jumlahcetak + 1;
                 if ($piutangHeader->save()) {
                     $logTrail = [
                         'namatabel' => strtoupper($piutangHeader->getTable()),

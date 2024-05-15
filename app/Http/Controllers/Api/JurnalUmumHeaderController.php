@@ -67,15 +67,16 @@ class JurnalUmumHeaderController extends Controller
                 'coakredit_detail' => $request->coakredit_detail,
             ];
             $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($data);
-            $jurnalUmumHeader->position = $this->getPosition($jurnalUmumHeader, $jurnalUmumHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $jurnalUmumHeader->page = ceil($jurnalUmumHeader->position / (10));
-            } else {
-                $jurnalUmumHeader->page = ceil($jurnalUmumHeader->position / ($request->limit ?? 10));
+            if ($request->button == 'btnSubmit') {
+                $jurnalUmumHeader->position = $this->getPosition($jurnalUmumHeader, $jurnalUmumHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $jurnalUmumHeader->page = ceil($jurnalUmumHeader->position / (10));
+                } else {
+                    $jurnalUmumHeader->page = ceil($jurnalUmumHeader->position / ($request->limit ?? 10));
+                }
+                $jurnalUmumHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $jurnalUmumHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            $jurnalUmumHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $jurnalUmumHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-
             DB::commit();
 
             return response()->json([
@@ -626,8 +627,8 @@ class JurnalUmumHeaderController extends Controller
 
             if ($jurnalUmum->statuscetak != $statusSudahCetak->id) {
                 $jurnalUmum->statuscetak = $statusSudahCetak->id;
-                $jurnalUmum->tglbukacetak = date('Y-m-d H:i:s');
-                $jurnalUmum->userbukacetak = auth('api')->user()->name;
+                // $jurnalUmum->tglbukacetak = date('Y-m-d H:i:s');
+                // $jurnalUmum->userbukacetak = auth('api')->user()->name;
                 $jurnalUmum->jumlahcetak = $jurnalUmum->jumlahcetak + 1;
                 if ($jurnalUmum->save()) {
                     $logTrail = [
@@ -671,7 +672,7 @@ class JurnalUmumHeaderController extends Controller
             'data' => $jurnalumum->getExport($id)
         ]);
     }
-    
+
     /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
@@ -685,6 +686,5 @@ class JurnalUmumHeaderController extends Controller
      */
     public function approvalkirimberkas()
     {
-    }    
-
+    }
 }

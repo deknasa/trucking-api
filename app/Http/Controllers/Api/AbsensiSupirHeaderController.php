@@ -222,6 +222,7 @@ class AbsensiSupirHeaderController extends Controller
                 "supir" => $request->supir,
                 "keterangan_detail" => $request->keterangan_detail,
                 "absen_id" => $request->absen_id,
+                "statusjeniskendaraan" => $request->statusjeniskendaraan,
                 "absen" => null,
                 "jam" => $request->jam,
                 "uangjalan" => $request->uangjalan,
@@ -269,6 +270,7 @@ class AbsensiSupirHeaderController extends Controller
                 "supir" => $request->supir,
                 "keterangan_detail" => $request->keterangan_detail,
                 "absen_id" => $request->absen_id,
+                "statusjeniskendaraan" => $request->statusjeniskendaraan,
                 "absen" => null,
                 "jam" => $request->jam,
                 "uangjalan" => $request->uangjalan,
@@ -764,8 +766,8 @@ class AbsensiSupirHeaderController extends Controller
 
             if ($absensiSupirHeader->statuscetak != $statusSudahCetak->id) {
                 $absensiSupirHeader->statuscetak = $statusSudahCetak->id;
-                $absensiSupirHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $absensiSupirHeader->userbukacetak = auth('api')->user()->name;
+                // $absensiSupirHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $absensiSupirHeader->userbukacetak = auth('api')->user()->name;
                 $absensiSupirHeader->jumlahcetak = $absensiSupirHeader->jumlahcetak + 1;
                 if ($absensiSupirHeader->save()) {
                     $logTrail = [

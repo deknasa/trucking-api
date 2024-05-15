@@ -677,6 +677,7 @@ class PenerimaanStokHeader extends MyModel
             $table->string('coa', 50)->nullable();
             $table->longText('keterangan')->nullable();
             $table->integer('kelompok_id')->length(11)->nullable();
+            $table->integer('stok_id')->length(11)->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -1310,6 +1311,7 @@ class PenerimaanStokHeader extends MyModel
 
         $penerimaanStokHeader->nobukti                  = (new RunningNumberService)->get($group, $subGroup, $penerimaanStokHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
+        // dd($penerimaanStokHeader->nobukti,$group, $subGroup, $penerimaanStokHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
         if (!$penerimaanStokHeader->save()) {
             throw new \Exception("Error storing penerimaan Stok Header.");
         }

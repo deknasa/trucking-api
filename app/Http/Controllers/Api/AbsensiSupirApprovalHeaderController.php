@@ -74,20 +74,22 @@ class AbsensiSupirApprovalHeaderController extends Controller
                 'uangjalan' => $request->uangjalan,
                 'supir_id' => $request->supir_id,
                 'trado_id' => $request->trado_id,
-                'uangjalan' => $request->uangjalan,
+                'statusjeniskendaraan' => $request->statusjeniskendaraan,
             ];
             /* Store header */
             $absensiSupirApprovalHeader = (new AbsensiSupirApprovalHeader())->processStore($data);
-            /* Set position and page */
-            $absensiSupirApprovalHeader->position = $this->getPosition($absensiSupirApprovalHeader, $absensiSupirApprovalHeader->getTable())->position;
-            if ($request->limit == 0) {
-                $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / (10));
-            } else {
-                $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
-            }
-            $absensiSupirApprovalHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
-            $absensiSupirApprovalHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
+            if ($request->button == 'btnSubmit') {
+                /* Set position and page */
+                $absensiSupirApprovalHeader->position = $this->getPosition($absensiSupirApprovalHeader, $absensiSupirApprovalHeader->getTable())->position;
+                if ($request->limit == 0) {
+                    $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / (10));
+                } else {
+                    $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
+                }
+                $absensiSupirApprovalHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+                $absensiSupirApprovalHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            }
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
@@ -336,7 +338,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
                 'statuspesan' => 'warning',
             ];
 
-            return response($data);            
+            return response($data);
         } else if ($useredit != '' && $useredit != $user) {
             $waktu = (new Parameter())->cekBatasWaktuEdit('ABSENSI SUPIR APPROVAL BUKTI');
 
@@ -366,7 +368,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
                 ];
 
                 return response($data);
-            }                  
+            }
         } else {
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                 (new MyModel())->updateEditingBy('absensisupirapprovalheader', $id, $aksi);
@@ -446,8 +448,8 @@ class AbsensiSupirApprovalHeaderController extends Controller
 
             if ($absensisupirapproval->statuscetak != $statusSudahCetak->id) {
                 $absensisupirapproval->statuscetak = $statusSudahCetak->id;
-                $absensisupirapproval->tglbukacetak = date('Y-m-d H:i:s');
-                $absensisupirapproval->userbukacetak = auth('api')->user()->name;
+                // $absensisupirapproval->tglbukacetak = date('Y-m-d H:i:s');
+                // $absensisupirapproval->userbukacetak = auth('api')->user()->name;
                 $absensisupirapproval->jumlahcetak = $absensisupirapproval->jumlahcetak + 1;
                 if ($absensisupirapproval->save()) {
                     $logTrail = [
@@ -507,7 +509,4 @@ class AbsensiSupirApprovalHeaderController extends Controller
     public function approvalkirimberkas()
     {
     }
-    
-
-
 }
