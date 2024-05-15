@@ -34,35 +34,16 @@ class validasiUpahSupirTangki implements Rule
         if ($supir_id != '' && $trado_id != '') {
 
 
-            $jenisTangki = DB::table('parameter')->from(DB::raw("parameter as a with (readuncommitted)"))
-                ->select('a.id')
-                ->where('a.grp', '=', 'STATUS JENIS KENDARAAN')
-                ->where('a.subgrp', '=', 'STATUS JENIS KENDARAAN')
-                ->where('a.text', '=', 'TANGKI')
-                ->first();
-            $getTripTangki = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-                ->select('triptangki_id')
-                ->where('supir_id', $supir_id)
-                ->where('trado_id', $trado_id)
-                ->where('tglbukti', date('Y-m-d', strtotime(request()->tglbukti)))
-                ->where('statusjeniskendaraan', $jenisTangki->id)
-                ->orderBy('id', 'desc')
-                ->count();
-
-            if ($getTripTangki > 0) {
-                $triptangki = $getTripTangki + 1;
-            } else {
-                $triptangki = 1;
-            }
+            $triptangki = request()->triptangki_id;
             $getTangki = DB::table("triptangki")->from(DB::raw("triptangki with (readuncommitted)"))
-                ->where('kodetangki', $triptangki)
+                ->where('id', $triptangki)
                 ->first();
             if (!isset($getTangki)) {
 
                 $error = new Error();
                 $keteranganerror = $error->cekKeteranganError('DTA') ?? '';
                 $keterangantambahanerror = $error->cekKeteranganError('MTB') ?? '';
-                $this->keterror = $keteranganerror . ' (' . $keterangantambahanerror . ' KE-' . $triptangki . ')';
+                $this->keterror = $keteranganerror . ' (' . $keterangantambahanerror . ' ' . request()->triptangki . ')';
 
                 return false;
             } else {
@@ -73,14 +54,14 @@ class validasiUpahSupirTangki implements Rule
                     $error = new Error();
                     $keteranganerror = $error->cekKeteranganError('DTA') ?? '';
                     $keterangantambahanerror = $error->cekKeteranganError('MUSTB') ?? '';
-                    $this->keterror = $keteranganerror . ' (' . $keterangantambahanerror . ' KE-' . $triptangki . ')';
+                    $this->keterror = $keteranganerror . ' (' . $keterangantambahanerror . ' ' . request()->triptangki . ')';
                     return false;
                 } else {
                     if ($upahsupir->nominalsupir == 0) {
 
                         $error = new Error();
                         $keteranganerror = $error->cekKeteranganError('NUSTBA') ?? '';
-                        $this->keterror =  $keteranganerror;
+                        $this->keterror =  $keteranganerror.' (' . request()->triptangki . ')';
                         return false;
                     }
                 }

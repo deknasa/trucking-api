@@ -101,6 +101,7 @@ class Gandengan extends MyModel
 
         $aktif = request()->aktif ?? '';
         $asal = request()->asal ?? '';
+        $statusjeniskendaraan = request()->statusjeniskendaraan ?? '';
 
         if ($asal == 'YA') {
             $statusGandengan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GANDENGAN')->where('text', 'TINGGAL CONTAINER')->first();
@@ -186,7 +187,9 @@ class Gandengan extends MyModel
 
             $query->where('gandengan.statusaktif', '=', $statusaktif->id);
         }
-
+        if($statusjeniskendaraan != ''){
+            $query->where('statusjeniskendaraan', $statusjeniskendaraan);
+        }
         $penerimaanstok = request()->penerimaanstok_id ?? '';
         $penerimaanStokPg = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
 

@@ -90,7 +90,7 @@ class InvoiceHeader extends MyModel
         $error = new Error();
         $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
-    
+
 
         $pelunasanPiutang = DB::table('pelunasanpiutangdetail')
             ->from(
@@ -105,7 +105,7 @@ class InvoiceHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti pelunasan piutang <b>'. $pelunasanPiutang->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti pelunasan piutang <b>' . $pelunasanPiutang->nobukti . '</b> <br> ' . $keterangantambahanerror,
 
                 // 'keterangan' => 'Pelunasan Piutang ' . $pelunasanPiutang->nobukti,
                 'kodeerror' => 'SATL2'
@@ -129,7 +129,7 @@ class InvoiceHeader extends MyModel
         if (isset($invoice)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $invoice->piutang_nobukti . '</b><br>' .$keteranganerror.' <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $invoice->piutang_nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror,
 
                 // 'keterangan' => 'Approval Jurnal ' . $invoice->piutang_nobukti,
                 'kodeerror' => 'SAPP'
@@ -245,11 +245,11 @@ class InvoiceHeader extends MyModel
     {
 
         $statusbatalmuat = db::table('parameter')->from(db::raw("parameter with (readuncommitted)"))
-        ->select('id')
-        ->where('grp', 'STATUS BATAL MUAT')
-        ->where('subgrp', 'STATUS BATAL MUAT')
-        ->where('text', 'BATAL MUAT')
-        ->first()->id ?? 0;
+            ->select('id')
+            ->where('grp', 'STATUS BATAL MUAT')
+            ->where('subgrp', 'STATUS BATAL MUAT')
+            ->where('text', 'BATAL MUAT')
+            ->first()->id ?? 0;
 
 
         $kotapelabuhan = DB::table('parameter')->from(
@@ -523,6 +523,27 @@ class InvoiceHeader extends MyModel
         // dd(db::table($temphasil)->get());
 
 
+        if ($request->jenisorder_id == 1) {
+            $queryTangki = DB::table('suratpengantar')->from(
+                db::raw("suratpengantar a with (readuncommitted)")
+            )
+                ->select(
+                    'a.jobtrucking',
+                    db::raw("max(a.totalomset) as nominal"),
+                    db::raw("max(a.nobukti) as suratpengantar_nobukti")
+                )
+                ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
+                ->where('a.agen_id', $request->agen_id)
+                ->where('a.statusjeniskendaraan', '646')
+                ->groupBy('a.jobtrucking');
+
+            DB::table($temphasil)->insertUsing([
+                'jobtrucking',
+                'nominal',
+                'suratpengantar_nobukti',
+            ], $queryTangki);
+        }
+
 
 
         $tempomsettambahan = '##tempomsettambahan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -548,7 +569,7 @@ class InvoiceHeader extends MyModel
             $table->double('nominal')->nullable();
         });
 
-        DB::table($tempomsettambahan)->insertUsing(['jobtrucking','keterangan', 'nominal'], $fetch);
+        DB::table($tempomsettambahan)->insertUsing(['jobtrucking', 'keterangan', 'nominal'], $fetch);
 
         $tempsp = '##tempsp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsp, function ($table) {
@@ -649,7 +670,35 @@ class InvoiceHeader extends MyModel
             }
         }
 
-
+        $querystatusfilter = DB::table($temphasil)->from(
+            db::raw($temphasil . " a with (readuncommitted)")
+        )
+            ->select(
+                'a.jobtrucking',
+                'sp.nosp'
+            )
+            ->join(DB::raw("suratpengantar sp with (readuncommitted)"), 'a.jobtrucking', 'sp.jobtrucking')
+            ->where('sp.statusjeniskendaraan', 646)
+            ->OrderBy('sp.tglbukti');
+        $datadetailsp = json_decode($querystatusfilter->get(), true);
+        foreach ($datadetailsp as $itemsp) {
+            $queryinstemp = DB::table($tempsp)->from(
+                DB::raw($tempsp . " a")
+            )
+                ->select(
+                    'a.jobtrucking'
+                )
+                ->where('a.jobtrucking', $itemsp['jobtrucking'])
+                ->first();
+            if (!isset($queryinstemp)) {
+                DB::table($tempsp)->insert([
+                    'jobtrucking' => $itemsp['jobtrucking'],
+                    'nospfull' => '',
+                    'nospempty' => '',
+                    'nospfullempty' => $itemsp['nosp'],
+                ]);
+            }
+        }
 
         $tempdatahasil = '##tempdatahasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdatahasil, function ($table) {
@@ -1677,6 +1726,8 @@ class InvoiceHeader extends MyModel
         $invoiceHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
         $invoiceHeader->modifiedby = auth('api')->user()->name;
         $invoiceHeader->info = html_entity_decode(request()->info);
+        $invoiceHeader->editing_by = '';
+        $invoiceHeader->editing_at = null;
         $invoiceHeader->statuspilihaninvoice = $data['statuspilihaninvoice'] ?? '';
 
 

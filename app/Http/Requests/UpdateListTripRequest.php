@@ -35,6 +35,7 @@ use App\Rules\ValidasiJenisOrderLongtrip;
 use App\Rules\ValidasiKotaUpahZona;
 use App\Rules\ValidasiKotaZonaTrip;
 use App\Rules\ValidasiLongtripGudangsama;
+use App\Rules\validasiNominalUpahSupirTangkiTrip;
 use App\Rules\ValidasiPelangganTripGudangSama;
 use App\Rules\ValidasiReminderOli;
 use App\Rules\ValidasiReminderOliGardan;
@@ -44,6 +45,7 @@ use App\Rules\validasiStatusContainerLongtrip;
 use App\Rules\validasiStatusJenisKendaraan;
 use App\Rules\ValidasiTradoTripGudangSama;
 use App\Rules\ValidasiTripGudangSama;
+use App\Rules\validasiTripTangkiEditTrip;
 use App\Rules\validasiUpahSupirTangki;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
@@ -89,6 +91,17 @@ class UpdateListTripRequest extends FormRequest
             } else if ($agen_id == null && $this->agen != '') {
                 $rulesAgen_id = [
                     'agen_id' => ['required', 'numeric', 'min:1', new ExistAgen()]
+                ];
+            }
+            $triptangki_id = $this->triptangki_id;
+            $rulesTripTangki_id = [];
+            if ($triptangki_id != null) {
+                $rulesTripTangki_id = [
+                    'triptangki_id' => ['required', 'numeric', 'min:1']
+                ];
+            } else if ($triptangki_id == null && $this->triptangki != '') {
+                $rulesTripTangki_id = [
+                    'triptangki_id' => ['required', 'numeric', 'min:1']
                 ];
             }
             $upah_id = $this->upah_id;
@@ -352,7 +365,8 @@ class UpdateListTripRequest extends FormRequest
                 "pelanggan" => ["required"],
                 "sampai" => ["required"],
                 "trado" => ["required"],
-                "upah" => ["required"],
+                "upah" => ["required", new validasiNominalUpahSupirTangkiTrip()],
+                "triptangki" => ["required", new validasiTripTangkiEditTrip()],
             ];
             $rulesId = [
                 'id' => new DestroyListTrip()
@@ -366,6 +380,7 @@ class UpdateListTripRequest extends FormRequest
                 $rulesPelanggan_id,
                 $rulesTrado_id,
                 $rulesUpah_id,
+                $rulesTripTangki_id
             );
         } else {
 

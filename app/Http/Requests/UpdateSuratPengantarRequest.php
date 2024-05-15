@@ -33,6 +33,7 @@ use App\Rules\ValidasiJenisOrderGudangsama;
 use App\Rules\ValidasiJenisOrderLongtrip;
 use App\Rules\ValidasiKotaUpahZona;
 use App\Rules\ValidasiLongtripGudangsama;
+use App\Rules\validasiNominalUpahSupirTangkiTrip;
 use App\Rules\ValidasiPelangganTripGudangSama;
 use App\Rules\ValidasiReminderOli;
 use App\Rules\ValidasiReminderOliGardan;
@@ -42,6 +43,7 @@ use App\Rules\validasiStatusContainerLongtrip;
 use App\Rules\validasiStatusJenisKendaraan;
 use App\Rules\ValidasiTradoTripGudangSama;
 use App\Rules\ValidasiTripGudangSama;
+use App\Rules\validasiTripTangkiEditTrip;
 use Illuminate\Support\Facades\Schema;
 
 class UpdateSuratPengantarRequest extends FormRequest
@@ -100,8 +102,11 @@ class UpdateSuratPengantarRequest extends FormRequest
                 "tarifrincian" => ['required'],
                 "statusjeniskendaraan" => ["required", new validasiStatusJenisKendaraan()],
                 'nosp' => 'required',
-                'upah' => ['required'],
+                'omset' => ['required','numeric','gt:0'],
+                'gajisupir' => ['required','numeric','gt:0'],
+                'upah' => ['required', new validasiNominalUpahSupirTangkiTrip()],
                 'qtyton' => ['required','numeric'],
+                "triptangki" => ["required", new validasiTripTangkiEditTrip()],
             ];
 
             $tempreminderoli = '##tempreminderoli' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));

@@ -262,7 +262,6 @@ class InputTrip extends MyModel
         $nominalspr = 0;
         $nominalkenek = 0;
 
-        $data['triptangki_id'] = '';
         if ($data['statusjeniskendaraan'] != $jenisTangki->id) {
             if ($data['statusupahzona'] == $getZona->id) {
                 $data['zonadari_id'] = $upahZona->zonadari_id;
@@ -368,24 +367,22 @@ class InputTrip extends MyModel
                 $nominalspr = $nominalSupir;
                 $nominalkenek = $upahsupirRincian->nominalkenek;
             }
-        }else{
-            $triptangki = 1;
-            $getTripTangki = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-            ->select('triptangki_id')
-            ->where('supir_id', $data['supir_id'])
-            ->where('trado_id', $data['trado_id'])
-            ->where('tglbukti', date('Y-m-d', strtotime($data['tglbukti'])))
-            ->where('statusjeniskendaraan', $jenisTangki->id)
-            ->orderBy('id', 'desc')
-            ->count();
-            if($getTripTangki > 0)
-            {
-                $triptangki = $getTripTangki + 1;
-            }
-            $getTangki = DB::table("triptangki")->from(DB::raw("triptangki with (readuncommitted)"))
-            ->where('kodetangki', $triptangki)
-            ->first();
-            $data['triptangki_id'] = $getTangki->id;
+        } else {
+            // $triptangki = 1;
+            // $getTripTangki = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+            //     ->select('triptangki_id')
+            //     ->where('supir_id', $data['supir_id'])
+            //     ->where('trado_id', $data['trado_id'])
+            //     ->where('tglbukti', date('Y-m-d', strtotime($data['tglbukti'])))
+            //     ->where('statusjeniskendaraan', $jenisTangki->id)
+            //     ->orderBy('id', 'desc')
+            //     ->count();
+            // if ($getTripTangki == 0) {
+            //     $getTangki = DB::table("triptangki")->from(DB::raw("triptangki with (readuncommitted)"))
+            //         ->where('kodetangki', $triptangki)
+            //         ->first();
+            //     $data['triptangki_id'] = $getTangki->id;
+            // }
         }
 
         // dd('here');
@@ -515,7 +512,6 @@ class InputTrip extends MyModel
     public function getInfo($trado_id, $upah_id, $statuscontainer, $id)
     {
         if ($upah_id != '' && $trado_id != '') {
-            $getTrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('statusjeniskendaraan')->where('id', $id)->first();
             $jenisTangki = DB::table('parameter')->from(DB::raw("parameter as a with (readuncommitted)"))
                 ->select('a.id')
                 ->where('a.grp', '=', 'STATUS JENIS KENDARAAN')
@@ -602,6 +598,38 @@ class InputTrip extends MyModel
                     )->get();
             }
             return $query;
+        }
+    }
+
+    public function getInfoTangki()
+    {
+        $trado_id = request()->trado_id;
+        $supir_id = request()->supir_id;
+        $tglbukti = request()->tglbukti;
+        $statusjeniskendaraan = request()->statusjeniskendaraan;
+
+        $jenisTangki = DB::table('parameter')->from(DB::raw("parameter as a with (readuncommitted)"))
+            ->select('a.id')
+            ->where('a.grp', '=', 'STATUS JENIS KENDARAAN')
+            ->where('a.subgrp', '=', 'STATUS JENIS KENDARAAN')
+            ->where('a.text', '=', 'TANGKI')
+            ->first();
+        if ($statusjeniskendaraan == $jenisTangki->id) {
+            $getTripTangki = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+                ->select('triptangki_id')
+                ->where('supir_id', $supir_id)
+                ->where('trado_id', $trado_id)
+                ->where('tglbukti', date('Y-m-d', strtotime($tglbukti)))
+                ->where('statusjeniskendaraan', $jenisTangki->id)
+                ->orderBy('id', 'desc')
+                ->count();
+            if ($getTripTangki > 0) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
         }
     }
 }
