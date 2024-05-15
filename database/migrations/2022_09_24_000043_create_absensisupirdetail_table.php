@@ -32,6 +32,7 @@ class CreateabsensisupirdetailTable extends Migration
             $table->integer('statusapprovaleditabsensi')->Length(11)->nullable();
             $table->string('userapprovaleditabsensi', 50)->nullable();
             $table->date('tglapprovaleditabsensi')->nullable();
+            $table->integer('statustambahantrado')->Length(11)->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
             
