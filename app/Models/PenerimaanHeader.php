@@ -1517,7 +1517,7 @@ class PenerimaanHeader extends MyModel
                 'statuscetak.id as  statuscetak_id',
                 DB::raw('(case when (year(penerimaanheader.tgllunas) <= 2000) then null else penerimaanheader.tgllunas end ) as tgllunas'),
                 'penerimaanheader.userapproval',
-                DB::raw("'Laporan Penerimaan' as judulLaporan"),
+                DB::raw("'Bukti Penerimaan' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
