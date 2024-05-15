@@ -64,13 +64,19 @@ class SuratPengantar extends MyModel
         return true;
     }
 
-    public function cekvalidasihapus($nobukti, $jobtrucking)
+    public function cekvalidasihapus($nobukti, $jobtrucking, $trip)
     {
 
         $error = new Error();
+        $aksi = request()->aksi;
         $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
-
+        $jenisTangki = DB::table('parameter')->from(DB::raw("parameter as a with (readuncommitted)"))
+        ->select('a.id')
+        ->where('a.grp', '=', 'STATUS JENIS KENDARAAN')
+        ->where('a.subgrp', '=', 'STATUS JENIS KENDARAAN')
+        ->where('a.text', '=', 'TANGKI')
+        ->first();
         $gajiSupir = DB::table('gajisupirdetail')
             ->from(
                 DB::raw("gajisupirdetail as a with (readuncommitted)")
@@ -205,6 +211,28 @@ class SuratPengantar extends MyModel
             goto selesai;
         }
 
+        if ($trip->statusjeniskendaraan == $jenisTangki->id && $aksi == 'DELETE') {
+            $getTripTangki = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+            ->select(db::raw("STRING_AGG(nobukti, ', ') as nobukti"))
+            ->where('supir_id', $trip->supir_id)
+            ->where('trado_id', $trip->trado_id)
+            ->where('tglbukti', date('Y-m-d', strtotime($trip->tglbukti)))
+            ->where('statusjeniskendaraan', $jenisTangki->id)
+            ->where('id', '>', $trip->id)
+            ->first();
+            if($getTripTangki->nobukti != ''){
+                $keteranganerror = $error->cekKeteranganError('ATBB') ?? '';
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' =>  $keteranganerror .' <b>'. $getTripTangki->nobukti . '</b><br> ' . $keterangantambahanerror,
+                    'kodeerror' => 'SATL2',
+                ];
+
+
+                goto selesai;
+            }
+        }
+        
         $data = [
             'kondisi' => false,
             'keterangan' => '',
@@ -1310,7 +1338,7 @@ class SuratPengantar extends MyModel
                     'suratpengantar.dari_id',
                     'kotadari.kodekota as dari',
                     'suratpengantar.gandengan_id',
-                    'gandengan.kodegandengan as gandengan',
+                    'gandengan.keterangan as gandengan',
                     'suratpengantar.nocont',
                     'suratpengantar.noseal',
                     'suratpengantar.statusperalihan',
@@ -1339,6 +1367,8 @@ class SuratPengantar extends MyModel
                     'suratpengantar.nojob2',
                     'suratpengantar.cabang_id',
                     'suratpengantar.qtyton',
+                    'suratpengantar.triptangki_id',
+                    'triptangki.keterangan as triptangki',
                     'suratpengantar.gudang',
                     'suratpengantar.statusbatalmuat',
                     'suratpengantar.statusupahzona',
@@ -1358,6 +1388,7 @@ class SuratPengantar extends MyModel
                 ->leftJoin('trado', 'suratpengantar.trado_id', 'trado.id')
                 ->leftJoin('supir', 'suratpengantar.supir_id', 'supir.id')
                 ->leftJoin('tariftangki', 'suratpengantar.tariftangki_id', 'tariftangki.id')
+                ->leftJoin('triptangki', 'suratpengantar.triptangki_id', 'triptangki.id')
                 ->leftJoin('upahsupirtangki', 'suratpengantar.upahsupirtangki_id', 'upahsupirtangki.id')
                 ->leftJoin('kota as kotaupah', 'kotaupah.id', '=', 'upahsupirtangki.kotasampai_id')
                 ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
@@ -2623,7 +2654,6 @@ class SuratPengantar extends MyModel
 
             $data['upahtangki_id'] = 0;
             $data['tariftangki_id'] = 0;
-            $data['triptangki_id'] = 0;
             if ($data['statusjeniskendaraan'] == $jenisTangki->id) {
 
                 $data['upahtangki_id'] = $data['upah_id'];
@@ -2636,28 +2666,7 @@ class SuratPengantar extends MyModel
                 $tarifNominal = $total;
 
                 $upahsupir = DB::table("upahsupirtangki")->where('id', $data['upahtangki_id'])->first();
-
-                if ($data['supir_id'] != $suratPengantar->supir_id && $data['trado_id'] != $suratPengantar->trado_id) {
-                    $getTripTangki = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-                        ->select('triptangki_id')
-                        ->where('supir_id', $data['supir_id'])
-                        ->where('trado_id', $data['trado_id'])
-                        ->where('tglbukti', date('Y-m-d', strtotime($data['tglbukti'])))
-                        ->where('statusjeniskendaraan', $jenisTangki->id)
-                        ->orderBy('id', 'desc')
-                        ->count();
-                    if ($getTripTangki > 0) {
-                        $triptangki = $getTripTangki + 1;
-                    } else {
-                        $triptangki = 1;
-                    }
-                    $getTangki = DB::table("triptangki")->from(DB::raw("triptangki with (readuncommitted)"))
-                        ->where('kodetangki', $triptangki)
-                        ->first();
-                    $data['triptangki_id'] = $getTangki->id;
-
-                    $suratPengantar->triptangki_id = $data['triptangki_id'];
-                }
+                $suratPengantar->triptangki_id = $data['triptangki_id'];
             } else {
 
                 $tarif = TarifRincian::where('tarif_id', $data['tarif_id'])->where('container_id', $container)->first();
@@ -2694,7 +2703,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->pelanggan_id = $pelanggan;
             $suratPengantar->keterangan = $data['keterangan'] ?? '';
             $suratPengantar->nourutorder = $data['nourutorder'] ?? 1;
-            $suratPengantar->upah_id = $upahsupir->id ?? '';
+            $suratPengantar->upah_id = $data['upah_id'] ?? '';
             $suratPengantar->upahsupirtangki_id = $data['upahtangki_id'];
             $suratPengantar->dari_id = $data['dari_id'];
             $suratPengantar->sampai_id = $data['sampai_id'];

@@ -343,6 +343,7 @@ class StoreMandorTripRequest extends FormRequest
                 "statusjeniskendaraan" => "required",
                 "trado" => ["required"],
                 "upah" => ["required", new validasiUpahSupirTangki()],
+                "triptangki" => ["required"],
             ];
             $rules = array_merge(
                 $rules,

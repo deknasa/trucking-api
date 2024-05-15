@@ -1021,12 +1021,11 @@ class UpahSupirTangki extends MyModel
         }
     }
 
-    public function getRincian($idtrip, $upah_id, $tarif_id)
+    public function getRincian($idtrip, $upah_id, $tarif_id, $triptangki_id)
     {
-        $getTrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('triptangki_id', 'tariftangki_id')->where('id', $idtrip)->first();
         $query = DB::table("upahsupirtangkirincian")->from(DB::raw("upahsupirtangkirincian with (readuncommitted)"))
         ->where('upahsupirtangki_id', $upah_id)
-        ->where('triptangki_id', $getTrip->triptangki_id)
+        ->where('triptangki_id', $triptangki_id)
         ->first();
         $getTarif = DB::table("tariftangki")->from(DB::raw("tariftangki with (readuncommitted)"))->where('id', $tarif_id)->first();
         $data = [

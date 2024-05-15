@@ -194,6 +194,7 @@ class SuratPengantarController extends Controller
             $data = [
                 'jobtrucking' => $request->jobtrucking,
                 'upah_id' => $request->upah_id,
+                'triptangki_id' => $request->triptangki_id,
                 'tarif_id' => $request->tarifrincian_id,
                 'container_id' => $request->container_id,
                 'tglbukti' => $request->tglbukti,
@@ -486,7 +487,7 @@ class SuratPengantarController extends Controller
         }
         // }
 
-        $cekdata = $suratPengantar->cekvalidasihapus($nobukti->nobukti, $nobukti->jobtrucking);
+        $cekdata = $suratPengantar->cekvalidasihapus($nobukti->nobukti, $nobukti->jobtrucking, $nobukti);
         if ($cekdata['kondisi'] == true) {
             $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
             $keterror = $cekdata['keterangan'];

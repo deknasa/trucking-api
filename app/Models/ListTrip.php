@@ -396,7 +396,7 @@ class ListTrip extends MyModel
                     'suratpengantar.dari_id',
                     'kotadari.kodekota as dari',
                     'suratpengantar.gandengan_id',
-                    'gandengan.kodegandengan as gandengan',
+                    'gandengan.keterangan as gandengan',
                     'suratpengantar.statusgudangsama',
                     'suratpengantar.keterangan',
                     'suratpengantar.penyesuaian',
@@ -408,6 +408,8 @@ class ListTrip extends MyModel
                     'agen.namaagen as agen',
                     'suratpengantar.tariftangki_id as tarifrincian_id',
                     'tariftangki.tujuan as tarifrincian',
+                    'suratpengantar.triptangki_id',
+                    'triptangki.keterangan as triptangki',
                     'suratpengantar.gudang',
                     'suratpengantar.upahsupirtangki_id as upah_id',
                     'suratpengantar.nobukti_tripasal',
@@ -422,6 +424,7 @@ class ListTrip extends MyModel
                 ->leftJoin('trado', 'suratpengantar.trado_id', 'trado.id')
                 ->leftJoin('supir', 'suratpengantar.supir_id', 'supir.id')
                 ->leftJoin('tariftangki', 'suratpengantar.tariftangki_id', 'tariftangki.id')
+                ->leftJoin('triptangki', 'suratpengantar.triptangki_id', 'triptangki.id')
                 ->leftJoin('upahsupirtangki', 'suratpengantar.upahsupirtangki_id', 'upahsupirtangki.id')
                 ->leftJoin('kota as kotaupah', 'kotaupah.id', '=', 'upahsupirtangki.kotasampai_id')
                 ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
@@ -951,29 +954,29 @@ class ListTrip extends MyModel
                 }
             }
         } else {
-            if ($data['supir_id'] != $trip->supir_id && $data['trado_id'] != $trip->trado_id) {
-                $getTripTangki = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-                    ->select('triptangki_id')
-                    ->where('supir_id', $data['supir_id'])
-                    ->where('trado_id', $data['trado_id'])
-                    ->where('tglbukti', date('Y-m-d', strtotime($data['tglbukti'])))
-                    ->where('statusjeniskendaraan', $jenisTangki->id)
-                    ->orderBy('id', 'desc')
-                    ->count();
-                if ($getTripTangki > 0) {
-                    $triptangki = $getTripTangki + 1;
-                } else {
-                    $triptangki = 1;
-                }
-                $getTangki = DB::table("triptangki")->from(DB::raw("triptangki with (readuncommitted)"))
-                    ->where('kodetangki', $triptangki)
-                    ->first();
+            // if ($data['supir_id'] != $trip->supir_id && $data['trado_id'] != $trip->trado_id) {
+            //     $getTripTangki = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+            //         ->select('triptangki_id')
+            //         ->where('supir_id', $data['supir_id'])
+            //         ->where('trado_id', $data['trado_id'])
+            //         ->where('tglbukti', date('Y-m-d', strtotime($data['tglbukti'])))
+            //         ->where('statusjeniskendaraan', $jenisTangki->id)
+            //         ->orderBy('id', 'desc')
+            //         ->count();
+            //     if ($getTripTangki > 0) {
+            //         $triptangki = $getTripTangki + 1;
+            //     } else {
+            //         $triptangki = 1;
+            //     }
+            //     $getTangki = DB::table("triptangki")->from(DB::raw("triptangki with (readuncommitted)"))
+            //         ->where('kodetangki', $triptangki)
+            //         ->first();
 
-                $tangki_id = $getTangki->id;
-            } else {
-                $tangki_id = $trip->triptangki_id;
-            }
-            $upahsupir = DB::table("upahsupirtangkirincian")->where('upahsupirtangki_id', $data['upah_id'])->where('triptangki_id', $tangki_id)->first()->nominalsupir ?? 0;
+            //     $tangki_id = $getTangki->id;
+            // } else {
+            //     $tangki_id = $trip->triptangki_id;
+            // }
+            $upahsupir = DB::table("upahsupirtangkirincian")->where('upahsupirtangki_id', $data['upah_id'])->where('triptangki_id', $data['triptangki_id'])->first()->nominalsupir ?? 0;
             $nominalspr = round(($upahsupir * $trip->qtyton) / 100) * 100;
         }
         $dataSP = [
@@ -982,6 +985,7 @@ class ListTrip extends MyModel
             'tglbukti' => $data['tglbukti'],
             'pelanggan_id' => $data['pelanggan_id'],
             'upah_id' => $data['upah_id'],
+            'triptangki_id' => $data['triptangki_id'],
             'dari_id' => $data['dari_id'],
             'sampai_id' => $data['sampai_id'],
             'container_id' => $data['container_id'],
