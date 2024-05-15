@@ -117,6 +117,7 @@ class ProsesGajiSupirHeaderController extends Controller
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                 'tgldari' => date('Y-m-d', strtotime($request->tgldari)),
                 'tglsampai' => date('Y-m-d', strtotime($request->tglsampai)),
+                'statusjeniskendaraan' => $request->statusjeniskendaraan,
                 'bank_id' => $request->bank_id,
                 'rincianId' => $requestData['rincianId'],
                 'nobuktiRIC' => $requestData['nobuktiRIC'],
@@ -162,7 +163,7 @@ class ProsesGajiSupirHeaderController extends Controller
         $deposito = $proses->showDeposito($id);
         $bbm = $proses->showBBM($id);
         $Uangjalan = $proses->showUangjalan($id);
-        $getTrip = $proses->getEdit($id, '');
+        $getTrip = $proses->getEdit($id, '', $prosesGajiSupirHeader->statusjeniskendaraan);
 
         return response([
             'status' => true,
@@ -191,6 +192,7 @@ class ProsesGajiSupirHeaderController extends Controller
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                 'tgldari' => date('Y-m-d', strtotime($request->tgldari)),
                 'tglsampai' => date('Y-m-d', strtotime($request->tglsampai)),
+                'statusjeniskendaraan' => $request->statusjeniskendaraan,
                 'bank_id' => $request->bank_id,
                 'rincianId' => $requestData['rincianId'],
                 'nobuktiRIC' => $requestData['nobuktiRIC'],
@@ -267,6 +269,7 @@ class ProsesGajiSupirHeaderController extends Controller
         $gajiSupir = new ProsesGajiSupirHeader();
         $dari = date('Y-m-d', strtotime(request()->tgldari));
         $sampai = date('Y-m-d', strtotime(request()->tglsampai));
+        $statusjeniskendaraan = request()->statusjeniskendaraan;
 
         $cekRic = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))
             ->whereRaw("tglbukti >= '$dari'")
@@ -285,13 +288,13 @@ class ProsesGajiSupirHeaderController extends Controller
             } else {
                 $nobukti = $cekRicsaldo->nobukti ?? '';
             }
-            
+
             $cekEBS = ProsesGajiSupirDetail::from(DB::raw("prosesgajisupirdetail with (readuncommitted)"))
                 ->whereRaw("gajisupir_nobukti = '$nobukti'")->first();
 
             return response([
                 'errors' => false,
-                'data' => $gajiSupir->getRic($dari, $sampai),
+                'data' => $gajiSupir->getRic($dari, $sampai, $statusjeniskendaraan),
                 'attributes' => [
                     'totalRows' => $gajiSupir->totalRows,
                     'totalPages' => $gajiSupir->totalPages,
@@ -355,12 +358,13 @@ class ProsesGajiSupirHeaderController extends Controller
     {
         $prosesgajisupir = new ProsesGajiSupirHeader();
         $aksi = $request->aksi;
+        $statusjeniskendaraan = $request->statusjeniskendaraan;
         if ($aksi == 'edit') {
             $dari = date('Y-m-d', strtotime(request()->tgldari));
             $sampai = date('Y-m-d', strtotime(request()->tglsampai));
-            $data = $prosesgajisupir->getAllEdit($gajiId, $dari, $sampai, $aksi);
+            $data = $prosesgajisupir->getAllEdit($gajiId, $dari, $sampai, $aksi, $statusjeniskendaraan);
         } else {
-            $data = $prosesgajisupir->getEdit($gajiId, $aksi);
+            $data = $prosesgajisupir->getEdit($gajiId, $aksi, $statusjeniskendaraan);
         }
 
         return response([
@@ -664,8 +668,8 @@ class ProsesGajiSupirHeaderController extends Controller
 
             if ($prosesGajiSupirHeader->statuscetak != $statusSudahCetak->id) {
                 $prosesGajiSupirHeader->statuscetak = $statusSudahCetak->id;
-                $prosesGajiSupirHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $prosesGajiSupirHeader->userbukacetak = auth('api')->user()->name;
+                // $prosesGajiSupirHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $prosesGajiSupirHeader->userbukacetak = auth('api')->user()->name;
                 $prosesGajiSupirHeader->jumlahcetak = $prosesGajiSupirHeader->jumlahcetak + 1;
                 if ($prosesGajiSupirHeader->save()) {
                     $logTrail = [

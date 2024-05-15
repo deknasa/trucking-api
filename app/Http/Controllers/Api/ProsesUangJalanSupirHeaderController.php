@@ -445,8 +445,8 @@ class ProsesUangJalanSupirHeaderController extends Controller
 
             if ($prosesUangJalanSupir->statuscetak != $statusSudahCetak->id) {
                 $prosesUangJalanSupir->statuscetak = $statusSudahCetak->id;
-                $prosesUangJalanSupir->tglbukacetak = date('Y-m-d H:i:s');
-                $prosesUangJalanSupir->userbukacetak = auth('api')->user()->name;
+                // $prosesUangJalanSupir->tglbukacetak = date('Y-m-d H:i:s');
+                // $prosesUangJalanSupir->userbukacetak = auth('api')->user()->name;
                 $prosesUangJalanSupir->jumlahcetak = $prosesUangJalanSupir->jumlahcetak + 1;
                 if ($prosesUangJalanSupir->save()) {
                     $logTrail = [

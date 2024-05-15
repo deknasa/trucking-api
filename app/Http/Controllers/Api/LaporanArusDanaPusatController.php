@@ -44,13 +44,14 @@ class LaporanArusDanaPusatController extends Controller
     public function report(Request $request)
     {
 
-        $tgldari = $request->tgldari;
-        $tglsampai = $request->tglsampai;
-        $cabang_id = $request->cabang_id;
-        $minggu = $request->minggu;
-
-
+        $tgldari = $request->tgldari  ?? '01-01-1900';
+        $tglsampai = $request->tglsampai ?? '01-01-1900';
+        $cabang_id = $request->cabang_id ?? 0;
+        $minggu = $request->minggu ?? '';
         $laporanArusDanaPusat = new LaporanArusDanaPusat();
+        // $data1=$laporanArusDanaPusat->getReport($tgldari, $tglsampai, $cabang_id, $minggu);
+        // dd($data1);
+        
         return response([
             'data' => $laporanArusDanaPusat->getReport($tgldari, $tglsampai, $cabang_id, $minggu),
         ]);

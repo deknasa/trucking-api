@@ -333,8 +333,8 @@ class RekapPengeluaranHeaderController extends Controller
 
             if ($rekapPengeluaran->statuscetak != $statusSudahCetak->id) {
                 $rekapPengeluaran->statuscetak = $statusSudahCetak->id;
-                $rekapPengeluaran->tglbukacetak = date('Y-m-d H:i:s');
-                $rekapPengeluaran->userbukacetak = auth('api')->user()->name;
+                // $rekapPengeluaran->tglbukacetak = date('Y-m-d H:i:s');
+                // $rekapPengeluaran->userbukacetak = auth('api')->user()->name;
                 $rekapPengeluaran->jumlahcetak = $rekapPengeluaran->jumlahcetak + 1;
                 if ($rekapPengeluaran->save()) {
                     $logTrail = [

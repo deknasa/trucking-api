@@ -27,7 +27,7 @@ use Intervention\Image\ImageManagerStatic as Image;
 class StokController extends Controller
 {
     private $stok;
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -44,7 +44,7 @@ class StokController extends Controller
         ]);
     }
 
-        /**
+    /**
      * @ClassName 
      * @Keterangan EDIT DATA USER
      */
@@ -56,7 +56,7 @@ class StokController extends Controller
     public function cekValidasi($id, request $request)
     {
         $stok = new Stok();
-        $dataMaster = $stok->where('id',$id)->first();
+        $dataMaster = $stok->where('id', $id)->first();
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
@@ -64,8 +64,8 @@ class StokController extends Controller
         $aksi = request()->aksi ?? '';
         $cekdata = $stok->cekvalidasihapus($id);
 
-    
-        $aksi=$request->aksi ?? '';
+
+        $aksi = $request->aksi ?? '';
         $acoid = db::table('acos')->from(db::raw("acos a with (readuncommitted)"))
             ->select(
                 'a.id'
@@ -114,7 +114,7 @@ class StokController extends Controller
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                     (new MyModel())->updateEditingBy('stok', $id, $aksi);
                 }
-                
+
                 $data = [
                     'status' => false,
                     'message' => '',
@@ -122,21 +122,21 @@ class StokController extends Controller
                     'kondisi' => false,
                     'editblok' => false,
                 ];
-                
+
                 // return response($data);
             } else {
-                
+
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
                 $keterror = 'Data <b>' . $dataMaster->keterangan . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
-                
+
                 $data = [
                     'status' => true,
-                    'message' => ["keterangan"=>$keterror],
+                    'message' => ["keterangan" => $keterror],
                     'errors' => '',
                     'kondisi' => true,
                     'editblok' => true,
                 ];
-                
+
                 return response($data);
             }
         } else {
@@ -392,7 +392,7 @@ class StokController extends Controller
             throw $th;
         }
     }
-    
+
     /**
      * @ClassName 
      * @Keterangan APPROVAL STOK REUSE
@@ -677,7 +677,7 @@ class StokController extends Controller
                 'stok_idjkttnldel' => $request->stok_idjkttnldel,
                 'stok_idmksdel' => $request->stok_idmksdel,
                 'stok_idsbydel' => $request->stok_idsbydel,
-                'stok_idbtgdel' => $request->stok_idbtgdel, 
+                'stok_idbtgdel' => $request->stok_idbtgdel,
             ];
             $stokPusat = (new Stok())->processKonsolidasi($data);
 
@@ -687,6 +687,30 @@ class StokController extends Controller
                 'status' => true,
                 'message' => 'Berhasil diubah',
                 'data' => $stokPusat
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APPROVAL AKTIF
+     */
+    public function approvalaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id
+            ];
+            (new Stok())->processApprovalaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();

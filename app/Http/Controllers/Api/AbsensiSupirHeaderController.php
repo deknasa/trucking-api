@@ -766,8 +766,8 @@ class AbsensiSupirHeaderController extends Controller
 
             if ($absensiSupirHeader->statuscetak != $statusSudahCetak->id) {
                 $absensiSupirHeader->statuscetak = $statusSudahCetak->id;
-                $absensiSupirHeader->tglbukacetak = date('Y-m-d H:i:s');
-                $absensiSupirHeader->userbukacetak = auth('api')->user()->name;
+                // $absensiSupirHeader->tglbukacetak = date('Y-m-d H:i:s');
+                // $absensiSupirHeader->userbukacetak = auth('api')->user()->name;
                 $absensiSupirHeader->jumlahcetak = $absensiSupirHeader->jumlahcetak + 1;
                 if ($absensiSupirHeader->save()) {
                     $logTrail = [

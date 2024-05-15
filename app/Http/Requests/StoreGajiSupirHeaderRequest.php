@@ -10,6 +10,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\ExistSupir;
 use App\Rules\validasiContSPGajiSupir;
+use App\Rules\validasiJenisKendaraanRIC;
 use App\Rules\validasiPemutihanSupirRIC;
 use App\Rules\ValidasiStatusContGajiSupir;
 use App\Rules\ValidasiTambahanGajiSupir;
@@ -69,6 +70,7 @@ class StoreGajiSupirHeaderRequest extends FormRequest
                 new DateTutupBuku(),
                 'before_or_equal:' . date('d-m-Y')
             ],
+            'statusjeniskendaraan' => 'required'
         ];
         $relatedRequests = [
             StoreGajiSupirDetailRequest::class

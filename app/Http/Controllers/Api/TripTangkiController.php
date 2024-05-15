@@ -56,7 +56,7 @@ class TripTangkiController extends Controller
         $useredit = $dataMaster->editing_by ?? '';
         $aksi = strtoupper(request()->aksi) ?? '';
         $cekdata = $triptangki->cekvalidasihapus($id);
-        if ($cekdata['kondisi'] == true && $aksi != 'EDIT') {
+        if ($cekdata['kondisi'] == true) {
             $keterangan = $error->cekKeteranganError('SATL') ?? '';
 
             $data = [

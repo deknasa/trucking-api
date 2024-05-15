@@ -609,10 +609,25 @@ class PindahBuku extends MyModel
                 'statuscetak.memo as statuscetak',
                 'statuscetak.id as  statuscetak_id',
                 'pindahbuku.jumlahcetak',
-                DB::raw("'Laporan Pindah Buku' as judulLaporan"),
+                DB::raw("'Bukti Pindah Buku' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                db::raw("format(pindahbuku.tgljatuhtempo,'dd/')+
+                    (case when month(pindahbuku.tgljatuhtempo)=1 then 'JAN'
+                          when month(pindahbuku.tgljatuhtempo)=2 then 'FEB'
+                          when month(pindahbuku.tgljatuhtempo)=3 then 'MAR'
+                          when month(pindahbuku.tgljatuhtempo)=4 then 'APR'
+                          when month(pindahbuku.tgljatuhtempo)=5 then 'MAY'
+                          when month(pindahbuku.tgljatuhtempo)=6 then 'JUN'
+                          when month(pindahbuku.tgljatuhtempo)=7 then 'JUL'
+                          when month(pindahbuku.tgljatuhtempo)=8 then 'AGU'
+                          when month(pindahbuku.tgljatuhtempo)=9 then 'SEP'
+                          when month(pindahbuku.tgljatuhtempo)=10 then 'OKT'
+                          when month(pindahbuku.tgljatuhtempo)=11 then 'NOV'
+                          when month(pindahbuku.tgljatuhtempo)=12 then 'DES' ELSE '' END)
+
+                    +format(pindahbuku.tgljatuhtempo,'/yy')   as tgljatuhtempoformat"),                
             )
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), "pindahbuku.alatbayar_id", "alatbayar.id")
             ->leftJoin(DB::raw("bank as bankdari with (readuncommitted)"), "pindahbuku.bankdari_id", "bankdari.id")

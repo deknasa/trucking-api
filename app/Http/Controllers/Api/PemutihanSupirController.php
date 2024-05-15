@@ -510,8 +510,8 @@ class PemutihanSupirController extends Controller
 
             if ($pemutihanSupir->statuscetak != $statusSudahCetak->id) {
                 $pemutihanSupir->statuscetak = $statusSudahCetak->id;
-                $pemutihanSupir->tglbukacetak = date('Y-m-d H:i:s');
-                $pemutihanSupir->userbukacetak = auth('api')->user()->name;
+                // $pemutihanSupir->tglbukacetak = date('Y-m-d H:i:s');
+                // $pemutihanSupir->userbukacetak = auth('api')->user()->name;
                 $pemutihanSupir->jumlahcetak = $pemutihanSupir->jumlahcetak + 1;
                 if ($pemutihanSupir->save()) {
                     $logTrail = [

@@ -60,6 +60,18 @@ class UpahSupirTangkiController extends Controller
         ]);
     }
 
+    public function get()
+    {
+        $upahsupir = new UpahSupirTangki();
+
+        return response([
+            'data' => $upahsupir->getLookup(),
+            'attributes' => [
+                'totalRows' => $upahsupir->totalRows,
+                'totalPages' => $upahsupir->totalPages
+            ]
+        ]);
+    }
     /**
      * @ClassName 
      * @Keterangan EXPORT KE EXCEL
@@ -635,13 +647,11 @@ class UpahSupirTangkiController extends Controller
     public function getRincian(Request $request)
     {
 
-        $statuskandang = $request->statuskandang ?? '';
+        $idtrip = $request->idtrip ?? '';
         $upah_id = $request->upah_id ?? '';
-        $container_id = $request->container_id ?? '';
-        $statuscontainer_id = $request->statuscontainer_id ?? '';
-
+        $tarif_id = $request->tarif_id ?? '';
         return response([
-            'data' => (new UpahSupir())->getRincian($statuskandang, $upah_id, $container_id, $statuscontainer_id)
+            'data' => (new UpahSupirTangki())->getRincian($idtrip, $upah_id, $tarif_id)
         ]);
     }
 }

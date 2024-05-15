@@ -47,6 +47,7 @@ class PenerimaanGiroDetail extends MyModel
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaangirodetail.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), 'penerimaangirodetail.bankpelanggan_id', 'bankpelanggan.id')
             ->where('penerimaangirodetail.penerimaangiro_id', $id)
+            ->orderBy('penerimaangirodetail.id')
             ->get();
 
         return $detail;

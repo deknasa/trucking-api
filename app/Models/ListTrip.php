@@ -19,11 +19,36 @@ class ListTrip extends MyModel
 
         $aksi = request()->aksi;
         $trip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-            ->select('nobukti', 'jobtrucking', 'tglbukti', DB::raw("isnull(approvalbukatanggal_id,0) as approvalbukatanggal_id"), 'tglbataseditsuratpengantar', 'statusapprovaleditsuratpengantar')
+            ->select('nobukti', 'jobtrucking', 'tglbukti', DB::raw("isnull(approvalbukatanggal_id,0) as approvalbukatanggal_id"), 'tglbataseditsuratpengantar', 'statusapprovaleditsuratpengantar', 'statusjeniskendaraan','supir_id','trado_id')
             ->where('id', $id)
             ->first();
+        $jenisTangki = DB::table('parameter')->from(DB::raw("parameter as a with (readuncommitted)"))
+            ->select('a.id')
+            ->where('a.grp', '=', 'STATUS JENIS KENDARAAN')
+            ->where('a.subgrp', '=', 'STATUS JENIS KENDARAAN')
+            ->where('a.text', '=', 'TANGKI')
+            ->first();
+        if ($trip->statusjeniskendaraan == $jenisTangki->id && $aksi == 'DELETE') {
+            $getTripTangki = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+            ->select(db::raw("STRING_AGG(nobukti, ', ') as nobukti"))
+            ->where('supir_id', $trip->supir_id)
+            ->where('trado_id', $trip->trado_id)
+            ->where('tglbukti', date('Y-m-d', strtotime($trip->tglbukti)))
+            ->where('statusjeniskendaraan', $jenisTangki->id)
+            ->where('id', '>', $id)
+            ->first();
+            if($getTripTangki->nobukti != ''){
+                $keteranganerror = $error->cekKeteranganError('ATBB') ?? '';
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' =>  $keteranganerror .' <b>'. $getTripTangki->nobukti . '</b><br> ' . $keterangantambahanerror,
+                    'kodeerror' => 'SATL2',
+                ];
 
 
+                goto selesai;
+            }
+        }
         $getBatasInput = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JAMBATASINPUTTRIP')->where('subgrp', 'JAMBATASINPUTTRIP')->first()->text;
         $getBatasHari = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATASHARIINPUTTRIP')->where('subgrp', 'BATASHARIINPUTTRIP')->first()->text;
 
@@ -334,7 +359,14 @@ class ListTrip extends MyModel
     public function findAll($id)
     {
         $getBukanUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'NON UPAH ZONA')->first();
-        $get = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('statusupahzona')->where('id', $id)->first();
+        $jenisTangki = DB::table('parameter')->from(DB::raw("parameter as a with (readuncommitted)"))
+            ->select('a.id')
+            ->where('a.grp', '=', 'STATUS JENIS KENDARAAN')
+            ->where('a.subgrp', '=', 'STATUS JENIS KENDARAAN')
+            ->where('a.text', '=', 'TANGKI')
+            ->first();
+
+        $get = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('statusupahzona', 'statusjeniskendaraan')->where('id', $id)->first();
         $pelabuhan = DB::table('parameter')
             ->from(DB::raw("parameter with (readuncommitted)"))
             ->select('text')
@@ -344,7 +376,7 @@ class ListTrip extends MyModel
         $idkandang = (new Parameter())->cekText('KANDANG', 'KANDANG') ?? 0;
         $pelabuhan = $pelabuhan->text . ',' . $idkandang;
 
-        if ($get->statusupahzona == $getBukanUpahZona->id) {
+        if ($get->statusjeniskendaraan == $jenisTangki->id) {
 
             $data = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
                 ->select(
@@ -352,6 +384,7 @@ class ListTrip extends MyModel
                     'suratpengantar.nobukti',
                     'suratpengantar.tglbukti',
                     'suratpengantar.jobtrucking',
+                    'suratpengantar.statusjeniskendaraan',
                     'suratpengantar.statuskandang',
                     'suratpengantar.statuslongtrip',
                     'suratpengantar.statusupahzona',
@@ -364,25 +397,19 @@ class ListTrip extends MyModel
                     'kotadari.kodekota as dari',
                     'suratpengantar.gandengan_id',
                     'gandengan.kodegandengan as gandengan',
-                    'suratpengantar.container_id',
-                    'container.kodecontainer as container',
                     'suratpengantar.statusgudangsama',
                     'suratpengantar.keterangan',
                     'suratpengantar.penyesuaian',
                     'suratpengantar.sampai_id',
                     'kotasampai.kodekota as sampai',
-                    'suratpengantar.statuscontainer_id',
-                    'statuscontainer.kodestatuscontainer as statuscontainer',
                     'suratpengantar.pelanggan_id',
                     'pelanggan.namapelanggan as pelanggan',
                     'suratpengantar.agen_id',
                     'agen.namaagen as agen',
-                    'suratpengantar.jenisorder_id',
-                    'jenisorder.keterangan as jenisorder',
-                    'suratpengantar.tarif_id as tarifrincian_id',
-                    'tarif.tujuan as tarifrincian',
+                    'suratpengantar.tariftangki_id as tarifrincian_id',
+                    'tariftangki.tujuan as tarifrincian',
                     'suratpengantar.gudang',
-                    'suratpengantar.upah_id',
+                    'suratpengantar.upahsupirtangki_id as upah_id',
                     'suratpengantar.nobukti_tripasal',
                     DB::raw("(trim(kotadari.kodekota)+' - '+trim(kotasampai.kodekota)) as upah"),
                     DB::raw("(CASE WHEN (suratpengantar.sampai_id in ($pelabuhan)) then 1 else 0 end) as statuspelabuhan"),
@@ -392,14 +419,11 @@ class ListTrip extends MyModel
                 ->leftJoin('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
                 ->leftJoin('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
                 ->leftJoin('agen', 'suratpengantar.agen_id', 'agen.id')
-                ->leftJoin('container', 'suratpengantar.container_id', 'container.id')
-                ->leftJoin('statuscontainer', 'suratpengantar.statuscontainer_id', 'statuscontainer.id')
                 ->leftJoin('trado', 'suratpengantar.trado_id', 'trado.id')
                 ->leftJoin('supir', 'suratpengantar.supir_id', 'supir.id')
-                ->leftJoin('jenisorder', 'suratpengantar.jenisorder_id', 'jenisorder.id')
-                ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id')
-                ->leftJoin('upahsupir', 'suratpengantar.upah_id', 'upahsupir.id')
-                ->leftJoin('kota as kotaupah', 'kotaupah.id', '=', 'upahsupir.kotasampai_id')
+                ->leftJoin('tariftangki', 'suratpengantar.tariftangki_id', 'tariftangki.id')
+                ->leftJoin('upahsupirtangki', 'suratpengantar.upahsupirtangki_id', 'upahsupirtangki.id')
+                ->leftJoin('kota as kotaupah', 'kotaupah.id', '=', 'upahsupirtangki.kotasampai_id')
                 ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
                 ->leftJoin('gandengan', 'suratpengantar.gandengan_id', 'gandengan.id')
                 ->leftJoin('orderantrucking', 'suratpengantar.jobtrucking', 'orderantrucking.nobukti')
@@ -408,67 +432,134 @@ class ListTrip extends MyModel
                 ->where('suratpengantar.id', $id)->first();
         } else {
 
-            $data = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
-                ->select(
-                    'suratpengantar.id',
-                    'suratpengantar.nobukti',
-                    'suratpengantar.tglbukti',
-                    'suratpengantar.jobtrucking',
-                    'suratpengantar.statuskandang',
-                    'suratpengantar.statuslongtrip',
-                    'suratpengantar.statusupahzona',
-                    'orderantrucking.statuslangsir',
-                    'suratpengantar.trado_id',
-                    'trado.kodetrado as trado',
-                    'suratpengantar.supir_id',
-                    'supir.namasupir as supir',
-                    'suratpengantar.dari_id',
-                    'kotadari.kodekota as dari',
-                    'suratpengantar.gandengan_id',
-                    'gandengan.kodegandengan as gandengan',
-                    'suratpengantar.container_id',
-                    'container.kodecontainer as container',
-                    'suratpengantar.statusgudangsama',
-                    'suratpengantar.keterangan',
-                    'suratpengantar.penyesuaian',
-                    'suratpengantar.sampai_id',
-                    'kotasampai.kodekota as sampai',
-                    'suratpengantar.statuscontainer_id',
-                    'statuscontainer.kodestatuscontainer as statuscontainer',
-                    'suratpengantar.pelanggan_id',
-                    'pelanggan.namapelanggan as pelanggan',
-                    'suratpengantar.agen_id',
-                    'agen.namaagen as agen',
-                    'suratpengantar.jenisorder_id',
-                    'jenisorder.keterangan as jenisorder',
-                    'suratpengantar.tarif_id as tarifrincian_id',
-                    'tarif.tujuan as tarifrincian',
-                    'suratpengantar.gudang',
-                    'suratpengantar.upah_id',
-                    'suratpengantar.nobukti_tripasal',
-                    'zonaupah.zona as upah',
-                    'absensisupirdetail.id as absensidetail_id'
-                )
-                ->leftJoin('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
-                ->leftJoin('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
-                ->leftJoin('agen', 'suratpengantar.agen_id', 'agen.id')
-                ->leftJoin('container', 'suratpengantar.container_id', 'container.id')
-                ->leftJoin('statuscontainer', 'suratpengantar.statuscontainer_id', 'statuscontainer.id')
-                ->leftJoin('trado', 'suratpengantar.trado_id', 'trado.id')
-                ->leftJoin('supir', 'suratpengantar.supir_id', 'supir.id')
-                ->leftJoin('jenisorder', 'suratpengantar.jenisorder_id', 'jenisorder.id')
-                ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id')
-                ->leftJoin('upahsupir', 'suratpengantar.upah_id', 'upahsupir.id')
-                ->leftJoin('zona as zonaupah', 'zonaupah.id', '=', 'upahsupir.zonasampai_id')
-                ->leftJoin('cabang', 'suratpengantar.cabang_id', 'cabang.id')
-                ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
-                ->leftJoin('gandengan', 'suratpengantar.gandengan_id', 'gandengan.id')
-                ->leftJoin('orderantrucking', 'suratpengantar.jobtrucking', 'orderantrucking.nobukti')
-                ->leftJoin('absensisupirheader', 'suratpengantar.tglbukti', 'absensisupirheader.tglbukti')
-                ->leftJoin('absensisupirdetail', 'absensisupirheader.id', 'absensisupirdetail.absensi_id')
-                // ->leftJoin(DB::raw("$tempGaji with (readuncommitted)"), "$tempGaji.id", "suratpengantar.id")
+            if ($get->statusupahzona == $getBukanUpahZona->id) {
 
-                ->where('suratpengantar.id', $id)->first();
+                $data = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+                    ->select(
+                        'suratpengantar.id',
+                        'suratpengantar.nobukti',
+                        'suratpengantar.tglbukti',
+                        'suratpengantar.jobtrucking',
+                        'suratpengantar.statuskandang',
+                        'suratpengantar.statuslongtrip',
+                        'suratpengantar.statusjeniskendaraan',
+                        'suratpengantar.statusupahzona',
+                        'orderantrucking.statuslangsir',
+                        'suratpengantar.trado_id',
+                        DB::raw("(trim(trado.kodetrado)+' - '+trim(supir.namasupir)) as trado"),
+                        'suratpengantar.supir_id',
+                        'supir.namasupir as supir',
+                        'suratpengantar.dari_id',
+                        'kotadari.kodekota as dari',
+                        'suratpengantar.gandengan_id',
+                        'gandengan.kodegandengan as gandengan',
+                        'suratpengantar.container_id',
+                        'container.kodecontainer as container',
+                        'suratpengantar.statusgudangsama',
+                        'suratpengantar.keterangan',
+                        'suratpengantar.penyesuaian',
+                        'suratpengantar.sampai_id',
+                        'kotasampai.kodekota as sampai',
+                        'suratpengantar.statuscontainer_id',
+                        'statuscontainer.kodestatuscontainer as statuscontainer',
+                        'suratpengantar.pelanggan_id',
+                        'pelanggan.namapelanggan as pelanggan',
+                        'suratpengantar.agen_id',
+                        'agen.namaagen as agen',
+                        'suratpengantar.jenisorder_id',
+                        'jenisorder.keterangan as jenisorder',
+                        'suratpengantar.tarif_id as tarifrincian_id',
+                        'tarif.tujuan as tarifrincian',
+                        'suratpengantar.gudang',
+                        'suratpengantar.upah_id',
+                        'suratpengantar.nobukti_tripasal',
+                        DB::raw("(trim(kotadari.kodekota)+' - '+trim(kotasampai.kodekota)) as upah"),
+                        DB::raw("(CASE WHEN (suratpengantar.sampai_id in ($pelabuhan)) then 1 else 0 end) as statuspelabuhan"),
+                        'absensisupirdetail.id as absensidetail_id'
+                        // 'kotaupah.kodekota as upah'
+                    )
+                    ->leftJoin('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
+                    ->leftJoin('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
+                    ->leftJoin('agen', 'suratpengantar.agen_id', 'agen.id')
+                    ->leftJoin('container', 'suratpengantar.container_id', 'container.id')
+                    ->leftJoin('statuscontainer', 'suratpengantar.statuscontainer_id', 'statuscontainer.id')
+                    ->leftJoin('trado', 'suratpengantar.trado_id', 'trado.id')
+                    ->leftJoin('supir', 'suratpengantar.supir_id', 'supir.id')
+                    ->leftJoin('jenisorder', 'suratpengantar.jenisorder_id', 'jenisorder.id')
+                    ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id')
+                    ->leftJoin('upahsupir', 'suratpengantar.upah_id', 'upahsupir.id')
+                    ->leftJoin('kota as kotaupah', 'kotaupah.id', '=', 'upahsupir.kotasampai_id')
+                    ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
+                    ->leftJoin('gandengan', 'suratpengantar.gandengan_id', 'gandengan.id')
+                    ->leftJoin('orderantrucking', 'suratpengantar.jobtrucking', 'orderantrucking.nobukti')
+                    ->leftJoin('absensisupirheader', 'suratpengantar.tglbukti', 'absensisupirheader.tglbukti')
+                    ->leftJoin('absensisupirdetail', 'absensisupirheader.id', 'absensisupirdetail.absensi_id')
+                    ->where('suratpengantar.id', $id)->first();
+            } else {
+
+                $data = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+                    ->select(
+                        'suratpengantar.id',
+                        'suratpengantar.nobukti',
+                        'suratpengantar.tglbukti',
+                        'suratpengantar.jobtrucking',
+                        'suratpengantar.statuskandang',
+                        'suratpengantar.statusjeniskendaraan',
+                        'suratpengantar.statuslongtrip',
+                        'suratpengantar.statusupahzona',
+                        'orderantrucking.statuslangsir',
+                        'suratpengantar.trado_id',
+                        'trado.kodetrado as trado',
+                        'suratpengantar.supir_id',
+                        'supir.namasupir as supir',
+                        'suratpengantar.dari_id',
+                        'kotadari.kodekota as dari',
+                        'suratpengantar.gandengan_id',
+                        'gandengan.kodegandengan as gandengan',
+                        'suratpengantar.container_id',
+                        'container.kodecontainer as container',
+                        'suratpengantar.statusgudangsama',
+                        'suratpengantar.keterangan',
+                        'suratpengantar.penyesuaian',
+                        'suratpengantar.sampai_id',
+                        'kotasampai.kodekota as sampai',
+                        'suratpengantar.statuscontainer_id',
+                        'statuscontainer.kodestatuscontainer as statuscontainer',
+                        'suratpengantar.pelanggan_id',
+                        'pelanggan.namapelanggan as pelanggan',
+                        'suratpengantar.agen_id',
+                        'agen.namaagen as agen',
+                        'suratpengantar.jenisorder_id',
+                        'jenisorder.keterangan as jenisorder',
+                        'suratpengantar.tarif_id as tarifrincian_id',
+                        'tarif.tujuan as tarifrincian',
+                        'suratpengantar.gudang',
+                        'suratpengantar.upah_id',
+                        'suratpengantar.nobukti_tripasal',
+                        'zonaupah.zona as upah',
+                        'absensisupirdetail.id as absensidetail_id'
+                    )
+                    ->leftJoin('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
+                    ->leftJoin('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
+                    ->leftJoin('agen', 'suratpengantar.agen_id', 'agen.id')
+                    ->leftJoin('container', 'suratpengantar.container_id', 'container.id')
+                    ->leftJoin('statuscontainer', 'suratpengantar.statuscontainer_id', 'statuscontainer.id')
+                    ->leftJoin('trado', 'suratpengantar.trado_id', 'trado.id')
+                    ->leftJoin('supir', 'suratpengantar.supir_id', 'supir.id')
+                    ->leftJoin('jenisorder', 'suratpengantar.jenisorder_id', 'jenisorder.id')
+                    ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id')
+                    ->leftJoin('upahsupir', 'suratpengantar.upah_id', 'upahsupir.id')
+                    ->leftJoin('zona as zonaupah', 'zonaupah.id', '=', 'upahsupir.zonasampai_id')
+                    ->leftJoin('cabang', 'suratpengantar.cabang_id', 'cabang.id')
+                    ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
+                    ->leftJoin('gandengan', 'suratpengantar.gandengan_id', 'gandengan.id')
+                    ->leftJoin('orderantrucking', 'suratpengantar.jobtrucking', 'orderantrucking.nobukti')
+                    ->leftJoin('absensisupirheader', 'suratpengantar.tglbukti', 'absensisupirheader.tglbukti')
+                    ->leftJoin('absensisupirdetail', 'absensisupirheader.id', 'absensisupirdetail.absensi_id')
+                    // ->leftJoin(DB::raw("$tempGaji with (readuncommitted)"), "$tempGaji.id", "suratpengantar.id")
+
+                    ->where('suratpengantar.id', $id)->first();
+            }
         }
         // dd('find');
         return $data;
@@ -479,17 +570,35 @@ class ListTrip extends MyModel
         $trip = SuratPengantar::findOrFail($id);
         $isDifferent = false;
         $isTripPulang = false;
-        if ($data['jobtrucking'] == '') {
-            $statusperalihan = DB::table('parameter')->from(
-                DB::raw("parameter as a with (readuncommitted)")
+        $jenisTangki = DB::table('parameter')->from(DB::raw("parameter as a with (readuncommitted)"))
+            ->select('a.id')
+            ->where('a.grp', '=', 'STATUS JENIS KENDARAAN')
+            ->where('a.subgrp', '=', 'STATUS JENIS KENDARAAN')
+            ->where('a.text', '=', 'TANGKI')
+            ->first();
+
+        $data['upahtangki_id'] = 0;
+        $data['tariftangki_id'] = 0;
+        $statusperalihan = DB::table('parameter')->from(
+            DB::raw("parameter as a with (readuncommitted)")
+        )
+            ->select(
+                'a.id'
             )
-                ->select(
-                    'a.id'
-                )
-                ->where('a.grp', '=', 'STATUS PERALIHAN')
-                ->where('a.subgrp', '=', 'STATUS PERALIHAN')
-                ->where('a.text', '=', 'BUKAN PERALIHAN')
-                ->first();
+            ->where('a.grp', '=', 'STATUS PERALIHAN')
+            ->where('a.subgrp', '=', 'STATUS PERALIHAN')
+            ->where('a.text', '=', 'BUKAN PERALIHAN')
+            ->first();
+        if ($data['statusjeniskendaraan'] == $jenisTangki->id) {
+            // $data['upahtangki_id'] = $data['upah_id'];
+            // $data['upah_id'] = '';
+            // $data['tariftangki_id'] = $data['tarifrincian_id'];
+            // $data['tarifrincian_id'] = '';
+            goto trip;
+        }
+
+        if ($data['jobtrucking'] == '') {
+
             $statuslangsir = DB::table('parameter')->from(
                 DB::raw("parameter as a with (readuncommitted)")
             )
@@ -727,114 +836,145 @@ class ListTrip extends MyModel
         $data['zonadari_id'] = '';
         $data['zonasampai_id'] = '';
 
-        if ($data['statusupahzona'] == $getZona->id) {
-            $data['zonadari_id'] = $upahZona->zonadari_id;
-            $data['zonasampai_id'] = $upahZona->zonasampai_id;
-        }
-        $params = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'GAJI KENEK')->first();
-        $komisi_gajisupir = $params->text;
-        // if ($komisi_gajisupir == 'YA') {
-        //     $nominalSupir = $upahsupirRincian->nominalsupir - $upahsupirRincian->nominalkenek;
-        // } else {
-        $nominalSupir = $upahsupirRincian->nominalsupir;
-        // }
-        // dd($trip->jobtrucking);
-        $parameter = new Parameter();
-        $idstatuskandang = $parameter->cekId('STATUS KANDANG', 'STATUS KANDANG', 'KANDANG') ?? 0;
-        $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
-        $idpelabuhan = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? 0;
+        $nominalspr = 0;
+        $nominalkenek = 0;
+        $nominalkomisi = 0;
 
-        $upahsupirkandnag = db::table("upahsupir")->from(db::raw("upahsupir a with (readuncommitted)"))
-            ->select(
-                'b.id',
-                'a.kotadari_id',
-                'a.kotasampai_id',
-                'b.upahsupir_id',
-                'b.container_id',
-                'b.statuscontainer_id',
-                'b.nominalsupir',
-                'b.nominalkenek',
-                'b.nominalkomisi',
-                'b.nominaltol',
-                'b.liter',
-                'b.tas_id',
-                'b.info',
-                'b.modifiedby',
-            )
-            ->join(db::raw("upahsupirrincian b with (readuncommitted)"), 'a.id', 'b.upahsupir_id')
-            ->where('a.kotadari_id', $idpelabuhan)
-            ->where('a.kotasampai_id', $idkandang)
-            ->where('b.container_id', $data['container_id'])
-            ->where('b.statuscontainer_id', $data['statuscontainer_id'])
-            ->whereraw("isnull(a.penyesuaian,'')=''");
-
-        $tempupahsupirkandang = '##tempupahsupirkandang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($tempupahsupirkandang, function ($table) {
-            $table->bigInteger('id')->nullable();
-            $table->unsignedBigInteger('kotadari_id')->nullable();
-            $table->unsignedBigInteger('kotasampai_id')->nullable();
-            $table->unsignedBigInteger('upahsupir_id')->nullable();
-            $table->unsignedBigInteger('container_id')->nullable();
-            $table->unsignedBigInteger('statuscontainer_id')->nullable();
-            $table->double('nominalsupir', 15, 2)->nullable();
-            $table->double('nominalkenek', 15, 2)->nullable();
-            $table->double('nominalkomisi', 15, 2)->nullable();
-            $table->double('nominaltol', 15, 2)->nullable();
-            $table->double('liter', 15, 2)->nullable();
-            $table->unsignedBigInteger('tas_id')->nullable();
-            $table->longText('info')->nullable();
-            $table->string('modifiedby', 50)->nullable();
-        });
-
-        DB::table($tempupahsupirkandang)->insertUsing([
-            'id',
-            'kotadari_id',
-            'kotasampai_id',
-            'upahsupir_id',
-            'container_id',
-            'statuscontainer_id',
-            'nominalsupir',
-            'nominalkenek',
-            'nominalkomisi',
-            'nominaltol',
-            'liter',
-            'tas_id',
-            'info',
-            'modifiedby',
-        ],  $upahsupirkandnag);
-
-        $querynominal = db::table($tempupahsupirkandang)->from(db::raw($tempupahsupirkandang . " a"))
-            ->select(
-                'a.nominalsupir',
-                'a.nominalkenek',
-                'a.nominalkomisi',
-            )->first();
-
-        if (isset($querynominal)) {
-            $nominalsupirkandang = $querynominal->nominalsupir ?? 0;
-            $nominalkenekkandang = $querynominal->nominalkenek ?? 0;
-            $nominalkomisikandang = $querynominal->nominalkomisi ?? 0;
-        } else {
-            $nominalsupirkandang = 0;
-            $nominalkenekkandang = 0;
-            $nominalkomisikandang = 0;
-        }
-
-
-        if ($data['statuskandang'] == $idstatuskandang) {
-            $nominalspr = $nominalSupir - $nominalsupirkandang;
-            $nominalkenek = $upahsupirRincian->nominalkenek - $nominalkenekkandang;
-            $nominalkomisi = $upahsupirRincian->nominalkomisi - $nominalkomisikandang;
-        } else {
-            if ($trip->container_id != $data['container_id'] || $trip->statuscontainer_id != $data['statuscontainer_id']) {
-                $nominalspr = $nominalSupir;
-                $nominalkenek = $upahsupirRincian->nominalkenek;
-                $nominalkomisi = $trip->komisisupir;
-            } else {
-                $nominalspr = $nominalSupir;
-                $nominalkenek = $trip->gajikenek;
-                $nominalkomisi = $trip->komisisupir;
+        if ($data['statusjeniskendaraan'] != $jenisTangki->id) {
+            if ($data['statusupahzona'] == $getZona->id) {
+                $data['zonadari_id'] = $upahZona->zonadari_id;
+                $data['zonasampai_id'] = $upahZona->zonasampai_id;
             }
+            $params = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'GAJI KENEK')->first();
+            $komisi_gajisupir = $params->text;
+            // if ($komisi_gajisupir == 'YA') {
+            //     $nominalSupir = $upahsupirRincian->nominalsupir - $upahsupirRincian->nominalkenek;
+            // } else {
+            $nominalSupir = $upahsupirRincian->nominalsupir;
+            // }
+            // dd($trip->jobtrucking);
+            $parameter = new Parameter();
+            $idstatuskandang = $parameter->cekId('STATUS KANDANG', 'STATUS KANDANG', 'KANDANG') ?? 0;
+            $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
+            $idpelabuhan = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? 0;
+
+            $upahsupirkandnag = db::table("upahsupir")->from(db::raw("upahsupir a with (readuncommitted)"))
+                ->select(
+                    'b.id',
+                    'a.kotadari_id',
+                    'a.kotasampai_id',
+                    'b.upahsupir_id',
+                    'b.container_id',
+                    'b.statuscontainer_id',
+                    'b.nominalsupir',
+                    'b.nominalkenek',
+                    'b.nominalkomisi',
+                    'b.nominaltol',
+                    'b.liter',
+                    'b.tas_id',
+                    'b.info',
+                    'b.modifiedby',
+                )
+                ->join(db::raw("upahsupirrincian b with (readuncommitted)"), 'a.id', 'b.upahsupir_id')
+                ->where('a.kotadari_id', $idpelabuhan)
+                ->where('a.kotasampai_id', $idkandang)
+                ->where('b.container_id', $data['container_id'])
+                ->where('b.statuscontainer_id', $data['statuscontainer_id'])
+                ->whereraw("isnull(a.penyesuaian,'')=''");
+
+            $tempupahsupirkandang = '##tempupahsupirkandang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempupahsupirkandang, function ($table) {
+                $table->bigInteger('id')->nullable();
+                $table->unsignedBigInteger('kotadari_id')->nullable();
+                $table->unsignedBigInteger('kotasampai_id')->nullable();
+                $table->unsignedBigInteger('upahsupir_id')->nullable();
+                $table->unsignedBigInteger('container_id')->nullable();
+                $table->unsignedBigInteger('statuscontainer_id')->nullable();
+                $table->double('nominalsupir', 15, 2)->nullable();
+                $table->double('nominalkenek', 15, 2)->nullable();
+                $table->double('nominalkomisi', 15, 2)->nullable();
+                $table->double('nominaltol', 15, 2)->nullable();
+                $table->double('liter', 15, 2)->nullable();
+                $table->unsignedBigInteger('tas_id')->nullable();
+                $table->longText('info')->nullable();
+                $table->string('modifiedby', 50)->nullable();
+            });
+
+            DB::table($tempupahsupirkandang)->insertUsing([
+                'id',
+                'kotadari_id',
+                'kotasampai_id',
+                'upahsupir_id',
+                'container_id',
+                'statuscontainer_id',
+                'nominalsupir',
+                'nominalkenek',
+                'nominalkomisi',
+                'nominaltol',
+                'liter',
+                'tas_id',
+                'info',
+                'modifiedby',
+            ],  $upahsupirkandnag);
+
+            $querynominal = db::table($tempupahsupirkandang)->from(db::raw($tempupahsupirkandang . " a"))
+                ->select(
+                    'a.nominalsupir',
+                    'a.nominalkenek',
+                    'a.nominalkomisi',
+                )->first();
+
+            if (isset($querynominal)) {
+                $nominalsupirkandang = $querynominal->nominalsupir ?? 0;
+                $nominalkenekkandang = $querynominal->nominalkenek ?? 0;
+                $nominalkomisikandang = $querynominal->nominalkomisi ?? 0;
+            } else {
+                $nominalsupirkandang = 0;
+                $nominalkenekkandang = 0;
+                $nominalkomisikandang = 0;
+            }
+
+
+            if ($data['statuskandang'] == $idstatuskandang) {
+                $nominalspr = $nominalSupir - $nominalsupirkandang;
+                $nominalkenek = $upahsupirRincian->nominalkenek - $nominalkenekkandang;
+                $nominalkomisi = $upahsupirRincian->nominalkomisi - $nominalkomisikandang;
+            } else {
+                if ($trip->container_id != $data['container_id'] || $trip->statuscontainer_id != $data['statuscontainer_id']) {
+                    $nominalspr = $nominalSupir;
+                    $nominalkenek = $upahsupirRincian->nominalkenek;
+                    $nominalkomisi = $trip->komisisupir;
+                } else {
+                    $nominalspr = $nominalSupir;
+                    $nominalkenek = $trip->gajikenek;
+                    $nominalkomisi = $trip->komisisupir;
+                }
+            }
+        } else {
+            if ($data['supir_id'] != $trip->supir_id && $data['trado_id'] != $trip->trado_id) {
+                $getTripTangki = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+                    ->select('triptangki_id')
+                    ->where('supir_id', $data['supir_id'])
+                    ->where('trado_id', $data['trado_id'])
+                    ->where('tglbukti', date('Y-m-d', strtotime($data['tglbukti'])))
+                    ->where('statusjeniskendaraan', $jenisTangki->id)
+                    ->orderBy('id', 'desc')
+                    ->count();
+                if ($getTripTangki > 0) {
+                    $triptangki = $getTripTangki + 1;
+                } else {
+                    $triptangki = 1;
+                }
+                $getTangki = DB::table("triptangki")->from(DB::raw("triptangki with (readuncommitted)"))
+                    ->where('kodetangki', $triptangki)
+                    ->first();
+
+                $tangki_id = $getTangki->id;
+            } else {
+                $tangki_id = $trip->triptangki_id;
+            }
+            $upahsupir = DB::table("upahsupirtangkirincian")->where('upahsupirtangki_id', $data['upah_id'])->where('triptangki_id', $tangki_id)->first()->nominalsupir ?? 0;
+            $nominalspr = round(($upahsupir * $trip->qtyton) / 100) * 100;
         }
         $dataSP = [
 
@@ -867,11 +1007,13 @@ class ListTrip extends MyModel
             'totalomset' => $tarifrincian->nominal ?? 0,
             'tglsp' => $data['tglbukti'],
             'statusbatalmuat' => $trip->statusbatalmuat,
+            'statusjeniskendaraan' => $data['statusjeniskendaraan'],
             'statusgudangsama' => $data['statusgudangsama'],
             'statuskandang' => $data['statuskandang'],
             'gudang' => $data['gudang'],
             'lokasibongkarmuat' => $data['lokasibongkarmuat'],
             'tarif_id' => $data['tarifrincian_id'],
+            'qtyton' => $trip->qtyton,
             'edittripmandor' => '1',
             'nominal' => '',
             'nobukti_tripasal' => $data['nobukti_tripasal'],
