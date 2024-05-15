@@ -166,14 +166,18 @@ class KategoriController extends Controller
                 'kodekategori' => $request->kodekategori ?? '',
                 'keterangan' => $request->keterangan ?? '',
                 'subkelompok_id' => $request->subkelompok_id,
-                'statusaktif' => $request->statusaktif
+                'statusaktif' => $request->statusaktif,
+                'tas_id' => $request->tas_id
+
             ];
             $kategori = (new Kategori())->processStore($data);
-            $kategori->position = $this->getPosition($kategori, $kategori->getTable())->position;
-            if ($request->limit == 0) {
-                $kategori->page = ceil($kategori->position / (10));
-            } else {
-                $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $kategori->position = $this->getPosition($kategori, $kategori->getTable())->position;
+                if ($request->limit == 0) {
+                    $kategori->page = ceil($kategori->position / (10));
+                } else {
+                    $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
+                }
             }
             DB::commit();
 
@@ -212,11 +216,13 @@ class KategoriController extends Controller
                 'statusaktif' => $request->statusaktif
             ];
             $kategori = (new Kategori())->processUpdate($kategori, $data);
-            $kategori->position = $this->getPosition($kategori, $kategori->getTable())->position;
-            if ($request->limit == 0) {
-                $kategori->page = ceil($kategori->position / (10));
-            } else {
-                $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $kategori->position = $this->getPosition($kategori, $kategori->getTable())->position;
+                if ($request->limit == 0) {
+                    $kategori->page = ceil($kategori->position / (10));
+                } else {
+                    $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
+                }
             }
 
             DB::commit();
@@ -241,13 +247,15 @@ class KategoriController extends Controller
 
         try {
             $kategori = (new Kategori())->processDestroy($id);
-            $selected = $this->getPosition($kategori, $kategori->getTable(), true);
-            $kategori->position = $selected->position;
-            $kategori->id = $selected->id;
-            if ($request->limit == 0) {
-                $kategori->page = ceil($kategori->position / (10));
-            } else {
-                $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($kategori, $kategori->getTable(), true);
+                $kategori->position = $selected->position;
+                $kategori->id = $selected->id;
+                if ($request->limit == 0) {
+                    $kategori->page = ceil($kategori->position / (10));
+                } else {
+                    $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
+                }
             }
             DB::commit();
 
