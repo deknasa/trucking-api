@@ -1488,10 +1488,12 @@ class MandorAbsensiSupir extends MyModel
 
             $temtabel = $querydata->namatabel;
 
+            $absensiheader = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))->select('nobukti')->where('tglbukti',date("Y-m-d", strtotime($data['tglbukti'])))->first();
 
             // if ($data['id'] != $data['deleted_id']) {
             DB::table($temtabel)->insert(
                 [
+                    'nobukti' => $absensiheader->nobukti,
                     'tglbukti' => date("Y-m-d", strtotime($data['tglbukti'])),
                     'id' => $data['id'],
                     'trado_id' => $data['trado_id'],
