@@ -235,6 +235,8 @@ class AbsensiSupirDetail extends MyModel
                     ->leftjoin(DB::raw($tempspgroup . " as c"), function ($join) {
                         $join->on("$this->table.supir_id", "=", "c.supir_id");
                         $join->on("$this->table.trado_id", "=", "c.trado_id");
+                        $join->on("$this->table.statusjeniskendaraan", "=", "c.statusjeniskendaraan");
+
                     })
                     ->where('trado.statusabsensisupir', $statusabsensi);
             } else {
@@ -800,6 +802,7 @@ class AbsensiSupirDetail extends MyModel
                 $join->on('sp.tglbukti', '=', 'a.tglbukti');
                 $join->on('sp.trado_id', '=', 'a.trado_id');
                 $join->on('sp.supir_id', '=', 'a.supir_id');
+                $join->on('sp.statusjeniskendaraan', '=', 'a.statusjeniskendaraan');
             });
 
 
@@ -917,6 +920,20 @@ class AbsensiSupirDetail extends MyModel
             ->orderby('a.text', 'asc');
 
         DB::table($tempidabsen)->insertUsing(['text'], $queryabsen);
+        
+        $tidakadasupirabsensi = '##tidakadasupirabsensi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tidakadasupirabsensi, function ($table) {
+            $table->integer('text')->nullable();
+        });
+
+        $queryaTidakadaSupir = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.text'
+            )
+            ->where('a.grp', 'ABSEN TIDAK ADA SUPIR')
+            ->orderby('a.text', 'asc');
+
+        DB::table($tidakadasupirabsensi)->insertUsing(['text'], $queryaTidakadaSupir);
 
 
         $tempric = '##tempric' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -980,6 +997,7 @@ class AbsensiSupirDetail extends MyModel
                     ) as datetime),'yyyy/MM/dd HH:mm:ss') as datetime)>=getdate() then 1 else 0 end) 
                     as berlaku"),
                 db::raw("(CASE WHEN a.absen_id IN (SELECT text FROM " . $tempidabsen . ") or isnull(d.supir_id,0)<>0 THEN 'readonly' ELSE '' END) AS uangjalan_readonly"),
+                db::raw("(CASE WHEN a.absen_id IN (SELECT text FROM " . $tidakadasupirabsensi . ") or isnull(d.supir_id,0)<>0 THEN 'readonly' ELSE '' END) AS tidakadasupir"),
                 // DB::raw("(CASE WHEN isnull(e.nobukti,0) = 0 THEN '' ELSE 'readonly' END) as pujnobukti_readonly"),
                 DB::raw("(CASE WHEN e.nobukti  IS NULL THEN '' ELSE 'readonly' END) as pujnobukti_readonly"),
 

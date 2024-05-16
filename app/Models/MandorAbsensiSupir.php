@@ -467,48 +467,50 @@ class MandorAbsensiSupir extends MyModel
         });
         
         //jika tanggal hari ini gak ada ambil 1 tanggal sebelum
-        if (!$queryabsensisupirheader->first()) {
-            $lastAbsensi = db::table("absensisupirheader")->from(db::raw("absensisupirheader a with (readuncommitted)"))
-            ->where('a.tglbukti','<',$date)
-            ->orderBy('a.tglbukti','desc')->first();
-            if ($lastAbsensi) {
-                $parameter = new Parameter();
-                $idstatusnonsupirserap = $parameter->cekId('SUPIR SERAP', 'SUPIR SERAP', 'YA') ?? 0;
-                $idstatustambahantrado=$parameter->cekId('TAMBAHAN TRADO ABSENSI','TAMBAHAN TRADO ABSENSI','YA') ?? 0;
-
-                $lastAbsensiDetail = db::table("absensisupirdetail")->from(db::raw("absensisupirdetail absensidetail with (readuncommitted)"))
-
-                ->select(
-                    'a.id',
-                    'a.kodetrado',
-                    'a.keterangan',
-                    'a.statusaktif',
-                    'a.statusabsensisupir',
-                    'a.nama',
-                    'a.mandor_id',
-                    'absensidetail.supir_id',
-                    'a.tglberlakumiliksupir',
-                    'a.modifiedby'
-                )
-                ->whereRaw("(absensidetail.statussupirserap <> $idstatusnonsupirserap or absensidetail.statussupirserap IS NULL) and (absensidetail.statustambahantrado <> $idstatustambahantrado or absensidetail.statustambahantrado IS NULL)")
-                ->where('absensidetail.absensi_id',$lastAbsensi->id)
-                ->leftJoin(DB::raw("trado as a with (readuncommitted)"), 'absensidetail.trado_id', 'a.id');
-                // ->get();
-
-                // dd($lastAbsensiDetail->get());
-                DB::table($tempTrado)->insertUsing([
-                    'id',
-                    'kodetrado',
-                    'keterangan',
-                    'statusaktif',
-                    'statusabsensisupir',
-                    'nama',
-                    'mandor_id',
-                    'supir_id',
-                    'tglberlakumiliksupir',
-                    'modifiedby',
-                ],  $lastAbsensiDetail);
-                goto tradosemalam;
+        if ($this->activeKolomJenisKendaraan) {
+            if (!$queryabsensisupirheader->first()) {
+                $lastAbsensi = db::table("absensisupirheader")->from(db::raw("absensisupirheader a with (readuncommitted)"))
+                ->where('a.tglbukti','<',$date)
+                ->orderBy('a.tglbukti','desc')->first();
+                if ($lastAbsensi) {
+                    $parameter = new Parameter();
+                    $idstatusnonsupirserap = $parameter->cekId('SUPIR SERAP', 'SUPIR SERAP', 'YA') ?? 0;
+                    $idstatustambahantrado=$parameter->cekId('TAMBAHAN TRADO ABSENSI','TAMBAHAN TRADO ABSENSI','YA') ?? 0;
+    
+                    $lastAbsensiDetail = db::table("absensisupirdetail")->from(db::raw("absensisupirdetail absensidetail with (readuncommitted)"))
+    
+                    ->select(
+                        'a.id',
+                        'a.kodetrado',
+                        'a.keterangan',
+                        'a.statusaktif',
+                        'a.statusabsensisupir',
+                        'a.nama',
+                        'a.mandor_id',
+                        'absensidetail.supir_id',
+                        'a.tglberlakumiliksupir',
+                        'a.modifiedby'
+                    )
+                    ->whereRaw("(absensidetail.statussupirserap <> $idstatusnonsupirserap or absensidetail.statussupirserap IS NULL) and (absensidetail.statustambahantrado <> $idstatustambahantrado or absensidetail.statustambahantrado IS NULL)")
+                    ->where('absensidetail.absensi_id',$lastAbsensi->id)
+                    ->leftJoin(DB::raw("trado as a with (readuncommitted)"), 'absensidetail.trado_id', 'a.id');
+                    // ->get();
+    
+                    // dd($lastAbsensiDetail->get());
+                    DB::table($tempTrado)->insertUsing([
+                        'id',
+                        'kodetrado',
+                        'keterangan',
+                        'statusaktif',
+                        'statusabsensisupir',
+                        'nama',
+                        'mandor_id',
+                        'supir_id',
+                        'tglberlakumiliksupir',
+                        'modifiedby',
+                    ],  $lastAbsensiDetail);
+                    goto tradosemalam;
+                }
             }
         }
         
