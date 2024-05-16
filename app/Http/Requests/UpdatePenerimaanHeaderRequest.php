@@ -56,7 +56,9 @@ class UpdatePenerimaanHeaderRequest extends FormRequest
                 // 'before_or_equal:'.date('d-m-Y'),
                 new DateTutupBuku()
             ],
-            'tgllunas'  => ['required','before_or_equal:'.date('d-m-Y'),],
+            'tgllunas'  => ['required',
+            // 'before_or_equal:'.date('d-m-Y'),
+        ],
             'bank'   => ['required', new ValidasiTotalDetail()],
             'bank_id' => ['required', Rule::in($getDataPenerimaan->bank_id)],
             'alatbayar'   => ['required'],
