@@ -1439,12 +1439,19 @@ class AbsensiSupirDetail extends MyModel
                                 $query = $query->where('absentrado.kodeabsen', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statusKeterangan') {
                                 $query = $query->where('absentrado.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'statusjeniskendaraan') {
+                                $query = $query->where('jeniskendaraan.text', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'keterangan_detail') {
                                 $query = $query->where("$this->table.keterangan", 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'uangjalan') {
                                 $query = $query->whereRaw("format($this->table.uangjalan, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'jumlahtrip') {
-                                $query = $query->whereRaw("format(c.jumlah, '#,#0.00') LIKE '%$filters[data]%'");
+                                if ($filters['data'] == 0) {
+                                    $query = $query->whereRaw("c.jumlah IS NULL");
+                                }else {
+                                    $query = $query->whereRaw("format(c.jumlah, '#,#0.00') LIKE '%$filters[data]%'");
+                                }
+                                // $query = $query->havingRaw("format(c.jumlah, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti') {
                                 $query->whereRaw("format(absensisupirheader.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
@@ -1467,12 +1474,19 @@ class AbsensiSupirDetail extends MyModel
                                 $query = $query->orWhere('absentrado.kodeabsen', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statusKeterangan') {
                                 $query = $query->orWhere('absentrado.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'statusjeniskendaraan') {
+                                $query = $query->orWhere('jeniskendaraan.text', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'keterangan_detail') {
                                 $query = $query->orWhere("$this->table.keterangan", 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'uangjalan') {
                                 $query = $query->orWhereRaw("format($this->table.uangjalan, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'jumlahtrip') {
-                                $query = $query->orWhereRaw("format(c.jumlah, '#,#0.00') LIKE '%$filters[data]%'");
+                                if ($filters['data'] == 0) {
+                                    $query = $query->orWhereRaw("c.jumlah IS NULL");
+                                }else {
+                                    $query = $query->orWhereRaw("format(c.jumlah, '#,#0.00') LIKE '%$filters[data]%'");
+                                }
+                                // $query = $query->orWhereRaw("format(c.jumlah, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti') {
                                 $query->orWhereRaw("format(absensisupirheader.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
