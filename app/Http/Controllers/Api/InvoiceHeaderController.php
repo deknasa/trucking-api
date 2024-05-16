@@ -76,6 +76,7 @@ class InvoiceHeaderController extends Controller
                 'tglterima' => $request->tglterima,
                 'tgljatuhtempo' => $request->tgljatuhtempo,
                 'agen_id' => $request->agen_id,
+                'statusjeniskendaraan' => $request->statusjeniskendaraan,
                 'jenisorder_id' => $request->jenisorder_id,
                 'piutang_nobukti' => $request->piutang_nobukti,
                 'statuspilihaninvoice' => $request->statuspilihaninvoice,
