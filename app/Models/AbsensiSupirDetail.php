@@ -37,6 +37,7 @@ class AbsensiSupirDetail extends MyModel
                 $table->unsignedBigInteger('absensi_id')->nullable();
                 $table->unsignedBigInteger('trado_id')->nullable();
                 $table->unsignedBigInteger('supir_id')->nullable();
+                $table->unsignedBigInteger('statusjeniskendaraan')->nullable();
                 $table->date('tglabsensi')->nullable();
                 $table->string('nobukti', 100)->nullable();
                 $table->bigInteger('nominalplusborongan')->nullable();
@@ -76,6 +77,7 @@ class AbsensiSupirDetail extends MyModel
                 'a.absensi_id',
                 'a.trado_id',
                 'a.supir_id',
+                'a.statusjeniskendaraan',
                 'c.tglbukti as tglabsensi',
                 'b.nobukti',
                 'trado.nominalplusborongan'
@@ -83,6 +85,7 @@ class AbsensiSupirDetail extends MyModel
                 ->join(DB::raw("suratpengantar as b with(readuncommitted)"), function ($join) use ($param1) {
                     $join->on('a.supir_id', '=', 'b.supir_id');
                     $join->on('a.trado_id', '=', 'b.trado_id');
+                    $join->on('a.statusjeniskendaraan', '=', 'b.statusjeniskendaraan');
                     $join->on('b.tglbukti', '=', DB::raw("'" . $param1 . "'"));
                 })
                 ->join(DB::raw("absensisupirheader as c with (readuncommitted)"), 'a.absensi_id', 'c.id')
@@ -95,6 +98,7 @@ class AbsensiSupirDetail extends MyModel
                 'absensi_id',
                 'trado_id',
                 'supir_id',
+                'statusjeniskendaraan',
                 'tglabsensi',
                 'nobukti',
                 'nominalplusborongan',
@@ -108,16 +112,18 @@ class AbsensiSupirDetail extends MyModel
                 ->select(
                     'a.trado_id',
                     'a.supir_id',
+                    'a.statusjeniskendaraan',
                     'a.nominalplusborongan',
                     DB::raw("count(a.nobukti) as jumlah")
                 )
-                ->groupBy('a.trado_id', 'a.supir_id', 'a.nominalplusborongan');
+                ->groupBy('a.trado_id', 'a.supir_id','a.statusjeniskendaraan', 'a.nominalplusborongan');
 
 
             $tempspgroup = '##tempspgroup' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempspgroup, function ($table) {
                 $table->unsignedBigInteger('trado_id')->nullable();
                 $table->unsignedBigInteger('supir_id')->nullable();
+                $table->unsignedBigInteger('statusjeniskendaraan')->nullable();
                 $table->bigInteger('nominalplusborongan')->nullable();
                 $table->double('jumlah', 15, 2)->nullable();
             });
@@ -125,6 +131,7 @@ class AbsensiSupirDetail extends MyModel
             DB::table($tempspgroup)->insertUsing([
                 'trado_id',
                 'supir_id',
+                'statusjeniskendaraan',
                 'nominalplusborongan',
                 'jumlah',
             ], $queryspgroup);
@@ -258,6 +265,7 @@ class AbsensiSupirDetail extends MyModel
                     ->leftjoin(DB::raw($tempspgroup . " as c"), function ($join) {
                         $join->on("$this->table.supir_id", "=", "c.supir_id");
                         $join->on("$this->table.trado_id", "=", "c.trado_id");
+                        $join->on("$this->table.statusjeniskendaraan", "=", "c.statusjeniskendaraan");
                     })
                     ->where('trado.statusabsensisupir', $statusabsensi);
 

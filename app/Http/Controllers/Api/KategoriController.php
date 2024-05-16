@@ -166,14 +166,25 @@ class KategoriController extends Controller
                 'kodekategori' => $request->kodekategori ?? '',
                 'keterangan' => $request->keterangan ?? '',
                 'subkelompok_id' => $request->subkelompok_id,
-                'statusaktif' => $request->statusaktif
+                'statusaktif' => $request->statusaktif,
+                'tas_id' => $request->tas_id
+
             ];
             $kategori = (new Kategori())->processStore($data);
-            $kategori->position = $this->getPosition($kategori, $kategori->getTable())->position;
-            if ($request->limit == 0) {
-                $kategori->page = ceil($kategori->position / (10));
-            } else {
-                $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $kategori->position = $this->getPosition($kategori, $kategori->getTable())->position;
+                if ($request->limit == 0) {
+                    $kategori->page = ceil($kategori->position / (10));
+                } else {
+                    $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
+                }
+            }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $kategori->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('kategori', 'add', $data);
             }
             DB::commit();
 
@@ -212,13 +223,21 @@ class KategoriController extends Controller
                 'statusaktif' => $request->statusaktif
             ];
             $kategori = (new Kategori())->processUpdate($kategori, $data);
-            $kategori->position = $this->getPosition($kategori, $kategori->getTable())->position;
-            if ($request->limit == 0) {
-                $kategori->page = ceil($kategori->position / (10));
-            } else {
-                $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $kategori->position = $this->getPosition($kategori, $kategori->getTable())->position;
+                if ($request->limit == 0) {
+                    $kategori->page = ceil($kategori->position / (10));
+                } else {
+                    $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
+                }
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $kategori->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('kategori', 'edit', $data);
+            }
             DB::commit();
 
             return response()->json([
@@ -241,13 +260,22 @@ class KategoriController extends Controller
 
         try {
             $kategori = (new Kategori())->processDestroy($id);
-            $selected = $this->getPosition($kategori, $kategori->getTable(), true);
-            $kategori->position = $selected->position;
-            $kategori->id = $selected->id;
-            if ($request->limit == 0) {
-                $kategori->page = ceil($kategori->position / (10));
-            } else {
-                $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($kategori, $kategori->getTable(), true);
+                $kategori->position = $selected->position;
+                $kategori->id = $selected->id;
+                if ($request->limit == 0) {
+                    $kategori->page = ceil($kategori->position / (10));
+                } else {
+                    $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
+                }
+            }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('kategori', 'delete', $data);
             }
             DB::commit();
 

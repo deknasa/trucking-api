@@ -284,6 +284,7 @@ class Kategori extends MyModel
         $kategori->keterangan = $data['keterangan'] ?? '';
         $kategori->subkelompok_id = $data['subkelompok_id'];
         $kategori->statusaktif = $data['statusaktif'];
+        $kategori->tas_id = $data['tas_id'];
         $kategori->modifiedby = auth('api')->user()->name;
         $kategori->info = html_entity_decode(request()->info);
 

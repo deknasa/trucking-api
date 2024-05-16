@@ -7,6 +7,7 @@ use App\Rules\ExistTrado;
 use App\Rules\DateTutupBuku;
 use App\Rules\ValidasiTglTradoTambahan;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\ValidasiJenisKendaraanAbsensi;
 
 class StoreTradoTambahanAbsensiRequest extends FormRequest
 {
@@ -37,7 +38,7 @@ class StoreTradoTambahanAbsensiRequest extends FormRequest
             'keterangan' => 'required',
             'supir' => ['required'],
             'statusjeniskendaraan' => ['required'],
-            'statusjeniskendaraannama' => ['required'],
+            'statusjeniskendaraannama' => ['required',new ValidasiJenisKendaraanAbsensi()],
         ];
 
         $trado_id = $this->trado_id;

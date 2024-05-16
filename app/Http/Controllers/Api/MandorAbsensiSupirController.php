@@ -102,6 +102,7 @@ class MandorAbsensiSupirController extends Controller
 
             Schema::create($temtabel, function ($table) {
                 $table->unsignedBigInteger('id')->nullable();
+                $table->string('nobukti')->nullable();
                 $table->date('tglbukti')->nullable();
                 $table->unsignedBigInteger('trado_id')->nullable();
                 $table->unsignedBigInteger('supir_id')->nullable();

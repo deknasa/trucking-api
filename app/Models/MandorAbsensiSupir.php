@@ -151,6 +151,7 @@ class MandorAbsensiSupir extends MyModel
             $table->date('tglapprovaleditabsensi')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
+            $table->integer('statustambahantrado')->Length(11)->nullable();
             $table->integer('statussupirserap')->Length(11)->nullable();
         });
         // dd($deleted_id);
@@ -173,6 +174,7 @@ class MandorAbsensiSupir extends MyModel
                     'a.tglapprovaleditabsensi',
                     'a.info',
                     'a.modifiedby',
+                    db::raw("isnull(a.statustambahantrado,0) as statustambahantrado"),
                     db::raw("isnull(a.statussupirserap,0) as statussupirserap"),
                 )
                 ->join(db::raw("absensisupirheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
@@ -196,6 +198,7 @@ class MandorAbsensiSupir extends MyModel
                 'tglapprovaleditabsensi',
                 'info',
                 'modifiedby',
+                'statustambahantrado',
                 'statussupirserap'
             ],  $queryabsensisupirdetail);
         } else {
@@ -291,6 +294,7 @@ class MandorAbsensiSupir extends MyModel
                 $table->date('tglapprovaleditabsensi')->nullable();
                 $table->longText('info')->nullable();
                 $table->string('modifiedby', 50)->nullable();
+                $table->integer('statustambahantrado')->Length(11)->nullable();
                 $table->integer('statussupirserap')->Length(11)->nullable();
             });
 
@@ -312,6 +316,7 @@ class MandorAbsensiSupir extends MyModel
                     'a.tglapprovaleditabsensi',
                     'a.info',
                     'a.modifiedby',
+                    db::raw("isnull(a.statustambahantrado,0) as statustambahantrado"),
                     db::raw("isnull(a.statussupirserap,0) as statussupirserap"),
                 )
                 ->join(db::raw("absensisupirheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
@@ -335,6 +340,7 @@ class MandorAbsensiSupir extends MyModel
                 'tglapprovaleditabsensi',
                 'info',
                 'modifiedby',
+                'statustambahantrado',
                 'statussupirserap'
             ],  $queryabsensisupirdetail2);
 
@@ -371,6 +377,7 @@ class MandorAbsensiSupir extends MyModel
                         db::raw("isnull(b.tglapprovaleditabsensi,'1900/1/1') as tglapprovaleditabsensi"),
                         db::raw("isnull(b.info,'') as info"),
                         db::raw("isnull(b.modifiedby,'') as modifiedby"),
+                        db::raw("isnull(b.statustambahantrado,'') as statustambahantrado"),
                         db::raw("isnull(b.statussupirserap,0) as statussupirserap")
                     )
                     ->leftJoin(DB::raw($tempabsensisupirdetail2 . " as b "), function ($join) {
@@ -398,6 +405,7 @@ class MandorAbsensiSupir extends MyModel
                         db::raw("isnull(b.tglapprovaleditabsensi,'1900/1/1') as tglapprovaleditabsensi"),
                         db::raw("isnull(b.info,'') as info"),
                         db::raw("isnull(b.modifiedby,'') as modifiedby"),
+                        db::raw("isnull(b.statustambahantrado,'') as statustambahantrado"),
                         db::raw("isnull(b.statussupirserap,0) as statussupirserap")
                     )
                     ->leftJoin(DB::raw($tempabsensisupirdetail2 . " as b "), function ($join) {
@@ -429,6 +437,7 @@ class MandorAbsensiSupir extends MyModel
                 'tglapprovaleditabsensi',
                 'info',
                 'modifiedby',
+                'statustambahantrado',
                 'statussupirserap'
             ],  $queryabsensisupirdetail);
 
@@ -456,6 +465,54 @@ class MandorAbsensiSupir extends MyModel
             $table->dateTime('tglberlakumiliksupir')->nullable();
             $table->string('modifiedby', 30)->nullable();
         });
+        
+        //jika tanggal hari ini gak ada ambil 1 tanggal sebelum
+        if (!$queryabsensisupirheader->first()) {
+            $lastAbsensi = db::table("absensisupirheader")->from(db::raw("absensisupirheader a with (readuncommitted)"))
+            ->where('a.tglbukti','<',$date)
+            ->orderBy('a.tglbukti','desc')->first();
+            if ($lastAbsensi) {
+                $parameter = new Parameter();
+                $idstatusnonsupirserap = $parameter->cekId('SUPIR SERAP', 'SUPIR SERAP', 'YA') ?? 0;
+                $idstatustambahantrado=$parameter->cekId('TAMBAHAN TRADO ABSENSI','TAMBAHAN TRADO ABSENSI','YA') ?? 0;
+
+                $lastAbsensiDetail = db::table("absensisupirdetail")->from(db::raw("absensisupirdetail absensidetail with (readuncommitted)"))
+
+                ->select(
+                    'a.id',
+                    'a.kodetrado',
+                    'a.keterangan',
+                    'a.statusaktif',
+                    'a.statusabsensisupir',
+                    'a.nama',
+                    'a.mandor_id',
+                    'absensidetail.supir_id',
+                    'a.tglberlakumiliksupir',
+                    'a.modifiedby'
+                )
+                ->whereRaw("(absensidetail.statussupirserap <> $idstatusnonsupirserap or absensidetail.statussupirserap IS NULL) and (absensidetail.statustambahantrado <> $idstatustambahantrado or absensidetail.statustambahantrado IS NULL)")
+                ->where('absensidetail.absensi_id',$lastAbsensi->id)
+                ->leftJoin(DB::raw("trado as a with (readuncommitted)"), 'absensidetail.trado_id', 'a.id');
+                // ->get();
+
+                // dd($lastAbsensiDetail->get());
+                DB::table($tempTrado)->insertUsing([
+                    'id',
+                    'kodetrado',
+                    'keterangan',
+                    'statusaktif',
+                    'statusabsensisupir',
+                    'nama',
+                    'mandor_id',
+                    'supir_id',
+                    'tglberlakumiliksupir',
+                    'modifiedby',
+                ],  $lastAbsensiDetail);
+                goto tradosemalam;
+            }
+        }
+        
+
         $queryTrado = db::table("trado")->from(db::raw("trado a with (readuncommitted)"))
             ->select(
                 'a.id',
@@ -519,6 +576,9 @@ class MandorAbsensiSupir extends MyModel
             'tglberlakumiliksupir',
             'modifiedby',
         ],  $queryNonAktifTrado);
+
+
+        tradosemalam:
 
         $tempsupir = '##tempsupir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsupir, function ($table) {
@@ -717,6 +777,7 @@ class MandorAbsensiSupir extends MyModel
             $table->datetime('tglbatas')->nullable();
             $table->integer('statusjeniskendaraan')->Length(11)->nullable();
             $table->string('statusjeniskendaraannama')->nullable();
+            $table->integer('statustambahantrado')->Length(11)->nullable();
             $table->integer('statussupirserap')->Length(11)->nullable();
         });
         $tempAbsensi = '##tempAbsensi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -736,6 +797,7 @@ class MandorAbsensiSupir extends MyModel
             $table->text('memo')->nullable();
             $table->integer('statusjeniskendaraan')->Length(11)->nullable();
             $table->string('statusjeniskendaraannama')->nullable();
+            $table->integer('statustambahantrado')->Length(11)->nullable();
             $table->integer('statussupirserap')->Length(11)->nullable();
         });
 
@@ -757,6 +819,7 @@ class MandorAbsensiSupir extends MyModel
                 // 'd.id as supir_id_old',
                 db::raw("isnull(absensisupirdetail.statusjeniskendaraan,0) as statusjeniskendaraan"),
                 'statusjeniskendaraan.text as statusjeniskendaraannama',
+                db::raw("isnull(absensisupirdetail.statustambahantrado,0) as statustambahantrado"),
                 db::raw("isnull(absensisupirdetail.statussupirserap,0) as statussupirserap"),
 
 
@@ -776,7 +839,7 @@ class MandorAbsensiSupir extends MyModel
                 $absensisupirdetail->Join(DB::raw($tempmandordetail . " as mandordetail"), 'trado.mandor_id', 'mandordetail.mandor_id');
             }
         }
-        DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id', 'namasupir_old', 'supir_id_old','statusjeniskendaraan','statusjeniskendaraannama','statussupirserap'], $absensisupirdetail);
+        DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id', 'namasupir_old', 'supir_id_old','statusjeniskendaraan','statusjeniskendaraannama','statustambahantrado','statussupirserap'], $absensisupirdetail);
         //trado yang sudah absen dan punya tidak punya supir
         $absensisupirdetail = DB::table($tempabsensisupirdetail)->from(db::raw($tempabsensisupirdetail . " as absensisupirdetail"))
             ->select(
@@ -795,6 +858,7 @@ class MandorAbsensiSupir extends MyModel
                 db::raw("(case when isnull(d1.id,0)=0 then d.id else d1.id end) as supir_id_old"),
                 db::raw("isnull(absensisupirdetail.statusjeniskendaraan,0) as statusjeniskendaraan"),
                 'statusjeniskendaraan.text as statusjeniskendaraannama',
+                db::raw("isnull(absensisupirdetail.statustambahantrado,0) as statustambahantrado"),
                 db::raw("isnull(absensisupirdetail.statussupirserap,0) as statussupirserap")
 
             )
@@ -816,8 +880,8 @@ class MandorAbsensiSupir extends MyModel
         }
 
         //supir Trado yang belum diisi
-        DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id', 'namasupir_old', 'supir_id_old','statusjeniskendaraan','statusjeniskendaraannama','statussupirserap'], $absensisupirdetail);
-        DB::table($tempAbsensi)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id', 'namasupir_old', 'supir_id_old','statusjeniskendaraan','statusjeniskendaraannama','statussupirserap'], $absensisupirdetail);
+        DB::table($tempMandor)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id', 'namasupir_old', 'supir_id_old','statusjeniskendaraan','statusjeniskendaraannama','statustambahantrado','statussupirserap'], $absensisupirdetail);
+        DB::table($tempAbsensi)->insertUsing(['trado_id', 'kodetrado', 'namasupir', 'keterangan', 'absentrado', 'absen_id', 'jam', 'tglbukti', 'supir_id', 'namasupir_old', 'supir_id_old','statusjeniskendaraan','statusjeniskendaraannama','statustambahantrado','statussupirserap'], $absensisupirdetail);
 
         // dump(DB::table($tempMandor)->get());
         // dump(DB::table($tempabsensisupirheader)->get());
@@ -856,8 +920,10 @@ class MandorAbsensiSupir extends MyModel
             ->where('a.statusaktif', $statusaktif->id)
             ->where('a.statusabsensisupir', $statusabsensisupir->id)
             ->whereRaw("isnull(b.id,0)=0");
-        // dd($trados->where('trado_id',78)->get());
+        // dd($trados->get());
+        // asda
 
+        
 
 
         if (!$isAdmin) {
@@ -917,6 +983,7 @@ class MandorAbsensiSupir extends MyModel
                 'a.statusjeniskendaraan',
                 'a.statusjeniskendaraannama',
                 'a.memo',
+                db::raw("isnull(a.statustambahantrado,0) as statustambahantrado"),
                 db::raw("isnull(a.statussupirserap,0) as statussupirserap"),
                 DB::raw("(case when year(isnull(a.tglbatas,'1900/1/1 '))=1900 then null else format(a.tglbatas,'dd-MM-yyyy HH:mm:ss')  end)as tglbatas"),
             )
@@ -936,6 +1003,7 @@ class MandorAbsensiSupir extends MyModel
                 'a.statusjeniskendaraan',
                 'a.statusjeniskendaraannama',
                 'a.memo',
+                'a.statustambahantrado',
                 'a.statussupirserap',
                 'a.tglbatas'
             )
@@ -943,6 +1011,7 @@ class MandorAbsensiSupir extends MyModel
                 $join->on('sp.tglbukti', '=', 'a.tglbukti');
                 $join->on('sp.trado_id', '=', 'a.trado_id');
                 $join->on('sp.supir_id', '=', 'a.supir_id');
+                $join->on('sp.statusjeniskendaraan', '=', 'a.statusjeniskendaraan');
             })
             ->orderby('a.kodetrado','asc');
 
@@ -967,6 +1036,7 @@ class MandorAbsensiSupir extends MyModel
                 $table->integer('statusjeniskendaraan')->nullable();
                 $table->string('statusjeniskendaraannama')->nullable();
                 $table->text('memo')->nullable();
+                $table->integer('statustambahantrado')->nullable();
                 $table->integer('statussupirserap')->nullable();
                 $table->string('tglbatas',50)->nullable();
 
@@ -989,6 +1059,7 @@ class MandorAbsensiSupir extends MyModel
                 'statusjeniskendaraan',
                 'statusjeniskendaraannama',
                 'memo',
+                'statustambahantrado',
                 'statussupirserap',
                 'tglbatas',
             ],  $queryhasil);
@@ -1012,11 +1083,15 @@ class MandorAbsensiSupir extends MyModel
                 'a.statusjeniskendaraan',
                 'a.statusjeniskendaraannama',
                 'a.memo',
+                DB::raw("(CASE WHEN isnull(a.statustambahantrado,0)=0 THEN '' ELSE
+                    (CASE WHEN a.statustambahantrado=655 THEN tradotambahan.text ELSE '' end) end) as statustambahantrado
+                "),
                 DB::raw("(CASE WHEN isnull(a.statussupirserap,0)=0 THEN '' ELSE
                     (CASE WHEN a.statussupirserap=593 THEN parameter.text ELSE '' end) end) as statussupirserap
                 "),
                 'a.tglbatas',
-            )->leftJoin("parameter",'a.statussupirserap','parameter.id');
+            )->leftJoin("parameter",'a.statussupirserap','parameter.id')
+            ->leftJoin(DB::raw("parameter as tradotambahan with (readuncommitted)"),'a.statustambahantrado','tradotambahan.id');
 
 
         $user = auth('api')->user()->name;
@@ -1413,10 +1488,12 @@ class MandorAbsensiSupir extends MyModel
 
             $temtabel = $querydata->namatabel;
 
+            $absensiheader = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))->select('nobukti')->where('tglbukti',date("Y-m-d", strtotime($data['tglbukti'])))->first();
 
             // if ($data['id'] != $data['deleted_id']) {
             DB::table($temtabel)->insert(
                 [
+                    'nobukti' => $absensiheader->nobukti,
                     'tglbukti' => date("Y-m-d", strtotime($data['tglbukti'])),
                     'id' => $data['id'],
                     'trado_id' => $data['trado_id'],
@@ -1487,9 +1564,9 @@ class MandorAbsensiSupir extends MyModel
         $jam = $data['jam'];
         // $AbsensiSupirDetail = (new AbsensiSupirDetail())->processStore($absensiSupirRequest);
         if ($this->isTradoMilikSupir()) {
-            $absensiSupirDetail = AbsensiSupirDetail::where('absensi_id', $AbsensiSupirHeader->id)->where('trado_id', $data['trado_id'])->where('supirold_id', $data['supirold_id'])->lockForUpdate()->first();
+            $absensiSupirDetail = AbsensiSupirDetail::where('absensi_id', $AbsensiSupirHeader->id)->where('trado_id', $data['trado_id'])->where('statusjeniskendaraan', $data['statusjeniskendaraan'])->where('supirold_id', $data['supirold_id'])->lockForUpdate()->first();
         } else {
-            $absensiSupirDetail = AbsensiSupirDetail::where('absensi_id', $AbsensiSupirHeader->id)->where('trado_id', $data['trado_id'])->lockForUpdate()->first();
+            $absensiSupirDetail = AbsensiSupirDetail::where('absensi_id', $AbsensiSupirHeader->id)->where('trado_id', $data['trado_id'])->where('statusjeniskendaraan', $data['statusjeniskendaraan'])->lockForUpdate()->first();
         }
         DB::table('absensisupirdetail', 'a')
             ->Join(db::raw("trado b with (readuncommitted)"), 'a.trado_id', '=', 'b.id')
