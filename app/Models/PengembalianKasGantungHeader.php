@@ -45,7 +45,7 @@ class PengembalianKasGantungHeader extends MyModel
         if (isset($prosesUangJalan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Proses Uang Jalan Supir <b>'. $prosesUangJalan->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Proses Uang Jalan Supir <b>' . $prosesUangJalan->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Proses Uang Jalan Supir ' . $prosesUangJalan->nobukti,
                 'kodeerror' => 'TDT'
             ];
@@ -67,7 +67,7 @@ class PengembalianKasGantungHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Approval Jurnal <b>'. $jurnal->penerimaan_nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Approval Jurnal <b>' . $jurnal->penerimaan_nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Approval Jurnal ' . $jurnal->penerimaan_nobukti,
                 'kodeerror' => 'SAP'
             ];
@@ -827,7 +827,9 @@ class PengembalianKasGantungHeader extends MyModel
         $dataDetail = $pengembalianKasGantungDetail->toArray();
 
         $penerimaan = PenerimaanHeader::where('nobukti', $pengembalianKasGantungHeader->penerimaan_nobukti)->lockForUpdate()->first();
-        $penerimaanHeader = (new PenerimaanHeader())->processDestroy($penerimaan->id, $postingdari ?? strtoupper('PENGEMBALIAN KAS GANTUNG'));
+        if (isset($penerimaan)) {
+            $penerimaanHeader = (new PenerimaanHeader())->processDestroy($penerimaan->id, $postingdari ?? strtoupper('PENGEMBALIAN KAS GANTUNG'));
+        }
 
         $pengembalianKasGantungHeader = $pengembalianKasGantungHeader->lockAndDestroy($id);
 
