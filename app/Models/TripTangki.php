@@ -24,8 +24,9 @@ class TripTangki extends MyModel
         $aktif = request()->aktif ?? '';
         $trado_id = request()->trado_id ?? '';
         $supir_id = request()->supir_id ?? '';
-        $tglabsensi = request()->tglabsensi ?? '';
-        $dari = request()->dari ?? '';
+        $tglbukti = request()->tglbukti ?? '';
+        $from = request()->from ?? '';
+        $lookup = boolval(request()->lookup) ?? false;
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -43,6 +44,29 @@ class TripTangki extends MyModel
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'triptangki.statusaktif', '=', 'parameter.id');
 
+        if ($lookup && $from == 'inputtrip') {
+            $jenisTangki = DB::table('parameter')->from(
+                DB::raw("parameter as a with (readuncommitted)")
+            )
+                ->select(
+                    'a.id'
+                )
+                ->where('a.grp', '=', 'STATUS JENIS KENDARAAN')
+                ->where('a.subgrp', '=', 'STATUS JENIS KENDARAAN')
+                ->where('a.text', '=', 'TANGKI')
+                ->first();
+            $getTripTangki = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+                ->select(DB::raw("STRING_AGG(triptangki_id, ',') as triptangki"))
+                ->where('supir_id', $supir_id)
+                ->where('trado_id', $trado_id)
+                ->where('tglbukti', date('Y-m-d', strtotime($tglbukti)))
+                ->where('statusjeniskendaraan', $jenisTangki->id)
+                ->first()->triptangki;
+
+            if (isset($getTripTangki)) {
+                $query->whereRaw("triptangki.kodetangki not in ($getTripTangki)");
+            }
+        }
         $this->filter($query);
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
@@ -64,7 +88,7 @@ class TripTangki extends MyModel
 
         return $data;
     }
-    
+
     public function cekvalidasihapus($id)
     {
         // cek sudah ada container
@@ -318,7 +342,7 @@ class TripTangki extends MyModel
 
         return $tripTangki;
     }
-    
+
     public function processApprovalnonaktif(array $data)
     {
 

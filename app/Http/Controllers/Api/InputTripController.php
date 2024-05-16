@@ -51,6 +51,7 @@ class InputTripController extends Controller
                 'jenisorder_id' => $request->jenisorder_id ?? '',
                 'pelanggan_id' => $request->pelanggan_id,
                 'tarifrincian_id' => $request->tarifrincian_id ?? '',
+                'triptangki_id' => $request->triptangki_id ?? '',
                 'nojobemkl' => $request->nojobemkl,
                 'nocont' => $request->nocont,
                 'noseal' => $request->noseal,
@@ -101,7 +102,7 @@ class InputTripController extends Controller
     public function getInfoTrado(Request $request)
     {
         return response([
-            'data' => (new InputTrip())->getInfo($request->trado_id, $request->upah_id, $request->statuscontainer_id, $request->id)
+            'data' => (new InputTrip())->getInfo($request->trado_id, $request->upah_id, $request->statuscontainer_id, $request->id),
         ]);
     }
 }

@@ -32,7 +32,7 @@ class LaporanKasBankController extends Controller
     public function report(ValidasiLaporanKasBankRequest $request)
     {
 
-
+        // dd($request->bank_id);
         if ($request->isCheck) {
             return response([
                 'data' => 'ok'

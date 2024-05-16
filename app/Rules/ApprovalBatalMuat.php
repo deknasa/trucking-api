@@ -31,24 +31,25 @@ class ApprovalBatalMuat implements Rule
     {
         $false = 0;
         $trip = '';
-        for($i=0;$i<count(request()->Id);$i++)
-        {
+        for ($i = 0; $i < count(request()->Id); $i++) {
             $nobukti = request()->Id[$i];
-            $getjob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('jobtrucking')->where('nobukti', $nobukti)->first()->jobtrucking ?? '';
-            $cek = (new SuratPengantar())->cekvalidasihapus($nobukti, $getjob);
-            if($cek['kondisi'] == true){
-                $false++;
-                if($trip == '')
-                {
-                    $trip = $nobukti.' di '.$cek['keterangan'];
-                }else{
-                    $trip = $trip . ', '.$nobukti.' di '.$cek['keterangan'];
+            $getjob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('jobtrucking','statusjeniskendaraan')->where('nobukti', $nobukti)->first();
+            if ($getjob != '') {
+
+                $cek = (new SuratPengantar())->cekvalidasihapus($nobukti, $getjob->jobtrucking, $getjob);
+                if ($cek['kondisi'] == true) {
+                    $false++;
+                    if ($trip == '') {
+                        $trip = $nobukti . ' di ' . $cek['keterangan'];
+                    } else {
+                        $trip = $trip . ', ' . $nobukti . ' di ' . $cek['keterangan'];
+                    }
                 }
             }
         }
 
         $this->trip = $trip;
-        if($false > 0){
+        if ($false > 0) {
             return false;
         }
 
@@ -62,6 +63,6 @@ class ApprovalBatalMuat implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('SATL')->keterangan . ' (' . $this->trip.')';
+        return app(ErrorController::class)->geterror('SATL')->keterangan . ' (' . $this->trip . ')';
     }
 }

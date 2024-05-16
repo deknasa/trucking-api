@@ -68,6 +68,7 @@ class ListTripController extends Controller
                 'statuscontainer_id' => $request->statuscontainer_id,
                 'container_id' => $request->container_id,
                 'upah_id' => $request->upah_id,
+                'triptangki_id' => $request->triptangki_id,
                 'penyesuaian' => $request->penyesuaian,
                 'dari_id' => $request->dari_id,
                 'sampai_id' => $request->sampai_id,

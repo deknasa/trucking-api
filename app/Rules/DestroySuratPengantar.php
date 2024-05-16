@@ -34,7 +34,7 @@ class DestroySuratPengantar implements Rule
     {
         $suratPengantar = new SuratPengantar();
         $nobukti = SuratPengantar::from(DB::raw("suratpengantar"))->where('id', request()->id)->first();
-        $cekdata = $suratPengantar->cekvalidasihapus($nobukti->nobukti, request()->jobtrucking);
+        $cekdata = $suratPengantar->cekvalidasihapus($nobukti->nobukti, request()->jobtrucking, $nobukti);
         if ($cekdata['kondisi']) {
             $this->kodeerror = $cekdata['kodeerror'];
             $this->keterangan = $cekdata['keterangan'];

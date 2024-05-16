@@ -986,6 +986,8 @@ class LaporanNeraca extends MyModel
                 ->where('grp', 'KAS/BANK')
                 ->where('subgrp', 'KAS')
                 ->first()->text ?? 0;
+
+                
             DB::table($tempkas)->insertUsing([
                 'urut',
                 'urutdetail',

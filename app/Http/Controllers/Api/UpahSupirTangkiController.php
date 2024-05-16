@@ -650,8 +650,9 @@ class UpahSupirTangkiController extends Controller
         $idtrip = $request->idtrip ?? '';
         $upah_id = $request->upah_id ?? '';
         $tarif_id = $request->tarif_id ?? '';
+        $triptangki_id = $request->triptangki_id ?? '';
         return response([
-            'data' => (new UpahSupirTangki())->getRincian($idtrip, $upah_id, $tarif_id)
+            'data' => (new UpahSupirTangki())->getRincian($idtrip, $upah_id, $tarif_id, $triptangki_id)
         ]);
     }
 }

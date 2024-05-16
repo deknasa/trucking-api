@@ -1419,9 +1419,6 @@ class PengeluaranHeader extends MyModel
         $pengeluaranHeader->transferkebank = $data['transferkebank'] ?? '';
         $pengeluaranHeader->penerimaan_nobukti = $data['penerimaan_nobukti'] ?? '';
         $pengeluaranHeader->statusformat = $data['statusformat'] ?? $querysubgrppengeluaran->formatpengeluaran;
-        $pengeluaranHeader->statuscetak = $statusCetak->id;
-        $pengeluaranHeader->userbukacetak = '';
-        $pengeluaranHeader->tglbukacetak = '';
         $pengeluaranHeader->editing_by = '';
         $pengeluaranHeader->editing_at = null;
         $pengeluaranHeader->modifiedby = auth('api')->user()->name;
