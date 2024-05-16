@@ -28,6 +28,9 @@ class LaporanKasBank extends MyModel
 
     public function getReport($dari, $sampai, $bank_id, $prosesneraca)
     {
+
+        // dd('test');
+        // dd($dari, $sampai, $bank_id, $prosesneraca);
         $prosesneraca = $prosesneraca ?? 0;
         $dariformat = date('Y/m/d', strtotime($dari));
         $sampaiformat = date('Y/m/d', strtotime($sampai));
@@ -403,19 +406,20 @@ class LaporanKasBank extends MyModel
         $saldoawalpengembaliankepusat = $querysaldoawalpengembaliankepusat->nominal ?? 0;
 
 
-
+        $dariformatsaldo = date("Y-m-d", strtotime("+1 day", strtotime($dariformat)));
         $querysaldoawal = DB::table("saldoawalbank")->from(
             DB::raw("saldoawalbank as a with (readuncommitted)")
         )
             ->select(
                 DB::raw("sum(isnull(a.nominaldebet,0)-isnull(a.nominalkredit,0)) as nominal")
             )
-            ->whereRaw("cast(right(a.bulan,4)+'/'+left(a.bulan,2)+'/1' as date)<'" . $dariformat . "'")
-            ->whereRaw("a.bulan<>format(cast('" . $dariformat . "' as date),'MM-yyyy')")
+            ->whereRaw("cast(right(a.bulan,4)+'/'+left(a.bulan,2)+'/1' as date)<'" . $dariformatsaldo . "'")
+            ->whereRaw("a.bulan<>format(cast('" . $dariformatsaldo . "' as date),'MM-yyyy')")
             // ->where('a.tglbukti', '<', $dari)
             ->where('a.bank_id', '=', $bank_id)
             ->first();
 
+            // dd($querysaldoawal->tosql());
         // dd($querysaldoawal->to);
         $saldoawal =  ($querysaldoawal->nominal + $querysaldoawalpenerimaan->nominal + $querysaldoawalpenerimaanpindahbuku->nominal) - ($querysaldoawalpengeluaran->nominal + $querysaldoawalpengeluaranpindahbuku->nominal + $saldoawalpengembaliankepusat);
 
@@ -424,6 +428,7 @@ class LaporanKasBank extends MyModel
         // dd($saldoawal);
         // data coba coba
 
+        // dd($saldoawal);
 
         DB::table($tempsaldo)->insert(
             array(
@@ -648,7 +653,7 @@ class LaporanKasBank extends MyModel
             ->orderBy('a.id', 'Asc');
 
 
-
+// dd($query->get());
 
         DB::table($temprekap)->insertUsing([
             'urut',
@@ -737,6 +742,7 @@ class LaporanKasBank extends MyModel
         
         if ($prosesneraca == 1) {
             $data = $queryhasil;
+            // dd($data->get());
         } else {
             // if ( $count>1) {
             //     $queryhasil->whereraw("a.nobukti not in ('SALDO AWAL')");
@@ -759,7 +765,7 @@ class LaporanKasBank extends MyModel
             ];
         }
 
-        // dd($data);
+     
         return $data;
     }
 }
