@@ -467,7 +467,7 @@ class MandorAbsensiSupir extends MyModel
         });
         
         //jika tanggal hari ini gak ada ambil 1 tanggal sebelum
-        if ($this->activeKolomJenisKendaraan) {
+        if ($this->activeKolomJenisKendaraan()) {
             if (!$queryabsensisupirheader->first()) {
                 $lastAbsensi = db::table("absensisupirheader")->from(db::raw("absensisupirheader a with (readuncommitted)"))
                 ->where('a.tglbukti','<',$date)
