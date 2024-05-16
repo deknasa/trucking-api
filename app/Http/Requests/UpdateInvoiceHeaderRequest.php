@@ -39,6 +39,11 @@ class UpdateInvoiceHeaderRequest extends FormRequest
 
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
 
+        $jenisGandengan = DB::table('parameter')->from(DB::raw("parameter as a with (readuncommitted)"))
+            ->select('a.id')
+            ->where('a.grp', '=', 'STATUS JENIS KENDARAAN')
+            ->where('a.text', '=', 'GANDENGAN')
+            ->first();
         $query=DB::table('invoiceheader')->from(
             DB::raw('invoiceheader a with (readuncommitted)')
         )
@@ -56,6 +61,9 @@ class UpdateInvoiceHeaderRequest extends FormRequest
         $rules = [
             'id' => new ValidasiDestroyInvoiceHeader(),
             'statuspilihaninvoice' => [
+                'required', 
+            ],
+            'statusjeniskendaraan' => [
                 'required', 
             ],
             'tglbukti' => [
@@ -165,7 +173,7 @@ class UpdateInvoiceHeaderRequest extends FormRequest
 
                 $rulesjenisorder_id = [
                     'jenisorder_id' => [
-                        'required',
+                        'required_if:statusjeniskendaraan,=,' . $jenisGandengan->id,
                         'numeric',
                         'min:1',
                         new ExistJenisOrder(),
@@ -178,8 +186,7 @@ class UpdateInvoiceHeaderRequest extends FormRequest
 
                     $rulesjenisorder_id = [
                         'jenisorder' => [
-                            'required',
-                            new ExistJenisOrder(),
+                            'required_if:statusjeniskendaraan,=,' . $jenisGandengan->id,
                         ]
                     ];
                 }
@@ -188,7 +195,7 @@ class UpdateInvoiceHeaderRequest extends FormRequest
 
             $rulesjenisorder_id = [
                 'jenisorder_id' => [
-                    'required',
+                    'required_if:statusjeniskendaraan,=,' . $jenisGandengan->id,
                     'numeric',
                     'min:1',
                     new ExistJenisOrder(),
@@ -197,10 +204,7 @@ class UpdateInvoiceHeaderRequest extends FormRequest
         } else {
             $rulesjenisorder_id = [
                 'jenisorder' => [
-                    'required',
-                    'numeric',
-                    'min:1',
-                    new ExistJenisOrder(),
+                    'required_if:statusjeniskendaraan,=,' . $jenisGandengan->id,
                 ]
             ];
         }        
