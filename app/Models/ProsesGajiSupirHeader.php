@@ -3877,8 +3877,14 @@ class ProsesGajiSupirHeader extends MyModel
             } else {
                 (new PengembalianKasGantungHeader())->processStore($pengembalianKasGantungHeader);
             }
-        }
+        }else{
+            
+            $nobuktiPenerimaanKasgantung = PengembalianKasGantungHeader::from(DB::raw("pengembaliankasgantungheader with (readuncommitted)"))->where('penerimaan_nobukti', $data['nobuktiUangjalan'])->first();
+            if (isset($nobuktiPenerimaanKasgantung)) {
 
+                (new PengembalianKasGantungHeader())->processDestroy($nobuktiPenerimaanKasgantung->id, 'PROSES GAJI SUPIR');
+            }
+        }
         //UPDATE EBS DI PENGELUARAN
         $noWarkat[] = '';
         $tglJatuhTempo[] = $prosesGajiSupirHeader->tglbukti;
