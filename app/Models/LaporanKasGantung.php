@@ -468,7 +468,7 @@ class LaporanKasGantung extends MyModel
             ->select('text')
             ->where('grp', 'DIPERIKSA')
             ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
-            $getJudul = DB::table('parameter')
+        $getJudul = DB::table('parameter')
             ->select('text')
             ->where('grp', 'JUDULAN LAPORAN')
             ->where('subgrp', 'JUDULAN LAPORAN')
@@ -498,6 +498,10 @@ class LaporanKasGantung extends MyModel
 
     public function getReport($periode, $prosesneraca)
     {
+        if ($prosesneraca == 1) {
+            $periode = date("Y-m-d", strtotime("+1 day", strtotime($periode)));
+        }
+
         //   return $periode;
         $prosesneraca = $prosesneraca ?? 0;
         $pengembaliankasgantungheader = '##pengembaliankasgantungheader' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -530,6 +534,8 @@ class LaporanKasGantung extends MyModel
             $table->double('nominal', 15, 2)->nullable();
         });
 
+        // dd('test');
+        
         $querysaldokasgantung = DB::table('kasgantungheader')->from(DB::raw("kasgantungheader AS A WITH (READUNCOMMITTED)"))
             ->select([
                 'A.nobukti',
@@ -539,6 +545,8 @@ class LaporanKasGantung extends MyModel
             ->join(db::raw("kasgantungdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->where('A.tglbukti', '<', $periode)
             ->groupBY('a.nobukti');
+
+        // dd($querysaldokasgantung->tosql());
 
         DB::table($temprekapsaldokasgantung)->insertUsing([
             'nobukti',
@@ -551,16 +559,16 @@ class LaporanKasGantung extends MyModel
             $table->string('nobukti', 50)->nullable();
             $table->longtext('keterangan')->nullable();
             $table->double('nominal', 15, 2)->nullable();
-        });        
+        });
 
-        $querysisa=db::table($temprekapsaldokasgantung)->from(db::raw($temprekapsaldokasgantung . " a"))
-        ->select(
-            'a.nobukti',
-            'a.keterangan',
-            db::raw("(isnull(a.nominal,0)-isnull(b.nominal,0)) as nominal")
-        )
-        ->leftjoin(db::raw($temprekapsaldopengembaliankasgantung . " b"),'a.nobukti','b.nobukti')
-        ->whereraw("(isnull(a.nominal,0)-isnull(b.nominal,0))>0");
+        $querysisa = db::table($temprekapsaldokasgantung)->from(db::raw($temprekapsaldokasgantung . " a"))
+            ->select(
+                'a.nobukti',
+                'a.keterangan',
+                db::raw("(isnull(a.nominal,0)-isnull(b.nominal,0)) as nominal")
+            )
+            ->leftjoin(db::raw($temprekapsaldopengembaliankasgantung . " b"), 'a.nobukti', 'b.nobukti')
+            ->whereraw("(isnull(a.nominal,0)-isnull(b.nominal,0))>0");
 
         DB::table($tempsisasaldokasgantung)->insertUsing([
             'nobukti',
@@ -733,7 +741,7 @@ class LaporanKasGantung extends MyModel
                 'A.created_at',
                 'A.updated_at'
             ])
-            ->join(db::raw($tempsisasaldokasgantung ." b"),'a.nobukti','b.nobukti');
+            ->join(db::raw($tempsisasaldokasgantung . " b"), 'a.nobukti', 'b.nobukti');
         //  dd($kasheader->get());
 
         DB::table($kasgantungheader)->insertUsing([
@@ -758,7 +766,7 @@ class LaporanKasGantung extends MyModel
         ], $kasheader);
 
         // 
-    
+
 
         $kasheader = DB::table('kasgantungheader')->from(DB::raw("kasgantungheader AS A WITH (READUNCOMMITTED)"))
             ->select([
@@ -805,7 +813,7 @@ class LaporanKasGantung extends MyModel
             'updated_at',
         ], $kasheader);
         // dd($kasheader->get());
-     
+
 
         //NOTE - kasgantungdetail
         $kasgantungdetail = '##kasgantungdetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -816,13 +824,12 @@ class LaporanKasGantung extends MyModel
         });
 
         // 
-        $kasdetail = DB::table($tempsisasaldokasgantung)->from(DB::raw($tempsisasaldokasgantung ." AS A"))
+        $kasdetail = DB::table($tempsisasaldokasgantung)->from(DB::raw($tempsisasaldokasgantung . " AS A"))
             ->select([
                 'A.nobukti',
                 DB::raw('A.keterangan'),
                 DB::raw('(A.nominal) as nominal')
-            ])
-            ;
+            ]);
 
         DB::table($kasgantungdetail)->insertUsing([
             'nobukti',
@@ -840,7 +847,7 @@ class LaporanKasGantung extends MyModel
                 DB::raw('SUM(A.nominal) as nominal')
             ])
             ->join(DB::raw("kasgantungheader as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-            ->join(DB::raw($kasgantungheader ." as c "), 'a.nobukti', 'c.nobukti')
+            ->join(DB::raw($kasgantungheader . " as c "), 'a.nobukti', 'c.nobukti')
             ->where('b.tglbukti', '=', $periode)
             ->groupBy('A.nobukti');
 
@@ -905,7 +912,7 @@ class LaporanKasGantung extends MyModel
             ->where('A.tglbukti', '=', $periode);
 
 
-            // dd($dataheader2->get());
+        // dd($dataheader2->get());
 
         DB::table($pengembaliankasgantungheader2)->insertUsing([
             'id',
@@ -952,7 +959,7 @@ class LaporanKasGantung extends MyModel
             ->join(DB::raw($pengembaliankasgantungheader2 . " as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->groupBy('A.nobukti', 'A.kasgantung_nobukti');
 
-            // dd($kasdetail2->get());
+        // dd($kasdetail2->get());
 
         DB::table($pengembaliankasgantungdetail2)->insertUsing([
             'nobukti',
@@ -977,7 +984,7 @@ class LaporanKasGantung extends MyModel
             $table->longText('penerimaan_nobukti');
         });
 
-   
+
 
         $temp_kasgantungheader = DB::table('kasgantungheader')->from(DB::raw($kasgantungheader . " AS a"))
             ->select([
@@ -1035,7 +1042,7 @@ class LaporanKasGantung extends MyModel
             ->orderBy('a.tglbukti', 'asc')
             ->orderBy('c.kasgantung_nobukti', 'desc');
 
-//    dd($temp_pengembaliankasgantungheader2->get());
+        //    dd($temp_pengembaliankasgantungheader2->get());
 
         DB::table($TempLaporan)->insertUsing([
             'tglbuktikasgantung',
