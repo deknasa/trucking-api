@@ -41,7 +41,7 @@ class LaporanKasBankController extends Controller
             $dari = $request->dari;
             $sampai = $request->sampai;
             $bank_id = $request->bank_id;
-            $prosesneraca = 1;
+            $prosesneraca = 0;
 
             $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
                 ->select('cabang.namacabang')
