@@ -2776,7 +2776,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'coakredit' => $coaKreditPP,
                 'nominal_detail' => $nominalPP,
                 'keterangan_detail' => $keteranganPP,
-                'tgljatuhtempo' => [$tglJatuhTempoPP ??  date('Y-m-d', strtotime($data['tglbukti']))]
+                'tgljatuhtempo' => $tglJatuhTempoPP ?? [date('Y-m-d', strtotime($data['tglbukti']))]
             ];
 
             // dd($penerimaanHeaderPPRequest);
@@ -3402,42 +3402,44 @@ class ProsesGajiSupirHeader extends MyModel
             $getPS = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
                 ->select('id')
                 ->where('nobukti', $penerimaan_nobuktiPS)->first();
+            $nominalPostingNonPS = array_filter($nominalPostingNonPS, function ($value) {
+                return $value !== 0;
+            });
+            $coakreditPostingNonPS = array_filter($coakreditPostingNonPS, function ($value) {
+                return $value !== '';
+            });
+            $keteranganPostingNonPS = array_filter($keteranganPostingNonPS, function ($value) {
+                return $value !== '';
+            });
+            $nominalPostingNonPS = array_values($nominalPostingNonPS);
+            $coakreditPostingNonPS = array_values($coakreditPostingNonPS);
+            $keteranganPostingNonPS = array_values($keteranganPostingNonPS);
+            $nominalPS = $nominalPostingNonPS;
+            $coaKreditPS = $coakreditPostingNonPS;
+            $keteranganPS = $keteranganPostingNonPS;
 
+            $penerimaanHeaderPS = [
+
+                'tglbukti' => $prosesGajiSupirHeader->tglbukti,
+                'pelanggan_id' => '',
+                'bank_id' => $data['bank_id'],
+                'postingdari' => 'EDIT PROSES GAJI SUPIR',
+                'diterimadari' => "PROSES GAJI SUPIR PERIODE " . date('d-m-Y', strtotime($data['tgldari'])) . " S/D " . date('d-m-Y', strtotime($data['tglsampai'])),
+                'tgllunas' => $prosesGajiSupirHeader->tglbukti,
+                'coakredit' => $coaKreditPS,
+                'nominal_detail' => $nominalPS,
+                'keterangan_detail' => $keteranganPS,
+                'tgljatuhtempo' => $tglJatuhTempoPS
+
+            ];
             if ($getPS != null) {
-
-                $nominalPostingNonPS = array_filter($nominalPostingNonPS, function ($value) {
-                    return $value !== 0;
-                });
-                $coakreditPostingNonPS = array_filter($coakreditPostingNonPS, function ($value) {
-                    return $value !== '';
-                });
-                $keteranganPostingNonPS = array_filter($keteranganPostingNonPS, function ($value) {
-                    return $value !== '';
-                });
-                $nominalPostingNonPS = array_values($nominalPostingNonPS);
-                $coakreditPostingNonPS = array_values($coakreditPostingNonPS);
-                $keteranganPostingNonPS = array_values($keteranganPostingNonPS);
-                $nominalPS = $nominalPostingNonPS;
-                $coaKreditPS = $coakreditPostingNonPS;
-                $keteranganPS = $keteranganPostingNonPS;
-
-                $penerimaanHeaderPS = [
-
-                    'tglbukti' => $prosesGajiSupirHeader->tglbukti,
-                    'pelanggan_id' => '',
-                    'bank_id' => $data['bank_id'],
-                    'postingdari' => 'EDIT PROSES GAJI SUPIR',
-                    'diterimadari' => "PROSES GAJI SUPIR PERIODE " . date('d-m-Y', strtotime($data['tgldari'])) . " S/D " . date('d-m-Y', strtotime($data['tglsampai'])),
-                    'tgllunas' => $prosesGajiSupirHeader->tglbukti,
-                    'coakredit' => $coaKreditPS,
-                    'nominal_detail' => $nominalPS,
-                    'keterangan_detail' => $keteranganPS,
-                    'tgljatuhtempo' => $tglJatuhTempoPS
-
-                ];
                 $newPenerimaanPS = new PenerimaanHeader();
                 $newPenerimaanPS = $newPenerimaanPS->findAll($getPS->id);
                 $dataPenerimaanPS = (new PenerimaanHeader())->processUpdate($newPenerimaanPS, $penerimaanHeaderPS);
+                $penerimaan_nobuktiPS = $dataPenerimaanPS->nobukti;
+            } else {
+
+                $dataPenerimaanPS = (new PenerimaanHeader())->processStore($penerimaanHeaderPS);
                 $penerimaan_nobuktiPS = $dataPenerimaanPS->nobukti;
             }
 
@@ -3458,10 +3460,15 @@ class ProsesGajiSupirHeader extends MyModel
                     (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingPS, $penerimaanTruckingHeaderPS);
                 }
             }
+        } else {
+            $getPinjamanPS = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
+                ->select('id')
+                ->where('nobukti', $penerimaan_nobuktiPS)->first();
+            if ($getPinjamanPS != null) {
+                (new PenerimaanHeader())->processDestroy($getPinjamanPS->id, 'PROSES GAJI SUPIR');
+            }
         }
-
         if ($data['nomPP'] != 0) {
-
             $bank = Bank::from(DB::raw("bank with (readuncommitted)"))
                 ->select('coa')
                 ->where('id', $data['bank_id'])
@@ -3471,40 +3478,45 @@ class ProsesGajiSupirHeader extends MyModel
                 ->select('id')
                 ->where('nobukti', $penerimaan_nobuktiPP)->first();
 
+            $nominalPostingNon = array_filter($nominalPostingNon, function ($value) {
+                return $value !== 0;
+            });
+            $coakreditPostingNon = array_filter($coakreditPostingNon, function ($value) {
+                return $value !== '';
+            });
+            $keteranganPostingNon = array_filter($keteranganPostingNon, function ($value) {
+                return $value !== '';
+            });
+            $nominalPostingNon = array_values($nominalPostingNon);
+            $coakreditPostingNon = array_values($coakreditPostingNon);
+            $keteranganPostingNon = array_values($keteranganPostingNon);
+            $nominalPP = $nominalPostingNon;
+            $coaKreditPP = $coakreditPostingNon;
+            $keteranganPP = $keteranganPostingNon;
+
+            $penerimaanHeaderPP = [
+                'tglbukti' => $prosesGajiSupirHeader->tglbukti,
+                'pelanggan_id' => '',
+                'bank_id' => $data['bank_id'],
+                'postingdari' => 'EDIT PROSES GAJI SUPIR',
+                'diterimadari' => "PROSES GAJI SUPIR PERIODE " . date('d-m-Y', strtotime($data['tgldari'])) . " S/D " . date('d-m-Y', strtotime($data['tglsampai'])),
+                'tgllunas' => $prosesGajiSupirHeader->tglbukti,
+                'coakredit' => $coaKreditPP,
+                'nominal_detail' => $nominalPP,
+                'keterangan_detail' => $keteranganPP,
+                'tgljatuhtempo' => $tglJatuhTempoPP
+
+            ];
             if ($getPP != null) {
-                $nominalPostingNon = array_filter($nominalPostingNon, function ($value) {
-                    return $value !== 0;
-                });
-                $coakreditPostingNon = array_filter($coakreditPostingNon, function ($value) {
-                    return $value !== '';
-                });
-                $keteranganPostingNon = array_filter($keteranganPostingNon, function ($value) {
-                    return $value !== '';
-                });
-                $nominalPostingNon = array_values($nominalPostingNon);
-                $coakreditPostingNon = array_values($coakreditPostingNon);
-                $keteranganPostingNon = array_values($keteranganPostingNon);
-                $nominalPP = $nominalPostingNon;
-                $coaKreditPP = $coakreditPostingNon;
-                $keteranganPP = $keteranganPostingNon;
 
-                $penerimaanHeaderPP = [
-                    'tglbukti' => $prosesGajiSupirHeader->tglbukti,
-                    'pelanggan_id' => '',
-                    'bank_id' => $data['bank_id'],
-                    'postingdari' => 'EDIT PROSES GAJI SUPIR',
-                    'diterimadari' => "PROSES GAJI SUPIR PERIODE " . date('d-m-Y', strtotime($data['tgldari'])) . " S/D " . date('d-m-Y', strtotime($data['tglsampai'])),
-                    'tgllunas' => $prosesGajiSupirHeader->tglbukti,
-                    'coakredit' => $coaKreditPP,
-                    'nominal_detail' => $nominalPP,
-                    'keterangan_detail' => $keteranganPP,
-                    'tgljatuhtempo' => $tglJatuhTempoPP
-
-                ];
                 $newPenerimaanPP = new PenerimaanHeader();
                 $newPenerimaanPP = $newPenerimaanPP->findAll($getPP->id);
                 $dataPenerimaanPP = (new PenerimaanHeader())->processUpdate($newPenerimaanPP, $penerimaanHeaderPP);
 
+                $penerimaan_nobuktiPP = $dataPenerimaanPP->nobukti;
+            } else {
+
+                $dataPenerimaanPP = (new PenerimaanHeader())->processStore($penerimaanHeaderPP);
                 $penerimaan_nobuktiPP = $dataPenerimaanPP->nobukti;
             }
 
@@ -3526,6 +3538,13 @@ class ProsesGajiSupirHeader extends MyModel
                     $newPenerimaanTruckingPP = $newPenerimaanTruckingPP->findAll($penerimaanPP->id);
                     (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingPP, $penerimaanTruckingHeaderPP);
                 }
+            }
+        } else {
+            $getPinjamanPP = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
+                ->select('id')
+                ->where('nobukti', $penerimaan_nobuktiPP)->first();
+            if ($getPinjamanPP != null) {
+                (new PenerimaanHeader())->processDestroy($getPinjamanPP->id, 'PROSES GAJI SUPIR');
             }
         }
 
@@ -3628,6 +3647,13 @@ class ProsesGajiSupirHeader extends MyModel
                     $newPenerimaanTruckingDeposito = $newPenerimaanTruckingDeposito->findAll($penerimaanDeposito->id);
                     (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingDeposito, $penerimaanTruckingHeaderDeposito);
                 }
+            }
+        } else {
+            $getDepo = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
+                ->select('id')
+                ->where('nobukti', $penerimaan_nobuktiDeposito)->first();
+            if ($getDepo != null) {
+                (new PenerimaanHeader())->processDestroy($getDepo->id, 'PROSES GAJI SUPIR');
             }
         }
 
@@ -3764,6 +3790,30 @@ class ProsesGajiSupirHeader extends MyModel
                         'keterangan_detail' => $keteranganBBM_detail
                     ];
                     (new JurnalUmumHeader())->processStore($jurnalRequest);
+                }
+            }
+        } else {
+            $getBBM = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
+                ->select('id')
+                ->where('nobukti', $penerimaan_nobuktiBBM)->first();
+            if (isset($getBBM)) {
+
+                (new PenerimaanHeader())->processDestroy($getBBM->id, 'PROSES GAJI SUPIR');
+            }
+
+            $gajiSupirBBM = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))->where('tglbukti', '>=', $prosesGajiSupirHeader['tgldari'])
+                ->where('tglbukti', '<=', $prosesGajiSupirHeader['tglsampai'])
+                ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupir_id=" . $prosesGajiSupirHeader['id'] . ")")
+                ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from gajisupirbbm)")
+                ->get();
+            $totalBBM = 0;
+            foreach ($gajiSupirBBM as $key => $value) {
+                $fetchBBM = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))->where('gajisupir_nobukti', $value->nobukti)->first();
+                if(isset($fetchBBM)){
+                    $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
+                    if(isset($getJurnalHeader)){
+                        (new JurnalUmumHeader())->processDestroy($getJurnalHeader->id, 'PROSES GAJI SUPIR');
+                    }
                 }
             }
         }
