@@ -32,7 +32,7 @@ class LaporanKasBankController extends Controller
     public function report(ValidasiLaporanKasBankRequest $request)
     {
 
-
+        // dd($request->bank_id);
         if ($request->isCheck) {
             return response([
                 'data' => 'ok'
@@ -41,7 +41,7 @@ class LaporanKasBankController extends Controller
             $dari = $request->dari;
             $sampai = $request->sampai;
             $bank_id = $request->bank_id;
-            $prosesneraca = 0;
+            $prosesneraca = 1;
 
             $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
                 ->select('cabang.namacabang')

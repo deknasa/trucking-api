@@ -36,11 +36,11 @@ class LaporanNeracaController extends Controller
         // event(new LaporanNeracaEventPusher(json_encode([
         //     'id' => auth('api')->user()->id,
         // ])));
-        if ($request->isCheck) {
-            return response([
-                'data' => 'ok'
-            ]);
-        } else {
+        // if ($request->isCheck) {
+        //     return response([
+        //         'data' => 'ok'
+        //     ]);
+        // } else {
 
             $sampai = $request->sampai;
             $eksport = 0;
@@ -60,7 +60,7 @@ class LaporanNeracaController extends Controller
             // return response([
             //     'data' => 'asdf',
             // ]);
-        }
+        // }
     }
 
     /**
