@@ -37,7 +37,7 @@ class StorePindahBukuRequest extends FormRequest
         $rules = [
             'tglbukti' => [
                 'required','date_format:d-m-Y',
-                'before_or_equal:' . date('d-m-Y'),
+                // 'before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
             'tgljatuhtempo' => ['required','date_format:d-m-Y','after_or_equal:'.request()->tglbukti],

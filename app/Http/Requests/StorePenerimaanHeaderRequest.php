@@ -77,7 +77,7 @@ class StorePenerimaanHeaderRequest extends FormRequest
 
             'tgllunas'  => [
                 'required', 'date_format:d-m-Y',
-                'before_or_equal:' . date('d-m-Y')
+                // 'before_or_equal:' . date('d-m-Y')
             ],
             // 'cabang' => 'required',
             'alatbayar' => 'required',

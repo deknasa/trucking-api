@@ -751,6 +751,8 @@ class LaporanNeraca extends MyModel
                 'diperiksa',
             ], (new LaporanKartuPiutangPerAgen())->getReport($tglsd, $tglsd, 0, 0, 1));
 
+            // dd(db::table($tempkartupiutang)->get());
+
             $temppinjamansupir = '##temppinjamansupir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($temppinjamansupir, function ($table) {
                 $table->dateTime('tanggal')->nullable();
@@ -987,7 +989,7 @@ class LaporanNeraca extends MyModel
                 ->where('subgrp', 'KAS')
                 ->first()->text ?? 0;
 
-                
+
             DB::table($tempkas)->insertUsing([
                 'urut',
                 'urutdetail',
@@ -1006,6 +1008,59 @@ class LaporanNeraca extends MyModel
                 'tglcetak',
                 'usercetak',
             ], (new LaporanKasBank())->getReport($tglkasbank, $tglkasbank, $kas_id, 1));
+
+            $parameter = new Parameter();
+
+            $getcabang = $parameter->cekText('CABANG', 'CABANG') ?? '1900-01-01';
+            if ($getcabang == 'MAKASSAR') {
+                $tempkastnl = '##tempkastnl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempkastnl, function ($table) {
+                    $table->id();
+                    $table->integer('urut')->nullable();
+                    $table->integer('urutdetail')->nullable();
+                    $table->string('keterangancoa', 500)->nullable();
+                    $table->string('namabank', 500)->nullable();
+                    $table->date('tglbukti')->nullable();
+                    $table->string('nobukti', 500)->nullable();
+                    $table->longText('keterangan')->nullable();
+                    $table->double('debet')->nullable();
+                    $table->double('kredit')->nullable();
+                    $table->double('totaldebet')->nullable();
+                    $table->double('totalkredit')->nullable();
+                    $table->double('saldo')->nullable();
+                    $table->string('judullaporan', 500)->nullable();
+                    $table->string('judul', 500)->nullable();
+                    $table->string('tglcetak', 500)->nullable();
+                    $table->string('usercetak', 500)->nullable();
+                });
+
+
+
+                $tglkasbank = date('Y-m-d', strtotime($tglsd1 . ' -1 days'));
+
+                $kas_idtnl = 6;
+
+
+                DB::table($tempkastnl)->insertUsing([
+                    'urut',
+                    'urutdetail',
+                    'keterangancoa',
+                    'namabank',
+                    'tglbukti',
+                    'nobukti',
+                    'keterangan',
+                    'debet',
+                    'kredit',
+                    'totaldebet',
+                    'totalkredit',
+                    'saldo',
+                    'judullaporan',
+                    'judul',
+                    'tglcetak',
+                    'usercetak',
+                ], (new LaporanKasBank())->getReport($tglkasbank, $tglkasbank, $kas_idtnl, 1));
+            }
+
 
             // dd(db::table($tempkas)->get());
 
@@ -1211,6 +1266,30 @@ class LaporanNeraca extends MyModel
                     'nominal' => $pinjamankaryawan,
                 ]
             );
+            if ($getcabang == 'MAKASSAR') {
+                // kas fisik tnl
+                $coakastnl = DB::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                    ->select(
+                        'a.memo'
+                    )
+                    ->where('grp', 'PERKIRAAN PEMBANDING NERACA')
+                    ->where('subgrp', 'KAS FISIK TNL')
+                    ->where('text', 'KAS FISIK TNL')
+                    ->first();
+                $memo = json_decode($coakastnl->memo, true);
+
+                $kastnl = db::table($tempkastnl)->from(db::raw($tempkastnl . " a"))
+                    ->select(
+                        db::raw("saldo as nominal")
+                    )->first()->nominal ?? 0;
+
+                DB::table($tempperkiraanbanding)->insert(
+                    [
+                        'coa' =>  $memo['JURNAL'],
+                        'nominal' => $kastnl,
+                    ]
+                );
+            }
 
             // Piutang Lain
 
@@ -1307,6 +1386,7 @@ class LaporanNeraca extends MyModel
             $memo = json_decode($coakasgantung->memo, true);
 
 
+            // dd(db::table($tempkasgantung)->get());
             $kasgantung = db::table($tempkasgantung)->from(db::raw($tempkasgantung . " a"))
                 ->select(
                     db::raw("sum(debet-kredit) as nominal")

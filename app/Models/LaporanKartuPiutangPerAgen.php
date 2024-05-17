@@ -102,6 +102,7 @@ class LaporanKartuPiutangPerAgen extends MyModel
             ->whereRaw("a.tglbukti<'" . $dari1 . "'")
             ->whereRaw("(a.agen_id>=" . $agenDari . " and a.agen_id<=" . $agenSampai . ")")
             ->groupby('a.nobukti');
+            // dd($querypiutangsaldo->get());
 
         DB::table($temppiutangsaldo)->insertUsing([
             'nobukti',

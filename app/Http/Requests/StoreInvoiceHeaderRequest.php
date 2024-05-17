@@ -12,6 +12,7 @@ use App\Rules\ValidasiDetail;
 use App\Rules\ValidasiHutangList;
 use App\Rules\ValidasiTambahanInvoice;
 use App\Rules\validasiTripInvoice;
+use Illuminate\Support\Facades\DB;
 
 class StoreInvoiceHeaderRequest extends FormRequest
 {
@@ -36,8 +37,16 @@ class StoreInvoiceHeaderRequest extends FormRequest
 
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
 
+        $jenisGandengan = DB::table('parameter')->from(DB::raw("parameter as a with (readuncommitted)"))
+            ->select('a.id')
+            ->where('a.grp', '=', 'STATUS JENIS KENDARAAN')
+            ->where('a.text', '=', 'GANDENGAN')
+            ->first();
         $rules = [
             'statuspilihaninvoice' => [
+                'required', 
+            ],
+            'statusjeniskendaraan' => [
                 'required', 
             ],
             'tglbukti' => [
@@ -135,7 +144,7 @@ class StoreInvoiceHeaderRequest extends FormRequest
 
                 $rulesjenisorder_id = [
                     'jenisorder_id' => [
-                        'required',
+                        'required_if:statusjeniskendaraan,=,' . $jenisGandengan->id,
                         'numeric',
                         'min:1',
                         new ExistJenisOrder(),
@@ -148,8 +157,7 @@ class StoreInvoiceHeaderRequest extends FormRequest
 
                     $rulesjenisorder_id = [
                         'jenisorder' => [
-                            'required',
-                            new ExistJenisOrder(),
+                            'required_if:statusjeniskendaraan,=,' . $jenisGandengan->id,
                         ]
                     ];
                 }
@@ -158,7 +166,7 @@ class StoreInvoiceHeaderRequest extends FormRequest
 
             $rulesjenisorder_id = [
                 'jenisorder_id' => [
-                    'required',
+                    'required_if:statusjeniskendaraan,=,' . $jenisGandengan->id,
                     'numeric',
                     'min:1',
                     new ExistJenisOrder(),
@@ -167,10 +175,7 @@ class StoreInvoiceHeaderRequest extends FormRequest
         } else {
             $rulesjenisorder_id = [
                 'jenisorder' => [
-                    'required',
-                    'numeric',
-                    'min:1',
-                    new ExistJenisOrder(),
+                    'required_if:statusjeniskendaraan,=,' . $jenisGandengan->id,
                 ]
             ];
         }        
@@ -219,6 +224,8 @@ class StoreInvoiceHeaderRequest extends FormRequest
     {
         return [
             'sp_id.required' => 'SP ' . app(ErrorController::class)->geterror('WP')->keterangan,
+            'jenisorder.required_if' => 'jenis order ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            'jenisorder_id.required_if' => 'jenis order ' . app(ErrorController::class)->geterror('WI')->keterangan,
             'nominalretribusi.*.min' => 'nominal retribusi ' . app(ErrorController::class)->geterror('NTM')->keterangan,
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
             'tgldari.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
