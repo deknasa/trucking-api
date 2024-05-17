@@ -897,6 +897,10 @@ class MandorAbsensiSupir extends MyModel
         // dump(db::table($tempMandor)->where('trado_id',18)->get());
         // 
         // dd(db::table($tempTrado)->where('kodetrado','1234567890')->get());
+        $isTampilSupir = (new Parameter)->cekText('ABSENSI SUPIR','TRADO MILIK SUPIR');
+        if ($this->activeKolomJenisKendaraan()) {
+            $isTampilSupir = 'YA';
+        }
         $trados = DB::table("$tempTrado as a")
 
             ->select(
@@ -909,9 +913,9 @@ class MandorAbsensiSupir extends MyModel
                 DB::raw('null as absen_id'),
                 DB::raw("null as jam"),
                 DB::raw("null as tglbukti"),
-                DB::raw("(case when (select text from parameter where grp='ABSENSI SUPIR' and subgrp='TRADO MILIK SUPIR')= 'YA' then a.supir_id else null end) as supir_id"),
+                DB::raw("(case when ('$isTampilSupir')= 'YA' then a.supir_id else null end) as supir_id"),
                 'c.namasupir as namasupir_old',
-                DB::raw("(case when (select text from parameter where grp='ABSENSI SUPIR' and subgrp='TRADO MILIK SUPIR')= 'YA' then a.supir_id else null end) as supir_id_old"),
+                DB::raw("(case when ('$isTampilSupir')= 'YA' then a.supir_id else null end) as supir_id_old"),
 
             )
             ->leftJoin("$tempsupir as c", 'a.supir_id', 'c.id')
