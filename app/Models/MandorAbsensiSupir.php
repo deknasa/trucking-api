@@ -1022,6 +1022,19 @@ class MandorAbsensiSupir extends MyModel
             ->orderby('a.kodetrado','asc');
 
             // dd($queryhasil->get());
+            $tidakadasupirabsensi = '##tidakadasupirabsensi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tidakadasupirabsensi, function ($table) {
+                $table->integer('text')->nullable();
+            });
+    
+            $queryaTidakadaSupir = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                ->select(
+                    'a.text'
+                )
+                ->where('a.grp', 'ABSEN TIDAK ADA SUPIR')
+                ->orderby('a.text', 'asc');
+    
+            DB::table($tidakadasupirabsensi)->insertUsing(['text'], $queryaTidakadaSupir);
 
             $tempHasil = '##tempHasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempHasil, function ($table) {
@@ -1095,6 +1108,7 @@ class MandorAbsensiSupir extends MyModel
                 DB::raw("(CASE WHEN isnull(a.statussupirserap,0)=0 THEN '' ELSE
                     (CASE WHEN a.statussupirserap=593 THEN parameter.text ELSE '' end) end) as statussupirserap
                 "),
+                db::raw("(CASE WHEN a.absen_id IN (SELECT text FROM " . $tidakadasupirabsensi . ") THEN 'readonly' ELSE '' END) AS tidakadasupir"),
                 'a.tglbatas',
             )->leftJoin("parameter",'a.statussupirserap','parameter.id')
             ->leftJoin(DB::raw("parameter as tradotambahan with (readuncommitted)"),'a.statustambahantrado','tradotambahan.id');
