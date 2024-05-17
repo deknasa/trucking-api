@@ -68,6 +68,7 @@ class StoreProsesGajiSupirHeaderRequest extends FormRequest
                 'before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
+            'statusjeniskendaraan' => 'required'
         ];
 
         // dd($rules);
