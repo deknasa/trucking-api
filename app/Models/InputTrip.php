@@ -383,6 +383,8 @@ class InputTrip extends MyModel
             //         ->first();
             //     $data['triptangki_id'] = $getTangki->id;
             // }
+            $upahsupir = DB::table("upahsupirtangkirincian")->where('upahsupirtangki_id', $data['upahtangki_id'])->where('triptangki_id', $data['triptangki_id'])->first()->nominalsupir ?? 0;
+            $nominalspr = $upahsupir;
         }
 
         // dd('here');

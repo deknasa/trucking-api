@@ -979,7 +979,7 @@ class ListTrip extends MyModel
             //     $tangki_id = $trip->triptangki_id;
             // }
             $upahsupir = DB::table("upahsupirtangkirincian")->where('upahsupirtangki_id', $data['upah_id'])->where('triptangki_id', $data['triptangki_id'])->first()->nominalsupir ?? 0;
-            $nominalspr = round(($upahsupir * $trip->qtyton) / 100) * 100;
+            $nominalspr = $upahsupir;
         }
         $dataSP = [
 
