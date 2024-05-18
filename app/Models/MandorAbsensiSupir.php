@@ -469,9 +469,7 @@ class MandorAbsensiSupir extends MyModel
         //jika tanggal hari ini gak ada ambil 1 tanggal sebelum
         if ($this->activeKolomJenisKendaraan()) {
             if (!$queryabsensisupirheader->first()) {
-                $lastAbsensi = db::table("absensisupirheader")->from(db::raw("absensisupirheader a with (readuncommitted)"))
-                ->where('a.tglbukti','<',$date)
-                ->orderBy('a.tglbukti','desc')->first();
+                $lastAbsensi = (new AbsensiSupirHeader)->getYesterdayAbsensi($date);
                 if ($lastAbsensi) {
                     $parameter = new Parameter();
                     $idstatusnonsupirserap = $parameter->cekId('SUPIR SERAP', 'SUPIR SERAP', 'YA') ?? 0;
