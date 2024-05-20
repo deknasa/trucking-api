@@ -733,6 +733,33 @@ class AbsensiSupirHeader extends MyModel
         return $tglbesok;
     }
 
+    public function getYesterdayAbsensi( $tglbukti = 'today') :AbsensiSupirHeader {
+        $hari =0;
+        $cont = true;
+        while ($cont) {
+            $tglsemalam = date('Y-m-d',strtotime(" $tglbukti - $hari  days"));
+            $lastAbsensi = AbsensiSupirHeader::from(db::raw("absensisupirheader a with (readuncommitted)"))
+            ->where('a.tglbukti','<',$tglsemalam)
+            ->orderBy('a.tglbukti','desc')->first();
+            
+            if (date("l",strtotime($lastAbsensi->tglbukti)) =="Sunday") {
+                $hariLibur = true;
+            }else {
+                $hariLibur = HariLibur::where('tgl',$lastAbsensi->tglbukti)->first();
+            }
+            if (!$hariLibur) {
+                $cont = false;
+            }
+            if ($lastAbsensi) {
+                $tglbukti = $lastAbsensi->tglbukti;
+            }
+            $hari ++;
+        }
+
+        return $lastAbsensi;
+    }
+
+
     public function todayValidation($tglbukti)
     {
         $tglbuktistr = strtotime($tglbukti);
