@@ -3022,7 +3022,9 @@ class ProsesGajiSupirHeader extends MyModel
                 ];
 
 
-                (new PengembalianKasGantungHeader())->processStore($pengembalianKasGantungHeader);
+               $pengembalianKasgantung =  (new PengembalianKasGantungHeader())->processStore($pengembalianKasGantungHeader);
+               $prosesGajiSupirHeader->pengembaliankasgantung_nobukti = $pengembalianKasgantung->nobukti;
+               $prosesGajiSupirHeader->save();
             }
         }
 
@@ -3873,9 +3875,13 @@ class ProsesGajiSupirHeader extends MyModel
 
                 $newPengembalianKasgantung = new PengembalianKasGantungHeader();
                 $newPengembalianKasgantung = $newPengembalianKasgantung->findAll($nobuktiPenerimaanKasgantung->id);
-                (new PengembalianKasGantungHeader())->processUpdate($newPengembalianKasgantung, $pengembalianKasGantungHeader);
+                $pengembaliankasgantung = (new PengembalianKasGantungHeader())->processUpdate($newPengembalianKasgantung, $pengembalianKasGantungHeader);
+                $prosesGajiSupirHeader->pengembaliankasgantung_nobukti = $pengembaliankasgantung->nobukti;
+                $prosesGajiSupirHeader->save();
             } else {
-                (new PengembalianKasGantungHeader())->processStore($pengembalianKasGantungHeader);
+                $pengembaliankasgantung = (new PengembalianKasGantungHeader())->processStore($pengembalianKasGantungHeader);
+                $prosesGajiSupirHeader->pengembaliankasgantung_nobukti = $pengembaliankasgantung->nobukti;
+                $prosesGajiSupirHeader->save();
             }
         }else{
             
