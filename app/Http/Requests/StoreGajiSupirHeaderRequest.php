@@ -15,6 +15,7 @@ use App\Rules\validasiPemutihanSupirRIC;
 use App\Rules\ValidasiStatusContGajiSupir;
 use App\Rules\ValidasiTambahanGajiSupir;
 use App\Rules\ValidasiTripGajiSupir;
+use App\Rules\validasiTripTangkiRIC;
 
 class StoreGajiSupirHeaderRequest extends FormRequest
 {
@@ -53,7 +54,7 @@ class StoreGajiSupirHeaderRequest extends FormRequest
 
         $rules = [
             //
-            'supir' => ['required', new ValidasiTripGajiSupir(), new validasiContSPGajiSupir(), new ValidasiTambahanGajiSupir(), new ValidasiStatusContGajiSupir(), new validasiPemutihanSupirRIC()],
+            'supir' => ['required', new ValidasiTripGajiSupir(), new validasiContSPGajiSupir(), new ValidasiTambahanGajiSupir(), new ValidasiStatusContGajiSupir(), new validasiPemutihanSupirRIC(), new validasiTripTangkiRIC()],
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
                 'before:' . $tglbatasakhir,
