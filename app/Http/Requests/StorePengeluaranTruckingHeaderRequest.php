@@ -195,11 +195,13 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
         $rulesSupir_id = [];
 
         $rulesbiaya = '';
-        if ($kodepengeluaran == 'BLL' || $kodepengeluaran == 'BLN' || $kodepengeluaran == 'BTU' || $kodepengeluaran == 'BPT' || $kodepengeluaran == 'BGS' || $kodepengeluaran == 'BIT' || $kodepengeluaran == 'BSM') {
+        if ($kodepengeluaran == 'BLL' || $kodepengeluaran == 'BLN' || $kodepengeluaran == 'BTU' || $kodepengeluaran == 'BPT' || $kodepengeluaran == 'BGS' || $kodepengeluaran == 'BIT' || $kodepengeluaran == 'BSM' || $kodepengeluaran == 'BLS') {
             
             $jumlahdetail = $this->jumlahdetail ?? 0;
             $rulesbiaya = new ValidasiDetail($jumlahdetail);
         }
+
+        // dd($jumlahdetail);
         if ($kodepengeluaran == 'KBBM') {
             $rules = [
                 "tglbukti" => [
