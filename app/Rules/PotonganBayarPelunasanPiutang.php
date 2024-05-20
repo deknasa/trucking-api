@@ -28,7 +28,8 @@ class PotonganBayarPelunasanPiutang implements Rule
     {
         $attribute = substr($attribute,9);
         $bayar = (request()->bayar[$attribute] == '') ? 0 : request()->bayar[$attribute];
-        $total = $value+$bayar;
+        $potonganpph = (request()->potonganpph[$attribute] == '') ? 0 : request()->potonganpph[$attribute];
+        $total = $value+$bayar+$potonganpph;
         if($total == 0){
             return false;
         }else{
@@ -43,6 +44,6 @@ class PotonganBayarPelunasanPiutang implements Rule
      */
     public function message()
     {
-        return  app(ErrorController::class)->geterror('WI')->keterangan.' bayar/potongan';
+        return  app(ErrorController::class)->geterror('WI')->keterangan.' bayar/potongan/potongan B. pph';
     }
 }

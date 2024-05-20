@@ -30,6 +30,7 @@ class PelunasanPiutangDetailController extends Controller
                 'totalPages' => $pelunasanPiutang->totalPages,
                 'totalNominal' => $pelunasanPiutang->totalNominal,
                 'totalPotongan' => $pelunasanPiutang->totalPotongan,
+                'totalPotonganPPH' => $pelunasanPiutang->totalPotonganPPH,
                 'totalNominalLebih' => $pelunasanPiutang->totalNominalLebih,
             ]
         ]);

@@ -104,8 +104,9 @@ class PelunasanPiutangHeaderController extends Controller
                 'bayar' => $request->bayar,
                 'keterangan' => $request->keterangan,
                 'potongan' => $request->potongan,
-                'statusnotakredit' => $request->statusnotakredit,
+                'potonganpph' => $request->potonganpph,
                 'keteranganpotongan' => $request->keteranganpotongan,
+                'keteranganpotonganpph' => $request->keteranganpotonganpph,
                 'nominallebihbayar' => $request->nominallebihbayar,
                 'statusnotadebet' => $request->statusnotadebet
             ];
@@ -172,8 +173,10 @@ class PelunasanPiutangHeaderController extends Controller
                 'bayar' => $request->bayar,
                 'keterangan' => $request->keterangan,
                 'potongan' => $request->potongan,
+                'potonganpph' => $request->potonganpph,
                 'statusnotakredit' => $request->statusnotakredit,
                 'keteranganpotongan' => $request->keteranganpotongan,
+                'keteranganpotonganpph' => $request->keteranganpotonganpph,
                 'nominallebihbayar' => $request->nominallebihbayar,
                 'statusnotadebet' => $request->statusnotadebet
             ];

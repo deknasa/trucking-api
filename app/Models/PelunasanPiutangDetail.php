@@ -69,7 +69,7 @@ class PelunasanPiutangDetail extends MyModel
             )
                 ->select(
                     'a.piutang_nobukti',
-                    DB::raw("sum(isnull(a.nominal,0)+isnull(a.potongan,0)) as nominal"),
+                    DB::raw("sum(isnull(a.nominal,0)+isnull(a.potongan,0)+isnull(a.potonganpph,0)) as nominal"),
                 )
                 ->join(DB::raw($temppiutang . " as b "), 'a.piutang_nobukti', 'b.piutang_nobukti')
                 ->where('a.pelunasanpiutang_id', '<=', request()->pelunasanpiutang_id)
@@ -111,11 +111,13 @@ class PelunasanPiutangDetail extends MyModel
                 $this->table . '.piutang_nobukti',
                 $this->table . '.invoice_nobukti',
                 $this->table . '.keteranganpotongan',
+                $this->table . '.keteranganpotonganpph',
                 'akunpusat.keterangancoa as coapotongan',
                 $this->table . '.nominal',
                 $this->table . '.keterangan',
                 $this->table . '.nominallebihbayar',
                 $this->table . '.potongan',
+                $this->table . '.potonganpph',
                 DB::raw("isnull(b.nominalpiutang,0) as nominalpiutang"),
                 DB::raw("isnull(b.nominalsisa,0) as sisapiutang"),
             )
@@ -132,6 +134,9 @@ class PelunasanPiutangDetail extends MyModel
                 $this->table . '.potongan',
                 $this->table . '.keteranganpotongan',
                 'akunpusat.keterangancoa as coapotongan',
+                $this->table . '.potonganpph',
+                $this->table . '.keteranganpotonganpph',
+                'akunpusatpph.keterangancoa as coapotonganpph',
                 $this->table . '.invoice_nobukti',
                 db::raw("cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceheader"),
                 db::raw("cast(cast(format((cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceheader"), 
@@ -143,7 +148,8 @@ class PelunasanPiutangDetail extends MyModel
                 ->leftJoin(DB::raw("invoiceheader as invoice with (readuncommitted)"), 'pelunasanpiutangdetail.invoice_nobukti', '=', 'invoice.nobukti')
                 ->leftJoin(DB::raw("invoiceextraheader as invoiceextra with (readuncommitted)"), 'pelunasanpiutangdetail.invoice_nobukti', '=', 'invoiceextra.nobukti')
                 ->leftJoin(DB::raw("piutangheader with (readuncommitted)"), 'pelunasanpiutangdetail.piutang_nobukti', '=', 'piutangheader.nobukti')
-                ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), $this->table . '.coapotongan', 'akunpusat.coa');
+                ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), $this->table . '.coapotongan', 'akunpusat.coa')
+                ->leftJoin(DB::raw("akunpusat as akunpusatpph with (readuncommitted)"), $this->table . '.coapotonganpph', 'akunpusatpph.coa');
 
             $this->sort($query);
             $query->where($this->table . '.pelunasanpiutang_id', '=', request()->pelunasanpiutang_id);
@@ -151,6 +157,7 @@ class PelunasanPiutangDetail extends MyModel
 
             $this->totalNominal = $query->sum('pelunasanpiutangdetail.nominal');
             $this->totalPotongan = $query->sum('pelunasanpiutangdetail.potongan');
+            $this->totalPotonganPPH = $query->sum('pelunasanpiutangdetail.potonganpph');
             $this->totalNominalLebih = $query->sum('pelunasanpiutangdetail.nominallebihbayar');
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -178,7 +185,9 @@ class PelunasanPiutangDetail extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'coapotongan') {
                                 $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'nominal' || $filters['field'] == 'potongan' || $filters['field'] == 'nominallebihbayar') {
+                            } else  if ($filters['field'] == 'coapotonganpph') {
+                                $query = $query->where('akunpusatpph.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal' || $filters['field'] == 'potongan' || $filters['field'] == 'potonganpph' || $filters['field'] == 'nominallebihbayar') {
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -192,7 +201,9 @@ class PelunasanPiutangDetail extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'coapotongan') {
                                 $query = $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'nominal' || $filters['field'] == 'potongan' || $filters['field'] == 'nominallebihbayar') {
+                            } else if ($filters['field'] == 'coapotonganpph') {
+                                $query = $query->orWhere('akunpusatpph.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal' || $filters['field'] == 'potongan' || $filters['field'] == 'potonganpph' || $filters['field'] == 'nominallebihbayar') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -227,9 +238,12 @@ class PelunasanPiutangDetail extends MyModel
         $pelunasanPiutangDetail->piutang_nobukti = $data['piutang_nobukti'];
         $pelunasanPiutangDetail->keterangan = $data['keterangan'];
         $pelunasanPiutangDetail->potongan = $data['potongan'];
+        $pelunasanPiutangDetail->potonganpph = $data['potonganpph'];
         $pelunasanPiutangDetail->coapotongan = $data['coapotongan'];
+        $pelunasanPiutangDetail->coapotonganpph = $data['coapotonganpph'];
         $pelunasanPiutangDetail->invoice_nobukti = $data['invoice_nobukti'];
         $pelunasanPiutangDetail->keteranganpotongan = $data['keteranganpotongan'];
+        $pelunasanPiutangDetail->keteranganpotonganpph = $data['keteranganpotonganpph'];
         $pelunasanPiutangDetail->nominallebihbayar = $data['nominallebihbayar'];
         $pelunasanPiutangDetail->coalebihbayar = $data['coalebihbayar'];
         $pelunasanPiutangDetail->statusnotadebet = $data['statusnotadebet'];
