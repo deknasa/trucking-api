@@ -29,8 +29,7 @@ class RequiredKetPotonganPelunasanPiutang implements Rule
     {
         $attribute = substr($attribute,19);
         $potongan = request()->potongan[$attribute];
-        $coaPotongan = request()->statusnotakredit[$attribute];
-        if($potongan != 0 || !empty($coaPotongan)){
+        if($potongan != 0){
             if($value == '') {
                 return false;
             }else{

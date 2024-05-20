@@ -28,9 +28,8 @@ class RequiredPotonganPelunasanPiutang implements Rule
     public function passes($attribute, $value)
     {
         $attribute = substr($attribute,9);
-        $coapotongan = request()->statusnotakredit[$attribute];
         $ketPotongan = request()->keteranganpotongan[$attribute];
-        if(!empty($coapotongan) || !empty($ketPotongan)){
+        if(!empty($ketPotongan)){
             if($value == '' || $value == 0) {
                 return false;
             }else{

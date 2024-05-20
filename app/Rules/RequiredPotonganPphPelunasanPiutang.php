@@ -5,7 +5,7 @@ namespace App\Rules;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Contracts\Validation\Rule;
 
-class BayarPotonganPelunasanPiutang implements Rule
+class RequiredPotonganPphPelunasanPiutang implements Rule
 {
     /**
      * Create a new rule instance.
@@ -26,13 +26,15 @@ class BayarPotonganPelunasanPiutang implements Rule
      */
     public function passes($attribute, $value)
     {
-        $attribute = substr($attribute, 6);
-        $potongan = (request()->potongan[$attribute] == '') ? 0 : request()->potongan[$attribute];
-        $potonganpph = (request()->potonganpph[$attribute] == '') ? 0 : request()->potonganpph[$attribute];
-        $total = $value + $potongan + $potonganpph;
-        if ($total == 0) {
-            return false;
-        } else {
+        $attribute = substr($attribute,12);
+        $ketPotongan = request()->keteranganpotonganpph[$attribute];
+        if(!empty($ketPotongan)){
+            if($value == '' || $value == 0) {
+                return false;
+            }else{
+                return true;
+            }
+        }else{
             return true;
         }
     }
@@ -44,6 +46,6 @@ class BayarPotonganPelunasanPiutang implements Rule
      */
     public function message()
     {
-        return  app(ErrorController::class)->geterror('WI')->keterangan . ' bayar/potongan/potongan B. pph';
+        return  app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan;
     }
 }

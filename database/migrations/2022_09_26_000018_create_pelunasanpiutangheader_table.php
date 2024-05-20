@@ -30,6 +30,7 @@ class CreatePelunasanpiutangheaderTable extends Migration
             $table->string('penerimaan_nobukti', 50)->nullable();
             $table->string('pengeluaran_nobukti', 50)->nullable();
             $table->string('notakredit_nobukti', 50)->nullable();
+            $table->string('notakreditpph_nobukti', 50)->nullable();
             $table->string('notadebet_nobukti', 50)->nullable();
             $table->date('tglcair')->nullable();
             $table->string('nowarkat', 50)->nullable();
