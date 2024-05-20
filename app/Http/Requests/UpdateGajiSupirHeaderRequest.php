@@ -15,6 +15,7 @@ use App\Rules\ValidasiStatusContGajiSupir;
 use App\Rules\ValidasiTambahanGajiSupir;
 use App\Rules\validasiTglBuktiRIC;
 use App\Rules\ValidasiTripGajiSupir;
+use App\Rules\validasiTripTangkiRIC;
 use Illuminate\Validation\Rule;
 
 class UpdateGajiSupirHeaderRequest extends FormRequest
@@ -45,7 +46,7 @@ class UpdateGajiSupirHeaderRequest extends FormRequest
                 $rulesSupir_id = [
                     'supir_id' => ['required', 'numeric', 'min:1', Rule::in($getDataGajiSupir->supir_id)]
                 ];
-            }else{
+            } else {
                 $rulesSupir_id = [
                     'supir_id' => ['required', 'numeric', 'min:1', Rule::in($getDataGajiSupir->supir_id)]
                 ];
@@ -62,16 +63,16 @@ class UpdateGajiSupirHeaderRequest extends FormRequest
         $rules = [
             'id' => new DestroyGajiSupirNobukti(),
             'nobukti' => [Rule::in($getDataGajiSupir->nobukti)],
-            'supir' => ['required',  new ValidasiTripGajiSupir(), new validasiContSPGajiSupir(), new ValidasiTambahanGajiSupir(), new ValidasiStatusContGajiSupir(), new validasiPemutihanSupirRIC()],
+            'supir' => ['required',  new ValidasiTripGajiSupir(), new validasiContSPGajiSupir(), new ValidasiTambahanGajiSupir(), new ValidasiStatusContGajiSupir(), new validasiPemutihanSupirRIC(), new validasiTripTangkiRIC()],
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
-                'after_or_equal:'.$tglbatasawal,
+                'before:' . $tglbatasakhir,
+                'after_or_equal:' . $tglbatasawal,
             ],
             'tglsampai' => [
                 'required', 'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
-                'after_or_equal:'.$this->tgldari 
+                'before:' . $tglbatasakhir,
+                'after_or_equal:' . $this->tgldari
             ],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
@@ -113,8 +114,8 @@ class UpdateGajiSupirHeaderRequest extends FormRequest
             'supir_id.required' => ':attribute ' . app(ErrorController::class)->geterror('HPDL')->keterangan,
             'rincianId' => app(ErrorController::class)->geterror('WP')->keterangan,
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
-            'tgldari.before' => app(ErrorController::class)->geterror('NTLB')->keterangan. ' '.$tglbatasakhir,
-            'tglsampai.before' => app(ErrorController::class)->geterror('NTLB')->keterangan. ' '.$tglbatasakhir,
+            'tgldari.before' => app(ErrorController::class)->geterror('NTLB')->keterangan . ' ' . $tglbatasakhir,
+            'tglsampai.before' => app(ErrorController::class)->geterror('NTLB')->keterangan . ' ' . $tglbatasakhir,
         ];
     }
 }

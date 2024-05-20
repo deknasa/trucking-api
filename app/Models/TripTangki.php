@@ -58,7 +58,6 @@ class TripTangki extends MyModel
             $getTripTangki = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
                 ->select(DB::raw("STRING_AGG(triptangki_id, ',') as triptangki"))
                 ->where('supir_id', $supir_id)
-                ->where('trado_id', $trado_id)
                 ->where('tglbukti', date('Y-m-d', strtotime($tglbukti)))
                 ->where('statusjeniskendaraan', $jenisTangki->id)
                 ->first()->triptangki;
