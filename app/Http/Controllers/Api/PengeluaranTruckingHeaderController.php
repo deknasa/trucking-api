@@ -164,7 +164,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 $pengeluaranTruckingHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
                 $pengeluaranTruckingHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             }
-            
+
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
@@ -948,7 +948,7 @@ class PengeluaranTruckingHeaderController extends Controller
 
     /**
      * @ClassName 
-     * @Keterangan TAMBAH
+     * @Keterangan BIAYA LAIN SUPIR
      */
     public function pengeluarantruckingbiayalainsupir()
     {
@@ -1063,6 +1063,22 @@ class PengeluaranTruckingHeaderController extends Controller
      * @Keterangan BIAYA UANG MAKAN SUPIR
      */
     public function pengeluarantruckingbiayauangmakansupir()
+    {
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan BIAYA LAPANGAN KAWAL
+     */
+    public function pengeluarantruckingbiayalapangankawal()
+    {
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan BIAYA LAPANGAN BORONGAN
+     */
+    public function pengeluarantruckingbiayalapanganborongan()
     {
     }
 }
