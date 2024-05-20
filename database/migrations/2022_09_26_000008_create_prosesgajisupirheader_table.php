@@ -23,6 +23,7 @@ class CreateProsesgajisupirheaderTable extends Migration
             $table->date('tgldari')->nullable();
             $table->date('tglsampai')->nullable();
             $table->string('pengeluaran_nobukti',50)->nullable();
+            $table->string('pengembaliankasgantung_nobukti',50)->nullable();
             $table->unsignedBigInteger('bank_id')->nullable();
             $table->integer('statusapproval')->length(11)->nullable();
             $table->string('userapproval',50)->nullable();

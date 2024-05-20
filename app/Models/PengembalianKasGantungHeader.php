@@ -52,6 +52,26 @@ class PengembalianKasGantungHeader extends MyModel
             goto selesai;
         }
 
+        $prosesGajiSupir = DB::table('prosesgajisupirheader')
+            ->from(
+                DB::raw("prosesgajisupirheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti',
+                'a.pengembaliankasgantung_nobukti'
+            )
+            ->where('a.pengembaliankasgantung_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($prosesGajiSupir)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Proses Gaji Supir <b>' . $prosesGajiSupir->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                // 'keterangan' => 'Proses Uang Jalan Supir ' . $prosesGajiSupir->nobukti,
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+
         $keteranganerror = $error->cekKeteranganError('SAPP') ?? '';
         $jurnal = DB::table('pengembaliankasgantungheader')
             ->from(
