@@ -66,6 +66,7 @@ class PengeluaranTruckingHeaderController extends Controller
      */
     public function store(StorePengeluaranTruckingHeaderRequest $request): JsonResponse
     {
+        // dd('test');
         DB::beginTransaction();
         try {
             /* Store header */
