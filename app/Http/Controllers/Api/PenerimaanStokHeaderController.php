@@ -26,8 +26,9 @@ use Illuminate\Support\Facades\Schema;
 use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 
-use Illuminate\Validation\ValidationException;
+use App\Http\Requests\ApprovalBatasPGRequest;
 
+use Illuminate\Validation\ValidationException;
 use App\Http\Requests\StoreHutangDetailRequest;
 use App\Http\Requests\StoreHutangHeaderRequest;
 use App\Http\Requests\UpdateHutangHeaderRequest;
@@ -820,6 +821,31 @@ class PenerimaanStokHeaderController extends Controller
             throw $th;
         }
     }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL BUKA TANGGAL BATAS PG SPK
+     */
+    public function approvalBukaTglBatasPG(ApprovalBatasPGRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new PenerimaanStokHeader())->processApprovalBukaTglBatasPG($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+    
     public function printReport($id)
     {
         DB::beginTransaction();

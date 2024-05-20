@@ -297,6 +297,17 @@ class PenerimaanStokHeader extends MyModel
                 $query->leftjoin(db::raw($tempdatastokpg . " datapg"),'penerimaanstokheader.nobukti','datapg.nobukti');
                 $query->whereraw("isnull(datapg.nobukti,'')=''");
                 $query->where('penerimaanstokheader.penerimaanstok_id', '=', $pg->text);
+                if ($this->batasPGCabang()) {
+                    $hari = (new Parameter)->cekText('BATAS HARI PINDAH GUDANG SPK','BATAS HARI PINDAH GUDANG SPK');
+                    $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+                    $tglminimal = date("Y-m-d",strtotime("-$hari days"));
+                    $query->where('penerimaanstokheader.tglbukti', '>', $tglminimal);
+                    $query->orWhere(function ($query) use($statusApproval) {
+                        $query->Where('penerimaanstokheader.statusapprovalpindahgudangspk', $statusApproval->id)
+                        ->Where('penerimaanstokheader.tglbataspindahgudangspk','>', date('Y-m-d H:i:s',strtotime('now')));
+                    });
+                    
+                }
             }
             if (request()->tgldari) {
                 $query->whereBetween('penerimaanstokheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
@@ -2539,6 +2550,47 @@ class PenerimaanStokHeader extends MyModel
         return $penerimaanStokHeader;
     }
 
+    public function processApprovalBukaTglBatasPG($data)
+    {
+        $jamBatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'JAMBATASAPPROVAL')->where('subgrp', 'JAMBATASAPPROVAL')->first();
+        $tglbatasedit = date('Y-m-d H:i:s', strtotime(date('Y-m-d') . ' ' . $jamBatas->text));
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $id = $data['Id'][$i];
+            $penerimaanStokHeader = PenerimaanStokHeader::select(
+                '*'
+                )->find($id);
+            $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            if ($penerimaanStokHeader->statusapprovalpindahgudangspk == $statusApproval->id) {
+                $penerimaanStokHeader->statusapprovalpindahgudangspk = $statusNonApproval->id;
+                $aksi = $statusNonApproval->text;
+                $penerimaanStokHeader->tglbataspindahgudangspk = null;
+            } else {
+                $penerimaanStokHeader->statusapprovalpindahgudangspk = $statusApproval->id;
+                $aksi = $statusApproval->text;
+                $penerimaanStokHeader->tglbataspindahgudangspk = $tglbatasedit;
+            }
+           
+            $penerimaanStokHeader->userapprovalpindahgudangspk = auth('api')->user()->name;
+            $penerimaanStokHeader->tglapprovalpindahgudangspk = date('Y-m-d');
+            $penerimaanStokHeader->save();
+
+          
+            if ($penerimaanStokHeader->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($penerimaanStokHeader->getTable()),
+                    'postingdari' => 'Approval Buka Tgl Batas PG',
+                    'idtrans' => $penerimaanStokHeader->id,
+                    'nobuktitrans' => $penerimaanStokHeader->id,
+                    'aksi' => $aksi,
+                    'datajson' => $penerimaanStokHeader->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+        return $penerimaanStokHeader;
+    } 
+
     public function resetPengeluaranFifo(PengeluaranStokHeader $pengeluaranStokHeader)
     {
         $fetchFormat =  PengeluaranStok::where('id', $pengeluaranStokHeader->pengeluaranstok_id)->first();
@@ -2913,6 +2965,19 @@ class PenerimaanStokHeader extends MyModel
             DB::rollBack();
             throw $th;
         }
+    }
+
+    public function batasPGCabang()
+    {
+        $query = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp','ID CABANG')
+            ->where('subgrp','ID CABANG')
+            ->first();
+        if ($query->text == '5') {//MAKASSAR
+            return true;
+        }
+        return false;
     }
 
 

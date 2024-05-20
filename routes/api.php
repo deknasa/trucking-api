@@ -1227,6 +1227,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::post('penerimaanstokheader/addrow', [PenerimaanStokDetailController::class, 'addrow']);
     Route::post('penerimaanstokheader/deleterow', [PenerimaanStokDetailController::class, 'deleterow']);
+    Route::post('penerimaanstokheader/approvalbukatglbataspg', [PenerimaanStokHeaderController::class,'approvalBukaTglBatasPG']);
     Route::get('penerimaanstokheader/field_length', [PenerimaanStokHeaderController::class, 'fieldLength']);
     Route::get('penerimaanstokheader/{id}/printreport', [PenerimaanStokHeaderController::class, 'printReport'])->whereNumber('id');
     Route::post('penerimaanstokheader/{id}/cekvalidasi', [PenerimaanStokHeaderController::class, 'cekValidasi'])->name('penerimaanstokheader.cekValidasi')->whereNumber('id');
