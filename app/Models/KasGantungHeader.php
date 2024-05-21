@@ -345,7 +345,7 @@ class KasGantungHeader extends MyModel
 
     public function createTempKasGantung($dari, $sampai)
     {
-
+        $bank_id = request()->bank_id;
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         $fetch = DB::table('kasgantungdetail')
@@ -355,6 +355,7 @@ class KasGantungHeader extends MyModel
             ->select(DB::raw("kasgantungdetail.nobukti,kasgantungheader.tglbukti,(SELECT (sum(kasgantungdetail.nominal) - coalesce(SUM(pengembaliankasgantungdetail.nominal),0)) FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa, MAX(kasgantungdetail.keterangan)"))
             ->leftJoin('kasgantungheader', 'kasgantungheader.id', 'kasgantungdetail.kasgantung_id')
             ->whereBetween('kasgantungheader.tglbukti', [$dari, $sampai])
+            ->where('kasgantungheader.bank_id', $bank_id)
             ->groupBy('kasgantungdetail.nobukti', 'kasgantungheader.tglbukti')
             ->orderBy('kasgantungheader.tglbukti', 'asc')
             ->orderBy('kasgantungdetail.nobukti', 'asc');

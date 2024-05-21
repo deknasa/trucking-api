@@ -327,6 +327,7 @@ class PengembalianKasGantungHeader extends MyModel
 
     public function createTempPengembalianKasGantung($id, $dari, $sampai)
     {
+        $bank_id = request()->bank_id;
         $temp = '##tempPengembalian' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         $fetch = DB::table('kasgantungdetail')
@@ -339,7 +340,9 @@ class PengembalianKasGantungHeader extends MyModel
             FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa"))
             ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'kasgantungheader.nobukti', 'kasgantungdetail.nobukti')
             ->leftJoin(DB::raw("pengembaliankasgantungdetail with (readuncommitted)"), 'pengembaliankasgantungdetail.kasgantung_nobukti', 'kasgantungdetail.nobukti')
+            ->whereBetween('kasgantungheader.tglbukti', [$dari, $sampai])
             ->where("pengembaliankasgantungdetail.pengembaliankasgantung_id", $id)
+            ->where("kasgantungheader.bank_id", $bank_id)
             ->groupBy('pengembaliankasgantungdetail.pengembaliankasgantung_id', 'kasgantungdetail.nobukti', 'kasgantungheader.tglbukti', 'pengembaliankasgantungdetail.nominal', 'pengembaliankasgantungdetail.keterangan', 'pengembaliankasgantungdetail.coa');
 
 
@@ -359,6 +362,7 @@ class PengembalianKasGantungHeader extends MyModel
 
     public function createTempPengembalian($id, $dari, $sampai)
     {
+        $bank_id = request()->bank_id;
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $fetch = DB::table('kasgantungdetail')
             ->from(
@@ -368,6 +372,7 @@ class PengembalianKasGantungHeader extends MyModel
             ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'kasgantungheader.nobukti', 'kasgantungdetail.nobukti')
             ->whereRaw("kasgantungheader.nobukti not in (select kasgantung_nobukti from pengembaliankasgantungdetail where pengembaliankasgantung_id=$id)")
             ->whereBetween('kasgantungheader.tglbukti', [$dari, $sampai])
+            ->where('kasgantungheader.bank_id', $bank_id)
             ->groupBy('kasgantungdetail.nobukti', 'kasgantungheader.tglbukti');
         //dd($fetch->toSQL());
 
