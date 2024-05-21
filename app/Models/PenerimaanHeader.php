@@ -457,7 +457,7 @@ class PenerimaanHeader extends MyModel
                 }
             }
             if ($isBmt == true) {
-                $getBankBmt = DB::table("bank")->from(DB::raw("bank with (readuncommitted)"))->whereRaw("coa = (select coa from bank where id=3)")->where('id', '!=', $bankId)->first();
+                $getBankBmt = DB::table("bank")->from(DB::raw("bank with (readuncommitted)"))->whereRaw("coa = (select coa from bank where id=$bankId)")->where('id', '!=', $bankId)->first();
                 $query->where('penerimaanheader.bank_id', $getBankBmt->id);
                 if (request()->nobuktiBmt != '') {
                     $nobukti = request()->nobuktiBmt;
