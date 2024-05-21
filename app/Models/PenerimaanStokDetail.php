@@ -830,6 +830,7 @@ class PenerimaanStokDetail extends MyModel
                 }
             }
         }
+        return true;
     }
     public function returnVulkanisir($id)
     {
