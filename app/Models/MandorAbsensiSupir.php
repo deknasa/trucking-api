@@ -1342,9 +1342,14 @@ class MandorAbsensiSupir extends MyModel
     public function getTrado($id, $supir_id)
     {
         $tradoMilikSupir = DB::table('parameter')->where('grp', 'ABSENSI SUPIR')->where('subgrp', 'TRADO MILIK SUPIR')->first();
-        $cekSupirTrado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))->where('id', $id)->where('supir_id', $supir_id)->first();
+        $ceksupir_id = $supir_id;
+        if ($tradoMilikSupir->text != 'YA') {
+            $ceksupir_id = 0;
+        }
+        $cekSupirTrado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))->where('id', $id)->where('supir_id', $ceksupir_id)->first();
 
         if ($cekSupirTrado == '') {
+            dd($supir_id,$cekSupirTrado);
             $tgl = request()->tanggal ?? 'now';
             $absensisupirdetail = DB::table('trado')
                 ->select(
@@ -1380,7 +1385,15 @@ class MandorAbsensiSupir extends MyModel
                 $absensisupirdetail->addSelect(DB::raw('trado.supir_id'), 'supir.namasupir as supir')
                     ->leftJoin('supir', 'trado.supir_id', 'supir.id');
             } else {
-                $absensisupirdetail->addSelect(DB::raw('null as supir_id'));
+                $resultsupir_id = 'null';
+
+                if ($supir_id) {
+                    $supir = DB::table('supir')->select('id','namasupir')->where('id',$supir_id)->first();
+                    if ($supir) {
+                        $resultsupir_id = $supir->id;
+                    }
+                }
+                $absensisupirdetail->addSelect(DB::raw("$resultsupir_id as supir_id"));
             }
         }
         return $absensisupirdetail->first();
@@ -1507,11 +1520,15 @@ class MandorAbsensiSupir extends MyModel
             $temtabel = $querydata->namatabel;
 
             $absensiheader = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))->select('nobukti')->where('tglbukti',date("Y-m-d", strtotime($data['tglbukti'])))->first();
+            $nobukti = "";
+            if ($absensiheader) {
+                $nobukti = $absensiheader->nobukti;
+            }
 
             // if ($data['id'] != $data['deleted_id']) {
             DB::table($temtabel)->insert(
                 [
-                    'nobukti' => $absensiheader->nobukti,
+                    'nobukti' => $nobukti,
                     'tglbukti' => date("Y-m-d", strtotime($data['tglbukti'])),
                     'id' => $data['id'],
                     'trado_id' => $data['trado_id'],
