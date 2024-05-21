@@ -1581,10 +1581,14 @@ class MandorAbsensiSupir extends MyModel
         }
         $jam = $data['jam'];
         // $AbsensiSupirDetail = (new AbsensiSupirDetail())->processStore($absensiSupirRequest);
+        $statustambahantrado = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('id','text')->where('grp', 'TAMBAHAN TRADO ABSENSI')->where('subgrp', 'TAMBAHAN TRADO ABSENSI')->where('text', 'TIDAK')->first();
+        if ($data['statustambahantrado']=="YA") {
+            $statustambahantrado = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('id','text')->where('grp', 'TAMBAHAN TRADO ABSENSI')->where('subgrp', 'TAMBAHAN TRADO ABSENSI')->where('text', 'YA')->first();
+        }
         if ($this->isTradoMilikSupir()) {
-            $absensiSupirDetail = AbsensiSupirDetail::where('absensi_id', $AbsensiSupirHeader->id)->where('trado_id', $data['trado_id'])->where('statusjeniskendaraan', $data['statusjeniskendaraan'])->where('supirold_id', $data['supirold_id'])->lockForUpdate()->first();
+            $absensiSupirDetail = AbsensiSupirDetail::where('absensi_id', $AbsensiSupirHeader->id)->where('trado_id', $data['trado_id'])->where('statustambahantrado', $statustambahantrado->id)->where('supirold_id', $data['supirold_id'])->lockForUpdate()->first();
         } else {
-            $absensiSupirDetail = AbsensiSupirDetail::where('absensi_id', $AbsensiSupirHeader->id)->where('trado_id', $data['trado_id'])->where('statusjeniskendaraan', $data['statusjeniskendaraan'])->lockForUpdate()->first();
+            $absensiSupirDetail = AbsensiSupirDetail::where('absensi_id', $AbsensiSupirHeader->id)->where('trado_id', $data['trado_id'])->where('statustambahantrado', $statustambahantrado->id)->lockForUpdate()->first();
         }
         DB::table('absensisupirdetail', 'a')
             ->Join(db::raw("trado b with (readuncommitted)"), 'a.trado_id', '=', 'b.id')

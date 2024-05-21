@@ -129,6 +129,7 @@ class MandorAbsensiSupirController extends Controller
                     "keterangan" => $key['keterangan'],
                     "absen_id" => $key['absen_id'],
                     "statusjeniskendaraan" => $key['statusjeniskendaraan'],
+                    "statustambahantrado" => $key['statustambahantrado'],
                     "deleted_id" => $deleted_id,
                     "id" => $key['id'],
                     // "jam" => $key['jam'],
