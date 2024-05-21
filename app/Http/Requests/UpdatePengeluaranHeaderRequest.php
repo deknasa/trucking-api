@@ -90,7 +90,7 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
                 'bank' => [
                     new ExistBank(),
                     new ValidasiBankList($kondisialatbayar),
-                    Rule::in($query->bank),
+                    // Rule::in($query->bank),
                     new ValidasiTotalDetail()
                 ],
                 'bank_id' => [
