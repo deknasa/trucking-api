@@ -2,10 +2,11 @@
 
 namespace App\Rules;
 
-use App\Http\Controllers\Api\AbsensiSupirHeaderController;
+use App\Models\Error;
+use App\Models\AbsensiSupirHeader;
 use Illuminate\Contracts\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
-use App\Models\AbsensiSupirHeader;
+use App\Http\Controllers\Api\AbsensiSupirHeaderController;
 
 class ValidasiDestroyAbsensiSupirHeader implements Rule
 {
@@ -32,7 +33,7 @@ class ValidasiDestroyAbsensiSupirHeader implements Rule
     public function passes($attribute, $value)
     {
 
-        // $absensisupir = AbsensiSupirHeader::findOrFail(request()->id);
+        $absensisupir = AbsensiSupirHeader::findOrFail(request()->id);
 
         // $isDateAllowed = AbsensiSupirHeader::isDateAllowed($absensisupir->id);
         // if (!$isDateAllowed) {
@@ -63,6 +64,16 @@ class ValidasiDestroyAbsensiSupirHeader implements Rule
         //     return true;
         // }
         // return false;
+        $isUsedTrip = AbsensiSupirHeader::isUsedTrip(request()->id);
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+        if ($isUsedTrip) {
+            $keteranganerror = $error->cekKeteranganError('DTSA') ?? '';
+            $keterror = 'No Bukti <b>' . $absensisupir->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+            $this->kodeerror = "DTSA";
+            $this->keterangan = $keterror;
+            return false;
+        }
 
         $cekCetak = app(AbsensiSupirHeaderController::class)->cekvalidasi(request()->id);
         $getOriginal = $cekCetak->original;
