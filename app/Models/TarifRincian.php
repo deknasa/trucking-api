@@ -361,7 +361,7 @@ class TarifRincian extends MyModel
             $getTon = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
                 ->select(DB::raw("cast(ISNULL(qtyton,0) as float) as qtyton"))->where('id', request()->idtrip)->first();
             $query = DB::table("tariftangki")->from(DB::raw("tariftangki with (readuncommitted)"))
-                ->select(DB::raw("(ROUND((nominal * $getTon->qtyton) / 100, 0) * 100) AS nominal"))
+                ->select(DB::raw("(ROUND(nominal * $getTon->qtyton, 0)) AS nominal"))
                 ->where('id', $id);
 
             $data = $query->first();

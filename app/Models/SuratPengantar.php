@@ -2662,7 +2662,7 @@ class SuratPengantar extends MyModel
                 $data['tarif_id'] = '';
 
                 $tarif = DB::table("tariftangki")->where('id', $data['tariftangki_id'])->first()->nominal ?? 0;
-                $total = round(($tarif * $data['qtyton']) / 100) * 100;
+                $total = round($tarif * $data['qtyton']);
                 $tarifNominal = $total;
 
                 $upahsupir = DB::table("upahsupirtangki")->where('id', $data['upahtangki_id'])->first();
