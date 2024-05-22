@@ -2227,7 +2227,7 @@ class SuratPengantar extends MyModel
                             } else if ($filters['field'] == 'container_id') {
                                 $query = $query->where('container.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'trado_id') {
-                                $query = $query->where('trado.keterangan', 'LIKE', "%$filters[data]%");
+                                $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'supir_id') {
                                 $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'agen_id') {
@@ -2293,7 +2293,7 @@ class SuratPengantar extends MyModel
                                 } else if ($filters['field'] == 'container_id') {
                                     $query = $query->orWhere('container.keterangan', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'trado_id') {
-                                    $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
+                                    $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'supir_id') {
                                     $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'agen_id') {
