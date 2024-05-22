@@ -1042,7 +1042,21 @@ class Trado extends MyModel
 
         return json_encode($storedFiles);
     }
+    
+    private function storeFilesBase64(array $files, string $destinationFolder): string
+    {
+        $storedFiles = [];
+        foreach ($files as $file) {
+            $originalFileName = hash('sha256', $file) . '.jpg';
+            $imageData = base64_decode($file);
+            $storedFile = Storage::put('trado/' . $destinationFolder . '/' . $originalFileName, $imageData);
+            $resizedFiles = App::imageResize(storage_path("app/trado/$destinationFolder/"), storage_path("app/trado/$destinationFolder/$originalFileName"), $originalFileName);
 
+            $storedFiles[] = $originalFileName;
+        }
+
+        return json_encode($storedFiles);
+    }
     private function deleteFiles(Trado $trado)
     {
         $sizeTypes = ['', 'medium_', 'small_'];
@@ -1185,6 +1199,7 @@ class Trado extends MyModel
             $trado->nominalplusborongan = str_replace(',', '', $data['nominalplusborongan']) ?? 0;
             $trado->modifiedby = auth('api')->user()->user;
             $trado->info = html_entity_decode(request()->info);
+            $trado->tas_id = $data['tas_id'];
 
 
             if ($data['mandor_id'] != 0) {
@@ -1194,9 +1209,16 @@ class Trado extends MyModel
                 $trado->tglberlakumiliksupir = date('Y-m-d');
             }
 
-            $trado->photostnk = $data['photostnk'];
-            $trado->photobpkb = $data['photobpkb'];
-            $trado->phototrado = $data['phototrado'];
+            if(request()->from != ''){
+                $trado->photostnk = $this->storeFilesBase64($data['photostnk'], 'stnk');
+                $trado->photobpkb = $this->storeFilesBase64($data['photobpkb'], 'bpkb');
+                $trado->phototrado = $this->storeFilesBase64($data['phototrado'], 'trado');
+            } else {
+                $trado->photostnk = (count($data['photostnk']) > 0) ? $this->storeFiles($data['photostnk'], 'stnk') : '';
+                $trado->photobpkb = (count($data['photobpkb']) > 0) ? $this->storeFiles($data['photobpkb'], 'bpkb') : '';
+                $trado->phototrado = (count($data['phototrado']) > 0) ? $this->storeFiles($data['phototrado'], 'trado') : '';
+              
+            }
 
             if (!$trado->save()) {
                 throw new \Exception("Error storing trado.");
@@ -1320,9 +1342,16 @@ class Trado extends MyModel
 
             $this->deleteFiles($trado);
 
-            $trado->photostnk = $data['photostnk'];
-            $trado->photobpkb = $data['photobpkb'];
-            $trado->phototrado = $data['phototrado'];
+            if(request()->from != ''){
+                $trado->photostnk = $this->storeFilesBase64($data['photostnk'], 'stnk');
+                $trado->photobpkb = $this->storeFilesBase64($data['photobpkb'], 'bpkb');
+                $trado->phototrado = $this->storeFilesBase64($data['phototrado'], 'trado');
+            } else {
+                $trado->photostnk = (count($data['photostnk']) > 0) ? $this->storeFiles($data['photostnk'], 'stnk') : '';
+                $trado->photobpkb = (count($data['photobpkb']) > 0) ? $this->storeFiles($data['photobpkb'], 'bpkb') : '';
+                $trado->phototrado = (count($data['phototrado']) > 0) ? $this->storeFiles($data['phototrado'], 'trado') : '';
+              
+            }
             $trado->modifiedby = auth('api')->user()->user;
             $trado->info = html_entity_decode(request()->info);
 

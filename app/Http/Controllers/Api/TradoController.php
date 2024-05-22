@@ -73,7 +73,7 @@ class TradoController extends Controller
             ];
             return response($data);
         }
-        $dataMaster = $trado->where('id',$id)->first();
+        $dataMaster = $trado->where('id', $id)->first();
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
@@ -81,7 +81,7 @@ class TradoController extends Controller
         $aksi = request()->aksi ?? '';
 
         $cekdata = $trado->cekvalidasihapus($id);
-        if( $aksi == 'EDIT'){
+        if ($aksi == 'EDIT') {
             $cekdata['kondisi'] = false;
         }
 
@@ -124,10 +124,10 @@ class TradoController extends Controller
 
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
                 $keterror = 'Data <b>' . $dataMaster->kodetrado . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
-                
+
                 $data = [
                     'status' => true,
-                    'message' => ["keterangan"=>$keterror],
+                    'message' => ["keterangan" => $keterror],
                     'errors' => '',
                     'kondisi' => true,
                 ];
@@ -196,20 +196,52 @@ class TradoController extends Controller
                 'statusgerobak' => $request->statusgerobak,
                 'statusabsensisupir' => $request->statusabsensisupir,
                 'nominalplusborongan' => str_replace(',', '', $request->nominalplusborongan) ?? 0,
-                'photostnk' => ($request->photostnk) ? $this->storeFiles($request->photostnk, 'stnk') : '',
-                'photobpkb' => ($request->photobpkb) ? $this->storeFiles($request->photobpkb, 'bpkb') : '',
-                'phototrado' => ($request->phototrado) ? $this->storeFiles($request->phototrado, 'trado') : '',
+                'photostnk' => $request->photostnk ?? [],
+                'photobpkb' => $request->photobpkb ?? [],
+                'phototrado' => $request->phototrado ?? [],
                 'tas_id' => $request->tas_id,
             ];
 
 
             $trado = (new Trado())->processStore($data);
-            $selected = $this->getPosition($trado, $trado->getTable());
-            $trado->position = $selected->position;
-            if ($request->limit == 0) {
-                $trado->page = ceil($trado->position / (10));
-            } else {
-                $trado->page = ceil($trado->position / ($request->limit ?? 10));
+
+            if ($request->from == '') {
+                $selected = $this->getPosition($trado, $trado->getTable());
+                $trado->position = $selected->position;
+                if ($request->limit == 0) {
+                    $trado->page = ceil($trado->position / (10));
+                } else {
+                    $trado->page = ceil($trado->position / ($request->limit ?? 10));
+                }
+            }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $trado->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $photostnk = json_decode($trado->photostnk);
+                if ($photostnk != '') {
+                    foreach ($photostnk as $imagePath) {
+                        $photostnkBase64[] = base64_encode(file_get_contents(storage_path("app/trado/stnk/" . $imagePath)));
+                    }
+                    $data['photostnk'] = $photostnkBase64;
+                }
+
+                $photobpkb = json_decode($trado->photobpkb);
+                if ($photobpkb != '') {
+                    foreach ($photobpkb as $imagePath) {
+                        $photobpkbBase64[] = base64_encode(file_get_contents(storage_path("app/trado/bpkb/" . $imagePath)));
+                    }
+                    $data['photobpkb'] = $photobpkbBase64;
+                }
+                $phototrado = json_decode($trado->phototrado);
+                if ($phototrado != '') {
+                    foreach ($phototrado as $imagePath) {
+                        $phototradoBase64[] = base64_encode(file_get_contents(storage_path("app/trado/trado/" . $imagePath)));
+                    }
+                    $data['phototrado'] = $phototradoBase64;
+                }
+                $this->saveToTnl('trado', 'add', $data);
             }
 
             DB::commit();
@@ -291,7 +323,7 @@ class TradoController extends Controller
 
 
             if (!isset($query)) {
-                
+
                 if ($trado != '') {
                     if ($trado->supir_id == '' || $trado->supir_id == 0) {
                         $data = [
@@ -325,13 +357,12 @@ class TradoController extends Controller
         return response($data);
     }
 
-       /**
+    /**
      * @ClassName 
      * @Keterangan EDIT DATA USER
      */
     public function updateuser()
     {
-
     }
     /**
      * @ClassName 
@@ -373,20 +404,50 @@ class TradoController extends Controller
                 'statusgerobak' => $request->statusgerobak,
                 'statusabsensisupir' => $request->statusabsensisupir,
                 'nominalplusborongan' => str_replace(',', '', $request->nominalplusborongan) ?? 0,
-                'photostnk' => ($request->photostnk) ? $this->storeFiles($request->photostnk, 'stnk') : '',
-                'photobpkb' => ($request->photobpkb) ? $this->storeFiles($request->photobpkb, 'bpkb') : '',
-                'phototrado' => ($request->phototrado) ? $this->storeFiles($request->phototrado, 'trado') : '',
+                'photostnk' => $request->photostnk ?? [],
+                'photobpkb' => $request->photobpkb ?? [],
+                'phototrado' => $request->phototrado ?? [],
             ];
 
 
             $trado = (new Trado())->processUpdate($trado, $data);
-            $trado->position = $this->getPosition($trado, $trado->getTable())->position;
-            if ($request->limit == 0) {
-                $trado->page = ceil($trado->position / (10));
-            } else {
-                $trado->page = ceil($trado->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $trado->position = $this->getPosition($trado, $trado->getTable())->position;
+                if ($request->limit == 0) {
+                    $trado->page = ceil($trado->position / (10));
+                } else {
+                    $trado->page = ceil($trado->position / ($request->limit ?? 10));
+                }
             }
 
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $trado->id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $photostnk = json_decode($trado->photostnk);
+                if ($photostnk != '') {
+                    foreach ($photostnk as $imagePath) {
+                        $photostnkBase64[] = base64_encode(file_get_contents(storage_path("app/trado/stnk/" . $imagePath)));
+                    }
+                    $data['photostnk'] = $photostnkBase64;
+                }
+
+                $photobpkb = json_decode($trado->photobpkb);
+                if ($photobpkb != '') {
+                    foreach ($photobpkb as $imagePath) {
+                        $photobpkbBase64[] = base64_encode(file_get_contents(storage_path("app/trado/bpkb/" . $imagePath)));
+                    }
+                    $data['photobpkb'] = $photobpkbBase64;
+                }
+                $phototrado = json_decode($trado->phototrado);
+                if ($phototrado != '') {
+                    foreach ($phototrado as $imagePath) {
+                        $phototradoBase64[] = base64_encode(file_get_contents(storage_path("app/trado/trado/" . $imagePath)));
+                    }
+                    $data['phototrado'] = $phototradoBase64;
+                }
+                $this->saveToTnl('trado', 'edit', $data);
+            }
             DB::commit();
 
             return response()->json([
@@ -445,15 +506,23 @@ class TradoController extends Controller
 
         try {
             $trado = (new Trado())->processDestroy($id);
-            $selected = $this->getPosition($trado, $trado->getTable(), true);
-            $trado->position = $selected->position;
-            $trado->id = $selected->id;
-            if ($request->limit == 0) {
-                $trado->page = ceil($trado->position / (10));
-            } else {
-                $trado->page = ceil($trado->position / ($request->limit ?? 10));
-            }
 
+            if ($request->from == '') {
+                $selected = $this->getPosition($trado, $trado->getTable(), true);
+                $trado->position = $selected->position;
+                $trado->id = $selected->id;
+                if ($request->limit == 0) {
+                    $trado->page = ceil($trado->position / (10));
+                } else {
+                    $trado->page = ceil($trado->position / ($request->limit ?? 10));
+                }
+            }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('trado', 'delete', $data);
+            }
             DB::commit();
 
             return response()->json([
