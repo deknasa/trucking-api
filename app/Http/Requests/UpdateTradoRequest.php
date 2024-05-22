@@ -33,6 +33,9 @@ class UpdateTradoRequest extends FormRequest
      */
     public function rules()
     {
+        if (request()->from == 'tas') {
+            return [];
+        }
         $ruleGambar = Rule::requiredIf(function () {
             $kodeTrado = request()->kodetrado;
             $requiredDefault  = true;

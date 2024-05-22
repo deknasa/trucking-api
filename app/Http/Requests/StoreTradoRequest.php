@@ -32,6 +32,9 @@ class StoreTradoRequest extends FormRequest
      */
     public function rules()
     {
+        if (request()->from == 'tas') {
+            return [];
+        }
         $ruleGambar = Rule::requiredIf(function () {
             $kodeTrado = request()->kodetrado;
             $requiredDefault  = true;
@@ -41,8 +44,8 @@ class StoreTradoRequest extends FormRequest
                 ->first();
             $nonAktif = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->select('id')
-                ->where("grp","STATUS AKTIF")
-                ->where("text","NON AKTIF")
+                ->where("grp", "STATUS AKTIF")
+                ->where("text", "NON AKTIF")
                 ->first();
             $cekValidasi = DB::table('approvaltradogambar')->from(DB::raw("approvaltradogambar with (readuncommitted)"))
                 ->select('kodetrado', 'tglbatas', 'statusapproval')
@@ -81,14 +84,14 @@ class StoreTradoRequest extends FormRequest
                 ->first();
             $nonAktif = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->select('id')
-                ->where("grp","STATUS AKTIF")
-                ->where("text","NON AKTIF")
+                ->where("grp", "STATUS AKTIF")
+                ->where("text", "NON AKTIF")
                 ->first();
             $cekValidasi = DB::table('approvaltradoketerangan')->from(DB::raw("approvaltradoketerangan with (readuncommitted)"))
                 ->select('kodetrado', 'tglbatas', 'statusapproval')
                 ->whereRaw("kodetrado in ('$kodetrado')")
                 ->first();
-                $tradononabsensi = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            $tradononabsensi = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'STATUS ABSENSI SUPIR')
                 ->where('subgrp', 'STATUS ABSENSI SUPIR')
                 ->where('text', 'NON ABSENSI SUPIR')
@@ -101,7 +104,6 @@ class StoreTradoRequest extends FormRequest
             if ($cekValidasi != '') {
                 if ($cekValidasi->statusapproval == $nonApp->id) {
                     return false;
-         
                 } else {
                     if (date('Y-m-d') < $cekValidasi->tglbatas) {
                         return false;
@@ -110,7 +112,7 @@ class StoreTradoRequest extends FormRequest
             } else if ($tradononabsensi == request()->statusabsensisupir) {
                 return false;
             }
-            
+
             return $requiredDefault;
         });
 
@@ -122,14 +124,14 @@ class StoreTradoRequest extends FormRequest
         }
 
         return [
-            'kodetrado' => ['required', 'nullable','sometimes','unique:trado'],
+            'kodetrado' => ['required', 'nullable', 'sometimes', 'unique:trado'],
             'statusaktif' => [$ruleKeterangan, Rule::in($status)],
             'tahun' => [$ruleKeterangan, 'min:4', 'max:4', 'nullable'],
             'merek' => $ruleKeterangan,
-            'norangka' => [$ruleKeterangan, 'max:20', 'nullable','sometimes','unique:trado'],
-            'nomesin' =>  [$ruleKeterangan, 'max:20', 'nullable','sometimes','unique:trado'],
+            'norangka' => [$ruleKeterangan, 'max:20', 'nullable', 'sometimes', 'unique:trado'],
+            'nomesin' =>  [$ruleKeterangan, 'max:20', 'nullable', 'sometimes', 'unique:trado'],
             'nama' => [$ruleKeterangan],
-            'nostnk' =>  [$ruleKeterangan, 'max:50', 'nullable','sometimes','unique:trado'],
+            'nostnk' =>  [$ruleKeterangan, 'max:50', 'nullable', 'sometimes', 'unique:trado'],
             'alamatstnk' => [$ruleKeterangan],
             'statusjenisplat' => [$ruleKeterangan],
             'tglpajakstnk' => [$ruleKeterangan],
@@ -144,7 +146,7 @@ class StoreTradoRequest extends FormRequest
             'jumlahsumbu' => [$ruleKeterangan, 'numeric', 'min:1', 'digits_between:1,2', 'nullable'],
             'jumlahroda' => [$ruleKeterangan, 'numeric', 'min:1', 'digits_between:1,2', 'nullable'],
             'model' => [$ruleKeterangan],
-            'nobpkb' => [$ruleKeterangan, 'max:15', 'nullable','sometimes','unique:trado'],
+            'nobpkb' => [$ruleKeterangan, 'max:15', 'nullable', 'sometimes', 'unique:trado'],
             'jumlahbanserap' => [$ruleKeterangan, 'numeric', 'min:1', 'digits_between:1,2', 'nullable'],
             'statusgerobak' => [$ruleKeterangan],
             'statusabsensisupir' => [$ruleKeterangan],
