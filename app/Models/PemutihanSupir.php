@@ -52,11 +52,18 @@ class PemutihanSupir extends MyModel
                 db::raw("cast(cast(format((cast((format(posting.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderposting"),
                 db::raw("cast((format(nonposting.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheadernonposting"),
                 db::raw("cast(cast(format((cast((format(nonposting.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheadernonposting"),
+                'penerimaanheader.bank_id as penerimaanbank_id',
+                'pengeluaranheader.bank_id as pengeluaranbank_id',
+                db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
+                db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
+
+
 
             )
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pemutihansupirheader.supir_id', 'supir.id')
             ->leftJoin(DB::raw("penerimaanheader with (readuncommitted)"), 'pemutihansupirheader.penerimaan_nobukti', '=', 'penerimaanheader.nobukti')
+            ->leftJoin(DB::raw("pengeluaranheader with (readuncommitted)"), 'pemutihansupirheader.pengeluaran_nobukti', '=', 'pengeluaranheader.nobukti')
             ->leftJoin(DB::raw("penerimaantruckingheader as posting with (readuncommitted)"), 'pemutihansupirheader.penerimaantruckingposting_nobukti', '=', 'posting.nobukti')
             ->leftJoin(DB::raw("penerimaantruckingheader as nonposting with (readuncommitted)"), 'pemutihansupirheader.penerimaantruckingnonposting_nobukti', '=', 'nonposting.nobukti')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pemutihansupirheader.statuscetak', 'statuscetak.id')

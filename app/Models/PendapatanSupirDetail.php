@@ -293,17 +293,25 @@ class PendapatanSupirDetail extends MyModel
                     DB::raw("isnull(c.kodekota,'') as sampai"),
                     'a.nominal as nominal_detail',
                     'a.gajikenek',
-                    DB::raw("(a.gajikenek + a.nominal) as totaldetail")
+                    DB::raw("(a.gajikenek + a.nominal) as totaldetail"),
+                    db::raw("cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as date) as tgldarisuratpengantar"),
+                    db::raw("cast(cast(format((cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaisuratpengantar"),
+                    db::raw("cast((format(gajisupirheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldarigajisupirheader"),
+                    db::raw("cast(cast(format((cast((format(gajisupirheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaigajisupirheader"),
+    
                 )
                 ->leftJoin(DB::raw("kota b with (readuncommitted)"), 'a.dari_id', 'b.id')
                 ->leftJoin(DB::raw("kota c with (readuncommitted)"), 'a.sampai_id', 'c.id')
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), 'a.supir_id', 'supir.id')
+                ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'a.nobuktitrip', '=', 'suratpengantar.nobukti')
+                ->leftJoin(DB::raw("gajisupirheader with (readuncommitted)"), 'a.nobuktirincian', '=', 'gajisupirheader.nobukti')
+
                 ->leftJoin(DB::raw("trado with (readuncommitted)"), 'a.trado_id', 'trado.id');
 
             $this->sort($query);
             $this->filter($query);
-            $this->totalNominal = $query->sum('nominal');
-            $this->totalGajiKenek = $query->sum('gajikenek');
+            $this->totalNominal = $query->sum('a.nominal');
+            $this->totalGajiKenek = $query->sum('a.gajikenek');
             $this->totalAll = $query->sum(DB::raw("(a.gajikenek + a.nominal)"));
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

@@ -276,6 +276,8 @@ class PengeluaranTruckingHeader extends MyModel
                 $table->longText('statuspostingtext')->nullable();
                 $table->double('qty')->nullable();
                 $table->double('harga')->nullable();
+                $table->integer('pengeluaranbank_id')->nullable();
+
             });
             // get namasupir pjt
             $tempSupir = '##tempsupir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -352,6 +354,8 @@ class PengeluaranTruckingHeader extends MyModel
                     db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
                     'statusposting.memo as statusposting',
                     'statusposting.text as statuspostingtext',
+                    'pengeluaranheader.bank_id as pengeluaranbank_id',
+
                 )
                 // ->whereBetween('pengeluarantruckingheader.tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))])            
                 ->leftJoin(DB::raw("pengeluaranheader with (readuncommitted)"), 'pengeluarantruckingheader.pengeluaran_nobukti', '=', 'pengeluaranheader.nobukti')
@@ -455,6 +459,8 @@ class PengeluaranTruckingHeader extends MyModel
                     'statuspostingtext' => $item['statuspostingtext'],
                     'qty' => $item['qty'] ?? '',
                     'harga' => $item['harga'] ?? '',
+                    'pengeluaranbank_id' => $item['pengeluaranbank_id'] ?? '',
+                    
                 ]);
             }
         } else {
@@ -503,6 +509,7 @@ class PengeluaranTruckingHeader extends MyModel
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at',
+                'a.pengeluaranbank_id',
             );
 
         $this->totalRows = $query->count();
