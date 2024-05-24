@@ -30,7 +30,7 @@ class AbsensiSupirApprovalHeader extends MyModel
         $this->setRequestParameters();
 
         $petik ='"';
-        $url = config('app.url_fe').'pengeluaranstokheader';
+        $url = config('app.url_fe').'pengeluaranheader';
         $absensisupirproses = DB::table("absensisupirapprovalproses")
             ->from(DB::raw("absensisupirapprovalproses with (readuncommitted)"))
             ->select(

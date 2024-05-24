@@ -23,7 +23,7 @@ use App\Http\Requests\DestroyPenerimaanTruckingRequest;
 
 class PenerimaanTruckingController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -52,13 +52,13 @@ class PenerimaanTruckingController extends Controller
     {
         $penerimaanTrucking = new PenerimaanTrucking();
 
-        $dataMaster = $penerimaanTrucking->where('id',$id)->first();
+        $dataMaster = $penerimaanTrucking->where('id', $id)->first();
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
         $useredit = $dataMaster->editing_by ?? '';
         $aksi = request()->aksi ?? '';
-        
+
         $cekdata = $penerimaanTrucking->cekvalidasihapus($id);
         if ($cekdata['kondisi'] == true && $aksi != 'EDIT') {
             $query = DB::table('error')
@@ -85,7 +85,7 @@ class PenerimaanTruckingController extends Controller
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                     (new MyModel())->updateEditingBy('penerimaanTrucking', $id, $aksi);
                 }
-                
+
                 $data = [
                     'status' => false,
                     'message' => '',
@@ -93,21 +93,21 @@ class PenerimaanTruckingController extends Controller
                     'kondisi' => false,
                     'editblok' => false,
                 ];
-                
+
                 // return response($data);
             } else {
-                
+
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
                 $keterror = 'Data <b>' . $dataMaster->keterangan . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
-                
+
                 $data = [
                     'status' => true,
-                    'message' => ["keterangan"=>$keterror],
+                    'message' => ["keterangan" => $keterror],
                     'errors' => '',
                     'kondisi' => true,
                     'editblok' => true,
                 ];
-                
+
                 return response($data);
             }
         } else {
@@ -141,14 +141,25 @@ class PenerimaanTruckingController extends Controller
                 'coapostingdebet' => $request->coapostingdebet ?? '',
                 'coapostingkredit' => $request->coapostingkredit ?? '',
                 'statusaktif' => $request->statusaktif,
-                'format' => $request->format
+                'format' => $request->format,
+                'tas_id' => $request->tas_id,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
+
             ];
             $penerimaanTrucking = (new PenerimaanTrucking())->processStore($data);
-            $penerimaanTrucking->position = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable())->position;
-            if ($request->limit==0) {
-                $penerimaanTrucking->page = ceil($penerimaanTrucking->position / (10));
-            } else {
-                $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $penerimaanTrucking->position = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable())->position;
+                if ($request->limit == 0) {
+                    $penerimaanTrucking->page = ceil($penerimaanTrucking->position / (10));
+                } else {
+                    $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
+                }
+            }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $penerimaanTrucking->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('penerimaantrucking', 'add', $data);
             }
 
             DB::commit();
@@ -190,15 +201,24 @@ class PenerimaanTruckingController extends Controller
                 'coapostingdebet' => $request->coapostingdebet ?? '',
                 'coapostingkredit' => $request->coapostingkredit ?? '',
                 'statusaktif' => $request->statusaktif,
-                'format' => $request->format
+                'format' => $request->format,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
 
             $penerimaanTrucking = (new PenerimaanTrucking())->processUpdate($penerimaanTrucking, $data);
-            $penerimaanTrucking->position = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable())->position;
-            if ($request->limit==0) {
-                $penerimaanTrucking->page = ceil($penerimaanTrucking->position / (10));
-            } else {
-                $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $penerimaanTrucking->position = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable())->position;
+                if ($request->limit == 0) {
+                    $penerimaanTrucking->page = ceil($penerimaanTrucking->position / (10));
+                } else {
+                    $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
+                }
+            }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $penerimaanTrucking->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('penerimaantrucking', 'edit', $data);
             }
 
             DB::commit();
@@ -226,13 +246,24 @@ class PenerimaanTruckingController extends Controller
 
         try {
             $penerimaanTrucking = (new PenerimaanTrucking())->processDestroy($id);
-            $selected = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable(), true);
-            $penerimaanTrucking->position = $selected->position;
-            $penerimaanTrucking->id = $selected->id;
-            if ($request->limit==0) {
-                $penerimaanTrucking->page = ceil($penerimaanTrucking->position / (10));
-            } else {
-                $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable(), true);
+                $penerimaanTrucking->position = $selected->position;
+                $penerimaanTrucking->id = $selected->id;
+                if ($request->limit == 0) {
+                    $penerimaanTrucking->page = ceil($penerimaanTrucking->position / (10));
+                } else {
+                    $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
+                }
+            }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
+
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('penerimaantrucking', 'delete', $data);
             }
 
             DB::commit();
@@ -267,7 +298,7 @@ class PenerimaanTruckingController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan

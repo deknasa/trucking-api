@@ -423,6 +423,12 @@ class PenerimaanTrucking extends MyModel
 
     public function processStore(array $data): PenerimaanTrucking
     {
+        $cabang_id = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'ID CABANG')
+        ->where('subgrp', 'ID CABANG')
+        ->first()->text ?? '';
+
         $penerimaanTrucking = new PenerimaanTrucking();
         $penerimaanTrucking->kodepenerimaan = $data['kodepenerimaan'];
         $penerimaanTrucking->keterangan = $data['keterangan'] ?? '';
@@ -432,6 +438,8 @@ class PenerimaanTrucking extends MyModel
         $penerimaanTrucking->coapostingkredit = $data['coapostingkredit'] ?? '';
         $penerimaanTrucking->format = $data['format'];
         $penerimaanTrucking->statusaktif = $data['statusaktif'];
+        $penerimaanTrucking->cabang_id = $cabang_id;
+        $penerimaanTrucking->tas_id = $data['tas_id'] ?? '';
         $penerimaanTrucking->modifiedby = auth('api')->user()->name;
         $penerimaanTrucking->info = html_entity_decode(request()->info);
 

@@ -28,6 +28,9 @@ class UpdatePengeluaranTruckingRequest extends FormRequest
      */
     public function rules()
     {
+        if (request()->from == 'tas') {
+            return [];
+        }
         $parameter = new Parameter();
         $dataFormat = $parameter->getComboByGroup('PENGELUARAN TRUCKING');
         $dataFormat = json_decode($dataFormat, true);

@@ -26,6 +26,9 @@ class StorePenerimaanTruckingRequest extends FormRequest
      */
     public function rules()
     {
+        if (request()->from == 'tas') {
+            return [];
+        }
         $parameter = new Parameter();
         $dataFormat = $parameter->getComboByGroup('PENERIMAAN TRUCKING');
         $dataFormat = json_decode($dataFormat, true);
