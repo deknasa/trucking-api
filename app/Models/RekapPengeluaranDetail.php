@@ -79,6 +79,8 @@ class RekapPengeluaranDetail extends MyModel
                 "$this->table.modifiedby",
                 db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
                 db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"), 
+                db::raw("pengeluaranheader.bank_id as pengeluaranbank_id"),
+
             )
             ->leftJoin(DB::raw("pengeluaranheader with (readuncommitted)"), 'rekappengeluarandetail.pengeluaran_nobukti', '=', 'pengeluaranheader.nobukti')
             ->leftJoin("rekappengeluaranheader", "$this->table.rekappengeluaran_id", "rekappengeluaranheader.id");

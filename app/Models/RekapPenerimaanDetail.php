@@ -55,6 +55,8 @@ class RekapPenerimaanDetail extends MyModel
                 "$this->table.modifiedby",
                 db::raw("cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaanheader"),
             db::raw("cast(cast(format((cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanheader"), 
+            'penerimaanheader.bank_id as penerimaanbank_id',
+
             )
             ->leftJoin(DB::raw("penerimaanheader with (readuncommitted)"), 'rekappenerimaandetail.penerimaan_nobukti', '=', 'penerimaanheader.nobukti')
             ->leftJoin('rekappenerimaanheader', "$this->table.rekappenerimaan_id", 'rekappenerimaanheader.id');
