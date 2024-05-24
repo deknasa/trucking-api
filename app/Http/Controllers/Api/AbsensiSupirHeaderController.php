@@ -2,38 +2,39 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreAbsensiSupirDetailRequest;
-use App\Http\Requests\StoreKasGantungDetailRequest;
-use App\Http\Requests\StoreKasGantungHeaderRequest;
-// use App\Http\Requests\UpdateAbsensiSupirHeaderRequest;
-// use App\Http\Requests\StoreAbsensiSupirHeaderRequest;
-use App\Models\AbsensiSupirHeader;
-use App\Models\AbsensiSupirApprovalHeader;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Http\Requests\StoreLogTrailRequest;
-use App\Http\Requests\UpdateKasGantungHeaderRequest;
-use App\Http\Requests\GetIndexRangeRequest;
-use App\Models\AbsensiSupirDetail;
-use App\Models\KasGantungDetail;
-use App\Models\KasGantungHeader;
-use App\Models\Parameter;
+use DateTime;
 use App\Models\User;
 use App\Models\Error;
-use App\Http\Controllers\Api\PengeluaranHeaderController;
-use App\Http\Requests\ApprovalKaryawanRequest;
-use App\Http\Requests\ApprovalValidasiApprovalRequest;
-use App\Http\Requests\ApprovalAbsensiFinalRequest;
-use App\Http\Requests\ApprovalAbsensiFinalAppEditRequest;
-
-
-use App\Http\Requests\AbsensiSupirHeaderRequest;
-use App\Http\Requests\ApprovalPengajuanTripInapAbsensiRequest;
-use Illuminate\Database\QueryException;
-
 use App\Models\MyModel;
-use DateTime;
+// use App\Http\Requests\UpdateAbsensiSupirHeaderRequest;
+// use App\Http\Requests\StoreAbsensiSupirHeaderRequest;
+use App\Models\Parameter;
+use Illuminate\Http\Request;
+use App\Models\KasGantungDetail;
+use App\Models\KasGantungHeader;
+use App\Models\AbsensiSupirDetail;
+use App\Models\AbsensiSupirHeader;
+use App\Models\MandorAbsensiSupir;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Database\QueryException;
+use App\Models\AbsensiSupirApprovalHeader;
+use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\ApprovalKaryawanRequest;
+use App\Http\Requests\AbsensiSupirHeaderRequest;
+use App\Http\Requests\ApprovalAbsensiFinalRequest;
+use App\Http\Requests\StoreKasGantungDetailRequest;
+use App\Http\Requests\StoreKasGantungHeaderRequest;
+
+
+use App\Http\Requests\UpdateKasGantungHeaderRequest;
+use App\Http\Requests\StoreAbsensiSupirDetailRequest;
+use App\Http\Requests\ApprovalValidasiApprovalRequest;
+
+use App\Http\Controllers\Api\PengeluaranHeaderController;
+use App\Http\Requests\ApprovalAbsensiFinalAppEditRequest;
+use App\Http\Requests\ApprovalPengajuanTripInapAbsensiRequest;
 
 class AbsensiSupirHeaderController extends Controller
 {
@@ -189,11 +190,16 @@ class AbsensiSupirHeaderController extends Controller
     {
         $data = AbsensiSupirHeader::findAll($id);
         $detail = (new AbsensiSupirDetail())->getAll($id);
+        $mandorabsensisupir = (new MandorAbsensiSupir());
+
 
         return response([
             'status' => true,
             'data' => $data,
-            'detail' => $detail
+            'detail' => $detail,
+            "attributes"=>[
+                'defaultJenis' => $mandorabsensisupir->defaultJenis(),
+            ]
         ]);
     }
 

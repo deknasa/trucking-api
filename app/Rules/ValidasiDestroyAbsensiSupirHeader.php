@@ -64,16 +64,6 @@ class ValidasiDestroyAbsensiSupirHeader implements Rule
         //     return true;
         // }
         // return false;
-        $isUsedTrip = AbsensiSupirHeader::isUsedTrip(request()->id);
-        $error = new Error();
-        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
-        if ($isUsedTrip) {
-            $keteranganerror = $error->cekKeteranganError('DTSA') ?? '';
-            $keterror = 'No Bukti <b>' . $absensisupir->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
-            $this->kodeerror = "DTSA";
-            $this->keterangan = $keterror;
-            return false;
-        }
 
         $cekCetak = app(AbsensiSupirHeaderController::class)->cekvalidasi(request()->id);
         $getOriginal = $cekCetak->original;

@@ -2,15 +2,16 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-
-use App\Http\Controllers\Api\ErrorController;
-use App\Rules\DateAllowedAbsen;
 use App\Rules\DateTutupBuku;
+
+use App\Rules\DateAllowedAbsen;
+use Illuminate\Validation\Rule;
+use App\Models\AbsensiSupirHeader;
 use Illuminate\Support\Facades\DB;
 
-use App\Models\AbsensiSupirHeader;
-use Illuminate\Validation\Rule;
+use App\Rules\ValidasiHapusAbsensiAdmin;
+use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
 use App\Rules\ValidasiDestroyAbsensiSupirHeader;
 use App\Http\Controllers\Api\AbsensiSupirHeaderController;
 
@@ -109,7 +110,7 @@ class AbsensiSupirHeaderRequest extends FormRequest
 
 
             return [
-                'id' => [new ValidasiDestroyAbsensiSupirHeader()],
+                'id' => [new ValidasiDestroyAbsensiSupirHeader(),new ValidasiHapusAbsensiAdmin()],
             ];
         } else {
             $awal  = date_create(date('Y-m-d', strtotime($this->tglbukti)));
