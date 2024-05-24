@@ -1553,13 +1553,16 @@ class AbsensiSupirDetail extends MyModel
         $absensiSupirDetail->supir_id = $data['supir_id'] ?? '';
         $absensiSupirDetail->supirold_id = $data['supirold_id'] ?? '';
         $absensiSupirDetail->jam = $data['jam'] ?? '';
-        $absensiSupirDetail->uangjalan = $data['uangjalan'] ?? '';
+        
         $absensiSupirDetail->keterangan = $data['keterangan'] ?? '';
         $absensiSupirDetail->modifiedby = $data['modifiedby'] ?? '';
         $absensiSupirDetail->mandor_id = $mandor_id ?? 0;
         $absensiSupirDetail->statussupirserap = $data['statussupirserap'] ?? $idstatusnonsupirserap;
         $absensiSupirDetail->statustambahantrado = $data['statustambahantrado'] ?? $idstatustambahantrado;
 
+        if (array_key_exists("uangjalan",$data)) {
+            $absensiSupirDetail->uangjalan = $data['uangjalan'];
+        }
         if (!$absensiSupirDetail->save()) {
             throw new \Exception("Gagal menyimpan absensi supir detail.");
         }
@@ -1585,11 +1588,13 @@ class AbsensiSupirDetail extends MyModel
         $absensiSupirDetail->supir_id = $data['supir_id'] ?? '';
         $absensiSupirDetail->supirold_id = $data['supirold_id'] ?? '';
         $absensiSupirDetail->jam = $data['jam'] ?? '';
-        $absensiSupirDetail->uangjalan = $data['uangjalan'] ?? '';
+        // $absensiSupirDetail->uangjalan = $data['uangjalan'] ?? '';
         $absensiSupirDetail->keterangan = $data['keterangan'] ?? '';
         $absensiSupirDetail->modifiedby = $data['modifiedby'] ?? '';
         // $absensiSupirDetail->mandor_id = $mandor_id ?? 0;
-
+        if (array_key_exists("uangjalan",$data)) {
+            $absensiSupirDetail->uangjalan = $data['uangjalan'];
+        }
         if (!$absensiSupirDetail->save()) {
             throw new \Exception("Gagal menyimpan absensi supir detail.");
         }
