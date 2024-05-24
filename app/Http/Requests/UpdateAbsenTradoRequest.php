@@ -27,6 +27,9 @@ class UpdateAbsenTradoRequest extends FormRequest
 
     public function rules()
     {
+        if (request()->from == 'tas') {
+            return [];
+        }
         $parameter = new Parameter();
         $dataAktif = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
         $dataAktif = json_decode($dataAktif, true);

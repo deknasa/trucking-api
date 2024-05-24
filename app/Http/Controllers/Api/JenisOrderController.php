@@ -24,7 +24,7 @@ use App\Http\Requests\RangeExportReportRequest;
 
 class JenisOrderController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -43,7 +43,7 @@ class JenisOrderController extends Controller
     public function cekValidasi($id)
     {
         $jenisOrder = new JenisOrder();
-        $dataMaster = $jenisOrder->where('id',$id)->first();
+        $dataMaster = $jenisOrder->where('id', $id)->first();
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
@@ -55,7 +55,7 @@ class JenisOrderController extends Controller
 
             $data = [
                 'status' => false,
-                'message' => $keterangan. " (".$cekdata['keterangan'].")",
+                'message' => $keterangan . " (" . $cekdata['keterangan'] . ")",
                 'errors' => '',
                 'kondisi' => $cekdata['kondisi'],
             ];
@@ -84,7 +84,7 @@ class JenisOrderController extends Controller
 
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
                 $keterror = 'Data <b>' . $dataMaster->keterangan . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
-                
+
                 $data = [
                     'status' => true,
                     'message' => $keterror,
@@ -128,16 +128,27 @@ class JenisOrderController extends Controller
             $data = [
                 'kodejenisorder' => $request->kodejenisorder ?? '',
                 'statusaktif' => $request->statusaktif ?? '',
-                'keterangan' => $request->keterangan ?? ''
+                'keterangan' => $request->keterangan ?? '',
+                'tas_id' => $request->tas_id,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
 
             ];
             $jenisorder = (new JenisOrder())->processStore($data);
-            $jenisorder->position = $this->getPosition($jenisorder, $jenisorder->getTable())->position;
-            if ($request->limit==0) {
-                $jenisorder->page = ceil($jenisorder->position / (10));
-            } else {
-                $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $jenisorder->position = $this->getPosition($jenisorder, $jenisorder->getTable())->position;
+                if ($request->limit == 0) {
+                    $jenisorder->page = ceil($jenisorder->position / (10));
+                } else {
+                    $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
+                }
             }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $jenisorder->id;
+            
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('jenisorder', 'add', $data);
+            }
+
             DB::commit();
 
             return response()->json([
@@ -170,16 +181,28 @@ class JenisOrderController extends Controller
             $data = [
                 'kodejenisorder' => $request->kodejenisorder ?? '',
                 'statusaktif' => $request->statusaktif ?? '',
-                'keterangan' => $request->keterangan ?? ''
+                'keterangan' => $request->keterangan ?? '',
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
+
             ];
 
             $jenisorder = (new JenisOrder())->processUpdate($jenisorder, $data);
-            $jenisorder->position = $this->getPosition($jenisorder, $jenisorder->getTable())->position;
-            if ($request->limit==0) {
-                $jenisorder->page = ceil($jenisorder->position / (10));
-            } else {
-                $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $jenisorder->position = $this->getPosition($jenisorder, $jenisorder->getTable())->position;
+                if ($request->limit == 0) {
+                    $jenisorder->page = ceil($jenisorder->position / (10));
+                } else {
+                    $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
+                }
             }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $jenisorder->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('jenisorder', 'edit', $data);
+            }
+
             DB::commit();
 
             return response()->json([
@@ -204,14 +227,25 @@ class JenisOrderController extends Controller
 
         try {
             $jenisorder = (new JenisOrder())->processDestroy($id);
-            $selected = $this->getPosition($jenisorder, $jenisorder->getTable(), true);
-            $jenisorder->position = $selected->position;
-            $jenisorder->id = $selected->id;
-            if ($request->limit==0) {
-                $jenisorder->page = ceil($jenisorder->position / (10));
-            } else {
-                $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($jenisorder, $jenisorder->getTable(), true);
+                $jenisorder->position = $selected->position;
+                $jenisorder->id = $selected->id;
+                if ($request->limit == 0) {
+                    $jenisorder->page = ceil($jenisorder->position / (10));
+                } else {
+                    $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
+                }
             }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
+
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('jenisorder', 'delete', $data);
+            }
+
             DB::commit();
 
             return response()->json([
@@ -267,7 +301,7 @@ class JenisOrderController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan

@@ -283,6 +283,7 @@ class AbsenTrado extends MyModel
         $absenTrado->kodeabsen = $data['kodeabsen'];
         $absenTrado->keterangan = $data['keterangan'] ?? '';
         $absenTrado->statusaktif = $data['statusaktif'];
+        $absenTrado->tas_id = $data['tas_id'] ?? '';
         $absenTrado->modifiedby = auth('api')->user()->name;
         $absenTrado->info = html_entity_decode(request()->info);
 
