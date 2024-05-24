@@ -348,6 +348,8 @@ class SuratPengantar extends MyModel
             $table->string('invoice_nobukti', 500)->nullable();
             $table->unsignedBigInteger('statusgajisupir')->nullable();
             $table->unsignedBigInteger('statusinvoice')->nullable();
+            $table->datetime('tgldariorderantrucking')->nullable();
+            $table->datetime('tglsampaiorderantrucking')->nullable();
         });
 
 
@@ -442,9 +444,14 @@ class SuratPengantar extends MyModel
                 'c.nobukti as invoice_nobukti',
                 db::raw("(case when isnull(b.nobukti,'')='' then " . $getBelumbuka->id . " else " . $getSudahbuka->id . " end) as statusgajisupir"),
                 db::raw("(case when isnull(c.nobukti,'')='' then " . $getBelumbuka->id . " else " . $getSudahbuka->id . " end) as statusinvoice"),
+                db::raw("cast((format(orderantrucking.tglbukti,'yyyy/MM')+'/1') as date) as tgldariorderantrucking"),
+                db::raw("cast(cast(format((cast((format(orderantrucking.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiorderantrucking"),
+
             )
             ->leftJoin(DB::raw("gajisupirdetail as b with (readuncommitted)"), 'suratpengantar.nobukti', 'b.suratpengantar_nobukti')
-            ->leftJoin(DB::raw("invoicedetail as c with (readuncommitted)"), 'suratpengantar.jobtrucking', 'c.orderantrucking_nobukti');
+            ->leftJoin(DB::raw("invoicedetail as c with (readuncommitted)"), 'suratpengantar.jobtrucking', 'c.orderantrucking_nobukti')
+            ->leftJoin(DB::raw("orderantrucking  with (readuncommitted)"), 'suratpengantar.jobtrucking', 'orderantrucking.nobukti');
+
         if (request()->tgldari) {
             $querysuratpengantar->whereBetween('suratpengantar.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
@@ -545,6 +552,8 @@ class SuratPengantar extends MyModel
             'invoice_nobukti',
             'statusgajisupir',
             'statusinvoice',
+            'tgldariorderantrucking',
+            'tglsampaiorderantrucking',
 
 
         ], $querysuratpengantar);
@@ -784,6 +793,13 @@ class SuratPengantar extends MyModel
                 'suratpengantar.invoice_nobukti',
                 'statusgajisupir.memo as statusgajisupir',
                 'statusinvoice.memo as statusinvoice',
+                db::raw("cast((format(orderantrucking.tglbukti,'yyyy/MM')+'/1') as date) as tgldariorderantrucking"),
+                db::raw("cast(cast(format((cast((format(orderantrucking.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiorderantrucking"),
+                db::raw("cast((format(gajisupirheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldarigajisupirheader"),
+                db::raw("cast(cast(format((cast((format(gajisupirheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaigajisupirheader"),
+                db::raw("cast((format(invoiceheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariinvoiceheader"),
+                db::raw("cast(cast(format((cast((format(invoiceheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiinvoiceheader"),
+
 
             )
 
@@ -808,7 +824,11 @@ class SuratPengantar extends MyModel
             ->leftJoin('parameter as statusinvoice', 'suratpengantar.statusinvoice', 'statusinvoice.id')
             ->leftJoin('mandor as mandortrado', 'suratpengantar.mandortrado_id', 'mandortrado.id')
             ->leftJoin('mandor as mandorsupir', 'suratpengantar.mandorsupir_id', 'mandorsupir.id')
-            ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id');
+            ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id')
+            ->leftJoin(DB::raw("orderantrucking as orderantrucking with (readuncommitted)"), 'suratpengantar.jobtrucking', 'orderantrucking.nobukti')
+            ->leftJoin(DB::raw("gajisupirheader  with (readuncommitted)"), 'suratpengantar.gajisupir_nobukti', 'gajisupirheader.nobukti')
+            ->leftJoin(DB::raw("invoiceheader  with (readuncommitted)"), 'suratpengantar.invoice_nobukti', 'invoiceheader.nobukti');
+
         if (request()->tgldari) {
             $query->whereBetween('suratpengantar.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }

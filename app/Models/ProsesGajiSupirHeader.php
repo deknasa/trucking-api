@@ -213,6 +213,9 @@ class ProsesGajiSupirHeader extends MyModel
                 $table->double('biayaextra', 15, 2)->nullable();
                 $table->dateTime('tgldariheaderpengeluaranheader')->nullable();
                 $table->dateTime('tglsampaiheaderpengeluaranheader')->nullable();
+                $table->integer('pengeluaranbank_id')->nullable();
+
+                
             });
 
             $tempgajidetail = '##tempgajidetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -302,6 +305,8 @@ class ProsesGajiSupirHeader extends MyModel
                     db::raw("isnull(c.biayaextra,0) as biayaextra"),
                     db::raw("cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
                     db::raw("cast(cast(format((cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
+                    'pengeluaran.bank_id as pengeluaranbank_id',
+
 
                 )
 
@@ -358,6 +363,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'biayaextra',
                 'tgldariheaderpengeluaranheader',
                 'tglsampaiheaderpengeluaranheader',
+                'pengeluaranbank_id',
             ], $querytemp);
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
@@ -412,6 +418,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'a.biayaextra',
                 'a.tgldariheaderpengeluaranheader',
                 'a.tglsampaiheaderpengeluaranheader',
+                'a.pengeluaranbank_id',
             );
         // dd($query->get());
 
