@@ -31,7 +31,7 @@ class PengeluaranTruckingDetail extends MyModel
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
 
         $getPengeluaranId = DB::table("pengeluarantruckingheader")->from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
-        ->where('id', request()->pengeluarantruckingheader_id)->first();
+            ->where('id', request()->pengeluarantruckingheader_id)->first();
         $pengeluaranId = $getPengeluaranId->pengeluarantrucking_id;
         $tableStok = 'stok';
         $kolomStok = 'stok_id';
@@ -39,7 +39,7 @@ class PengeluaranTruckingDetail extends MyModel
         //klaim
         if ($pengeluaranId == 7) {
             $stokKlaim = $query->select($this->table . '.stoktnl_id')
-            ->where($this->table . '.pengeluarantruckingheader_id', '=',  request()->pengeluarantruckingheader_id)->first();
+                ->where($this->table . '.pengeluarantruckingheader_id', '=',  request()->pengeluarantruckingheader_id)->first();
             if ($getPengeluaranId->statuscabang == 516) {
                 $tableStok = (new Stok())->showTNLForKlaim($stokKlaim->stoktnl_id);
                 $kolomStok = 'stoktnl_id';
@@ -48,7 +48,7 @@ class PengeluaranTruckingDetail extends MyModel
 
 
         if (isset(request()->forReport) && request()->forReport) {
-           
+
             if ($pengeluaranId == 9) {
                 $query->select(
                     $this->table . '.suratpengantar_nobukti',
@@ -89,7 +89,7 @@ class PengeluaranTruckingDetail extends MyModel
                     ->leftJoin(DB::raw("parameter with (readuncommitted)"), $this->table . '.statustitipanemkl', 'parameter.id');
             } else {
                 $query->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id')
-                    ->leftJoin(DB::raw("$tableStok as stok with (readuncommitted)"), $this->table . '.'.$kolomStok, 'stok.id')
+                    ->leftJoin(DB::raw("$tableStok as stok with (readuncommitted)"), $this->table . '.' . $kolomStok, 'stok.id')
                     ->leftJoin(DB::raw("karyawan with (readuncommitted)"), $this->table . '.karyawan_id', 'karyawan.id');
             }
             $query->where($this->table . '.pengeluarantruckingheader_id', '=', request()->pengeluarantruckingheader_id);
@@ -128,6 +128,11 @@ class PengeluaranTruckingDetail extends MyModel
                 db::raw("cast(cast(format((cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceheader"),
                 db::raw("cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceextraheader"),
                 db::raw("cast(cast(format((cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceextraheader"),
+                db::raw("cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as date) as tgldarisuratpengantar"),
+                db::raw("cast(cast(format((cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaisuratpengantar"),
+                db::raw("cast((format(penerimaanstokheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaanstokheader"),
+                db::raw("cast(cast(format((cast((format(penerimaanstokheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanstokheader"),
+
             )
                 ->leftJoin(DB::raw("invoiceheader as invoice with (readuncommitted)"), 'pengeluarantruckingdetail.invoice_nobukti', '=', 'invoice.nobukti')
                 ->leftJoin(DB::raw("invoiceextraheader as invoiceextra with (readuncommitted)"), 'pengeluarantruckingdetail.invoice_nobukti', '=', 'invoiceextra.nobukti')
@@ -138,7 +143,8 @@ class PengeluaranTruckingDetail extends MyModel
                 ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'pengeluarantruckingdetail.orderantrucking_nobukti', 'ot.nobukti')
                 ->leftJoin(DB::raw("$tableStok as stok with (readuncommitted)"), "pengeluarantruckingdetail.$kolomStok", 'stok.id')
                 ->leftJoin(DB::raw("parameter as statustitipanemkl with (readuncommitted)"), 'pengeluarantruckingdetail.statustitipanemkl', 'statustitipanemkl.id')
-
+                ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'pengeluarantruckingdetail.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
+                ->leftJoin(DB::raw("penerimaanstokheader with (readuncommitted)"), 'pengeluarantruckingdetail.pengeluaranstok_nobukti', '=', 'penerimaanstokheader.nobukti')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id');
 
 
@@ -182,7 +188,7 @@ class PengeluaranTruckingDetail extends MyModel
                 ->where('pengeluarantruckingdetail.pengeluarantruckingheader_id', '=', $id);
         } else if ($kodepengeluaran == 'KLAIM') {
             $cek  = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
-                ->select('pengeluarantrucking_id', 'statuscabang','tglbukti')
+                ->select('pengeluarantrucking_id', 'statuscabang', 'tglbukti')
                 ->where('id', $id)->first();
             if ($cek->statuscabang == 516) {
                 $dari = date('01-m-Y', strtotime($cek->tglbukti));

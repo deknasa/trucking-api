@@ -128,6 +128,7 @@ class PengeluaranStokHeader extends MyModel
                 $table->date('tglsampaiheaderserviceinheader')->nullable();
                 $table->date('tgldariheaderpengeluarantruckingheader')->nullable();
                 $table->date('tglsampaiheaderpengeluarantruckingheader')->nullable();
+                $table->integer('penerimaanbank_id')->nullable();
             });
 
 
@@ -179,6 +180,7 @@ class PengeluaranStokHeader extends MyModel
             Schema::create($temppenerimaanstokheader, function ($table) {
                 $table->string('nobukti', 50)->nullable();
                 $table->date('tglbukti')->nullable();
+                // $table->integer('bank_id')->nullable();
 
                 $table->index('nobukti', 'temppenerimaanstokheader_nobukti_index');
             });
@@ -188,6 +190,7 @@ class PengeluaranStokHeader extends MyModel
             Schema::create($temppenerimaanheader, function ($table) {
                 $table->string('nobukti', 50)->nullable();
                 $table->date('tglbukti')->nullable();
+                $table->integer('bank_id')->nullable();
 
                 $table->index('nobukti', 'temppenerimaanheader_nobukti_index');
             });
@@ -262,12 +265,14 @@ class PengeluaranStokHeader extends MyModel
                     ->select(
                         'a.nobukti',
                         'a.tglbukti',
+                        // 'a.bank_id',
                     )
                     ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti');
 
                 DB::table($temppenerimaanstokheader)->insertUsing([
                     'nobukti',
                     'tglbukti',
+                    // 'bank_id',
                 ],  $querypenerimaanstokheader);
 
                 // temporary penerimaanheader
@@ -275,14 +280,17 @@ class PengeluaranStokHeader extends MyModel
                     ->select(
                         'a.nobukti',
                         'a.tglbukti',
+                        'a.bank_id',
                     )
                     ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti');
 
                 DB::table($temppenerimaanheader)->insertUsing([
                     'nobukti',
                     'tglbukti',
+                    'bank_id',
                 ],  $querypenerimaanheader);
 
+                // dd(db::table($temppenerimaanheader)->get());
                 // hutang bayar
 
                 $querypelunasanhutangheader = db::table("pelunasanhutangheader")->from(db::raw("pelunasanhutangheader a with (readuncommitted)"))
@@ -489,7 +497,7 @@ class PengeluaranStokHeader extends MyModel
             if ($statusCetak != '') {
                 $query->where("pengeluaranstokheader.statuscetak", $statusCetak);
             }
-            // dd($query->get());
+            // dd($query->tosql());
 
             $datadetail = json_decode($query->get(), true);
             foreach ($datadetail as $item) {
@@ -549,6 +557,7 @@ class PengeluaranStokHeader extends MyModel
                     'tglsampaiheaderserviceinheader' => $item['tglsampaiheaderserviceinheader'],
                     'tgldariheaderpengeluarantruckingheader' => $item['tgldariheaderpengeluarantruckingheader'],
                     'tglsampaiheaderpengeluarantruckingheader' => $item['tglsampaiheaderpengeluarantruckingheader'],
+                    'penerimaanbank_id' => $item['penerimaanbank_id'],
                 ]);
             }
 
@@ -679,6 +688,8 @@ class PengeluaranStokHeader extends MyModel
                 'a.tglsampaiheaderserviceinheader',
                 'a.tgldariheaderpengeluarantruckingheader',
                 'a.tglsampaiheaderpengeluarantruckingheader',
+                'a.penerimaanbank_id',
+
             );
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -1144,7 +1155,7 @@ class PengeluaranStokHeader extends MyModel
             'statuskirimberkas.id as statuskirimberkas_id',
             "$this->table.statusformat",
             "$this->table.statuspotongretur",
-            "$this->table.bank_id",
+            "$this->table.bank_id as bank_id",
             "$this->table.tglkasmasuk",
             "$this->table.modifiedby",
             "$this->table.created_at",
@@ -1182,6 +1193,8 @@ class PengeluaranStokHeader extends MyModel
             db::raw("cast(cast(format((cast((format(serviceinheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderserviceinheader"),
             db::raw("cast((format(pengeluarantruckingheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluarantruckingheader"),
             db::raw("cast(cast(format((cast((format(pengeluarantruckingheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluarantruckingheader"),
+            "$this->table.bank_id as penerimaanbank_id",
+
 
         );
     }

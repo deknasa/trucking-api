@@ -53,6 +53,8 @@ class PendapatanSupirHeader extends MyModel
                 'pendapatansupirheader.updated_at',
                 db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
                 db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
+                'pengeluaranheader.bank_id as pengeluaranbank_id',
+
             )
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pendapatansupirheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("pengeluaranheader with (readuncommitted)"), 'pendapatansupirheader.pengeluaran_nobukti', '=', 'pengeluaranheader.nobukti')
