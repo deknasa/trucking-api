@@ -110,6 +110,7 @@ class PenerimaanTruckingHeader extends MyModel
                 $table->dateTime('updated_at')->nullable();
                 $table->date('tgldariheaderpenerimaanheader')->nullable();
                 $table->date('tglsampaiheaderpenerimaanheader')->nullable();
+                $table->integer('penerimaanbank_id')->nullable();
             });
 
             $query = DB::table($this->table)->from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
@@ -136,6 +137,9 @@ class PenerimaanTruckingHeader extends MyModel
                     'penerimaantruckingheader.updated_at',
                     db::raw("cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaanheader"),
                     db::raw("cast(cast(format((cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanheader"),
+                    'penerimaanheader.bank_id as penerimaanbank_id',
+
+
                 )
                 ->leftJoin(DB::raw("penerimaanheader with (readuncommitted)"), 'penerimaantruckingheader.penerimaan_nobukti', '=', 'penerimaanheader.nobukti')
                 ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'penerimaantruckingheader.penerimaantrucking_id', 'penerimaantrucking.id')
@@ -233,6 +237,8 @@ class PenerimaanTruckingHeader extends MyModel
                     'updated_at' => $item['updated_at'],
                     'tgldariheaderpenerimaanheader' => $item['tgldariheaderpenerimaanheader'],
                     'tglsampaiheaderpenerimaanheader' => $item['tglsampaiheaderpenerimaanheader'],
+                    'penerimaanbank_id' => $item['penerimaanbank_id'],
+                    
                 ]);
             }
         } else {
@@ -270,6 +276,7 @@ class PenerimaanTruckingHeader extends MyModel
                 'a.updated_at',
                 'a.tgldariheaderpenerimaanheader',
                 'a.tglsampaiheaderpenerimaanheader',
+                'a.penerimaanbank_id',
             );
 
         $this->totalRows = $query->count();

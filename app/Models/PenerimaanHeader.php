@@ -440,6 +440,7 @@ class PenerimaanHeader extends MyModel
                     'penerimaanheader.updated_at',
                     'statusapproval.memo as statusapproval',
                     'statusapproval.text as statusapprovaltext',
+                    
                 )
 
                 ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaanheader.statusapproval', 'statusapproval.id')

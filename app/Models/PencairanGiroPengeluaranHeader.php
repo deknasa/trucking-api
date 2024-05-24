@@ -197,7 +197,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                     pengeluaranheader.tglbukti as tglbukti_giro,
                     pengeluaranheader.id, 
                     pengeluaranheader.dibayarke, 
-                    '<a href=$petik" . $url . "?tgldari='+(format(pengeluaranheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(pengeluaranheader.tglbukti,'yyyy-MM')+'-31')+'$petik 
+                    '<a href=$petik" . $url . "?tgldari='+(format(pengeluaranheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(pengeluaranheader.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+pengeluaranheader.nobukti+'$petik 
                     class=$petik link-color $petik target=$petik _blank $petik>'+pengeluaranheader.nobukti+'</a>' as urlpengeluaran,
                     bank.namabank as bank_id, 
                     pengeluaranheader.transferkeac, 
@@ -305,7 +305,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                     pindahbuku.nobukti as pengeluaran_nobukti,
                     pindahbuku.tglbukti as tglbukti_giro,
                     pindahbuku.id, 
-                    '<a href=$petik" . $url . "?tgldari='+(format(pindahbuku.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(pindahbuku.tglbukti,'yyyy-MM')+'-31')+'$petik 
+                    '<a href=$petik" . $url . "?tgldari='+(format(pindahbuku.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(pindahbuku.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+pindahbuku.nobukti+'$petik 
                     class=$petik link-color $petik target=$petik _blank $petik>'+pindahbuku.nobukti+'</a>' as urlpengeluaran,
                     bank.namabank as bank_id, 
                     alatbayar.namaalatbayar as alatbayar_id, 
@@ -414,7 +414,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                         penerimaangiroheader.nobukti as pengeluaran_nobukti,
                         penerimaangiroheader.tglbukti as tglbukti_giro,
                         penerimaangiroheader.id, 
-                        '<a href=$petik".$url."?tgldari='+(format(penerimaangiroheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(penerimaangiroheader.tglbukti,'yyyy-MM')+'-31')+'$petik 
+                        '<a href=$petik".$url."?tgldari='+(format(penerimaangiroheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(penerimaangiroheader.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+penerimaangiroheader.nobukti+'$petik 
                          class=$petik link-color $petik target=$petik _blank $petik>'+penerimaangiroheader.nobukti+'</a>' as urlpengeluaran,
                         bank.namabank as bank_id, 
                         'GIRO' as alatbayar_id,

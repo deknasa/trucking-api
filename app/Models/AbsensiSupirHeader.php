@@ -89,7 +89,7 @@ class AbsensiSupirHeader extends MyModel
                 absensisupirproses.absensi_id,
                 absensisupirproses.nobukti,
                 STRING_AGG(absensisupirproses.kasgantung_nobukti, ', ') as kasgantung_nobukti,
-                STRING_AGG('<a href=$petik".$url."?tgldari='+(format(absensisupirheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(absensisupirheader.tglbukti,'yyyy-MM')+'-31')+'$petik class=$petik link-color $petik target=$petik _blank $petik title=$petik '+absensisupirproses.kasgantung_nobukti+' $petik>'+absensisupirproses.kasgantung_nobukti+'</a>', ',') as url"
+                STRING_AGG('<a href=$petik".$url."?tgldari='+(format(absensisupirheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(absensisupirheader.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+absensisupirheader.nobukti+'$petik class=$petik link-color $petik target=$petik _blank $petik title=$petik '+absensisupirproses.kasgantung_nobukti+' $petik>'+absensisupirproses.kasgantung_nobukti+'</a>', ',') as url"
                 ))
             ->join(DB::raw("absensisupirheader with (readuncommitted)"),'absensisupirproses.absensi_id','absensisupirheader.id')    
             ->groupBy("absensisupirproses.absensi_id","absensisupirproses.nobukti");

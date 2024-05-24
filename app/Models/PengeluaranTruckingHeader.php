@@ -305,7 +305,7 @@ class PengeluaranTruckingHeader extends MyModel
 
             $getpenerimaantruckingdetail = DB::table("penerimaantruckingdetail")->from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
             ->select(DB::raw(" penerimaantruckingdetail.pengeluarantruckingheader_nobukti, STRING_AGG(penerimaantruckingdetail.nobukti, ', ') as nobuktipenerimaan,
-            STRING_AGG('<a href=$petik".$url."?tgldari='+(format(penerimaantruckingheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(penerimaantruckingheader.tglbukti,'yyyy-MM')+'-31')+'$petik 
+            STRING_AGG('<a href=$petik".$url."?tgldari='+(format(penerimaantruckingheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(penerimaantruckingheader.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+penerimaantruckingheader.nobukti+'$petik 
             class=$petik link-color $petik target=$petik _blank $petik>'+penerimaantruckingdetail.nobukti+'</a>', ',') as url"))
             ->join(DB::raw("penerimaantruckingheader with (readuncommitted)"),'penerimaantruckingdetail.nobukti','penerimaantruckingheader.nobukti')
             ->whereRaw("isnull(penerimaantruckingdetail.pengeluarantruckingheader_nobukti,'') != ''")
@@ -1284,7 +1284,7 @@ class PengeluaranTruckingHeader extends MyModel
 
         $getpenerimaantruckingdetail = DB::table("penerimaantruckingdetail")->from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
         ->select(DB::raw(" penerimaantruckingdetail.pengeluarantruckingheader_nobukti, STRING_AGG(penerimaantruckingdetail.nobukti, ', ') as nobuktipenerimaan,
-        STRING_AGG('<a href=$petik".$url."?tgldari='+(format(penerimaantruckingheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(penerimaantruckingheader.tglbukti,'yyyy-MM')+'-31')+'$petik 
+        STRING_AGG('<a href=$petik".$url."?tgldari='+(format(penerimaantruckingheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(penerimaantruckingheader.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+penerimaantruckingheader.nobukti+'$petik 
         class=$petik link-color $petik target=$petik _blank $petik>'+penerimaantruckingdetail.nobukti+'</a>', ',') as url"))
         ->join(DB::raw("penerimaantruckingheader with (readuncommitted)"),'penerimaantruckingdetail.nobukti','penerimaantruckingheader.nobukti')
         ->whereRaw("isnull(penerimaantruckingdetail.pengeluarantruckingheader_nobukti,'') != ''")
