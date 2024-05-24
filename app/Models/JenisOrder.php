@@ -306,6 +306,7 @@ class JenisOrder extends MyModel
         $jenisorder->kodejenisorder = $data['kodejenisorder'];
         $jenisorder->statusaktif = $data['statusaktif'];
         $jenisorder->keterangan = $data['keterangan'] ?? '';
+        $jenisorder->tas_id = $data['tas_id'] ?? '';
         $jenisorder->modifiedby = auth('api')->user()->name;
         $jenisorder->info = html_entity_decode(request()->info);
         // $request->sortname = $request->sortname ?? 'id';

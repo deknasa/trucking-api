@@ -23,7 +23,7 @@ use App\Http\Requests\RangeExportReportRequest;
 
 class AbsenTradoController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -52,7 +52,7 @@ class AbsenTradoController extends Controller
     public function cekValidasi($id)
     {
         $absenTrado = new AbsenTrado();
-        $dataMaster = $absenTrado->where('id',$id)->first();
+        $dataMaster = $absenTrado->where('id', $id)->first();
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
@@ -64,7 +64,7 @@ class AbsenTradoController extends Controller
 
             $data = [
                 'status' => false,
-                'message' => $keterangan. " (".$cekdata['keterangan'].")",
+                'message' => $keterangan . " (" . $cekdata['keterangan'] . ")",
                 'errors' => '',
                 'kondisi' => $cekdata['kondisi'],
             ];
@@ -93,7 +93,7 @@ class AbsenTradoController extends Controller
 
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
                 $keterror = 'Data <b>' . $dataMaster->keterangan . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
-                
+
                 $data = [
                     'status' => true,
                     'message' => $keterror,
@@ -132,16 +132,26 @@ class AbsenTradoController extends Controller
                 'keterangan' => $request->keterangan ?? '',
                 'statusaktif' => $request->statusaktif ?? '',
                 'key' => $request->key ?? '',
-                'value' => $request->value ?? ''
+                'value' => $request->value ?? '',
+                'tas_id' => $request->tas_id,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
             $absenTrado = (new AbsenTrado())->processStore($data);
-            $absenTrado->position = $this->getPosition($absenTrado, $absenTrado->getTable())->position;
-            if ($request->limit == 0) {
-                $absenTrado->page = ceil($absenTrado->position / (10));
-            } else {
-                $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
-            }
+            if ($request->from == '') {
 
+                $absenTrado->position = $this->getPosition($absenTrado, $absenTrado->getTable())->position;
+                if ($request->limit == 0) {
+                    $absenTrado->page = ceil($absenTrado->position / (10));
+                } else {
+                    $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
+                }
+            }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $absenTrado->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('absentrado', 'add', $data);
+            }
             DB::commit();
             return response()->json([
                 'status' => true,
@@ -176,15 +186,25 @@ class AbsenTradoController extends Controller
                 'keterangan' => $request->keterangan ?? '',
                 'statusaktif' => $request->statusaktif ?? '',
                 'key' => $request->key ?? '',
-                'value' => $request->value ?? ''
+                'value' => $request->value ?? '',
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',
+
             ];
 
             $absentrado = (new AbsenTrado())->processUpdate($absentrado, $data);
-            $absentrado->position = $this->getPosition($absentrado, $absentrado->getTable())->position;
-            if ($request->limit == 0) {
-                $absentrado->page = ceil($absentrado->position / (10));
-            } else {
-                $absentrado->page = ceil($absentrado->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $absentrado->position = $this->getPosition($absentrado, $absentrado->getTable())->position;
+                if ($request->limit == 0) {
+                    $absentrado->page = ceil($absentrado->position / (10));
+                } else {
+                    $absentrado->page = ceil($absentrado->position / ($request->limit ?? 10));
+                }
+            }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $absentrado->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('absentrado', 'edit', $data);
             }
 
             DB::commit();
@@ -211,13 +231,24 @@ class AbsenTradoController extends Controller
         DB::beginTransaction();
         try {
             $absenTrado = (new AbsenTrado())->processDestroy($id);
-            $selected = $this->getPosition($absenTrado, $absenTrado->getTable(), true);
-            $absenTrado->position = $selected->position;
-            $absenTrado->id = $selected->id;
-            if ($request->limit == 0) {
-                $absenTrado->page = ceil($absenTrado->position / (10));
-            } else {
-                $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($absenTrado, $absenTrado->getTable(), true);
+                $absenTrado->position = $selected->position;
+                $absenTrado->id = $selected->id;
+                if ($request->limit == 0) {
+                    $absenTrado->page = ceil($absenTrado->position / (10));
+                } else {
+                    $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
+                }
+            }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
+
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $this->saveToTnl('absentrado', 'delete', $data);
             }
 
             DB::commit();
