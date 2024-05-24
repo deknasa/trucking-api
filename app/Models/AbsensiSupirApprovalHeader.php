@@ -38,7 +38,7 @@ class AbsensiSupirApprovalHeader extends MyModel
                 absensisupirapprovalproses.absensisupirapproval_id,
                 absensisupirapprovalproses.nobukti,
                 STRING_AGG(absensisupirapprovalproses.pengeluaran_nobukti, ', ') as pengeluaran_nobukti,
-                STRING_AGG('<a href=$petik".$url."?tgldari='+(format(absensisupirapprovalheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(absensisupirapprovalheader.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+absensisupirapprovalheader.nobukti+'$petik class=$petik link-color $petik target=$petik _blank $petik title=$petik '+absensisupirapprovalproses.pengeluaran_nobukti+' $petik>'+absensisupirapprovalproses.pengeluaran_nobukti+'</a>', ',') as url"
+                STRING_AGG('<a href=$petik".$url."?tgldari='+(format(absensisupirapprovalheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(absensisupirapprovalheader.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+absensisupirapprovalproses.pengeluaran_nobukti+'$petik class=$petik link-color $petik target=$petik _blank $petik title=$petik '+absensisupirapprovalproses.pengeluaran_nobukti+' $petik>'+absensisupirapprovalproses.pengeluaran_nobukti+'</a>', ',') as url"
                 ))
             ->join(DB::raw("absensisupirapprovalheader with (readuncommitted)"),'absensisupirapprovalproses.absensisupirapproval_id','absensisupirapprovalheader.id')    
             ->groupBy("absensisupirapprovalproses.absensisupirapproval_id","absensisupirapprovalproses.nobukti");
