@@ -452,6 +452,23 @@ class AbsensiSupirHeaderController extends Controller
             ];
             return response($data);
         }
+        $isUsedTrip = AbsensiSupirHeader::isUsedTrip($absensisupir->id);
+        // dd($absensisupir,$absensisupir->nominal);
+        if ($aksi == 'DELETE') {
+            if ($isUsedTrip  || ($absensisupir->nominal > 0 )) {
+                $keteranganerror = $error->cekKeteranganError('DTSA') ?? '';
+                $keterror = 'No Bukti <b>' . $absensisupir->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
+
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'DTSA',
+                    'statuspesan' => 'warning',
+                ];
+                return response($data);
+            }
+            
+        }
 
         if ($aksi == 'PRINTER BESAR' || $aksi == 'PRINTER KECIL') {
             //validasi cetak
