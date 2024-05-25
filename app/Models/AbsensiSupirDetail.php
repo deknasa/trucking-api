@@ -257,6 +257,8 @@ class AbsensiSupirDetail extends MyModel
                     "jeniskendaraan.text as statusjeniskendaraan",
                     DB::raw("left(jam, 5)"),
                     DB::raw("isnull(c.jumlah,0) as jumlahtrip"),
+                    DB::raw("(CASE WHEN isnull($this->table.statustambahantrado,0)=0 THEN '' ELSE (CASE WHEN $this->table.statustambahantrado=655 THEN tradotambahan.text ELSE '' end) end) as statustambahantrado"),
+                    DB::raw("(CASE WHEN isnull($this->table.statussupirserap,0)=0 THEN '' ELSE (CASE WHEN $this->table.statussupirserap=593 THEN serap.text ELSE '' end) end) as statussupirserap "),
                     DB::Raw("(case when isnull(c.jumlah,0)=0  and isnull(absentrado.kodeabsen,'')='' then ' $statustrip->memo ' else '' end) as statustrip")
 
                 )
@@ -264,6 +266,8 @@ class AbsensiSupirDetail extends MyModel
                     ->leftjoin(DB::raw("parameter as jeniskendaraan with (readuncommitted)"), "jeniskendaraan.id", "$this->table.statusjeniskendaraan")
                     ->leftjoin(DB::raw("supir with (readuncommitted)"), "supir.id", "$this->table.supir_id")
                     ->leftjoin(DB::raw("absentrado with (readuncommitted)"), "absentrado.id", "$this->table.absen_id")
+                    ->leftJoin("parameter as serap","$this->table.statussupirserap",'serap.id')
+                    ->leftJoin(DB::raw("parameter as tradotambahan with (readuncommitted)"),"$this->table.statustambahantrado",'tradotambahan.id')
                     ->leftjoin(DB::raw($tempspgroup . " as c"), function ($join) {
                         $join->on("$this->table.supir_id", "=", "c.supir_id");
                         $join->on("$this->table.trado_id", "=", "c.trado_id");
@@ -278,6 +282,17 @@ class AbsensiSupirDetail extends MyModel
                     })
                         ->whereRaw("isnull($this->table.absen_id,0)=0")
                         ->whereRaw("isnull(tempsp.nobukti,'')=''");
+                }
+
+                if (request()->from == 'viewHistory') {
+                    $isMandor = auth()->user()->isMandor();
+                    $isAdmin = auth()->user()->isAdmin();
+
+                    if (!$isAdmin) {
+                        if ($isMandor) {
+                            $query->Join(DB::raw($tempmandordetail . " as mandordetail"), "$this->table.mandor_id", 'mandordetail.mandor_id');
+                        }
+                    }
                 }
                 if ($getAbsen) {
                     $statusJenisKendaraan = request()->statusjeniskendaraan;

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
+use App\Models\AbsensiSupirDetail;
 use App\Models\MandorAbsensiSupir;
 use App\Http\Controllers\Controller;
 
@@ -14,13 +15,19 @@ class MandorAbsensiSupirHistoryController extends Controller
      */
     public function index(Request $request)
     {
-        $mandorabsensisupir = new MandorAbsensiSupir();
+        $getHeaderAbsensi = (new MandorAbsensiSupir())->getHeaderAbsensi();
+        $absensiSupirDetail = new AbsensiSupirDetail();
+        $request->merge([
+            'absensi_id' =>$getHeaderAbsensi->id??'',
+            'sortIndex' =>$request->sortIndex == 'kodetrado'?'trado':$request->sortIndex,
+        ]);
+        
         return response([
-            'data' => $mandorabsensisupir->get(),
+            'data' => $absensiSupirDetail->get(),
             'attributes' => [
-                'total' => $mandorabsensisupir->totalPages,
-                'records' => $mandorabsensisupir->totalRows,
-                'tradosupir' => $mandorabsensisupir->isTradoMilikSupir(),
+                'total' => $absensiSupirDetail->totalPages,
+                'records' => $absensiSupirDetail->totalRows,
+                'tradosupir' => (new MandorAbsensiSupir())->isTradoMilikSupir(),
             ]
         ]);
     }
