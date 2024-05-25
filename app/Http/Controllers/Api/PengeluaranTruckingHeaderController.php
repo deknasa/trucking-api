@@ -91,7 +91,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 $request->postingpinjaman = $statusPosting->id;
             }
 
-            if ($fetchFormat->kodepengeluaran != "PJT") {
+            if ($fetchFormat->kodepengeluaran != "PJT" && $fetchFormat->kodepengeluaran != "PJK") {
                 $statusPosting = DB::table(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'POSTING')->first();
                 $request->statusposting = $statusPosting->id;
             }
@@ -270,7 +270,7 @@ class PengeluaranTruckingHeaderController extends Controller
             }
 
 
-            if ($fetchFormat->kodepengeluaran != "PJT") {
+            if ($fetchFormat->kodepengeluaran != "PJT" && $fetchFormat->kodepengeluaran != "PJK") {
                 $statusPosting = DB::table(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'POSTING')->first();
                 $request->statusposting = $statusPosting->id;
             }

@@ -238,7 +238,7 @@ class PenerimaanTruckingHeader extends MyModel
                     'tgldariheaderpenerimaanheader' => $item['tgldariheaderpenerimaanheader'],
                     'tglsampaiheaderpenerimaanheader' => $item['tglsampaiheaderpenerimaanheader'],
                     'penerimaanbank_id' => $item['penerimaanbank_id'],
-                    
+
                 ]);
             }
         } else {
@@ -792,12 +792,15 @@ class PenerimaanTruckingHeader extends MyModel
         $tempPribadi = $this->createTempPinjPribadiKaryawan($karyawan_id);
 
         $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By pengeluarantruckingdetail.nobukti) as id,pengeluarantruckingheader.tglbukti,pengeluarantruckingdetail.nobukti,pengeluarantruckingdetail.keterangan," . $tempPribadi . ".sisa"))
+            ->select(DB::raw("row_number() Over(Order By pengeluarantruckingdetail.nobukti) as id,pengeluarantruckingheader.tglbukti,pengeluarantruckingdetail.nobukti,pengeluarantruckingdetail.keterangan,pengeluarantruckingdetail.karyawan_id as pinj_karyawanid, karyawan.namakaryawan as pinj_karyawan," . $tempPribadi . ".sisa"))
             ->leftJoin(DB::raw("$tempPribadi with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', $tempPribadi . ".nobukti")
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', "pengeluarantruckingheader.nobukti")
-            ->whereRaw("pengeluarantruckingheader.pengeluarantrucking_id=8")
-            ->whereRaw("pengeluarantruckingdetail.karyawan_id = $karyawan_id")
-            ->whereRaw("pengeluarantruckingdetail.nobukti = $tempPribadi.nobukti")
+            ->leftJoin(DB::raw("karyawan with (readuncommitted)"), 'pengeluarantruckingdetail.karyawan_id', "karyawan.id")
+            ->whereRaw("pengeluarantruckingheader.pengeluarantrucking_id=8");
+        if ($karyawan_id != 0) {
+            $query->whereRaw("pengeluarantruckingdetail.karyawan_id = $karyawan_id");
+        }
+        $query->whereRaw("pengeluarantruckingdetail.nobukti = $tempPribadi.nobukti")
             ->where(function ($query) use ($tempPribadi) {
                 $query->whereRaw("$tempPribadi.sisa != 0")
                     ->orWhereRaw("$tempPribadi.sisa is null");
@@ -965,9 +968,12 @@ class PenerimaanTruckingHeader extends MyModel
             ->from(
                 DB::raw("pengeluarantruckingdetail with (readuncommitted)")
             )
-            ->select(DB::raw("pengeluarantruckingdetail.nobukti, (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa"))
-            // ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti', 'pengeluarantruckingdetail.nobukti')
-            ->whereRaw("pengeluarantruckingdetail.karyawan_id = $karyawan_id")
+            ->select(DB::raw("pengeluarantruckingdetail.nobukti, (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa"));
+        // ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti', 'pengeluarantruckingdetail.nobukti')
+        if ($karyawan_id != 0) {
+            $fetch->whereRaw("pengeluarantruckingdetail.karyawan_id = $karyawan_id");
+        }
+        $fetch->where("pengeluarantruckingdetail.nobukti",  'LIKE', "%PJK%")
             ->groupBy('pengeluarantruckingdetail.nobukti', 'pengeluarantruckingdetail.nominal');
 
         Schema::create($temp, function ($table) {
@@ -1024,7 +1030,7 @@ class PenerimaanTruckingHeader extends MyModel
 
         $temp = '##tempGet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $pengembalian = DB::table($tempPribadi)->from(DB::raw("$tempPribadi with (readuncommitted)"))
-            ->select(DB::raw("penerimaantrucking_id,nobukti,keterangan,sisa,bayar"));
+            ->select(DB::raw("penerimaantrucking_id,nobukti,keterangan,sisa,bayar,pinj_karyawanid,pinj_karyawan"));
 
         Schema::create($temp, function ($table) {
             $table->bigInteger('penerimaantrucking_id')->nullable();
@@ -1032,17 +1038,19 @@ class PenerimaanTruckingHeader extends MyModel
             $table->longText('keterangan')->nullable();
             $table->bigInteger('sisa')->nullable();
             $table->bigInteger('bayar')->nullable();
+            $table->bigInteger('pinj_karyawanid')->nullable();
+            $table->string('pinj_karyawan')->nullable();
         });
-        DB::table($temp)->insertUsing(['penerimaantrucking_id', 'nobukti', 'keterangan', 'sisa', 'bayar'], $pengembalian);
+        DB::table($temp)->insertUsing(['penerimaantrucking_id', 'nobukti', 'keterangan', 'sisa', 'bayar', 'pinj_karyawanid', 'pinj_karyawan'], $pengembalian);
 
         $pinjaman = DB::table($tempAll)->from(DB::raw("$tempAll with (readuncommitted)"))
-            ->select(DB::raw("null as penerimaantrucking_id,nobukti,keterangan,sisa, 0 as bayar"))
+            ->select(DB::raw("null as penerimaantrucking_id,nobukti,keterangan,sisa, 0 as bayar,pinj_karyawanid,pinj_karyawan"))
             ->where('sisa', '!=', '0');
 
-        DB::table($temp)->insertUsing(['penerimaantrucking_id', 'nobukti', 'keterangan', 'sisa', 'bayar'], $pinjaman);
+        DB::table($temp)->insertUsing(['penerimaantrucking_id', 'nobukti', 'keterangan', 'sisa', 'bayar', 'pinj_karyawanid', 'pinj_karyawan'], $pinjaman);
 
         $data = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By $temp.nobukti) as id,penerimaantrucking_id,nobukti,keterangan,sisa,bayar as nominal"))
+            ->select(DB::raw("row_number() Over(Order By $temp.nobukti) as id,penerimaantrucking_id,nobukti,keterangan,sisa,bayar as nominal, pinj_karyawanid,pinj_karyawan"))
             ->get();
 
         return $data;
@@ -1092,10 +1100,14 @@ class PenerimaanTruckingHeader extends MyModel
             )
             ->select(DB::raw("pengeluarantruckingdetail.nobukti,pengeluarantruckingdetail.keterangan,
             (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) 
-            FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa "))
+            FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa, pengeluarantruckingdetail.karyawan_id as pinj_karyawanid, karyawan.namakaryawan as pinj_karyawan"))
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'pengeluarantruckingdetail.nobukti')
-            ->whereRaw("pengeluarantruckingdetail.karyawan_id = $karyawan_id")
-            ->where("pengeluarantruckingheader.pengeluarantrucking_id", "8")
+            ->leftJoin(DB::raw("karyawan with (readuncommitted)"), 'pengeluarantruckingdetail.karyawan_id', "karyawan.id");
+
+        if ($karyawan_id != 0) {
+            $fetch->whereRaw("pengeluarantruckingdetail.karyawan_id = $karyawan_id");
+        }
+        $fetch->where("pengeluarantruckingheader.pengeluarantrucking_id", "8")
             ->whereRaw("pengeluarantruckingheader.nobukti not in (select pengeluarantruckingheader_nobukti from penerimaantruckingdetail where penerimaantruckingheader_id=$id)")
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
@@ -1103,9 +1115,11 @@ class PenerimaanTruckingHeader extends MyModel
             $table->string('nobukti');
             $table->longText('keterangan');
             $table->bigInteger('sisa')->nullable();
+            $table->bigInteger('pinj_karyawanid')->nullable();
+            $table->string('pinj_karyawan')->nullable();
         });
         // return $fetch->get();
-        $tes = DB::table($temp)->insertUsing(['nobukti', 'keterangan', 'sisa'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'keterangan', 'sisa', 'pinj_karyawanid', 'pinj_karyawan'], $fetch);
         return $temp;
     }
 
@@ -1165,12 +1179,16 @@ class PenerimaanTruckingHeader extends MyModel
             )
             ->select(DB::raw("penerimaantruckingdetail.penerimaantruckingheader_id,pengeluarantruckingdetail.nobukti,pengeluarantruckingdetail.keterangan, penerimaantruckingdetail.nominal as bayar ,
                 (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) 
-                FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa "))
+                FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa,pengeluarantruckingdetail.karyawan_id as pinj_karyawanid, karyawan.namakaryawan as pinj_karyawan "))
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'pengeluarantruckingdetail.nobukti')
             ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti', 'pengeluarantruckingdetail.nobukti')
-            ->where("pengeluarantruckingheader.pengeluarantrucking_id", "8")
-            ->whereRaw("pengeluarantruckingdetail.karyawan_id = $karyawan_id")
-            ->where("penerimaantruckingdetail.penerimaantruckingheader_id", $id)
+            ->leftJoin(DB::raw("karyawan with (readuncommitted)"), 'pengeluarantruckingdetail.karyawan_id', "karyawan.id")
+            ->where("pengeluarantruckingheader.pengeluarantrucking_id", "8");
+
+        if ($karyawan_id != 0) {
+            $fetch->whereRaw("pengeluarantruckingdetail.karyawan_id = $karyawan_id");
+        }
+        $fetch->where("penerimaantruckingdetail.penerimaantruckingheader_id", $id)
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
         Schema::create($temp, function ($table) {
@@ -1179,9 +1197,11 @@ class PenerimaanTruckingHeader extends MyModel
             $table->longText('keterangan');
             $table->bigInteger('bayar')->nullable();
             $table->bigInteger('sisa')->nullable();
+            $table->bigInteger('pinj_karyawanid')->nullable();
+            $table->string('pinj_karyawan')->nullable();
         });
         // return $fetch->get();
-        $tes = DB::table($temp)->insertUsing(['penerimaantrucking_id', 'nobukti', 'keterangan', 'bayar', 'sisa'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['penerimaantrucking_id', 'nobukti', 'keterangan', 'bayar', 'sisa', 'pinj_karyawanid', 'pinj_karyawan'], $fetch);
 
 
         return $temp;
@@ -1193,7 +1213,7 @@ class PenerimaanTruckingHeader extends MyModel
         $tempPribadi = $this->createTempPengembalianPinjaman($id, $supir_id);
 
         $data = DB::table($tempPribadi)->from(DB::raw("$tempPribadi with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By $tempPribadi.nobukti) as id,penerimaantrucking_id,nobukti,keterangan,jlhpinjaman,totalbayar,sisa,bayar as nominal"))
+            ->select(DB::raw("row_number() Over(Order By $tempPribadi.nobukti) as id,penerimaantrucking_id,nobukti,keterangan,jlhpinjaman,totalbayar,sisa,bayar as nominal,pinj_supirid, pinj_supir"))
             ->get();
 
         return $data;
@@ -1204,7 +1224,7 @@ class PenerimaanTruckingHeader extends MyModel
         $tempPribadi = $this->createTempPengembalianPinjamanKaryawan($id, $karyawan_id);
 
         $data = DB::table($tempPribadi)->from(DB::raw("$tempPribadi with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By $tempPribadi.nobukti) as id,penerimaantrucking_id,nobukti,keterangan,sisa,bayar as nominal"))
+            ->select(DB::raw("row_number() Over(Order By $tempPribadi.nobukti) as id,penerimaantrucking_id,nobukti,keterangan,sisa,bayar as nominal,pinj_karyawanid, pinj_karyawan"))
             ->get();
 
         return $data;
@@ -1329,7 +1349,7 @@ class PenerimaanTruckingHeader extends MyModel
 
 
         $nobuktipengeluarantrucking = $data['pengeluarantruckingheader_nobukti'][0] ?? '';
-        if ($fetchFormat->kodepenerimaan == 'PJP') {
+        if ($fetchFormat->kodepenerimaan == 'PJP' || $fetchFormat->kodepenerimaan == 'PJPK') {
             $queryposting = db::table('pengeluarantruckingheader')->from(db::raw("pengeluarantruckingheader a with (readuncommitted)"))
                 ->select('statusposting', 'coa')->where('nobukti', $nobuktipengeluarantrucking)->first();
             if (isset($queryposting)) {
@@ -1427,7 +1447,7 @@ class PenerimaanTruckingHeader extends MyModel
             ]);
             $nobuktipengeluarantrucking = $data['pengeluarantruckingheader_nobukti'][$i] ?? '';
             $penerimaanTruckingDetails[] = $penerimaanTruckingDetail->toArray();
-            if ($fetchFormat->kodepenerimaan == 'PJP') {
+            if ($fetchFormat->kodepenerimaan == 'PJP' || $fetchFormat->kodepenerimaan == 'PJPK') {
                 $queryposting = db::table('pengeluarantruckingheader')->from(db::raw("pengeluarantruckingheader a with (readuncommitted)"))
                     ->select('statusposting', 'coa')->where('nobukti', $nobuktipengeluarantrucking)->first();
                 if (isset($queryposting)) {
@@ -1491,8 +1511,7 @@ class PenerimaanTruckingHeader extends MyModel
                 $coakredit_detail[] = $data['coa'];
             }
 
-            if ($fetchFormat->kodepenerimaan != 'PJP') {
-
+            if ($fetchFormat->kodepenerimaan != 'PJP' && $fetchFormat->kodepenerimaan != 'PJPK') {
                 $coadebet_detail[] = $coadebet;
                 $nominal_detail[] = $data['nominal'][$i];
                 if ($fetchFormat->kodepenerimaan == 'DPO') {
@@ -1508,7 +1527,7 @@ class PenerimaanTruckingHeader extends MyModel
 
         $diterimaDari = '';
         // convert nominal dan coa pjp
-        if ($fetchFormat->kodepenerimaan == 'PJP') {
+        if ($fetchFormat->kodepenerimaan == 'PJP' || $fetchFormat->kodepenerimaan == 'PJPK') {
 
             if ($from != 'pemutihan') {
                 $nominalPostingNon = array_filter($nominalPostingNon, function ($value) {
@@ -1528,11 +1547,23 @@ class PenerimaanTruckingHeader extends MyModel
                 $coakredit_detail = $coakreditPostingNon;
                 $keterangan_detail = $keteranganPostingNon;
             }
-            $getNamaSupir = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))->select('namasupir')->where('id', $data['supirheader_id'])->first();
-            if ($getNamaSupir != '') {
-                $diterimaDari = $getNamaSupir->namasupir;
-            } else {
-                $diterimaDari = 'SUPIR';
+            if ($fetchFormat->kodepenerimaan == 'PJP') {
+
+                $getNamaSupir = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))->select('namasupir')->where('id', $data['supirheader_id'])->first();
+                if ($getNamaSupir != '') {
+                    $diterimaDari = $getNamaSupir->namasupir;
+                } else {
+                    $diterimaDari = 'SUPIR';
+                }
+            }
+            if ($fetchFormat->kodepenerimaan == 'PJPK') {
+
+                $getNamaKaryawan = DB::table("karyawan")->from(DB::raw("karyawan with (readuncommitted)"))->select('namakaryawan')->where('id', $data['karyawanheader_id'])->first();
+                if ($getNamaKaryawan != '') {
+                    $diterimaDari = $getNamaKaryawan->namakaryawan;
+                } else {
+                    $diterimaDari = 'KARYAWAN';
+                }
             }
         }
 
@@ -1582,7 +1613,7 @@ class PenerimaanTruckingHeader extends MyModel
                     $keterangan_detail[] = 'DEPOSITO SUPIR';
                     // $keterangan_detail[] = 'DEPOSITO SUPIR A/N ' . $namasupirdata . ' ' . $data['keterangan'][0];
                 }
-            } else if ($fetchFormat->kodepenerimaan == 'BBM' || $fetchFormat->kodepenerimaan == 'PJPK' || $fetchFormat->kodepenerimaan == 'DPOK') {
+            } else if ($fetchFormat->kodepenerimaan == 'BBM' || $fetchFormat->kodepenerimaan == 'DPOK') {
                 $coakredit_detail = [];
                 $coadebet_detail = [];
                 $nominal_detail = [];
@@ -1597,10 +1628,6 @@ class PenerimaanTruckingHeader extends MyModel
                 } else {
                     $keterangan_detail[] = $data['keterangan'][0];
                 }
-            }
-            if ($fetchFormat->kodepenerimaan == 'PJPK') {
-                $getKaryawan = DB::table("karyawan")->from(DB::raw("karyawan with (readuncommitted)"))->select("namakaryawan")->where('id', $data['karyawanheader_id'])->first();
-                $diterimaDari = $getKaryawan->namakaryawan;
             }
             /*STORE PENERIMAAN*/
             $penerimaanRequest = [
@@ -1756,7 +1783,7 @@ class PenerimaanTruckingHeader extends MyModel
             }
 
             $nobuktipengeluarantrucking = $data['pengeluarantruckingheader_nobukti'][0] ?? '';
-            if ($fetchFormat->kodepenerimaan == 'PJP') {
+            if ($fetchFormat->kodepenerimaan == 'PJP' || $fetchFormat->kodepenerimaan == 'PJPK') {
                 $queryposting = db::table('pengeluarantruckingheader')->from(db::raw("pengeluarantruckingheader a with (readuncommitted)"))
                     ->select('statusposting', 'coa')->where('nobukti', $nobuktipengeluarantrucking)->first();
                 if (isset($queryposting)) {
@@ -1852,7 +1879,7 @@ class PenerimaanTruckingHeader extends MyModel
                 ]);
                 $nobuktipengeluarantrucking = $data['pengeluarantruckingheader_nobukti'][$i] ?? '';
                 $penerimaanTruckingDetails[] = $penerimaanTruckingDetail->toArray();
-                if ($fetchFormat->kodepenerimaan == 'PJP') {
+                if ($fetchFormat->kodepenerimaan == 'PJP' || $fetchFormat->kodepenerimaan == 'PJPK') {
                     $queryposting = db::table('pengeluarantruckingheader')->from(db::raw("pengeluarantruckingheader a with (readuncommitted)"))
                         ->select('statusposting', 'coa')->where('nobukti', $nobuktipengeluarantrucking)->first();
                     if (isset($queryposting)) {
@@ -1914,7 +1941,7 @@ class PenerimaanTruckingHeader extends MyModel
                 } else {
                     $coakredit_detail[] = $data['coa'];
                 }
-                if ($fetchFormat->kodepenerimaan != 'PJP') {
+                if ($fetchFormat->kodepenerimaan != 'PJP' && $fetchFormat->kodepenerimaan != 'PJPK') {
                     $coadebet_detail[] = $coadebet;
                     $nominal_detail[] = $data['nominal'][$i];
                     if ($fetchFormat->kodepenerimaan == 'DPO') {
@@ -1930,7 +1957,7 @@ class PenerimaanTruckingHeader extends MyModel
 
             // convert nominal dan coa pjp
             $diterimaDari = '';
-            if ($fetchFormat->kodepenerimaan == 'PJP') {
+            if ($fetchFormat->kodepenerimaan == 'PJP' || $fetchFormat->kodepenerimaan == 'PJPK') {
                 if ($from != 'pemutihan') {
                     $nominalPostingNon = array_filter($nominalPostingNon, function ($value) {
                         return $value !== 0;
@@ -1948,11 +1975,23 @@ class PenerimaanTruckingHeader extends MyModel
                     $coakredit_detail = $coakreditPostingNon;
                     $keterangan_detail = $keteranganPostingNon;
                 }
-                $getNamaSupir = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))->select('namasupir')->where('id', $data['supirheader_id'])->first();
-                if ($getNamaSupir != '') {
-                    $diterimaDari = $getNamaSupir->namasupir;
-                } else {
-                    $diterimaDari = 'SUPIR';
+
+                if ($fetchFormat->kodepenerimaan == 'PJP') {
+                    $getNamaSupir = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))->select('namasupir')->where('id', $data['supirheader_id'])->first();
+                    if ($getNamaSupir != '') {
+                        $diterimaDari = $getNamaSupir->namasupir;
+                    } else {
+                        $diterimaDari = 'SUPIR';
+                    }
+                }
+                if ($fetchFormat->kodepenerimaan == 'PJPK') {
+
+                    $getNamaKaryawan = DB::table("karyawan")->from(DB::raw("karyawan with (readuncommitted)"))->select('namakaryawan')->where('id', $data['karyawanheader_id'])->first();
+                    if ($getNamaKaryawan != '') {
+                        $diterimaDari = $getNamaKaryawan->namakaryawan;
+                    } else {
+                        $diterimaDari = 'KARYAWAN';
+                    }
                 }
             }
 
@@ -1990,7 +2029,7 @@ class PenerimaanTruckingHeader extends MyModel
                         $keterangan_detail[] = 'DEPOSITO SUPIR';
                         // $keterangan_detail[] = 'DEPOSITO SUPIR A/N ' . $namasupirdata . ' ' . $data['keterangan'][0];
                     }
-                } else if ($fetchFormat->kodepenerimaan == 'BBM' || $fetchFormat->kodepenerimaan == 'PJPK' || $fetchFormat->kodepenerimaan == 'DPOK') {
+                } else if ($fetchFormat->kodepenerimaan == 'BBM' || $fetchFormat->kodepenerimaan == 'DPOK') {
                     $coakredit_detail = [];
                     $coadebet_detail = [];
                     $nominal_detail = [];
@@ -2007,10 +2046,6 @@ class PenerimaanTruckingHeader extends MyModel
                     }
                 }
 
-                if ($fetchFormat->kodepenerimaan == 'PJPK') {
-                    $getKaryawan = DB::table("karyawan")->from(DB::raw("karyawan with (readuncommitted)"))->select("namakaryawan")->where('id', $data['karyawanheader_id'])->first();
-                    $diterimaDari = $getKaryawan->namakaryawan;
-                }
                 /*UPDATE PENERIMAAN*/
                 $penerimaanRequest = [
                     'tglbukti' => $penerimaanTruckingHeader->tglbukti,
