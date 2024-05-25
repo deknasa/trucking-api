@@ -304,17 +304,20 @@ class UpahSupirTangki extends MyModel
                 $table->double('nominalsupir', 15, 2)->nullable();
                 $table->double('nominalkenek', 15, 2)->nullable();
                 $table->double('nominalkomisi', 15, 2)->nullable();
+                $table->double('omset', 15, 2)->nullable();
             });
 
             $temptariftangki = '##temptariftangki' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($temptariftangki, function ($table) {
                 $table->unsignedBigInteger('id')->nullable();
                 $table->string('tujuan', 200)->nullable();
+                $table->double('omset', 15, 2)->nullable();
             });
             $querytarif = db::table('tariftangki')->from(db::raw("tariftangki a with (readuncommitted)"))
                 ->select(
                     'a.id',
                     'a.tujuan',
+                    "a.nominal as omset"
                 )
                 ->whereRaw("cast('" . $tglbukti . "' as datetime)>=a.tglmulaiberlaku")
                 ->where('a.statusaktif', 1)
@@ -323,6 +326,7 @@ class UpahSupirTangki extends MyModel
             DB::table($temptariftangki)->insertUsing([
                 'id',
                 'tujuan',
+                'omset'
             ],  $querytarif);
 
             $queryupahsupir = db::table('upahsupirtangki')->from(db::raw("upahsupirtangki a with (readuncommitted)"))
@@ -351,7 +355,8 @@ class UpahSupirTangki extends MyModel
                     DB::raw("null as statuscontainer"),
                     DB::raw("0 as nominalsupir"),
                     DB::raw("0 as nominalkenek"),
-                    DB::raw("0 as nominalkomisi")
+                    DB::raw("0 as nominalkomisi"),
+                    db::raw("isnull(tariftangki.omset,0) as omset"),
                 )
                 ->join(DB::raw("$temptariftangki as tariftangki with (readuncommitted)"), 'a.tariftangki_id', 'tariftangki.id')
                 ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'a.kotadari_id')
@@ -387,6 +392,7 @@ class UpahSupirTangki extends MyModel
                 'nominalsupir',
                 'nominalkenek',
                 'nominalkomisi',
+                'omset',
             ], $queryupahsupir);
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
@@ -422,6 +428,7 @@ class UpahSupirTangki extends MyModel
                 'a.created_at',
                 'a.updated_at',
                 'a.kotadarisampai',
+                'a.omset',
             );
         $this->filter($query);
         $this->totalRows = $query->count();
@@ -696,6 +703,8 @@ class UpahSupirTangki extends MyModel
                             $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'check') {
                             $query = $query->whereRaw('1 = 1');
+                        } else if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi' || $filters['field'] == 'omset') {
+                            $query = $query->whereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                         }
@@ -715,6 +724,8 @@ class UpahSupirTangki extends MyModel
                                 $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'check') {
                                 $query = $query->whereRaw('1 = 1');
+                            } else if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi' || $filters['field'] == 'omset') {
+                                $query = $query->orWhereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->OrwhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                             }

@@ -266,6 +266,7 @@ class UpahSupirRincian extends MyModel
                 $table->longtext('statusaktif')->nullable();
                 $table->longtext('container')->nullable();
                 $table->longtext('statuscontainer')->nullable();
+                $table->double('omset', 15, 2)->nullable();
                 $table->double('nominalsupir', 15, 2)->nullable();
                 $table->double('nominalkenek', 15, 2)->nullable();
                 $table->double('nominalkomisi', 15, 2)->nullable();
@@ -748,6 +749,7 @@ class UpahSupirRincian extends MyModel
                     'parameter.memo as statusaktif',
                     'container.kodecontainer as container',
                     'statuscontainer.kodestatuscontainer as statuscontainer',
+                    db::raw("isnull(B.omset,0) as omset"),
                     db::raw("(upahsupirrincian.nominalsupir-
                     (case when " . $statuskandang_id . "=" . $idstatuskandang . " then " . $nominalsupirkandang . " else  0 end))
                     as nominalsupir"),
@@ -814,6 +816,7 @@ class UpahSupirRincian extends MyModel
                 'statusaktif',
                 'container',
                 'statuscontainer',
+                'omset',
                 'nominalsupir',
                 'nominalkenek',
                 'nominalkomisi',
@@ -843,6 +846,7 @@ class UpahSupirRincian extends MyModel
                         'parameter.memo as statusaktif',
                         'container.kodecontainer as container',
                         'statuscontainer.kodestatuscontainer as statuscontainer',
+                        db::raw("isnull(B.omset,0) as omset"),
                         'upahsupirrincian.nominalsupir',
                         'upahsupirrincian.nominalkenek',
                         'upahsupirrincian.nominalkomisi',
@@ -894,6 +898,7 @@ class UpahSupirRincian extends MyModel
                     'statusaktif',
                     'container',
                     'statuscontainer',
+                    'omset',
                     'nominalsupir',
                     'nominalkenek',
                     'nominalkomisi',
@@ -939,6 +944,7 @@ class UpahSupirRincian extends MyModel
                 'a.statusaktif',
                 'a.container',
                 'a.statuscontainer',
+                'a.omset',
                 'a.nominalsupir',
                 'a.nominalkenek',
                 'a.nominalkomisi',
@@ -1371,11 +1377,12 @@ class UpahSupirRincian extends MyModel
                         //     $query = $query->WhereRaw("format(B.tglmulaiberlaku,'dd-MM-yyyy') like '%$filters[data]%'");
                         // } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                         //     $query = $query->whereRaw("format(B." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        // } else if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi') {
-                        //     $query = $query->whereRaw("format(upahsupirrincian." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
-                        // } else {
-                        $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        // }
+                        // } else 
+                        if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi' || $filters['field'] == 'omset') {
+                            $query = $query->whereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                        } else {
+                            $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                     }
 
                     break;
@@ -1393,11 +1400,12 @@ class UpahSupirRincian extends MyModel
                             //     $query = $query->orWhereRaw("format(B.tglmulaiberlaku,'dd-MM-yyyy') like '%$filters[data]%'");
                             // } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             //     $query = $query->orWhereRaw("format(B." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            // } else if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi') {
-                            //     $query = $query->orWhereRaw("format(upahsupirrincian." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
-                            // } else {
-                            $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            // }
+                            // } else 
+                            if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi' || $filters['field'] == 'omset') {
+                                $query = $query->orWhereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
                     });
 
