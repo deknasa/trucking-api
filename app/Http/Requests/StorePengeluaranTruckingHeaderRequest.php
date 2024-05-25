@@ -89,10 +89,15 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                 // ->where('id',$this->pengeluarantrucking_id)
                 ->where('kodepengeluaran', "PJT")
                 ->first();
+                
+            $pjk = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
+            // ->where('id',$this->pengeluarantrucking_id)
+            ->where('kodepengeluaran', "PJK")
+            ->first();
 
             if ($this->pengeluarantrucking_id) {
                 if ($pjt) {
-                    if ($pjt->id !=  $this->pengeluarantrucking_id) {
+                    if ($pjt->id !=  $this->pengeluarantrucking_id && $pjk->id !=  $this->pengeluarantrucking_id) {
                         return false;
                     }
                 }
