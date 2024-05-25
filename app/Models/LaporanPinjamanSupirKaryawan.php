@@ -26,11 +26,18 @@ class LaporanPinjamanSupirKaryawan extends MyModel
 
 
 
-    public function getReport($sampai,$prosesneraca)
+    public function getReport($sampai,$prosesneraca, $jenis)
     {
         $pengeluarantrucking_id = 8;
         $penerimaantrucking_id = 4;
         $prosesneraca = $prosesneraca ?? 0;
+
+        $parameter = new Parameter();
+        $idstatusposting = $parameter->cekId('STATUS POSTING', 'STATUS POSTING', 'POSTING') ?? 0; 
+
+        if ($prosesneraca==1) {
+            $jenis=$idstatusposting;
+        }
 
         $temphistory = '##temphistory' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
@@ -60,10 +67,12 @@ class LaporanPinjamanSupirKaryawan extends MyModel
             ->where('a.pengeluarantrucking_id', '=', $pengeluarantrucking_id)
             ->whereRaw("a.tglbukti<='" . date('Y/m/d', strtotime($sampai)) . "'")
             ->whereRaw("isnull(b.karyawan_id,0)<>0")
+            ->where('a.statusposting', '=', $jenis)
             ->OrderBy('c.namakaryawan', 'asc')
             ->OrderBy('a.tglbukti', 'asc')
             ->OrderBy('a.nobukti', 'asc');
 
+            // dd($queryhistory->tosql());
         DB::table($temphistory)->insertUsing([
             'nobukti',
             'tglbukti',
@@ -72,6 +81,9 @@ class LaporanPinjamanSupirKaryawan extends MyModel
             'tipe',
             'namakaryawan',
         ], $queryhistory);
+
+
+        // dd(db::table($temphistory)->get());
 
 
         $queryhistory = DB::table('penerimaantruckingheader')->from(
@@ -93,6 +105,7 @@ class LaporanPinjamanSupirKaryawan extends MyModel
             ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
             ->whereRaw("a.tglbukti<'" . date('Y/m/d', strtotime($sampai)) . "'")
             ->whereRaw("isnull(b.karyawan_id,0)<>0")
+            ->where('c.statusposting', '=', $jenis)
             ->OrderBy('f.namakaryawan', 'asc')
             ->OrderBy('a.tglbukti', 'asc')
             ->OrderBy('a.nobukti', 'asc');
@@ -163,6 +176,7 @@ class LaporanPinjamanSupirKaryawan extends MyModel
             ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
             ->whereRaw("a.tglbukti='" . date('Y/m/d', strtotime($sampai)) . "'")
             ->whereRaw("isnull(b.karyawan_id,0)<>0")
+            ->where('e.statusposting', '=', $jenis)            
             ->OrderBy('f.namakaryawan', 'asc')
             ->OrderBy('a.tglbukti', 'asc')
             ->OrderBy('a.nobukti', 'asc');
