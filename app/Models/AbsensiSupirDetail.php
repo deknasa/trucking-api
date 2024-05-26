@@ -418,6 +418,7 @@ class AbsensiSupirDetail extends MyModel
                 $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
                 $this->filter($query);
                 $this->sort($query);
+                // dd($query->tosql());
                 $this->paginate($query);
 
                 $absensiSupirDetail = $query->get();
@@ -1437,6 +1438,8 @@ class AbsensiSupirDetail extends MyModel
                                 $query = $query->whereRaw("(trim(trado.kodetrado)+' - '+trim(supir.namasupir)) LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'status') {
                                 $query = $query->where('absentrado.kodeabsen', 'LIKE', "%$filters[data]%");
+                            // } else if ($filters['field'] == 'statustrip') {
+                            //     $query = $query->whereRaw("(case when isnull(c.jumlah,0)=0  and isnull(absentrado.kodeabsen,'')='' then ' $statustrip->memo ' else '' end) LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'statusKeterangan') {
                                 $query = $query->where('absentrado.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statusjeniskendaraan') {
@@ -1470,6 +1473,8 @@ class AbsensiSupirDetail extends MyModel
                                 $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tradosupir') {
                                 $query = $query->orWhereRaw("(trim(trado.kodetrado)+' - '+trim(supir.namasupir)) LIKE '%$filters[data]%'");
+                            // } else if ($filters['field'] == 'statustrip') {
+                            //     $query = $query->whereRaw("(case when isnull(c.jumlah,0)=0  and isnull(absentrado.kodeabsen,'')='' then ' $statustrip->memo ' else '' end) LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'status') {
                                 $query = $query->orWhere('absentrado.kodeabsen', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statusKeterangan') {
@@ -1514,7 +1519,7 @@ class AbsensiSupirDetail extends MyModel
         } else if ($this->params['sortIndex'] == 'supir') {
             return $query->orderBy('supir.namasupir', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'status') {
-            return $query->orderBy('absenstrado.kodeabsen', $this->params['sortOrder']);
+            return $query->orderBy('absentrado.keterangan', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'keterangan_detail') {
             return $query->orderBy($this->table . '.keterangan', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'jumlahtrip') {
