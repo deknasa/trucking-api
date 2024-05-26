@@ -153,6 +153,29 @@ class AbsensiSupirHeader extends MyModel
                 $table->string('nobukti', 1000)->nullable();
             });
 
+            // $querybelumlengkap = db::table("absensisupirdetail")->from(db::raw("absensisupirdetail a with (readuncommitted)"))
+            // ->select(
+            //     'a.nobukti',
+            //     'a.supir_id',
+            //     'a.trado_id',
+            //     'd.namasupir',
+            //     'e.kodetrado',
+            // )
+            // ->join(db::raw("absensisupirheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            // ->leftjoin(DB::raw("suratpengantar as c with(readuncommitted)"), function ($join) {
+            //     $join->on('a.supir_id', '=', 'c.supir_id');
+            //     $join->on('a.trado_id', '=', 'c.trado_id');
+            //     $join->on('b.tglbukti', '=', 'c.tglbukti');
+            // })
+            // ->join(db::raw("supir d with (readuncommitted)"), 'a.supir_id', 'd.id')
+            // ->join(db::raw("trado e with (readuncommitted)"), 'a.trado_id', 'e.id')
+            // ->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            // ->whereRaw("isnull(a.absen_id,0)=0")
+            // ->whereRaw("isnull(c.nobukti,'')=''")
+            // ->whereRaw("isnull(b.nobukti,'')='ABS 0002/V/2024'");
+    
+            // dd($querybelumlengkap->get());
+
             $querybelumlengkap = db::table("absensisupirdetail")->from(db::raw("absensisupirdetail a with (readuncommitted)"))
                 ->select(
                     'a.nobukti'
