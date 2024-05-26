@@ -1162,6 +1162,17 @@ class MandorAbsensiSupir extends MyModel
         // dd($this->totalPages);
         return $data;
     }
+    public function getHeaderAbsensi()
+    {
+        $this->setRequestParameters();
+        $tglbukaabsensi = request()->tglbukaabsensi ?? 'now';
+        $date = date('Y-m-d', strtotime($tglbukaabsensi));
+        $absensisupirheader = db::table("absensisupirheader")->from(db::raw("absensisupirheader a with (readuncommitted)"))
+        ->where('a.tglbukti', $date)
+        ->first();
+        
+        return $absensisupirheader;
+    }
 
     public function isTradoMilikSupir()
     {
