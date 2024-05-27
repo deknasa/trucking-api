@@ -204,6 +204,7 @@ class ProsesGajiSupirHeader extends MyModel
                 $table->double('bbm', 15, 2)->nullable();
                 $table->double('uangmakanharian', 15, 2)->nullable();
                 $table->double('uangmakanberjenjang', 15, 2)->nullable();
+                $table->double('biayaextraheader', 15, 2)->nullable();
                 $table->double('potonganpinjaman', 15, 2)->nullable();
                 $table->double('potonganpinjamansemua', 15, 2)->nullable();
                 $table->double('deposito', 15, 2)->nullable();
@@ -214,8 +215,6 @@ class ProsesGajiSupirHeader extends MyModel
                 $table->dateTime('tgldariheaderpengeluaranheader')->nullable();
                 $table->dateTime('tglsampaiheaderpengeluaranheader')->nullable();
                 $table->integer('pengeluaranbank_id')->nullable();
-
-                
             });
 
             $tempgajidetail = '##tempgajidetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -296,6 +295,7 @@ class ProsesGajiSupirHeader extends MyModel
                     'd.bbm',
                     'd.uangmakanharian',
                     'd.uangmakanberjenjang',
+                    'd.biayaextraheader',
                     'd.potonganpinjaman',
                     'd.potonganpinjamansemua',
                     'd.deposito',
@@ -354,6 +354,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'bbm',
                 'uangmakanharian',
                 'uangmakanberjenjang',
+                'biayaextraheader',
                 'potonganpinjaman',
                 'potonganpinjamansemua',
                 'deposito',
@@ -409,6 +410,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'a.bbm',
                 'a.uangmakanharian',
                 'a.uangmakanberjenjang',
+                'a.biayaextraheader',
                 'a.potonganpinjaman',
                 'a.potonganpinjamansemua',
                 'a.deposito',
@@ -454,6 +456,7 @@ class ProsesGajiSupirHeader extends MyModel
                 db::raw("sum(a.bbm) as bbm"),
                 db::raw("sum(a.uangmakanharian) as uangmakanharian"),
                 db::raw("sum(a.uangmakanberjenjang) as uangmakanberjenjang"),
+                db::raw("sum(a.biayaextraheader) as biayaextraheader"),
                 db::raw("sum(a.potonganpinjaman) as potonganpinjaman"),
                 db::raw("sum(a.potonganpinjamansemua) as potonganpinjamansemua"),
                 db::raw("sum(a.deposito) as deposito"),
@@ -468,6 +471,7 @@ class ProsesGajiSupirHeader extends MyModel
         $this->totalGajiKenek = $querytotal->gajikenek ?? 0;
         $this->totalKomisiSupir = $querytotal->komisisupir ?? 0;
         $this->totalBiayaExtra = $querytotal->biayaextra ?? 0;
+        $this->totalBiayaExtraHeader = $querytotal->biayaextraheader ?? 0;
         $this->totalBbm = $querytotal->bbm ?? 0;
         $this->totalDeposito = $querytotal->deposito ?? 0;
         $this->totalPotPinj = $querytotal->potonganpinjaman ?? 0;
@@ -503,6 +507,9 @@ class ProsesGajiSupirHeader extends MyModel
                 (SELECT SUM(isnull(gajisupirheader.uangmakanberjenjang,0))
                 FROM gajisupirheader 
                 WHERE gajisupirheader.nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupirheader.id = prosesgajisupirdetail.prosesgajisupir_id)) AS uangmakanberjenjang,
+                (SELECT SUM(isnull(gajisupirheader.biayaextra,0))
+                FROM gajisupirheader 
+                WHERE gajisupirheader.nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupirheader.id = prosesgajisupirdetail.prosesgajisupir_id)) AS biayaextraheader,
                 (SELECT SUM(gajisupirheader.potonganpinjaman)
                 FROM gajisupirheader 
                 WHERE gajisupirheader.nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupirheader.id = prosesgajisupirdetail.prosesgajisupir_id)) AS potonganpinjaman,  
@@ -522,18 +529,19 @@ class ProsesGajiSupirHeader extends MyModel
 
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
-            $table->bigInteger('total')->nullable();
-            $table->bigInteger('totalposting')->nullable();
-            $table->bigInteger('uangjalan')->nullable();
-            $table->bigInteger('bbm')->nullable();
-            $table->bigInteger('uangmakanharian')->nullable();
-            $table->bigInteger('uangmakanberjenjang')->nullable();
-            $table->bigInteger('potonganpinjaman')->nullable();
-            $table->bigInteger('potonganpinjamansemua')->nullable();
-            $table->bigInteger('deposito')->nullable();
+            $table->float('total')->nullable();
+            $table->float('totalposting')->nullable();
+            $table->float('uangjalan')->nullable();
+            $table->float('bbm')->nullable();
+            $table->float('uangmakanharian')->nullable();
+            $table->float('uangmakanberjenjang')->nullable();
+            $table->float('biayaextraheader')->nullable();
+            $table->float('potonganpinjaman')->nullable();
+            $table->float('potonganpinjamansemua')->nullable();
+            $table->float('deposito')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['nobukti', 'total', 'totalposting', 'uangjalan', 'bbm', 'uangmakanharian', 'uangmakanberjenjang', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'total', 'totalposting', 'uangjalan', 'bbm', 'uangmakanharian', 'uangmakanberjenjang', 'biayaextraheader', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito'], $fetch);
 
         return $temp;
     }
@@ -558,6 +566,8 @@ class ProsesGajiSupirHeader extends MyModel
                 $tempRIC . '.bbm',
                 $tempRIC . '.uangmakanharian',
                 $tempRIC . '.uangmakanberjenjang',
+                $tempRIC . '.biayaextraheader',
+                $tempRIC . '.keteranganextra',
                 $tempRIC . '.potonganpinjaman',
                 $tempRIC . '.potonganpinjamansemua',
                 $tempRIC . '.deposito',
@@ -589,6 +599,7 @@ class ProsesGajiSupirHeader extends MyModel
         $this->totalUangMakanBerjenjang = $query->sum('uangmakanberjenjang');
         $this->totalPotPinjaman = $query->sum('potonganpinjaman');
         $this->totalPotPinjSemua = $query->sum('potonganpinjamansemua');
+        $this->totalBiayaExtraHeader = $query->sum('biayaextraheader');
         $this->totalDeposito = $query->sum('deposito');
         $this->totalKomisi = $query->sum('komisisupir');
         $this->totalTol = $query->sum('tolsupir');
@@ -615,6 +626,8 @@ class ProsesGajiSupirHeader extends MyModel
                 $tempRIC . '.bbm',
                 $tempRIC . '.uangmakanharian',
                 $tempRIC . '.uangmakanberjenjang',
+                $tempRIC . '.biayaextraheader',
+                $tempRIC . '.keteranganextra',
                 $tempRIC . '.potonganpinjaman',
                 $tempRIC . '.potonganpinjamansemua',
                 $tempRIC . '.deposito',
@@ -639,6 +652,7 @@ class ProsesGajiSupirHeader extends MyModel
         $this->totalUangMakanBerjenjang = $query->sum('uangmakanberjenjang');
         $this->totalPotPinjaman = $query->sum('potonganpinjaman');
         $this->totalPotPinjSemua = $query->sum('potonganpinjamansemua');
+        $this->totalBiayaExtraHeader = $query->sum('biayaextraheader');
         $this->totalDeposito = $query->sum('deposito');
         $this->totalKomisi = $query->sum('komisisupir');
         $this->totalTol = $query->sum('tolsupir');
@@ -684,6 +698,8 @@ class ProsesGajiSupirHeader extends MyModel
                 'gajisupirheader.bbm',
                 'gajisupirheader.uangmakanharian',
                 DB::raw("(case when gajisupirheader.uangmakanberjenjang IS NULL then 0 else gajisupirheader.uangmakanberjenjang end) as uangmakanberjenjang"),
+                DB::raw("(case when gajisupirheader.biayaextra IS NULL then 0 else gajisupirheader.biayaextra end) as biayaextraheader"),
+                'gajisupirheader.keteranganextra',
                 'gajisupirheader.potonganpinjaman',
                 'gajisupirheader.potonganpinjamansemua',
                 'gajisupirheader.deposito',
@@ -707,22 +723,24 @@ class ProsesGajiSupirHeader extends MyModel
             $table->string('supir');
             $table->date('tgldariric')->nullable();
             $table->date('tglsampairic')->nullable();
-            $table->bigInteger('borongan')->nullable();
-            $table->bigInteger('uangjalan')->nullable();
-            $table->bigInteger('bbm')->nullable();
-            $table->bigInteger('uangmakanharian')->nullable();
-            $table->bigInteger('uangmakanberjenjang')->nullable();
-            $table->bigInteger('potonganpinjaman')->nullable();
-            $table->bigInteger('potonganpinjamansemua')->nullable();
-            $table->bigInteger('deposito')->nullable();
-            $table->bigInteger('komisisupir')->nullable();
-            $table->bigInteger('tolsupir')->nullable();
+            $table->float('borongan')->nullable();
+            $table->float('uangjalan')->nullable();
+            $table->float('bbm')->nullable();
+            $table->float('uangmakanharian')->nullable();
+            $table->float('uangmakanberjenjang')->nullable();
+            $table->float('biayaextraheader')->nullable();
+            $table->longText('keteranganextra')->nullable();
+            $table->float('potonganpinjaman')->nullable();
+            $table->float('potonganpinjamansemua')->nullable();
+            $table->float('deposito')->nullable();
+            $table->float('komisisupir')->nullable();
+            $table->float('tolsupir')->nullable();
             $table->float('gajisupir')->nullable();
             $table->float('gajikenek')->nullable();
             $table->float('extra')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'supir', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'uangmakanberjenjang', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir', 'gajisupir', 'gajikenek', 'extra'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'supir', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'uangmakanberjenjang', 'biayaextraheader', 'keteranganextra', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir', 'gajisupir', 'gajikenek', 'extra'], $fetch);
 
         // GET SALDO
         // $tempDetail = '##tempDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -814,6 +832,8 @@ class ProsesGajiSupirHeader extends MyModel
                     'gajisupirheader.bbm',
                     'gajisupirheader.uangmakanharian',
                     DB::raw("(case when gajisupirheader.uangmakanberjenjang IS NULL then 0 else gajisupirheader.uangmakanberjenjang end) as uangmakanberjenjang"),
+                    DB::raw("(case when gajisupirheader.biayaextra IS NULL then 0 else gajisupirheader.biayaextra end) as biayaextraheader"),
+                    'gajisupirheader.keteranganextra',
                     'gajisupirheader.potonganpinjaman',
                     'gajisupirheader.potonganpinjamansemua',
                     'gajisupirheader.deposito',
@@ -830,7 +850,7 @@ class ProsesGajiSupirHeader extends MyModel
                 ->where('gajisupirheader.statusjeniskendaraan', $statusjeniskendaraan)
                 ->whereRaw("gajisupirheader.nobukti not in(select gajisupir_nobukti from prosesgajisupirdetail)");
 
-            $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'supir', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'uangmakanberjenjang', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir', 'gajisupir', 'gajikenek', 'extra'], $fetch);
+            $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'supir', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'uangmakanberjenjang', 'biayaextraheader', 'keteranganextra', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir', 'gajisupir', 'gajikenek', 'extra'], $fetch);
 
             // // SALDO
             // $tempDetail = '##tempDet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -920,6 +940,7 @@ class ProsesGajiSupirHeader extends MyModel
             $table->double('bbm', 15, 2)->nullable();
             $table->double('uangmakanharian', 15, 2)->nullable();
             $table->double('uangmakanberjenjang', 15, 2)->nullable();
+            $table->double('biayaextraheader', 15, 2)->nullable();
             $table->double('potonganpinjaman', 15, 2)->nullable();
             $table->double('potonganpinjamansemua', 15, 2)->nullable();
             $table->double('deposito', 15, 2)->nullable();
@@ -996,6 +1017,7 @@ class ProsesGajiSupirHeader extends MyModel
                 $this->tableTotal . '.bbm',
                 $this->tableTotal . '.uangmakanharian',
                 $this->tableTotal . '.uangmakanberjenjang',
+                $this->tableTotal . '.biayaextraheader',
                 $this->tableTotal . '.potonganpinjaman',
                 $this->tableTotal . '.potonganpinjamansemua',
                 $this->tableTotal . '.deposito',
@@ -1040,6 +1062,7 @@ class ProsesGajiSupirHeader extends MyModel
             'bbm',
             'uangmakanharian',
             'uangmakanberjenjang',
+            'biayaextraheader',
             'potonganpinjaman',
             'potonganpinjamansemua',
             'deposito',
@@ -1079,6 +1102,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'a.bbm',
                 'a.uangmakanharian',
                 'a.uangmakanberjenjang',
+                'a.biayaextraheader',
                 'a.potonganpinjaman',
                 'a.potonganpinjamansemua',
                 'a.deposito',
@@ -1122,6 +1146,7 @@ class ProsesGajiSupirHeader extends MyModel
             $table->double('bbm', 15, 2)->nullable();
             $table->double('uangmakanharian', 15, 2)->nullable();
             $table->double('uangmakanberjenjang', 15, 2)->nullable();
+            $table->double('biayaextraheader', 15, 2)->nullable();
             $table->double('potonganpinjaman', 15, 2)->nullable();
             $table->double('potonganpinjamansemua', 15, 2)->nullable();
             $table->double('deposito', 15, 2)->nullable();
@@ -1171,6 +1196,7 @@ class ProsesGajiSupirHeader extends MyModel
             'bbm',
             'uangmakanharian',
             'uangmakanberjenjang',
+            'biayaextraheader',
             'potonganpinjaman',
             'potonganpinjamansemua',
             'deposito',
@@ -1205,6 +1231,8 @@ class ProsesGajiSupirHeader extends MyModel
                 $getRIC . '.bbm',
                 $getRIC . '.uangmakanharian',
                 $getRIC . '.uangmakanberjenjang',
+                $getRIC . '.biayaextraheader',
+                $getRIC . '.keteranganextra',
                 $getRIC . '.potonganpinjaman',
                 $getRIC . '.potonganpinjamansemua',
                 $getRIC . '.deposito',
@@ -1227,6 +1255,7 @@ class ProsesGajiSupirHeader extends MyModel
         $this->totalUangBBM = $query->sum('bbm');
         $this->totalUangMakan = $query->sum('uangmakanharian');
         $this->totalUangMakanBerjenjang = $query->sum('uangmakanberjenjang');
+        $this->totalBiayaExtraHeader = $query->sum('biayaextraheader');
         $this->totalPotPinjaman = $query->sum('potonganpinjaman');
         $this->totalPotPinjSemua = $query->sum('potonganpinjamansemua');
         $this->totalDeposito = $query->sum('deposito');
@@ -1295,6 +1324,8 @@ class ProsesGajiSupirHeader extends MyModel
                 'gajisupirheader.bbm',
                 'gajisupirheader.uangmakanharian',
                 DB::raw("(case when gajisupirheader.uangmakanberjenjang IS NULL then 0 else gajisupirheader.uangmakanberjenjang end) as uangmakanberjenjang"),
+                DB::raw("(case when gajisupirheader.biayaextra IS NULL then 0 else gajisupirheader.biayaextra end) as biayaextraheader"),
+                'gajisupirheader.keteranganextra',
                 'gajisupirheader.potonganpinjaman',
                 'gajisupirheader.potonganpinjamansemua',
                 'gajisupirheader.deposito',
@@ -1319,22 +1350,24 @@ class ProsesGajiSupirHeader extends MyModel
             $table->string('supir');
             $table->date('tgldariric')->nullable();
             $table->date('tglsampairic')->nullable();
-            $table->bigInteger('borongan')->nullable();
-            $table->bigInteger('uangjalan')->nullable();
-            $table->bigInteger('bbm')->nullable();
-            $table->bigInteger('uangmakanharian')->nullable();
-            $table->bigInteger('uangmakanberjenjang')->nullable();
-            $table->bigInteger('potonganpinjaman')->nullable();
-            $table->bigInteger('potonganpinjamansemua')->nullable();
-            $table->bigInteger('deposito')->nullable();
-            $table->bigInteger('komisisupir')->nullable();
-            $table->bigInteger('tolsupir')->nullable();
+            $table->float('borongan')->nullable();
+            $table->float('uangjalan')->nullable();
+            $table->float('bbm')->nullable();
+            $table->float('uangmakanharian')->nullable();
+            $table->float('uangmakanberjenjang')->nullable();
+            $table->float('biayaextraheader')->nullable();
+            $table->longText('keteranganextra')->nullable();
+            $table->float('potonganpinjaman')->nullable();
+            $table->float('potonganpinjamansemua')->nullable();
+            $table->float('deposito')->nullable();
+            $table->float('komisisupir')->nullable();
+            $table->float('tolsupir')->nullable();
             $table->float('gajisupir')->nullable();
             $table->float('gajikenek')->nullable();
             $table->float('extra')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'supir', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'uangmakanberjenjang', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir', 'gajisupir', 'gajikenek', 'extra'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'supir', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'uangmakanberjenjang', 'biayaextraheader', 'keteranganextra', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir', 'gajisupir', 'gajikenek', 'extra'], $fetch);
 
         $fetchsaldo = db::table("saldogajisupirheader")->from(DB::raw("saldogajisupirheader with (readuncommitted)"))
             ->select(
@@ -1378,8 +1411,13 @@ class ProsesGajiSupirHeader extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] != '') {
-                            // $query = $query->where($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw($table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            if ($filters['field'] == 'borongan' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'deposito' || $filters['field'] == 'komisisupir' || $filters['field'] == 'gajisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'extra' || $filters['field'] == 'biayaextraheader' || $filters['field'] == 'tolsupir') {
+                                $query = $query->whereRaw("format($table." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                            } else {
+
+                                // $query = $query->where($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw($table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -1387,8 +1425,12 @@ class ProsesGajiSupirHeader extends MyModel
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] != '') {
-                            // $query = $query->orWhere($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->OrwhereRaw($table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            if ($filters['field'] == 'borongan' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'deposito' || $filters['field'] == 'komisisupir' || $filters['field'] == 'gajisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'extra' || $filters['field'] == 'biayaextraheader' || $filters['field'] == 'tolsupir') {
+                                $query = $query->orWhereRaw("format($table." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->orWhere($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->OrwhereRaw($table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -1939,7 +1981,7 @@ class ProsesGajiSupirHeader extends MyModel
         }
 
 
-        // 
+        // uang makan
 
         $tgl = DB::table($tempRincianJurnal)->select(DB::raw("min(tglbukti) as tglbukti"))->first();
 
@@ -1984,6 +2026,18 @@ class ProsesGajiSupirHeader extends MyModel
             DB::table($tempRincianJurnal)->insertUsing(['tglbukti', 'nominal', 'keterangan'], $fetchTempRincianJurnal4);
         }
 
+        // biaya extra header
+        $fetchTempRincianJurnal4 = DB::table($tempGaji)->from(DB::raw("$tempGaji as A with (readuncommitted)"))
+            ->select(
+                DB::raw("'$tgl->tglbukti', isnull(sum(B.biayaextra),0) as nominal, 'Biaya Extra' as keterangan")
+            )
+            ->join(DB::raw("gajisupirheader as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
+            ->whereRaw("isnull(B.biayaextra ,0)<>0");
+        $cekBiayaExtraHeader = $fetchTempRincianJurnal4->first();
+        if ($cekBiayaExtraHeader->nominal > 0) {
+
+            DB::table($tempRincianJurnal)->insertUsing(['tglbukti', 'nominal', 'keterangan'], $fetchTempRincianJurnal4);
+        }
         // end of table utama
 
         // AMBIL GAJI DARI SALDO
@@ -2148,7 +2202,7 @@ class ProsesGajiSupirHeader extends MyModel
                             $query = $query->where('a.statuscetaktext', '=', "$filters[data]");
                         } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglbukacetak') {
                             $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'total' || $filters['field'] == 'totalposting' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'deposito' || $filters['field'] == 'komisisupir' || $filters['field'] == 'gajisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'biayaextra') {
+                        } else if ($filters['field'] == 'total' || $filters['field'] == 'totalposting' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'deposito' || $filters['field'] == 'komisisupir' || $filters['field'] == 'gajisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'biayaextra' || $filters['field'] == 'biayaextraheader') {
                             $query = $query->whereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
@@ -2167,7 +2221,7 @@ class ProsesGajiSupirHeader extends MyModel
                                 $query = $query->orWhere('a.statuscetaktext', '=', "$filters[data]");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglbukacetak') {
                                 $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'total' || $filters['field'] == 'totalposting' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'deposito' || $filters['field'] == 'komisisupir' || $filters['field'] == 'gajisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'biayaextra') {
+                            } else if ($filters['field'] == 'total' || $filters['field'] == 'totalposting' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'deposito' || $filters['field'] == 'komisisupir' || $filters['field'] == 'gajisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'biayaextra' || $filters['field'] == 'biayaextraheader') {
                                 $query = $query->orWhereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
@@ -3029,9 +3083,9 @@ class ProsesGajiSupirHeader extends MyModel
                 ];
 
 
-               $pengembalianKasgantung =  (new PengembalianKasGantungHeader())->processStore($pengembalianKasGantungHeader);
-               $prosesGajiSupirHeader->pengembaliankasgantung_nobukti = $pengembalianKasgantung->nobukti;
-               $prosesGajiSupirHeader->save();
+                $pengembalianKasgantung =  (new PengembalianKasGantungHeader())->processStore($pengembalianKasGantungHeader);
+                $prosesGajiSupirHeader->pengembaliankasgantung_nobukti = $pengembalianKasgantung->nobukti;
+                $prosesGajiSupirHeader->save();
             }
         }
 
@@ -3818,9 +3872,9 @@ class ProsesGajiSupirHeader extends MyModel
             $totalBBM = 0;
             foreach ($gajiSupirBBM as $key => $value) {
                 $fetchBBM = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))->where('gajisupir_nobukti', $value->nobukti)->first();
-                if(isset($fetchBBM)){
+                if (isset($fetchBBM)) {
                     $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
-                    if(isset($getJurnalHeader)){
+                    if (isset($getJurnalHeader)) {
                         (new JurnalUmumHeader())->processDestroy($getJurnalHeader->id, 'PROSES GAJI SUPIR');
                     }
                 }
@@ -3890,8 +3944,8 @@ class ProsesGajiSupirHeader extends MyModel
                 $prosesGajiSupirHeader->pengembaliankasgantung_nobukti = $pengembaliankasgantung->nobukti;
                 $prosesGajiSupirHeader->save();
             }
-        }else{
-            
+        } else {
+
             $nobuktiPenerimaanKasgantung = PengembalianKasGantungHeader::from(DB::raw("pengembaliankasgantungheader with (readuncommitted)"))->where('penerimaan_nobukti', $data['nobuktiUangjalan'])->first();
             if (isset($nobuktiPenerimaanKasgantung)) {
 

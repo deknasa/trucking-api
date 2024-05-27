@@ -40,7 +40,9 @@ class CreateGajisupirheaderTable extends Migration
             $table->double('uangmakanharian',15,2)->nullable();            
             $table->double('pinjamanpribadi',15,2)->nullable();            
             $table->double('gajiminus',15,2)->nullable();            
-            $table->double('uangJalantidakterhitung',15,2)->nullable();            
+            $table->double('uangJalantidakterhitung',15,2)->nullable();                 
+            $table->double('biayaextra',15,2)->nullable();          
+            $table->longText('keteranganextra')->nullable();             
             $table->unsignedBigInteger('statusformat')->nullable();
             $table->integer('statuscetak')->Length(11)->nullable();
             $table->string('userbukacetak',50)->nullable();
