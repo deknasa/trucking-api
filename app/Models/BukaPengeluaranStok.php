@@ -121,6 +121,9 @@ class BukaPengeluaranStok extends MyModel
 
     public function sort($query)
     {
+        if ($this->params['sortIndex'] == 'pengeluaranstok') {
+            return $query->orderBy('pengeluaranstok.kodepengeluaran', $this->params['sortOrder']);
+        }
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 

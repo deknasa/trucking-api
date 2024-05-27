@@ -121,6 +121,9 @@ class BukaPenerimaanStok extends MyModel
 
     public function sort($query)
     {
+        if ($this->params['sortIndex'] == 'penerimaanstok') {
+            return $query->orderBy('penerimaanstok.kodepenerimaan', $this->params['sortOrder']);
+        }
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 
