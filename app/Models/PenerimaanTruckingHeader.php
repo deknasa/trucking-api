@@ -502,6 +502,7 @@ class PenerimaanTruckingHeader extends MyModel
     public function getDeposito($supir_id)
     {
         $tempPribadi = $this->createTempDeposito($supir_id);
+        $tglbukti = date('Y-m-d', strtotime(request()->tglbukti));
 
         $query = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
             ->select(DB::raw("row_number() Over(Order By penerimaantruckingdetail.nobukti) as id,penerimaantruckingheader.tglbukti,penerimaantruckingdetail.nobukti,penerimaantruckingdetail.keterangan," . $tempPribadi . ".sisa"))
@@ -513,6 +514,7 @@ class PenerimaanTruckingHeader extends MyModel
                 $query->whereRaw("$tempPribadi.sisa != 0")
                     ->orWhereRaw("$tempPribadi.sisa is null");
             })
+            ->where("penerimaantruckingheader.tglbukti", '<=', $tglbukti )
             ->orderBy('penerimaantruckingheader.tglbukti', 'asc')
             ->orderBy('penerimaantruckingdetail.nobukti', 'asc');
 
@@ -618,6 +620,7 @@ class PenerimaanTruckingHeader extends MyModel
     public function getDepositoKaryawan($karyawan_id)
     {
         $tempPribadi = $this->createTempDepositoKaryawan($karyawan_id);
+        $tglbukti = date('Y-m-d', strtotime(request()->tglbukti));
 
         $query = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
             ->select(DB::raw("row_number() Over(Order By penerimaantruckingdetail.nobukti) as id,penerimaantruckingheader.tglbukti,penerimaantruckingdetail.nobukti,penerimaantruckingdetail.keterangan," . $tempPribadi . ".sisa"))
@@ -629,6 +632,7 @@ class PenerimaanTruckingHeader extends MyModel
                 $query->whereRaw("$tempPribadi.sisa != 0")
                     ->orWhereRaw("$tempPribadi.sisa is null");
             })
+            ->where("penerimaantruckingheader.tglbukti", '<=', $tglbukti )
             ->orderBy('penerimaantruckingheader.tglbukti', 'asc')
             ->orderBy('penerimaantruckingdetail.nobukti', 'asc');
 
@@ -764,7 +768,7 @@ class PenerimaanTruckingHeader extends MyModel
     public function getPinjaman($supir_id, $isCekPemutihan = false)
     {
         $tempPribadi = $this->createTempPinjPribadi($supir_id);
-
+        $tglbukti = date('Y-m-d', strtotime(request()->tglbukti));
         $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
             ->select(DB::raw("row_number() Over(Order By pengeluarantruckingdetail.nobukti) as id,pengeluarantruckingheader.tglbukti,pengeluarantruckingdetail.nobukti,pengeluarantruckingdetail.keterangan,pengeluarantruckingdetail.supir_id as pinj_supirid, supir.namasupir as pinj_supir," . $tempPribadi . ".sisa,$tempPribadi.jlhpinjaman,$tempPribadi.totalbayar"))
             ->leftJoin(DB::raw("$tempPribadi with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', $tempPribadi . ".nobukti")
@@ -779,6 +783,7 @@ class PenerimaanTruckingHeader extends MyModel
                     ->orWhereRaw("$tempPribadi.sisa is null");
             })
             ->where("pengeluarantruckingheader.pengeluarantrucking_id",  1)
+            ->where("pengeluarantruckingheader.tglbukti", '<=', $tglbukti )
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
         if ($isCekPemutihan) {
@@ -791,6 +796,7 @@ class PenerimaanTruckingHeader extends MyModel
     {
         $tempPribadi = $this->createTempPinjPribadiKaryawan($karyawan_id);
 
+        $tglbukti = date('Y-m-d', strtotime(request()->tglbukti));
         $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
             ->select(DB::raw("row_number() Over(Order By pengeluarantruckingdetail.nobukti) as id,pengeluarantruckingheader.tglbukti,pengeluarantruckingdetail.nobukti,pengeluarantruckingdetail.keterangan,pengeluarantruckingdetail.karyawan_id as pinj_karyawanid, karyawan.namakaryawan as pinj_karyawan," . $tempPribadi . ".sisa"))
             ->leftJoin(DB::raw("$tempPribadi with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', $tempPribadi . ".nobukti")
@@ -805,6 +811,7 @@ class PenerimaanTruckingHeader extends MyModel
                 $query->whereRaw("$tempPribadi.sisa != 0")
                     ->orWhereRaw("$tempPribadi.sisa is null");
             })
+            ->where("pengeluarantruckingheader.tglbukti", '<=', $tglbukti )
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
 
