@@ -178,6 +178,8 @@ class GajiSupirHeader extends MyModel
                 $table->double('potonganpinjamansemua', 15, 2)->nullable();
                 $table->double('uangmakanberjenjang', 15, 2)->nullable();
                 $table->double('uangmakanharian', 15, 2)->nullable();
+                $table->double('biayaextraheader', 15, 2)->nullable();
+                $table->longText('keteranganextra')->nullable();
                 $table->longText('statuscetak')->nullable();
                 $table->longText('statuscetak_text')->nullable();
                 $table->string('userbukacetak', 1000)->nullable();
@@ -254,6 +256,8 @@ class GajiSupirHeader extends MyModel
                     'gajisupirheader.potonganpinjamansemua',
                     DB::raw("(case when gajisupirheader.uangmakanberjenjang IS NULL then 0 else gajisupirheader.uangmakanberjenjang end) as uangmakanberjenjang"),
                     'gajisupirheader.uangmakanharian',
+                    DB::raw("isnull(gajisupirheader.biayaextra, 0) as biayaextraheader"),
+                    'gajisupirheader.keteranganextra',
                     'parameter.memo as statuscetak',
                     "parameter.text as statuscetak_text",
                     'gajisupirheader.userbukacetak',
@@ -301,6 +305,8 @@ class GajiSupirHeader extends MyModel
                 'potonganpinjamansemua',
                 'uangmakanberjenjang',
                 'uangmakanharian',
+                'biayaextraheader',
+                'keteranganextra',
                 'statuscetak',
                 'statuscetak_text',
                 'userbukacetak',
@@ -349,6 +355,8 @@ class GajiSupirHeader extends MyModel
                 'a.potonganpinjamansemua',
                 'a.uangmakanberjenjang',
                 'a.uangmakanharian',
+                'a.biayaextraheader',
+                'a.keteranganextra',
                 'a.statuscetak',
                 'a.statuscetak_text',
                 'a.userbukacetak',
@@ -391,6 +399,7 @@ class GajiSupirHeader extends MyModel
                 db::raw("sum(a.komisisupir) as komisisupir"),
                 db::raw("sum(a.gajikenek) as gajikenek"),
                 db::raw("sum(a.biayaextra) as biayaextra"),
+                db::raw("sum(a.biayaextraheader) as biayaextraheader"),
                 db::raw("sum(a.total) as total"),
                 db::raw("sum(a.uangjalan) as uangjalan"),
                 db::raw("sum(a.bbm) as bbm"),
@@ -410,6 +419,7 @@ class GajiSupirHeader extends MyModel
         $this->totalGajiKenek = $querytotal->gajikenek ?? 0;
         $this->totalKomisiSupir = $querytotal->komisisupir ?? 0;
         $this->totalBiayaExtra = $querytotal->biayaextra ?? 0;
+        $this->totalBiayaExtraHeader = $querytotal->biayaextraheader ?? 0;
         $this->totalBbm = $querytotal->bbm ?? 0;
         $this->totalDeposito = $querytotal->deposito ?? 0;
         $this->totalPotPinj = $querytotal->potonganpinjaman ?? 0;
@@ -439,6 +449,8 @@ class GajiSupirHeader extends MyModel
                 'gajisupirheader.tglsampai',
                 'gajisupirheader.uangmakanberjenjang as berjenjanguangmakan',
                 'gajisupirheader.uangmakanharian',
+                DB::raw("isnull(gajisupirheader.biayaextra, 0) as biayaextraheader"),
+                'gajisupirheader.keteranganextra',
                 'gajisupirheader.deposito',
                 'gajisupirheader.bbm',
                 'gajisupirheader.potonganpinjaman',
@@ -1012,6 +1024,8 @@ class GajiSupirHeader extends MyModel
             $table->double('potonganpinjamansemua', 15, 2)->nullable();
             $table->double('uangmakanberjenjang', 15, 2)->nullable();
             $table->double('uangmakanharian', 15, 2)->nullable();
+            $table->double('biayaextraheader', 15, 2)->nullable();
+            $table->longText('keteranganextra')->nullable();
             $table->longText('statuscetak')->nullable();
             $table->longText('statuscetak_text')->nullable();
             $table->string('userbukacetak', 1000)->nullable();
@@ -1076,6 +1090,8 @@ class GajiSupirHeader extends MyModel
                 'gajisupirheader.potonganpinjamansemua',
                 DB::raw("(case when gajisupirheader.uangmakanberjenjang IS NULL then 0 else gajisupirheader.uangmakanberjenjang end) as uangmakanberjenjang"),
                 'gajisupirheader.uangmakanharian',
+                DB::raw("isnull(gajisupirheader.biayaextra, 0) as biayaextraheader"),
+                'gajisupirheader.keteranganextra',
                 'parameter.memo as statuscetak',
                 "parameter.text as statuscetak_text",
                 'gajisupirheader.userbukacetak',
@@ -1110,6 +1126,8 @@ class GajiSupirHeader extends MyModel
             'potonganpinjamansemua',
             'uangmakanberjenjang',
             'uangmakanharian',
+            'biayaextraheader',
+            'keteranganextra',
             'statuscetak',
             'statuscetak_text',
             'userbukacetak',
@@ -1142,6 +1160,8 @@ class GajiSupirHeader extends MyModel
                 'a.potonganpinjamansemua',
                 'a.uangmakanberjenjang',
                 'a.uangmakanharian',
+                'a.biayaextraheader',
+                'a.keteranganextra',
                 'a.statuscetak',
                 'a.statuscetak_text',
                 'a.userbukacetak',
@@ -1178,6 +1198,8 @@ class GajiSupirHeader extends MyModel
             $table->double('potonganpinjamansemua', 15, 2)->nullable();
             $table->double('uangmakanberjenjang', 15, 2)->nullable();
             $table->double('uangmakanharian', 15, 2)->nullable();
+            $table->double('biayaextraheader', 15, 2)->nullable();
+            $table->longText('keteranganextra')->nullable();
             $table->longText('statuscetak')->nullable();
             $table->longText('statuscetak_text')->nullable();
             $table->string('userbukacetak', 1000)->nullable();
@@ -1221,6 +1243,8 @@ class GajiSupirHeader extends MyModel
             'potonganpinjamansemua',
             'uangmakanberjenjang',
             'uangmakanharian',
+            'biayaextraheader',
+            'keteranganextra',
             'statuscetak',
             'statuscetak_text',
             'userbukacetak',
@@ -1926,7 +1950,7 @@ class GajiSupirHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statuscetak') {
                             $query = $query->where('a.statuscetak_text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'total' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'deposito' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang' || $filters['field'] == 'komisisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'biayaextra' || $filters['field'] == 'nominal') {
+                        } else if ($filters['field'] == 'total' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'deposito' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang' || $filters['field'] == 'komisisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'biayaextra' || $filters['field'] == 'nominal' || $filters['field'] == 'biayaextraheader') {
                             $query = $query->whereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglbukacetak') {
                             $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
@@ -1946,7 +1970,7 @@ class GajiSupirHeader extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statuscetak') {
                                 $query->orWhere('a.statuscetak_text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'total' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'deposito' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang' || $filters['field'] == 'komisisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'biayaextra' || $filters['field'] == 'nominal') {
+                            } else if ($filters['field'] == 'total' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'deposito' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang' || $filters['field'] == 'komisisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'biayaextra' || $filters['field'] == 'nominal' || $filters['field'] == 'biayaextraheader') {
                                 $query = $query->orWhereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglbukacetak') {
                                 $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
@@ -2251,6 +2275,8 @@ class GajiSupirHeader extends MyModel
         $gajiSupirHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
         $gajiSupirHeader->total = '';
         $gajiSupirHeader->uangjalan = $data['uangjalan'] ?? 0;
+        $gajiSupirHeader->biayaextra = $data['biayaextra'] ?? 0;
+        $gajiSupirHeader->keteranganextra = $data['keteranganextra'];
         $gajiSupirHeader->bbm = $data['nomBBM'] ?? 0;
         $gajiSupirHeader->potonganpinjaman = ($data['nominalPP']) ? array_sum($data['nominalPP']) : 0;
         $gajiSupirHeader->deposito = $data['nomDeposito'] ?? 0;
@@ -2308,7 +2334,7 @@ class GajiSupirHeader extends MyModel
             $gajiSupirDetails[] = $gajiSupirDetail->toArray();
             $urut++;
         }
-        $nominal = ($total - $gajiSupirHeader->uangjalan - $gajiSupirHeader->bbm - $gajiSupirHeader->potonganpinjaman - $gajiSupirHeader->potonganpinjamansemua - $gajiSupirHeader->deposito) + $gajiSupirHeader->uangmakanharian + $gajiSupirHeader->uangmakanberjenjang;
+        $nominal = ($total - $gajiSupirHeader->uangjalan - $gajiSupirHeader->bbm - $gajiSupirHeader->potonganpinjaman - $gajiSupirHeader->potonganpinjamansemua - $gajiSupirHeader->deposito) + $gajiSupirHeader->uangmakanharian + $gajiSupirHeader->uangmakanberjenjang + $gajiSupirHeader->biayaextra;
 
         $gajiSupirHeader->nominal = $nominal;
         $gajiSupirHeader->total = $total;
@@ -2582,6 +2608,8 @@ class GajiSupirHeader extends MyModel
         $gajiSupirHeader->total = '';
         $gajiSupirHeader->uangjalan = $data['uangjalan'] ?? 0;
         $gajiSupirHeader->bbm = $data['nomBBM'] ?? 0;
+        $gajiSupirHeader->biayaextra = $data['biayaextra'] ?? 0;
+        $gajiSupirHeader->keteranganextra = $data['keteranganextra'];
         $gajiSupirHeader->potonganpinjaman = ($data['nominalPP']) ? array_sum($data['nominalPP']) : 0;
         $gajiSupirHeader->deposito = $data['nomDeposito'] ?? 0;
         $gajiSupirHeader->potonganpinjamansemua = ($data['nominalPS']) ? array_sum($data['nominalPS']) : 0;
@@ -2641,7 +2669,7 @@ class GajiSupirHeader extends MyModel
             $gajiSupirDetails[] = $gajiSupirDetail->toArray();
             $urut++;
         }
-        $nominal = ($total - $gajiSupirHeader->uangjalan - $gajiSupirHeader->bbm - $gajiSupirHeader->potonganpinjaman - $gajiSupirHeader->potonganpinjamansemua - $gajiSupirHeader->deposito) + $gajiSupirHeader->uangmakanharian + $gajiSupirHeader->uangmakanberjenjang;
+        $nominal = ($total - $gajiSupirHeader->uangjalan - $gajiSupirHeader->bbm - $gajiSupirHeader->potonganpinjaman - $gajiSupirHeader->potonganpinjamansemua - $gajiSupirHeader->deposito) + $gajiSupirHeader->uangmakanharian + $gajiSupirHeader->uangmakanberjenjang + $gajiSupirHeader->biayaextra;
 
         $gajiSupirHeader->nominal = $nominal;
         $gajiSupirHeader->total = $total;

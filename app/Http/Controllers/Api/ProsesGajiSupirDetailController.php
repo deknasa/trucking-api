@@ -42,6 +42,7 @@ class ProsesGajiSupirDetailController extends Controller
                 'totalBBM' => $prosesGajiSupir->totalBBM,
                 'totalUangMakan' => $prosesGajiSupir->totalUangMakan,
                 'totalUangMakanBerjenjang' => $prosesGajiSupir->totalUangMakanBerjenjang,
+                'totalBiayaExtraHeader' => $prosesGajiSupir->totalBiayaExtraHeader,
                 'totalPinjaman' => $prosesGajiSupir->totalPinjaman,
                 'totalPinjamanSemua' => $prosesGajiSupir->totalPinjamanSemua,
                 'totalDeposito' => $prosesGajiSupir->totalDeposito,

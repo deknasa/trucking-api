@@ -81,6 +81,7 @@ class ProsesGajiSupirDetail extends MyModel
                     $table->double('uangjalan', 15, 2)->nullable();
                     $table->double('bbm', 15, 2)->nullable();
                     $table->double('uangmakanharian', 15, 2)->nullable();
+                    $table->double('biayaextraheader', 15, 2)->nullable();
                     $table->double('potonganpinjaman', 15, 2)->nullable();
                     $table->double('potonganpinjamansemua', 15, 2)->nullable();
                     $table->double('deposito', 15, 2)->nullable();
@@ -158,6 +159,7 @@ class ProsesGajiSupirDetail extends MyModel
                         db::raw("(case when isnull(gajisupirheader.nobukti,'')='' then saldogajisupirheader.uangjalan  else gajisupirheader.uangjalan end) as uangjalan"),
                         db::raw("(case when isnull(gajisupirheader.nobukti,'')='' then saldogajisupirheader.bbm  else gajisupirheader.bbm end) as bbm"),
                         db::raw("(case when isnull(gajisupirheader.nobukti,'')='' then saldogajisupirheader.uangmakanharian  else gajisupirheader.uangmakanharian end) as uangmakanharian"),
+                        db::raw("isnull(gajisupirheader.biayaextra, 0) as biayaextraheader"),
                         db::raw("(case when isnull(gajisupirheader.nobukti,'')='' then saldogajisupirheader.potonganpinjaman  else gajisupirheader.potonganpinjaman end) as potonganpinjaman"),
                         db::raw("(case when isnull(gajisupirheader.nobukti,'')='' then saldogajisupirheader.potonganpinjamansemua  else gajisupirheader.potonganpinjamansemua end) as potonganpinjamansemua"),
                         db::raw("(case when isnull(gajisupirheader.nobukti,'')='' then saldogajisupirheader.deposito  else gajisupirheader.deposito end) as deposito"),
@@ -201,6 +203,7 @@ class ProsesGajiSupirDetail extends MyModel
                     'uangjalan',
                     'bbm',
                     'uangmakanharian',
+                    'biayaextraheader',
                     'potonganpinjaman',
                     'potonganpinjamansemua',
                     'deposito',
@@ -238,6 +241,7 @@ class ProsesGajiSupirDetail extends MyModel
                 'a.uangjalan',
                 'a.bbm',
                 'a.uangmakanharian',
+                'a.biayaextraheader',
                 'a.potonganpinjaman',
                 'a.potonganpinjamansemua',
                 'a.deposito',
@@ -280,6 +284,7 @@ class ProsesGajiSupirDetail extends MyModel
                     db::raw("sum(a.uangmakanharian) as uangmakanharian"),
                     db::raw("sum(a.potonganpinjaman) as potonganpinjaman"),
                     db::raw("sum(a.potonganpinjamansemua) as potonganpinjamansemua"),
+                    db::raw("sum(a.biayaextraheader) as biayaextraheader"),
                     db::raw("sum(a.deposito) as deposito"),
                     db::raw("sum(a.gajisupir) as gajisupir"),
                     db::raw("sum(a.gajikenek) as gajikenek"),
@@ -297,6 +302,7 @@ class ProsesGajiSupirDetail extends MyModel
             $this->totalUangMakan = $querytotal->uangmakanharian ?? 0;
             $this->totalPinjaman = $querytotal->potonganpinjaman ?? 0;
             $this->totalPinjamanSemua = $querytotal->potonganpinjamansemua ?? 0;
+            $this->totalBiayaExtraHeader = $querytotal->biayaextraheader ?? 0;
             $this->totalDeposito = $querytotal->deposito ?? 0;
             $this->totalKomisi = $querytotal->komisisupir ?? 0;
             $this->totalBiayaExtra = $querytotal->biayaextra ?? 0;
@@ -350,7 +356,7 @@ class ProsesGajiSupirDetail extends MyModel
                 case "AND":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'total' || $filters['field'] == 'tolsupir' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'deposito' || $filters['field'] == 'komisisupir' || $filters['field'] == 'gajisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'biayaextra') {
+                            if ($filters['field'] == 'total' || $filters['field'] == 'tolsupir' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'deposito' || $filters['field'] == 'komisisupir' || $filters['field'] == 'gajisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'biayaextra' || $filters['field'] == 'biayaextraheader') {
                                 $query = $query->whereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -362,7 +368,7 @@ class ProsesGajiSupirDetail extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'total' || $filters['field'] == 'tolsupir' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'deposito' || $filters['field'] == 'komisisupir' || $filters['field'] == 'gajisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'biayaextra') {
+                            if ($filters['field'] == 'total' || $filters['field'] == 'tolsupir' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'deposito' || $filters['field'] == 'komisisupir' || $filters['field'] == 'gajisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'biayaextra' || $filters['field'] == 'biayaextraheader') {
                                 $query = $query->orWhereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
