@@ -33,6 +33,7 @@ class KartuStok extends MyModel
 
     public function get()
     {
+        // dd('test');
         $this->setRequestParameters();
 
         $tgldari = date('Y-m-d', strtotime(request()->dari));
@@ -53,8 +54,8 @@ class KartuStok extends MyModel
         $user = auth('api')->user()->name;
         $class = 'KartuStokController';
 
+// dd('test');
 
-     
         if ($proses == 'reload') {
             $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
 
@@ -139,6 +140,7 @@ class KartuStok extends MyModel
                 $table->index('nobukti', 'temtabel_nobukti_index');
                 $table->index('kategori_id', 'temtabel_kategori_id_index');
             });
+         
             if ($datafilter == 0 || $datafilter == '') {
                 DB::table($temprekapall)->insertUsing([
                     'stok_id',
@@ -263,6 +265,7 @@ class KartuStok extends MyModel
                     ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, 0, 0, $filtergudang->text));
                 }
             }
+       
             // dd(db::table($temprekapall)->whereraw("stok_id=29")->get());
             // dd(request()->statustampil);
             $statustampilan = request()->statustampil ?? 0;
@@ -539,7 +542,7 @@ class KartuStok extends MyModel
             $temtabel = $querydata->namatabel;
         }
 
-
+       
         // dd(db::table($temtabel)->get());
         $query = DB::table(DB::raw($temtabel))->from(
             DB::raw(DB::raw($temtabel) . " a with (readuncommitted)")

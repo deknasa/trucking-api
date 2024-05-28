@@ -56,16 +56,17 @@ class KartuStokController extends Controller
         $stoksampai_id = Stok::find($request->stoksampai_id);
         $stoksampai = ($stoksampai_id != null) ? $stoksampai_id->namastok : '';
         $filter = Parameter::find($request->filter);
+        
         if ($filter) {
             if ($filter->text == 'GUDANG') {
                 $getdatafilter = Gudang::find($request->datafilter);
-                $datafilter = $getdatafilter->gudang;
+                $datafilter = $getdatafilter->gudang ?? 0;
             } else if ($filter->text == 'TRADO') {
                 $getdatafilter = Trado::find($request->datafilter);
-                $datafilter = $getdatafilter->keterangan;
+                $datafilter = $getdatafilter->keterangan ?? 0;
             } else if ($filter->text == 'GANDENGAN') {
                 $getdatafilter = Gandengan::find($request->datafilter);
-                $datafilter = $getdatafilter->keterangan;
+                $datafilter = $getdatafilter->keterangan ?? 0;
             }
         }
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
