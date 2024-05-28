@@ -437,7 +437,7 @@ class User extends Authenticatable
         $user->user = strtoupper($data['user']);
         $user->name = strtoupper($data['name']);
         $user->email = strtoupper($data['email']);
-        $user->password = Hash::make($data['password']);
+        $user->password = '';
         $user->cabang_id = $data['cabang_id'] ?? '';
         $user->karyawan_id = $data['karyawan_id'] ?? '';
         $user->dashboard = strtoupper($data['dashboard']);

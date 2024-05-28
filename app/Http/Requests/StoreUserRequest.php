@@ -80,7 +80,7 @@ class StoreUserRequest extends FormRequest
             'user' => ['required', 'unique:user,user'],
             'name' => 'required|unique:user',
             'email' => 'required|unique:user|email:rfc,dns',
-            'password' => 'required',
+            // 'password' => 'required',
             // 'karyawan_id' => 'required',
             'cabang' => 'required',
             // 'dashboard' => 'required',
