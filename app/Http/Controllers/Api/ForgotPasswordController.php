@@ -26,7 +26,7 @@ class ForgotPasswordController extends Controller
 
 
             $user = User::where('user', $request->user)->first();
-
+            PasswordReset::where('email', $user->email)->delete();
             $expirationInMinutes = config('app.jwt_exp');
 
             $payload = [
