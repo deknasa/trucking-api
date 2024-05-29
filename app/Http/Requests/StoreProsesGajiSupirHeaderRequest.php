@@ -9,6 +9,7 @@ use App\Rules\DateTutupBuku;
 use App\Rules\ExistBank;
 use App\Rules\ValidasiHutangList;
 use App\Rules\validasiRicProsesGajiSupir;
+use App\Rules\validasiUangJalanEBS;
 
 class StoreProsesGajiSupirHeaderRequest extends FormRequest
 {
@@ -51,7 +52,8 @@ class StoreProsesGajiSupirHeaderRequest extends FormRequest
             'bank' => [
                 'required',
                 new ValidasiHutangList($jumlahdetail),
-                new validasiRicProsesGajiSupir()
+                new validasiRicProsesGajiSupir(),
+                new validasiUangJalanEBS()
             ],
             'tgldari' => [
                 'required', 'date_format:d-m-Y',

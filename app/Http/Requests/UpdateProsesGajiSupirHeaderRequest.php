@@ -10,6 +10,7 @@ use App\Rules\DestroyProsesGajiSupir;
 use App\Rules\ExistBank;
 use App\Rules\ValidasiHutangList;
 use App\Rules\validasiRicProsesGajiSupir;
+use App\Rules\validasiUangJalanEBS;
 use Illuminate\Validation\Rule;
 
 class UpdateProsesGajiSupirHeaderRequest extends FormRequest
@@ -56,7 +57,8 @@ class UpdateProsesGajiSupirHeaderRequest extends FormRequest
             'nobukti' => [Rule::in($getDataProsesGaji->nobukti)],
             'bank' => [
                 'required', new ValidasiHutangList($jumlahdetail),
-                new validasiRicProsesGajiSupir()
+                new validasiRicProsesGajiSupir(),
+                new validasiUangJalanEBS()
             ],
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
