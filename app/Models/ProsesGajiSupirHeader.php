@@ -489,12 +489,14 @@ class ProsesGajiSupirHeader extends MyModel
         $fetch = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))
             ->select(
                 DB::raw("distinct(prosesgajisupirheader.nobukti),
-                (SELECT SUM(isnull(gajisupirheader.total, 0)+isnull(gajisupirheader.uangmakanharian, 0)+isnull(gajisupirheader.uangmakanberjenjang, 0))
+                (SELECT SUM(isnull(gajisupirheader.total, 0)+isnull(gajisupirheader.uangmakanharian, 0)+isnull(gajisupirheader.uangmakanberjenjang, 0)+isnull(gajisupirheader.biayaextra, 0))
                 FROM gajisupirheader 
                 WHERE gajisupirheader.nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupirheader.id = prosesgajisupirdetail.prosesgajisupir_id)) AS total,
-                (SELECT SUM(gajisupirheader.total)
+
+                (SELECT SUM(isnull(gajisupirheader.total, 0)+isnull(gajisupirheader.uangmakanharian, 0)+isnull(gajisupirheader.uangmakanberjenjang, 0)+isnull(gajisupirheader.biayaextra, 0))
                 FROM gajisupirheader 
                 WHERE gajisupirheader.nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupirheader.id = prosesgajisupirdetail.prosesgajisupir_id)) AS totalposting,
+
                 (SELECT SUM(gajisupirheader.uangjalan)
                 FROM gajisupirheader 
                 WHERE gajisupirheader.nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupirheader.id = prosesgajisupirdetail.prosesgajisupir_id)) AS uangjalan,
@@ -693,7 +695,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'supir.namasupir as supir',
                 'gajisupirheader.tgldari as tgldariric',
                 'gajisupirheader.tglsampai as tglsampairic',
-                'gajisupirheader.total as borongan',
+                DB::raw("(gajisupirheader.total + isnull(gajisupirheader.uangmakanharian,0) + isnull(gajisupirheader.biayaextra,0) + isnull(gajisupirheader.uangmakanberjenjang,0)) as borongan"),
                 'gajisupirheader.uangjalan',
                 'gajisupirheader.bbm',
                 'gajisupirheader.uangmakanharian',
@@ -827,7 +829,7 @@ class ProsesGajiSupirHeader extends MyModel
                     'supir.namasupir as supir',
                     'gajisupirheader.tgldari as tgldariric',
                     'gajisupirheader.tglsampai as tglsampairic',
-                    'gajisupirheader.total as borongan',
+                    DB::raw("(gajisupirheader.total + isnull(gajisupirheader.uangmakanharian,0) + isnull(gajisupirheader.biayaextra,0) + isnull(gajisupirheader.uangmakanberjenjang,0)) as borongan"),
                     'gajisupirheader.uangjalan',
                     'gajisupirheader.bbm',
                     'gajisupirheader.uangmakanharian',
@@ -1319,7 +1321,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'supir.namasupir as supir',
                 'gajisupirheader.tgldari as tgldariric',
                 'gajisupirheader.tglsampai as tglsampairic',
-                'gajisupirheader.total as borongan',
+                DB::raw("(gajisupirheader.total + isnull(gajisupirheader.uangmakanharian,0) + isnull(gajisupirheader.biayaextra,0) + isnull(gajisupirheader.uangmakanberjenjang,0)) as borongan"),
                 'gajisupirheader.uangjalan',
                 'gajisupirheader.bbm',
                 'gajisupirheader.uangmakanharian',

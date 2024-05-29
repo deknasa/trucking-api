@@ -52,7 +52,8 @@ class PenerimaanDetail extends MyModel
                 ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), "debet.coa", "$this->table.coadebet")
                 ->leftJoin(DB::raw("akunpusat as kredit with (readuncommitted)"), "kredit.coa", "$this->table.coakredit")
                 ->leftJoin(DB::raw("bankpelanggan as bpd with (readuncommitted)"), "bpd.id", "=", "$this->table.bankpelanggan_id");
-            $query->where($this->table . ".penerimaan_id", "=", request()->penerimaan_id);
+            $query->where($this->table . ".penerimaan_id", "=", request()->penerimaan_id)
+                ->orderBy('penerimaandetail.id', 'asc');
 
             $penerimaanDetail = $query->get();
         } else {

@@ -55,7 +55,8 @@ class PengeluaranDetail extends MyModel
 
             )
                 ->leftJoin(DB::raw("pengeluaranheader as header with (readuncommitted)"), "header.id", "$this->table.pengeluaran_id")
-                ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), "debet.coa", "$this->table.coadebet");
+                ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), "debet.coa", "$this->table.coadebet")
+                ->orderBy('pengeluarandetail.id','asc');
             $query->where($this->table . ".pengeluaran_id", "=", request()->pengeluaran_id);
 
             $pengeluaranDetail = $query->get();
