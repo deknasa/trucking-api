@@ -266,7 +266,7 @@ class GajiSupirHeader extends MyModel
                     'gajisupirheader.modifiedby',
                     'gajisupirheader.created_at',
                     'gajisupirheader.updated_at',
-                    DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then gajisupirheader.nominal else (gajisupirheader.total+isnull(C.komisisupir,0)+isnull(C.gajikenek,0)) end) as nominal"),
+                    DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then gajisupirheader.nominal else (gajisupirheader.total + isnull(gajisupirheader.uangmakanharian,0) + isnull(gajisupirheader.biayaextra,0) + isnull(gajisupirheader.uangmakanberjenjang,0)+isnull(C.komisisupir,0)+isnull(C.gajikenek,0)) end) as nominal"),
                     DB::raw('(total + uangmakanharian + isnull(uangmakanberjenjang,0) - uangjalan - potonganpinjaman - potonganpinjamansemua - deposito - bbm) as sisa')
                 )
 
