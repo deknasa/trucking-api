@@ -251,13 +251,13 @@ class MainAkunPusat extends MyModel
         DB::table($tempdefault)->insert(
             [
                 "statusparent" => $iddefaultstatusparent,
-                "statusparentnama"=>$textdefaultstatusparent,
+                "statusparentnama" => $textdefaultstatusparent,
                 "statuslabarugi" => $iddefaultstatuslabarugi,
-                "statuslabaruginama"=>$textdefaultstatuslabarugi,
+                "statuslabaruginama" => $textdefaultstatuslabarugi,
                 "statusneraca" => $iddefaultstatusneraca,
-                "statusneracanama"=>$textdefaultstatusneraca,
+                "statusneracanama" => $textdefaultstatusneraca,
                 "statusaktif" => $iddefaultstatusaktif,
-                "statusaktifnama"=>$textdefaultstatusaktif,
+                "statusaktifnama" => $textdefaultstatusaktif,
             ]
         );
 
@@ -350,8 +350,8 @@ class MainAkunPusat extends MyModel
                 'mainakunpusat.coa',
                 'mainakunpusat.keterangancoa',
                 'mainakunpusat.type',
-                'mainakunpusat.type_id',                
-                DB::raw('(case when (mainakunpusat.akuntansi_id = 0) then null else mainakunpusat.akuntansi_id end ) as akuntansi_id'),     
+                'mainakunpusat.type_id',
+                DB::raw('(case when (mainakunpusat.akuntansi_id = 0) then null else mainakunpusat.akuntansi_id end ) as akuntansi_id'),
                 'akuntansi.kodeakuntansi as akuntansi',
                 'mainakunpusat.parent',
                 DB::raw("(trim(parent.coa)+' - '+trim(parent.keterangancoa)) as parentnama"),
@@ -392,25 +392,27 @@ class MainAkunPusat extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter_statusaktif.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statusparent') {
-                            $query = $query->where('parameter_statusparent.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statusneraca') {
-                            $query = $query->where('parameter_statusneraca.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statuslabarugi') {
-                            $query = $query->where('parameter_statuslabarugi.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } elseif ($filters['field'] == 'type') {
-                            $query = $query->where('typeakuntansi.kodetype', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'akuntansi') {
-                            $query = $query->where('akuntansi.kodeakuntansi', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'kodeket') {
-                            $query = $query->whereRaw("(trim(mainakunpusat.coa)+' - '+trim(mainakunpusat.keterangancoa)) LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->where('parameter_statusaktif.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statusparent') {
+                                $query = $query->where('parameter_statusparent.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusneraca') {
+                                $query = $query->where('parameter_statusneraca.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statuslabarugi') {
+                                $query = $query->where('parameter_statuslabarugi.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } elseif ($filters['field'] == 'type') {
+                                $query = $query->where('typeakuntansi.kodetype', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'akuntansi') {
+                                $query = $query->where('akuntansi.kodeakuntansi', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'kodeket') {
+                                $query = $query->whereRaw("(trim(mainakunpusat.coa)+' - '+trim(mainakunpusat.keterangancoa)) LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -418,25 +420,27 @@ class MainAkunPusat extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusaktif') {
-                                $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'statusparent') {
-                                $query = $query->orWhere('parameter_statusparent.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'statusneraca') {
-                                $query = $query->orWhere('parameter_statusneraca.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'statuslabarugi') {
-                                $query = $query->orWhere('parameter_statuslabarugi.text', '=', "$filters[data]");
-                            } elseif ($filters['field'] == 'type') {
-                                $query = $query->orWhere('typeakuntansi.kodetype', 'LIKE', "%$filters[data]%");
-                            } elseif ($filters['field'] == 'akuntansi') {
-                                $query = $query->orWhere('akuntansi.kodeakuntansi', 'LIKE', "%$filters[data]%");
-                            } elseif ($filters['field'] == 'kodeket') {
-                                $query = $query->OrwhereRaw("(trim(mainakunpusat.coa)+' - '+trim(mainakunpusat.keterangancoa)) LIKE '%$filters[data]%'");
-                            } else {
-                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusaktif') {
+                                    $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'statusparent') {
+                                    $query = $query->orWhere('parameter_statusparent.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusneraca') {
+                                    $query = $query->orWhere('parameter_statusneraca.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statuslabarugi') {
+                                    $query = $query->orWhere('parameter_statuslabarugi.text', '=', "$filters[data]");
+                                } elseif ($filters['field'] == 'type') {
+                                    $query = $query->orWhere('typeakuntansi.kodetype', 'LIKE', "%$filters[data]%");
+                                } elseif ($filters['field'] == 'akuntansi') {
+                                    $query = $query->orWhere('akuntansi.kodeakuntansi', 'LIKE', "%$filters[data]%");
+                                } elseif ($filters['field'] == 'kodeket') {
+                                    $query = $query->OrwhereRaw("(trim(mainakunpusat.coa)+' - '+trim(mainakunpusat.keterangancoa)) LIKE '%$filters[data]%'");
+                                } else {
+                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
                     });
@@ -503,7 +507,7 @@ class MainAkunPusat extends MyModel
 
     public function processUpdate(MainAkunPusat $mainAkunPusat, array $data): MainAkunPusat
     {
-        
+
         $parent = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS PARENT')->where('text', 'PARENT')->first();
         if ($data['statusparent'] == $parent->id) {
             $parent = $data['coa'];
