@@ -37,7 +37,7 @@ class PengeluaranDetail extends MyModel
                 "$this->table.keterangan",
                 "$this->table.noinvoice as invoice_nobukti",
                 "$this->table.nowarkat",
-                db::raw("format(pengeluarandetail.tgljatuhtempo,'dd/')+
+                db::raw("format(pengeluarandetail.tgljatuhtempo,'dd-')+
                     (case when month(pengeluarandetail.tgljatuhtempo)=1 then 'JAN'
                           when month(pengeluarandetail.tgljatuhtempo)=2 then 'FEB'
                           when month(pengeluarandetail.tgljatuhtempo)=3 then 'MAR'
@@ -51,7 +51,7 @@ class PengeluaranDetail extends MyModel
                           when month(pengeluarandetail.tgljatuhtempo)=11 then 'NOV'
                           when month(pengeluarandetail.tgljatuhtempo)=12 then 'DES' ELSE '' END)
 
-                    +format(pengeluarandetail.tgljatuhtempo,'/yy')   as tgljatuhtempoformat"),
+                    +format(pengeluarandetail.tgljatuhtempo,'-yy')   as tgljatuhtempoformat"),
 
             )
                 ->leftJoin(DB::raw("pengeluaranheader as header with (readuncommitted)"), "header.id", "$this->table.pengeluaran_id")
