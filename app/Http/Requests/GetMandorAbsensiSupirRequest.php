@@ -30,7 +30,7 @@ class GetMandorAbsensiSupirRequest extends FormRequest
     {
 
         return [
-            "tglbukaabsensi" => [new GetAbsensiMandorRule(), new AbsensiRicUsed()]
+            "tglbukaabsensi" => [new GetAbsensiMandorRule()]
         ];
     }
 
