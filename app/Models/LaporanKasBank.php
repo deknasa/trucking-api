@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use DateTime;
 
 class LaporanKasBank extends MyModel
 {
@@ -405,22 +406,32 @@ class LaporanKasBank extends MyModel
         }
         $saldoawalpengembaliankepusat = $querysaldoawalpengembaliankepusat->nominal ?? 0;
 
+        $month = date('m', strtotime($dariformat));
+        $year = date('Y', strtotime($dariformat));
 
-        $dariformatsaldo = date("Y-m-d", strtotime("+1 day", strtotime($dariformat)));
+        if ($month == 1) {
+            $bulan = 12;
+            $year=$year-1;
+        } else {
+            $bulan = Intval($month) - 1;
+        }
+        $date = $year . '-' . $bulan . '-01';
+        $dariformatsaldo = $date;
+        // dd($dariformatsaldo);
         $querysaldoawal = DB::table("saldoawalbank")->from(
             DB::raw("saldoawalbank as a with (readuncommitted)")
         )
             ->select(
                 DB::raw("sum(isnull(a.nominaldebet,0)-isnull(a.nominalkredit,0)) as nominal")
             )
-            ->whereRaw("cast(right(a.bulan,4)+'/'+left(a.bulan,2)+'/1' as date)<'" . $dariformatsaldo . "'")
-            ->whereRaw("a.bulan<>format(cast('" . $dariformat . "' as date),'MM-yyyy')")
+            ->whereRaw("cast(right(a.bulan,4)+'/'+left(a.bulan,2)+'/1' as date)<='" . $dariformatsaldo . "'")
+            // ->whereRaw("a.bulan<>format(cast('" . $dariformat . "' as date),'MM-yyyy')")
             // ->where('a.tglbukti', '<', $dari)
             ->where('a.bank_id', '=', $bank_id)
             ->first();
-            // dd( $querysaldoawal->toSql());
+        // dd($querysaldoawal->toSql());
 
-            // dd($querysaldoawal->tosql());
+        // dd($querysaldoawal->tosql());
         // dd($querysaldoawal->to);
         $saldoawal =  ($querysaldoawal->nominal + $querysaldoawalpenerimaan->nominal + $querysaldoawalpenerimaanpindahbuku->nominal) - ($querysaldoawalpengeluaran->nominal + $querysaldoawalpengeluaranpindahbuku->nominal + $saldoawalpengembaliankepusat);
 
@@ -658,7 +669,7 @@ class LaporanKasBank extends MyModel
             ->orderBy('a.id', 'Asc');
 
 
-// dd($query->get());
+        // dd($query->get());
 
         DB::table($temprekap)->insertUsing([
             'urut',
@@ -715,8 +726,8 @@ class LaporanKasBank extends MyModel
         ], $querynominal);
 
 
-        $count=db::table($temprekap)->count();
-     
+        $count = db::table($temprekap)->count();
+
 
         // dd(db::table($temprekap)->get());
 
@@ -746,8 +757,8 @@ class LaporanKasBank extends MyModel
             ->orderBy('a.tglbukti', 'Asc')
             ->orderBy('a.id', 'Asc');
 
-       
-        
+
+
         if ($prosesneraca == 1) {
             $data = $queryhasil;
             // dd($data->get());
@@ -775,7 +786,7 @@ class LaporanKasBank extends MyModel
             // dd($data);
         }
 
-     
+
         return $data;
     }
 }
