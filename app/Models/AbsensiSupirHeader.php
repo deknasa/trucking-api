@@ -771,7 +771,11 @@ class AbsensiSupirHeader extends MyModel
                 $hariLibur = HariLibur::where('tgl',$lastAbsensi->tglbukti)->first();
             }
             if (!$hariLibur) {
-                $cont = false;
+                $lastDetail = AbsensiSupirDetail::from(db::raw("absensisupirdetail a with (readuncommitted)"))
+                ->where('a.absensi_id',$lastAbsensi->id)->count();
+                if ($lastDetail){
+                    $cont = false;
+                }
             }
             if ($lastAbsensi) {
                 $tglbukti = $lastAbsensi->tglbukti;
