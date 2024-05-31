@@ -870,7 +870,7 @@ class PengembalianKasGantungHeader extends MyModel
         ]);
 
         (new LogTrail())->processStore([
-            'namatabel' => "penerimaanstokdetail",
+            'namatabel' => "PENGEMBALIANKASGANTUNGDETAIL",
             'postingdari' => $postingdari ?? strtoupper('DELETE PENGEMBALIAN KAS GANTUNG'),
             'idtrans' => $pengembalianKasGantungHeaderLogTrail['id'],
             'nobuktitrans' => $pengembalianKasGantungHeader->nobukti,
