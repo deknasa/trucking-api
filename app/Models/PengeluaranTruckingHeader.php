@@ -1013,6 +1013,13 @@ class PengeluaranTruckingHeader extends MyModel
 
     public function getEditInvoice($id, $tgldari, $tglsampai)
     {
+
+
+
+        $parameter = new Parameter();
+
+        $sumbanganton = $parameter->cekText('SUMBANGAN TON', 'SUMBANGAN TON') ?? '0';
+
         $this->setRequestParameters();
         $temp = '##tempGet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
@@ -1021,7 +1028,7 @@ class PengeluaranTruckingHeader extends MyModel
                 DB::raw("pengeluarantruckingdetail.id as pengeluarantrucking_id"),
                 DB::raw("pengeluarantruckingdetail.invoice_nobukti as noinvoice_detail"),
                 DB::raw("pengeluarantruckingdetail.orderantrucking_nobukti as nojobtrucking_detail"),
-                DB::raw("container.keterangan as container_detail"),
+                DB::raw("isnull(container.keterangan,'TON') as container_detail"),
                 DB::raw("pengeluarantruckingdetail.nominal as nominal_detail"),
             )
             ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'pengeluarantruckingdetail.orderantrucking_nobukti', 'ot.nobukti')
@@ -1043,7 +1050,7 @@ class PengeluaranTruckingHeader extends MyModel
             invoicedetail.nobukti as noinvoice_detail,
             invoicedetail.orderantrucking_nobukti as nojobtrucking_detail,
             container.keterangan as container_detail,
-            (case when container.nominalsumbangan IS NULL then 0 else container.nominalsumbangan end) as nominal_detail
+            (case when container.nominalsumbangan IS NULL then " . $sumbanganton . " else container.nominalsumbangan end) as nominal_detail
 
             "))
 
@@ -1068,6 +1075,10 @@ class PengeluaranTruckingHeader extends MyModel
     }
     public function getShowInvoice($id, $tgldari, $tglsampai)
     {
+        $parameter = new Parameter();
+
+        $sumbanganton = $parameter->cekText('SUMBANGAN TON', 'SUMBANGAN TON') ?? '0';
+
         $aksi = request()->aksi ?? '';
         $this->setRequestParameters();
         $temp = '##tempGet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -1077,7 +1088,7 @@ class PengeluaranTruckingHeader extends MyModel
                 DB::raw("pengeluarantruckingdetail.id as pengeluarantrucking_id"),
                 DB::raw("pengeluarantruckingdetail.invoice_nobukti as noinvoice_detail"),
                 DB::raw("pengeluarantruckingdetail.orderantrucking_nobukti as nojobtrucking_detail"),
-                DB::raw("container.keterangan as container_detail"),
+                DB::raw("isnull(container.keterangan,'TON') as container_detail"),
                 DB::raw("pengeluarantruckingdetail.nominal as nominal_detail"),
             )
             ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'pengeluarantruckingdetail.orderantrucking_nobukti', 'ot.nobukti')

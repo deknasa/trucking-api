@@ -983,6 +983,10 @@ class InvoiceHeader extends MyModel
         $class = 'SumbanganSosialController';
 
 
+        $parameter = new Parameter();
+
+        $sumbanganton = $parameter->cekText('SUMBANGAN TON', 'SUMBANGAN TON') ?? '0';
+
         if ($proses == 'reload') {
             $temtabel = 'tempgetinv' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
 
@@ -1033,9 +1037,9 @@ class InvoiceHeader extends MyModel
                     'a.id_detail',
                     'a.noinvoice_detail',
                     'a.nojobtrucking_detail',
-                    'container.keterangan as container_detail',
+                    db::raw("isnull(container.keterangan,'TON') as container_detail"),
                     'a.tgl_bukti as tglbukti',
-                    db::raw("(case when container.nominalsumbangan IS NULL then 0 else container.nominalsumbangan end) as nominal_detail")
+                    db::raw("(case when container.nominalsumbangan IS NULL then " . $sumbanganton . " else container.nominalsumbangan end) as nominal_detail")
                 )
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'a.container_id', 'container.id')
                 ->whereRaw("a.nojobtrucking_detail not in (select orderantrucking_nobukti from pengeluarantruckingdetail where orderantrucking_nobukti != '')")
@@ -1059,9 +1063,9 @@ class InvoiceHeader extends MyModel
             invoicedetail.id as id_detail,
             invoicedetail.nobukti as noinvoice_detail,
             invoicedetail.orderantrucking_nobukti as nojobtrucking_detail,
-            container.keterangan as container_detail,
+            isnull(container.keterangan,'TON') as container_detail,
             invoiceheader.tglbukti,
-            (case when container.nominalsumbangan IS NULL then 0 else container.nominalsumbangan end) as nominal_detail
+            (case when container.nominalsumbangan IS NULL then " . $sumbanganton . " else container.nominalsumbangan end) as nominal_detail
 
             "))
 
@@ -1114,9 +1118,12 @@ class InvoiceHeader extends MyModel
                 DB::raw("'$temtabel' as namatabel")
             )->orderBY('id');
 
+            
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $this->totalNominal = $query->sum('a.nominal_detail');
+        // dd($query->sum('a.nominal_detail'));
 
         $this->filterGetInvoice($query);
         if (request()->limit != 0) {
@@ -1135,9 +1142,10 @@ class InvoiceHeader extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] != '') {
-
-                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                          
+                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                          
                         }
                     }
 

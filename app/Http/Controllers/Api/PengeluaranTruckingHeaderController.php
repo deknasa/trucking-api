@@ -755,6 +755,7 @@ class PengeluaranTruckingHeaderController extends Controller
         $tglsampai = $request->tglsampai;
         $invoiceHeader = new InvoiceHeader();
         $data = $invoiceHeader->getInvoicePengeluaran($tgldari, $tglsampai);
+        // dd($invoiceHeader->totalNominal);
         // $data = $pengeluaranTrucking->getTarikDeposito($pengeluaranTrucking->pengeluarantruckingdetail[0]->supir_id);
         return response([
             'status' => true,
