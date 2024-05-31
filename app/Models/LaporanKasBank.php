@@ -414,14 +414,17 @@ class LaporanKasBank extends MyModel
                 DB::raw("sum(isnull(a.nominaldebet,0)-isnull(a.nominalkredit,0)) as nominal")
             )
             ->whereRaw("cast(right(a.bulan,4)+'/'+left(a.bulan,2)+'/1' as date)<'" . $dariformatsaldo . "'")
-            ->whereRaw("a.bulan<>format(cast('" . $dariformatsaldo . "' as date),'MM-yyyy')")
+            ->whereRaw("a.bulan<>format(cast('" . $dariformat . "' as date),'MM-yyyy')")
             // ->where('a.tglbukti', '<', $dari)
             ->where('a.bank_id', '=', $bank_id)
             ->first();
+            // dd( $querysaldoawal->toSql());
 
             // dd($querysaldoawal->tosql());
         // dd($querysaldoawal->to);
         $saldoawal =  ($querysaldoawal->nominal + $querysaldoawalpenerimaan->nominal + $querysaldoawalpenerimaanpindahbuku->nominal) - ($querysaldoawalpengeluaran->nominal + $querysaldoawalpengeluaranpindahbuku->nominal + $saldoawalpengembaliankepusat);
+
+        // dd($querysaldoawal->nominal,$querysaldoawalpenerimaan->nominal,$querysaldoawalpenerimaanpindahbuku->nominal,$querysaldoawalpengeluaran->nominal,$querysaldoawalpengeluaranpindahbuku->nominal,$saldoawalpengembaliankepusat);
 
         // dd($saldoawal);
 
@@ -443,6 +446,7 @@ class LaporanKasBank extends MyModel
                 "saldo" => $saldoawal ?? 0,
             )
         );
+        //   dd(db::table($tempsaldo)->get());
 
         $querypenerimaan = DB::table("penerimaanheader")->from(
             DB::raw("penerimaanheader as a with (readuncommitted)")
@@ -634,6 +638,7 @@ class LaporanKasBank extends MyModel
             $table->double('saldo', 15, 2)->nullable();
         });
 
+        // dd(db::table($tempsaldo)->get());
         $query = DB::table($tempsaldo)->from(
             $tempsaldo . " as a"
         )
@@ -713,6 +718,8 @@ class LaporanKasBank extends MyModel
         $count=db::table($temprekap)->count();
      
 
+        // dd(db::table($temprekap)->get());
+
         $queryhasil = DB::table($temprekap)->from(
             $tempsaldo . " as a"
         )
@@ -739,6 +746,7 @@ class LaporanKasBank extends MyModel
             ->orderBy('a.tglbukti', 'Asc')
             ->orderBy('a.id', 'Asc');
 
+       
         
         if ($prosesneraca == 1) {
             $data = $queryhasil;
@@ -763,6 +771,8 @@ class LaporanKasBank extends MyModel
                 "data" => $queryhasil->get(),
                 "dataSaldo" => $dataSaldo,
             ];
+
+            // dd($data);
         }
 
      

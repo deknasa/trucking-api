@@ -376,7 +376,7 @@ class TradoController extends Controller
             $data = [
                 'keterangan' => $request->keterangan ?? '',
                 'kodetrado' => $request->kodetrado,
-                'statusaktif' => $request->statusaktif,
+                // 'statusaktif' => $request->statusaktif,
                 'tahun' => $request->tahun,
                 'merek' => $request->merek,
                 'norangka' => $request->norangka,
