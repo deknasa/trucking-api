@@ -1311,7 +1311,7 @@ class Trado extends MyModel
 
             $trado->keterangan = $data['keterangan'] ?? '';
             $trado->kodetrado = $data['kodetrado'];
-            $trado->statusaktif = $data['statusaktif'];
+            // $trado->statusaktif = $data['statusaktif'];
             $trado->tahun = $data['tahun'];
             $trado->merek = $data['merek'];
             $trado->norangka = $data['norangka'];
