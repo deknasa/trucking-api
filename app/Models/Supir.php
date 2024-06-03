@@ -1114,7 +1114,7 @@ class Supir extends MyModel
                 $tglBatasLuarKota = (date('Y-m-d', strtotime("+$batasBulan->text months", strtotime($tglmasuk))));
             }
 
-            if ($cabang->text =="JAKARTA") {
+            if ($cabang->text != "SURABAYA") {
                 $statusApprovalDefault = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
             }
 
