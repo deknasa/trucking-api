@@ -614,6 +614,13 @@ class ListTrip extends MyModel
                 ->first();
 
             $tglBatasEdit = date('Y-m-d', strtotime($data['tglbukti'])) . ' ' . '12:00:00';
+            
+            if($data['statuslongtrip'] == 65){
+                
+                $getId = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
+                (new OrderanTrucking())->processDestroy($getId->id);
+            }
+            
             $orderan = [
                 'tglbukti' => $data['tglbukti'],
                 'container_id' => $data['container_id'],
@@ -844,7 +851,6 @@ class ListTrip extends MyModel
         $nominalspr = 0;
         $nominalkenek = 0;
         $nominalkomisi = 0;
-
         if ($data['statusjeniskendaraan'] != $jenisTangki->id) {
             if ($data['statusupahzona'] == $getZona->id) {
                 $data['zonadari_id'] = $upahZona->zonadari_id;
