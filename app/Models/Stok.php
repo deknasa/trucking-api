@@ -523,8 +523,7 @@ class Stok extends MyModel
 
             $query->where('stok.statusaktif_id', '=', $statusaktif->id);
         }
-        // dd($query->get());
-        if (($statusreuse == 'REUSE') || ($pg->text == $penerimaanstok_id)) {
+        if (($statusreuse == 'REUSE') || ($pg->id == $penerimaanstok_id) || ($korv->text == $penerimaanstok_id)) {
 
             $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
