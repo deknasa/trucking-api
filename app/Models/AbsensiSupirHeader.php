@@ -1481,4 +1481,50 @@ class AbsensiSupirHeader extends MyModel
 
         return $result;
     }
+
+    function processApprovalEditAbsensi(array $data) {
+        $statusBolehEdit = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT ABSENSI')->where('text', '=', 'BOLEH EDIT ABSENSI')->first();
+        $statusTidakBolehEdit = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT ABSENSI')->where('text', '=', 'TIDAK BOLEH EDIT ABSENSI')->first();
+       
+        $jam_batas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'JAMBATASAPPROVAL')->where('subgrp', 'JAMBATASAPPROVAL')->first()->text ?? '23:59:59';
+        $tglbtas = (new AbsensiSupirHeader())->getTomorrowDate();
+        $tglbtas = date("Y-m-d H:i:s", strtotime($tglbtas .' '. $jam_batas));
+
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $id = $data['Id'][$i];
+            $absensiSupirHeader = AbsensiSupirHeader::lockForUpdate()->findOrFail($id);
+
+            if ($absensiSupirHeader->statusapprovaleditabsensi == $statusBolehEdit->id) {
+                $absensiSupirHeader->statusapprovaleditabsensi = $statusTidakBolehEdit->id;
+                $absensiSupirHeader->tglapprovaleditabsensi = date('Y-m-d', strtotime("1900-01-01"));
+                $absensiSupirHeader->userapprovaleditabsensi = '';
+                $absensiSupirHeader->tglbataseditabsensi = null;
+                $absensiSupirHeader->tglbataseditabsensiadmin = null;
+                $aksi = $statusTidakBolehEdit->text;
+            } else {
+                $absensiSupirHeader->tglbataseditabsensi = $tglbtas;
+                $absensiSupirHeader->tglbataseditabsensiadmin = $tglbtas;
+                $absensiSupirHeader->statusapprovaleditabsensi = $statusBolehEdit->id;
+                $aksi = $statusBolehEdit->text;
+                $absensiSupirHeader->tglapprovaleditabsensi = date("Y-m-d", strtotime('today'));
+                $absensiSupirHeader->userapprovaleditabsensi = auth('api')->user()->name;
+            }
+
+
+            if ($absensiSupirHeader->save()) {
+                $absensiSupirDetailLogTrail = (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($absensiSupirHeader->getTable()),
+                    'postingdari' => 'APPROVED EDIT ABSENSI SUPIR',
+                    'idtrans' => $absensiSupirHeader->id,
+                    'nobuktitrans' => $absensiSupirHeader->id,
+                    'aksi' => $aksi,
+                    'datajson' => $absensiSupirHeader->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ]);
+            }else{
+                throw new \Exception("Error storing Absensi Supir Header.");
+            }
+
+        }
+    }
 }
