@@ -38,7 +38,7 @@ class ExportLaporanKasGantungController extends Controller
         } else {
 
             $sampai = $request->periode;
-            $jenis = 1;//kas bank
+            $jenis = $request->bank_id;//kas bank
 
 
             $export = ExportLaporanKasGantung::getExport($sampai, $jenis);

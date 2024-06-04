@@ -67,8 +67,9 @@ class LaporanKasGantungController extends Controller
                 ->join("parameter", 'parameter.text', 'cabang.id')
                 ->where('parameter.grp', 'ID CABANG')
                 ->first();
+                $bank_id = $request->bank_id;//kas bank
             return response([
-                'data' => $laporankasgantung->getReport($periode, $prosesneraca),
+                'data' => $laporankasgantung->getReport($periode, $prosesneraca, $bank_id),
                 'namacabang' => 'CABANG ' . $getCabang->namacabang
             ]);
         }
@@ -110,7 +111,8 @@ class LaporanKasGantungController extends Controller
         //     ]
         // ];
         $prosesneraca=0;
-        $laporan_kas_gantung = $laporankasgantung->getReport($periode, $prosesneraca);
+        $bank_id = $request->bank_id;//kas bank
+        $laporan_kas_gantung = $laporankasgantung->getReport($periode, $prosesneraca, $bank_id);
         foreach($laporan_kas_gantung as $item){
             $item->tanggal = date('d-m-Y', strtotime($item->tanggal));
         }
