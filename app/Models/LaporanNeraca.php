@@ -838,7 +838,7 @@ class LaporanNeraca extends MyModel
                 'usercetak',
                 'disetujui',
                 'diperiksa',
-            ], (new LaporanPinjamanSupirKaryawan())->getReport($tglsd, 1));
+            ], (new LaporanPinjamanSupirKaryawan())->getReport($tglsd, 1,83));
             // 
 
             // Piutang LAin
@@ -952,7 +952,7 @@ class LaporanNeraca extends MyModel
                 'judullaporan',
                 'tglcetak',
                 'usercetak',
-            ], (new LaporanKasGantung())->getReport($tglsd, 1));
+            ], (new LaporanKasGantung())->getReport($tglsd, 1,1));
 
             // Kas 
 
