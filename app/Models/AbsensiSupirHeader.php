@@ -792,15 +792,15 @@ class AbsensiSupirHeader extends MyModel
     {
         $tglbuktistr = strtotime($tglbukti);
         $jam_batas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'BATAS JAM EDIT ABSENSI')->where('subgrp', 'BATAS JAM EDIT ABSENSI')->first();
-        // $jam = substr($jam_batas->text, 0, 2);
-        // $menit = substr($jam_batas->text, 3, 2);
+        $hari = 0;//hari ini
         if (!auth()->user()->isMandor()) {
             $jam_batas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'JAMBATASAPPROVAL')->where('subgrp', 'JAMBATASAPPROVAL')->first();
+            $hari = 1;//+ 1 hari untuk admin
         }
-        $tglbukti = $this->getTomorrowDate($tglbukti,0);
+        $tglbukti = $this->getTomorrowDate($tglbukti,$hari);
         $jam = substr($jam_batas->text, 0, 2);
         $menit = substr($jam_batas->text, 3, 2);
-        
+
         $limit = strtotime($tglbukti . ' +' . $jam . ' hours +' . $menit . ' minutes');
         $now = strtotime('now');
         if ($now < $limit) return true;

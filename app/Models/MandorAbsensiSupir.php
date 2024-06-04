@@ -1495,6 +1495,9 @@ class MandorAbsensiSupir extends MyModel
                                 $query = $query->whereRaw("(CASE WHEN isnull(a.statussupirserap,0)=0 THEN '' ELSE
                                 (CASE WHEN a.statussupirserap=593 THEN parameter.text ELSE '' end) end) LIKE '%$filters[data]%'");
                                 break;
+                            case "jeniskendaraan":
+                                $query = $query->whereRaw("a.statusjeniskendaraannama LIKE '%$filters[data]%'");
+                                break;
                             default:
                                 $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
 
@@ -1511,6 +1514,9 @@ class MandorAbsensiSupir extends MyModel
                                 case "tglbukti":
                                     // $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                                     $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                    break;
+                                case "jeniskendaraan":
+                                    $query = $query->orWhereRaw("a.statusjeniskendaraannama LIKE '%$filters[data]%'");
                                     break;
 
                                 default:
