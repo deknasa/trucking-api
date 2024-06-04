@@ -213,7 +213,7 @@ class StoreUpahSupirRequest extends FormRequest
             $rulesGambar = [];
             if (request()->from == null) {
                 $rulesGambar = [
-                    'gambar.*' => ['image','min:100']
+                    'gambar.*' => ['image','min:50']
                 ];
             }
             if (request()->statusupahzona == $getUpahZona->id) {
