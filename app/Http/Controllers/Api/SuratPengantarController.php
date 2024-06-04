@@ -53,6 +53,8 @@ class SuratPengantarController extends Controller
     public function index(GetIndexRangeRequest $request)
     {
         $suratPengantar = new SuratPengantar();
+        
+        $suratPengantar->returnUnApprovalEdit();
 
         return response([
             'data' => $suratPengantar->get(),
