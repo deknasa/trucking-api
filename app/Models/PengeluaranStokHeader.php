@@ -1343,6 +1343,13 @@ class PengeluaranStokHeader extends MyModel
 
     public function isBukaTanggalValidation($date, $pengeluaranstok_id)
     {
+        if (auth('api')->user()->isUserPusat()) {
+            $kor = Parameter::where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')->first();
+            $korv = DB::table('pengeluaranstok')->where('kodepengeluaran', 'KORV')->first();
+            if ($kor->text == $pengeluaranstok_id || $korv->id == $pengeluaranstok_id) {
+               return true;
+            }
+        }
         $date = date('Y-m-d', strtotime($date));
         $bukaPengeluaranStok = BukaPengeluaranStok::where('tglbukti', '=', $date)->where('pengeluaranstok_id', '=', $pengeluaranstok_id)->first();
         $tglbatas = $bukaPengeluaranStok->tglbatas ?? 0;

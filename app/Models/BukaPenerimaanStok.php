@@ -238,6 +238,13 @@ class BukaPenerimaanStok extends MyModel
     public function isTanggalAvaillable($id)
     {
 
+        if (auth('api')->user()->isUserPusat()) {
+            $kor = Parameter::where('grp', 'KOR STOK')->where('subgrp', 'KOR STOK')->first();
+            $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
+            if ($kor->text == $id || $korv->id == $id) {
+               return ["hello"];
+            }
+        }
         $tutupbuku = DB::table('parameter')->from(
             DB::raw("parameter as a with (readuncommitted)")
         )

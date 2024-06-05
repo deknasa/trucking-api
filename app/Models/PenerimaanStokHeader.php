@@ -2893,6 +2893,13 @@ class PenerimaanStokHeader extends MyModel
     }
     public function isBukaTanggalValidation($date, $penerimaanstok_id)
     {
+        if (auth('api')->user()->isUserPusat()) {
+            $kor = Parameter::where('grp', 'KOR STOK')->where('subgrp', 'KOR STOK')->first();
+            $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
+            if ($kor->text == $penerimaanstok_id || $korv->id == $penerimaanstok_id) {
+               return true;
+            }
+        }
         $date = date('Y-m-d', strtotime($date));
         $bukaPenerimaanStok = BukaPenerimaanStok::where('tglbukti', '=', $date)->where('penerimaanstok_id', '=', $penerimaanstok_id)->first();
         $tglbatas = $bukaPenerimaanStok->tglbatas ?? 0;
