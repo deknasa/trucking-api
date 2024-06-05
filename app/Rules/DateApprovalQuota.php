@@ -196,6 +196,20 @@ class DateApprovalQuota implements Rule
             $now = date('Y-m-d');
             $nonApproval = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where("grp", 'STATUS APPROVAL')->where("text", "NON APPROVAL")->first();
             if ($getAll->statusapproval == $nonApproval->id) {
+
+                // CEK APAKAH TRIP EDIT ATAU BUKAN, JIKA EDIT TRIP, DI CEK APAKAH TGL BATAS EDITNYA ADA
+                $idtrip = request()->id ?? 0;
+                $trip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+                    ->select('nobukti', 'jobtrucking', 'tglbukti', DB::raw("isnull(approvalbukatanggal_id,0) as approvalbukatanggal_id"), 'tglbataseditsuratpengantar')
+                    ->where('id', $idtrip)
+                    ->first();
+                if ($trip != '') {
+
+                    if (date('Y-m-d H:i:s') < date('Y-m-d H:i:s', strtotime($trip->tglbataseditsuratpengantar))) {
+                        return true;
+                    }
+                }
+
                 return false;
             }
 
