@@ -74,6 +74,9 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
                         $stok = DB::table('stok')->where('id', $detail_stok_id)->first();
                         //check statusreuse pada stok ,jika = reuse maka wajib
                         if ($reuse->id == $stok->statusreuse) {
+                            if (auth('api')->user()->isUserPusat()) {//jika pusat gak wajib
+                                return false;
+                            }
                             return true;
                         }
                     }
