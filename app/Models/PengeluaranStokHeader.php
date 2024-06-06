@@ -839,6 +839,7 @@ class PengeluaranStokHeader extends MyModel
                             if ($filters['data']) {
                                 $query = $query->where('a.statuscetak_id', '=', "$filters[data]");
                             }
+                        } else if ($filters['field'] == '') {
                         } else if ($filters['field'] == 'statuskirimberkas') {
                                 if ($filters['data']) {
                                     $query = $query->where('a.statuskirimberkas_id', '=', "$filters[data]");
@@ -881,6 +882,7 @@ class PengeluaranStokHeader extends MyModel
                                 if ($filters['data']) {
                                     $query = $query->Orwhere('a.statuscetak_id', '=', "$filters[data]");
                                 }
+                            } else if ($filters['field'] == '') {
                             } else if ($filters['field'] == 'statuskirimberkas') {
                                     if ($filters['data']) {
                                         $query = $query->Orwhere('a.statuskirimberkas_id', '=', "$filters[data]");

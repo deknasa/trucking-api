@@ -1038,6 +1038,7 @@ class PenerimaanStokHeader extends MyModel
                             //     $query = $query->where('ke.gudang', 'LIKE', "%$filters[data]%");
                             // } else if ($filters['field'] == 'coa') {
                             //     $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == '') {
                         } else if ($filters['field'] == 'tglbukti') {
                             $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
@@ -1074,6 +1075,7 @@ class PenerimaanStokHeader extends MyModel
                                 if ($filters['data']) {
                                     $query = $query->Orwhere('a.statuscetak_id', '=', "$filters[data]");
                                 }
+                            } else if ($filters['field'] == '') {
                             } else if ($filters['field'] == 'statuskirimberkas') {
                                     if ($filters['data']) {
                                         $query = $query->Orwhere('a.statuskirimberkas_id', '=', "$filters[data]");
