@@ -1393,6 +1393,9 @@ class PengeluaranStokHeader extends MyModel
 
     public function isKeteranganEditAble($id)
     {
+        if (auth('api')->user()->isUserPusat()) {//jika pusat gak wajib
+            return true;
+        }
         $tidakBolehEdit = DB::table('pengeluaranstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
         $query = DB::table('pengeluaranstokheader')->from(DB::raw("pengeluaranstokheader with (readuncommitted)"))

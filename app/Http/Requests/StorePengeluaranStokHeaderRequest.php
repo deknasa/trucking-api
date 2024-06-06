@@ -78,6 +78,9 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
                         if ($stok) {
                             //check statusreuse pada stok ,jika = reuse maka wajib
                             if ($reuse->id == $stok->statusreuse) {
+                                if (auth('api')->user()->isUserPusat()) {//jika pusat gak wajib
+                                    return false;
+                                }
                                 return true;
                             }
                         }                        
