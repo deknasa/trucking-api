@@ -1609,7 +1609,7 @@ class Supir extends MyModel
                 'supir.alamat',
                 'supir.kota',
                 'supir.telp',
-                DB::raw($statusNonAktif." as statusaktif"),
+                // DB::raw($statusNonAktif." as statusaktif"),
                 'supir.pemutihansupir_nobukti',
                 'supir.nominaldepositsa',
                 'supir.depositke',
