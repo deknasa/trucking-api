@@ -62,7 +62,7 @@ class KasGantungHeader extends MyModel
         if (isset($absensiSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> Absensi Supir <b>'. $absensiSupir->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> Absensi Supir <b>' . $absensiSupir->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Absensi Supir ' . $absensiSupir->nobukti,
                 'kodeerror' => 'TDT'
             ];
@@ -84,7 +84,7 @@ class KasGantungHeader extends MyModel
         if (isset($pengembalianKasgantung)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Pengembalian Kas Gantung <b>'. $pengembalianKasgantung->nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Pengembalian Kas Gantung <b>' . $pengembalianKasgantung->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Pengembalian Kas Gantung ' . $pengembalianKasgantung->nobukti,
                 'kodeerror' => 'SATL2'
             ];
@@ -108,7 +108,7 @@ class KasGantungHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'No Bukti <b>'. $nobukti . '</b><br>' .$keteranganerror.'<br> No Bukti Approval Jurnal <b>'. $jurnal->pengeluaran_nobukti .'</b> <br> '.$keterangantambahanerror,
+                'keterangan' => 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Approval Jurnal <b>' . $jurnal->pengeluaran_nobukti . '</b> <br> ' . $keterangantambahanerror,
                 // 'keterangan' => 'Approval Jurnal ' . $jurnal->pengeluaran_nobukti,
                 'kodeerror' => 'SAPP'
             ];
@@ -348,6 +348,29 @@ class KasGantungHeader extends MyModel
     public function createTempKasGantung($dari, $sampai)
     {
         $bank_id = request()->bank_id;
+
+        $isTangki = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'ABSENSI TANGKI')->first()->text ?? 'TIDAK';
+        $tempabsensi = '##tempabsensi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempabsensi, function ($table) {
+            $table->string('nobukti')->nullabble();
+        });
+
+        if ($isTangki == 'YA') {
+            $fetchAbsensi = DB::table("absensisupirproses")->from(DB::raw("absensisupirproses as p with (readuncommitted)"))
+            ->select(DB::raw("p.kasgantung_nobukti as nobukti"))
+            ->leftJoin(DB::raw("absensisupirheader as a with (readuncommitted)"), 'p.nobukti', 'a.nobukti')
+            ->leftJoin(DB::raw("kasgantungheader as k with (readuncommitted)"), 'p.kasgantung_nobukti', 'k.nobukti')
+            ->whereBetween('a.tglbukti', [$dari, $sampai])
+            ->where('k.bank_id', $bank_id);
+        } else {
+            $fetchAbsensi = DB::table("absensisupirheader")->from(DB::raw("absensisupirheader as a with (readuncommitted)"))
+            ->select(DB::raw("a.kasgantung_nobukti as nobukti"))
+            ->leftJoin(DB::raw("kasgantungheader as k with (readuncommitted)"), 'a.kasgantung_nobukti', 'k.nobukti')
+            ->whereBetween('a.tglbukti', [$dari, $sampai]);
+        }
+        
+        DB::table($tempabsensi)->insertUsing(['nobukti'], $fetchAbsensi);
+
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         $fetch = DB::table('kasgantungdetail')
@@ -356,8 +379,10 @@ class KasGantungHeader extends MyModel
             )
             ->select(DB::raw("kasgantungdetail.nobukti,kasgantungheader.tglbukti,(SELECT (sum(kasgantungdetail.nominal) - coalesce(SUM(pengembaliankasgantungdetail.nominal),0)) FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa, MAX(kasgantungdetail.keterangan)"))
             ->leftJoin('kasgantungheader', 'kasgantungheader.id', 'kasgantungdetail.kasgantung_id')
+            ->leftJoin(DB::raw("$tempabsensi as c with (readuncommitted)"), 'kasgantungheader.nobukti', 'c.nobukti')
             ->whereBetween('kasgantungheader.tglbukti', [$dari, $sampai])
             ->where('kasgantungheader.bank_id', $bank_id)
+            ->whereRaw("isnull(c.nobukti,'')=''")
             ->groupBy('kasgantungdetail.nobukti', 'kasgantungheader.tglbukti')
             ->orderBy('kasgantungheader.tglbukti', 'asc')
             ->orderBy('kasgantungdetail.nobukti', 'asc');
@@ -578,7 +603,7 @@ class KasGantungHeader extends MyModel
 
 
             $alatbayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('bank_id', $bank->id)->first();
-            if ($bank->tipe == 'KAS'){
+            if ($bank->tipe == 'KAS') {
                 $alatbayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('tipe', $bank->tipe)->first();
             }
 
@@ -777,7 +802,7 @@ class KasGantungHeader extends MyModel
             }
 
             $alatbayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('bank_id', $bank->id)->first();
-            if ($bank->tipe == 'KAS'){
+            if ($bank->tipe == 'KAS') {
                 $alatbayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('tipe', $bank->tipe)->first();
             }
 

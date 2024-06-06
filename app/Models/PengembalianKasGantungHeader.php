@@ -364,6 +364,28 @@ class PengembalianKasGantungHeader extends MyModel
     public function createTempPengembalian($id, $dari, $sampai)
     {
         $bank_id = request()->bank_id;
+        $isTangki = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'ABSENSI TANGKI')->first()->text ?? 'TIDAK';
+        $tempabsensi = '##tempabsensi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempabsensi, function ($table) {
+            $table->string('nobukti')->nullabble();
+        });
+
+        if ($isTangki == 'YA') {
+            $fetchAbsensi = DB::table("absensisupirproses")->from(DB::raw("absensisupirproses as p with (readuncommitted)"))
+                ->select(DB::raw("p.kasgantung_nobukti as nobukti"))
+                ->leftJoin(DB::raw("absensisupirheader as a with (readuncommitted)"), 'p.nobukti', 'a.nobukti')
+                ->leftJoin(DB::raw("kasgantungheader as k with (readuncommitted)"), 'p.kasgantung_nobukti', 'k.nobukti')
+                ->whereBetween('a.tglbukti', [$dari, $sampai])
+                ->where('k.bank_id', $bank_id);
+        } else {
+            $fetchAbsensi = DB::table("absensisupirheader")->from(DB::raw("absensisupirheader as a with (readuncommitted)"))
+                ->select(DB::raw("a.kasgantung_nobukti as nobukti"))
+                ->leftJoin(DB::raw("kasgantungheader as k with (readuncommitted)"), 'a.kasgantung_nobukti', 'k.nobukti')
+                ->whereBetween('a.tglbukti', [$dari, $sampai]);
+        }
+
+        DB::table($tempabsensi)->insertUsing(['nobukti'], $fetchAbsensi);
+
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $fetch = DB::table('kasgantungdetail')
             ->from(
@@ -371,9 +393,11 @@ class PengembalianKasGantungHeader extends MyModel
             )
             ->select(DB::raw("kasgantungdetail.nobukti,kasgantungheader.tglbukti,(SELECT (sum(kasgantungdetail.nominal) - coalesce(SUM(pengembaliankasgantungdetail.nominal),0)) FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa, MAX(kasgantungdetail.keterangan)"))
             ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'kasgantungheader.nobukti', 'kasgantungdetail.nobukti')
+            ->leftJoin(DB::raw("$tempabsensi as c with (readuncommitted)"), 'kasgantungheader.nobukti', 'c.nobukti')
             ->whereRaw("kasgantungheader.nobukti not in (select kasgantung_nobukti from pengembaliankasgantungdetail where pengembaliankasgantung_id=$id)")
             ->whereBetween('kasgantungheader.tglbukti', [$dari, $sampai])
             ->where('kasgantungheader.bank_id', $bank_id)
+            ->whereRaw("isnull(c.nobukti,'')=''")
             ->groupBy('kasgantungdetail.nobukti', 'kasgantungheader.tglbukti');
         //dd($fetch->toSQL());
 
