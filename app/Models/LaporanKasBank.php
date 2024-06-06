@@ -688,7 +688,8 @@ class LaporanKasBank extends MyModel
             DB::raw("bank as a with (readuncommitted)")
         )
             ->select(
-                'a.namabank'
+                'a.namabank',
+                'a.tipe'
             )
             ->where('a.id', '=', $bank_id)
             ->first();
@@ -747,7 +748,7 @@ class LaporanKasBank extends MyModel
                 'c.totaldebet',
                 'c.totalkredit',
                 DB::raw("sum ((isnull(a.saldo,0)+isnull(a.debet,0))-isnull(a.Kredit,0)) over (order by a.tglbukti,a.id) as saldo"),
-                DB::raw("'Laporan Buku Kas Bank' as judulLaporan"),
+                DB::raw("'Laporan Buku " . ucwords(strtolower($querykasbank->tipe)) . "' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
