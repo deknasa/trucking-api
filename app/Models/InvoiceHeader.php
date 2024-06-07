@@ -376,13 +376,13 @@ class InvoiceHeader extends MyModel
             ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
             ->where('a.agen_id', $request->agen_id)
             ->where('a.jenisorder_id', $request->jenisorder_id)
-
+            // ->where('nobukti', 'TRP 0112/VI/2024')
             ->groupBy('a.jobtrucking');
 
         DB::table($tempdaripelabuhan)->insertUsing([
             'jobtrucking',
         ], $querydaripelabuhan);
-
+        // dd($querydaripelabuhan->get());
 
 
         // dump($pilihanperiodeotobon);
@@ -436,7 +436,6 @@ class InvoiceHeader extends MyModel
                     ->groupBy('a.jobtrucking');
 
 
-
                 DB::table($tempkepelabuhan)->insertUsing([
                     'jobtrucking',
                     'nominal',
@@ -461,7 +460,7 @@ class InvoiceHeader extends MyModel
                     ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
                     ->groupBy('a.jobtrucking');
 
-                // dd($querykepelabuhan->toSql());
+                // dd($querykepelabuhan->get());
 
                 DB::table($tempkepelabuhan)->insertUsing([
                     'jobtrucking',
@@ -544,6 +543,47 @@ class InvoiceHeader extends MyModel
         // dd('test');
         // dd(db::table($temphasil)->get());
 
+        // GET NOBUKTI TRIP ASAL LONGTRIP
+        $temptripasal = '##temptripasal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temptripasal, function ($table) {
+            $table->string('nobukti', 1000)->nullable();
+        });
+        $querygetTripasal = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+            ->select(DB::raw("nobukti_tripasal as nobukti"))
+            ->where('nobukti_tripasal', '!=', '')
+            ->whereRaw("tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'");
+        DB::table($temptripasal)->insertUsing([
+            'nobukti',
+        ], $querygetTripasal);
+
+        $queryTripAwalLongtrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar as a with (readuncommitted)"))
+            ->select(
+                'a.jobtrucking',
+                db::raw("a.totalomset as nominal"),
+                db::raw("a.nobukti as suratpengantar_nobukti")
+            )
+            ->join(DB::raw("$temptripasal as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti');
+
+        DB::table($temphasil)->insertUsing([
+            'jobtrucking',
+            'nominal',
+            'suratpengantar_nobukti',
+        ], $queryTripAwalLongtrip);
+
+        // GET LONGTRIP
+        $getLongTrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar as a with (readuncommitted)"))
+            ->select(
+                'a.jobtrucking',
+                db::raw("a.totalomset as nominal"),
+                db::raw("a.nobukti as suratpengantar_nobukti")
+            )
+            ->where('a.statuslongtrip', $statuslongtrip->id)
+            ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'");
+        DB::table($temphasil)->insertUsing([
+            'jobtrucking',
+            'nominal',
+            'suratpengantar_nobukti',
+        ], $getLongTrip);
 
 
 
@@ -1118,7 +1158,7 @@ class InvoiceHeader extends MyModel
                 DB::raw("'$temtabel' as namatabel")
             )->orderBY('id');
 
-            
+
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -1142,10 +1182,9 @@ class InvoiceHeader extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] != '') {
-                          
-                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-                          
+
+                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                         }
                     }
 
