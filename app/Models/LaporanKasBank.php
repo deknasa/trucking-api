@@ -732,41 +732,79 @@ class LaporanKasBank extends MyModel
 
         // dd(db::table($temprekap)->get());
 
-        $queryhasil = DB::table($temprekap)->from(
-            $tempsaldo . " as a"
-        )
-            ->select(
-                'a.urut',
-                'a.urutdetail',
-                DB::raw("isnull(b.keterangancoa,'') as keterangancoa"),
-                DB::raw("'" . $querykasbank->namabank . "' as namabank"),
-                DB::raw("(case when year(isnull(a.tglbukti,'1900/1/1')) < '2000' then '" . $dari . "' else a.tglbukti end) as tglbukti"),
-                'a.nobukti',
-                'a.keterangan',
-                'a.debet',
-                'a.kredit',
-                'c.totaldebet',
-                'c.totalkredit',
-                DB::raw("sum ((isnull(a.saldo,0)+isnull(a.debet,0))-isnull(a.Kredit,0)) over (order by a.tglbukti,a.id) as saldo"),
-                DB::raw("'Laporan Buku " . ucwords(strtolower($querykasbank->tipe)) . "' as judulLaporan"),
-                DB::raw("'" . $getJudul->text . "' as judul"),
-                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
-            )
-            ->leftjoin(DB::raw("akunpusat as b with (readuncommitted)"), 'a.coa', 'b.coa')
-            ->leftjoin(DB::raw("$tempnominal as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
-            ->orderBy('a.tglbukti', 'Asc')
-            ->orderBy('a.id', 'Asc');
-
-
-
         if ($prosesneraca == 1) {
+            $queryhasil = DB::table($temprekap)->from(
+                $tempsaldo . " as a"
+            )
+                ->select(
+                    'a.urut',
+                    'a.urutdetail',
+                    DB::raw("isnull(b.keterangancoa,'') as keterangancoa"),
+                    DB::raw("'" . $querykasbank->namabank . "' as namabank"),
+                    DB::raw("(case when year(isnull(a.tglbukti,'1900/1/1')) < '2000' then '" . $dari . "' else a.tglbukti end) as tglbukti"),
+                    'a.nobukti',
+                    'a.keterangan',
+                    'a.debet',
+                    'a.kredit',
+                    'c.totaldebet',
+                    'c.totalkredit',
+                    DB::raw("sum ((isnull(a.saldo,0)+isnull(a.debet,0))-isnull(a.Kredit,0)) over (order by a.tglbukti,a.id) as saldo"),
+                    DB::raw("'Laporan Buku " . ucwords(strtolower($querykasbank->tipe)) . "' as judulLaporan"),
+                    DB::raw("'" . $getJudul->text . "' as judul"),
+                    DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                    DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                )
+                ->leftjoin(DB::raw("akunpusat as b with (readuncommitted)"), 'a.coa', 'b.coa')
+                ->leftjoin(DB::raw("$tempnominal as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+                ->orderBy('a.tglbukti', 'Asc')
+                ->orderBy('a.id', 'Asc');
             $data = $queryhasil;
             // dd($data->get());
         } else {
             // if ( $count>1) {
             //     $queryhasil->whereraw("a.nobukti not in ('SALDO AWAL')");
             // }
+            $queryhasil = DB::table($temprekap)->from(
+                $tempsaldo . " as a"
+            )
+                ->select(
+                    'a.urut',
+                    'a.urutdetail',
+                    DB::raw("isnull(b.keterangancoa,'') as keterangancoa"),
+                    DB::raw("'" . $querykasbank->namabank . "' as namabank"),
+                    DB::raw("(case when year(isnull(a.tglbukti,'1900/1/1')) < '2000' then '" . $dari . "' else 
+                    format(a.tglbukti,'dd-')+
+                    (case when month(a.tglbukti)=1 then 'JAN'
+                          when month(a.tglbukti)=2 then 'FEB'
+                          when month(a.tglbukti)=3 then 'MAR'
+                          when month(a.tglbukti)=4 then 'APR'
+                          when month(a.tglbukti)=5 then 'MAY'
+                          when month(a.tglbukti)=6 then 'JUN'
+                          when month(a.tglbukti)=7 then 'JUL'
+                          when month(a.tglbukti)=8 then 'AGU'
+                          when month(a.tglbukti)=9 then 'SEP'
+                          when month(a.tglbukti)=10 then 'OKT'
+                          when month(a.tglbukti)=11 then 'NOV'
+                          when month(a.tglbukti)=12 then 'DES' ELSE '' END)
+
+                    +format(a.tglbukti,'-yy') 
+                     end) as tglbukti"),
+                    'a.nobukti',
+                    'a.keterangan',
+                    'a.debet',
+                    'a.kredit',
+                    'c.totaldebet',
+                    'c.totalkredit',
+                    DB::raw("sum ((isnull(a.saldo,0)+isnull(a.debet,0))-isnull(a.Kredit,0)) over (order by a.tglbukti,a.id) as saldo"),
+                    DB::raw("'Laporan Buku " . ucwords(strtolower($querykasbank->tipe)) . "' as judulLaporan"),
+                    DB::raw("'" . $getJudul->text . "' as judul"),
+                    DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                    DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                )
+                ->leftjoin(DB::raw("akunpusat as b with (readuncommitted)"), 'a.coa', 'b.coa')
+                ->leftjoin(DB::raw("$tempnominal as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+                ->orderBy('a.tglbukti', 'Asc')
+                ->orderBy('a.id', 'Asc');
 
             $dataSaldo = [
                 'urut' => '1',
