@@ -107,7 +107,7 @@ class AbsensiSupirDetailController extends Controller
                         $kondisi = true;
                         $batasHari = $getBatasHari;
                         $tanggal = date('Y-m-d', strtotime($tglbukti));
-                        if ($getBatasHari != 0) {
+                        // if ($getBatasHari != 0) {
 
                             while ($kondisi) {
                                 $cekHarilibur = DB::table("harilibur")->from(DB::raw("harilibur with (readuncommitted)"))
@@ -132,9 +132,9 @@ class AbsensiSupirDetailController extends Controller
                                 }
                                 $tanggal = date('Y-m-d', strtotime($tglbukti . "+$batasHari days"));
                             }
-                        } else {
-                            $tanggal = date('Y-m-d', strtotime($tglbukti . "+$getBatasHari days"));
-                        }
+                        // } else {
+                        //     $tanggal = date('Y-m-d', strtotime($tglbukti . "+$getBatasHari days"));
+                        // }
 
                         if ($tanggal . ' ' . $getBatasInput->text < date('Y-m-d H:i:s')) {
                             if (request()->from == 'listtrip') {
