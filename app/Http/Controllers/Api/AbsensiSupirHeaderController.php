@@ -83,8 +83,7 @@ class AbsensiSupirHeaderController extends Controller
             return response([
                 'error' => true,
                 'errors' => $validator->messages()
-            ],422);
-            
+            ], 422);
         }
         $data = [
             'Id' => $request->Id,
@@ -147,7 +146,7 @@ class AbsensiSupirHeaderController extends Controller
         //     throw $th;
         // }
     }
-    public function approvalEditAbsensiOld(ApprovalAbsensiFinalAppEditRequest $request,$id)
+    public function approvalEditAbsensiOld(ApprovalAbsensiFinalAppEditRequest $request, $id)
     {
 
         dd($request->all());
@@ -168,7 +167,7 @@ class AbsensiSupirHeaderController extends Controller
             } else {
                 $jam_batas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'JAMBATASAPPROVAL')->where('subgrp', 'JAMBATASAPPROVAL')->first()->text ?? '23:59:59';
                 $tglbtas = (new AbsensiSupirHeader())->getTomorrowDate();
-                $tglbtas = date("Y-m-d H:i:s", strtotime($tglbtas .' '. $jam_batas));
+                $tglbtas = date("Y-m-d H:i:s", strtotime($tglbtas . ' ' . $jam_batas));
                 $absensiSupirHeader->tglbataseditabsensi = $tglbtas;
                 $absensiSupirHeader->tglbataseditabsensiadmin = $tglbtas;
                 $absensiSupirHeader->statusapprovaleditabsensi = $statusBolehEdit->id;
@@ -285,7 +284,7 @@ class AbsensiSupirHeaderController extends Controller
             'status' => true,
             'data' => $data,
             'detail' => $detail,
-            "attributes"=>[
+            "attributes" => [
                 'defaultJenis' => $mandorabsensisupir->defaultJenis(),
             ]
         ]);
@@ -540,10 +539,28 @@ class AbsensiSupirHeaderController extends Controller
             ];
             return response($data);
         }
+
+        $cekAbsensiApproval = DB::table("absensisupirapprovalheader")->from(DB::raw("absensisupirapprovalheader with (readuncommitted)"))
+            ->where('absensisupir_nobukti', $nobukti)
+            ->first();
+        if ($cekAbsensiApproval != '') {
+
+            $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' no bukti approval <b>' . $cekAbsensiApproval->nobukti . '</b> <br> ' . $keterangantambahanerror;
+
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'SATL2',
+                'statuspesan' => 'warning',
+            ];
+            return response($data);
+        }
+        
         $isUsedTrip = AbsensiSupirHeader::isUsedTrip($absensisupir->id);
         // dd($absensisupir,$absensisupir->nominal);
         if ($aksi == 'DELETE') {
-            if ($isUsedTrip  || ($absensisupir->nominal > 0 )) {
+            if ($isUsedTrip  || ($absensisupir->nominal > 0)) {
                 $keteranganerror = $error->cekKeteranganError('DTSA') ?? '';
                 $keterror = 'No Bukti <b>' . $absensisupir->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
 
@@ -555,7 +572,6 @@ class AbsensiSupirHeaderController extends Controller
                 ];
                 return response($data);
             }
-            
         }
 
         if ($aksi == 'PRINTER BESAR' || $aksi == 'PRINTER KECIL') {
@@ -858,7 +874,7 @@ class AbsensiSupirHeaderController extends Controller
     public function approvalbukacetak()
     {
     }
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL KIRIM BERKAS
      */
@@ -902,7 +918,7 @@ class AbsensiSupirHeaderController extends Controller
             throw $th;
         }
     }
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL FINAL ABSENSI
      */
