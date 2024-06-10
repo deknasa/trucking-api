@@ -246,7 +246,7 @@ class ListTrip extends MyModel
                     $keteranganerror = $error->cekKeteranganError('LB') ?? '';
                     $data = [
                         'kondisi' => true,
-                        'keterangan' => $keteranganerror . "<br> BATAS $aksi " . date('d-m-Y H:i:s', strtotime($getTglBatasApproval->tglbatas)) . ' <br> ' . $keterangantambahanerror,
+                        'keterangan' => $keteranganerror . "<br> BATAS $aksi " . date('d-m-Y H:i:s', strtotime($trip->tglbataseditsuratpengantar)) . ' <br> ' . $keterangantambahanerror,
                         'kodeerror' => 'LB',
                     ];
 

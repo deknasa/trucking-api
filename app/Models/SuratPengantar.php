@@ -2387,7 +2387,7 @@ class SuratPengantar extends MyModel
             $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
             $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
             $now = date('Y-m-d H:i:s',strtotime('now'));
-            $data = SuratPengantar::where('statusapprovaleditsuratpengantar',$statusApproval->id)
+            $data = DB::table("suratpengantar")->where('statusapprovaleditsuratpengantar',$statusApproval->id)
             ->where('tglbataseditsuratpengantar','<',$now)
             ->update(['statusapprovaleditsuratpengantar' => $statusNonApproval->id]);
             DB::commit();
