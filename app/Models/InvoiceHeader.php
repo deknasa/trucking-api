@@ -1156,7 +1156,7 @@ class InvoiceHeader extends MyModel
                 'a.tglbukti',
                 'a.nominal_detail',
                 DB::raw("'$temtabel' as namatabel")
-            )->orderBY('id');
+            );
 
 
 
@@ -1165,6 +1165,7 @@ class InvoiceHeader extends MyModel
         $this->totalNominal = $query->sum('a.nominal_detail');
         // dd($query->sum('a.nominal_detail'));
 
+        $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
         $this->filterGetInvoice($query);
         if (request()->limit != 0) {
             $query->skip($this->params['offset'])->take($this->params['limit']);
