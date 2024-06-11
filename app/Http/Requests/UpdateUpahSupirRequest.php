@@ -191,7 +191,7 @@ class UpdateUpahSupirRequest extends FormRequest
             'tglmulaiberlaku' => [
                 'required', 'date_format:d-m-Y',
             ],
-            'gambar.*' => ['image', 'min:100']
+            'gambar.*' => ['image', 'min:50']
         ];
         $relatedRequests = [
             UpdateUpahSupirRincianRequest::class

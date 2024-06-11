@@ -839,6 +839,7 @@ class PengeluaranStokHeader extends MyModel
                             if ($filters['data']) {
                                 $query = $query->where('a.statuscetak_id', '=', "$filters[data]");
                             }
+                        } else if ($filters['field'] == '') {
                         } else if ($filters['field'] == 'statuskirimberkas') {
                                 if ($filters['data']) {
                                     $query = $query->where('a.statuskirimberkas_id', '=', "$filters[data]");
@@ -881,6 +882,7 @@ class PengeluaranStokHeader extends MyModel
                                 if ($filters['data']) {
                                     $query = $query->Orwhere('a.statuscetak_id', '=', "$filters[data]");
                                 }
+                            } else if ($filters['field'] == '') {
                             } else if ($filters['field'] == 'statuskirimberkas') {
                                     if ($filters['data']) {
                                         $query = $query->Orwhere('a.statuskirimberkas_id', '=', "$filters[data]");
@@ -1343,6 +1345,13 @@ class PengeluaranStokHeader extends MyModel
 
     public function isBukaTanggalValidation($date, $pengeluaranstok_id)
     {
+        if (auth('api')->user()->isUserPusat()) {
+            $kor = Parameter::where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')->first();
+            $korv = DB::table('pengeluaranstok')->where('kodepengeluaran', 'KORV')->first();
+            if ($kor->text == $pengeluaranstok_id || $korv->id == $pengeluaranstok_id) {
+               return true;
+            }
+        }
         $date = date('Y-m-d', strtotime($date));
         $bukaPengeluaranStok = BukaPengeluaranStok::where('tglbukti', '=', $date)->where('pengeluaranstok_id', '=', $pengeluaranstok_id)->first();
         $tglbatas = $bukaPengeluaranStok->tglbatas ?? 0;
@@ -1386,6 +1395,9 @@ class PengeluaranStokHeader extends MyModel
 
     public function isKeteranganEditAble($id)
     {
+        if (auth('api')->user()->isUserPusat()) {//jika pusat gak wajib
+            return true;
+        }
         $tidakBolehEdit = DB::table('pengeluaranstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
         $query = DB::table('pengeluaranstokheader')->from(DB::raw("pengeluaranstokheader with (readuncommitted)"))

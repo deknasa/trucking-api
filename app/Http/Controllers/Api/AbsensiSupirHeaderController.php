@@ -18,6 +18,7 @@ use App\Models\MandorAbsensiSupir;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Validator;
 use App\Models\AbsensiSupirApprovalHeader;
 use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\StoreLogTrailRequest;
@@ -25,13 +26,13 @@ use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\AbsensiSupirHeaderRequest;
 use App\Http\Requests\ApprovalAbsensiFinalRequest;
 use App\Http\Requests\StoreKasGantungDetailRequest;
+
+
 use App\Http\Requests\StoreKasGantungHeaderRequest;
-
-
 use App\Http\Requests\UpdateKasGantungHeaderRequest;
 use App\Http\Requests\StoreAbsensiSupirDetailRequest;
-use App\Http\Requests\ApprovalValidasiApprovalRequest;
 
+use App\Http\Requests\ApprovalValidasiApprovalRequest;
 use App\Http\Controllers\Api\PengeluaranHeaderController;
 use App\Http\Requests\ApprovalAbsensiFinalAppEditRequest;
 use App\Http\Requests\ApprovalPengajuanTripInapAbsensiRequest;
@@ -61,8 +62,94 @@ class AbsensiSupirHeaderController extends Controller
      * @ClassName 
      * @Keterangan APPROVAL EDIT ABSENSI
      */
-    public function approvalEditAbsensi(ApprovalAbsensiFinalAppEditRequest $request,$id)
+    public function approvalEditAbsensi(Request $request)
     {
+
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'Id' => [
+                    'required',
+                ],
+            ],
+            [
+                'Id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WP')->keterangan,
+            ],
+            [
+                'Id' => 'Absensi',
+            ],
+        );
+        if (!$validator->passes()) {
+            return response([
+                'error' => true,
+                'errors' => $validator->messages()
+            ], 422);
+        }
+        $data = [
+            'Id' => $request->Id,
+        ];
+        (new AbsensiSupirHeader())->processApprovalEditAbsensi($data);
+
+        DB::commit();
+        return response([
+            'message' => 'Berhasil'
+        ]);
+        // DB::beginTransaction();
+        // try {
+        //     $absensiSupirHeader = AbsensiSupirHeader::lockForUpdate()->findOrFail($id);
+
+        //     $statusBolehEdit = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT ABSENSI')->where('text', '=', 'BOLEH EDIT ABSENSI')->first();
+        //     $statusTidakBolehEdit = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT ABSENSI')->where('text', '=', 'TIDAK BOLEH EDIT ABSENSI')->first();
+        //     // statusapprovaleditabsensi,tglapprovaleditabsensi,userapprovaleditabsensi 
+        //     if ($absensiSupirHeader->statusapprovaleditabsensi == $statusBolehEdit->id) {
+        //         $absensiSupirHeader->statusapprovaleditabsensi = $statusTidakBolehEdit->id;
+        //         $absensiSupirHeader->tglapprovaleditabsensi = date('Y-m-d', strtotime("1900-01-01"));
+        //         $absensiSupirHeader->userapprovaleditabsensi = '';
+        //         $absensiSupirHeader->tglbataseditabsensi = null;
+        //         $absensiSupirHeader->tglbataseditabsensiadmin = null;
+        //         $aksi = $statusTidakBolehEdit->text;
+        //     } else {
+        //         $jam_batas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'JAMBATASAPPROVAL')->where('subgrp', 'JAMBATASAPPROVAL')->first()->text ?? '23:59:59';
+        //         $tglbtas = (new AbsensiSupirHeader())->getTomorrowDate();
+        //         $tglbtas = date("Y-m-d H:i:s", strtotime($tglbtas .' '. $jam_batas));
+        //         $absensiSupirHeader->tglbataseditabsensi = $tglbtas;
+        //         $absensiSupirHeader->tglbataseditabsensiadmin = $tglbtas;
+        //         $absensiSupirHeader->statusapprovaleditabsensi = $statusBolehEdit->id;
+        //         $aksi = $statusBolehEdit->text;
+        //         $absensiSupirHeader->tglapprovaleditabsensi = date("Y-m-d", strtotime('today'));
+        //         $absensiSupirHeader->userapprovaleditabsensi = auth('api')->user()->name;
+        //     }
+
+
+        //     if ($absensiSupirHeader->save()) {
+        //         $logTrail = [
+        //             'namatabel' => strtoupper($absensiSupirHeader->getTable()),
+        //             'postingdari' => 'APPROVED EDIT ABSENSI SUPIR',
+        //             'idtrans' => $absensiSupirHeader->id,
+        //             'nobuktitrans' => $absensiSupirHeader->id,
+        //             'aksi' => $aksi,
+        //             'datajson' => $absensiSupirHeader->toArray(),
+        //             'modifiedby' => auth('api')->user()->name
+        //         ];
+
+        //         $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+        //         $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+        //         DB::commit();
+        //     }
+
+        //     return response([
+        //         'message' => 'Berhasil'
+        //     ]);
+        // } catch (\Throwable $th) {
+        //     DB::rollBack();
+        //     throw $th;
+        // }
+    }
+    public function approvalEditAbsensiOld(ApprovalAbsensiFinalAppEditRequest $request, $id)
+    {
+
+        dd($request->all());
         DB::beginTransaction();
         try {
             $absensiSupirHeader = AbsensiSupirHeader::lockForUpdate()->findOrFail($id);
@@ -80,7 +167,7 @@ class AbsensiSupirHeaderController extends Controller
             } else {
                 $jam_batas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'JAMBATASAPPROVAL')->where('subgrp', 'JAMBATASAPPROVAL')->first()->text ?? '23:59:59';
                 $tglbtas = (new AbsensiSupirHeader())->getTomorrowDate();
-                $tglbtas = date("Y-m-d H:i:s", strtotime($tglbtas .' '. $jam_batas));
+                $tglbtas = date("Y-m-d H:i:s", strtotime($tglbtas . ' ' . $jam_batas));
                 $absensiSupirHeader->tglbataseditabsensi = $tglbtas;
                 $absensiSupirHeader->tglbataseditabsensiadmin = $tglbtas;
                 $absensiSupirHeader->statusapprovaleditabsensi = $statusBolehEdit->id;
@@ -197,7 +284,7 @@ class AbsensiSupirHeaderController extends Controller
             'status' => true,
             'data' => $data,
             'detail' => $detail,
-            "attributes"=>[
+            "attributes" => [
                 'defaultJenis' => $mandorabsensisupir->defaultJenis(),
             ]
         ]);
@@ -452,10 +539,28 @@ class AbsensiSupirHeaderController extends Controller
             ];
             return response($data);
         }
+
+        $cekAbsensiApproval = DB::table("absensisupirapprovalheader")->from(DB::raw("absensisupirapprovalheader with (readuncommitted)"))
+            ->where('absensisupir_nobukti', $nobukti)
+            ->first();
+        if ($cekAbsensiApproval != '') {
+
+            $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' no bukti approval <b>' . $cekAbsensiApproval->nobukti . '</b> <br> ' . $keterangantambahanerror;
+
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'SATL2',
+                'statuspesan' => 'warning',
+            ];
+            return response($data);
+        }
+        
         $isUsedTrip = AbsensiSupirHeader::isUsedTrip($absensisupir->id);
         // dd($absensisupir,$absensisupir->nominal);
         if ($aksi == 'DELETE') {
-            if ($isUsedTrip  || ($absensisupir->nominal > 0 )) {
+            if ($isUsedTrip  || ($absensisupir->nominal > 0)) {
                 $keteranganerror = $error->cekKeteranganError('DTSA') ?? '';
                 $keterror = 'No Bukti <b>' . $absensisupir->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
 
@@ -467,7 +572,6 @@ class AbsensiSupirHeaderController extends Controller
                 ];
                 return response($data);
             }
-            
         }
 
         if ($aksi == 'PRINTER BESAR' || $aksi == 'PRINTER KECIL') {
@@ -770,7 +874,7 @@ class AbsensiSupirHeaderController extends Controller
     public function approvalbukacetak()
     {
     }
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL KIRIM BERKAS
      */
@@ -814,7 +918,7 @@ class AbsensiSupirHeaderController extends Controller
             throw $th;
         }
     }
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL FINAL ABSENSI
      */

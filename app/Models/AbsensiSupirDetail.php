@@ -950,6 +950,19 @@ class AbsensiSupirDetail extends MyModel
             ->orderby('a.text', 'asc');
 
         DB::table($tidakadasupirabsensi)->insertUsing(['text'], $queryaTidakadaSupir);
+        $ricsupirtemp = '##ricsupirtemp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($ricsupirtemp, function ($table) {
+            $table->integer('supir_id')->nullable();
+            $table->date('tgltrip')->nullable();
+        });
+
+        $ricSupirQuery = DB::table('gajisupirheader')
+        ->leftJoin('gajisupirdetail', 'gajisupirheader.id', '=', 'gajisupirdetail.gajisupir_id')
+        ->leftJoin('suratpengantar', 'gajisupirdetail.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
+        ->select('gajisupirheader.supir_id', 'suratpengantar.tglbukti')
+        ->where('suratpengantar.tglbukti', $date)
+        ->groupBy('gajisupirheader.supir_id', 'suratpengantar.tglbukti');
+        DB::table($ricsupirtemp)->insertUsing(["supir_id","tgltrip"], $ricSupirQuery);
 
 
         $tempric = '##tempric' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -1000,6 +1013,7 @@ class AbsensiSupirDetail extends MyModel
                 'a.memo',
                 'a.statusjeniskendaraan',
                 'a.statusjeniskendaraannama',
+                'supirric.tgltrip as tgltrip',
                 DB::RAW("isnull(a.uangjalan,0) as uangjalan"),
                 db::raw("format(cast(isnull(b.tglbatas,
                     (case when year(isnull(a.tglbukti,'1900/1/1'))=1900  then  '" .  date('Y-m-d', strtotime($date)) . " " . $batasJamEdit->text . "'  else    format(a.tglbukti,'yyyy/MM/dd')+' " . $batasJamEdit->text . "' end)
@@ -1040,6 +1054,7 @@ class AbsensiSupirDetail extends MyModel
             ->leftJoin("parameter as tambahtrado", 'a.statustambahantrado', 'tambahtrado.id')
             ->leftJoin(db::raw($tempric . " as d"), 'a.supir_id', 'd.supir_id')
             ->join(db::raw("trado c with (readuncommitted)"), 'a.trado_id', 'c.id')
+            ->leftJoin(DB::raw("$ricsupirtemp as supirric with (readuncommitted)"),'a.supir_id','supirric.supir_id')
             ->orderBy('a.trado', 'asc')
             ->orderBy('a.statussupirserap', 'desc')
             ->orderBy('a.statustambahantrado', 'desc')

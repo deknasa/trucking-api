@@ -2380,6 +2380,23 @@ class SuratPengantar extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
+    function returnUnApprovalEdit() {
+         DB::beginTransaction();
+        try {
+            $suratPengantar = new SuratPengantar();
+            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            $now = date('Y-m-d H:i:s',strtotime('now'));
+            $data = DB::table("suratpengantar")->where('statusapprovaleditsuratpengantar',$statusApproval->id)
+            ->where('tglbataseditsuratpengantar','<',$now)
+            ->update(['statusapprovaleditsuratpengantar' => $statusNonApproval->id]);
+            DB::commit();
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
     public function processStore(array $data): SuratPengantar
     {
         $inputTripMandor = $data['inputtripmandor'] ?? 0;

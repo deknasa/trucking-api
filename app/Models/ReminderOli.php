@@ -1760,12 +1760,12 @@ class ReminderOli extends MyModel
         $Tempsaldoreminderoli = '##Tempsaldoreminderoli' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($Tempsaldoreminderoli, function ($table) {
             $table->integer('id');
-            $table->integer('trado_id');
-            $table->string('nopol', 1000);
-            $table->string('statusreminder', 100);
-            $table->date('tglawal');
-            $table->date('tglsampai');
-            $table->double('jarak', 15, 2);
+            $table->integer('trado_id')->nullable();
+            $table->string('nopol', 1000)->nullable();
+            $table->string('statusreminder', 100)->nullable();
+            $table->date('tglawal')->nullable();
+            $table->date('tglsampai')->nullable();
+            $table->double('jarak', 15, 2)->nullable();
             $table->double('jaraktransaksi', 15, 2)->nullable();
         });
 
@@ -1828,8 +1828,8 @@ class ReminderOli extends MyModel
         Schema::create($Temppergantian, function ($table) {
             $table->string('nobukti', 100);
             $table->integer('trado_id');
-            $table->string('statusreminder', 100);
-            $table->date('tgl');
+            $table->string('statusreminder', 100)->nullable();
+            $table->date('tgl')->nullable();
         });
 
         $querypergantian = db::table("pengeluaranstokheader")->from(DB::raw("pengeluaranstokheader a with (readuncommitted)"))
@@ -1997,8 +1997,8 @@ class ReminderOli extends MyModel
         Schema::create($Temptradotransakdi, function ($table) {
             $table->integer('trado_id');
             $table->double('jarak', 15, 2)->nullable();
-            $table->date('tgl');
-            $table->string('statusreminder', 100);
+            $table->date('tgl')->nullable();
+            $table->string('statusreminder', 100)->nullable();
         });
 
 

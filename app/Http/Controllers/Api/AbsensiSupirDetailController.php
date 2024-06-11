@@ -107,7 +107,7 @@ class AbsensiSupirDetailController extends Controller
                         $kondisi = true;
                         $batasHari = $getBatasHari;
                         $tanggal = date('Y-m-d', strtotime($tglbukti));
-                        if ($getBatasHari != 0) {
+                        // if ($getBatasHari != 0) {
 
                             while ($kondisi) {
                                 $cekHarilibur = DB::table("harilibur")->from(DB::raw("harilibur with (readuncommitted)"))
@@ -132,12 +132,23 @@ class AbsensiSupirDetailController extends Controller
                                 }
                                 $tanggal = date('Y-m-d', strtotime($tglbukti . "+$batasHari days"));
                             }
-                        } else {
-                            $tanggal = date('Y-m-d', strtotime($tglbukti . "+$getBatasHari days"));
-                        }
+                        // } else {
+                        //     $tanggal = date('Y-m-d', strtotime($tglbukti . "+$getBatasHari days"));
+                        // }
 
                         if ($tanggal . ' ' . $getBatasInput->text < date('Y-m-d H:i:s')) {
+                            if (request()->from == 'listtrip') {
+                                $trip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+                                    ->select('nobukti', 'jobtrucking', 'tglbukti', DB::raw("isnull(approvalbukatanggal_id,0) as approvalbukatanggal_id"), 'tglbataseditsuratpengantar')
+                                    ->where('id', request()->trip_id)
+                                    ->first();
+                                if ($trip != '') {
 
+                                    if (date('Y-m-d H:i:s') < date('Y-m-d H:i:s', strtotime($trip->tglbataseditsuratpengantar))) {
+                                        goto selesai;
+                                    }
+                                }
+                            }
                             // GET APPROVAL INPUTTRIP
                             $tempApp = '##tempApp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                             Schema::create($tempApp, function ($table) {
@@ -203,7 +214,7 @@ class AbsensiSupirDetailController extends Controller
                                 ->whereRaw('COALESCE(b.mandor_id, 0) <> 0')
                                 ->whereRaw('COALESCE(c.user_id, 0) <> 0')
                                 ->whereRaw('isnull(d.jumlahtrip,0) < c.jumlahtrip')
-                                ->orderBy('c.tglbatas','desc')
+                                ->orderBy('c.tglbatas', 'desc')
                                 ->first();
                             if ($getAll == '') {
                                 return response([
@@ -261,6 +272,7 @@ class AbsensiSupirDetailController extends Controller
                         }
                     }
                 }
+                selesai:
                 $id = $absensiSupirHeader->id;
                 $request->request->add(['getabsen' => true]);
             }
@@ -280,11 +292,12 @@ class AbsensiSupirDetailController extends Controller
         // 
     }
 
-    public function getProsesKGT(Request $request){
+    public function getProsesKGT(Request $request)
+    {
         $KasGantungDetail = new KasGantungDetail;
         return response([
             'data' => $KasGantungDetail->getKgtAbsensi($request->nobukti),
-            
+
             'attributes' => [
                 'totalRows' => $KasGantungDetail->totalRows,
                 "totalPages" => $KasGantungDetail->totalPages,

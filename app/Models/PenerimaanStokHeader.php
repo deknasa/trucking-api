@@ -1038,6 +1038,7 @@ class PenerimaanStokHeader extends MyModel
                             //     $query = $query->where('ke.gudang', 'LIKE', "%$filters[data]%");
                             // } else if ($filters['field'] == 'coa') {
                             //     $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == '') {
                         } else if ($filters['field'] == 'tglbukti') {
                             $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
@@ -1074,6 +1075,7 @@ class PenerimaanStokHeader extends MyModel
                                 if ($filters['data']) {
                                     $query = $query->Orwhere('a.statuscetak_id', '=', "$filters[data]");
                                 }
+                            } else if ($filters['field'] == '') {
                             } else if ($filters['field'] == 'statuskirimberkas') {
                                     if ($filters['data']) {
                                         $query = $query->Orwhere('a.statuskirimberkas_id', '=', "$filters[data]");
@@ -2893,6 +2895,13 @@ class PenerimaanStokHeader extends MyModel
     }
     public function isBukaTanggalValidation($date, $penerimaanstok_id)
     {
+        if (auth('api')->user()->isUserPusat()) {
+            $kor = Parameter::where('grp', 'KOR STOK')->where('subgrp', 'KOR STOK')->first();
+            $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
+            if ($kor->text == $penerimaanstok_id || $korv->id == $penerimaanstok_id) {
+               return true;
+            }
+        }
         $date = date('Y-m-d', strtotime($date));
         $bukaPenerimaanStok = BukaPenerimaanStok::where('tglbukti', '=', $date)->where('penerimaanstok_id', '=', $penerimaanstok_id)->first();
         $tglbatas = $bukaPenerimaanStok->tglbatas ?? 0;
@@ -2931,6 +2940,9 @@ class PenerimaanStokHeader extends MyModel
 
     public function isKeteranganEditAble($id)
     {
+        if (auth('api')->user()->isUserPusat()) {//jika pusat gak wajib
+            return true;
+        }
         $tidakBolehEdit = DB::table('penerimaanstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
         $query = DB::table('penerimaanstokheader')->from(DB::raw("penerimaanstokheader with (readuncommitted)"))

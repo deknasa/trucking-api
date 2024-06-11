@@ -171,10 +171,16 @@ class SupirController extends Controller
             } else {
                 $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
                 $statusapproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+                
+                $cabang = DB::table('parameter')->where('grp', 'CABANG')->where('subgrp', 'CABANG')->first();
+
                 if ($request->action == "approve") {
                     $supir->tglberhentisupir = date('Y-m-d', strtotime($request->tglberhentisupir));
                     $supir->statusaktif = $statusaktif->id;
-                    $supir->statusapproval = $statusapproval->id;
+                    if ($cabang->text == "SURABAYA") {
+                        $supir->statusapproval = $statusapproval->id;
+                    }
+
                     $aksi = "APPROVED SUPIR RESIGN";
                     // $supir->keteranganberhentisupir = ($request->keteranganberhentisupir == null) ? "" : $request->keteranganberhentisupir;
                     $supir->keteranganberhentisupir = $request->keteranganberhentisupir;

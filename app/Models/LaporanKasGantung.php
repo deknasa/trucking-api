@@ -496,7 +496,7 @@ class LaporanKasGantung extends MyModel
         return $data;
     }
 
-    public function getReport($periode, $prosesneraca)
+    public function getReport($periode, $prosesneraca, $bank_id)
     {
         if ($prosesneraca == 1) {
             $periode = date("Y-m-d", strtotime("+1 day", strtotime($periode)));
@@ -519,6 +519,7 @@ class LaporanKasGantung extends MyModel
             ])
             ->join(db::raw("pengembaliankasgantungdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->where('A.tglbukti', '<', $periode)
+            ->where('A.bank_id', '=', $bank_id)
             ->groupBY('b.kasgantung_nobukti');
 
         DB::table($temprekapsaldopengembaliankasgantung)->insertUsing([
@@ -544,6 +545,7 @@ class LaporanKasGantung extends MyModel
             ])
             ->join(db::raw("kasgantungdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->where('A.tglbukti', '<', $periode)
+            ->where('A.bank_id', '=', $bank_id)
             ->groupBY('a.nobukti');
 
         // dd($querysaldokasgantung->tosql());
@@ -623,6 +625,7 @@ class LaporanKasGantung extends MyModel
                 'A.created_at',
                 'A.updated_at'
             ])
+            ->where('A.bank_id', '=', $bank_id)
             ->where('A.tglbukti', '=', $periode);
 
 
@@ -789,6 +792,7 @@ class LaporanKasGantung extends MyModel
                 'A.created_at',
                 'A.updated_at'
             ])
+            ->where('A.bank_id', '=', $bank_id)
             ->where('A.tglbukti', '=', $periode);
         //  dd($kasheader->get());
 
@@ -909,6 +913,7 @@ class LaporanKasGantung extends MyModel
                 'A.created_at',
                 'A.updated_at',
             ])
+            ->where('A.bank_id', '=', $bank_id)
             ->where('A.tglbukti', '=', $periode);
 
 

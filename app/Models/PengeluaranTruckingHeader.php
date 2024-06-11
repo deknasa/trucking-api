@@ -1013,39 +1013,95 @@ class PengeluaranTruckingHeader extends MyModel
 
     public function getEditInvoice($id, $tgldari, $tglsampai)
     {
-
-
+        $proses = request()->proses ?? 'reload';
+        $user = auth('api')->user()->name;
+        $class = 'SumbanganSosialController';
 
         $parameter = new Parameter();
 
         $sumbanganton = $parameter->cekText('SUMBANGAN TON', 'SUMBANGAN TON') ?? '0';
 
         $this->setRequestParameters();
-        $temp = '##tempGet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        if ($proses == 'reload') {
+            $temtabel = 'tempeditinv' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
 
-        $get = DB::table('pengeluarantruckingdetail')->from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
-            ->select(
-                DB::raw("pengeluarantruckingdetail.id as pengeluarantrucking_id"),
-                DB::raw("pengeluarantruckingdetail.invoice_nobukti as noinvoice_detail"),
-                DB::raw("pengeluarantruckingdetail.orderantrucking_nobukti as nojobtrucking_detail"),
-                DB::raw("isnull(container.keterangan,'TON') as container_detail"),
-                DB::raw("pengeluarantruckingdetail.nominal as nominal_detail"),
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel a with (readuncommitted)")
             )
-            ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'pengeluarantruckingdetail.orderantrucking_nobukti', 'ot.nobukti')
-            ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id')
-            ->where('pengeluarantruckingdetail.pengeluarantruckingheader_id', '=', $id);
+                ->select(
+                    'id',
+                    'class',
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
 
-        Schema::create($temp, function ($table) {
-            $table->bigInteger('pengeluarantrucking_id')->nullable();
-            $table->string('noinvoice_detail');
-            $table->string('nojobtrucking_detail')->nullable();
-            $table->string('container_detail')->nullable();
-            $table->bigInteger('nominal_detail')->nullable();
-        });
-        DB::table($temp)->insertUsing(['pengeluarantrucking_id', 'noinvoice_detail', 'nojobtrucking_detail', 'container_detail', 'nominal_detail'], $get);
+            if (isset($querydata)) {
+                Schema::dropIfExists($querydata->namatabel);
+                $queryid = db::table('listtemporarytabel')->from(db::raw("listtemporarytabel a with (readuncommitted)"))
+                    ->select('id')->where('id', $querydata->id)->first();
+                if (isset($queryid)) {
+                    DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+                }
+            }
 
-        $fetch = InvoiceDetail::from(DB::raw("invoicedetail with (readuncommitted)"))
-            ->select(DB::raw("
+            DB::table('listtemporarytabel')->insert(
+                [
+                    'class' => $class,
+                    'namatabel' => $temtabel,
+                    'modifiedby' => $user,
+                    'created_at' => date('Y/m/d H:i:s'),
+                    'updated_at' => date('Y/m/d H:i:s'),
+                ]
+            );
+
+
+            $get = DB::table('pengeluarantruckingdetail')->from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
+                ->select(
+                    DB::raw("pengeluarantruckingdetail.id as pengeluarantrucking_id"),
+                    DB::raw("pengeluarantruckingdetail.invoice_nobukti as noinvoice_detail"),
+                    DB::raw("pengeluarantruckingdetail.orderantrucking_nobukti as nojobtrucking_detail"),
+                    DB::raw("isnull(container.keterangan,'TON') as container_detail"),
+                    DB::raw("pengeluarantruckingdetail.nominal as nominal_detail"),
+                )
+                ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'pengeluarantruckingdetail.orderantrucking_nobukti', 'ot.nobukti')
+                ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id')
+                ->where('pengeluarantruckingdetail.pengeluarantruckingheader_id', '=', $id);
+
+            Schema::create($temtabel, function ($table) {
+                $table->bigInteger('pengeluarantrucking_id')->nullable();
+                $table->string('noinvoice_detail');
+                $table->string('nojobtrucking_detail')->nullable();
+                $table->string('container_detail')->nullable();
+                $table->bigInteger('nominal_detail')->nullable();
+            });
+            DB::table($temtabel)->insertUsing(['pengeluarantrucking_id', 'noinvoice_detail', 'nojobtrucking_detail', 'container_detail', 'nominal_detail'], $get);
+
+
+            $queryget = db::table("saldosumbangansosial")->from(db::raw("saldosumbangansosial a with (readuncommitted)"))
+                ->select(
+                    db::raw("null as pengeluarantrucking_id"),
+                    'a.noinvoice_detail',
+                    'a.nojobtrucking_detail',
+                    db::raw("isnull(container.keterangan,'TON') as container_detail"),
+                    db::raw("(case when container.nominalsumbangan IS NULL then " . $sumbanganton . " else container.nominalsumbangan end) as nominal_detail")
+                )
+                ->leftJoin(DB::raw("container with (readuncommitted)"), 'a.container_id', 'container.id')
+                ->whereRaw("a.nojobtrucking_detail not in (select orderantrucking_nobukti from pengeluarantruckingdetail where orderantrucking_nobukti != '')")
+                ->whereBetween('a.tgl_bukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
+                ->orderby('a.id', 'asc');
+
+            DB::table($temtabel)->insertUsing([
+                'pengeluarantrucking_id',
+                'noinvoice_detail',
+                'nojobtrucking_detail',
+                'container_detail',
+                'nominal_detail',
+            ], $queryget);
+
+            $fetch = InvoiceDetail::from(DB::raw("invoicedetail with (readuncommitted)"))
+                ->select(DB::raw("
             null as pengeluarantrucking_id,
             invoicedetail.nobukti as noinvoice_detail,
             invoicedetail.orderantrucking_nobukti as nojobtrucking_detail,
@@ -1054,22 +1110,36 @@ class PengeluaranTruckingHeader extends MyModel
 
             "))
 
-            ->leftJoin(DB::raw("invoiceheader with (readuncommitted)"), 'invoicedetail.invoice_id', 'invoiceheader.id')
-            ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', 'ot.nobukti')
-            ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id')
-            ->whereRaw("invoicedetail.orderantrucking_nobukti not in (select orderantrucking_nobukti from pengeluarantruckingdetail where orderantrucking_nobukti != '')")
-            ->whereBetween('invoiceheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))]);
+                ->leftJoin(DB::raw("invoiceheader with (readuncommitted)"), 'invoicedetail.invoice_id', 'invoiceheader.id')
+                ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', 'ot.nobukti')
+                ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id')
+                ->whereRaw("invoicedetail.orderantrucking_nobukti not in (select orderantrucking_nobukti from pengeluarantruckingdetail where orderantrucking_nobukti != '')")
+                ->whereBetween('invoiceheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))]);
 
-        DB::table($temp)->insertUsing(['pengeluarantrucking_id', 'noinvoice_detail', 'nojobtrucking_detail', 'container_detail', 'nominal_detail'], $fetch);
+            DB::table($temtabel)->insertUsing(['pengeluarantrucking_id', 'noinvoice_detail', 'nojobtrucking_detail', 'container_detail', 'nominal_detail'], $fetch);
+        } else {
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel with (readuncommitted)")
+            )
+                ->select(
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
 
-
-        $query = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By $temp.noinvoice_detail) as id_detail,pengeluarantrucking_id,noinvoice_detail,nojobtrucking_detail,container_detail,nominal_detail"));
+            // dd($querydata);
+            $temtabel = $querydata->namatabel;
+        }
+        $query = DB::table($temtabel)->from(DB::raw("$temtabel as a with (readuncommitted)"))
+            ->select(DB::raw("row_number() Over(Order By a.noinvoice_detail) as id_detail,pengeluarantrucking_id,noinvoice_detail,nojobtrucking_detail,container_detail,nominal_detail"));
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $this->totalNominal = $query->sum('nominal_detail');
-
+        
+        $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        $this->filter($query);
         $this->paginate($query);
         return $query->get();
     }
@@ -1105,12 +1175,12 @@ class PengeluaranTruckingHeader extends MyModel
         });
         DB::table($temp)->insertUsing(['pengeluarantrucking_id', 'noinvoice_detail', 'nojobtrucking_detail', 'container_detail', 'nominal_detail'], $fetch);
 
-        $query = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By $temp.noinvoice_detail) as id_detail,pengeluarantrucking_id,noinvoice_detail,nojobtrucking_detail,container_detail,nominal_detail"));
+        $query = DB::table($temp)->from(DB::raw("$temp as a with (readuncommitted)"))
+            ->select(DB::raw("row_number() Over(Order By a.noinvoice_detail) as id_detail,pengeluarantrucking_id,noinvoice_detail,nojobtrucking_detail,container_detail,nominal_detail"));
         if ($this->params['sortIndex'] == 'id') {
-            $query->orderBy($temp . '.nojobtrucking_detail', $this->params['sortOrder']);
+            $query->orderBy('a.noinvoice_detail', $this->params['sortOrder']);
         } else {
-            $query->orderBy($temp . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+            $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
 
         $this->totalNominal = $query->sum('nominal_detail');
@@ -1118,7 +1188,7 @@ class PengeluaranTruckingHeader extends MyModel
 
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-            // $this->filter($query);
+            $this->filter($query);
             $this->paginate($query);
         }
         return $query->get();

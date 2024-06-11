@@ -1027,6 +1027,20 @@ class MandorAbsensiSupir extends MyModel
             ->orderby('a.kodetrado','asc');
 
             // dd($queryhasil->get());
+            $ricsupirtemp = '##ricsupirtemp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($ricsupirtemp, function ($table) {
+                $table->integer('supir_id')->nullable();
+                $table->date('tgltrip')->nullable();
+            });
+
+            $ricSupirQuery = DB::table('gajisupirheader')
+            ->leftJoin('gajisupirdetail', 'gajisupirheader.id', '=', 'gajisupirdetail.gajisupir_id')
+            ->leftJoin('suratpengantar', 'gajisupirdetail.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
+            ->select('gajisupirheader.supir_id', 'suratpengantar.tglbukti')
+            ->where('suratpengantar.tglbukti', $date)
+            ->groupBy('gajisupirheader.supir_id', 'suratpengantar.tglbukti');
+            DB::table($ricsupirtemp)->insertUsing(["supir_id","tgltrip"], $ricSupirQuery);
+
             $tidakadasupirabsensi = '##tidakadasupirabsensi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tidakadasupirabsensi, function ($table) {
                 $table->integer('text')->nullable();
@@ -1109,6 +1123,7 @@ class MandorAbsensiSupir extends MyModel
                 'a.uangjalan',
                 'a.statusjeniskendaraan',
                 'a.statusjeniskendaraannama',
+                'supirric.tgltrip as tgltrip',
                 'a.memo',
                 DB::raw("(CASE WHEN isnull(a.statustambahantrado,0)=0 THEN '' ELSE
                     (CASE WHEN a.statustambahantrado=655 THEN tradotambahan.text ELSE '' end) end) as statustambahantrado
@@ -1119,6 +1134,7 @@ class MandorAbsensiSupir extends MyModel
                 db::raw("(CASE WHEN a.absen_id IN (SELECT text FROM " . $tidakadasupirabsensi . ") THEN 'readonly' ELSE '' END) AS tidakadasupir"),
                 'a.tglbatas',
             )->leftJoin("parameter",'a.statussupirserap','parameter.id')
+            ->leftJoin(DB::raw("$ricsupirtemp as supirric with (readuncommitted)"),'a.supir_id','supirric.supir_id')
             ->leftJoin(DB::raw("parameter as tradotambahan with (readuncommitted)"),'a.statustambahantrado','tradotambahan.id');
 
 
@@ -1479,6 +1495,9 @@ class MandorAbsensiSupir extends MyModel
                                 $query = $query->whereRaw("(CASE WHEN isnull(a.statussupirserap,0)=0 THEN '' ELSE
                                 (CASE WHEN a.statussupirserap=593 THEN parameter.text ELSE '' end) end) LIKE '%$filters[data]%'");
                                 break;
+                            case "jeniskendaraan":
+                                $query = $query->whereRaw("a.statusjeniskendaraannama LIKE '%$filters[data]%'");
+                                break;
                             default:
                                 $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
 
@@ -1495,6 +1514,9 @@ class MandorAbsensiSupir extends MyModel
                                 case "tglbukti":
                                     // $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                                     $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                    break;
+                                case "jeniskendaraan":
+                                    $query = $query->orWhereRaw("a.statusjeniskendaraannama LIKE '%$filters[data]%'");
                                     break;
 
                                 default:

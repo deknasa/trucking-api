@@ -832,7 +832,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('absensisupirheader/{id}/printreport', [AbsensiSupirHeaderController::class, 'printReport'])->whereNumber('id');
     Route::get('absensisupirheader/{id}/export', [AbsensiSupirHeaderController::class, 'export'])->name('absensisupirheader.export')->whereNumber('id');
     Route::post('absensisupirheader/{id}/approval', [AbsensiSupirHeaderController::class, 'approval'])->name('absensisupirheader.approval')->whereNumber('id');
-    Route::post('absensisupirheader/{id}/approvalEditAbsensi', [AbsensiSupirHeaderController::class, 'approvalEditAbsensi'])->whereNumber('id');
+    // Route::post('absensisupirheader/{id}/approvalEditAbsensi', [AbsensiSupirHeaderController::class, 'approvalEditAbsensi'])->whereNumber('id');
+    Route::post('absensisupirheader/approvalEditAbsensi', [AbsensiSupirHeaderController::class, 'approvalEditAbsensi']);
     Route::post('absensisupirheader/approvaltripinap', [AbsensiSupirHeaderController::class, 'approvalTripInap']);
     Route::post('absensisupirheader/approvalfinalabsensi', [AbsensiSupirHeaderController::class, 'approvalfinalabsensi']);
     
@@ -1799,6 +1800,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('laporanmutasikasbank', LaporanMutasiKasBankController::class)->whereNumber('laporanmutasikasbank');
     Route::get('laporankartustok/report', [LaporanKartuStokController::class, 'report'])->name('laporankartustok.report');
     Route::resource('laporankartustok', LaporanKartuStokController::class)->whereNumber('laporankartustok');
+    Route::get('laporanaruskas/export', [LaporanArusKasController::class, 'export'])->name('laporanaruskas.export');
     Route::get('laporanaruskas/report', [LaporanArusKasController::class, 'report'])->name('laporanaruskas.report');
     Route::resource('laporanaruskas', LaporanArusKasController::class)->whereNumber('laporanaruskas');
 

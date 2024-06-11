@@ -77,7 +77,7 @@ class LaporanKasBankController extends Controller
                 'data' => $hasil['data'],
                 'datasaldo' => $hasil['dataSaldo'],
                 'infopemeriksa' => $infoPemeriksa,
-                'namacabang' => 'CABANG ' . $getCabang->namacabang
+                'namacabang' => ucwords(strtolower($getCabang->namacabang))
             ]);
         }
     }
@@ -109,7 +109,7 @@ class LaporanKasBankController extends Controller
             $hasil = $laporankasbank->getReport($dari, $sampai, $bank_id, $prosesneraca);
             return response([
                 'data' => $hasil['data'],
-                'namacabang' => 'CABANG ' . $getCabang->namacabang
+                'namacabang' => ucwords(strtolower($getCabang->namacabang))
             ]);
         }
     }

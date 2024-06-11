@@ -736,8 +736,7 @@ class AbsensiSupirHeader extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function getTomorrowDate( $tglbukti = 'today') {
-        $hari =1;
+    public function getTomorrowDate( $tglbukti = 'today',$hari =1) {
         $cont = true;
         
         while ($cont) {
@@ -756,7 +755,7 @@ class AbsensiSupirHeader extends MyModel
         return $tglbesok;
     }
 
-    public function getYesterdayAbsensi( $tglbukti = 'today') :AbsensiSupirHeader {
+    public function getYesterdayAbsensi( $tglbukti = 'today') : ?AbsensiSupirHeader {
         $hari =0;
         $cont = true;
         while ($cont) {
@@ -764,14 +763,20 @@ class AbsensiSupirHeader extends MyModel
             $lastAbsensi = AbsensiSupirHeader::from(db::raw("absensisupirheader a with (readuncommitted)"))
             ->where('a.tglbukti','<',$tglsemalam)
             ->orderBy('a.tglbukti','desc')->first();
-            
+            if (!$lastAbsensi) {
+                return $lastAbsensi;
+            }
             if (date("l",strtotime($lastAbsensi->tglbukti)) =="Sunday") {
                 $hariLibur = true;
             }else {
                 $hariLibur = HariLibur::where('tgl',$lastAbsensi->tglbukti)->first();
             }
             if (!$hariLibur) {
-                $cont = false;
+                $lastDetail = AbsensiSupirDetail::from(db::raw("absensisupirdetail a with (readuncommitted)"))
+                ->where('a.absensi_id',$lastAbsensi->id)->count();
+                if ($lastDetail){
+                    $cont = false;
+                }
             }
             if ($lastAbsensi) {
                 $tglbukti = $lastAbsensi->tglbukti;
@@ -787,14 +792,15 @@ class AbsensiSupirHeader extends MyModel
     {
         $tglbuktistr = strtotime($tglbukti);
         $jam_batas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'BATAS JAM EDIT ABSENSI')->where('subgrp', 'BATAS JAM EDIT ABSENSI')->first();
-        $jam = substr($jam_batas->text, 0, 2);
-        $menit = substr($jam_batas->text, 3, 2);
+        $hari = 0;//hari ini
         if (!auth()->user()->isMandor()) {
             $jam_batas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'JAMBATASAPPROVAL')->where('subgrp', 'JAMBATASAPPROVAL')->first();
-            $tglbukti = $this->getTomorrowDate($tglbukti);
-            $jam = substr($jam_batas->text, 0, 2);
-            $menit = substr($jam_batas->text, 3, 2);
+            $hari = 1;//+ 1 hari untuk admin
         }
+        $tglbukti = $this->getTomorrowDate($tglbukti,$hari);
+        $jam = substr($jam_batas->text, 0, 2);
+        $menit = substr($jam_batas->text, 3, 2);
+
         $limit = strtotime($tglbukti . ' +' . $jam . ' hours +' . $menit . ' minutes');
         $now = strtotime('now');
         if ($now < $limit) return true;
@@ -1474,5 +1480,51 @@ class AbsensiSupirHeader extends MyModel
         }
 
         return $result;
+    }
+
+    function processApprovalEditAbsensi(array $data) {
+        $statusBolehEdit = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT ABSENSI')->where('text', '=', 'BOLEH EDIT ABSENSI')->first();
+        $statusTidakBolehEdit = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT ABSENSI')->where('text', '=', 'TIDAK BOLEH EDIT ABSENSI')->first();
+       
+        $jam_batas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'JAMBATASAPPROVAL')->where('subgrp', 'JAMBATASAPPROVAL')->first()->text ?? '23:59:59';
+        $tglbtas = (new AbsensiSupirHeader())->getTomorrowDate();
+        $tglbtas = date("Y-m-d H:i:s", strtotime($tglbtas .' '. $jam_batas));
+
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $id = $data['Id'][$i];
+            $absensiSupirHeader = AbsensiSupirHeader::lockForUpdate()->findOrFail($id);
+
+            if ($absensiSupirHeader->statusapprovaleditabsensi == $statusBolehEdit->id) {
+                $absensiSupirHeader->statusapprovaleditabsensi = $statusTidakBolehEdit->id;
+                $absensiSupirHeader->tglapprovaleditabsensi = date('Y-m-d', strtotime("1900-01-01"));
+                $absensiSupirHeader->userapprovaleditabsensi = '';
+                $absensiSupirHeader->tglbataseditabsensi = null;
+                $absensiSupirHeader->tglbataseditabsensiadmin = null;
+                $aksi = $statusTidakBolehEdit->text;
+            } else {
+                $absensiSupirHeader->tglbataseditabsensi = $tglbtas;
+                $absensiSupirHeader->tglbataseditabsensiadmin = $tglbtas;
+                $absensiSupirHeader->statusapprovaleditabsensi = $statusBolehEdit->id;
+                $aksi = $statusBolehEdit->text;
+                $absensiSupirHeader->tglapprovaleditabsensi = date("Y-m-d", strtotime('today'));
+                $absensiSupirHeader->userapprovaleditabsensi = auth('api')->user()->name;
+            }
+
+
+            if ($absensiSupirHeader->save()) {
+                $absensiSupirDetailLogTrail = (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($absensiSupirHeader->getTable()),
+                    'postingdari' => 'APPROVED EDIT ABSENSI SUPIR',
+                    'idtrans' => $absensiSupirHeader->id,
+                    'nobuktitrans' => $absensiSupirHeader->id,
+                    'aksi' => $aksi,
+                    'datajson' => $absensiSupirHeader->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ]);
+            }else{
+                throw new \Exception("Error storing Absensi Supir Header.");
+            }
+
+        }
     }
 }
