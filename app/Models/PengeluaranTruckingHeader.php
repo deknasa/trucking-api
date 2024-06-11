@@ -1137,6 +1137,8 @@ class PengeluaranTruckingHeader extends MyModel
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $this->totalNominal = $query->sum('nominal_detail');
+        
+        $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
         $this->filter($query);
         $this->paginate($query);
         return $query->get();
@@ -1176,7 +1178,7 @@ class PengeluaranTruckingHeader extends MyModel
         $query = DB::table($temp)->from(DB::raw("$temp as a with (readuncommitted)"))
             ->select(DB::raw("row_number() Over(Order By a.noinvoice_detail) as id_detail,pengeluarantrucking_id,noinvoice_detail,nojobtrucking_detail,container_detail,nominal_detail"));
         if ($this->params['sortIndex'] == 'id') {
-            $query->orderBy('a.nojobtrucking_detail', $this->params['sortOrder']);
+            $query->orderBy('a.noinvoice_detail', $this->params['sortOrder']);
         } else {
             $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
