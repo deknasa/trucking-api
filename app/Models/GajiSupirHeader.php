@@ -2239,9 +2239,11 @@ class GajiSupirHeader extends MyModel
                 'gajisupirheader.potonganpinjamansemua',
                 'gajisupirheader.uangmakanharian',
                 'gajisupirheader.uangmakanberjenjang',
-                DB::raw('(total + uangmakanharian + uangmakanberjenjang - uangjalan - potonganpinjaman - potonganpinjamansemua - deposito - bbm) as sisa'),
+                'gajisupirheader.biayaextra',
+                'gajisupirheader.keteranganextra',
+                DB::raw('(total + uangmakanharian + uangmakanberjenjang + biayaextra - uangjalan - potonganpinjaman - potonganpinjamansemua - deposito - bbm) as sisa'),
                 DB::raw('(case when (year(gajisupirheader.tglbukacetak) <= 2000) then null else gajisupirheader.tglbukacetak end ) as tglbukacetak'),
-                DB::raw("'Laporan Rincian Gaji Supir' as judulLaporan"),
+                DB::raw("'Bukti Rincian Gaji Supir' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
