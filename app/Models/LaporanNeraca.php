@@ -732,6 +732,11 @@ class LaporanNeraca extends MyModel
         //         ], $query);
         // // 
 
+        $parameter = new Parameter();
+        $tglsaldo = $parameter->cekText('SALDO', 'SALDO') ?? '1900-01-01';
+        $tglsaldo = date('Y-m-d', strtotime($tglsaldo));
+        $tgluji = date('Y-m-d', strtotime($tglsd1 . ' -1 days'));
+
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
         $class = 'LaporanNeracaController';
@@ -1041,6 +1046,13 @@ class LaporanNeraca extends MyModel
 
 
 
+            // if ($tglsaldo==$tgluji) {
+            //     $tglkasbank = date('Y-m-d', strtotime($tglsd1));
+            // } else {
+            //     $tglkasbank = date('Y-m-d', strtotime($tglsd1 . ' -1 days'));
+            // }
+
+            // dd($tglsd);
             DB::table($tempkasgantung)->insertUsing([
                 'tanggal',
                 'nobukti',
@@ -1055,6 +1067,27 @@ class LaporanNeraca extends MyModel
                 'tglcetak',
                 'usercetak',
             ], (new LaporanKasGantung())->getReport($tglsd, 1, 1));
+
+            // dd(db::table($tempkasgantung)->get());
+
+            $getcabang = $parameter->cekText('CABANG', 'CABANG') ?? '';
+            if ($getcabang == 'MAKASSAR') {
+                DB::table($tempkasgantung)->insertUsing([
+                    'tanggal',
+                    'nobukti',
+                    'keterangan',
+                    'debet',
+                    'kredit',
+                    'saldo',
+                    'disetujui',
+                    'diperiksa',
+                    'judul',
+                    'judullaporan',
+                    'tglcetak',
+                    'usercetak',
+                ], (new LaporanKasGantung())->getReport($tglsd, 1, 6)); 
+            }
+           
 
             // Kas 
 
@@ -1081,7 +1114,17 @@ class LaporanNeraca extends MyModel
 
 
 
-            $tglkasbank = date('Y-m-d', strtotime($tglsd1 . ' -1 days'));
+          
+         
+
+            // dd($tglsaldo,$tgluji);
+            if ($tglsaldo==$tgluji) {
+                $tglkasbank = date('Y-m-d', strtotime($tglsd1));
+            } else {
+                $tglkasbank = date('Y-m-d', strtotime($tglsd1 . ' -1 days'));
+            }
+
+           
 
             $kas_id = DB::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
                 ->select(
@@ -1111,6 +1154,9 @@ class LaporanNeraca extends MyModel
                 'usercetak',
             ], (new LaporanKasBank())->getReport($tglkasbank, $tglkasbank, $kas_id, 1));
 
+            // dd($tglkasbank);
+            // dd(db::table($tempkas)->get());
+
             $parameter = new Parameter();
 
             $getcabang = $parameter->cekText('CABANG', 'CABANG') ?? '1900-01-01';
@@ -1138,11 +1184,15 @@ class LaporanNeraca extends MyModel
 
 
 
-                $tglkasbank = date('Y-m-d', strtotime($tglsd1 . ' -1 days'));
+                // $tglkasbank = date('Y-m-d', strtotime($tglsd1 . ' -1 days'));
 
                 $kas_idtnl = 6;
 
-
+                if ($tglsaldo==$tgluji) {
+                    $tglkasbank = date('Y-m-d', strtotime($tglsd1));
+                } else {
+                    $tglkasbank = date('Y-m-d', strtotime($tglsd1 . ' -1 days'));
+                }
                 DB::table($tempkastnl)->insertUsing([
                     'urut',
                     'urutdetail',
