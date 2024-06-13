@@ -899,15 +899,16 @@ class PengeluaranStokHeader extends MyModel
                             // } else if ($filters['field'] == 'bank') {
                             //     $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                             // } else 
-                            if ($filters['field'] == 'statuscetak') {
-                                if ($filters['data']) {
-                                    $query = $query->Orwhere('a.statuscetak_id', '=', "$filters[data]");
-                                }
-                            } else if ($filters['field'] == '') {
-                            } else if ($filters['field'] == 'statuskirimberkas') {
-                                    if ($filters['data']) {
-                                        $query = $query->Orwhere('a.statuskirimberkas_id', '=', "$filters[data]");
-                                    }
+                            // if ($filters['field'] == 'statuscetak') {
+                            //     if ($filters['data']) {
+                            //         $query = $query->Orwhere('a.statuscetak_id', '=', "$filters[data]");
+                            //     }
+                            // } else 
+                            if ($filters['field'] == '') {
+                            // } else if ($filters['field'] == 'statuskirimberkas') {
+                            //         if ($filters['data']) {
+                            //             $query = $query->Orwhere('a.statuskirimberkas_id', '=', "$filters[data]");
+                            //         }
     
                             } else if ($filters['field'] == 'tglbukti') {
                                 $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
@@ -940,6 +941,7 @@ class PengeluaranStokHeader extends MyModel
 
         Schema::create($temptable, function (Blueprint $table) {
             $table->integer('id')->nullable();
+            $table->double('nominal')->nullable();
             $table->longText('statuscetak')->nullable();
             $table->integer('statuscetak_id')->nullable();
             $table->longText('statuskirimberkas')->nullable();
@@ -967,10 +969,21 @@ class PengeluaranStokHeader extends MyModel
             $table->dateTime('updated_at')->nullable();
         });
 
+        $tempNominal = '##tempNominal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempNominal, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+        $getNominal = DB::table("pengeluaranstokdetail")->from(DB::raw("pengeluaranstokdetail with (readuncommitted)"))
+            ->select(DB::raw("pengeluaranstokheader.nobukti,SUM(pengeluaranstokdetail.total) AS nominal"))
+            ->join(DB::raw("pengeluaranstokheader with (readuncommitted)"), 'pengeluaranstokheader.id', 'pengeluaranstokdetail.pengeluaranstokheader_id')
+            ->groupBy("pengeluaranstokheader.nobukti");
+        DB::table($tempNominal)->insertUsing(['nobukti', 'nominal'], $getNominal);
 
         $query = DB::table('pengeluaranstokheader');
         $query->select(
             "pengeluaranstokheader.id",
+            "nominal.nominal",
             'statuscetak.text as statuscetak',
             "statuscetak.id as  statuscetak_id",
             'statuskirimberkas.text as statuskirimberkas',
@@ -1007,10 +1020,12 @@ class PengeluaranStokHeader extends MyModel
             ->leftJoin('bank', 'pengeluaranstokheader.bank_id', 'bank.id')
             ->leftJoin('parameter as statuspotongretur', 'pengeluaranstokheader.statuspotongretur', 'statuspotongretur.id')
             ->leftJoin('parameter as statuscetak', 'pengeluaranstokheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'pengeluaranstokheader.nobukti', 'nominal.nobukti')
             ->leftJoin('parameter as statuskirimberkas', 'pengeluaranstokheader.statuskirimberkas', 'statuskirimberkas.id');
 
         DB::table($temptable)->insertUsing([
             'id',
+            'nominal',
             'statuscetak',
             'statuscetak_id',
             'statuskirimberkas',
@@ -1040,6 +1055,7 @@ class PengeluaranStokHeader extends MyModel
         $query = DB::table($temptable)->from(DB::raw($temptable . " a "))
             ->select(
                 'a.id',
+                'a.nominal',
                 'a.statuscetak',
                 'a.statuscetak_id',
                 'a.statuskirimberkas',

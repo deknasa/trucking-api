@@ -838,6 +838,7 @@ class PenerimaanStokHeader extends MyModel
 
         Schema::create($temptable, function (Blueprint $table) {
             $table->integer('id')->nullable();
+            $table->double('nominal')->nullable();
             $table->longText('statuscetak')->nullable();
             $table->integer('statuscetak_id')->nullable();
             $table->longText('statuskirimberkas')->nullable();
@@ -860,6 +861,12 @@ class PenerimaanStokHeader extends MyModel
             $table->string('modifiedby', 200)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
+            $table->integer('tradodari_id')->nullable();
+            $table->longText('gandengan', 200)->nullable();
+            $table->longText('tradodari', 200)->nullable();
+            $table->longText('tradoke', 200)->nullable();
+            $table->longText('gandengandari', 200)->nullable();
+            $table->longText('gandenganke', 200)->nullable();
         });
 
         $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
@@ -868,9 +875,21 @@ class PenerimaanStokHeader extends MyModel
             $penerimaanstok_nobukti = "nobuktispb.nobukti as penerimaanstok_nobukti";
         }
 
+        $tempNominal = '##tempNominal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempNominal, function ($table) {
+                $table->string('nobukti')->nullable();
+                $table->double('nominal', 15, 2)->nullable();
+            });
+        $getNominal = DB::table("penerimaanstokdetail")->from(DB::raw("penerimaanstokdetail with (readuncommitted)"))
+                ->select(DB::raw("penerimaanstokheader.nobukti,SUM(penerimaanstokdetail.total) AS nominal"))
+                ->join(DB::raw("penerimaanstokheader with (readuncommitted)"), 'penerimaanstokheader.id', 'penerimaanstokdetail.penerimaanstokheader_id')
+                ->groupBy("penerimaanstokheader.nobukti");
+        DB::table($tempNominal)->insertUsing(['nobukti', 'nominal'], $getNominal);
+
         $query = DB::table('penerimaanstokheader');
         $query->select(
             "penerimaanstokheader.id",
+            'nominal.nominal',
             "statuscetak.text as  statuscetak",
             "statuscetak.id as  statuscetak_id",
             "statuskirimberkas.text as  statuskirimberkas",
@@ -893,21 +912,38 @@ class PenerimaanStokHeader extends MyModel
             "penerimaanstokheader.modifiedby",
             "penerimaanstokheader.created_at",
             "penerimaanstokheader.updated_at",
+            "penerimaanstokheader.tradodari_id",
+            "gandengan.kodegandengan as gandengan",
+            "tradodari.kodetrado as tradodari",
+            "tradoke.kodetrado as tradoke",
+            "gandengandari.kodegandengan as gandengandari",
+            "gandenganke.kodegandengan as gandenganke",
         )
             ->leftJoin('gudang as gudangs', 'penerimaanstokheader.gudang_id', 'gudangs.id')
             ->leftJoin('gudang as dari', 'penerimaanstokheader.gudangdari_id', 'dari.id')
             ->leftJoin('gudang as ke', 'penerimaanstokheader.gudangke_id', 'ke.id')
             ->leftJoin('parameter as statuscetak', 'penerimaanstokheader.statuscetak', 'statuscetak.id')
             ->leftJoin('parameter as statuskirimberkas', 'penerimaanstokheader.statuskirimberkas', 'statuskirimberkas.id')
+            ->leftJoin('parameter as statusedit', 'penerimaanstokheader.statusapprovaledit', 'statusedit.id')
+            ->leftJoin('parameter as statuseditketerangan', 'penerimaanstokheader.statusapprovaleditketerangan', 'statuseditketerangan.id')
             ->leftJoin('penerimaanstok', 'penerimaanstokheader.penerimaanstok_id', 'penerimaanstok.id')
             ->leftJoin('akunpusat', 'penerimaanstokheader.coa', 'akunpusat.coa')
             ->leftJoin('trado', 'penerimaanstokheader.trado_id', 'trado.id')
+            ->leftJoin('trado as tradodari ', 'penerimaanstokheader.tradodari_id', 'tradodari.id')
+            ->leftJoin('trado as tradoke ', 'penerimaanstokheader.tradoke_id', 'tradoke.id')
+            ->leftJoin('gandengan as gandengandari ', 'penerimaanstokheader.gandengandari_id', 'gandengandari.id')
+            ->leftJoin('gandengan as gandenganke ', 'penerimaanstokheader.gandenganke_id', 'gandenganke.id')
+            ->leftJoin('gandengan as gandengan ', 'penerimaanstokheader.gandengan_id', 'gandengan.id')
+            ->leftJoin('hutangheader', 'penerimaanstokheader.hutang_nobukti', 'hutangheader.nobukti')
+            ->leftJoin('pengeluaranstokheader as pengeluaranstok', 'penerimaanstokheader.pengeluaranstok_nobukti', 'pengeluaranstok.nobukti')
             ->leftJoin('penerimaanstokheader as nobuktipenerimaanstok', 'nobuktipenerimaanstok.nobukti', 'penerimaanstokheader.penerimaanstok_nobukti')
             ->leftJoin('penerimaanstokheader as nobuktispb', 'penerimaanstokheader.nobukti', 'nobuktispb.penerimaanstok_nobukti')
+            ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'penerimaanstokheader.nobukti', 'nominal.nobukti')
             ->leftJoin('supplier', 'penerimaanstokheader.supplier_id', 'supplier.id');
 
         DB::table($temptable)->insertUsing([
             'id',
+            'nominal',
             'statuscetak',
             'statuscetak_id',
             'statuskirimberkas',
@@ -930,10 +966,17 @@ class PenerimaanStokHeader extends MyModel
             'modifiedby',
             'created_at',
             'updated_at',
+            'tradodari_id',
+            'gandengan',
+            'tradodari',
+            'tradoke',
+            'gandengandari',
+            'gandenganke',
         ], $query);
         $query = DB::table($temptable)->from(DB::raw($temptable . " a "))
             ->select(
                 'a.id',
+                'a.nominal',
                 'a.statuscetak',
                 'a.statuscetak_id',
                 'a.statuskirimberkas',
@@ -955,7 +998,11 @@ class PenerimaanStokHeader extends MyModel
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at',
-
+                'a.gandengan',
+                'a.tradodari',
+                'a.tradoke',
+                'a.gandengandari',
+                'a.gandenganke',
             );
         return $query;
     }
@@ -968,6 +1015,7 @@ class PenerimaanStokHeader extends MyModel
 
         Schema::create($temp, function (Blueprint $table) {
             $table->integer('id')->nullable();
+            $table->double('nominal')->nullable();
             $table->longText('statuscetak')->nullable();
             $table->integer('statuscetak_id')->nullable();
             $table->longText('statuskirimberkas')->nullable();
@@ -989,6 +1037,11 @@ class PenerimaanStokHeader extends MyModel
             $table->string('modifiedby', 200)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
+            $table->longText('gandengan', 200)->nullable();
+            $table->longText('tradodari', 200)->nullable();
+            $table->longText('tradoke', 200)->nullable();
+            $table->longText('gandengandari', 200)->nullable();
+            $table->longText('gandenganke', 200)->nullable();
             $table->increments('position');
         });
 
@@ -1003,6 +1056,7 @@ class PenerimaanStokHeader extends MyModel
         }
         DB::table($temp)->insertUsing([
             'a.id',
+            'a.nominal',
             'a.statuscetak',
             'a.statuscetak_id',
             'a.statuskirimberkas',
@@ -1024,6 +1078,11 @@ class PenerimaanStokHeader extends MyModel
             'a.modifiedby',
             'a.created_at',
             'a.updated_at',
+            'a.gandengan',
+            'a.tradodari',
+            'a.tradoke',
+            'a.gandengandari',
+            'a.gandenganke',
         ], $models);
 
         return  $temp;
@@ -1097,15 +1156,16 @@ class PenerimaanStokHeader extends MyModel
                             // } else if ($filters['field'] == 'coa') {
                             //     $query = $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                             // } else 
-                            if ($filters['field'] == 'statuscetak') {
-                                if ($filters['data']) {
-                                    $query = $query->Orwhere('a.statuscetak_id', '=', "$filters[data]");
-                                }
-                            } else if ($filters['field'] == '') {
-                            } else if ($filters['field'] == 'statuskirimberkas') {
-                                    if ($filters['data']) {
-                                        $query = $query->Orwhere('a.statuskirimberkas_id', '=', "$filters[data]");
-                                    }                            
+                            // if ($filters['field'] == 'statuscetak') {
+                            //     if ($filters['data']) {
+                            //         $query = $query->Orwhere('a.statuscetak_id', '=', "$filters[data]");
+                            //     }
+                            // } else 
+                            if ($filters['field'] == '') {
+                            // } else if ($filters['field'] == 'statuskirimberkas') {
+                            //         if ($filters['data']) {
+                            //             $query = $query->Orwhere('a.statuskirimberkas_id', '=', "$filters[data]");
+                            //         }                            
                             } else if ($filters['field'] == 'tglbukti') {
                                 $query = $query->orWhereRaw("format( a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
