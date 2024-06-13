@@ -498,9 +498,9 @@ class LaporanKasGantung extends MyModel
 
     public function getReport($periode, $prosesneraca, $bank_id)
     {
-        if ($prosesneraca == 1) {
-            $periode = date("Y-m-d", strtotime("+1 day", strtotime($periode)));
-        }
+        // if ($prosesneraca == 1) {
+        //     $periode = date("Y-m-d", strtotime("+1 day", strtotime($periode)));
+        // }
 
         //   return $periode;
         $prosesneraca = $prosesneraca ?? 0;
