@@ -417,8 +417,7 @@ class LaporanNeraca extends MyModel
                 'updated_at',
 
             ], $queryTempSaldoAkunPusatDetail);
-
-            if ($cabang = 'SEMUA') {
+            if ($cabang == 'SEMUA') {
                 $queryTempAkunPusatDetail = DB::table('akunpusatdetail')->from(
                     DB::raw('akunpusatdetail')
                 )
@@ -437,12 +436,15 @@ class LaporanNeraca extends MyModel
                     ->whereRaw("(cabang_id=" .  $cabang_id . " or " . $cabang_id . "=0)")
                     ->whereRaw("(cabang_id=" .  $cabang_id . " or " . $cabang_id . "=0)")
                     ->orderBy('id', 'asc');
+                    dd('test');
             } else {
                 $queryTempAkunPusatDetail = DB::table('akunpusatdetail')->from(
                     DB::raw('akunpusatdetail')
                 )
                     ->select(
                         // db::raw("(case when isnull(coagroup,'')<>'' and '".$cabang. "' = 'SEMUA' then isnull(coagroup,'') else coa end) as coa"),
+                        // db::raw("(case when isnull(coagroup,'')<>'' and '" . $cabang . "' = 'SEMUA' then isnull(coagroup,'') else coa end) as coa"),
+
                         'coa',
                         'coagroup',
                         'bulan',
@@ -456,6 +458,7 @@ class LaporanNeraca extends MyModel
                     ->whereRaw("(cabang_id=" .  $cabang_id . " or " . $cabang_id . "=0)")
                     ->whereRaw("(cabang_id=" .  $cabang_id . " or " . $cabang_id . "=0)")
                     ->orderBy('id', 'asc');
+              
             }
 
 
@@ -516,7 +519,7 @@ class LaporanNeraca extends MyModel
                 )
                 ->join(db::raw($tempAkunPusatDetail . " cd with (readuncommitted)"), 'c.coa', 'cd.coa')
                 ->leftjoin(db::raw("maintypeakuntansi a with (readuncommitted)"), 'a.kodetype', 'c.type');
-            // dd($query1 ->get());
+            // dd($query1->where('c.coa','05.03.01.07')->where('cd.tahun', $tahun)->get());
 
             DB::table($tempquery1)->insertUsing([
                 'type',
@@ -592,7 +595,8 @@ class LaporanNeraca extends MyModel
                 ->groupBy('d.keterangancoa');
             // ->having(DB::raw('sum(d.nominal)'), '<>', 0);
 
-            // dd($query2->toSql());
+            //  dd($query2->where('d.coa','05.03.01.07')->get());
+            //  dd(db::table($tempquery1)->where('coa','05.03.01.07')->where('tahun', $tahun)->get());
 
             DB::table($tempquery2)->insertUsing([
                 'tipemaster',
