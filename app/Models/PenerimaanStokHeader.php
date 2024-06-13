@@ -130,6 +130,7 @@ class PenerimaanStokHeader extends MyModel
                 $table->date('tgldariheaderpengeluaranstok')->nullable();
                 $table->date('tglsampaiheaderpengeluaranstok')->nullable();
                 $table->longText('judul')->nullable();
+                $table->double('nominal')->nullable();
             });
 
             // $temprole = '##temprole' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -198,6 +199,24 @@ class PenerimaanStokHeader extends MyModel
             ], $queryPg);
             $queryTemtabelPg = DB::table($temtabelPg);
 
+            $tempNominal = '##tempNominal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempNominal, function ($table) {
+                $table->string('nobukti')->nullable();
+                $table->double('nominal', 15, 2)->nullable();
+            });
+            $getNominal = DB::table("penerimaanstokdetail")->from(DB::raw("penerimaanstokdetail with (readuncommitted)"))
+                ->select(DB::raw("penerimaanstokheader.nobukti,SUM(penerimaanstokdetail.total) AS nominal"))
+                ->join(DB::raw("penerimaanstokheader with (readuncommitted)"), 'penerimaanstokheader.id', 'penerimaanstokdetail.penerimaanstokheader_id')
+                ->groupBy("penerimaanstokheader.nobukti");
+            if (request()->tgldari && request()->tglsampai) {
+                $getNominal->whereBetween('penerimaanstokheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+                if (request()->pengeluaranheader_id) {
+                    $getNominal->where('pengeluaranstokheader.pengeluaranstok_id', request()->pengeluaranheader_id);
+                }
+            }
+    
+            DB::table($tempNominal)->insertUsing(['nobukti', 'nominal'], $getNominal);
+
             $query = DB::table($this->table);
             $query = $this->selectColumns($query)
 
@@ -221,6 +240,7 @@ class PenerimaanStokHeader extends MyModel
                 ->leftJoin('penerimaanstokheader as nobuktipenerimaanstok', 'nobuktipenerimaanstok.nobukti', 'penerimaanstokheader.penerimaanstok_nobukti')
                 ->leftJoin('penerimaanstokheader as nobuktispb', 'penerimaanstokheader.nobukti', 'nobuktispb.penerimaanstok_nobukti')
                 ->leftJoin(db::raw($temtabelPg . " d1"), "penerimaanstokheader.id", "d1.id")
+                ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'penerimaanstokheader.nobukti', 'nominal.nobukti')
                 ->leftJoin('supplier', 'penerimaanstokheader.supplier_id', 'supplier.id');
             // ->join(db::raw($temprole . " d "), 'penerimaanstok.aco_id', 'd.aco_id');
 
@@ -467,6 +487,8 @@ class PenerimaanStokHeader extends MyModel
                     'tgldariheaderpengeluaranstok' => $item['tgldariheaderpengeluaranstok'],
                     'tglsampaiheaderpengeluaranstok' => $item['tglsampaiheaderpengeluaranstok'],
                     'judul' => $item['judul'],
+                    'nominal' => $item['nominal'],
+
                 ]);
             }
 
@@ -590,6 +612,8 @@ class PenerimaanStokHeader extends MyModel
                 'a.tgldariheaderpengeluaranstok',
                 'a.tglsampaiheaderpengeluaranstok',
                 'a.judul',
+                'a.nominal',
+
             );
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -802,6 +826,8 @@ class PenerimaanStokHeader extends MyModel
             db::raw("d1.stok_id as stok_id"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             db::raw("isnull(penerimaanstokheader.pengeluaranstokproses_nobukti,'') as pengeluaranstok_nobukti_proses"),
+            'nominal.nominal',
+
         );
     }
 
@@ -1120,6 +1146,24 @@ class PenerimaanStokHeader extends MyModel
 
     public function find($id)
     {
+        $tempNominal = '##tempNominal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempNominal, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+        $getNominal = DB::table("penerimaanstokdetail")->from(DB::raw("penerimaanstokdetail with (readuncommitted)"))
+            ->select(DB::raw("penerimaanstokheader.nobukti,SUM(penerimaanstokdetail.total) AS nominal"))
+            ->join(DB::raw("penerimaanstokheader with (readuncommitted)"), 'penerimaanstokheader.id', 'penerimaanstokdetail.penerimaanstokheader_id')
+            ->groupBy("penerimaanstokheader.nobukti");
+        if (request()->tgldari && request()->tglsampai) {
+            $getNominal->whereBetween('penerimaanstokheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+            if (request()->pengeluaranheader_id) {
+                $getNominal->where('penerimaanstokheader.penerimaanstokheader_id',$id);
+            }
+        }
+
+        DB::table($tempNominal)->insertUsing(['nobukti', 'nominal'], $getNominal);
+
         $this->setRequestParameters();
         $temtabelPg = '##temppg' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
         Schema::create($temtabelPg, function (Blueprint $table) {
