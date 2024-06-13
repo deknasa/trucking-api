@@ -788,15 +788,19 @@ class Stok extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama')->nullable();
             $table->unsignedBigInteger('statusreuse')->nullable();
+            $table->string('statusreusenama')->nullable();
             $table->unsignedBigInteger('statusban')->nullable();
+            $table->string('statusbannama')->nullable();
         });
 
         $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
@@ -807,7 +811,8 @@ class Stok extends MyModel
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS REUSE')
             ->where('subgrp', '=', 'STATUS REUSE')
@@ -818,7 +823,8 @@ class Stok extends MyModel
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS BAN')
             ->where('subgrp', '=', 'STATUS BAN')
@@ -827,8 +833,11 @@ class Stok extends MyModel
 
         DB::table($tempdefault)->insert([
             "statusaktif" => $statusaktif->id,
+            "statusaktifnama" => $statusaktif->text,
             "statusreuse" => $statusreuse->id,
-            "statusban" => $statusban->id
+            "statusreusenama" => $statusreuse->text,
+            "statusban" => $statusban->id,
+            "statusbannama" => $statusban->text
         ]);
 
         $query = DB::table($tempdefault)->from(
@@ -836,8 +845,11 @@ class Stok extends MyModel
         )
             ->select(
                 'statusaktif',
+                'statusaktifnama',
                 'statusreuse',
-                'statusban'
+                'statusreusenama',
+                'statusban',
+                'statusbannama',
             );
 
         $data = $query->first();
@@ -872,6 +884,10 @@ class Stok extends MyModel
             'satuan.satuan as satuan',
             'kategori.kodekategori as kategori',
             'merk.keterangan as merk',
+            'statusaktif.text as statusaktifnama',
+            'statusreuse.text as statusreusenama',
+            'statusban.text as statusbannama',
+            'statusservicerutin.text as statusservicerutinnama',
         )
             ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
             ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
@@ -879,6 +895,10 @@ class Stok extends MyModel
             ->leftJoin('satuan', 'stok.satuan_id', 'satuan.id')
             ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
             ->leftJoin('merk', 'stok.merk_id', 'merk.id')
+            ->leftJoin('parameter as statusaktif', 'penerimaanstok.statusaktif', '=', 'statusaktif.id')
+            ->leftJoin('parameter as statusreuse', 'penerimaanstok.statusreuse', '=', 'statusreuse.id')
+            ->leftJoin('parameter as statusban', 'penerimaanstok.statusban', '=', 'statusban.id')
+            ->leftJoin('parameter as statusservicerutin', 'penerimaanstok.statusservicerutin', '=', 'statusservicerutin.id')
             ->where('stok.id', $id)
             ->first();
 

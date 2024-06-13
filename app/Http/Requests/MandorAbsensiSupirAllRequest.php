@@ -6,6 +6,7 @@ use App\Rules\DateTutupBuku;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use App\Rules\DateAllowedAbsenMandor;
+use App\Rules\AbsensiSupirRICUangJalanRule;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\MandorAbsensiSupirEditSupirValidasiTrado;
 use App\Rules\MandorAbsensiSupirInputSupirValidasiTrado;
@@ -118,7 +119,7 @@ class MandorAbsensiSupirAllRequest extends FormRequest
                 ];
                 // dd($this->input("$key.kodetrado"));
                 $rulesBeda = [
-                    "$key.namasupir" => ['required', new MandorAbsensiSupirEditSupirValidasiTrado($data[$key]['trado_id'], $data[$key]['supir_id'])],
+                    "$key.namasupir" => ['required', new MandorAbsensiSupirEditSupirValidasiTrado($data[$key]['trado_id'], $data[$key]['supir_id']),new AbsensiSupirRICUangJalanRule($data[$key])],
                     "$key.supir_id" => ['required', new MandorAbsensiSupirEditSupirValidasiTrado($data[$key]['trado_id'], $data[$key]['supir_id'])],
                     
                 ];

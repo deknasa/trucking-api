@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Schema;
 use App\Models\Parameter;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class MandorAbsensiSupir extends MyModel
 {
@@ -1656,6 +1657,8 @@ class MandorAbsensiSupir extends MyModel
             ->delete();
 
         if ($absensiSupirDetail) {
+            $this->validasiRICUangJalan($data,$absensiSupirDetail);
+
             $jam = $absensiSupirDetail->jam;
             return $this->processUpdate($absensiSupirDetail,  [
                 'absensi_id' => $AbsensiSupirHeader->id,
@@ -1811,5 +1814,42 @@ class MandorAbsensiSupir extends MyModel
             "keteranganGandengan" => "Absensi Supir tgl " . date('Y-m-d', strtotime($absensiSupir->tglbukti)) . " " . $absensiSupir->nobukti. " Gandengan",
         ];
         $absensiSupirProses = (new AbsensiSupirProses())->processStore($absensiSupir,$absensiPorsess);
+    }
+
+    public function validasiRICUangJalan($data,$absensiSupirDetail){
+        if(($data['supir_id'] == $absensiSupirDetail->supir_id) && ($data['absen_id'] == $absensiSupirDetail->absen_id) && ($data['statusjeniskendaraan'] == $absensiSupirDetail->statusjeniskendaraan)){
+            return [true,"00"];
+        }
+        $message = "";
+        $error = 0;
+        $errorReturn = 0;
+        if ($absensiSupirDetail->uangjalan) {
+            $message .= "<br>Sudah Ada Uang Jalan ";
+            $errorReturn = "01";
+            $error++;
+        }
+
+        $tglbukti = date('Y-m-d',strtotime($data['tglbukti']));
+        $ricSupirQuery = DB::table('gajisupirheader')
+            ->leftJoin('gajisupirdetail', 'gajisupirheader.id', '=', 'gajisupirdetail.gajisupir_id')
+            ->leftJoin('suratpengantar', 'gajisupirdetail.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
+            ->select('gajisupirheader.*')
+            ->where('suratpengantar.supir_id', $absensiSupirDetail->supir_id)
+            ->where('suratpengantar.trado_id', $absensiSupirDetail->trado_id)
+            ->where('suratpengantar.statusjeniskendaraan', $absensiSupirDetail->statusjeniskendaraan)
+            ->where('suratpengantar.tglbukti', $tglbukti)
+            ->get();
+        if(count($ricSupirQuery)){
+            $errorReturn ="10";
+            if ($error) {
+                $message .= "dan ";
+                $errorReturn ="11";
+            }
+            $message .= "<br>Sudah Ada RIC ";
+            $error++;
+        }
+
+        return [false,$errorReturn];
+
     }
 }

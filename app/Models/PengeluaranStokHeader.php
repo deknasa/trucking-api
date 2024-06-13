@@ -129,6 +129,7 @@ class PengeluaranStokHeader extends MyModel
                 $table->date('tgldariheaderpengeluarantruckingheader')->nullable();
                 $table->date('tglsampaiheaderpengeluarantruckingheader')->nullable();
                 $table->integer('penerimaanbank_id')->nullable();
+                $table->double('nominal')->nullable();
             });
 
 
@@ -348,6 +349,23 @@ class PengeluaranStokHeader extends MyModel
                 ],  $querypengeluarantruckingheader);
             }
 
+            $tempNominal = '##tempNominal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempNominal, function ($table) {
+                $table->string('nobukti')->nullable();
+                $table->double('nominal', 15, 2)->nullable();
+            });
+            $getNominal = DB::table("pengeluaranstokdetail")->from(DB::raw("pengeluaranstokdetail with (readuncommitted)"))
+                ->select(DB::raw("pengeluaranstokheader.nobukti,SUM(pengeluaranstokdetail.total) AS nominal"))
+                ->join(DB::raw("pengeluaranstokheader with (readuncommitted)"), 'pengeluaranstokheader.id', 'pengeluaranstokdetail.pengeluaranstokheader_id')
+                ->groupBy("pengeluaranstokheader.nobukti");
+            if (request()->tgldari && request()->tglsampai) {
+                $getNominal->whereBetween('pengeluaranstokheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+                if (request()->pengeluaranheader_id) {
+                    $getNominal->where('pengeluaranstokheader.pengeluaranstok_id', request()->pengeluaranheader_id);
+                }
+            }
+
+            DB::table($tempNominal)->insertUsing(['nobukti', 'nominal'], $getNominal);
 
 
             // dd('test1');
@@ -370,6 +388,7 @@ class PengeluaranStokHeader extends MyModel
                 ->leftJoin(db::raw($temppengeluaranstokheader . " as pengeluaran"), 'pengeluaranstokheader.pengeluaranstok_nobukti', 'pengeluaran.nobukti')
                 ->leftJoin(db::raw($tempserviceinheader . " as serviceinheader"), 'pengeluaranstokheader.servicein_nobukti', 'serviceinheader.nobukti')
                 ->leftJoin(db::raw($temppengeluarantruckingheader . " as pengeluarantruckingheader"), 'pengeluaranstokheader.pengeluarantrucking_nobukti', 'pengeluarantruckingheader.nobukti')
+                ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'pengeluaranstokheader.nobukti', 'nominal.nobukti')
 
                 ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id');
             // ->join(db::raw($temprole . " d "), 'pengeluaranstok.aco_id', 'd.aco_id');
@@ -558,6 +577,7 @@ class PengeluaranStokHeader extends MyModel
                     'tgldariheaderpengeluarantruckingheader' => $item['tgldariheaderpengeluarantruckingheader'],
                     'tglsampaiheaderpengeluarantruckingheader' => $item['tglsampaiheaderpengeluarantruckingheader'],
                     'penerimaanbank_id' => $item['penerimaanbank_id'],
+                    'nominal' => $item['nominal'],
                 ]);
             }
 
@@ -689,6 +709,7 @@ class PengeluaranStokHeader extends MyModel
                 'a.tgldariheaderpengeluarantruckingheader',
                 'a.tglsampaiheaderpengeluarantruckingheader',
                 'a.penerimaanbank_id',
+                'a.nominal',
 
             );
         $this->totalRows = $query->count();
@@ -878,15 +899,16 @@ class PengeluaranStokHeader extends MyModel
                             // } else if ($filters['field'] == 'bank') {
                             //     $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                             // } else 
-                            if ($filters['field'] == 'statuscetak') {
-                                if ($filters['data']) {
-                                    $query = $query->Orwhere('a.statuscetak_id', '=', "$filters[data]");
-                                }
-                            } else if ($filters['field'] == '') {
-                            } else if ($filters['field'] == 'statuskirimberkas') {
-                                    if ($filters['data']) {
-                                        $query = $query->Orwhere('a.statuskirimberkas_id', '=', "$filters[data]");
-                                    }
+                            // if ($filters['field'] == 'statuscetak') {
+                            //     if ($filters['data']) {
+                            //         $query = $query->Orwhere('a.statuscetak_id', '=', "$filters[data]");
+                            //     }
+                            // } else 
+                            if ($filters['field'] == '') {
+                            // } else if ($filters['field'] == 'statuskirimberkas') {
+                            //         if ($filters['data']) {
+                            //             $query = $query->Orwhere('a.statuskirimberkas_id', '=', "$filters[data]");
+                            //         }
     
                             } else if ($filters['field'] == 'tglbukti') {
                                 $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
@@ -919,6 +941,7 @@ class PengeluaranStokHeader extends MyModel
 
         Schema::create($temptable, function (Blueprint $table) {
             $table->integer('id')->nullable();
+            $table->double('nominal')->nullable();
             $table->longText('statuscetak')->nullable();
             $table->integer('statuscetak_id')->nullable();
             $table->longText('statuskirimberkas')->nullable();
@@ -946,10 +969,21 @@ class PengeluaranStokHeader extends MyModel
             $table->dateTime('updated_at')->nullable();
         });
 
+        $tempNominal = '##tempNominal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempNominal, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+        $getNominal = DB::table("pengeluaranstokdetail")->from(DB::raw("pengeluaranstokdetail with (readuncommitted)"))
+            ->select(DB::raw("pengeluaranstokheader.nobukti,SUM(pengeluaranstokdetail.total) AS nominal"))
+            ->join(DB::raw("pengeluaranstokheader with (readuncommitted)"), 'pengeluaranstokheader.id', 'pengeluaranstokdetail.pengeluaranstokheader_id')
+            ->groupBy("pengeluaranstokheader.nobukti");
+        DB::table($tempNominal)->insertUsing(['nobukti', 'nominal'], $getNominal);
 
         $query = DB::table('pengeluaranstokheader');
         $query->select(
             "pengeluaranstokheader.id",
+            "nominal.nominal",
             'statuscetak.text as statuscetak',
             "statuscetak.id as  statuscetak_id",
             'statuskirimberkas.text as statuskirimberkas',
@@ -986,10 +1020,12 @@ class PengeluaranStokHeader extends MyModel
             ->leftJoin('bank', 'pengeluaranstokheader.bank_id', 'bank.id')
             ->leftJoin('parameter as statuspotongretur', 'pengeluaranstokheader.statuspotongretur', 'statuspotongretur.id')
             ->leftJoin('parameter as statuscetak', 'pengeluaranstokheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'pengeluaranstokheader.nobukti', 'nominal.nobukti')
             ->leftJoin('parameter as statuskirimberkas', 'pengeluaranstokheader.statuskirimberkas', 'statuskirimberkas.id');
 
         DB::table($temptable)->insertUsing([
             'id',
+            'nominal',
             'statuscetak',
             'statuscetak_id',
             'statuskirimberkas',
@@ -1019,6 +1055,7 @@ class PengeluaranStokHeader extends MyModel
         $query = DB::table($temptable)->from(DB::raw($temptable . " a "))
             ->select(
                 'a.id',
+                'a.nominal',
                 'a.statuscetak',
                 'a.statuscetak_id',
                 'a.statuskirimberkas',
@@ -1196,13 +1233,32 @@ class PengeluaranStokHeader extends MyModel
             db::raw("cast((format(pengeluarantruckingheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluarantruckingheader"),
             db::raw("cast(cast(format((cast((format(pengeluarantruckingheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluarantruckingheader"),
             "$this->table.bank_id as penerimaanbank_id",
-
+            'nominal.nominal',
 
         );
     }
 
     public function find($id)
     {
+        $tempNominal = '##tempNominal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempNominal, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+        $getNominal = DB::table("pengeluaranstokdetail")->from(DB::raw("pengeluaranstokdetail with (readuncommitted)"))
+            ->select(DB::raw("pengeluaranstokheader.nobukti,SUM(pengeluaranstokdetail.total) AS nominal"))
+            ->join(DB::raw("pengeluaranstokheader with (readuncommitted)"), 'pengeluaranstokheader.id', 'pengeluaranstokdetail.pengeluaranstokheader_id')
+            ->groupBy("pengeluaranstokheader.nobukti");
+        if (request()->tgldari && request()->tglsampai) {
+            $getNominal->whereBetween('pengeluaranstokheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+            if (request()->pengeluaranheader_id) {
+                $getNominal->where('pengeluaranstokheader.pengeluaranstok_id', $id);
+            }
+        }
+
+        DB::table($tempNominal)->insertUsing(['nobukti', 'nominal'], $getNominal);
+
+
         $this->setRequestParameters();
 
         $query = DB::table($this->table);
@@ -1224,6 +1280,7 @@ class PengeluaranStokHeader extends MyModel
             ->leftJoin('pengeluaranstokheader as pengeluaran', 'pengeluaranstokheader.pengeluaranstok_nobukti', 'pengeluaran.nobukti')
             ->leftJoin('serviceinheader', 'pengeluaranstokheader.servicein_nobukti', 'serviceinheader.nobukti')
             ->leftJoin('pengeluarantruckingheader', 'pengeluaranstokheader.pengeluarantrucking_nobukti', 'pengeluarantruckingheader.nobukti')
+            ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'pengeluaranstokheader.nobukti', 'nominal.nobukti')
             ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id');
 
         $data = $query->where("$this->table.id", $id)->first();
