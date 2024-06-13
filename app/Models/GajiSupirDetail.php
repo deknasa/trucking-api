@@ -38,6 +38,7 @@ class GajiSupirDetail extends MyModel
                 $this->table .  '.nobukti',
                 $this->table . '.suratpengantar_nobukti',
                 'suratpengantar.nosp',
+                'suratpengantar.penyesuaian',
                 'statuscontainer.kodestatuscontainer',
                 'dari.keterangan as dari',
                 'sampai.keterangan as sampai',
