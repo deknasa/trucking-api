@@ -550,7 +550,9 @@ class InvoiceHeader extends MyModel
         });
         $querygetTripasal = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
             ->select(DB::raw("nobukti_tripasal as nobukti"))
-            ->where('nobukti_tripasal', '!=', '')
+            ->whereRaw("isnull(nobukti_tripasal,'') != ''")
+            ->where('agen_id', $request->agen_id)
+            ->where('statusjeniskendaraan', $statusjeniskendaraan)
             ->whereRaw("tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'");
         DB::table($temptripasal)->insertUsing([
             'nobukti',
@@ -562,6 +564,8 @@ class InvoiceHeader extends MyModel
                 db::raw("a.totalomset as nominal"),
                 db::raw("a.nobukti as suratpengantar_nobukti")
             )
+            ->where('a.agen_id', $request->agen_id)
+            ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
             ->join(DB::raw("$temptripasal as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti');
 
         DB::table($temphasil)->insertUsing([
@@ -578,6 +582,8 @@ class InvoiceHeader extends MyModel
                 db::raw("a.nobukti as suratpengantar_nobukti")
             )
             ->where('a.statuslongtrip', $statuslongtrip->id)
+            ->where('a.agen_id', $request->agen_id)
+            ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
             ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'");
         DB::table($temphasil)->insertUsing([
             'jobtrucking',
