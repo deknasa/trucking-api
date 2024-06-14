@@ -1821,7 +1821,7 @@ class MandorAbsensiSupir extends MyModel
             return [true,"00"];
         }
         $message = "";
-        $error = 0;
+        $error = "00";
         $errorReturn = 0;
         if ($absensiSupirDetail->uangjalan) {
             $message .= "<br>Sudah Ada Uang Jalan ";
@@ -1838,8 +1838,8 @@ class MandorAbsensiSupir extends MyModel
             ->where('suratpengantar.trado_id', $absensiSupirDetail->trado_id)
             ->where('suratpengantar.statusjeniskendaraan', $absensiSupirDetail->statusjeniskendaraan)
             ->where('suratpengantar.tglbukti', $tglbukti)
-            ->get();
-        if(count($ricSupirQuery)){
+            ->count();
+        if($ricSupirQuery){
             $errorReturn ="10";
             if ($error) {
                 $message .= "dan ";
