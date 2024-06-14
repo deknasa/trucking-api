@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\DateTutupBuku;
 use App\Rules\ValidasiHutangList;
 use App\Rules\validasiTglJatuhTempoSudahCair;
 use Illuminate\Foundation\Http\FormRequest;
@@ -27,9 +28,20 @@ class UpdateTglJatuhTempoRequest extends FormRequest
     {
         $jumlahdetail = $this->jumlahdetail ?? 0;
         return [
-
+            'tgljatuhtempo' => [
+                'required','date_format:d-m-Y',
+                // 'before_or_equal:' . date('d-m-Y'),
+                new DateTutupBuku()
+            ],
             'jumlahdetail' => new ValidasiHutangList($jumlahdetail),
             'detail' => new validasiTglJatuhTempoSudahCair()
+        ];
+    }
+
+    public function attributes()
+    {
+        return [ 
+            'tgljatuhtempo' => 'tgl jatuh tempo'
         ];
     }
 }
