@@ -166,6 +166,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
         $year = substr($periode, 3);
 
         $alatBayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'GIRO')->first();
+        $alatBayarCheck = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'CHECK')->first();
 
         $petik = '"';
         $url = config('app.url_fe') . 'pengeluaranheader';
@@ -190,6 +191,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
             $table->dateTime('updated_at')->nullable();
         });
 
+        // ALAT BAYAR GIRO
         $query1 = DB::table("pengeluaranheader")->from(DB::raw("pengeluaranheader with (readuncommitted)"))
             ->select(
                 DB::raw("
@@ -222,6 +224,60 @@ class PencairanGiroPengeluaranHeader extends MyModel
             ->whereRaw("MONTH(pengeluaranheader.tglbukti) = $month")
             ->whereRaw("YEAR(pengeluaranheader.tglbukti) = $year")
             ->where('pengeluaranheader.alatbayar_id', $alatBayar->id);
+
+        DB::table($templist)->insertUsing([
+            'pengeluaran_nobukti',
+            'tglbukti_giro',
+            'id',
+            'dibayarke',
+            'urlpengeluaran',
+            'bank_id',
+            'transferkeac',
+            'alatbayar_id',
+            'nobukti',
+            'tglbukti',
+            'statusapproval',
+            'tgljatuhtempo',
+            'nominal',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+
+        ], $query1);
+
+        // alat bayar check
+        $query1 = DB::table("pengeluaranheader")->from(DB::raw("pengeluaranheader with (readuncommitted)"))
+            ->select(
+                DB::raw("
+                    pengeluaranheader.nobukti as pengeluaran_nobukti,
+                    pengeluaranheader.tglbukti as tglbukti_giro,
+                    pengeluaranheader.id, 
+                    pengeluaranheader.dibayarke, 
+                    '<a href=$petik" . $url . "?tgldari='+(format(pengeluaranheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(pengeluaranheader.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+pengeluaranheader.nobukti+'$petik 
+                    class=$petik link-color $petik target=$petik _blank $petik>'+pengeluaranheader.nobukti+'</a>' as urlpengeluaran,
+                    bank.namabank as bank_id, 
+                    pengeluaranheader.transferkeac, 
+                    alatbayar.namaalatbayar as alatbayar_id,
+                    pgp.nobukti,
+                    pgp.tglbukti, 
+                    parameter.memo as statusapproval,
+                    CONVERT(date, GETDATE()) as tgljatuhtempo,
+                    (SELECT (SUM(pengeluarandetail.nominal)) FROM pengeluarandetail 
+                        WHERE pengeluarandetail.nobukti= pengeluaranheader.nobukti and pengeluaranheader.alatbayar_id=$alatBayarCheck->id) as nominal,
+                    (case when isnull(pgp.nobukti,'')='' then pengeluaranheader.modifiedby else pgp.modifiedby end) as modifiedby, 
+                    (case when isnull(pgp.nobukti,'')='' then pengeluaranheader.created_at else pgp.created_at end) as created_at, 
+                    (case when isnull(pgp.nobukti,'')='' then pengeluaranheader.updated_at else pgp.updated_at end) as updated_at
+                ")
+            )
+            ->distinct('pengeluaranheader.nobukti')
+            ->leftJoin(DB::raw("pengeluarandetail with (readuncommitted)"), 'pengeluarandetail.nobukti', 'pengeluaranheader.nobukti')
+            ->leftJoin(DB::raw("pencairangiropengeluaranheader as pgp with (readuncommitted)"), 'pgp.pengeluaran_nobukti', 'pengeluaranheader.nobukti')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pgp.statusapproval', 'parameter.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pengeluaranheader.alatbayar_id', 'alatbayar.id')
+            ->whereRaw("MONTH(pengeluaranheader.tglbukti) = $month")
+            ->whereRaw("YEAR(pengeluaranheader.tglbukti) = $year")
+            ->where('pengeluaranheader.alatbayar_id', $alatBayarCheck->id);
 
         DB::table($templist)->insertUsing([
             'pengeluaran_nobukti',
@@ -475,6 +531,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
         $year = substr($periode, 3);
 
         $alatBayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'GIRO')->first();
+        $alatBayarCheck = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'CHECK')->first();
         $query1 = DB::table($this->anotherTable)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
             ->select(
                 DB::raw("pengeluaranheader.nobukti as pengeluaran_nobukti,pengeluaranheader.id, 

@@ -709,7 +709,7 @@ class PengeluaranHeader extends MyModel
             ->whereRaw("pengeluaranheader.nobukti not in (select pengeluaran_nobukti from rekappengeluarandetail)")
             ->groupBy('pengeluaranheader.nobukti')
             ->groupBy('pengeluaranheader.tglbukti');
-            
+
         Schema::create($temp, function ($table) {
             $table->string('nobukti_pengeluaran')->nullable();
             $table->date('tglbukti_pengeluaran')->nullable();
@@ -1226,6 +1226,7 @@ class PengeluaranHeader extends MyModel
             ->where('a.subgrp', 'ALAT BAYAR GIRO')
             ->first();
 
+        $alatBayarCheck = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'CHECK')->first();
 
         $pengeluaranHeader = new PengeluaranHeader();
 
@@ -1274,7 +1275,7 @@ class PengeluaranHeader extends MyModel
         $nominal_detail = [];
         $keterangan_detail = [];
         for ($i = 0; $i < count($data['nominal_detail']); $i++) {
-            if ($alatabayarid == $alatabayargiro->text) {
+            if ($alatabayarid == $alatabayargiro->text || $alatabayarid == $alatBayarCheck->id) {
                 $memo = json_decode($alatabayargiro->memo, true);
                 $coakredit_detail[] = $memo['JURNAL'];
                 $coaKredit = $memo['JURNAL'];
@@ -1452,6 +1453,8 @@ class PengeluaranHeader extends MyModel
             ->where('a.subgrp', 'ALAT BAYAR GIRO')
             ->first();
 
+        $alatBayarCheck = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'CHECK')->first();
+
         $alatabayarid = $data['alatbayar_id'] ?? 0;
         $pengeluaranDetails = [];
         $coadebet_detail = [];
@@ -1468,7 +1471,7 @@ class PengeluaranHeader extends MyModel
             // } else {
             //     $coaKredit = $coakredit;
             // } 
-            if ($alatabayarid == $alatabayargiro->text) {
+            if ($alatabayarid == $alatabayargiro->text || $alatabayarid == $alatBayarCheck->id) {
                 $memo = json_decode($alatabayargiro->memo, true);
                 $coakredit_detail[] = $memo['JURNAL'];
                 $coaKredit = $memo['JURNAL'];
@@ -1602,7 +1605,7 @@ class PengeluaranHeader extends MyModel
         ]);
 
         $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $pengeluaranHeader->nobukti)->first();
-        if(isset($getJurnal)){
+        if (isset($getJurnal)) {
             $jurnalumumHeader = (new JurnalUmumHeader())->processDestroy($getJurnal->id, ($postingDari == "") ? $postingDari : strtoupper('DELETE pengeluaran Header'));
         }
 
