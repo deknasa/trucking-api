@@ -773,7 +773,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                         } else {
 
                             $pencairanGiro = new PencairanGiroPengeluaranHeader();
-                            $pencairanGiro->nobukti = (new RunningNumberService)->get($group, $subGroup, $pencairanGiro->getTable(), date('Y-m-d'));
+                            $pencairanGiro->nobukti = (new RunningNumberService)->get($group, $subGroup, $pencairanGiro->getTable(), date('Y-m-d', strtotime($pindahBuku->tgljatuhtempo)));
                             $pencairanGiro->tglbukti = date('Y-m-d', strtotime($pindahBuku->tgljatuhtempo));
                             $pencairanGiro->pengeluaran_nobukti = $pindahBuku->nobukti;
                             $pencairanGiro->statusapproval = $statusApproval->id;
@@ -872,7 +872,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                             $saldoPengeluaranDetail = saldopengeluarandetail::from(DB::raw("saldopengeluarandetail with (readuncommitted)"))->where('nobukti', $data['nobukti'][$i])->get();
 
                             $pencairanGiro = new PencairanGiroPengeluaranHeader();
-                            $pencairanGiro->nobukti = (new RunningNumberService)->get($group, $subGroup, $pencairanGiro->getTable(), date('Y-m-d'));
+                            $pencairanGiro->nobukti = (new RunningNumberService)->get($group, $subGroup, $pencairanGiro->getTable(), date('Y-m-d', strtotime($saldoPengeluaranDetail[0]['tgljatuhtempo'])));
                             $pencairanGiro->tglbukti = date('Y-m-d', strtotime($saldoPengeluaranDetail[0]['tgljatuhtempo']));
                             $pencairanGiro->pengeluaran_nobukti = $saldoPengeluaran->nobukti;
                             $pencairanGiro->statusapproval = $statusApproval->id;
@@ -969,7 +969,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                             $pengeluaranDetail = PengeluaranDetail::from(DB::raw("pengeluarandetail with (readuncommitted)"))->where('nobukti', $data['nobukti'][$i])->get();
 
                             $pencairanGiro = new PencairanGiroPengeluaranHeader();
-                            $pencairanGiro->nobukti = (new RunningNumberService)->get($group, $subGroup, $pencairanGiro->getTable(), date('Y-m-d'));
+                            $pencairanGiro->nobukti = (new RunningNumberService)->get($group, $subGroup, $pencairanGiro->getTable(), date('Y-m-d', strtotime($pengeluaranDetail[0]['tgljatuhtempo'])));
                             $pencairanGiro->tglbukti = date('Y-m-d', strtotime($pengeluaranDetail[0]['tgljatuhtempo']));
                             $pencairanGiro->pengeluaran_nobukti = $pengeluaran->nobukti;
                             $pencairanGiro->statusapproval = $statusApproval->id;
