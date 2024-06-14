@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidasiHutangList;
 use App\Rules\validasiTglJatuhTempoSudahCair;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -24,7 +25,10 @@ class UpdateTglJatuhTempoRequest extends FormRequest
      */
     public function rules()
     {
+        $jumlahdetail = $this->jumlahdetail ?? 0;
         return [
+
+            'jumlahdetail' => new ValidasiHutangList($jumlahdetail),
             'detail' => new validasiTglJatuhTempoSudahCair()
         ];
     }

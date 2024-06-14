@@ -259,7 +259,7 @@ class PencairanGiroPengeluaranDetail extends MyModel
         $pencairanGiroDetail->nobukti = $pencairanGiroPengeluaranHeader->nobukti;
         $pencairanGiroDetail->alatbayar_id = $data['alatbayar_id'];
         $pencairanGiroDetail->nowarkat = $data['nowarkat'];
-        $pencairanGiroDetail->tgljatuhtempo = $data['tgljatuhtempo'];
+        $pencairanGiroDetail->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $pencairanGiroDetail->nominal = $data['nominal'];
         $pencairanGiroDetail->coadebet = $data['coadebet'];
         $pencairanGiroDetail->coakredit = $data['coakredit'];

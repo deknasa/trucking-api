@@ -29,23 +29,39 @@ class validasiTglJatuhTempoSudahCair implements Rule
     public function passes($attribute, $value)
     {
         $detail = json_decode(request()->detail, true);
+        $status = request()->status;
         $exist = 0;
         $nomor = '';
         for ($i = 0; $i < count($detail['nobukti']); $i++) {
-            $cekPenerimaan = DB::table("penerimaanheader")->from(DB::raw("penerimaanheader with (readuncommitted)"))
-                ->where('penerimaangiro_nobukti', $detail['nobukti'][$i])
+            if ($status == 591) {
+                $cekPencairan = DB::table("pencairangiropengeluaranheader")->from(DB::raw("pencairangiropengeluaranheader with (readuncommitted)"))
+                ->where('pengeluaran_nobukti', $detail['nobukti'][$i])
                 ->first();
-            if ($cekPenerimaan != '') {
-                if ($nomor == '') {
-                    $nomor = $detail['nobukti'][$i];
-                } else {
-                    $nomor = $nomor . ', ' . $detail['nobukti'][$i];
+                if($cekPencairan != ''){
+                    if ($nomor == '') {
+                        $nomor = $detail['nobukti'][$i];
+                    } else {
+                        $nomor = $nomor . ', ' . $detail['nobukti'][$i];
+                    }
+                    $exist++;
                 }
-                $exist++;
+            } else {
+
+                $cekPenerimaan = DB::table("penerimaanheader")->from(DB::raw("penerimaanheader with (readuncommitted)"))
+                    ->where('penerimaangiro_nobukti', $detail['nobukti'][$i])
+                    ->first();
+                if ($cekPenerimaan != '') {
+                    if ($nomor == '') {
+                        $nomor = $detail['nobukti'][$i];
+                    } else {
+                        $nomor = $nomor . ', ' . $detail['nobukti'][$i];
+                    }
+                    $exist++;
+                }
             }
         }
 
-        if($exist > 0){
+        if ($exist > 0) {
             $this->nomor = $nomor;
             return false;
         }
@@ -59,6 +75,6 @@ class validasiTglJatuhTempoSudahCair implements Rule
      */
     public function message()
     {
-        return 'NO BUKTI <b>'.$this->nomor .'</b><br>'. app(ErrorController::class)->geterror('SCG')->keterangan;
+        return 'NO BUKTI <b>' . $this->nomor . '</b><br>' . app(ErrorController::class)->geterror('SCG')->keterangan;
     }
 }
