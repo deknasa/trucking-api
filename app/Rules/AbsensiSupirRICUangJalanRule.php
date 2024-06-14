@@ -51,6 +51,9 @@ class AbsensiSupirRICUangJalanRule implements Rule
                 $this->kodeeror = $validasi[1];
                 return $validasi[0];
             }
+        }else {
+            $this->kodeeror ="";
+            return true;
         }
     }
 
@@ -70,6 +73,9 @@ class AbsensiSupirRICUangJalanRule implements Rule
         }
         if ($this->kodeeror =="11") {
             $message .= "Sudah Ada Uang Jalan dan Sudah Ada RIC ";
+        }
+        if ($this->kodeeror ="") {
+            $message ="";
         }
 
         return $message;
