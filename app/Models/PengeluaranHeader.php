@@ -1275,14 +1275,26 @@ class PengeluaranHeader extends MyModel
         $nominal_detail = [];
         $keterangan_detail = [];
         for ($i = 0; $i < count($data['nominal_detail']); $i++) {
-            if ($alatabayarid == $alatabayargiro->text || $alatabayarid == $alatBayarCheck->id) {
+            if ($alatabayarid == $alatabayargiro->text) {
                 $memo = json_decode($alatabayargiro->memo, true);
                 $coakredit_detail[] = $memo['JURNAL'];
                 $coaKredit = $memo['JURNAL'];
             } else {
-                $coakredit_detail[] = $querysubgrppengeluaran->coa;
-                $coaKredit = $querysubgrppengeluaran->coa;
+                if ($alatBayarCheck != '') {
+                    if ($alatabayarid == $alatBayarCheck->id) {
+                        $memo = json_decode($alatabayargiro->memo, true);
+                        $coakredit_detail[] = $memo['JURNAL'];
+                        $coaKredit = $memo['JURNAL'];
+                    } else {
+                        $coakredit_detail[] = $querysubgrppengeluaran->coa;
+                        $coaKredit = $querysubgrppengeluaran->coa;
+                    }
+                } else {
+                    $coakredit_detail[] = $querysubgrppengeluaran->coa;
+                    $coaKredit = $querysubgrppengeluaran->coa;
+                }
             }
+
 
             $pengeluaranDetail = (new PengeluaranDetail())->processStore($pengeluaranHeader, [
                 'pengeluaran_id' => $pengeluaranHeader->id,
@@ -1471,13 +1483,24 @@ class PengeluaranHeader extends MyModel
             // } else {
             //     $coaKredit = $coakredit;
             // } 
-            if ($alatabayarid == $alatabayargiro->text || $alatabayarid == $alatBayarCheck->id) {
+            if ($alatabayarid == $alatabayargiro->text) {
                 $memo = json_decode($alatabayargiro->memo, true);
                 $coakredit_detail[] = $memo['JURNAL'];
                 $coaKredit = $memo['JURNAL'];
             } else {
-                $coakredit_detail[] = $querysubgrppengeluaran->coa;
-                $coaKredit = $querysubgrppengeluaran->coa;
+                if ($alatBayarCheck != '') {
+                    if ($alatabayarid == $alatBayarCheck->id) {
+                        $memo = json_decode($alatabayargiro->memo, true);
+                        $coakredit_detail[] = $memo['JURNAL'];
+                        $coaKredit = $memo['JURNAL'];
+                    } else {
+                        $coakredit_detail[] = $querysubgrppengeluaran->coa;
+                        $coaKredit = $querysubgrppengeluaran->coa;
+                    }
+                } else {
+                    $coakredit_detail[] = $querysubgrppengeluaran->coa;
+                    $coaKredit = $querysubgrppengeluaran->coa;
+                }
             }
 
             $pengeluaranDetail = (new PengeluaranDetail())->processStore($pengeluaranHeader, [

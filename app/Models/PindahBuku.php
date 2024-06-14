@@ -377,6 +377,7 @@ class PindahBuku extends MyModel
             ->where('a.grp', 'ALAT BAYAR GIRO')
             ->where('a.subgrp', 'ALAT BAYAR GIRO')
             ->first();
+        $alatBayarCheck = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'CHECK')->first();
 
         $getCoaKredit = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankdari_id'])->first();
 
@@ -386,10 +387,21 @@ class PindahBuku extends MyModel
             $coakredit_detail[] = $memo['JURNAL'];
             $coaKredit = $memo['JURNAL'];
         } else {
-            $coaKredit = $getCoaKredit->coa;
-            $coakredit_detail[] = $getCoaKredit->coa;
-        }
 
+            if ($alatBayarCheck != '') {
+                if ($alatabayarid == $alatBayarCheck->id) {
+                    $memo = json_decode($alatabayargiro->memo, true);
+                    $coakredit_detail[] = $memo['JURNAL'];
+                    $coaKredit = $memo['JURNAL'];
+                } else {
+                    $coaKredit = $getCoaKredit->coa;
+                    $coakredit_detail[] = $getCoaKredit->coa;
+                }
+            } else {
+                $coaKredit = $getCoaKredit->coa;
+                $coakredit_detail[] = $getCoaKredit->coa;
+            }
+        }
         $getCoaDebet = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankke_id'])->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
@@ -627,7 +639,7 @@ class PindahBuku extends MyModel
                           when month(pindahbuku.tgljatuhtempo)=11 then 'NOV'
                           when month(pindahbuku.tgljatuhtempo)=12 then 'DES' ELSE '' END)
 
-                    +format(pindahbuku.tgljatuhtempo,'/yy')   as tgljatuhtempoformat"),                
+                    +format(pindahbuku.tgljatuhtempo,'/yy')   as tgljatuhtempoformat"),
             )
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), "pindahbuku.alatbayar_id", "alatbayar.id")
             ->leftJoin(DB::raw("bank as bankdari with (readuncommitted)"), "pindahbuku.bankdari_id", "bankdari.id")
