@@ -32,7 +32,7 @@ class validasiTglJatuhTempoPengeluaran implements Rule
         $alatbayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('id', request()->alatbayar_id)->first();
         if ($alatbayar != '') {
 
-            if ($alatbayar->namaalatbayar == 'GIRO') {
+            if ($alatbayar->namaalatbayar == 'GIRO' || $alatbayar->namaalatbayar == 'CHECK') {
                 $tglJatuhTempo = request()->tgljatuhtempo;
                 $tglBukti = request()->tglbukti;
                 $firstValue = $tglJatuhTempo[0];
