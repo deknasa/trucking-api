@@ -1094,6 +1094,7 @@ class PengeluaranStokHeader extends MyModel
 
         Schema::create($temp, function ($table) {
             $table->integer('id')->nullable();
+            $table->double('nominal')->nullable();
             $table->longText('statuscetak')->nullable();
             $table->integer('statuscetak_id')->nullable();
             $table->longText('statuskirimberkas')->nullable();
@@ -1133,6 +1134,7 @@ class PengeluaranStokHeader extends MyModel
         }
         DB::table($temp)->insertUsing([
             'id',
+            'nominal',
             'statuscetak',
             'statuscetak_id',
             'statuskirimberkas',
