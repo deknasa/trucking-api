@@ -852,7 +852,12 @@ class InvoiceHeader extends MyModel
                 // 'sp.nocont as nocont',
                 DB::raw("(CASE WHEN sp.container_id = 3 THEN sp.nocont + (CASE WHEN sp.nocont2 != '' then ' / ' else '' end) + sp.nocont2 
                 ELSE sp.nocont end) as nocont"),
-                DB::raw("isnull(tarif.tujuan,'')+(case when isnull(sp.penyesuaian,'')='' then '' else ' ( '+isnull(sp.penyesuaian,'')+' ) '  end) as tarif_id"),
+                DB::raw("
+                (CASE WHEN sp.statusjeniskendaraan=645 then
+                isnull(tarif.tujuan,'')+(case when isnull(sp.penyesuaian,'')='' then '' else ' ( '+isnull(sp.penyesuaian,'')+' ) '  end)
+                else
+                isnull(tariftangki.tujuan,'')+(case when isnull(sp.penyesuaian,'')='' then '' else ' ( '+isnull(sp.penyesuaian,'')+' ) '  end) end)
+                 as tarif_id"),
                 DB::raw("isnull(a.nominal,0) as omset"),
                 DB::raw("isnull(c.nominal,0) as nominalextra"),
                 DB::raw("0 as nominalretribusi"),
@@ -867,6 +872,7 @@ class InvoiceHeader extends MyModel
             ->leftjoin(DB::raw($tempomsettambahan . " c"), 'a.jobtrucking', 'c.jobtrucking')
             ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'a.jobtrucking', 'ot.nobukti')
             ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'sp.tarif_id', 'tarif.id')
+            ->leftJoin(DB::raw("tariftangki with (readuncommitted)"), 'sp.tariftangki_id', 'tariftangki.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'sp.jenisorder_id', 'jenisorder.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'sp.agen_id', 'agen.id')
             ->leftjoin(DB::raw($tempsp . " e"), 'a.jobtrucking', 'e.jobtrucking')
