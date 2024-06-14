@@ -1269,6 +1269,7 @@ class PenerimaanStokHeader extends MyModel
             ->leftJoin('penerimaanstokheader as nobuktipenerimaanstok', 'nobuktipenerimaanstok.nobukti', 'penerimaanstokheader.penerimaanstok_nobukti')
             ->leftJoin('penerimaanstokheader as nobuktispb', 'penerimaanstokheader.nobukti', 'nobuktispb.penerimaanstok_nobukti')
             ->leftJoin(db::raw($temtabelPg . " d1"), "penerimaanstokheader.id", "d1.id")
+            ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'penerimaanstokheader.nobukti', 'nominal.nobukti')
 
             ->leftJoin('supplier', 'penerimaanstokheader.supplier_id', 'supplier.id');
         $data = $query->where("$this->table.id", $id)->first();
