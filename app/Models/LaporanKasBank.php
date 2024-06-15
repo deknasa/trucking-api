@@ -545,6 +545,7 @@ class LaporanKasBank extends MyModel
                 DB::raw("0 as saldo"),
             )
             ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->whereraw("isnull(a.alatbayar_id,0) not in(3,4)")
             ->where('a.tglbukti', '>=', $dari)
             ->where('a.tglbukti', '<=', $sampai)
             ->where('a.bank_id', '=', $bank_id)
@@ -562,6 +563,43 @@ class LaporanKasBank extends MyModel
             'kredit',
             'saldo',
         ], $querypengeluaran);
+
+        $querypengeluaran = DB::table("pengeluaranheader")->from(
+            DB::raw("pengeluaranheader as a with (readuncommitted)")
+        )
+            ->select(
+                DB::raw("4 as urut"),
+                DB::raw('ROW_NUMBER() OVER (PARTITION BY A.nobukti ORDER BY b.id) as urutdetail'),
+                'b.coadebet as coa',
+                'a.tglbukti',
+                'a.nobukti',
+                'b.keterangan',
+                // DB::raw("(case when b.nominal<0 then abs(b.nominal) else 0 end) as debet "),
+                // DB::raw("(case when b.nominal>0 then b.nominal else 0 end) as kredit "),
+                DB::raw(" 0  as debet "),
+                DB::raw("b.nominal  as kredit "),
+                DB::raw("0 as saldo"),
+            )
+            ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(DB::raw("pencairangiropengeluaranheader as c with (readuncommitted)"), 'a.nobukti', 'c.pengeluaran_nobukti')
+            ->whereraw("isnull(a.alatbayar_id,0) in(3,4)")
+            ->where('c.tglbukti', '>=', $dari)
+            ->where('c.tglbukti', '<=', $sampai)
+            ->where('a.bank_id', '=', $bank_id)
+            ->orderBy('a.tglbukti', 'Asc')
+            ->orderBy('a.nobukti', 'Asc');
+
+        DB::table($tempsaldo)->insertUsing([
+            'urut',
+            'urutdetail',
+            'coa',
+            'tglbukti',
+            'nobukti',
+            'keterangan',
+            'debet',
+            'kredit',
+            'saldo',
+        ], $querypengeluaran);        
         if (isset($bankpengembaliankepusat)) {
             $querypengeluaran = DB::table("pengeluaranheader")->from(
                 DB::raw("pengeluaranheader as a with (readuncommitted)")

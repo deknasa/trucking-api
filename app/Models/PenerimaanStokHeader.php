@@ -3061,6 +3061,7 @@ class PenerimaanStokHeader extends MyModel
         $tglbatasedit = date('Y-m-d H:i:s', strtotime(date('Y-m-d') . ' ' . $jamBatas->text));
         for ($i = 0; $i < count($data['Id']); $i++) {
             $id = $data['Id'][$i];
+            // $nobukti = $data['nobukti'][$i];
             $penerimaanStokHeader = PenerimaanStokHeader::select(
                 '*'
             )->find($id);
