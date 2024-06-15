@@ -166,6 +166,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
         $year = substr($periode, 3);
 
         $alatBayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'GIRO')->first();
+        $alatBayarCheck = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'CHECK')->first();
 
         $petik = '"';
         $url = config('app.url_fe') . 'pengeluaranheader';
@@ -190,6 +191,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
             $table->dateTime('updated_at')->nullable();
         });
 
+        // ALAT BAYAR GIRO
         $query1 = DB::table("pengeluaranheader")->from(DB::raw("pengeluaranheader with (readuncommitted)"))
             ->select(
                 DB::raw("
@@ -197,7 +199,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                     pengeluaranheader.tglbukti as tglbukti_giro,
                     pengeluaranheader.id, 
                     pengeluaranheader.dibayarke, 
-                    '<a href=$petik" . $url . "?tgldari='+(format(pengeluaranheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(pengeluaranheader.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+pengeluaranheader.nobukti+'$petik 
+                    '<a href=$petik" . $url . "?tgldari='+(format(pengeluaranheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(pengeluaranheader.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+pengeluaranheader.nobukti+'&bank_id='+CAST(pengeluaranheader.bank_id AS varchar)+'$petik 
                     class=$petik link-color $petik target=$petik _blank $petik>'+pengeluaranheader.nobukti+'</a>' as urlpengeluaran,
                     bank.namabank as bank_id, 
                     pengeluaranheader.transferkeac, 
@@ -205,7 +207,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                     pgp.nobukti,
                     pgp.tglbukti, 
                     parameter.memo as statusapproval,
-                    CONVERT(date, GETDATE()) as tgljatuhtempo,
+                    pengeluarandetail.tgljatuhtempo,
                     (SELECT (SUM(pengeluarandetail.nominal)) FROM pengeluarandetail 
                         WHERE pengeluarandetail.nobukti= pengeluaranheader.nobukti and pengeluaranheader.alatbayar_id=$alatBayar->id) as nominal,
                     (case when isnull(pgp.nobukti,'')='' then pengeluaranheader.modifiedby else pgp.modifiedby end) as modifiedby, 
@@ -243,6 +245,60 @@ class PencairanGiroPengeluaranHeader extends MyModel
 
         ], $query1);
 
+        // alat bayar check
+        $query1 = DB::table("pengeluaranheader")->from(DB::raw("pengeluaranheader with (readuncommitted)"))
+            ->select(
+                DB::raw("
+                    pengeluaranheader.nobukti as pengeluaran_nobukti,
+                    pengeluaranheader.tglbukti as tglbukti_giro,
+                    pengeluaranheader.id, 
+                    pengeluaranheader.dibayarke, 
+                    '<a href=$petik" . $url . "?tgldari='+(format(pengeluaranheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(pengeluaranheader.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+pengeluaranheader.nobukti+'&bank_id='+CAST(pengeluaranheader.bank_id AS varchar)+'$petik 
+                    class=$petik link-color $petik target=$petik _blank $petik>'+pengeluaranheader.nobukti+'</a>' as urlpengeluaran,
+                    bank.namabank as bank_id, 
+                    pengeluaranheader.transferkeac, 
+                    alatbayar.namaalatbayar as alatbayar_id,
+                    pgp.nobukti,
+                    pgp.tglbukti, 
+                    parameter.memo as statusapproval,
+                    pengeluarandetail.tgljatuhtempo,
+                    (SELECT (SUM(pengeluarandetail.nominal)) FROM pengeluarandetail 
+                        WHERE pengeluarandetail.nobukti= pengeluaranheader.nobukti and pengeluaranheader.alatbayar_id=$alatBayarCheck->id) as nominal,
+                    (case when isnull(pgp.nobukti,'')='' then pengeluaranheader.modifiedby else pgp.modifiedby end) as modifiedby, 
+                    (case when isnull(pgp.nobukti,'')='' then pengeluaranheader.created_at else pgp.created_at end) as created_at, 
+                    (case when isnull(pgp.nobukti,'')='' then pengeluaranheader.updated_at else pgp.updated_at end) as updated_at
+                ")
+            )
+            ->distinct('pengeluaranheader.nobukti')
+            ->leftJoin(DB::raw("pengeluarandetail with (readuncommitted)"), 'pengeluarandetail.nobukti', 'pengeluaranheader.nobukti')
+            ->leftJoin(DB::raw("pencairangiropengeluaranheader as pgp with (readuncommitted)"), 'pgp.pengeluaran_nobukti', 'pengeluaranheader.nobukti')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pgp.statusapproval', 'parameter.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pengeluaranheader.alatbayar_id', 'alatbayar.id')
+            ->whereRaw("MONTH(pengeluaranheader.tglbukti) = $month")
+            ->whereRaw("YEAR(pengeluaranheader.tglbukti) = $year")
+            ->where('pengeluaranheader.alatbayar_id', $alatBayarCheck->id);
+
+        DB::table($templist)->insertUsing([
+            'pengeluaran_nobukti',
+            'tglbukti_giro',
+            'id',
+            'dibayarke',
+            'urlpengeluaran',
+            'bank_id',
+            'transferkeac',
+            'alatbayar_id',
+            'nobukti',
+            'tglbukti',
+            'statusapproval',
+            'tgljatuhtempo',
+            'nominal',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+
+        ], $query1);
+
         $query2 = DB::table("saldopengeluaranheader")->from(DB::raw("saldopengeluaranheader as pengeluaranheader with (readuncommitted) "))
             ->select(
                 DB::raw("
@@ -258,7 +314,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                     pgp.nobukti, 
                     pgp.tglbukti, 
                     parameter.memo as statusapproval,
-                    CONVERT(date, GETDATE()) as tgljatuhtempo, 
+                    pengeluarandetail.tgljatuhtempo,
                     (SELECT (SUM(pengeluarandetail.nominal)) FROM saldopengeluarandetail as pengeluarandetail
                         WHERE pengeluarandetail.nobukti= pengeluaranheader.nobukti and pengeluaranheader.alatbayar_id=$alatBayar->id) as nominal,      
                     (case when isnull(pgp.nobukti,'')='' then pengeluaranheader.modifiedby else pgp.modifiedby end) as modifiedby, 
@@ -414,7 +470,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                         penerimaangiroheader.nobukti as pengeluaran_nobukti,
                         penerimaangiroheader.tglbukti as tglbukti_giro,
                         penerimaangiroheader.id, 
-                        '<a href=$petik".$url."?tgldari='+(format(penerimaangiroheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(penerimaangiroheader.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+penerimaangiroheader.nobukti+'$petik 
+                        '<a href=$petik" . $url . "?tgldari='+(format(penerimaangiroheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(penerimaangiroheader.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+penerimaangiroheader.nobukti+'$petik 
                          class=$petik link-color $petik target=$petik _blank $petik>'+penerimaangiroheader.nobukti+'</a>' as urlpengeluaran,
                         bank.namabank as bank_id, 
                         'GIRO' as alatbayar_id,
@@ -475,6 +531,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
         $year = substr($periode, 3);
 
         $alatBayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'GIRO')->first();
+        $alatBayarCheck = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'CHECK')->first();
         $query1 = DB::table($this->anotherTable)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
             ->select(
                 DB::raw("pengeluaranheader.nobukti as pengeluaran_nobukti,pengeluaranheader.id, 
@@ -716,8 +773,8 @@ class PencairanGiroPengeluaranHeader extends MyModel
                         } else {
 
                             $pencairanGiro = new PencairanGiroPengeluaranHeader();
-                            $pencairanGiro->nobukti = (new RunningNumberService)->get($group, $subGroup, $pencairanGiro->getTable(), date('Y-m-d'));
-                            $pencairanGiro->tglbukti = date('Y-m-d');
+                            $pencairanGiro->nobukti = (new RunningNumberService)->get($group, $subGroup, $pencairanGiro->getTable(), date('Y-m-d', strtotime($pindahBuku->tgljatuhtempo)));
+                            $pencairanGiro->tglbukti = date('Y-m-d', strtotime($pindahBuku->tgljatuhtempo));
                             $pencairanGiro->pengeluaran_nobukti = $pindahBuku->nobukti;
                             $pencairanGiro->statusapproval = $statusApproval->id;
                             $pencairanGiro->userapproval = '';
@@ -755,7 +812,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                             $pencairanGiroDetail = (new PencairanGiroPengeluaranDetail())->processStore($pencairanGiro, [
                                 'alatbayar_id' => $alatBayar,
                                 'nowarkat' => $pindahBuku->nowarkat,
-                                'tgljatuhtempo' => date('Y-m-d'),
+                                'tgljatuhtempo' => $pindahBuku->tgljatuhtempo,
                                 'nominal' => $pindahBuku->nominal,
                                 'coadebet' => $pindahBuku->coakredit,
                                 'coakredit' => $getCoaBank->coa,
@@ -783,7 +840,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                             $jurnalRequest = [
                                 'tanpaprosesnobukti' => 1,
                                 'nobukti' => $pencairanGiro->nobukti,
-                                'tglbukti' => date('Y-m-d'),
+                                'tglbukti' => date('Y-m-d', strtotime($pindahBuku->tgljatuhtempo)),
                                 'postingdari' => "ENTRY PENCAIRAN GIRO PENGELUARAN",
                                 'statusformat' => "0",
                                 'coakredit_detail' => $coakredit_detail,
@@ -812,9 +869,11 @@ class PencairanGiroPengeluaranHeader extends MyModel
                             }
                         } else {
 
+                            $saldoPengeluaranDetail = saldopengeluarandetail::from(DB::raw("saldopengeluarandetail with (readuncommitted)"))->where('nobukti', $data['nobukti'][$i])->get();
+
                             $pencairanGiro = new PencairanGiroPengeluaranHeader();
-                            $pencairanGiro->nobukti = (new RunningNumberService)->get($group, $subGroup, $pencairanGiro->getTable(), date('Y-m-d'));
-                            $pencairanGiro->tglbukti = date('Y-m-d');
+                            $pencairanGiro->nobukti = (new RunningNumberService)->get($group, $subGroup, $pencairanGiro->getTable(), date('Y-m-d', strtotime($saldoPengeluaranDetail[0]['tgljatuhtempo'])));
+                            $pencairanGiro->tglbukti = date('Y-m-d', strtotime($saldoPengeluaranDetail[0]['tgljatuhtempo']));
                             $pencairanGiro->pengeluaran_nobukti = $saldoPengeluaran->nobukti;
                             $pencairanGiro->statusapproval = $statusApproval->id;
                             $pencairanGiro->userapproval = '';
@@ -848,12 +907,13 @@ class PencairanGiroPengeluaranHeader extends MyModel
                             $keterangan_detail = [];
                             $nominal_detail = [];
 
+                            $tglLunas = '';
                             foreach ($saldoPengeluaranDetail as $index => $value) {
 
                                 $pencairanGiroDetail = (new PencairanGiroPengeluaranDetail())->processStore($pencairanGiro, [
                                     'alatbayar_id' => $saldoPengeluaran->alatbayar_id,
                                     'nowarkat' => $value->nowarkat,
-                                    'tgljatuhtempo' => date('Y-m-d'),
+                                    'tgljatuhtempo' => $value->tgljatuhtempo,
                                     'nominal' => $value->nominal,
                                     'coadebet' => $value->coakredit,
                                     'coakredit' => $getCoaBank->coa,
@@ -867,6 +927,8 @@ class PencairanGiroPengeluaranHeader extends MyModel
                                 $nominal_detail[$index] = $value->nominal;
 
                                 $pencairanGiroDetails[] = $pencairanGiroDetail->toArray();
+
+                                $tglLunas = date('Y-m-d', strtotime($value->tgljatuhtempo));
                             }
 
 
@@ -883,7 +945,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                             $jurnalRequest = [
                                 'tanpaprosesnobukti' => 1,
                                 'nobukti' => $pencairanGiro->nobukti,
-                                'tglbukti' => date('Y-m-d'),
+                                'tglbukti' => $tglLunas,
                                 'postingdari' => "ENTRY PENCAIRAN GIRO PENGELUARAN",
                                 'statusformat' => "0",
                                 'coakredit_detail' => $coakredit_detail,
@@ -904,9 +966,11 @@ class PencairanGiroPengeluaranHeader extends MyModel
                             }
                         } else {
 
+                            $pengeluaranDetail = PengeluaranDetail::from(DB::raw("pengeluarandetail with (readuncommitted)"))->where('nobukti', $data['nobukti'][$i])->get();
+
                             $pencairanGiro = new PencairanGiroPengeluaranHeader();
-                            $pencairanGiro->nobukti = (new RunningNumberService)->get($group, $subGroup, $pencairanGiro->getTable(), date('Y-m-d'));
-                            $pencairanGiro->tglbukti = date('Y-m-d');
+                            $pencairanGiro->nobukti = (new RunningNumberService)->get($group, $subGroup, $pencairanGiro->getTable(), date('Y-m-d', strtotime($pengeluaranDetail[0]['tgljatuhtempo'])));
+                            $pencairanGiro->tglbukti = date('Y-m-d', strtotime($pengeluaranDetail[0]['tgljatuhtempo']));
                             $pencairanGiro->pengeluaran_nobukti = $pengeluaran->nobukti;
                             $pencairanGiro->statusapproval = $statusApproval->id;
                             $pencairanGiro->userapproval = '';
@@ -934,20 +998,20 @@ class PencairanGiroPengeluaranHeader extends MyModel
 
                             // STORE DETAIL
 
-                            $pengeluaranDetail = PengeluaranDetail::from(DB::raw("pengeluarandetail with (readuncommitted)"))->where('nobukti', $data['nobukti'][$i])->get();
 
                             $pencairanGiroDetails = [];
                             $coadebet_detail = [];
                             $coakredit_detail = [];
                             $keterangan_detail = [];
                             $nominal_detail = [];
+                            $tglLunas = '';
 
                             foreach ($pengeluaranDetail as $index => $value) {
 
                                 $pencairanGiroDetail = (new PencairanGiroPengeluaranDetail())->processStore($pencairanGiro, [
                                     'alatbayar_id' => $pengeluaran->alatbayar_id,
                                     'nowarkat' => $value->nowarkat,
-                                    'tgljatuhtempo' => date('Y-m-d'),
+                                    'tgljatuhtempo' => $value->tgljatuhtempo,
                                     'nominal' => $value->nominal,
                                     'coadebet' => $value->coakredit,
                                     'coakredit' => $getCoaBank->coa,
@@ -961,6 +1025,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                                 $nominal_detail[$index] = $value->nominal;
 
                                 $pencairanGiroDetails[] = $pencairanGiroDetail->toArray();
+                                $tglLunas = date('Y-m-d', strtotime($value->tgljatuhtempo));
                             }
 
 
@@ -977,7 +1042,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                             $jurnalRequest = [
                                 'tanpaprosesnobukti' => 1,
                                 'nobukti' => $pencairanGiro->nobukti,
-                                'tglbukti' => date('Y-m-d'),
+                                'tglbukti' => $tglLunas,
                                 'postingdari' => "ENTRY PENCAIRAN GIRO PENGELUARAN",
                                 'statusformat' => "0",
                                 'coakredit_detail' => $coakredit_detail,
@@ -1004,9 +1069,9 @@ class PencairanGiroPengeluaranHeader extends MyModel
                     $dataDetail = DB::table("penerimaangirodetail")->from(DB::raw("penerimaangirodetail with (readuncommitted)"))->where('nobukti', $data['nobukti'][$i])->get();
 
                     $alatBayar = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
-                    ->where('grp', 'ALAT BAYAR GIRO')
-                    ->where('grp', 'ALAT BAYAR GIRO')
-                    ->first()->text;
+                        ->where('grp', 'ALAT BAYAR GIRO')
+                        ->where('grp', 'ALAT BAYAR GIRO')
+                        ->first()->text;
 
                     $noWarkat = [];
                     $tglJatuhTempo = [];
@@ -1156,6 +1221,45 @@ class PencairanGiroPengeluaranHeader extends MyModel
                 ];
                 (new HistoryTglJatuhTempoGiro())->processStore($dataHistory);
             }
+        } else {
+            for ($i = 0; $i < count($data['nobukti']); $i++) {
+                $cekAsal = substr($data['nobukti'][$i], 0, 3);
+                if ($cekAsal == 'PBT') {
+                    $getTglBukti = DB::table("pindahbuku")->from(DB::raw("pindahbuku with (readuncommitted)"))
+                        ->where('nobukti', $data['nobukti'][$i])
+                        ->first();
+                    $tglJatuhTempo = $getTglBukti->tgljatuhtempo;
+                    $tglBukti = $getTglBukti->tglbukti;
+
+                    DB::table("pindahbuku")
+                        ->where('nobukti', $data['nobukti'][$i])->update([
+                            'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'])),
+                        ]);
+                } else {
+
+                    $getTglJatuhTempo = DB::table("pengeluarandetail")->from(DB::raw("pengeluarandetail with (readuncommitted)"))
+                        ->where('nobukti', $data['nobukti'][$i])
+                        ->first();
+
+                    $getTglBukti = DB::table("pengeluaranheader")->from(DB::raw("pengeluaranheader with (readuncommitted)"))
+                        ->where('nobukti', $data['nobukti'][$i])
+                        ->first();
+                    $tglJatuhTempo = $getTglJatuhTempo->tgljatuhtempo;
+                    $tglBukti = $getTglBukti->tglbukti;
+
+                    DB::table("pengeluarandetail")
+                        ->where('nobukti', $data['nobukti'][$i])->update([
+                            'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'])),
+                        ]);
+                }
+                $dataHistory = [
+                    'nobukti' => $data['nobukti'][$i],
+                    'tglbukti' => $tglBukti,
+                    'tgljatuhtempo' => $data['tgljatuhtempo'],
+                    'tgljatuhtempolama' => $tglJatuhTempo,
+                ];
+            }
+            (new HistoryTglJatuhTempoGiro())->processStore($dataHistory);
         }
         return $data;
     }

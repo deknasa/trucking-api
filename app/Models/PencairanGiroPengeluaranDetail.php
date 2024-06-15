@@ -32,6 +32,7 @@ class PencairanGiroPengeluaranDetail extends MyModel
         $status = request()->status;
         $templist = '##templist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($templist, function ($table) {
+            $table->integer('id')->nullable();
             $table->string('nobukti', 300)->nullable();
             $table->string('nowarkat', 300)->nullable();
             $table->date('tgljatuhtempo')->nullable();
@@ -45,6 +46,7 @@ class PencairanGiroPengeluaranDetail extends MyModel
             if ($cekAsal == 'PBT') {
                 $query1 = DB::table("pindahbuku")->from(DB::raw("pindahbuku with (readuncommitted)"))
                     ->select(
+                        'id',
                         'nobukti',
                         'nowarkat',
                         'tgljatuhtempo',
@@ -59,6 +61,7 @@ class PencairanGiroPengeluaranDetail extends MyModel
 
 
                 DB::table($templist)->insertUsing([
+                    'id',
                     'nobukti',
                     'nowarkat',
                     'tgljatuhtempo',
@@ -73,6 +76,7 @@ class PencairanGiroPengeluaranDetail extends MyModel
 
                 $query1 = DB::table($this->anotherTable)->from(DB::raw("pengeluarandetail with (readuncommitted)"))
                     ->select(
+                        'pengeluarandetail.id',
                         'pengeluarandetail.nobukti',
                         'pengeluarandetail.nowarkat',
                         'pengeluarandetail.tgljatuhtempo',
@@ -86,8 +90,21 @@ class PencairanGiroPengeluaranDetail extends MyModel
                     ->leftJoin('akunpusat as coakredit', 'pengeluarandetail.coakredit', 'coakredit.coa')
                     ->where('pengeluarandetail.nobukti', '=', request()->nobukti);
 
+                DB::table($templist)->insertUsing([
+                    'id',
+                    'nobukti',
+                    'nowarkat',
+                    'tgljatuhtempo',
+                    'nominal',
+                    'coadebet',
+                    'coakredit',
+                    'keterangan',
+                    'bulanbeban',
+
+                ], $query1);
                 $query2 = DB::table($this->anotherTable)->from(DB::raw("saldopengeluarandetail with (readuncommitted)"))
                     ->select(
+                        'saldopengeluarandetail.id',
                         'saldopengeluarandetail.nobukti',
                         'saldopengeluarandetail.nowarkat',
                         'saldopengeluarandetail.tgljatuhtempo',
@@ -100,14 +117,9 @@ class PencairanGiroPengeluaranDetail extends MyModel
                     ->leftJoin('akunpusat as coadebet', 'saldopengeluarandetail.coadebet', 'coadebet.coa')
                     ->leftJoin('akunpusat as coakredit', 'saldopengeluarandetail.coakredit', 'coakredit.coa')
                     ->where('saldopengeluarandetail.nobukti', '=', request()->nobukti);
-                $query3 = DB::table(DB::raw("({$query1->toSql()} UNION ALL {$query2->toSql()}) as V"))
-                    ->mergeBindings($query1)
-                    ->mergeBindings($query2);
-
-
-
 
                 DB::table($templist)->insertUsing([
+                    'id',
                     'nobukti',
                     'nowarkat',
                     'tgljatuhtempo',
@@ -117,11 +129,12 @@ class PencairanGiroPengeluaranDetail extends MyModel
                     'keterangan',
                     'bulanbeban',
 
-                ], $query3);
+                ], $query2);
             }
         } else {
             $query1 = DB::table('penerimaangirodetail')->from(DB::raw("penerimaangirodetail with (readuncommitted)"))
                 ->select(
+                    'penerimaangirodetail.id',
                     'penerimaangirodetail.nobukti',
                     'penerimaangirodetail.nowarkat',
                     'penerimaangirodetail.tgljatuhtempo',
@@ -135,6 +148,7 @@ class PencairanGiroPengeluaranDetail extends MyModel
                 ->leftJoin('akunpusat as coakredit', 'penerimaangirodetail.coakredit', 'coakredit.coa')
                 ->where('penerimaangirodetail.nobukti', '=', request()->nobukti);
             DB::table($templist)->insertUsing([
+                'id',
                 'nobukti',
                 'nowarkat',
                 'tgljatuhtempo',
@@ -148,6 +162,7 @@ class PencairanGiroPengeluaranDetail extends MyModel
         }
         $query = DB::table($templist)->from(DB::raw($templist . " AS pengeluarandetail "))
             ->select([
+                'pengeluarandetail.id',
                 'pengeluarandetail.nobukti',
                 'pengeluarandetail.nowarkat',
                 'pengeluarandetail.tgljatuhtempo',
@@ -244,7 +259,7 @@ class PencairanGiroPengeluaranDetail extends MyModel
         $pencairanGiroDetail->nobukti = $pencairanGiroPengeluaranHeader->nobukti;
         $pencairanGiroDetail->alatbayar_id = $data['alatbayar_id'];
         $pencairanGiroDetail->nowarkat = $data['nowarkat'];
-        $pencairanGiroDetail->tgljatuhtempo = $data['tgljatuhtempo'];
+        $pencairanGiroDetail->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $pencairanGiroDetail->nominal = $data['nominal'];
         $pencairanGiroDetail->coadebet = $data['coadebet'];
         $pencairanGiroDetail->coakredit = $data['coakredit'];

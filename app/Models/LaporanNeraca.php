@@ -200,8 +200,8 @@ class LaporanNeraca extends MyModel
                         ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
                         ->join('perkiraanlabarugi as LR', function ($join) use ($cabang_id) {
                             $join->on('LR.tahun', '=', DB::raw('YEAR(J.tglbukti)'))
-                            ->on('LR.bulan', '=', DB::raw('MONTH(J.tglbukti)'))
-                            ->on('LR.cabang_id', '=', DB::raw($cabang_id));
+                                ->on('LR.bulan', '=', DB::raw('MONTH(J.tglbukti)'))
+                                ->on('LR.cabang_id', '=', DB::raw($cabang_id));
                         })
                         ->whereIn('D.coamain', function ($query) {
                             $query->select(DB::raw('DISTINCT C.coa'))
@@ -374,6 +374,10 @@ class LaporanNeraca extends MyModel
                     }
                 }
             }
+            if ($getcabangid == 1) {
+                DB::update(DB::raw("update akunpusatdetail set coagroup='05.03.01.01' where coa in('05.03.01.02','05.03.01.07','05.03.01.01','05.03.01.03','05.03.01.04','05.03.01.05')and isnull(coagroup,'')=''"));
+            }
+
 
             $tempAkunPusatDetail = '##tempAkunPusatDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempAkunPusatDetail, function ($table) {
@@ -436,7 +440,7 @@ class LaporanNeraca extends MyModel
                     ->whereRaw("(cabang_id=" .  $cabang_id . " or " . $cabang_id . "=0)")
                     ->whereRaw("(cabang_id=" .  $cabang_id . " or " . $cabang_id . "=0)")
                     ->orderBy('id', 'asc');
-                    dd('test');
+                dd('test');
             } else {
                 $queryTempAkunPusatDetail = DB::table('akunpusatdetail')->from(
                     DB::raw('akunpusatdetail')
@@ -458,7 +462,6 @@ class LaporanNeraca extends MyModel
                     ->whereRaw("(cabang_id=" .  $cabang_id . " or " . $cabang_id . "=0)")
                     ->whereRaw("(cabang_id=" .  $cabang_id . " or " . $cabang_id . "=0)")
                     ->orderBy('id', 'asc');
-              
             }
 
 
@@ -1089,9 +1092,9 @@ class LaporanNeraca extends MyModel
                     'judullaporan',
                     'tglcetak',
                     'usercetak',
-                ], (new LaporanKasGantung())->getReport($tglsd, 1, 6)); 
+                ], (new LaporanKasGantung())->getReport($tglsd, 1, 6));
             }
-           
+
 
             // Kas 
 
@@ -1118,17 +1121,17 @@ class LaporanNeraca extends MyModel
 
 
 
-          
-         
+
+
 
             // dd($tglsaldo,$tgluji);
-            if ($tglsaldo==$tgluji) {
+            if ($tglsaldo == $tgluji) {
                 $tglkasbank = date('Y-m-d', strtotime($tglsd1));
             } else {
                 $tglkasbank = date('Y-m-d', strtotime($tglsd1 . ' -1 days'));
             }
 
-           
+
 
             $kas_id = DB::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
                 ->select(
@@ -1192,7 +1195,7 @@ class LaporanNeraca extends MyModel
 
                 $kas_idtnl = 6;
 
-                if ($tglsaldo==$tgluji) {
+                if ($tglsaldo == $tgluji) {
                     $tglkasbank = date('Y-m-d', strtotime($tglsd1));
                 } else {
                     $tglkasbank = date('Y-m-d', strtotime($tglsd1 . ' -1 days'));
@@ -1650,8 +1653,8 @@ class LaporanNeraca extends MyModel
                 ->where('D.tglbukti', '>=', $ptgl)
                 ->groupBy('D.coamain', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
 
-                if ($cabang == 'SEMUA') {
-                    $subquery2 = DB::table('jurnalumumpusatheader as J')
+            if ($cabang == 'SEMUA') {
+                $subquery2 = DB::table('jurnalumumpusatheader as J')
                     ->select('LR.coa', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('round(SUM(D.nominal),2) as FNominal'))
                     ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
                     ->join('perkiraanlabarugi as LR', function ($join) {
@@ -1668,15 +1671,14 @@ class LaporanNeraca extends MyModel
                     })
                     ->where('D.tglbukti', '>=', $ptgl)
                     ->groupBy('LR.coa', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
-    
-                } else {
-                    $subquery2 = DB::table('jurnalumumpusatheader as J')
+            } else {
+                $subquery2 = DB::table('jurnalumumpusatheader as J')
                     ->select('LR.coa', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('round(SUM(D.nominal),2) as FNominal'))
                     ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
                     ->join('perkiraanlabarugi as LR', function ($join) use ($cabang_id) {
                         $join->on('LR.tahun', '=', DB::raw('YEAR(J.tglbukti)'))
-                        ->on('LR.bulan', '=', DB::raw('MONTH(J.tglbukti)'))
-                        ->on('LR.cabang_id', '=', DB::raw($cabang_id));
+                            ->on('LR.bulan', '=', DB::raw('MONTH(J.tglbukti)'))
+                            ->on('LR.cabang_id', '=', DB::raw($cabang_id));
                     })
                     ->whereIn('D.coamain', function ($query) {
                         $query->select(DB::raw('DISTINCT C.coa'))
@@ -1688,8 +1690,7 @@ class LaporanNeraca extends MyModel
                     })
                     ->where('D.tglbukti', '>=', $ptgl)
                     ->groupBy('LR.coa', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
-    
-                }
+            }
 
             $RecalKdPerkiraan = DB::table(DB::raw("({$subquery1->toSql()} UNION ALL {$subquery2->toSql()}) as V"))
                 ->mergeBindings($subquery1)
