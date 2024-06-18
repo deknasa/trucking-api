@@ -375,7 +375,7 @@ class PengembalianKasGantungHeaderController extends Controller
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
             if ($diffNow->i > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                    (new MyModel())->updateEditingBy('pengembaliankasgantung', $id, $aksi);
+                    (new MyModel())->updateEditingBy('pengembaliankasgantungheader', $id, $aksi);
                 }
 
                 $data = [
@@ -402,7 +402,7 @@ class PengembalianKasGantungHeaderController extends Controller
         } else {
 
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                (new MyModel())->updateEditingBy('pengembaliankasgantung', $id, $aksi);
+                (new MyModel())->updateEditingBy('pengembaliankasgantungheader', $id, $aksi);
             }
             $data = [
                 'error' => false,
