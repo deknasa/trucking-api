@@ -312,7 +312,7 @@ class PenerimaanStokHeader extends MyModel
                         db::raw("'' as userkirimberkas"),
                         db::raw("'1900/1/1' as tglkirimberkas"),
                         db::raw("max(a.statusapprovalpindahgudangspk) as statusapprovalpindahgudangspk"),
-                        db::raw("'1900/1/1' as tglbataspindahgudangspk"),
+                        db::raw("max(isnull(a.tglbataspindahgudangspk,'1900/1/1'))  as tglbataspindahgudangspk"),                        
                     )
                     ->whereraw("isnull(a.qtymasuk,0)<>0")
                     ->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
@@ -3060,29 +3060,54 @@ class PenerimaanStokHeader extends MyModel
         $jamBatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'JAMBATASAPPROVAL')->where('subgrp', 'JAMBATASAPPROVAL')->first();
         $tglbatasedit = date('Y-m-d H:i:s', strtotime(date('Y-m-d') . ' ' . $jamBatas->text));
         for ($i = 0; $i < count($data['Id']); $i++) {
+            $datalama = false;
             $id = $data['Id'][$i];
-            // $nobukti = $data['nobukti'][$i];
+            $nobukti = $data['nobukti'][$i];
             $penerimaanStokHeader = PenerimaanStokHeader::select(
                 '*'
-            )->find($id);
+            )->where('nobukti',$nobukti)->first();
+            if (!$penerimaanStokHeader) {
+                $datalama = true;
+                $penerimaanStokHeader = KartuStokLama::select(
+                    '*',
+                    db::raw("(case when left(nobukti,3)='PG ' then 5
+                            when left(nobukti,3)='SPB' then 3
+                            when left(nobukti,3)='KOR' then 4
+                            else 0 end) as penerimaanstok_id"),
+                )
+                ->where('nobukti', $nobukti);
+                $kartustok = $penerimaanStokHeader->first();
+                // $penerimaanStokHeader =$penerimaanStokHeader;
+            }
+            // dd($penerimaanStokHeader);
+
             $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
             $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
-            if ($penerimaanStokHeader->statusapprovalpindahgudangspk == $statusApproval->id) {
-                $penerimaanStokHeader->statusapprovalpindahgudangspk = $statusNonApproval->id;
+            if ($datalama) {
+                $dataapproval = ($kartustok->statusapprovalpindahgudangspk == $statusApproval->id);
+            }else{
+                $dataapproval = ($penerimaanStokHeader->statusapprovalpindahgudangspk == $statusApproval->id);
+            }
+            if ($dataapproval) {
+                $updatedData["statusapprovalpindahgudangspk"] = $statusNonApproval->id;
                 $aksi = $statusNonApproval->text;
-                $penerimaanStokHeader->tglbataspindahgudangspk = null;
+                $updatedData["tglbataspindahgudangspk"] = null;
             } else {
-                $penerimaanStokHeader->statusapprovalpindahgudangspk = $statusApproval->id;
+                $updatedData["statusapprovalpindahgudangspk"] = $statusApproval->id;
                 $aksi = $statusApproval->text;
-                $penerimaanStokHeader->tglbataspindahgudangspk = $tglbatasedit;
+                $updatedData["tglbataspindahgudangspk"] = $tglbatasedit;
             }
 
-            $penerimaanStokHeader->userapprovalpindahgudangspk = auth('api')->user()->name;
-            $penerimaanStokHeader->tglapprovalpindahgudangspk = date('Y-m-d');
-            $penerimaanStokHeader->save();
+            $updatedData["userapprovalpindahgudangspk"] = auth('api')->user()->name;
+            $updatedData["tglapprovalpindahgudangspk"] = date('Y-m-d');
+            // dd($updatedData);
+            $penerimaanStokHeader->update($updatedData);
 
 
-            if ($penerimaanStokHeader->save()) {
+            if ($datalama) {
+                $penerimaanStokHeader=$kartustok;
+            }
+            // if ($penerimaanStokHeader->save()) {
                 (new LogTrail())->processStore([
                     'namatabel' => strtoupper($penerimaanStokHeader->getTable()),
                     'postingdari' => 'Approval Buka Tgl Batas PG',
@@ -3092,7 +3117,7 @@ class PenerimaanStokHeader extends MyModel
                     'datajson' => $penerimaanStokHeader->toArray(),
                     'modifiedby' => auth('api')->user()->user
                 ]);
-            }
+            // }
         }
         return $penerimaanStokHeader;
     }

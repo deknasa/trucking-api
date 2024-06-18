@@ -833,7 +833,7 @@ class PenerimaanStokHeaderController extends Controller
         try {
             $data = [
                 'Id' => $request->Id,
-                // 'nobukti' => $request->nobukti,
+                'nobukti' => $request->nobukti,
             ];
             (new PenerimaanStokHeader())->processApprovalBukaTglBatasPG($data);
 
