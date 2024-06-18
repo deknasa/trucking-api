@@ -253,7 +253,9 @@ class Parameter extends MyModel
                             $query = $query->where('B.grp', 'like', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
+                        } else if ($filters['field'] == 'grpand') {
+                            $query = $query->where('parameter.grp', "$filters[data]");
+                        }else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'like', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                         }

@@ -38,6 +38,7 @@ use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\ApprovalBatalMuatRequest;
 use App\Http\Requests\GetUpahSupirRangeRequest;
 use App\Http\Requests\ApprovalEditTujuanRequest;
+use App\Http\Requests\ApprovalTolakanRequest;
 use App\Http\Requests\StoreSuratPengantarRequest;
 use App\Http\Requests\UpdateSuratPengantarRequest;
 use App\Http\Requests\DestroySuratPengantarRequest;
@@ -216,13 +217,14 @@ class SuratPengantarController extends Controller
                 'statuslongtrip' => $request->statuslongtrip,
                 'statusperalihan' => $request->statusperalihan,
                 'statuskandang' => $request->statuskandang,
-                'nominalperalihan' => $request->nominalperalihan,
+                'nominalperalihan' => $request->nominalperalihan ?? 0,
                 'persentaseperalihan' => $request->persentaseperalihan,
                 'biayatambahan_id' => $request->biayatambahan_id,
                 'nosp' => $request->nosp,
                 'nosptagihlain' => $request->nosptagihlain,
                 'qtyton' => $request->qtyton,
                 'statusgudangsama' => $request->statusgudangsama,
+                'statustolakan' => $request->statustolakan,
                 'statusjeniskendaraan' => $request->statusjeniskendaraan,
                 'qtyton' => $request->qtyton,
                 'statusbatalmuat' => $request->statusbatalmuat,
@@ -752,5 +754,41 @@ class SuratPengantarController extends Controller
      */
     public function approvalBiayaTambahan()
     {
+    }
+    /**
+     * @ClassName 
+     * @Keterangan APPROVAL TOLAKAM
+     */
+    public function approvalTolakan(ApprovalTolakanRequest $request)
+    {
+        DB::beginTransaction();
+        try{
+            $data = [
+                'nobukti' => $request->nobuktitrans,
+                'statustolakan' => $request->statustolakan,
+                'nominalperalihan' => $request->nominalperalihantolakan,
+                'persentaseperalihan' => $request->persentaseperalihantolakan,
+
+            ];
+            $suratPengantar = (new SuratPengantar())->processTolakan($data);
+            
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $suratPengantar
+            ], 200);
+        }catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+
+    }
+
+    public function getTolakan($id){
+        return response([
+            'status' => true,
+            'data' => (new SuratPengantar())->getTolakan($id),
+        ]);
     }
 }

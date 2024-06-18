@@ -1475,6 +1475,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('suratpengantar/titipanemkl', [SuratPengantarController::class, 'approvalTitipanEmkl']);
     Route::get('suratpengantar/getOrderanTrucking', [SuratPengantarController::class, 'getOrderanTrucking']);
     Route::get('suratpengantar/getGaji/{dari}/{sampai}/{container}/{statuscontainer}', [SuratPengantarController::class, 'getGaji']);
+    Route::get('suratpengantar/{id}/getTolakan', [SuratPengantarController::class, 'getTolakan']);
+    Route::post('suratpengantar/approvalTolakan', [SuratPengantarController::class, 'approvalTolakan']);
 
     Route::get('penerimaanheader/{id}/printreport', [PenerimaanHeaderController::class, 'printReport'])->whereNumber('id');
     Route::post('penerimaanheader/{id}/editcoa', [PenerimaanHeaderController::class, 'editCoa']);

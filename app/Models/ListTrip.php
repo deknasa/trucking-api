@@ -1034,7 +1034,9 @@ class ListTrip extends MyModel
             'nosptagihlain' => $trip->nosptagihlain,
             'qtyton' => $trip->qtyton,
             'biayatambahan_id' => $trip->biayatambahan_id,
-            'persentaseperalihan' => $trip->persentaseperalihan,
+            'persentaseperalihan' => $trip->persentaseperalihan ?? 0,
+            'nominalperalihan' => $trip->nominalperalihan ?? 0,
+            'statustolakan' => $trip->statustolakan ?? 4,
             'nosp' => $trip->nosp,
         ];
         $suratPengantar = (new SuratPengantar())->processUpdate($trip, $dataSP);
