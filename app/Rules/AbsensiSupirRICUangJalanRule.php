@@ -74,7 +74,7 @@ class AbsensiSupirRICUangJalanRule implements Rule
         if ($this->kodeeror =="11") {
             $message .= "Sudah Ada Uang Jalan dan Sudah Ada RIC ";
         }
-        if ($this->kodeeror == "") {
+        if ($this->kodeeror == "" || $this->kodeeror == "00" ) {
             $message .="";
         }
 

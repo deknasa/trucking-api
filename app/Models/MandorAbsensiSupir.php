@@ -1821,9 +1821,9 @@ class MandorAbsensiSupir extends MyModel
             return [true,"00"];
         }
         $message = "";
-        $error = "00";
-        $errorReturn = 0;
-        if ($absensiSupirDetail->uangjalan) {
+        $error = 0;
+        $errorReturn = "00";
+        if ($absensiSupirDetail->uangjalan>0) {
             $message .= "<br>Sudah Ada Uang Jalan ";
             $errorReturn = "01";
             $error++;
@@ -1848,7 +1848,9 @@ class MandorAbsensiSupir extends MyModel
             $message .= "<br>Sudah Ada RIC ";
             $error++;
         }
-
+        if ($errorReturn == "00") {
+            return [true,$errorReturn];
+        }
         return [false,$errorReturn];
 
     }
