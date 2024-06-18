@@ -895,10 +895,10 @@ class Stok extends MyModel
             ->leftJoin('satuan', 'stok.satuan_id', 'satuan.id')
             ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
             ->leftJoin('merk', 'stok.merk_id', 'merk.id')
-            ->leftJoin('parameter as statusaktif', 'penerimaanstok.statusaktif', '=', 'statusaktif.id')
-            ->leftJoin('parameter as statusreuse', 'penerimaanstok.statusreuse', '=', 'statusreuse.id')
-            ->leftJoin('parameter as statusban', 'penerimaanstok.statusban', '=', 'statusban.id')
-            ->leftJoin('parameter as statusservicerutin', 'penerimaanstok.statusservicerutin', '=', 'statusservicerutin.id')
+            ->leftJoin('parameter as statusaktif', 'stok.statusaktif', '=', 'statusaktif.id')
+            ->leftJoin('parameter as statusreuse', 'stok.statusreuse', '=', 'statusreuse.id')
+            ->leftJoin('parameter as statusban', 'stok.statusban', '=', 'statusban.id')
+            ->leftJoin('parameter as statusservicerutin', 'stok.statusservicerutin', '=', 'statusservicerutin.id')
             ->where('stok.id', $id)
             ->first();
 
