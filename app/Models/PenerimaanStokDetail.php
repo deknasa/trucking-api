@@ -212,6 +212,7 @@ class PenerimaanStokDetail extends MyModel
                     'a.nobukti',
                     db::raw("max(a.tglbukti) as tglbukti")
                 )
+                ->groupBy('a.nobukti')
                 ->where('a.nobukti', $nobukti);
 
             DB::table($temtabelpenerimaan)->insertUsing([
@@ -366,7 +367,7 @@ class PenerimaanStokDetail extends MyModel
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
-                ->leftJoin(db::raw($temtabelpenerimaan ." penerimaanstokheader"), "$this->table.penerimaanstokheader_id", "penerimaanstokheader.id")
+                ->leftJoin(db::raw($temtabelpenerimaan . " penerimaanstokheader"), "$this->table.nobukti", "penerimaanstokheader.nobukti")
                 ->leftJoin("stok", "$this->table.stok_id", "stok.id")
                 ->leftJoin("parameter", "stok.statusban", "parameter.id")
                 ->leftJoin(db::raw($tempumuraki . " c"), "$this->table.stok_id", "c.stok_id")
