@@ -900,7 +900,7 @@ class KasGantungHeader extends MyModel
                 'kasgantungheader.jumlahcetak',
                 'statuscetak.memo as statuscetak',
                 'statuscetak.id as  statuscetak_id',
-                DB::raw("'Laporan Kas Gantung' as judulLaporan"),
+                DB::raw("'Bukti Kas Gantung' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
