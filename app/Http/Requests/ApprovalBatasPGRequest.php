@@ -30,7 +30,21 @@ class ApprovalBatasPGRequest extends FormRequest
             'Id' => 'required',
             'Id.*' => [
                 function ($attribute, $value, $fail){
+                    $index = substr($attribute, 3);  // returns "cde"
+                    $nobukti = $this->nobukti[$index];
                     $penerimaanstokheader = DB::table('penerimaanstokheader')->where('id', $value)->first();
+
+                    if (!$penerimaanstokheader) {
+                        $penerimaanstokheader = db::table("kartustoklama")->from(db::raw("kartustoklama a  with (readuncommitted)"))
+                        ->select(
+                            'a.*',
+                            db::raw("(case when left(a.nobukti,3)='PG ' then 5
+                                    when left(a.nobukti,3)='SPB' then 3
+                                    when left(a.nobukti,3)='KOR' then 4
+                                    else 0 end) as penerimaanstok_id"),
+                        )
+                        ->where('nobukti', $nobukti)->first();
+                    }
                     $pg = DB::table('parameter')->where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
 
                     if ($pg->text != $penerimaanstokheader->penerimaanstok_id) {
