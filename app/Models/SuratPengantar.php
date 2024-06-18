@@ -72,11 +72,11 @@ class SuratPengantar extends MyModel
         $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $jenisTangki = DB::table('parameter')->from(DB::raw("parameter as a with (readuncommitted)"))
-        ->select('a.id')
-        ->where('a.grp', '=', 'STATUS JENIS KENDARAAN')
-        ->where('a.subgrp', '=', 'STATUS JENIS KENDARAAN')
-        ->where('a.text', '=', 'TANGKI')
-        ->first();
+            ->select('a.id')
+            ->where('a.grp', '=', 'STATUS JENIS KENDARAAN')
+            ->where('a.subgrp', '=', 'STATUS JENIS KENDARAAN')
+            ->where('a.text', '=', 'TANGKI')
+            ->first();
         $gajiSupir = DB::table('gajisupirdetail')
             ->from(
                 DB::raw("gajisupirdetail as a with (readuncommitted)")
@@ -213,18 +213,18 @@ class SuratPengantar extends MyModel
 
         if ($trip->statusjeniskendaraan == $jenisTangki->id && $aksi == 'DELETE') {
             $getTripTangki = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-            ->select(db::raw("STRING_AGG(nobukti, ', ') as nobukti"))
-            ->where('supir_id', $trip->supir_id)
-            ->where('trado_id', $trip->trado_id)
-            ->where('tglbukti', date('Y-m-d', strtotime($trip->tglbukti)))
-            ->where('statusjeniskendaraan', $jenisTangki->id)
-            ->where('id', '>', $trip->id)
-            ->first();
-            if($getTripTangki->nobukti != ''){
+                ->select(db::raw("STRING_AGG(nobukti, ', ') as nobukti"))
+                ->where('supir_id', $trip->supir_id)
+                ->where('trado_id', $trip->trado_id)
+                ->where('tglbukti', date('Y-m-d', strtotime($trip->tglbukti)))
+                ->where('statusjeniskendaraan', $jenisTangki->id)
+                ->where('id', '>', $trip->id)
+                ->first();
+            if ($getTripTangki->nobukti != '') {
                 $keteranganerror = $error->cekKeteranganError('ATBB') ?? '';
                 $data = [
                     'kondisi' => true,
-                    'keterangan' =>  $keteranganerror .' <b>'. $getTripTangki->nobukti . '</b><br> ' . $keterangantambahanerror,
+                    'keterangan' =>  $keteranganerror . ' <b>' . $getTripTangki->nobukti . '</b><br> ' . $keterangantambahanerror,
                     'kodeerror' => 'SATL2',
                 ];
 
@@ -232,7 +232,7 @@ class SuratPengantar extends MyModel
                 goto selesai;
             }
         }
-        
+
         $data = [
             'kondisi' => false,
             'keterangan' => '',
@@ -327,6 +327,7 @@ class SuratPengantar extends MyModel
             $table->unsignedBigInteger('zonadari_id')->nullable();
             $table->unsignedBigInteger('zonasampai_id')->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();
+            $table->unsignedBigInteger('statustolakan')->nullable();
             $table->unsignedBigInteger('statusgudangsama')->nullable();
             $table->unsignedBigInteger('statusbatalmuat')->nullable();
             $table->unsignedBigInteger('statusgandengan')->nullable();
@@ -423,6 +424,7 @@ class SuratPengantar extends MyModel
                 'suratpengantar.zonadari_id',
                 'suratpengantar.zonasampai_id',
                 'suratpengantar.statusformat',
+                'suratpengantar.statustolakan',
                 'suratpengantar.statusgudangsama',
                 'suratpengantar.statusbatalmuat',
                 'suratpengantar.statusgandengan',
@@ -531,6 +533,7 @@ class SuratPengantar extends MyModel
             'zonadari_id',
             'zonasampai_id',
             'statusformat',
+            'statustolakan',
             'statusgudangsama',
             'statusbatalmuat',
             'statusgandengan',
@@ -778,6 +781,7 @@ class SuratPengantar extends MyModel
                 'tarif.tujuan as tarif_id',
                 'mandortrado.namamandor as mandortrado_id',
                 'mandorsupir.namamandor as mandorsupir_id',
+                'statustolakan.memo as statustolakan',
                 'statusgudangsama.memo as statusgudangsama',
                 'statusbatalmuat.memo as statusbatalmuat',
                 'suratpengantar.userapprovaleditsuratpengantar',
@@ -817,6 +821,7 @@ class SuratPengantar extends MyModel
             ->leftJoin('parameter as statusperalihan', 'suratpengantar.statusperalihan', 'statusperalihan.id')
             ->leftJoin('parameter as statusritasiomset', 'suratpengantar.statusritasiomset', 'statusritasiomset.id')
             ->leftJoin('parameter as statusgudangsama', 'suratpengantar.statusgudangsama', 'statusgudangsama.id')
+            ->leftJoin('parameter as statustolakan', 'suratpengantar.statustolakan', 'statustolakan.id')
             ->leftJoin('parameter as statusbatalmuat', 'suratpengantar.statusbatalmuat', 'statusbatalmuat.id')
             ->leftJoin('parameter as statusapprovaleditsuratpengantar', 'suratpengantar.statusapprovaleditsuratpengantar', 'statusapprovaleditsuratpengantar.id')
             ->leftJoin('parameter as statusapprovalbiayatitipanemkl', 'suratpengantar.statusapprovalbiayatitipanemkl', 'statusapprovalbiayatitipanemkl.id')
@@ -1390,6 +1395,7 @@ class SuratPengantar extends MyModel
                     'suratpengantar.triptangki_id',
                     'triptangki.keterangan as triptangki',
                     'suratpengantar.gudang',
+                    DB::raw("isnull(suratpengantar.statustolakan, 4) as statustolakan"),
                     'suratpengantar.statusbatalmuat',
                     'suratpengantar.statusupahzona',
                     'suratpengantar.statusgandengan',
@@ -1509,6 +1515,7 @@ class SuratPengantar extends MyModel
                         DB::raw("(case when suratpengantar.nominalperalihan IS NULL then 0 else suratpengantar.nominalperalihan end) as nominalperalihan"),
                         'suratpengantar.nojob',
                         'suratpengantar.nojob2',
+                        DB::raw("isnull(suratpengantar.statustolakan, 4) as statustolakan"),
                         'suratpengantar.cabang_id',
                         'cabang.namacabang as cabang',
                         'suratpengantar.qtyton',
@@ -1565,6 +1572,7 @@ class SuratPengantar extends MyModel
                         'suratpengantar.container_id',
                         'container.kodecontainer as container',
                         'suratpengantar.statusjeniskendaraan',
+                        DB::raw("isnull(suratpengantar.statustolakan, 4) as statustolakan"),
                         'suratpengantar.nocont',
                         'suratpengantar.noseal',
                         'suratpengantar.statusperalihan',
@@ -1670,6 +1678,7 @@ class SuratPengantar extends MyModel
             $table->unsignedBigInteger('tarif_id')->nullable();
             $table->unsignedBigInteger('mandortrado_id')->nullable();
             $table->unsignedBigInteger('mandorsupir_id')->nullable();
+            $table->unsignedBigInteger('statustolakan')->nullable();
             $table->unsignedBigInteger('statusgudangsama')->nullable();
             $table->unsignedBigInteger('statusbatalmuat')->nullable();
             $table->string('userapprovaleditsuratpengantar', 50)->nullable();
@@ -1729,6 +1738,7 @@ class SuratPengantar extends MyModel
                 'suratpengantar.tarif_id',
                 'suratpengantar.mandortrado_id',
                 'suratpengantar.mandorsupir_id',
+                'suratpengantar.statustolakan',
                 'suratpengantar.statusgudangsama',
                 'suratpengantar.statusbatalmuat',
                 'suratpengantar.userapprovaleditsuratpengantar',
@@ -1783,6 +1793,7 @@ class SuratPengantar extends MyModel
             'tarif_id',
             'mandortrado_id',
             'mandorsupir_id',
+            'statustolakan',
             'statusgudangsama',
             'statusbatalmuat',
             'userapprovaleditsuratpengantar',
@@ -1840,6 +1851,7 @@ class SuratPengantar extends MyModel
                 'tarif.tujuan as tarif_id',
                 'mandortrado.namamandor as mandortrado_id',
                 'mandorsupir.namamandor as mandorsupir_id',
+                'statustolakan.memo as statustolakan',
                 'statusgudangsama.memo as statusgudangsama',
                 'statusbatalmuat.memo as statusbatalmuat',
                 suratpengantar.userapprovaleditsuratpengantar,
@@ -1873,6 +1885,7 @@ class SuratPengantar extends MyModel
             ->leftJoin('parameter as statusperalihan', 'suratpengantar.statusperalihan', 'statusperalihan.id')
             ->leftJoin('parameter as statusritasiomset', 'suratpengantar.statusritasiomset', 'statusritasiomset.id')
             ->leftJoin('parameter as statusgudangsama', 'suratpengantar.statusgudangsama', 'statusgudangsama.id')
+            ->leftJoin('parameter as statustolakan', 'suratpengantar.statustolakan', 'statustolakan.id')
             ->leftJoin('parameter as statusbatalmuat', 'suratpengantar.statusbatalmuat', 'statusbatalmuat.id')
             ->leftJoin('parameter as statusapprovaleditsuratpengantar', 'suratpengantar.statusapprovaleditsuratpengantar', 'statusapprovaleditsuratpengantar.id')
             ->leftJoin('parameter as statusapprovalbiayatitipanemkl', 'suratpengantar.statusapprovalbiayatitipanemkl', 'statusapprovalbiayatitipanemkl.id')
@@ -2127,6 +2140,7 @@ class SuratPengantar extends MyModel
             $table->string('tarif_id')->nullable();
             $table->string('mandortrado_id')->nullable();
             $table->string('mandorsupir_id')->nullable();
+            $table->longText('statustolakan')->nullable();
             $table->longText('statusgudangsama')->nullable();
             $table->longText('statusbatalmuat')->nullable();
             $table->string('userapprovaleditsuratpengantar')->nullable();
@@ -2161,7 +2175,7 @@ class SuratPengantar extends MyModel
 
 
         DB::table($temp)->insertUsing([
-            'id', 'nobukti', 'jobtrucking', 'tglbukti', 'nosp', 'tglsp', 'nojob', 'pelanggan_id', 'keterangan', 'dari_id', 'sampai_id', 'penyesuaian', 'gajisupir', 'jarak', 'agen_id', 'jenisorder_id', 'container_id', 'nocont', 'noseal', 'omset', 'nominalperalihan', 'totalomset', 'statuscontainer_id', 'gudang', 'trado_id', 'supir_id', 'gandengan_id', 'statuslongtrip', 'statusperalihan', 'statusritasiomset', 'statusapprovaleditsuratpengantar', 'statusapprovalbiayatitipanemkl', 'tarif_id', 'mandortrado_id', 'mandorsupir_id', 'statusgudangsama', 'statusbatalmuat', 'userapprovaleditsuratpengantar', 'userapprovalbiayatitipanemkl', 'tglapprovaleditsuratpengantar', 'tglbataseditsuratpengantar', 'tglapprovalbiayatitipanemkl', 'gajisupir_nobukti', 'invoice_nobukti', 'modifiedby', 'created_at', 'updated_at', 'statusgajisupir', 'statusinvoice'
+            'id', 'nobukti', 'jobtrucking', 'tglbukti', 'nosp', 'tglsp', 'nojob', 'pelanggan_id', 'keterangan', 'dari_id', 'sampai_id', 'penyesuaian', 'gajisupir', 'jarak', 'agen_id', 'jenisorder_id', 'container_id', 'nocont', 'noseal', 'omset', 'nominalperalihan', 'totalomset', 'statuscontainer_id', 'gudang', 'trado_id', 'supir_id', 'gandengan_id', 'statuslongtrip', 'statusperalihan', 'statusritasiomset', 'statusapprovaleditsuratpengantar', 'statusapprovalbiayatitipanemkl', 'tarif_id', 'mandortrado_id', 'mandorsupir_id', 'statustolakan','statusgudangsama', 'statusbatalmuat', 'userapprovaleditsuratpengantar', 'userapprovalbiayatitipanemkl', 'tglapprovaleditsuratpengantar', 'tglbataseditsuratpengantar', 'tglapprovalbiayatitipanemkl', 'gajisupir_nobukti', 'invoice_nobukti', 'modifiedby', 'created_at', 'updated_at', 'statusgajisupir', 'statusinvoice'
         ], $models);
         // dd('test');
 
@@ -2272,6 +2286,8 @@ class SuratPengantar extends MyModel
                                 $query = $query->where('statusritasiomset.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statusgudangsama') {
                                 $query = $query->where('statusgudangsama.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statustolakan') {
+                                $query = $query->where('statustolakan.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statusbatalmuat') {
                                 $query = $query->where('statusbatalmuat.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statusgajisupir') {
@@ -2342,6 +2358,8 @@ class SuratPengantar extends MyModel
                                     $query = $query->orWhere('statusritasiomset.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'statusgudangsama') {
                                     $query = $query->orWhere('statusgudangsama.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statustolakan') {
+                                    $query = $query->orWhere('statustolakan.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'statusbatalmuat') {
                                     $query = $query->orWhere('statusbatalmuat.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'statusapprovaleditsuratpengantar') {
@@ -2380,16 +2398,17 @@ class SuratPengantar extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    function returnUnApprovalEdit() {
-         DB::beginTransaction();
+    function returnUnApprovalEdit()
+    {
+        DB::beginTransaction();
         try {
             $suratPengantar = new SuratPengantar();
             $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
             $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
-            $now = date('Y-m-d H:i:s',strtotime('now'));
-            $data = DB::table("suratpengantar")->where('statusapprovaleditsuratpengantar',$statusApproval->id)
-            ->where('tglbataseditsuratpengantar','<',$now)
-            ->update(['statusapprovaleditsuratpengantar' => $statusNonApproval->id]);
+            $now = date('Y-m-d H:i:s', strtotime('now'));
+            $data = DB::table("suratpengantar")->where('statusapprovaleditsuratpengantar', $statusApproval->id)
+                ->where('tglbataseditsuratpengantar', '<', $now)
+                ->update(['statusapprovaleditsuratpengantar' => $statusNonApproval->id]);
             DB::commit();
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -2504,6 +2523,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->statusbatalmuat = $data['statusbatalmuat'];
             $suratPengantar->gudang = $data['gudang'];
             $suratPengantar->statusapprovaleditsuratpengantar = $statusNonApproval->id;
+            $suratPengantar->statustolakan = $statusNonApproval->id;
             $suratPengantar->modifiedby = auth('api')->user()->name;
             $suratPengantar->info = html_entity_decode(request()->info);
             $suratPengantar->statusformat = $format->id;
@@ -2605,6 +2625,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->tglbataseditsuratpengantar = $data['tglbataseditsuratpengantar'];
             $suratPengantar->nobukti_tripasal = $data['nobukti_tripasal'];
             $suratPengantar->statusapprovalbiayatitipanemkl = $statusNonApproval->id;
+            $suratPengantar->statustolakan = $statusNonApproval->id;
             $suratPengantar->nobukti = (new RunningNumberService)->get($group, $subGroup, $suratPengantar->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
         }
 
@@ -2767,12 +2788,13 @@ class SuratPengantar extends MyModel
             $suratPengantar->statusperalihan = $data['statusperalihan'];
             $suratPengantar->statusupahzona = $data['statusupahzona'];
             $suratPengantar->statuskandang = $data['statuskandang'];
+            $suratPengantar->statustolakan = $data['statustolakan'] ?? 4;
             $suratPengantar->tarif_id = $data['tarif_id'] ?? '';
             $suratPengantar->tariftangki_id = $data['tariftangki_id'] ?? '';
-            $nominalPeralihan = 0;
-            if ($data['persentaseperalihan'] != 0) {
-                $nominalPeralihan = ($tarifNominal * ($data['persentaseperalihan'] / 100));
-            }
+            // $nominalPeralihan = 0;
+            // if ($data['persentaseperalihan'] != 0) {
+            //     $nominalPeralihan = ($tarifNominal * ($data['persentaseperalihan'] / 100));
+            // }
 
             // if (trim($isKomisiReadonly->text) == 'TIDAK') {
             $suratPengantar->komisisupir = $data['komisisupir'];
@@ -2781,10 +2803,10 @@ class SuratPengantar extends MyModel
             //     $suratPengantar->komisisupir = $upahsupirRincian->nominalkomisi;
             //     $suratPengantar->gajikenek = $upahsupirRincian->nominalkenek;
             // }
-            $suratPengantar->nominalperalihan = $nominalPeralihan;
+            $suratPengantar->nominalperalihan = $data['nominalperalihan'];
             $suratPengantar->persentaseperalihan = $data['persentaseperalihan'];
             $suratPengantar->discount = $data['persentaseperalihan'];
-            $suratPengantar->totalomset = $tarifNominal - ($tarifNominal * ($data['persentaseperalihan'] / 100));
+            $suratPengantar->totalomset = $tarifNominal - $data['nominalperalihan'];
             $suratPengantar->biayatambahan_id = $data['biayatambahan_id'] ?? 0;
             $suratPengantar->nosp = $data['nosp'];
             $suratPengantar->tglsp = date('Y-m-d', strtotime($data['tglbukti']));
@@ -3508,5 +3530,60 @@ class SuratPengantar extends MyModel
     {
         $query = $this->where('supir_id', $supir_id)->where('trado_id', $trado_id)->where('tglbukti', $tglabsensi);
         return $query->first();
+    }
+
+    public function getTolakan($id)
+    {
+        $query = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+            ->select(DB::raw("isnull(suratpengantar.statustolakan, 4) as statustolakan, isnull(omset,0) as omsettolakan, nominalperalihan as nominalperalihantolakan, persentaseperalihan as persentaseperalihantolakan,  nobukti as nobuktitrans,jobtrucking as jobtruckingtrans"))
+            ->where("id", $id)
+            ->first();
+
+        return $query;
+    }
+
+    public function processTolakan(array $data)
+    {
+
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+
+        $getOmset = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+            ->select('id', 'omset')
+            ->where('nobukti', $data['nobukti'])
+            ->first();
+
+        $suratPengantar = SuratPengantar::lockForUpdate()->findOrFail($getOmset->id);
+        if ($data['statustolakan'] == $statusApproval->id) {
+
+            $totalomset = $getOmset->omset - $data['nominalperalihan'];
+
+            $suratPengantar->statustolakan = $data['statustolakan'];
+            $suratPengantar->totalomset = $totalomset;
+            $suratPengantar->nominalperalihan = $data['nominalperalihan'];
+            $suratPengantar->persentaseperalihan = $data['persentaseperalihan'];
+            $aksi = $statusApproval->text;
+        } else {
+
+            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            $suratPengantar->statustolakan = $data['statustolakan'];
+            $suratPengantar->totalomset = $getOmset->omset;
+            $suratPengantar->nominalperalihan = 0;
+            $suratPengantar->persentaseperalihan = 0;
+            $aksi = $statusNonApproval->text;
+        }
+        
+        if ($suratPengantar->save()) {
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($suratPengantar->getTable()),
+                'postingdari' =>  "APPROVAL/UN TOLAKAN",
+                'idtrans' => $suratPengantar->id,
+                'nobuktitrans' => $suratPengantar->nobukti,
+                'aksi' => $aksi,
+                'datajson' => $suratPengantar->toArray(),
+                'modifiedby' => auth('api')->user()->user
+            ]);
+        }
+
+        return $suratPengantar;
     }
 }

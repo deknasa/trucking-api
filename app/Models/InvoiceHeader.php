@@ -591,7 +591,25 @@ class InvoiceHeader extends MyModel
             'suratpengantar_nobukti',
         ], $getLongTrip);
 
+        // GET TRIP TOLAKAN
 
+        $queryTolakan = DB::table('suratpengantar')->from(
+            db::raw("suratpengantar a with (readuncommitted)")
+        )
+            ->select(
+                'a.jobtrucking',
+                db::raw("a.totalomset as nominal"),
+                db::raw("a.nobukti as suratpengantar_nobukti")
+            )
+            ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
+            ->where('a.agen_id', $request->agen_id)
+            ->where('a.jenisorder_id', $request->jenisorder_id)
+            ->where('a.statustolakan', 3);
+        DB::table($temphasil)->insertUsing([
+            'jobtrucking',
+            'nominal',
+            'suratpengantar_nobukti',
+        ], $queryTolakan);
 
         $tempomsettambahan = '##tempomsettambahan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 

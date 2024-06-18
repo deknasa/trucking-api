@@ -57,7 +57,7 @@ class DateApprovalQuota implements Rule
         $tanggal = date('Y-m-d', strtotime($date));
 
         $kondisi = true;
-        if ($getBatasHari != 0) {
+        // if ($getBatasHari != 0) {
 
             while ($kondisi) {
                 $cekHarilibur = DB::table("harilibur")->from(DB::raw("harilibur with (readuncommitted)"))
@@ -82,7 +82,7 @@ class DateApprovalQuota implements Rule
                 }
                 $tanggal = date('Y-m-d', strtotime($date . "+$batasHari days"));
             }
-        }
+        // }
         if (date('Y-m-d H:i:s') > $tanggal . ' ' . $getBatasInput->text) {
             $allowed = false;
         }
