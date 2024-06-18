@@ -72,6 +72,9 @@ class MandorAbsensiSupirAllRequest extends FormRequest
             $supirAbsen = DB::table("absentrado")->from(DB::raw("absentrado with (readuncommitted)"))
                 ->where('kodeabsen', 'S')
                 ->first();
+            $supirLibur = DB::table("absentrado")->from(DB::raw("absentrado with (readuncommitted)"))
+                ->where('kodeabsen', 'L')
+                ->first();
 
 
             if (isset($query)) {
@@ -87,6 +90,18 @@ class MandorAbsensiSupirAllRequest extends FormRequest
                 ];
                 $rulesBeda = [];
             } else if ($supirAbsen->id == $data[$key]['absen_id']) {
+                $rules = [
+                    "$key.kodetrado" => 'required',
+                    "$key.trado_id" => 'required',
+                    "$key.namasupir" => 'nullable',
+                    "$key.supir_id" => 'nullable',
+                    "$key.absen" => 'nullable',
+                    // "$key.jam" => [Rule::requiredIf(function () use($key,$data){
+                    //     return empty($data[$key]['absen_id']);
+                    // }), Rule::when(empty($data[$key]['absen_id']), 'date_format:H:i')]
+                ];
+                $rulesBeda = [];
+            } else if ($supirLibur->id == $data[$key]['absen_id']) {
                 $rules = [
                     "$key.kodetrado" => 'required',
                     "$key.trado_id" => 'required',
