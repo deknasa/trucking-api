@@ -661,7 +661,8 @@ class PenerimaanStokHeader extends MyModel
             }
 
             if (request()->penerimaanstok_id == $spbs->text) {
-                $query->leftJoin($temtabelpenerimaandetail .' detail', 'penerimaanstokheader.id', '=', 'detail.penerimaanstokheader_id');
+                $query->leftJoin(DB::raw("$temtabelpenerimaandetail as detail with (readuncommitted)"), 'penerimaanstokheader.id', '=', 'detail.penerimaanstokheader_id');
+                // dd($query->get());
                 $query->where('penerimaanstokheader.penerimaanstok_id', '=', $do->text)
                     ->where('detail.stok_id', '=', request()->stok_id)
                     ->whereNotIn('penerimaanstokheader.nobukti', function ($query) {
