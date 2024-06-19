@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Parameter;
 use App\Rules\ApprovalTolakanRule;
+use App\Rules\ValidasiTglTolakan;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -33,7 +34,8 @@ class ApprovalTolakanRequest extends FormRequest
             $status[] = $item['id'];
         }
         return [
-            'jobtruckingtrans' => new ApprovalTolakanRule(),
+            'jobtruckingtrans' => [new ApprovalTolakanRule()],
+            'nobuktitrans' => [new ValidasiTglTolakan()],
             'statustolakan' => ['required', Rule::in($status)],
             'nominalperalihantolakan' => 'numeric|min:0'
         ];
