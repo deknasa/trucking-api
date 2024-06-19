@@ -33,6 +33,9 @@ class PenerimaanStokDetail extends MyModel
         $from = request()->from ?? '';
         $nobukti = request()->nobukti ?? '';
 
+        if ($nobukti == '') {
+            $nobukti = request()->penerimaanstokheader_nobukti ?? '';
+        }
         $query = DB::table("PenerimaanStokHeader");
         // $header = $query->where("id", request()->penerimaanstokheader_id)->first();
         $header = $query->where("nobukti", $nobukti)->first();
