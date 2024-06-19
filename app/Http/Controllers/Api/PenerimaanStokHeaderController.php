@@ -345,10 +345,9 @@ class PenerimaanStokHeaderController extends Controller
         $pgdo = Parameter::where('grp', 'DO STOK')->where('subgrp', 'DO STOK')->first();
 
         $aksi = request()->aksi ?? '';
-        $peneimaan = $penerimaanStokHeader->findOrFail($id);
-        $nobukti = $peneimaan->nobukti ?? '';
-        $user = auth('api')->user()->name;
-        $useredit = $peneimaan->editing_by ?? '';
+        $peneimaan = $penerimaanStokHeader->where('nobukti',request()->nobukti)->first();
+
+       
         if (!isset($peneimaan)) {
             $keteranganerror = $error->cekKeteranganError('DTA') ?? '';
             $keterror = 'No Bukti <b>' . request()->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
@@ -363,13 +362,28 @@ class PenerimaanStokHeaderController extends Controller
             return response($data);
         }
 
+        if ($aksi == "VIEW") {
+            $data = [
+                'message' => '',
+                'errors' => 'bisa',
+                'kodestatus' => '0',
+                'statuspesan' => 'warning',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        }
+
+        $nobukti = $peneimaan->nobukti ?? '';
+        $user = auth('api')->user()->name;
+        $useredit = $peneimaan->editing_by ?? '';
         if ($tgltutup >= $peneimaan->tglbukti) {
             $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
             $keterangan = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
             $data = [
-                'message' => $keterangan,
-                'errors' => $keterangan,
-                'kodestatus' => '1',
+                'message' => '',
+                'errors' => 'bisa',
+                'kodestatus' => '0',
                 'statuspesan' => 'warning',
                 'kodenobukti' => '1'
             ];

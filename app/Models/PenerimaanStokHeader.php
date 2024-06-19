@@ -785,9 +785,9 @@ class PenerimaanStokHeader extends MyModel
 
 
                 $tutupbuku = DB::table("parameter")->where('grp', 'TUTUP BUKU')->first()->text ?? '1900/01/01';
-                $queryklaimtrucking = DB::table($temtabelpenerimaan)->from(DB::raw($temtabelpenerimaan ."penerimaanstokheader with (readuncommitted)"))
+                $queryklaimtrucking = DB::table($temtabelpenerimaan)->from(DB::raw($temtabelpenerimaan ." penerimaanstokheader with (readuncommitted)"))
                     ->select(DB::raw("count(penerimaanstokdetail.stok_id) as jumlah,penerimaanstokheader.nobukti"))
-                    ->join(DB::raw($temtabelpenerimaandetail ."penerimaanstokdetail with (readuncommitted)"), 'penerimaanstokheader.nobukti', 'penerimaanstokdetail.nobukti')
+                    ->join(DB::raw($temtabelpenerimaandetail ." penerimaanstokdetail with (readuncommitted)"), 'penerimaanstokheader.nobukti', 'penerimaanstokdetail.nobukti')
                     ->where("penerimaanstokheader.penerimaanstok_id", 5)
                     ->whereBetween('penerimaanstokheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
                     ->where('penerimaanstokheader.tglbukti', '>', date('Y-m-d', strtotime($tutupbuku)))
