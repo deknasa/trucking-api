@@ -1971,7 +1971,7 @@ class InvoiceHeader extends MyModel
                 'statusapproval.memo as statusapproval',
                 'statuscetak.memo as statuscetak',
                 'statuscetak.id as  statuscetak_id',
-                DB::raw("'Laporan Invoice' as judulLaporan"),
+                DB::raw("'Bukti Invoice' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")

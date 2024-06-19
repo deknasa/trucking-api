@@ -65,7 +65,7 @@ class InvoiceDetail extends MyModel
             )
                 ->select(
                     'a.jobtrucking',
-                    'a.nocont',
+                    DB::raw("(case when isnull(a.container_id,0)=3 then a.nocont+'/'+ a.nocont2 else a.nocont end) as nocont"),
                     DB::raw("(case when isnull(c.kodestatuscontainer,'')='FULL' then a.nosp else '' end) as spfull"),
                     DB::raw("(case when isnull(c.kodestatuscontainer,'')='EMPTY' then a.nosp else '' end) as spempty"),
                     DB::raw("(case when isnull(c.kodestatuscontainer,'')='FULL EMPTY' then a.nosp else '' end) as spfullempty"),
