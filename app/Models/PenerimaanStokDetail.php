@@ -98,8 +98,10 @@ class PenerimaanStokDetail extends MyModel
                 'a.updated_at',
                 'a.qtyterpakai',
                 'a.pengeluaranstokproses_nobukti',
-            )
-            ->where('a.nobukti', $nobukti);
+            );
+            if ($nobukti != "") {
+                $querypenerimaandetail->where('a.nobukti', $nobukti);
+            }
 
         DB::table($temtabelpenerimaandetail)->insertUsing([
             'id',
@@ -385,7 +387,7 @@ class PenerimaanStokDetail extends MyModel
                 ->where('grp', 'JUDULAN LAPORAN')
                 ->where('subgrp', 'JUDULAN LAPORAN')
                 ->first();
-
+            $temtabelpenerimaan = "penerimaanstokheader";
             $query->select(
                 "$this->table.penerimaanstokheader_id",
                 "$this->table.nobukti",

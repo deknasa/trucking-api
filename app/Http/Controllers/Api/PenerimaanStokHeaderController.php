@@ -52,6 +52,7 @@ class PenerimaanStokHeaderController extends Controller
         if ($request->reload == '') {
             $penerimaanStokHeader = new PenerimaanStokHeader();
             $penerimaanStokHeader->updateApproval();
+            $penerimaanStokHeader->returnUnApprovalBukaTglBatasPG();
             return response([
                 'data' => $penerimaanStokHeader->get(),
                 'attributes' => [
