@@ -510,10 +510,12 @@ class PenerimaanStokHeader extends MyModel
                 $table->integer('supplier_id')->nullable();
                 $table->integer('jumlahcetak')->nullable();
                 $table->longText('statuscetak')->nullable();
+                $table->longText('statusapprovalpindahgudangspk')->nullable();
                 $table->longText('statuskirimberkas')->nullable();
                 $table->longText('statusedit')->nullable();
                 $table->date('parrenttglbukti')->nullable();
                 $table->integer('statuscetak_id')->nullable();
+                $table->integer('statusapprovalpindahgudangspk_id')->nullable();
                 $table->integer('statuskirimberkas_id')->nullable();
                 $table->integer('statusedit_id')->nullable();
                 $table->integer('statuseditketerangan_id')->nullable();
@@ -626,6 +628,7 @@ class PenerimaanStokHeader extends MyModel
                 ->leftJoin('gudang as dari', 'penerimaanstokheader.gudangdari_id', 'dari.id')
                 ->leftJoin('gudang as ke', 'penerimaanstokheader.gudangke_id', 'ke.id')
                 ->leftJoin('parameter as statuscetak', 'penerimaanstokheader.statuscetak', 'statuscetak.id')
+                ->leftJoin('parameter as statusapprovalpindahgudangspk', 'penerimaanstokheader.statusapprovalpindahgudangspk', 'statusapprovalpindahgudangspk.id')
                 ->leftJoin('parameter as statuskirimberkas', 'penerimaanstokheader.statuskirimberkas', 'statuskirimberkas.id')
                 ->leftJoin('parameter as statusedit', 'penerimaanstokheader.statusapprovaledit', 'statusedit.id')
                 ->leftJoin('parameter as statuseditketerangan', 'penerimaanstokheader.statusapprovaleditketerangan', 'statuseditketerangan.id')
@@ -877,10 +880,12 @@ class PenerimaanStokHeader extends MyModel
                     'supplier_id' => $item['supplier_id'],
                     'jumlahcetak' => $item['jumlahcetak'],
                     'statuscetak' => $item['statuscetak'],
+                    'statusapprovalpindahgudangspk' => $item['statusapprovalpindahgudangspk'],
                     'statuskirimberkas' => $item['statuskirimberkas'],
                     'statusedit' => $item['statusedit'],
                     'parrenttglbukti' => $item['parrenttglbukti'],
                     'statuscetak_id' => $item['statuscetak_id'],
+                    'statusapprovalpindahgudangspk_id' => $item['statusapprovalpindahgudangspk_id'],
                     'statuskirimberkas_id' => $item['statuskirimberkas_id'],
                     'statusedit_id' => $item['statusedit_id'],
                     'statuseditketerangan_id' => $item['statuseditketerangan_id'],
@@ -1004,10 +1009,12 @@ class PenerimaanStokHeader extends MyModel
                 'a.supplier_id',
                 'a.jumlahcetak',
                 'a.statuscetak',
+                'a.statusapprovalpindahgudangspk',
                 'a.statuskirimberkas',
                 'a.statusedit',
                 'a.parrenttglbukti',
                 'a.statuscetak_id',
+                'a.statusapprovalpindahgudangspk_id',
                 'a.statuskirimberkas_id',
                 'a.statusedit_id',
                 'a.statuseditketerangan_id',
@@ -1138,10 +1145,12 @@ class PenerimaanStokHeader extends MyModel
             unset($row['statusformat']);
             unset($row['jumlahcetak']);
             unset($row['statuscetak']);
+            unset($row['statusapprovalpindahgudangspk']);
             unset($row['statuskirimberkas']);
             unset($row['statusedit']);
             unset($row['parrenttglbukti']);
             unset($row['statuscetak_id']);
+            unset($row['statusapprovalpindahgudangspk_id']);
             unset($row['statuskirimberkas_id']);
             unset($row['statusedit_id']);
             unset($row['statuseditketerangan_id']);
@@ -1215,10 +1224,12 @@ class PenerimaanStokHeader extends MyModel
             "penerimaanstokheader.supplier_id",
             "penerimaanstokheader.jumlahcetak",
             "statuscetak.memo as  statuscetak",
+            "statusapprovalpindahgudangspk.memo as  statusapprovalpindahgudangspk",
             "statuskirimberkas.memo as  statuskirimberkas",
             "statusedit.memo as  statusedit",
             "nobuktipenerimaanstok.tglbukti as parrenttglbukti",
             "statuscetak.id as  statuscetak_id",
+            "statusapprovalpindahgudangspk.id as  statusapprovalpindahgudangspk_id",
             "statuskirimberkas.id as  statuskirimberkas_id",
             "statusedit.id as  statusedit_id",
             "statuseditketerangan.id as  statuseditketerangan_id",
@@ -1245,6 +1256,8 @@ class PenerimaanStokHeader extends MyModel
             $table->double('nominal')->nullable();
             $table->longText('statuscetak')->nullable();
             $table->integer('statuscetak_id')->nullable();
+            $table->longText('statusapprovalpindahgudangspk')->nullable();
+            $table->integer('statusapprovalpindahgudangspk_id')->nullable();
             $table->longText('statuskirimberkas')->nullable();
             $table->integer('statuskirimberkas_id')->nullable();
             $table->string('nobukti', 1000)->nullable();
@@ -1296,6 +1309,8 @@ class PenerimaanStokHeader extends MyModel
             'nominal.nominal',
             "statuscetak.text as  statuscetak",
             "statuscetak.id as  statuscetak_id",
+            "statusapprovalpindahgudangspk.text as  statusapprovalpindahgudangspk",
+            "statusapprovalpindahgudangspk.id as  statusapprovalpindahgudangspk_id",
             "statuskirimberkas.text as  statuskirimberkas",
             "statuskirimberkas.id as  statuskirimberkas_id",
             "penerimaanstokheader.nobukti",
@@ -1327,6 +1342,7 @@ class PenerimaanStokHeader extends MyModel
             ->leftJoin('gudang as dari', 'penerimaanstokheader.gudangdari_id', 'dari.id')
             ->leftJoin('gudang as ke', 'penerimaanstokheader.gudangke_id', 'ke.id')
             ->leftJoin('parameter as statuscetak', 'penerimaanstokheader.statuscetak', 'statuscetak.id')
+            ->leftJoin('parameter as statusapprovalpindahgudangspk', 'penerimaanstokheader.statusapprovalpindahgudangspk', 'statusapprovalpindahgudangspk.id')
             ->leftJoin('parameter as statuskirimberkas', 'penerimaanstokheader.statuskirimberkas', 'statuskirimberkas.id')
             ->leftJoin('parameter as statusedit', 'penerimaanstokheader.statusapprovaledit', 'statusedit.id')
             ->leftJoin('parameter as statuseditketerangan', 'penerimaanstokheader.statusapprovaleditketerangan', 'statuseditketerangan.id')
@@ -1350,6 +1366,8 @@ class PenerimaanStokHeader extends MyModel
             'nominal',
             'statuscetak',
             'statuscetak_id',
+            'statusapprovalpindahgudangspk',
+            'statusapprovalpindahgudangspk_id',
             'statuskirimberkas',
             'statuskirimberkas_id',
             'nobukti',
@@ -1383,6 +1401,8 @@ class PenerimaanStokHeader extends MyModel
                 'a.nominal',
                 'a.statuscetak',
                 'a.statuscetak_id',
+                'a.statusapprovalpindahgudangspk',
+                'a.statusapprovalpindahgudangspk_id',
                 'a.statuskirimberkas',
                 'a.statuskirimberkas_id',
                 'a.nobukti',
@@ -1422,6 +1442,8 @@ class PenerimaanStokHeader extends MyModel
             $table->double('nominal')->nullable();
             $table->longText('statuscetak')->nullable();
             $table->integer('statuscetak_id')->nullable();
+            $table->longText('statusapprovalpindahgudangspk')->nullable();
+            $table->integer('statusapprovalpindahgudangspk_id')->nullable();
             $table->longText('statuskirimberkas')->nullable();
             $table->integer('statuskirimberkas_id')->nullable();
             $table->string('nobukti', 1000)->nullable();
@@ -1463,6 +1485,8 @@ class PenerimaanStokHeader extends MyModel
             'a.nominal',
             'a.statuscetak',
             'a.statuscetak_id',
+            'a.statusapprovalpindahgudangspk',
+            'a.statusapprovalpindahgudangspk_id',
             'a.statuskirimberkas',
             'a.statuskirimberkas_id',
             'a.nobukti',
@@ -1506,6 +1530,10 @@ class PenerimaanStokHeader extends MyModel
                         if ($filters['field'] == 'statuscetak') {
                             if ($filters['data']) {
                                 $query = $query->where('a.statuscetak_id', '=', "$filters[data]");
+                            }
+                        } else if ($filters['field'] == 'statusapprovalpindahgudangspk') {
+                            if ($filters['data']) {
+                                $query = $query->where('a.statusapprovalpindahgudangspk_id', '=', "$filters[data]");
                             }
                         } else if ($filters['field'] == 'statuskirimberkas') {
                             if ($filters['data']) {
@@ -1657,6 +1685,7 @@ class PenerimaanStokHeader extends MyModel
             ->leftJoin('gudang as dari', 'penerimaanstokheader.gudangdari_id', 'dari.id')
             ->leftJoin('gudang as ke', 'penerimaanstokheader.gudangke_id', 'ke.id')
             ->leftJoin('parameter as statuscetak', 'penerimaanstokheader.statuscetak', 'statuscetak.id')
+            ->leftJoin('parameter as statusapprovalpindahgudangspk', 'penerimaanstokheader.statusapprovalpindahgudangspk', 'statusapprovalpindahgudangspk.id')
             ->leftJoin('parameter as statuskirimberkas', 'penerimaanstokheader.statuskirimberkas', 'statuskirimberkas.id')
             ->leftJoin('parameter as statusedit', 'penerimaanstokheader.statusapprovaledit', 'statusedit.id')
             ->leftJoin('parameter as statuseditketerangan', 'penerimaanstokheader.statusapprovaleditketerangan', 'statuseditketerangan.id')
@@ -3100,7 +3129,7 @@ class PenerimaanStokHeader extends MyModel
             }
 
             $updatedData["userapprovalpindahgudangspk"] = auth('api')->user()->name;
-            $updatedData["tglapprovalpindahgudangspk"] = date('Y-m-d');
+            $updatedData["tglapprovalpindahgudangspk"] = date('Y-m-d H:i:s');
             // dd($updatedData);
             $penerimaanStokHeader->update($updatedData);
 
@@ -3121,6 +3150,27 @@ class PenerimaanStokHeader extends MyModel
             // }
         }
         return $penerimaanStokHeader;
+    }
+
+    function returnUnApprovalBukaTglBatasPG()
+    {
+        DB::beginTransaction();
+        try {
+            $penerimaanStokHeader = new PenerimaanStokHeader();
+            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            $now = date('Y-m-d H:i:s', strtotime('now'));
+            $data = DB::table("PenerimaanStokHeader")->where('statusapprovalpindahgudangspk', $statusApproval->id)
+                ->where('tglbataspindahgudangspk', '<', $now)
+                ->update(['statusapprovalpindahgudangspk' => $statusNonApproval->id]);
+            $data = DB::table("kartustoklama")->where('statusapprovalpindahgudangspk', $statusApproval->id)
+                ->where('tglbataspindahgudangspk', '<', $now)
+                ->update(['statusapprovalpindahgudangspk' => $statusNonApproval->id]);
+            DB::commit();
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 
     public function resetPengeluaranFifo(PengeluaranStokHeader $pengeluaranStokHeader)
