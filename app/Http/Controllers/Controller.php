@@ -399,6 +399,10 @@ class Controller extends BaseController
         return in_array($ipRequest, $ipArray);
     }
 
+    public function saveToTnlConnection($table, $aksi, $data)
+    {
+
+    }
     public function saveToTnl($table, $aksi, $data)
     {
         $server = config('app.api_tnl');
