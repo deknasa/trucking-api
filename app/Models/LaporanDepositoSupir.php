@@ -124,7 +124,7 @@ class LaporanDepositoSupir extends MyModel
             )
             ->join(DB::raw("pengeluarantruckingdetail b with (readuncommitted)"), 'a.id', 'b.pengeluarantruckingheader_id')
             ->where('a.tglbukti', '=', $sampai)
-            ->where('a.pengeluarantrucking_id', '=',  $penerimaantrucking_id)
+            ->where('a.pengeluarantrucking_id', '=',  $pengeluarantrucking_id)
             ->groupBy('b.supir_id');
 
         DB::table($temppengeluarantruckinglist)->insertUsing([
@@ -206,6 +206,7 @@ class LaporanDepositoSupir extends MyModel
             $table->double('cicil', 15, 2)->nullable();
         });
 
+        // dd(db::table($temppengeluarantruckinglist)->get());
         $querysaldo = DB::table('supir')->from(
             DB::raw("supir as c with (readuncommitted)")
         )

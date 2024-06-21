@@ -440,7 +440,6 @@ class LaporanNeraca extends MyModel
                     ->whereRaw("(cabang_id=" .  $cabang_id . " or " . $cabang_id . "=0)")
                     ->whereRaw("(cabang_id=" .  $cabang_id . " or " . $cabang_id . "=0)")
                     ->orderBy('id', 'asc');
-                dd('test');
             } else {
                 $queryTempAkunPusatDetail = DB::table('akunpusatdetail')->from(
                     DB::raw('akunpusatdetail')
