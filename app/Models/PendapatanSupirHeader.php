@@ -898,7 +898,7 @@ class PendapatanSupirHeader extends MyModel
                 'statuscetak.memo as statuscetak',
                 'statuscetak.id as  statuscetak_id',
                 'pendapatansupirheader.jumlahcetak',
-                DB::raw("'Laporan Komisi Supir' as judulLaporan"),
+                DB::raw("'Bukti Komisi Supir' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
@@ -934,7 +934,7 @@ class PendapatanSupirHeader extends MyModel
                 'pendapatansupirheader.periode',
                 'statuscetak.memo as statuscetak',
                 'statuscetak.id as  statuscetak_id',
-                DB::raw("'Laporan Pendapatan Supir' as judulLaporan"),
+                DB::raw("'Bukti Pendapatan Supir' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")

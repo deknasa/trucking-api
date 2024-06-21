@@ -410,7 +410,7 @@ class AbsensiSupirApprovalHeader extends MyModel
             'statuscetak.memo as statuscetak',
             'statuscetak.id as  statuscetak_id',
             db::raw("(case when year(isnull(absensisupirapprovalheader.tglbukacetak,'1900/1/1'))=1900 then null else absensisupirapprovalheader.tglbukacetak end) as tglbukacetak"),
-            DB::raw("'Laporan Absensi Supir Posting' as judulLaporan"),
+            DB::raw("'Bukti Absensi Supir Posting' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
             DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")

@@ -1015,7 +1015,7 @@ class AbsensiSupirHeader extends MyModel
                 'absensisupirheader.userbukacetak',
                 'absensisupirheader.jumlahcetak',
                 DB::raw("(case when absensisupirheader.nominal IS NULL then 0 else absensisupirheader.nominal end) as nominal"),
-                DB::raw("'Laporan Absensi' as judulLaporan"),
+                DB::raw("'Bukti Absensi' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")

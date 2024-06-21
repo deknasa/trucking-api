@@ -653,7 +653,7 @@ class ServiceInHeader extends MyModel
                 'statuscetak.memo as statuscetak',
                 "statuscetak.id as  statuscetak_id",
                 "serviceinheader.jumlahcetak",
-                DB::raw("'Laporan Service In' as judulLaporan"),
+                DB::raw("'Bukti Service In' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")

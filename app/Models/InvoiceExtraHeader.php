@@ -585,7 +585,7 @@ class InvoiceExtraHeader extends MyModel
             "agen.namaagen as  agen",
             'statuscetak.memo as statuscetak',
             'statuscetak.id as  statuscetak_id',
-            DB::raw("'Laporan Invoice Extra' as judulLaporan"),
+            DB::raw("'Bukti Invoice Extra' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
             DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
