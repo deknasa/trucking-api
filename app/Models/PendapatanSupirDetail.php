@@ -244,7 +244,7 @@ class PendapatanSupirDetail extends MyModel
                         'a.deposito',
                         'a.pengembalianpinjaman',
                         'a.total',
-                        DB::raw("'LAPORAN KOMISI '+a.jenis as judulLaporan"),
+                        DB::raw("'BUKTI KOMISI '+a.jenis as judulLaporan"),
                     )
                     ->whereRaw("a.jenis='KENEK'")
                     ->orderBY('a.jenis', 'desc')
@@ -518,7 +518,7 @@ class PendapatanSupirDetail extends MyModel
                         db::raw("(case when a.urut=1 then isnull(a.deposito,0) else 0 end) as deposito"),
                         db::raw("(case when a.urut=1 then isnull(a.pengembalianpinjaman,0) else 0 end) as pengembalianpinjaman"),
                         db::raw("(isnull(a.komisi,0)-isnull(a.deposito,0)-isnull(a.pengembalianpinjaman,0)) as total"),
-                        DB::raw("'LAPORAN KOMISI '+a.jenis as judulLaporan"),
+                        DB::raw("'BUKTI KOMISI '+a.jenis as judulLaporan"),
                     )
                     ->WHEREraw("a.jenis='SUPIR'")
                     ->orderBY('a.namasupir', 'asc')

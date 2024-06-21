@@ -428,7 +428,7 @@ class ServiceOutHeader extends MyModel
                 'statuscetak.memo as statuscetak',
                 "statuscetak.id as  statuscetak_id",
                 'serviceoutheader.jumlahcetak',
-                DB::raw("'Laporan Service Out' as judulLaporan"),
+                DB::raw("'Bukti Service Out' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
