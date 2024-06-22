@@ -821,6 +821,8 @@ class PengeluaranStokHeader extends MyModel
             $table->string('statusedit', 1500)->nullable();
             $table->integer('statusedit_id')->length(11)->nullable();
             $table->integer('statuseditketerangan_id')->length(11)->nullable();
+            $table->integer('penerimaanbank_id')->length(11)->nullable();
+            $table->double('nominal', 15, 2)->nullable();    
         });
 
         foreach ($data as $row) {

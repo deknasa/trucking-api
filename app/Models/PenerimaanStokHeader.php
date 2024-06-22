@@ -1138,6 +1138,7 @@ class PenerimaanStokHeader extends MyModel
             $table->integer('gandengandari_id')->length(11)->nullable();
             $table->integer('gandengan_id')->length(11)->nullable();
             $table->integer('supplier_id')->length(11)->nullable();
+            $table->double('nominal', 15, 2)->nullable();
         });
 
         foreach ($data as $row) {
