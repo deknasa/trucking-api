@@ -154,7 +154,9 @@ class KaryawanController extends Controller
 
             ];
             // dd($data);
-            $karyawan = (new Karyawan())->processStore($data);
+            // $karyawan = (new Karyawan())->processStore($data);
+            $karyawan = new Karyawan();
+            $karyawan->processStore($data, $karyawan);            
             if ($request->from == '') {
                 $karyawan->position = $this->getPosition($karyawan, $karyawan->getTable())->position;
                 if ($request->limit == 0) {
@@ -167,7 +169,8 @@ class KaryawanController extends Controller
             $data['tas_id'] = $karyawan->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('karyawan', 'add', $data);
+                // $this->saveToTnl('karyawan', 'add', $data);
+                $this->SaveTnlNew('karyawan', 'add', $data);
             }
 
 
@@ -196,7 +199,7 @@ class KaryawanController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateKaryawanRequest $request, Karyawan $karyawan)
+    public function update(UpdateKaryawanRequest $request, $id)
     {
         DB::beginTransaction();
 
@@ -209,7 +212,11 @@ class KaryawanController extends Controller
                 'jabatan' => $request->jabatan,
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
-            $karyawan = (new Karyawan())->processUpdate($karyawan, $data);
+            $karyawan = new Karyawan();
+            $karyawans = $karyawan->findOrFail($id);
+            $karyawan = $karyawan->processUpdate($karyawans, $data);
+
+            // $karyawan = (new Karyawan())->processUpdate($karyawan, $data);
             if ($request->from == '') {
                 $karyawan->position = $this->getPosition($karyawan, $karyawan->getTable())->position;
                 if ($request->limit == 0) {
@@ -222,7 +229,8 @@ class KaryawanController extends Controller
             $data['tas_id'] = $karyawan->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('karyawan', 'edit', $data);
+                // $this->saveToTnl('karyawan', 'edit', $data);
+                $this->SaveTnlNew('karyawan', 'edit', $data);
             }
 
             DB::commit();
@@ -247,7 +255,11 @@ class KaryawanController extends Controller
         DB::beginTransaction();
 
         try {
-            $karyawan = (new Karyawan())->processDestroy($id);
+            $karyawan = new Karyawan();
+            $karyawans = $karyawan->findOrFail($id);
+            $karyawan = $karyawan->processDestroy($karyawans);
+
+            // $karyawan = (new Karyawan())->processDestroy($id);
             if ($request->from == '') {
                 $selected = $this->getPosition($karyawan, $karyawan->getTable(), true);
                 $karyawan->position = $selected->position;
@@ -265,7 +277,8 @@ class KaryawanController extends Controller
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('karyawan', 'delete', $data);
+                // $this->saveToTnl('karyawan', 'delete', $data);
+                $this->SaveTnlNew('karyawan', 'delete', $data);
             }
 
             DB::commit();

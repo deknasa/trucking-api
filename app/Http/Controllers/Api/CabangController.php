@@ -152,7 +152,7 @@ class CabangController extends Controller
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
                 // $this->saveToTnl('cabang', 'add', $data);
-                $this->testSaveTnl('cabang', 'add', $data);
+                $this->SaveTnlNew('cabang', 'add', $data);
             }
 
             DB::commit();
@@ -212,7 +212,7 @@ class CabangController extends Controller
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
                 // $this->saveToTnl('cabang', 'edit', $data);
-                $this->testSaveTnl('cabang', 'edit', $data);
+                $this->SaveTnlNew('cabang', 'edit', $data);
             }
 
             DB::commit();
@@ -260,7 +260,7 @@ class CabangController extends Controller
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
                 // $this->saveToTnl('cabang', 'delete', $data);
-                $this->testSaveTnl('cabang', 'delete', $data);
+                $this->SaveTnlNew('cabang', 'delete', $data);
             }
             DB::commit();
 

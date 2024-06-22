@@ -331,8 +331,8 @@ class Karyawan extends MyModel
                 $this->table.updated_at"
             )
         )
-        ->leftJoin(DB::raw("parameter as statusaktif with (readuncommitted)"), 'karyawan.statusaktif', 'statusaktif.id')
-        ->leftJoin(DB::raw("parameter as statusstaff with (readuncommitted)"), 'karyawan.statusstaff', '=', 'statusstaff.id');
+            ->leftJoin(DB::raw("parameter as statusaktif with (readuncommitted)"), 'karyawan.statusaktif', 'statusaktif.id')
+            ->leftJoin(DB::raw("parameter as statusstaff with (readuncommitted)"), 'karyawan.statusstaff', '=', 'statusstaff.id');
     }
 
     public function createTemp(string $modelTable)
@@ -423,9 +423,10 @@ class Karyawan extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): Karyawan
+    public function processStore(array $data, Karyawan $karyawan): Karyawan
     {
-        $karyawan = new Karyawan();
+        // dd($karyawan);
+        // $karyawan = new Karyawan();
         $karyawan->namakaryawan = $data['namakaryawan'];
         $karyawan->keterangan = $data['keterangan'] ?? '';
         $karyawan->statusaktif = $data['statusaktif'];
@@ -479,10 +480,10 @@ class Karyawan extends MyModel
         return $karyawan;
     }
 
-    public function processDestroy($id): Karyawan
+    public function processDestroy(Karyawan $karyawan): Karyawan
     {
-        $karyawan = new karyawan();
-        $karyawan = $karyawan->lockAndDestroy($id);
+        // $karyawan = new karyawan();
+        $karyawan = $karyawan->lockAndDestroy($karyawan->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($karyawan->getTable()),
