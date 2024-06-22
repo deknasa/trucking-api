@@ -11,6 +11,7 @@ use App\Rules\DestroyGajiSupirNobukti;
 use App\Rules\validasiContSPGajiSupir;
 use App\Rules\validasiJenisKendaraanRIC;
 use App\Rules\validasiPemutihanSupirRIC;
+use App\Rules\ValidasiPinjamanGajiSupir;
 use App\Rules\ValidasiStatusContGajiSupir;
 use App\Rules\ValidasiTambahanGajiSupir;
 use App\Rules\validasiTglBuktiRIC;
@@ -63,7 +64,7 @@ class UpdateGajiSupirHeaderRequest extends FormRequest
         $rules = [
             'id' => new DestroyGajiSupirNobukti(),
             'nobukti' => [Rule::in($getDataGajiSupir->nobukti)],
-            'supir' => ['required',  new ValidasiTripGajiSupir(), new validasiContSPGajiSupir(), new ValidasiTambahanGajiSupir(), new ValidasiStatusContGajiSupir(), new validasiPemutihanSupirRIC(), new validasiTripTangkiRIC()],
+            'supir' => ['required',  new ValidasiTripGajiSupir(), new validasiContSPGajiSupir(), new ValidasiTambahanGajiSupir(), new ValidasiStatusContGajiSupir(), new validasiPemutihanSupirRIC(), new validasiTripTangkiRIC(), new ValidasiPinjamanGajiSupir()],
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
                 'before:' . $tglbatasakhir,
