@@ -27,7 +27,7 @@ class ValidasiPinjamanGajiSupir implements Rule
      */
     public function passes($attribute, $value)
     {
-        $nobuktiPjt = request()->pinjPribadi_nobukti;
+        $nobuktiPjt = request()->pinjPribadi_nobukti ?? [];
         $allowed = true;
         $listPjt = '';
         for ($i = 0; $i < count($nobuktiPjt); $i++) {
