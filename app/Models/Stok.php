@@ -773,7 +773,10 @@ class Stok extends MyModel
             $table->string('satuan', 300)->nullable();
             $table->string('kategori', 300)->nullable();
             $table->string('merk', 300)->nullable();
-    
+            $table->string('statusaktifnama', 300)->nullable();
+            $table->string('statusreusenama', 300)->nullable();
+            $table->string('statusbannama', 300)->nullable();
+            $table->string('statusservicerutinnama', 300)->nullable();
         });
 
             DB::table($temtabel)->insert($data);
