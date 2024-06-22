@@ -1924,7 +1924,7 @@ class PelunasanPiutangHeader extends MyModel
                 'bank.namabank as bank_id',
                 'agen.namaagen as agen_id',
                 'alatbayar.namaalatbayar as alatbayar_id',
-                DB::raw("'Cetak Penerimaan Piutang' as judulLaporan"),
+                DB::raw("'Bukti Pelunasan Piutang' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
