@@ -787,7 +787,7 @@ class HutangHeader extends MyModel
                 'statuscetak.id as  statuscetak_id',
                 'hutangheader.userbukacetak',
                 'hutangheader.jumlahcetak',
-                DB::raw("'Cetak Hutang' as judulLaporan"),
+                DB::raw("'Bukti Hutang' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
