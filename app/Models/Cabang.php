@@ -283,9 +283,9 @@ class Cabang extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): Cabang
+    public function processStore(array $data, Cabang $cabang): Cabang
     {
-        $cabang = new Cabang();
+        // $cabang = new Cabang();
         $cabang->kodecabang = $data['kodecabang'];
         $cabang->namacabang = $data['namacabang'];
         $cabang->statusaktif = $data['statusaktif'];
@@ -344,7 +344,7 @@ class Cabang extends MyModel
         if (!$cabang->save()) {
             throw new \Exception('Error updating cabang.');
         }
-
+        
         (new LogTrail())->processStore([
             'namatabel' => $cabang->getTable(),
             'postingdari' => 'EDIT CABANG',
@@ -358,10 +358,9 @@ class Cabang extends MyModel
         return $cabang;
     }
 
-    public function processDestroy($id): Cabang
+    public function processDestroy(Cabang $cabang): Cabang
     {
-        $cabang = new Cabang();
-        $cabang = $cabang->lockAndDestroy($id);
+        $cabang = $cabang->lockAndDestroy($cabang->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($cabang->getTable()),

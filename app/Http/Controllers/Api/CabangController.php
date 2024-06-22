@@ -40,15 +40,15 @@ class CabangController extends Controller
 
     public function cekValidasi($id)
     {
-        $dataMaster = Cabang::where('id',$id)->first();
+        $dataMaster = Cabang::where('id', $id)->first();
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
         $useredit = $dataMaster->editing_by ?? '';
         $aksi = request()->aksi ?? '';
-       
+
         if ($useredit != '' && $useredit != $user) {
-           
+
             $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
 
             $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
@@ -78,8 +78,7 @@ class CabangController extends Controller
                 ];
 
                 return response($data);
-            }            
-            
+            }
         } else {
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                 (new MyModel())->updateEditingBy('cabang', $id, $aksi);
@@ -90,7 +89,7 @@ class CabangController extends Controller
                 'kodeerror' => '',
                 'statuspesan' => 'success',
             ];
-            
+
 
             return response($data);
         }
@@ -136,7 +135,9 @@ class CabangController extends Controller
         DB::beginTransaction();
 
         try {
-            $cabang = (new Cabang())->processStore($data);
+            // $cabang = (new Cabang())->processStore($data);
+            $cabang = new Cabang();
+            $cabang->processStore($data, $cabang);
             if ($request->from == '') {
                 $cabang->position = $this->getPosition($cabang, $cabang->getTable())->position;
                 if ($request->limit == 0) {
@@ -150,7 +151,8 @@ class CabangController extends Controller
             $data['tas_id'] = $cabang->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('cabang', 'add', $data);
+                // $this->saveToTnl('cabang', 'add', $data);
+                $this->testSaveTnl('cabang', 'add', $data);
             }
 
             DB::commit();
@@ -179,7 +181,7 @@ class CabangController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateCabangRequest $request, Cabang $cabang): JsonResponse
+    public function update(UpdateCabangRequest $request, $id): JsonResponse
     {
         $data = [
             'id' => $request->id,
@@ -193,7 +195,9 @@ class CabangController extends Controller
         DB::beginTransaction();
 
         try {
-            $cabang = (new Cabang())->processUpdate($cabang, $data);
+            $cabang = new Cabang();
+            $cabangs = $cabang->findOrFail($id);
+            $cabang = $cabang->processUpdate($cabangs, $data);
             if ($request->from == '') {
                 $cabang->position = $this->getPosition($cabang, $cabang->getTable())->position;
                 if ($request->limit == 0) {
@@ -207,7 +211,8 @@ class CabangController extends Controller
             $data['tas_id'] = $cabang->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('cabang', 'edit', $data);
+                // $this->saveToTnl('cabang', 'edit', $data);
+                $this->testSaveTnl('cabang', 'edit', $data);
             }
 
             DB::commit();
@@ -233,7 +238,9 @@ class CabangController extends Controller
         DB::beginTransaction();
 
         try {
-            $cabang = (new Cabang())->processDestroy($id);
+            $cabang = new Cabang();
+            $cabangs = $cabang->findOrFail($id);
+            $cabang = $cabang->processDestroy($cabangs);
 
             if ($request->from == '') {
                 $selected = $this->getPosition($cabang, $cabang->getTable(), true);
@@ -252,7 +259,8 @@ class CabangController extends Controller
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('cabang', 'delete', $data);
+                // $this->saveToTnl('cabang', 'delete', $data);
+                $this->testSaveTnl('cabang', 'delete', $data);
             }
             DB::commit();
 
