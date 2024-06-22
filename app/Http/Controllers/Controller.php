@@ -589,4 +589,44 @@ class Controller extends BaseController
             'data' => (new MyModel())->updateEditingBy($table, $id, $aksi),
         ]);
     }
+
+    public function testSaveTnl($table, $aksi, $data)
+    {
+        $backSlash = " \ ";
+
+        $model = 'App\Models' . trim($backSlash) . $table;
+        $models = app($model);
+        $models->setConnection('srvtnl');
+        DB::connection('srvtnl')->beginTransaction();
+        try {
+            if ($aksi == 'add') {
+                $models->processStore($data, $models);
+            } else {
+                $getId = $models->where('tas_id', $data['tas_id'])->first() ?? 0;
+                if (!$getId) {
+                    $models->processStore($data, $models);
+                } else {
+                    if ($aksi == 'edit') {
+                        $findModels = $models->findOrFail($getId->id);
+                        $models->processUpdate($findModels, $data);
+                    }
+                    if ($aksi == 'delete') {
+                        $findModels = $models->findOrFail($getId->id);
+                        $models->processDestroy($findModels);
+                    }
+                }
+            }
+            DB::connection('srvtnl')->commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil disimpan.',
+                'data' => $data,
+            ], 201);
+        } catch (\Throwable $th) {
+            DB::connection('srvtnl')->rollBack();
+
+            throw $th;
+        }
+    }
 }

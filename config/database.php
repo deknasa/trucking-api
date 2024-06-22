@@ -135,7 +135,18 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
         ],         
-
+        'srvtnl' => [
+            'driver' => 'sqlsrv',
+            'url' => env('DATABASE_URL'),
+            'host' => env('DB_HOST_TNL', 'web.transporindo.com'),
+            'port' => env('DB_PORT_TNL', '1450'),
+            'database' => env('DB_DATABASE_TNL', 'truckingtnl'),
+            'username' => env('DB_USERNAME_TNL', 'sa'),
+            'password' => $local,
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+        ],   
         'sqlsrvlama' => [
             'driver' => 'sqlsrv',
             'url' => env('DATABASE_URL'),
