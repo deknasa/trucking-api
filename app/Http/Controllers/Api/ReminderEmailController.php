@@ -15,6 +15,7 @@ use App\DataTransferObject\ReminderEmailDTO;
 use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\StoreReminderEmailRequest;
 use App\Http\Requests\UpdateReminderEmailRequest;
+use Illuminate\Http\Request;
 
 class ReminderEmailController extends Controller
 {
@@ -43,14 +44,14 @@ class ReminderEmailController extends Controller
 
     public function cekValidasi($id)
     {
-        $dataMaster = ReminderEmail::where('id',$id)->first();
+        $dataMaster = ReminderEmail::where('id', $id)->first();
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
         $useredit = $dataMaster->editing_by ?? '';
         $aksi = request()->aksi ?? '';
         if ($useredit != '' && $useredit != $user) {
-           
+
             $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
 
             $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
@@ -71,7 +72,7 @@ class ReminderEmailController extends Controller
             } else {
 
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
-                $keterror = 'Data <b>' .$dataMaster->keterangan . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $keterror = 'Data <b>' . $dataMaster->keterangan . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
                 $data = [
                     'error' => true,
                     'message' => $keterror,
@@ -80,19 +81,18 @@ class ReminderEmailController extends Controller
                 ];
 
                 return response($data);
-            }            
-            
+            }
         } else {
-            
+
             (new MyModel())->updateEditingBy('reminderemail', $id, $aksi);
-                
+
             $data = [
                 'error' => false,
                 'message' => '',
                 'kodeerror' => '',
                 'statuspesan' => 'success',
             ];
-            
+
 
             return response($data);
         }
@@ -105,25 +105,29 @@ class ReminderEmailController extends Controller
      */
     public function store(StoreReminderEmailRequest $request)
     {
-        // $data = [
-        //     'id' => $request->id,
-        //     'keterangan' => $request->keterangan,
-        //     'statusaktif' => $request->statusaktif,
-        //     'tas_id' => $request->tas_id ?? '',
-        //     "accessTokenTnl" => $request->accessTokenTnl ?? '',
-        // ];
+        $data = [
+            'id' => $request->id,
+            'keterangan' => $request->keterangan,
+            'statusaktif' => $request->statusaktif,
+            'tas_id' => $request->tas_id ?? '',
+            "key" => $request->key,
+            "value" => $request->value,
+            "accessTokenTnl" => $request->accessTokenTnl ?? '',
+        ];
 
         // dd($request->input('accessTokenTnl'));
         DB::beginTransaction();
         try {
-            $reminderEmail = $this->service->store(
-                [
-                    "keterangan" => $request->input('keterangan'),
-                    "statusaktif" => $request->input('statusaktif'),
-                    "tas_id" => $request->input('tas_id'),
-                    "accessTokenTnl" => $request->input('accessTokenTnl')
-                ]
-            );
+            // $reminderEmail = $this->service->store(
+            //     [
+            //         "keterangan" => $request->input('keterangan'),
+            //         "statusaktif" => $request->input('statusaktif'),
+            //         "tas_id" => $request->input('tas_id'),
+            //         "accessTokenTnl" => $request->input('accessTokenTnl')
+            //     ]
+            // );
+            $reminderEmail = new ReminderEmail();
+            $reminderEmail->processStore($data, $reminderEmail);
             if ($request->from == '') {
                 $reminderEmail->position = $this->getPosition($reminderEmail, $reminderEmail->getTable())->position;
                 if ($request->limit == 0) {
@@ -134,17 +138,18 @@ class ReminderEmailController extends Controller
             }
 
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-            $data = [
-                "keterangan" => $request->input('keterangan'),
-                "statusaktif" => $request->input('statusaktif'),
-                "tas_id" => $request->input('tas_id'),
-                "accessTokenTnl" => $request->input('accessTokenTnl')
-            ];
+            // $data = [
+            //     "keterangan" => $request->input('keterangan'),
+            //     "statusaktif" => $request->input('statusaktif'),
+            //     "tas_id" => $request->input('tas_id'),
+            //     "accessTokenTnl" => $request->input('accessTokenTnl')
+            // ];
             $data['tas_id'] = $reminderEmail->id;
 
             // dd($data);
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('reminderemail', 'add',   $data);
+                // $this->saveToTnl('reminderemail', 'add',   $data);
+                $this->SaveTnlNew('reminderemail', 'add',   $data);
             }
 
             DB::commit();
@@ -175,26 +180,32 @@ class ReminderEmailController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(StoreReminderEmailRequest $request, ReminderEmail $reminderemail)
+    public function update(UpdateReminderEmailRequest $request, $id)
     {
-        // $data = [
-        //     'id' => $request->id,
-        //     'keterangan' => $request->keterangan,
-        //     'statusaktif' => $request->statusaktif,
-        //     "accessTokenTnl" => $request->accessTokenTnl ?? '',
-        // ];
-
+        $data = [
+            'id' => $request->id,
+            'keterangan' => $request->keterangan,
+            'statusaktif' => $request->statusaktif,
+            "key" => $request->key,
+            "value" => $request->value,
+            "accessTokenTnl" => $request->accessTokenTnl ?? '',
+        ];
+// dd('test');
         DB::beginTransaction();
         try {
-            $reminderEmail = $this->service->update(
-                $reminderemail,
-                [
-                    "keterangan" => $request->input('keterangan'),
-                    "statusaktif" => $request->input('statusaktif'),
-                    "tas_id" => $request->input('tas_id'),
-                    "accessTokenTnl" => $request->input('accessTokenTnl')
-                ]
-            );
+            // $reminderEmail = $this->service->update(
+            //     $reminderemail,
+            //     [
+            //         "keterangan" => $request->input('keterangan'),
+            //         "statusaktif" => $request->input('statusaktif'),
+            //         "tas_id" => $request->input('tas_id'),
+            //         "accessTokenTnl" => $request->input('accessTokenTnl')
+            //     ]
+            // );
+
+            $reminderEmail = new ReminderEmail();
+            $reminderEmails = $reminderEmail->findOrFail($id);
+            $reminderEmail = $reminderEmail->processUpdate($reminderEmails, $data);
             if ($request->from == '') {
                 $reminderEmail->position = $this->getPosition($reminderEmail, $reminderEmail->getTable())->position;
 
@@ -206,16 +217,17 @@ class ReminderEmailController extends Controller
             }
 
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-            $data = [
-                "keterangan" => $request->input('keterangan'),
-                "statusaktif" => $request->input('statusaktif'),
-                "tas_id" => $request->input('tas_id'),
-                "accessTokenTnl" => $request->input('accessTokenTnl')
-            ];
+            // $data = [
+            //     "keterangan" => $request->input('keterangan'),
+            //     "statusaktif" => $request->input('statusaktif'),
+            //     "tas_id" => $request->input('tas_id'),
+            //     "accessTokenTnl" => $request->input('accessTokenTnl')
+            // ];
             $data['tas_id'] = $reminderEmail->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('reminderemail', 'edit', $data);
+                // $this->saveToTnl('reminderemail', 'edit', $data);
+                $this->SaveTnlNew('reminderemail', 'edit', $data);
             }
 
             DB::commit();
@@ -235,13 +247,16 @@ class ReminderEmailController extends Controller
      * @ClassName 
      * @Keterangan HAPUS DATA
      */
-    public function destroy(ReminderEmail $reminderemail)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
         try {
 
-            $reminderemail = (new ReminderEmail())->processDestroy($reminderemail);
+            // $reminderemail = (new ReminderEmail())->processDestroy($reminderemail);
+            $reminderemail = new Reminderemail();
+            $reminderemails = $reminderemail->findOrFail($id);
+            $reminderemail = $reminderemail->processDestroy($reminderemails);
             if (request()->from == '') {
                 $reminderemail->position = $this->getPosition($reminderemail, $reminderemail->getTable())->position;
                 if (request()->limit == 0) {

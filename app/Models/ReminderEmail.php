@@ -162,6 +162,83 @@ class ReminderEmail extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
+    public function processStore(array $data, ReminderEmail $reminderemail): ReminderEmail
+    {
+        // $reminderemail = new ReminderEmail();
+        // dd($reminderemail);
+        $reminderemail->keterangan = $data['keterangan'];
+        $reminderemail->statusaktif = $data['statusaktif'];
+        $reminderemail->tas_id = $data['tas_id'] ?? '';
+        $reminderemail->modifiedby = auth('api')->user()->user;
+        $reminderemail->info = html_entity_decode(request()->info);
+        // $detailmemo = [];
+        // for ($i = 0; $i < count($data['key']); $i++) {
+        //     $value = ($data['value'][$i] != null) ? $data['value'][$i] : "";
+        //     $datadetailmemo = [
+        //         $data['key'][$i] => $value,
+        //     ];
+        //     $detailmemo = array_merge($detailmemo, $datadetailmemo);
+        // }
+        // $reminderemail->memo = json_encode($detailmemo);
+        // dd('test');
+        if (!$reminderemail->save()) {
+            throw new \Exception('Error storing Reminder Email.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => $reminderemail->getTable(),
+            'postingdari' => 'ENTRY Reminder Email',
+            'idtrans' => $reminderemail->id,
+            'nobuktitrans' => $reminderemail->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $reminderemail->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        // $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        // $data['tas_id'] = $reminderemail->id;
+
+        // if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+        //     $this->saveToTnl('ReminderEmail', 'add', $data);
+        // }
+
+        return $reminderemail;
+    }
+
+    public function processUpdate(ReminderEmail $reminderemail, array $data): ReminderEmail
+    {
+        $reminderemail->keterangan = $data['keterangan'];
+        $reminderemail->statusaktif = $data['statusaktif'];
+        $reminderemail->modifiedby = auth('api')->user()->user;
+        $reminderemail->info = html_entity_decode(request()->info);
+        // $detailmemo = [];
+        // for ($i = 0; $i < count($data['key']); $i++) {
+        //     $value = ($data['value'][$i] != null) ? $data['value'][$i] : "";
+        //     $datadetailmemo = [
+        //         $data['key'][$i] => $value,
+        //     ];
+        //     $detailmemo = array_merge($detailmemo, $datadetailmemo);
+        // }
+        // $reminderemail->memo = json_encode($detailmemo);
+        // dd('test');
+        if (!$reminderemail->save()) {
+            throw new \Exception('Error updating Reminder Email.');
+        }
+        
+        (new LogTrail())->processStore([
+            'namatabel' => $reminderemail->getTable(),
+            'postingdari' => 'EDIT Reminder Email',
+            'idtrans' => $reminderemail->id,
+            'nobuktitrans' => $reminderemail->id,
+            'aksi' => 'EDIT',
+            'datajson' => $reminderemail->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $reminderemail;
+    }
+
+
     public function processDestroy(ReminderEmail $reminderEmail): ReminderEmail
     {
         $reminderEmail->lockAndDestroy($reminderEmail->id);

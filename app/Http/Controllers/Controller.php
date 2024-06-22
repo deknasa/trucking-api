@@ -590,7 +590,7 @@ class Controller extends BaseController
         ]);
     }
 
-    public function testSaveTnl($table, $aksi, $data)
+    public function SaveTnlNew($table, $aksi, $data)
     {
         $backSlash = " \ ";
 
