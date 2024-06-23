@@ -72,7 +72,9 @@ class SatuanController extends Controller
                 'tas_id' => $request->tas_id
             ];
 
-            $satuan = (new Satuan())->processStore($data);
+            // $satuan = (new Satuan())->processStore($data);
+            $satuan = new Satuan();
+            $satuan->processStore($data, $satuan);            
             if ($request->from == '') {
                 $satuan->position = $this->getPosition($satuan, $satuan->getTable())->position;
                 if ($request->limit==0) {
@@ -86,7 +88,7 @@ class SatuanController extends Controller
             $data['tas_id'] = $satuan->id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('satuan', 'add', $data);
+                $this->SaveTnlNew('satuan', 'add', $data);
             }
             DB::commit();
 
@@ -119,7 +121,7 @@ class SatuanController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateSatuanRequest $request, Satuan $satuan)
+    public function update(UpdateSatuanRequest $request, $id)
     {
         DB::beginTransaction();
 
@@ -129,7 +131,10 @@ class SatuanController extends Controller
                 'statusaktif' => $request->statusaktif
             ];
 
-            $satuan = (new Satuan())->processUpdate($satuan, $data);
+            // $satuan = (new Satuan())->processUpdate($satuan, $data);
+            $satuan = new Satuan();
+            $satuans = $satuan->findOrFail($id);
+            $satuan = $satuan->processUpdate($satuans, $data);            
             if ($request->from == '') {
                 $satuan->position = $this->getPosition($satuan, $satuan->getTable())->position;
                 if ($request->limit==0) {
@@ -143,7 +148,7 @@ class SatuanController extends Controller
             $data['tas_id'] = $satuan->id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('satuan', 'edit', $data);
+                $this->SaveTnlNew('satuan', 'edit', $data);
             }
             DB::commit();
 
@@ -166,7 +171,10 @@ class SatuanController extends Controller
         DB::beginTransaction();
 
         try {
-            $satuan = (new Satuan())->processDestroy($id);
+            // $satuan = (new Satuan())->processDestroy($id);
+            $satuan = new Satuan();
+            $satuans = $satuan->findOrFail($id);
+            $satuan = $satuan->processDestroy($satuans);            
             if ($request->from == '') {
                 $selected = $this->getPosition($satuan, $satuan->getTable(), true);
                 $satuan->position = $selected->position;
@@ -182,7 +190,7 @@ class SatuanController extends Controller
             $data['tas_id'] = $id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('satuan', 'delete', $data);
+                $this->SaveTnlNew('satuan', 'delete', $data);
             }
             DB::commit();
 

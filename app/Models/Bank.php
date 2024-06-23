@@ -514,7 +514,7 @@ class Bank extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): Bank
+    public function processStore(array $data, Bank $bank): Bank
     {
 
         $cabang = DB::table('parameter')->where('grp', 'CABANG')->where('subgrp', 'CABANG')->first();
@@ -522,7 +522,7 @@ class Bank extends MyModel
         if ($cabang->text != "SURABAYA") {
             $data['formatcetakan'] = DB::table('parameter')->where('grp', 'FORMAT CETAKAN BANK')->where('subgrp', 'FORMAT CETAKAN BANK 1')->first()->id;
         }
-        $bank = new Bank();
+        // $bank = new Bank();
         $bank->kodebank = $data['kodebank'];
         $bank->namabank = $data['namabank'];
         $bank->coa = $data['coa'];
@@ -533,6 +533,7 @@ class Bank extends MyModel
         $bank->formatcetakan = $data['formatcetakan'];
         $bank->modifiedby = auth('api')->user()->name;
         $bank->info = html_entity_decode(request()->info);
+        $bank->tas_id = $data['tas_id'] ?? '';
 
         if (!$bank->save()) {
             throw new \Exception("Error storing service in header.");
@@ -580,10 +581,10 @@ class Bank extends MyModel
 
         return $bank;
     }
-    public function processDestroy($id): Bank
+    public function processDestroy(Bank $bank): Bank
     {
-        $bank = new Bank();
-        $bank = $bank->lockAndDestroy($id);
+        // $bank = new Bank();
+        $bank = $bank->lockAndDestroy($bank->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($bank->getTable()),

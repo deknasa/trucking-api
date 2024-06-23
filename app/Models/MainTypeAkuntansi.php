@@ -270,9 +270,9 @@ class MainTypeAkuntansi extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): MainTypeAkuntansi
+    public function processStore(array $data, MainTypeAkuntansi $maintypeakuntansi): MainTypeAkuntansi
     {
-        $maintypeakuntansi = new MainTypeAkuntansi();
+        // $maintypeakuntansi = new MainTypeAkuntansi();
         $maintypeakuntansi->kodetype = $data['kodetype'];
         $maintypeakuntansi->order = $data['order'];
         $maintypeakuntansi->keterangantype = $data['keterangantype'];
@@ -280,6 +280,8 @@ class MainTypeAkuntansi extends MyModel
         $maintypeakuntansi->statusaktif = $data['statusaktif'];
         $maintypeakuntansi->modifiedby = auth('api')->user()->user;
         $maintypeakuntansi->info = html_entity_decode(request()->info);
+        $maintypeakuntansi->tas_id = $data['tas_id'] ?? '';
+
 
         if (!$maintypeakuntansi->save()) {
             throw new \Exception('Error storing tipe akuntansi.');
@@ -323,10 +325,10 @@ class MainTypeAkuntansi extends MyModel
         return $maintypeakuntansi;
     }
 
-    public function processDestroy($id): MainTypeAkuntansi
+    public function processDestroy(MainTypeAkuntansi $maintypeakuntansi): MainTypeAkuntansi
     {
-        $maintypeakuntansi = new MainTypeAkuntansi();
-        $maintypeakuntansi = $maintypeakuntansi->lockAndDestroy($id);
+        // $maintypeakuntansi = new MainTypeAkuntansi();
+        $maintypeakuntansi = $maintypeakuntansi->lockAndDestroy($maintypeakuntansi->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($maintypeakuntansi->getTable()),

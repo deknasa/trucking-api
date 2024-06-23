@@ -141,7 +141,10 @@ class GudangController extends Controller
                 'statusaktif' => $request->statusaktif,
                 'tas_id' => $request->tas_id
             ];
-            $gudang = (new Gudang())->processStore($data);
+            // $gudang = (new Gudang())->processStore($data);
+            $gudang = new Gudang();
+            $gudang->processStore($data, $gudang);
+
             if ($request->from == '') {
                 $selected = $this->getPosition($gudang, $gudang->getTable());
                 $gudang->position = $selected->position;
@@ -155,7 +158,7 @@ class GudangController extends Controller
             $data['tas_id'] = $gudang->id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('gudang', 'add', $data);
+                $this->SaveTnlNew('gudang', 'add', $data);
             }
             DB::commit();
 
@@ -182,7 +185,7 @@ class GudangController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateGudangRequest $request, Gudang $gudang): JsonResponse
+    public function update(UpdateGudangRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -192,7 +195,10 @@ class GudangController extends Controller
                 'tas_id' => $request->tas_id
             ];
 
-            $gudang = (new Gudang())->processUpdate($gudang, $data);
+            // $gudang = (new Gudang())->processUpdate($gudang, $data);
+            $gudang = new Gudang();
+            $gudangs = $gudang->findOrFail($id);
+            $gudang = $gudang->processUpdate($gudangs, $data);            
             if ($request->from == '') {
                 $gudang->position = $this->getPosition($gudang, $gudang->getTable())->position;
                 if ($request->limit==0) {
@@ -205,7 +211,7 @@ class GudangController extends Controller
             $data['tas_id'] = $gudang->id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('gudang', 'edit', $data);
+                $this->SaveTnlNew('gudang', 'edit', $data);
             }
             DB::commit();
             return response()->json([
@@ -227,7 +233,12 @@ class GudangController extends Controller
         DB::beginTransaction();
 
         try {
-            $gudang = (new Gudang())->processDestroy($id);
+            // $gudang = (new Gudang())->processDestroy($id);
+            $gudang = new Gudang();
+            $gudangs = $gudang->findOrFail($id);
+            $gudang = $gudang->processDestroy($gudangs);
+
+            if ($request->from == '') {            
             $selected = $this->getPosition($gudang, $gudang->getTable(), true);
             $gudang->position = $selected->position;
             $gudang->id = $selected->id;
@@ -238,13 +249,14 @@ class GudangController extends Controller
                     $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
                 }
             }
+        }
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
 
             $data['tas_id'] = $id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('gudang', 'delete', $data);
+                $this->SaveTnlNew('gudang', 'delete', $data);
             }
             DB::commit();
             DB::commit();

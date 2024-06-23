@@ -140,7 +140,9 @@ class PenerimaanStokController extends Controller
                 'tas_id' => $request->tas_id,
                 'statushitungstok' => $request->statushitungstok
             ];
-            $penerimaanStok = (new PenerimaanStok())->processStore($data);
+            // $penerimaanStok = (new PenerimaanStok())->processStore($data);
+            $penerimaanStok = new PenerimaanStok();
+            $penerimaanStok->processStore($data, $penerimaanStok);            
             if ($request->from == '') {
                 $penerimaanStok->position = $this->getPosition($penerimaanStok, $penerimaanStok->getTable())->position;
                 if ($request->limit==0) {
@@ -154,7 +156,7 @@ class PenerimaanStokController extends Controller
             $data['tas_id'] = $penerimaanStok->id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('penerimaanstok', 'add', $data);
+                $this->SaveTnlNew('penerimaanstok', 'add', $data);
             }
             DB::commit();
 
@@ -185,7 +187,7 @@ class PenerimaanStokController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdatePenerimaanStokRequest $request, PenerimaanStok $penerimaanStok, $id): JsonResponse
+    public function update(UpdatePenerimaanStokRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -198,8 +200,11 @@ class PenerimaanStokController extends Controller
                 'statushitungstok' => $request->statushitungstok
             ];
 
-            $penerimaanStok = PenerimaanStok::findOrFail($id);
-            $penerimaanStok = (new PenerimaanStok())->processUpdate($penerimaanStok, $data);
+            // $penerimaanStok = PenerimaanStok::findOrFail($id);
+            // $penerimaanStok = (new PenerimaanStok())->processUpdate($penerimaanStok, $data);
+            $penerimaanStok = new PenerimaanStok();
+            $penerimaanStoks = $penerimaanStok->findOrFail($id);
+            $penerimaanStok = $penerimaanStok->processUpdate($penerimaanStoks, $data);            
             if ($request->from == '') {
                 $penerimaanStok->position = $this->getPosition($penerimaanStok, $penerimaanStok->getTable())->position;
                 if ($request->limit==0) {
@@ -212,7 +217,7 @@ class PenerimaanStokController extends Controller
             $data['tas_id'] = $penerimaanStok->id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('penerimaanstok', 'edit', $data);
+                $this->SaveTnlNew('penerimaanstok', 'edit', $data);
             }
 
             DB::commit();
@@ -251,7 +256,10 @@ class PenerimaanStokController extends Controller
 
 
         try {
-            $penerimaanStok = (new PenerimaanStok())->processDestroy($id);
+            // $penerimaanStok = (new PenerimaanStok())->processDestroy($id);
+            $penerimaanStok = new PenerimaanStok();
+            $penerimaanStoks = $penerimaanStok->findOrFail($id);
+            $penerimaanStok = $penerimaanStok->processDestroy($penerimaanStoks);            
             if ($request->from == '') {
                 $selected = $this->getPosition($penerimaanStok, $penerimaanStok->getTable(), true);
                 $penerimaanStok->position = $selected->position;
@@ -267,7 +275,7 @@ class PenerimaanStokController extends Controller
             $data['tas_id'] = $id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('penerimaanstok', 'delete', $data);
+                $this->SaveTnlNew('penerimaanstok', 'delete', $data);
             }
 
             DB::commit();

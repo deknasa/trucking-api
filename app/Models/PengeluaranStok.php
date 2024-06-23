@@ -417,7 +417,7 @@ class PengeluaranStok extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): PengeluaranStok
+    public function processStore(array $data, PengeluaranStok $pengeluaranStok): PengeluaranStok
     {
         $cabang_id = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
         ->select('text')
@@ -427,7 +427,7 @@ class PengeluaranStok extends MyModel
 
         $cabang_id = (request()->cabang == "kosong") ? null : $cabang_id;
         
-        $pengeluaranStok = new PengeluaranStok();
+        // $pengeluaranStok = new PengeluaranStok();
         $pengeluaranStok->kodepengeluaran = $data['kodepengeluaran'];
         $pengeluaranStok->keterangan = $data['keterangan'] ?? '';
         $pengeluaranStok->coa = $data['coa'];
@@ -484,10 +484,10 @@ class PengeluaranStok extends MyModel
         return $pengeluaranStok;
     }
 
-    public function processDestroy($id): PengeluaranStok
+    public function processDestroy(PengeluaranStok $pengeluaranStok): PengeluaranStok
     {
-        $pengeluaranStok = new PengeluaranStok();
-        $pengeluaranStok = $pengeluaranStok->lockAndDestroy($id);
+        // $pengeluaranStok = new PengeluaranStok();
+        $pengeluaranStok = $pengeluaranStok->lockAndDestroy($pengeluaranStok->id);
 
 
         (new LogTrail())->processStore([

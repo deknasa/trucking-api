@@ -12,6 +12,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreToEmailRequest;
 use App\Http\Requests\UpdateToEmailRequest;
 use App\Http\Requests\ApprovalKaryawanRequest;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class ToEmailController extends Controller
 {
@@ -106,8 +108,9 @@ class ToEmailController extends Controller
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
 
             ];
-
-            $toEmail = (new ToEmail())->processStore($data);
+            $toEmail = new ToEmail();
+            $toEmail->processStore($data, $toEmail);
+            // $toEmail = (new ToEmail())->processStore($data);
             if ($request->from == '') {
                 $toEmail->position = $this->getPosition($toEmail, $toEmail->getTable())->position;
                 if ($request->limit == 0) {
@@ -120,7 +123,7 @@ class ToEmailController extends Controller
             $data['tas_id'] = $toEmail->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('toemail', 'add', $data);
+                $this->SaveTnlNew('toemail', 'add', $data);
             }
 
             DB::commit();
@@ -148,20 +151,23 @@ class ToEmailController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateToEmailRequest $request, ToEmail $toemail)
+    public function update(UpdateToEmailRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
 
         try {
             $data = [
+                'id' => $request->id,
                 'nama' => $request->nama,
                 'email' => $request->email,
                 'statusaktif' => $request->statusaktif,
                 'reminderemail_id' => $request->reminderemail_id,
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
-
-            $toEmail = (new ToEmail())->processUpdate($toemail, $data);
+            $toEmail = new ToEmail();
+            $toEmails = $toEmail->findOrFail($id);
+            $toEmail = $toEmail->processUpdate($toEmails, $data);
+            // $toEmail = (new ToEmail())->processUpdate($toemail, $data);
             if ($request->from == '') {
                 $toEmail->position = $this->getPosition($toEmail, $toEmail->getTable())->position;
                 if ($request->limit == 0) {
@@ -175,7 +181,7 @@ class ToEmailController extends Controller
             $data['tas_id'] = $toEmail->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('toemail', 'edit', $data);
+                $this->SaveTnlNew('toemail', 'edit', $data);
             }
 
             DB::commit();
@@ -195,13 +201,16 @@ class ToEmailController extends Controller
      * @ClassName 
      * @Keterangan HAPUS DATA
      */
-    public function destroy(ToEmail $toemail)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
         try {
 
-            $toEmail = (new ToEmail())->processDestroy($toemail);
+            // $toEmail = (new ToEmail())->processDestroy($toemail);
+            $toEmail = new ToEmail();
+            $toEmails = $toEmail->findOrFail($id);
+            $toEmail = $toEmail->processDestroy($toEmails);            
             if (request()->from == '') {
                 $toEmail->position = $this->getPosition($toEmail, $toEmail->getTable())->position;
                 if (request()->limit == 0) {
@@ -211,12 +220,13 @@ class ToEmailController extends Controller
                 }
             }
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-            $data['tas_id'] = $toemail;
+            $data['tas_id'] = $id;
 
-            $data["accessTokenTnl"] = request()->accessTokenTnl ?? '';
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('toemail', 'delete', $data);
+                // DD('TEST');
+                $this->SaveTnlNew('toemail', 'delete', $data);
             }
 
             DB::commit();

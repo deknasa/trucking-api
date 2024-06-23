@@ -602,19 +602,24 @@ class Controller extends BaseController
             if ($aksi == 'add') {
                 $models->processStore($data, $models);
             } else {
-                $getId = $models->where('tas_id', $data['tas_id'])->first() ?? 0;
-                if (!$getId) {
-                    $models->processStore($data, $models);
-                } else {
+                $getId = $models->where('tas_id', $data['tas_id'])->first()->id ?? 0;
+                // dd($getId);
+                // if (!$getId) {
+                //     $models->processStore($data, $models);
+                // } else {
+                if ($getId!=0) {
                     if ($aksi == 'edit') {
-                        $findModels = $models->findOrFail($getId->id);
+                        $findModels = $models->findOrFail($getId);
                         $models->processUpdate($findModels, $data);
                     }
                     if ($aksi == 'delete') {
-                        $findModels = $models->findOrFail($getId->id);
+                        
+                        $findModels = $models->findOrFail($getId);
+
                         $models->processDestroy($findModels);
                     }
                 }
+                // }
             }
             DB::connection('srvtnl')->commit();
 

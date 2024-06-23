@@ -494,9 +494,9 @@ class AlatBayar extends MyModel
         return $query;
     }
 
-    public function processStore(array $data): AlatBayar
+    public function processStore(array $data, AlatBayar $alatbayar): AlatBayar
     {
-        $alatbayar = new AlatBayar();
+        // $alatbayar = new AlatBayar();
         $getTipeBank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->where('id',$data['bank_id'])->first()->tipe ?? '';
         $alatbayar->kodealatbayar = $data['kodealatbayar'];
         $alatbayar->namaalatbayar = $data['namaalatbayar'];
@@ -509,6 +509,7 @@ class AlatBayar extends MyModel
         $alatbayar->statusaktif = $data['statusaktif'];
         $alatbayar->modifiedby = auth('api')->user()->name;
         $alatbayar->info = html_entity_decode(request()->info);
+        $alatbayar->tas_id = $data['tas_id'] ?? '';
 
 
         if (!$alatbayar->save()) {
@@ -562,11 +563,12 @@ class AlatBayar extends MyModel
         return $alatbayar;
     }
 
-    public function processDestroy($id): AlatBayar
+    public function processDestroy(AlatBayar $alatBayar): AlatBayar
     {
-        $alatBayar = new AlatBayar();
-        $alatBayar = $alatBayar->lockAndDestroy($id);
-
+     
+        // $alatBayar = new AlatBayar();
+        $alatBayar = $alatBayar->lockAndDestroy($alatBayar->id);
+     
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($alatBayar->getTable()),
             'postingdari' => 'DELETE ALATBAYAR',

@@ -144,7 +144,9 @@ class PengeluaranStokController extends Controller
                 'statusaktif' => $request->statusaktif ?? 1,
                 'tas_id' => $request->tas_id
             ];
-            $pengeluaranStok = (new PengeluaranStok())->processStore($data);
+            // $pengeluaranStok = (new PengeluaranStok())->processStore($data);
+            $pengeluaranStok = new PengeluaranStok();
+            $pengeluaranStok->processStore($data, $pengeluaranStok);            
             if ($request->from == '') {
                 $pengeluaranStok->position = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable())->position;
                 if ($request->limit==0) {
@@ -158,7 +160,7 @@ class PengeluaranStokController extends Controller
             $data['tas_id'] = $pengeluaranStok->id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('pengeluaranstok', 'add', $data);
+                $this->SaveTnlNew('pengeluaranstok', 'add', $data);
             }
             DB::commit();
 
@@ -190,7 +192,7 @@ class PengeluaranStokController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdatePengeluaranStokRequest $request, PengeluaranStok $pengeluaranStok, $id): JsonResponse
+    public function update(UpdatePengeluaranStokRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -203,8 +205,11 @@ class PengeluaranStokController extends Controller
                 'statusaktif' => $request->statusaktif ?? 1,
             ];
 
-            $pengeluaranStok = PengeluaranStok::findOrFail($id);
-            $pengeluaranStok = (new PengeluaranStok())->processUpdate($pengeluaranStok, $data);
+            // $pengeluaranStok = PengeluaranStok::findOrFail($id);
+            // $pengeluaranStok = (new PengeluaranStok())->processUpdate($pengeluaranStok, $data);
+            $pengeluaranStok = new PengeluaranStok();
+            $pengeluaranStoks = $pengeluaranStok->findOrFail($id);
+            $pengeluaranStok = $pengeluaranStok->processUpdate($pengeluaranStoks, $data);            
             if ($request->from == '') {
                 $pengeluaranStok->position = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable())->position;
                 if ($request->limit==0) {
@@ -218,7 +223,7 @@ class PengeluaranStokController extends Controller
             $data['tas_id'] = $pengeluaranStok->id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('pengeluaranstok', 'edit', $data);
+                $this->SaveTnlNew('pengeluaranstok', 'edit', $data);
             }
             DB::commit();
 
@@ -256,7 +261,10 @@ class PengeluaranStokController extends Controller
 
 
         try {
-            $pengeluaranStok = (new PengeluaranStok())->processDestroy($id);
+            // $pengeluaranStok = (new PengeluaranStok())->processDestroy($id);
+            $pengeluaranStok = new PengeluaranStok();
+            $pengeluaranStoks = $pengeluaranStok->findOrFail($id);
+            $pengeluaranStok = $pengeluaranStok->processDestroy($pengeluaranStoks);
             if ($request->from == '') {
                 $selected = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable(), true);
                 $pengeluaranStok->position = $selected->position;
@@ -272,7 +280,7 @@ class PengeluaranStokController extends Controller
             $data['tas_id'] = $id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('pengeluaranstok', 'delete', $data);
+                $this->SaveTnlNew('pengeluaranstok', 'delete', $data);
             }
             DB::commit();
 

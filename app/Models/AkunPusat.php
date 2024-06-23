@@ -521,7 +521,7 @@ class AkunPusat extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): AkunPusat
+    public function processStore(array $data, AkunPusat $akunPusat): AkunPusat
     {
         $level = $data['level'] ?? 0;
         if ($data['parent'] == null) {
@@ -534,7 +534,7 @@ class AkunPusat extends MyModel
                 $level = $getLevel->level + 1;
             }
         }
-        $akunPusat = new AkunPusat();
+        // $akunPusat = new AkunPusat();
         $akunPusat->coa = $data['coa'];
         $akunPusat->keterangancoa = $data['keterangancoa'];
         $akunPusat->type_id = $data['type_id'];
@@ -549,6 +549,8 @@ class AkunPusat extends MyModel
         $akunPusat->statusaktif = $data['statusaktif'];
         $akunPusat->modifiedby = auth('api')->user()->name;
         $akunPusat->info = html_entity_decode(request()->info);
+        $akunPusat->tas_id = $data['tas_id'] ?? '';
+
 
         if (!$akunPusat->save()) {
             throw new \Exception("Error storing akun pusat.");
@@ -614,10 +616,10 @@ class AkunPusat extends MyModel
         return $akunPusat;
     }
 
-    public function processDestroy($id): AkunPusat
+    public function processDestroy(AkunPusat $akunPusat): AkunPusat
     {
-        $akunPusat = new AkunPusat();
-        $akunPusat = $akunPusat->lockAndDestroy($id);
+        // $akunPusat = new AkunPusat();
+        $akunPusat = $akunPusat->lockAndDestroy($akunPusat->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($akunPusat->getTable()),

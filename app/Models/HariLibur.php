@@ -204,14 +204,16 @@ class HariLibur extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): HariLibur
+    public function processStore(array $data, HariLibur $hariLibur): HariLibur
     {
-        $hariLibur = new HariLibur();
+        // $hariLibur = new HariLibur();
         $hariLibur->tgl = date('Y-m-d', strtotime($data['tgl']));
         $hariLibur->keterangan = $data['keterangan'] ?? '';
         $hariLibur->statusaktif = $data['statusaktif'];
         $hariLibur->modifiedby = auth('api')->user()->name;
         $hariLibur->info = html_entity_decode(request()->info);
+        $hariLibur->tas_id = $data['tas_id'] ?? '';
+        $hariLibur->modifiedby = auth('api')->user()->user;        
 
         if (!$hariLibur->save()) {
             throw new \Exception('Error storing hari libur.');
@@ -255,10 +257,10 @@ class HariLibur extends MyModel
         return $harilibur;
     }
 
-    public function processDestroy($id): HariLibur
+    public function processDestroy(Harilibur $harilibur): HariLibur
     {
-        $harilibur = new harilibur();
-        $harilibur = $harilibur->lockAndDestroy($id);
+        // $harilibur = new Harilibur();
+        $harilibur = $harilibur->lockAndDestroy($harilibur->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($harilibur->getTable()),

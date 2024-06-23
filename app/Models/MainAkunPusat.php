@@ -463,7 +463,7 @@ class MainAkunPusat extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): MainAkunPusat
+    public function processStore(array $data, MainAkunPusat $mainAkunPusat): MainAkunPusat
     {
         if ($data['parent'] == null) {
             $parent = $data['coa'];
@@ -473,8 +473,9 @@ class MainAkunPusat extends MyModel
             $getLevel = DB::table("mainakunpusat")->from(DB::raw("mainakunpusat with (readuncommitted)"))->where('coa', $parent)->first();
             $level = $getLevel->level + 1;
         }
-        $mainAkunPusat = new MainAkunPusat();
+        // $mainAkunPusat = new MainAkunPusat();
         $mainAkunPusat->coa = $data['coa'];
+        $mainAkunPusat->tas_id = $data['tas_id'] ?? '';
         $mainAkunPusat->keterangancoa = $data['keterangancoa'];
         $mainAkunPusat->type_id = $data['type_id'];
         $mainAkunPusat->type = $data['type'];
@@ -548,10 +549,10 @@ class MainAkunPusat extends MyModel
         return $mainAkunPusat;
     }
 
-    public function processDestroy($id): MainAkunPusat
+    public function processDestroy(MainAkunPusat $mainAkunPusat): MainAkunPusat
     {
-        $mainAkunPusat = new MainAkunPusat();
-        $mainAkunPusat = $mainAkunPusat->lockAndDestroy($id);
+        // $mainAkunPusat = new MainAkunPusat();
+        $mainAkunPusat = $mainAkunPusat->lockAndDestroy($mainAkunPusat->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($mainAkunPusat->getTable()),

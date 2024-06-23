@@ -162,15 +162,27 @@ class BankController extends Controller
                 'formatpenerimaan' => $request->formatpenerimaan,
                 'formatpengeluaran' => $request->formatpengeluaran,
                 'formatcetakan' => $request->formatcetakan,
+                // 'tas_id' => $request->tas_id ?? '',                
             ];
 
-            $bank = (new Bank())->processStore($data);
+            // $bank = (new Bank())->processStore($data);
+            $bank = new Bank();
+            $bank->processStore($data, $bank);            
+            if ($request->from == '') {            
             $bank->position = $this->getPosition($bank, $bank->getTable())->position;
             if ($request->limit==0) {
                 $bank->page = ceil($bank->position / (10));
             } else {
                 $bank->page = ceil($bank->position / ($request->limit ?? 10));
             }
+        }
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $bank->id;
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('bank', 'add', $data);
+            $this->SaveTnlNew('bank', 'add', $data);
+        }        
 
             DB::commit();
 
@@ -197,7 +209,7 @@ class BankController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateBankRequest $request, Bank $bank): JsonResponse
+    public function update(UpdateBankRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -212,13 +224,26 @@ class BankController extends Controller
                 'formatcetakan' => $request->formatcetakan,
             ];
 
-            $bank = (new Bank())->processUpdate($bank, $data);
+            // $bank = (new Bank())->processUpdate($bank, $data);
+            $bank = new Bank();
+            $banks = $bank->findOrFail($id);
+            $bank = $bank->processUpdate($banks, $data);            
+            if ($request->from == '') {            
             $bank->position = $this->getPosition($bank, $bank->getTable())->position;
             if ($request->limit==0) {
                 $bank->page = ceil($bank->position / (10));
             } else {
                 $bank->page = ceil($bank->position / ($request->limit ?? 10));
             }
+        }
+
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $bank->id;
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('bank', 'edit', $data);
+            $this->SaveTnlNew('bank', 'edit', $data);
+        }
 
             DB::commit();
 
@@ -242,7 +267,11 @@ class BankController extends Controller
         DB::beginTransaction();
 
         try {
-            $bank = (new Bank())->processDestroy($id);
+            // $bank = (new Bank())->processDestroy($id);
+            $bank = new Bank();
+            $banks = $bank->findOrFail($id);
+            $bank = $bank->processDestroy($banks);            
+            if ($request->from == '') {            
             $selected = $this->getPosition($bank, $bank->getTable(), true);
             $bank->position = $selected->position;
             $bank->id = $selected->id;
@@ -251,7 +280,17 @@ class BankController extends Controller
             } else {
                 $bank->page = ceil($bank->position / ($request->limit ?? 10));
             }
+        }
 
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $id;
+
+        $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('bank', 'delete', $data);
+            $this->SaveTnlNew('bank', 'delete', $data);
+        }
             DB::commit();
 
             return response()->json([

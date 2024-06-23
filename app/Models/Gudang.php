@@ -306,9 +306,9 @@ class Gudang extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
-    public function processStore(array $data): Gudang
+    public function processStore(array $data, Gudang $gudang): Gudang
     {
-        $gudang = new Gudang();
+        // $gudang = new Gudang();
         $gudang->gudang = $data['gudang'];
         $gudang->statusaktif = $data['statusaktif'];
         $gudang->tas_id = $data['tas_id'];
@@ -595,10 +595,10 @@ class Gudang extends MyModel
         return $gudang;
     }
 
-    public function processDestroy($id): Gudang
+    public function processDestroy(Gudang $gudang): Gudang
     {
-        $gudang = new Gudang();
-        $gudang = $gudang->lockAndDestroy($id);
+        // $gudang = new Gudang();
+        $gudang = $gudang->lockAndDestroy($gudang->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($gudang->getTable()),

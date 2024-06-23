@@ -78,19 +78,25 @@ class AkunPusatController extends Controller
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
     
             ];
-            $akunPusat = (new AkunPusat())->processStore($data);
+            // $akunPusat = (new AkunPusat())->processStore($data);
+            $akunPusat = new AkunPusat();
+            $akunPusat->processStore($data, $akunPusat);
+
+            if ($request->from == '') {
+
             $akunPusat->position = $this->getPosition($akunPusat, $akunPusat->getTable())->position;
             if ($request->limit == 0) {
                 $akunPusat->page = ceil($akunPusat->position / (10));
             } else {
                 $akunPusat->page = ceil($akunPusat->position / ($request->limit ?? 10));
             }
+        }
 
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
             $data['tas_id'] = $akunPusat->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('akunpusat', 'add', $data);
+                $this->SaveTnlNew('akunpusat', 'add', $data);
             }
 
 
@@ -121,7 +127,7 @@ class AkunPusatController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateAkunPusatRequest $request, AkunPusat $akunPusat): JsonResponse
+    public function update(UpdateAkunPusatRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
 
@@ -142,19 +148,27 @@ class AkunPusatController extends Controller
                 "value" => $request->value,
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',                
             ];
-            $akunPusat = (new AkunPusat())->processUpdate($akunPusat, $data);
+            // $akunPusat = (new AkunPusat())->processUpdate($akunPusat, $data);
+            $akunPusat = new AkunPusat();
+            $akunPusats = $akunPusat->findOrFail($id);
+            $akunPusat = $akunPusat->processUpdate($akunPusats, $data);
+
+            if ($request->from == '') {
+
             $akunPusat->position = $this->getPosition($akunPusat, $akunPusat->getTable())->position;
-            if ($request->limit == 0) {
+                        if ($request->limit == 0) {
                 $akunPusat->page = ceil($akunPusat->position / (10));
             } else {
                 $akunPusat->page = ceil($akunPusat->position / ($request->limit ?? 10));
             }
 
+        }
+
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
             $data['tas_id'] = $akunPusat->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('akunpusat', 'edit', $data);
+                $this->SaveTnlNew('akunpusat', 'edit', $data);
             }            
 
             DB::commit();
@@ -180,7 +194,13 @@ class AkunPusatController extends Controller
         DB::beginTransaction();
 
         try {
-            $akunPusat = (new AkunPusat())->processDestroy($id);
+            // $akunPusat = (new AkunPusat())->processDestroy($id);
+            $akunPusat = new AkunPusat();
+            $akunPusats = $akunPusat->findOrFail($id);
+            $akunPusat = $akunPusat->processDestroy($akunPusats);
+
+            if ($request->from == '') {
+
             $selected = $this->getPosition($akunPusat, $akunPusat->getTable(), true);
             $akunPusat->position = $selected->position;
             $akunPusat->id = $selected->id;
@@ -189,14 +209,14 @@ class AkunPusatController extends Controller
             } else {
                 $akunPusat->page = ceil($akunPusat->position / ($request->limit ?? 10));
             }
-
+        }
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
             $data['tas_id'] = $id;
 
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('akunpusat', 'delete', $data);
+                $this->SaveTnlNew('akunpusat', 'delete', $data);
             }
                         
             DB::commit();

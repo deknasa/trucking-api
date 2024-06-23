@@ -496,13 +496,13 @@ class Supplier extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): Supplier
+    public function processStore(array $data, Supplier $supplier): Supplier
     {
 
         $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
-        $supplier = new Supplier();
+        // $supplier = new Supplier();
         $supplier->namasupplier = trim($data['namasupplier']);
         $supplier->namakontak = $data['namakontak'];
         $supplier->top = $data['top'];
@@ -592,10 +592,10 @@ class Supplier extends MyModel
 
         return $supplier;
     }
-    public function processDestroy($id): Supplier
+    public function processDestroy(Supplier $supplier): Supplier
     {
-        $supplier = new Supplier();
-        $supplier = $supplier->lockAndDestroy($id);
+        // $supplier = new Supplier();
+        $supplier = $supplier->lockAndDestroy($supplier->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($supplier->getTable()),

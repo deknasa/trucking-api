@@ -74,7 +74,11 @@ class AkuntansiController extends Controller
         DB::beginTransaction();
 
         try {
-            $akuntansi = (new Akuntansi())->processStore($data);
+            // $akuntansi = (new Akuntansi())->processStore($data);
+            $akuntansi = new Akuntansi();
+            $akuntansi->processStore($data, $akuntansi);            
+            if ($request->from == '') {
+
             $akuntansi->position = $this->getPosition($akuntansi, $akuntansi->getTable())->position;
             if ($request->limit == 0) {
                 $akuntansi->page = ceil($akuntansi->position / (10));
@@ -82,6 +86,15 @@ class AkuntansiController extends Controller
                 $akuntansi->page = ceil($akuntansi->position / ($request->limit ?? 10));
             }
 
+        }
+
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $akuntansi->id;
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('akuntansi', 'add', $data);
+            $this->SaveTnlNew('akuntansi', 'add', $data);
+        }        
             DB::commit();
 
             return response()->json([
@@ -107,7 +120,7 @@ class AkuntansiController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateAkuntansiRequest $request, Akuntansi $akuntansi): JsonResponse
+    public function update(UpdateAkuntansiRequest $request, $id): JsonResponse
     {
         $data = [
             'id' => $request->id,
@@ -119,13 +132,29 @@ class AkuntansiController extends Controller
         DB::beginTransaction();
 
         try {
-            $akuntansi = (new Akuntansi())->processUpdate($akuntansi, $data);
+            // $akuntansi = (new Akuntansi())->processUpdate($akuntansi, $data);
+
+            $akuntansi = new Akuntansi();
+            $akuntansis = $akuntansi->findOrFail($id);
+            $akuntansi = $akuntansi->processUpdate($akuntansis, $data);
+
+            if ($request->from == '') {
+
             $akuntansi->position = $this->getPosition($akuntansi, $akuntansi->getTable())->position;
             if ($request->limit == 0) {
                 $akuntansi->page = ceil($akuntansi->position / (10));
             } else {
                 $akuntansi->page = ceil($akuntansi->position / ($request->limit ?? 10));
             }
+        }
+
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $akuntansi->id;
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('akuntansi', 'edit', $data);
+            $this->SaveTnlNew('akuntansi', 'edit', $data);
+        }        
 
             DB::commit();
 
@@ -150,7 +179,13 @@ class AkuntansiController extends Controller
         DB::beginTransaction();
 
         try {
-            $akuntansi = (new Akuntansi())->processDestroy($id);
+            // $akuntansi = (new Akuntansi())->processDestroy($id);
+            $akuntansi = new Akuntansi();
+            $akuntansis = $akuntansi->findOrFail($id);
+            $akuntansi = $akuntansi->processDestroy($akuntansis);
+
+            if ($request->from == '') {
+
             $selected = $this->getPosition($akuntansi, $akuntansi->getTable(), true);
             $akuntansi->position = $selected->position;
             $akuntansi->id = $selected->id;
@@ -159,6 +194,18 @@ class AkuntansiController extends Controller
             } else {
                 $akuntansi->page = ceil($akuntansi->position / ($request->limit ?? 10));
             }
+        }
+
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $id;
+
+        $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('akuntansi', 'delete', $data);
+            $this->SaveTnlNew('akuntansi', 'delete', $data);
+        }
+
 
             DB::commit();
 

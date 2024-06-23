@@ -159,14 +159,28 @@ class PenerimaController extends Controller
                 'statusaktif' => $request->statusaktif,
                 'statuskaryawan' => $request->statuskaryawan,
             ];
-            $penerima = (new Penerima())->processStore($data);
+            // $penerima = (new Penerima())->processStore($data);
+            $penerima = new Penerima();
+            $penerima->processStore($data, $penerima);
+
+            if ($request->from == '') {
+            
             $penerima->position = $this->getPosition($penerima, $penerima->getTable())->position;
             if ($request->limit==0) {
                 $penerima->page = ceil($penerima->position / (10));
             } else {
                 $penerima->page = ceil($penerima->position / ($request->limit ?? 10));
             }
+        }
 
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $penerima->id;
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('penerima', 'add', $data);
+            $this->SaveTnlNew('penerima', 'add', $data);
+        }
+    
             DB::commit();
 
             return response()->json([
@@ -193,7 +207,7 @@ class PenerimaController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdatePenerimaRequest $request, Penerima $penerima): JsonResponse
+    public function update(UpdatePenerimaRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
 
@@ -207,14 +221,27 @@ class PenerimaController extends Controller
                 'statuskaryawan' => $request->statuskaryawan,
             ];
 
-            $penerima = (new Penerima())->processUpdate($penerima, $data);
+            // $penerima = (new Penerima())->processUpdate($penerima, $data);
+            $penerima = new Penerima();
+            $penerimas = $penerima->findOrFail($id);
+            $penerima = $penerima->processUpdate($penerimas, $data);            
+            if ($request->from == '') {
+
             $penerima->position = $this->getPosition($penerima, $penerima->getTable())->position;
            if ($request->limit==0) {
                 $penerima->page = ceil($penerima->position / (10));
             } else {
                 $penerima->page = ceil($penerima->position / ($request->limit ?? 10));
             }
+        }
 
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $penerima->id;
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('penerima', 'edit', $data);
+            $this->SaveTnlNew('penerima', 'edit', $data);
+        }        
             DB::commit();
 
             return response()->json([
@@ -237,7 +264,14 @@ class PenerimaController extends Controller
         DB::beginTransaction();
 
         try {
-            $penerima = (new Penerima())->processDestroy($id);
+            $penerima = new Penerima();
+            $penerimas = $penerima->findOrFail($id);
+            $penerima = $penerima->processDestroy($penerimas);
+
+
+            // $penerima = (new Penerima())->processDestroy($id);
+            if ($request->from == '') {
+
             $selected = $this->getPosition($penerima, $penerima->getTable(), true);
             $penerima->position = $selected->position;
             $penerima->id = $selected->id;
@@ -246,6 +280,16 @@ class PenerimaController extends Controller
             } else {
                 $penerima->page = ceil($penerima->position / ($request->limit ?? 10));
             }
+        }
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $id;
+
+        $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('penerima', 'delete', $data);
+            $this->SaveTnlNew('penerima', 'delete', $data);
+        }
 
             DB::commit();
 

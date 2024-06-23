@@ -276,9 +276,9 @@ class Kelompok extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
-    public function processStore(array $data): Kelompok
+    public function processStore(array $data, Kelompok $kelompok): Kelompok
     {
-        $kelompok = new Kelompok();
+        // $kelompok = new Kelompok();
         $kelompok->kodekelompok = $data['kodekelompok'];
         $kelompok->keterangan = $data['keterangan'] ?? '';
         $kelompok->statusaktif = $data['statusaktif'];
@@ -328,10 +328,10 @@ class Kelompok extends MyModel
         return $kelompok;
     }
 
-    public function processDestroy($id): Kelompok
+    public function processDestroy(Kelompok $kelompok): Kelompok
     {
-        $kelompok = new Kelompok();
-        $kelompok = $kelompok->lockAndDestroy($id);
+        // $kelompok = new Kelompok();
+        $kelompok = $kelompok->lockAndDestroy($kelompok->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($kelompok->getTable()),

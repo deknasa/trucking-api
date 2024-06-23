@@ -258,9 +258,9 @@ class Satuan extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): Satuan
+    public function processStore(array $data, Satuan $satuan): Satuan
     {
-        $satuan = new Satuan();
+        // $satuan = new Satuan();
         $satuan->satuan = $data['satuan'];
         $satuan->statusaktif = $data['statusaktif'];
         $satuan->tas_id = $data['tas_id'];
@@ -308,10 +308,10 @@ class Satuan extends MyModel
         return $satuan;
     }
 
-    public function processDestroy($id): Satuan
+    public function processDestroy(Satuan $satuan): Satuan
     {
-        $satuan = new Satuan();
-        $satuan = $satuan->lockAndDestroy($id);
+        // $satuan = new Satuan();
+        $satuan = $satuan->lockAndDestroy($satuan->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($satuan->getTable()),

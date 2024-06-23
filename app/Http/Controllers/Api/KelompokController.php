@@ -169,7 +169,9 @@ class KelompokController extends Controller
                 'statusaktif' => $request->statusaktif,
                 'tas_id' => $request->tas_id
             ];
-            $kelompok = (new Kelompok())->processStore($data);
+            // $kelompok = (new Kelompok())->processStore($data);
+            $kelompok = new Kelompok();
+            $kelompok->processStore($data, $kelompok);            
             if ($request->from == '') {
                 $kelompok->position = $this->getPosition($kelompok, $kelompok->getTable())->position;
                 if ($request->limit == 0) {
@@ -183,7 +185,7 @@ class KelompokController extends Controller
             $data['tas_id'] = $kelompok->id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('kelompok', 'add', $data);
+                $this->SaveTnlNew('kelompok', 'add', $data);
             }
             DB::commit();
 
@@ -210,7 +212,7 @@ class KelompokController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateKelompokRequest $request, Kelompok $kelompok): JsonResponse
+    public function update(UpdateKelompokRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -221,7 +223,11 @@ class KelompokController extends Controller
                 'tas_id' => $request->tas_id
             ];
 
-            $kelompok = (new Kelompok())->processUpdate($kelompok, $data);
+            // $kelompok = (new Kelompok())->processUpdate($kelompok, $data);
+            $kelompok = new Kelompok();
+            $kelompoks = $kelompok->findOrFail($id);
+            $kelompok = $kelompok->processUpdate($kelompoks, $data);
+
             if ($request->from == '') {
                 $kelompok->position = $this->getPosition($kelompok, $kelompok->getTable())->position;
                 if ($request->limit == 0) {
@@ -235,7 +241,7 @@ class KelompokController extends Controller
             $data['tas_id'] = $kelompok->id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('kelompok', 'edit', $data);
+                $this->SaveTnlNew('kelompok', 'edit', $data);
             }
             DB::commit();
 
@@ -258,7 +264,11 @@ class KelompokController extends Controller
         DB::beginTransaction();
 
         try {
-            $kelompok = (new Kelompok())->processDestroy($id);
+            // $kelompok = (new Kelompok())->processDestroy($id);
+            $kelompok = new Kelompok();
+            $kelompoks = $kelompok->findOrFail($id);
+            $kelompok = $kelompok->processDestroy($kelompoks);
+
             if ($request->from == '') {
                 $selected = $this->getPosition($kelompok, $kelompok->getTable(), true);
                 $kelompok->position = $selected->position;
@@ -275,7 +285,7 @@ class KelompokController extends Controller
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('kelompok', 'delete', $data);
+                $this->SaveTnlNew('kelompok', 'delete', $data);
             }
             DB::commit();
 

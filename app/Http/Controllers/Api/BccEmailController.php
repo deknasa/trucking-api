@@ -12,6 +12,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreBccEmailRequest;
 use App\Http\Requests\UpdateBccEmailRequest;
 use App\Http\Requests\ApprovalKaryawanRequest;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class BccEmailController extends Controller
 {
@@ -91,7 +93,7 @@ class BccEmailController extends Controller
      * @ClassName 
      * @Keterangan TAMBAH DATA
      */
-    public function store(StoreBccEmailRequest $request)
+    public function store(StoreBccEmailRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
@@ -105,7 +107,9 @@ class BccEmailController extends Controller
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
 
-            $bccEmail = (new BccEmail())->processStore($data);
+            // $bccEmail = (new BccEmail())->processStore($data);
+            $bccEmail = new BccEmail();
+            $bccEmail->processStore($data, $bccEmail);            
             if ($request->from == '') {
                 $bccEmail->position = $this->getPosition($bccEmail, $bccEmail->getTable())->position;
                 if ($request->limit == 0) {
@@ -118,7 +122,7 @@ class BccEmailController extends Controller
             $data['tas_id'] = $bccEmail->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('bccemail', 'add', $data);
+                $this->SaveTnlNew('bccemail', 'add', $data);
             }
 
             DB::commit();
@@ -146,7 +150,7 @@ class BccEmailController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateBccEmailRequest $request, BccEmail $bccemail)
+    public function update(UpdateBccEmailRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
 
@@ -159,7 +163,10 @@ class BccEmailController extends Controller
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
 
-            $bccEmail = (new BccEmail())->processUpdate($bccemail, $data);
+            // $bccEmail = (new BccEmail())->processUpdate($bccemail, $data);
+            $bccEmail = new BccEmail();
+            $bccEmails = $bccEmail->findOrFail($id);
+            $bccEmail = $bccEmail->processUpdate($bccEmails, $data);            
             if ($request->from == '') {
                 $bccEmail->position = $this->getPosition($bccEmail, $bccEmail->getTable())->position;
                 if ($request->limit == 0) {
@@ -169,10 +176,10 @@ class BccEmailController extends Controller
                 }
             }
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-            $data['tas_id'] = $bccemail->id;
+            $data['tas_id'] = $bccEmail->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('bccemail', 'edit', $data);
+                $this->SaveTnlNew('bccemail', 'edit', $data);
             }
 
             DB::commit();
@@ -192,13 +199,17 @@ class BccEmailController extends Controller
      * @ClassName 
      * @Keterangan HAPUS DATA
      */
-    public function destroy(BccEmail $bccemail)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
         try {
 
-            $bccEmail = (new BccEmail())->processDestroy($bccemail);
+            // $bccEmail = (new BccEmail())->processDestroy($bccemail);
+            $bccEmail = new BccEmail();
+            $bccEmails = $bccEmail->findOrFail($id);
+            $bccEmail = $bccEmail->processDestroy($bccEmails);
+
             if (request()->from == '') {
                 $bccEmail->position = $this->getPosition($bccEmail, $bccEmail->getTable())->position;
                 if (request()->limit == 0) {
@@ -208,12 +219,12 @@ class BccEmailController extends Controller
                 }
             }
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-            $data['tas_id'] = $bccemail;
+            $data['tas_id'] = $id;
 
             $data["accessTokenTnl"] = request()->accessTokenTnl ?? '';
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('bccemail', 'delete', $data);
+                $this->SaveTnlNew('bccemail', 'delete', $data);
             }
 
             DB::commit();

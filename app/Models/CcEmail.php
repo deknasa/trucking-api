@@ -184,9 +184,9 @@ class CcEmail extends MyModel
     }
 
 
-    public function processStore(array $data): CcEmail
+    public function processStore(array $data, CcEmail $ccEmail): CcEmail
     {
-        $ccEmail = new CcEmail();
+        // $ccEmail = new CcEmail();
         $ccEmail->nama = $data['nama'];
         $ccEmail->email = $data['email'];
         $ccEmail->statusaktif = $data['statusaktif'];

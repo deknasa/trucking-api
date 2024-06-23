@@ -185,9 +185,9 @@ class ToEmail extends MyModel
     }
 
 
-    public function processStore(array $data): ToEmail
+    public function processStore(array $data, ToEmail $toEmail): ToEmail
     {
-        $toEmail = new ToEmail();
+        // $toEmail = new ToEmail();
         $toEmail->nama = $data['nama'];
         $toEmail->email = $data['email'];
         $toEmail->statusaktif = $data['statusaktif'];
@@ -245,7 +245,7 @@ class ToEmail extends MyModel
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($toEmail->getTable()),
-            'postingdari' => 'DELETE SATUAN',
+            'postingdari' => 'DELETE TO EMAIL',
             'idtrans' => $toEmail->id,
             'nobuktitrans' => $toEmail->id,
             'aksi' => 'DELETE',

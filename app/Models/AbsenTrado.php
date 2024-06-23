@@ -277,9 +277,9 @@ class AbsenTrado extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): AbsenTrado
+    public function processStore(array $data, AbsenTrado $absenTrado): AbsenTrado
     {
-        $absenTrado = new AbsenTrado();
+        // $absenTrado = new AbsenTrado();
         $absenTrado->kodeabsen = $data['kodeabsen'];
         $absenTrado->keterangan = $data['keterangan'] ?? '';
         $absenTrado->statusaktif = $data['statusaktif'];
@@ -347,10 +347,10 @@ class AbsenTrado extends MyModel
         return $absentrado;
     }
 
-    public function processDestroy($id): AbsenTrado
+    public function processDestroy(AbsenTrado $absenTrado): AbsenTrado
     {
-        $absenTrado = new AbsenTrado();
-        $absenTrado = $absenTrado->lockAndDestroy($id);
+        // $absenTrado = new AbsenTrado();
+        $absenTrado = $absenTrado->lockAndDestroy($absenTrado->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($absenTrado->getTable()),

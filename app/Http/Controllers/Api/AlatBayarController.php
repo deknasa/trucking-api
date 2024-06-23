@@ -155,6 +155,7 @@ class AlatBayarController extends Controller
         // dd($request->all());
         try {
             $data = [
+                'id' => $request->id,
                 'kodealatbayar' => $request->kodealatbayar,
                 'namaalatbayar' => $request->namaalatbayar,
                 'keterangan' => $request->keterangan ?? '',
@@ -163,14 +164,26 @@ class AlatBayarController extends Controller
                 'bank_id' => $request->bank_id,
                 'coa' => $request->coa ?? '',
                 'statusaktif' => $request->statusaktif,
+                'tas_id' => $request->tas_id ?? '',                
             ];
 
-            $alatbayar = (new AlatBayar())->processStore($data);
+            // $alatbayar = (new AlatBayar())->processStore($data);
+            $alatbayar = new AlatBayar();
+            $alatbayar->processStore($data, $alatbayar);
             $alatbayar->position = $this->getPosition($alatbayar, $alatbayar->getTable())->position;
             if ($request->limit==0) {
                 $alatbayar->page = ceil($alatbayar->position / (10));
             } else {
                 $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
+            }
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $alatbayar->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                // $this->saveToTnl('alatbayar', 'add', $data);
+                // dd($data);
+                $this->SaveTnlNew('alatbayar', 'add', $data);
             }
 
             DB::commit();
@@ -199,7 +212,7 @@ class AlatBayarController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateAlatBayarRequest $request, AlatBayar $alatbayar): JsonResponse
+    public function update(UpdateAlatBayarRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -213,12 +226,24 @@ class AlatBayarController extends Controller
                 'coa' => $request->coa ?? '',
                 'statusaktif' => $request->statusaktif,
             ];
-            $alatbayar = (new AlatBayar())->processUpdate($alatbayar, $data);
+            // $alatbayar = (new AlatBayar())->processUpdate($alatbayar, $data);
+            $alatbayar = new AlatBayar();
+            $alatbayars = $alatbayar->findOrFail($id);
+            $alatbayar = $alatbayar->processUpdate($alatbayars, $data);            
             $alatbayar->position = $this->getPosition($alatbayar, $alatbayar->getTable())->position;
             if ($request->limit==0) {
                 $alatbayar->page = ceil($alatbayar->position / (10));
             } else {
                 $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
+            }
+
+
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $alatbayar->id;
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                // $this->saveToTnl('alatbayar', 'edit', $data);
+                $this->SaveTnlNew('alatbayar', 'edit', $data);
             }
 
             DB::commit();
@@ -242,14 +267,30 @@ class AlatBayarController extends Controller
         DB::beginTransaction();
 
         try {
-            $alatbayar = (new AlatBayar())->processDestroy($id);
+            // $alatbayar = (new AlatBayar())->processDestroy($id);
+            $alatbayar = new AlatBayar();
+            $alatbayars = $alatbayar->findOrFail($id);
+            $alatbayar = $alatbayar->processDestroy($alatbayars);            
             $selected = $this->getPosition($alatbayar, $alatbayar->getTable(), true);
             $alatbayar->position = $selected->position;
             $alatbayar->id = $selected->id;
+            if ($request->from == '') {            
             if ($request->limit==0) {
                 $alatbayar->page = ceil($alatbayar->position / (10));
             } else {
                 $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
+            }
+        }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
+
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+        
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                // $this->saveToTnl('alatbayar', 'delete', $data);
+              
+                $this->SaveTnlNew('alatbayar', 'delete', $data);
+                // dd('test1');
             }
 
             DB::commit();

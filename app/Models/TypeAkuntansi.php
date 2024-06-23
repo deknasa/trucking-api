@@ -270,13 +270,14 @@ class TypeAkuntansi extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): TypeAkuntansi
+    public function processStore(array $data, TypeAkuntansi $typeakuntansi): TypeAkuntansi
     {
-        $typeakuntansi = new TypeAkuntansi();
+        // $typeakuntansi = new TypeAkuntansi();
         $typeakuntansi->kodetype = $data['kodetype'];
         $typeakuntansi->order = $data['order'];
         $typeakuntansi->keterangantype = $data['keterangantype'];
         $typeakuntansi->akuntansi_id = $data['akuntansi_id'];
+        $typeakuntansi->tas_id = $data['tas_id'] ?? '';
         $typeakuntansi->statusaktif = $data['statusaktif'];
         $typeakuntansi->modifiedby = auth('api')->user()->user;
         $typeakuntansi->info = html_entity_decode(request()->info);
@@ -322,10 +323,10 @@ class TypeAkuntansi extends MyModel
         return $typeakuntansi;
     }
 
-    public function processDestroy($id): TypeAkuntansi
+    public function processDestroy(TypeAkuntansi $typeakuntansi): TypeAkuntansi
     {
-        $typeakuntansi = new TypeAkuntansi();
-        $typeakuntansi = $typeakuntansi->lockAndDestroy($id);
+        // $typeakuntansi = new TypeAkuntansi();
+        $typeakuntansi = $typeakuntansi->lockAndDestroy($typeakuntansi->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($typeakuntansi->getTable()),
