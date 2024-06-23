@@ -251,15 +251,16 @@ class BankPelanggan extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): BankPelanggan
+    public function processStore(array $data, BankPelanggan $bankpelanggan): BankPelanggan
     {
-        $bankpelanggan = new BankPelanggan();
+        // $bankpelanggan = new BankPelanggan();
         $bankpelanggan->kodebank = $data['kodebank'];
         $bankpelanggan->namabank = $data['namabank'];
         $bankpelanggan->keterangan = $data['keterangan'] ?? '';
         $bankpelanggan->statusaktif = $data['statusaktif'];
         $bankpelanggan->modifiedby = auth('api')->user()->name;
         $bankpelanggan->info = html_entity_decode(request()->info);
+        $bankpelanggan->tas_id = $data['tas_id'] ?? '';
 
         if (!$bankpelanggan->save()) {
             throw new \Exception("Error storing service in header.");
@@ -304,10 +305,10 @@ class BankPelanggan extends MyModel
         return $bankpelanggan;
     }
 
-    public function processDestroy($id): BankPelanggan
+    public function processDestroy(BankPelanggan $bankPelanggan): BankPelanggan
     {
-        $bankPelanggan = new BankPelanggan();
-        $bankPelanggan = $bankPelanggan->lockAndDestroy($id);
+        // $bankPelanggan = new BankPelanggan();
+        $bankPelanggan = $bankPelanggan->lockAndDestroy($bankPelanggan->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($bankPelanggan->getTable()),

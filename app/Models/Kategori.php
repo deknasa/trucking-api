@@ -277,9 +277,9 @@ class Kategori extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): Kategori
+    public function processStore(array $data, Kategori $kategori): Kategori
     {
-        $kategori = new Kategori();
+        // $kategori = new Kategori();
         $kategori->kodekategori = $data['kodekategori'];
         $kategori->keterangan = $data['keterangan'] ?? '';
         $kategori->subkelompok_id = $data['subkelompok_id'];
@@ -330,10 +330,10 @@ class Kategori extends MyModel
         return $kategori;
     }
 
-    public function processDestroy($id): Kategori
+    public function processDestroy(Kategori $kategori): Kategori
     {
-        $kategori = new Kategori();
-        $kategori = $kategori->lockAndDestroy($id);
+        // $kategori = new Kategori();
+        $kategori = $kategori->lockAndDestroy($kategori->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($kategori->getTable()),

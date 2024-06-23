@@ -115,15 +115,31 @@ class HariLiburController extends Controller
                 'tgl' => date('Y-m-d', strtotime($request->tgl)),
                 'keterangan' => $request->keterangan ?? '',
                 'statusaktif' => $request->statusaktif,
+                'tas_id' => $request->tas_id ?? '',
+                "key" => $request->key,
+                "value" => $request->value,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',                
             ];
-            $hariLibur = (new HariLibur())->processStore($data);
-            $hariLibur->position = $this->getPosition($hariLibur, $hariLibur->getTable())->position;
-            if ($request->limit==0) {
-                $hariLibur->page = ceil($hariLibur->position / (10));
-            } else {
-                $hariLibur->page = ceil($hariLibur->position / ($request->limit ?? 10));
-            }
+            // $hariLibur = (new HariLibur())->processStore($data);
+            $hariLibur = new HariLibur();
+            $hariLibur->processStore($data, $hariLibur);
 
+            $hariLibur->position = $this->getPosition($hariLibur, $hariLibur->getTable())->position;
+            if ($request->from == '') {            
+                    if ($request->limit==0) {
+                        $hariLibur->page = ceil($hariLibur->position / (10));
+                    } else {
+                        $hariLibur->page = ceil($hariLibur->position / ($request->limit ?? 10));
+                    }
+              }       
+
+              $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+              $data['tas_id'] = $hariLibur->id;
+  
+              if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                  // $this->saveToTnl('cabang', 'add', $data);
+                  $this->SaveTnlNew('harilibur', 'add', $data);
+              }              
             DB::commit();
 
             return response()->json([
@@ -150,24 +166,41 @@ class HariLiburController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateHariLiburRequest $request, HariLibur $harilibur)
+    public function update(UpdateHariLiburRequest $request, $id)
     {
         DB::beginTransaction();
 
         try {
             $data = [
+                'id' => $request->id,
                 'tgl' => date('Y-m-d', strtotime($request->tgl)),
                 'keterangan' => $request->keterangan ?? '',
                 'statusaktif' => $request->statusaktif,
-            ];
+                "key" => $request->key,
+                "value" => $request->value,
+                "accessTokenTnl" => $request->accessTokenTnl ?? '',            ];
 
-            $harilibur = (new harilibur())->processUpdate($harilibur, $data);
+                
+            // $harilibur = (new harilibur())->processUpdate($harilibur, $data);
+            $harilibur = new HariLibur();
+            $hariliburs = $harilibur->findOrFail($id);
+            $harilibur = $harilibur->processUpdate($hariliburs, $data);            
             $harilibur->position = $this->getPosition($harilibur, $harilibur->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->from == '') {
+                if ($request->limit==0) {
                 $harilibur->page = ceil($harilibur->position / (10));
             } else {
                 $harilibur->page = ceil($harilibur->position / ($request->limit ?? 10));
             }
+        }
+
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $harilibur->id;
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('cabang', 'edit', $data);
+            $this->SaveTnlNew('harilibur', 'edit', $data);
+        }        
 
             DB::commit();
 
@@ -186,21 +219,34 @@ class HariLiburController extends Controller
      * @ClassName 
      * @Keterangan HAPUS DATA
      */
-    public function destroy(DestroyHariLiburRequest $request, $id): JsonResponse
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
         try {
-            $harilibur = (new HariLibur())->processDestroy($id);
+            $harilibur = new HariLibur();
+            $hariliburs = $harilibur->findOrFail($id);
+            $harilibur = $harilibur->processDestroy($hariliburs);            
+            // $harilibur = (new HariLibur())->processDestroy($id);
             $selected = $this->getPosition($harilibur, $harilibur->getTable(), true);
             $harilibur->position = $selected->position;
             $harilibur->id = $selected->id;
+            if ($request->from == '') {            
             if ($request->limit==0) {
                 $harilibur->page = ceil($harilibur->position / (10));
             } else {
                 $harilibur->page = ceil($harilibur->position / ($request->limit ?? 10));
             }
+        }
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $id;
 
+        $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('harilibur', 'delete', $data);
+            $this->SaveTnlNew('harilibur', 'delete', $data);
+        }        
             DB::commit();
 
             return response()->json([

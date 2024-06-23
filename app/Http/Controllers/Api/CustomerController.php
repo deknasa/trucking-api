@@ -168,13 +168,25 @@ class CustomerController extends Controller
         DB::beginTransaction();
 
         try {
-            $agen = (new Agen())->processStore($data);
+            // $agen = (new Agen())->processStore($data);
+            $agen = new Agen();
+            $agen->processStore($data, $agen);            
+            if ($request->from == '') {            
             $agen->position = $this->getPosition($agen, $agen->getTable())->position;
             if ($request->limit==0) {
                 $agen->page = ceil($agen->position / (10));
             } else {
                 $agen->page = ceil($agen->position / ($request->limit ?? 10));
             }
+        }
+
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $agen->id;
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('agen', 'add', $data);
+            $this->SaveTnlNew('agen', 'add', $data);
+        }        
 
             DB::commit();
 
@@ -201,7 +213,7 @@ class CustomerController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateAgenRequest $request, Agen $customer): JsonResponse
+    public function update(UpdateAgenRequest $request, $id): JsonResponse
     {
 
         $data = [
@@ -223,14 +235,26 @@ class CustomerController extends Controller
         DB::beginTransaction();
 
         try {
-            $agen = (new Agen())->processUpdate($customer, $data);
+            // $agen = (new Agen())->processUpdate($customer, $data);
+            $agen = new Agen();
+            $agens = $agen->findOrFail($id);
+            $agen = $agen->processUpdate($agens, $data);            
+            if ($request->from == '') {
             $agen->position = $this->getPosition($agen, $agen->getTable())->position;
             if ($request->limit==0) {
                 $agen->page = ceil($agen->position / (10));
             } else {
                 $agen->page = ceil($agen->position / ($request->limit ?? 10));
             }
+        }
 
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $agen->id;
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('agen', 'edit', $data);
+            $this->SaveTnlNew('agen', 'edit', $data);
+        }
 
             DB::commit();
 
@@ -255,7 +279,13 @@ class CustomerController extends Controller
         DB::beginTransaction();
 
         try {
-            $agen = (new Agen())->processDestroy($id);
+            // $agen = (new Agen())->processDestroy($id);
+            $agen = new Agen();
+            $agens = $agen->findOrFail($id);
+            $agen = $agen->processDestroy($agens);
+
+            if ($request->from == '') {
+
             $selected = $this->getPosition($agen, $agen->getTable(), true);
             $agen->position = $selected->position;
             $agen->id = $selected->id;
@@ -264,6 +294,18 @@ class CustomerController extends Controller
             } else {
                 $agen->page = ceil($agen->position / ($request->limit ?? 10));
             }
+        }
+
+
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $id;
+
+        $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('cabang', 'delete', $data);
+            $this->SaveTnlNew('agen', 'delete', $data);
+        }
 
             DB::commit();
 

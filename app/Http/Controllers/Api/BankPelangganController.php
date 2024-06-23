@@ -161,14 +161,25 @@ class BankPelangganController extends Controller
                 'keterangan' => $request->keterangan ?? '',
                 'statusaktif' => $request->statusaktif,
             ];
-            $bankpelanggan = (new BankPelanggan())->processStore($data);
+            // $bankpelanggan = (new BankPelanggan())->processStore($data);
+            $bankpelanggan = new BankPelanggan();
+            $bankpelanggan->processStore($data, $bankpelanggan);            
+            if ($request->from == '') {            
             $bankpelanggan->position = $this->getPosition($bankpelanggan, $bankpelanggan->getTable())->position;
             if ($request->limit==0) {
                 $bankpelanggan->page = ceil($bankpelanggan->position / (10));
             } else {
                 $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10));
             }
+        }
 
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $bankpelanggan->id;
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('bankpelanggan', 'add', $data);
+            $this->SaveTnlNew('bankpelanggan', 'add', $data);
+        }        
             DB::commit();
 
             return response()->json([
@@ -194,7 +205,7 @@ class BankPelangganController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateBankPelangganRequest $request, BankPelanggan $bankpelanggan): JsonResponse
+    public function update(UpdateBankPelangganRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -205,13 +216,28 @@ class BankPelangganController extends Controller
                 'statusaktif' => $request->statusaktif,
             ];
 
-            $bankpelanggan = (new BankPelanggan())->processUpdate($bankpelanggan, $data);
+            // $bankpelanggan = (new BankPelanggan())->processUpdate($bankpelanggan, $data);
+            $bankpelanggan = new BankPelanggan();
+            $bankpelanggans = $bankpelanggan->findOrFail($id);
+            $bankpelanggan = $bankpelanggan->processUpdate($bankpelanggans, $data);
+
+            if ($request->from == '') {
+
             $bankpelanggan->position = $this->getPosition($bankpelanggan, $bankpelanggan->getTable())->position;
             if ($request->limit==0) {
                 $bankpelanggan->page = ceil($bankpelanggan->position / (10));
             } else {
                 $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10));
             }
+        }
+
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $bankpelanggan->id;
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('bankpelanggan', 'edit', $data);
+            $this->SaveTnlNew('bankpelanggan', 'edit', $data);
+        }
 
             DB::commit();
 
@@ -234,7 +260,13 @@ class BankPelangganController extends Controller
         DB::beginTransaction();
 
         try {
-            $bankpelanggan = (new BankPelanggan())->processDestroy($id);
+            // $bankpelanggan = (new BankPelanggan())->processDestroy($id);
+            $bankpelanggan = new BankPelanggan();
+            $bankpelanggans = $bankpelanggan->findOrFail($id);
+            $bankpelanggan = $bankpelanggan->processDestroy($bankpelanggans);
+
+
+            if ($request->from == '') {            
             $selected = $this->getPosition($bankpelanggan, $bankpelanggan->getTable(), true);
             $bankpelanggan->position = $selected->position;
             $bankpelanggan->id = $selected->id;
@@ -243,6 +275,17 @@ class BankPelangganController extends Controller
             } else {
                 $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10));
             }
+        }
+
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $id;
+
+        $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('bankpelanggan', 'delete', $data);
+            $this->SaveTnlNew('bankpelanggan', 'delete', $data);
+        }
 
             DB::commit();
 

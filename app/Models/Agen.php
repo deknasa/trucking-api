@@ -523,12 +523,12 @@ class Agen extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): Agen
+    public function processStore(array $data, Agen $agen): Agen
     {
         $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
-        $agen = new Agen();
+        // $agen = new Agen();
         $agen->kodeagen = $data['kodeagen'];
         $agen->namaagen = $data['namaagen'];
         $agen->keterangan = $data['keterangan'] ?? '';
@@ -543,6 +543,7 @@ class Agen extends MyModel
         $agen->top = $data['top'];
         $agen->statusapproval = $statusNonApproval->id;
         $agen->statustas = $data['statustas'];
+        $agen->tas_id = $data['tas_id'] ?? '';
         // $agen->jenisemkl = $request->jenisemkl;
         $agen->tglapproval = '';
         $agen->modifiedby = auth('api')->user()->name;
@@ -605,10 +606,10 @@ class Agen extends MyModel
         return $agen;
     }
 
-    public function processDestroy($id): Agen
+    public function processDestroy(Agen $agen): Agen
     {
-        $agen = new Agen();
-        $agen = $agen->lockAndDestroy($id);
+        // $agen = new Agen();
+        $agen = $agen->lockAndDestroy($agen->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($agen->getTable()),

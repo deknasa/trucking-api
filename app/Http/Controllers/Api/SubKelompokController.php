@@ -177,7 +177,9 @@ class SubKelompokController extends Controller
                 'statusaktif' => $request->statusaktif,
                 'tas_id' => $request->tas_id                
             ];
-            $subKelompok = (new SubKelompok())->processStore($data);
+            // $subKelompok = (new SubKelompok())->processStore($data);
+            $subKelompok = new SubKelompok();
+            $subKelompok->processStore($data, $subKelompok);            
             if ($request->from == '') {
                 $subKelompok->position = $this->getPosition($subKelompok, $subKelompok->getTable())->position;
                 if ($request->limit==0) {
@@ -191,7 +193,7 @@ class SubKelompokController extends Controller
             $data['tas_id'] = $subKelompok->id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('subkelompok', 'add', $data);
+                $this->SaveTnlNew('subkelompok', 'add', $data);
             }
             DB::commit();
 
@@ -211,7 +213,7 @@ class SubKelompokController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateSubKelompokRequest $request, SubKelompok $subKelompok): JsonResponse
+    public function update(UpdateSubKelompokRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -222,7 +224,10 @@ class SubKelompokController extends Controller
                 'statusaktif' => $request->statusaktif
             ];
 
-            $subKelompok = (new SubKelompok())->processUpdate($subKelompok, $data);
+            // $subKelompok = (new SubKelompok())->processUpdate($subKelompok, $data);
+            $subKelompok = new SubKelompok();
+            $subKelompoks = $subKelompok->findOrFail($id);
+            $subKelompok = $subKelompok->processUpdate($subKelompoks, $data);            
             if ($request->from == '') {
                 $subKelompok->position = $this->getPosition($subKelompok, $subKelompok->getTable())->position;
                 if ($request->limit==0) {
@@ -236,7 +241,7 @@ class SubKelompokController extends Controller
             $data['tas_id'] = $subKelompok->id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('subkelompok', 'edit', $data);
+                $this->SaveTnlNew('subkelompok', 'edit', $data);
             }
             DB::commit();
 
@@ -259,7 +264,10 @@ class SubKelompokController extends Controller
     public function destroy(DestroySubKelompokRequest $request, $id)
     {
         try {
-            $subKelompok = (new SubKelompok())->processDestroy($id);
+            // $subKelompok = (new SubKelompok())->processDestroy($id);
+            $subKelompok = new SubKelompok();
+            $subKelompoks = $subKelompok->findOrFail($id);
+            $subKelompok = $subKelompok->processDestroy($subKelompoks);
             if ($request->from == '') {
                 $selected = $this->getPosition($subKelompok, $subKelompok->getTable(), true);
                 $subKelompok->position = $selected->position;
@@ -275,7 +283,7 @@ class SubKelompokController extends Controller
             $data['tas_id'] = $id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('subkelompok', 'delete', $data);
+                $this->SaveTnlNew('subkelompok', 'delete', $data);
             }
 
             DB::commit();

@@ -172,7 +172,9 @@ class MerkController extends Controller
                 'statusaktif' => $request->statusaktif,
                 'tas_id' => $request->tas_id
             ];
-            $merk = (new Merk())->processStore($data);
+            // $merk = (new Merk())->processStore($data);
+            $merk = new Merk();
+            $merk->processStore($data, $merk);            
             if ($request->from == '') {
                 $merk->position = $this->getPosition($merk, $merk->getTable())->position;
                 if ($request->limit==0) {
@@ -185,7 +187,7 @@ class MerkController extends Controller
             $data['tas_id'] = $merk->id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('merk', 'add', $data);
+                $this->SaveTnlNew('merk', 'add', $data);
             }
 
             DB::commit();
@@ -214,7 +216,7 @@ class MerkController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateMerkRequest $request, Merk $merk): JsonResponse
+    public function update(UpdateMerkRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -224,7 +226,11 @@ class MerkController extends Controller
                 'statusaktif' => $request->statusaktif,
             ];
 
-            $merk = (new Merk())->processUpdate($merk, $data);
+            // $merk = (new Merk())->processUpdate($merk, $data);
+            $merk = new Merk();
+            $merks = $merk->findOrFail($id);
+            $merk = $merk->processUpdate($merks, $data);
+
 
             if ($request->from == '') {
                 $merk->position = $this->getPosition($merk, $merk->getTable())->position;
@@ -239,7 +245,7 @@ class MerkController extends Controller
             $data['tas_id'] = $merk->id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('merk', 'edit', $data);
+                $this->SaveTnlNew('merk', 'edit', $data);
             }
             DB::commit();
 
@@ -262,7 +268,11 @@ class MerkController extends Controller
         DB::beginTransaction();
 
         try {
-            $merk = (new Merk())->processDestroy($id);
+            // $merk = (new Merk())->processDestroy($id);
+            $merk = new Merk();
+            $merks = $merk->findOrFail($id);
+            $merk = $merk->processDestroy($merks);
+
             if ($request->from == '') {
                 $selected = $this->getPosition($merk, $merk->getTable(), true);
                 $merk->position = $selected->position;
@@ -278,7 +288,7 @@ class MerkController extends Controller
             $data['tas_id'] = $id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('merk', 'delete', $data);
+                $this->SaveTnlNew('merk', 'delete', $data);
             }
             DB::commit();
 

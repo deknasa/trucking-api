@@ -271,9 +271,9 @@ class SubKelompok extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): SubKelompok
+    public function processStore(array $data, SubKelompok $subKelompok): SubKelompok
     {
-        $subKelompok = new SubKelompok();
+        // $subKelompok = new SubKelompok();
         $subKelompok->kodesubkelompok = $data['kodesubkelompok'];
         $subKelompok->keterangan = $data['keterangan'] ?? '';
         $subKelompok->kelompok_id = $data['kelompok_id'];
@@ -326,10 +326,10 @@ class SubKelompok extends MyModel
         return $subKelompok;
     }
 
-    public function processDestroy($id): SubKelompok
+    public function processDestroy(SubKelompok $subKelompok): SubKelompok
     {
-        $subKelompok = new SubKelompok();
-        $subKelompok = $subKelompok->lockAndDestroy($id);
+        // $subKelompok = new SubKelompok();
+        $subKelompok = $subKelompok->lockAndDestroy($subKelompok->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($subKelompok->getTable()),

@@ -226,14 +226,15 @@ class Akuntansi extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): Akuntansi
+    public function processStore(array $data, Akuntansi $akuntansi): Akuntansi
     {
-        $akuntansi = new Akuntansi();
+        // $akuntansi = new Akuntansi();
         $akuntansi->kodeakuntansi = $data['kodeakuntansi'];
         $akuntansi->keterangan = $data['keterangan'];
         $akuntansi->statusaktif = $data['statusaktif'];
         $akuntansi->modifiedby = auth('api')->user()->user;
         $akuntansi->info = html_entity_decode(request()->info);
+        $akuntansi->tas_id = $data['tas_id'] ?? '';
 
         if (!$akuntansi->save()) {
             throw new \Exception('Error storing akuntansi.');
@@ -275,10 +276,10 @@ class Akuntansi extends MyModel
         return $akuntansi;
     }
 
-    public function processDestroy($id): Akuntansi
+    public function processDestroy(Akuntansi $akuntansi): Akuntansi
     {
-        $akuntansi = new Akuntansi();
-        $akuntansi = $akuntansi->lockAndDestroy($id);
+        // $akuntansi = new Akuntansi();
+        $akuntansi = $akuntansi->lockAndDestroy($akuntansi->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($akuntansi->getTable()),

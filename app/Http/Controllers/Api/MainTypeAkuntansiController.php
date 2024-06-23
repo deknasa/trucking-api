@@ -127,20 +127,40 @@ class MainTypeAkuntansiController extends Controller
     {
         DB::beginTransaction();
 
+        $data = [
+            "kodetype" => $request->kodetype,
+            "order" => $request->order,
+            "keterangantype" => $request->keterangantype,
+            "akuntansi_id" => $request->akuntansi_id,
+            "statusaktif" => $request->statusaktif,
+        ];        
         try {
-            $maintypeakuntansi = (new MainTypeAkuntansi())->processStore([
-                "kodetype" => $request->kodetype,
-                "order" => $request->order,
-                "keterangantype" => $request->keterangantype,
-                "akuntansi_id" => $request->akuntansi_id,
-                "statusaktif" => $request->statusaktif,
-            ]);
+            // $maintypeakuntansi = (new MainTypeAkuntansi())->processStore([
+            //     "kodetype" => $request->kodetype,
+            //     "order" => $request->order,
+            //     "keterangantype" => $request->keterangantype,
+            //     "akuntansi_id" => $request->akuntansi_id,
+            //     "statusaktif" => $request->statusaktif,
+            // ]);
+            $maintypeakuntansi = new MainTypeAkuntansi();
+            $maintypeakuntansi->processStore($data, $maintypeakuntansi);
+            if ($request->from == '') {
+
             $maintypeakuntansi->position = $this->getPosition($maintypeakuntansi, $maintypeakuntansi->getTable())->position;
             if ($request->limit == 0) {
                 $maintypeakuntansi->page = ceil($maintypeakuntansi->position / (10));
             } else {
                 $maintypeakuntansi->page = ceil($maintypeakuntansi->position / ($request->limit ?? 10));
             }
+        }
+
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $maintypeakuntansi->id;
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('maintypeakuntansi', 'add', $data);
+            $this->SaveTnlNew('maintypeakuntansi', 'add', $data);
+        }
 
             DB::commit();
 
@@ -168,24 +188,46 @@ class MainTypeAkuntansiController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateMainTypeAkuntansiRequest $request, MainTypeAkuntansi $maintypeakuntansi): JsonResponse
+    public function update(UpdateMainTypeAkuntansiRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
-
+        $data = [
+            "kodetype" => $request->kodetype,
+            "order" => $request->order,
+            "keterangantype" => $request->keterangantype,
+            "akuntansi_id" => $request->akuntansi_id,
+            "statusaktif" => $request->statusaktif,
+        ];      
         try {
-            $maintypeakuntansi = (new MainTypeAkuntansi())->processUpdate($maintypeakuntansi, [
-                "kodetype" => $request->kodetype,
-                "order" => $request->order,
-                "keterangantype" => $request->keterangantype,
-                "akuntansi_id" => $request->akuntansi_id,
-                "statusaktif" => $request->statusaktif,
-            ]);
+            // $maintypeakuntansi = (new MainTypeAkuntansi())->processUpdate($maintypeakuntansi, [
+            //     "kodetype" => $request->kodetype,
+            //     "order" => $request->order,
+            //     "keterangantype" => $request->keterangantype,
+            //     "akuntansi_id" => $request->akuntansi_id,
+            //     "statusaktif" => $request->statusaktif,
+            // ]);
+
+            $maintypeakuntansi = new MainTypeAkuntansi();
+            $maintypeakuntansis = $maintypeakuntansi->findOrFail($id);
+            $maintypeakuntansi = $maintypeakuntansi->processUpdate($maintypeakuntansis, $data);
+
+            if ($request->from == '') {
+
             $maintypeakuntansi->position = $this->getPosition($maintypeakuntansi, $maintypeakuntansi->getTable())->position;
             if ($request->limit == 0) {
                 $maintypeakuntansi->page = ceil($maintypeakuntansi->position / (10));
             } else {
                 $maintypeakuntansi->page = ceil($maintypeakuntansi->position / ($request->limit ?? 10));
             }
+        }
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $maintypeakuntansi->id;
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('maintypeakuntansi', 'edit', $data);
+            $this->SaveTnlNew('maintypeakuntansi', 'edit', $data);
+        }
+
 
             DB::commit();
 
@@ -210,7 +252,13 @@ class MainTypeAkuntansiController extends Controller
         DB::beginTransaction();
 
         try {
-            $maintypeakuntansi = (new MainTypeAkuntansi())->processDestroy($id);
+            // $maintypeakuntansi = (new MainTypeAkuntansi())->processDestroy($id);
+
+            $maintypeakuntansi = new MainTypeAkuntansi();
+            $maintypeakuntansis = $maintypeakuntansi->findOrFail($id);
+            $maintypeakuntansi = $maintypeakuntansi->processDestroy($maintypeakuntansis);
+
+            if ($request->from == '') {            
             $selected = $this->getPosition($maintypeakuntansi, $maintypeakuntansi->getTable(), true);
             $maintypeakuntansi->position = $selected->position;
             $maintypeakuntansi->id = $selected->id;
@@ -219,6 +267,17 @@ class MainTypeAkuntansiController extends Controller
             } else {
                 $maintypeakuntansi->page = ceil($maintypeakuntansi->position / ($request->limit ?? 10));
             }
+        }
+
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $id;
+
+        $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('maintypeakuntansi', 'delete', $data);
+            $this->SaveTnlNew('maintypeakuntansi', 'delete', $data);
+        }
 
             DB::commit();
 

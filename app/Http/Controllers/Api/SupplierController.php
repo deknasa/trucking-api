@@ -11,6 +11,7 @@ use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\UpdateSupirRequest;
 use App\Http\Requests\UpdateSupplierRequest;
 use Illuminate\Http\Request;
+
 use App\Models\Parameter;
 use DateTime;
 use App\Models\Error;
@@ -219,7 +220,9 @@ class SupplierController extends Controller
                 'tas_id' => $request->tas_id,
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
-            $supplier = (new Supplier())->processStore($data);
+            // $supplier = (new Supplier())->processStore($data);
+            $supplier = new Supplier();
+            $supplier->processStore($data, $supplier);            
             if ($request->from == '') {
                 $supplier->position = $this->getPosition($supplier, $supplier->getTable())->position;
                 if ($request->limit == 0) {
@@ -235,7 +238,7 @@ class SupplierController extends Controller
 
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('supplier', 'add', $data);
+                $this->SaveTnlNew('supplier', 'add', $data);
             }
             // if ($data['statuspostingtnl'] == $statusTnl->id) {
             //     $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
@@ -261,7 +264,7 @@ class SupplierController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateSupplierRequest $request, Supplier $supplier): JsonResponse
+    public function update(UpdateSupplierRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
 
@@ -293,7 +296,11 @@ class SupplierController extends Controller
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
 
-            $supplier = (new Supplier())->processUpdate($supplier, $data);
+            // $supplier = (new Supplier())->processUpdate($supplier, $data);
+
+            $supplier = new Supplier();
+            $suppliers = $supplier->findOrFail($id);
+            $supplier = $supplier->processUpdate($suppliers, $data);            
 
             if ($request->from == '') {
                 $supplier->position = $this->getPosition($supplier, $supplier->getTable())->position;
@@ -307,7 +314,7 @@ class SupplierController extends Controller
             $data['tas_id'] = $supplier->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('supplier', 'edit', $data);
+                $this->SaveTnlNew('supplier', 'edit', $data);
             }
 
 
@@ -332,7 +339,10 @@ class SupplierController extends Controller
         DB::beginTransaction();
 
         try {
-            $supplier = (new Supplier())->processDestroy($id);
+            // $supplier = (new Supplier())->processDestroy($id);
+            $supplier = new Supplier();
+            $suppliers = $supplier->findOrFail($id);
+            $supplier = $supplier->processDestroy($suppliers);            
             if ($request->from == '') {
                 $selected = $this->getPosition($supplier, $supplier->getTable(), true);
                 $supplier->position = $selected->position;
@@ -350,7 +360,7 @@ class SupplierController extends Controller
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('supplier', 'delete', $data);
+                $this->SaveTnlNew('supplier', 'delete', $data);
             }
             DB::commit();
 

@@ -300,9 +300,9 @@ class JenisOrder extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): JenisOrder
+    public function processStore(array $data, JenisOrder $jenisorder): JenisOrder
     {
-        $jenisorder = new JenisOrder();
+        // $jenisorder = new JenisOrder();
         $jenisorder->kodejenisorder = $data['kodejenisorder'];
         $jenisorder->statusaktif = $data['statusaktif'];
         $jenisorder->keterangan = $data['keterangan'] ?? '';
@@ -354,10 +354,10 @@ class JenisOrder extends MyModel
         return $jenisorder;
     }
 
-    public function processDestroy($id): JenisOrder
+    public function processDestroy(JenisOrder $jenisOrder): JenisOrder
     {
-        $jenisOrder = new JenisOrder();
-        $jenisOrder = $jenisOrder->lockAndDestroy($id);
+        // $jenisOrder = new JenisOrder();
+        $jenisOrder = $jenisOrder->lockAndDestroy($jenisOrder->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($jenisOrder->getTable()),

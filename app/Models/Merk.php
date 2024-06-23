@@ -258,10 +258,10 @@ class Merk extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): Merk
+    public function processStore(array $data, Merk $merk): Merk
     {
 
-        $merk = new Merk();
+        // $merk = new Merk();
         $merk->kodemerk = $data['kodemerk'];
         $merk->keterangan = $data['keterangan'] ?? '';
         $merk->statusaktif = $data['statusaktif'];
@@ -312,10 +312,10 @@ class Merk extends MyModel
         return $merk;
     }
 
-    public function processDestroy($id): Merk
+    public function processDestroy(Merk $merk): Merk
     {
-        $merk = new Merk();
-        $merk = $merk->lockAndDestroy($id);
+        // $merk = new Merk();
+        $merk = $merk->lockAndDestroy($merk->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($merk->getTable()),

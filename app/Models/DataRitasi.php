@@ -71,6 +71,80 @@ class DataRitasi extends MyModel
         return $data;
     }
 
+    public function processStore(array $data, DataRitasi $dataritasi): DataRitasi
+    {
+        // $cabang = new Cabang();
+        $dataritasi->statusritasi = $data['statusritasi'];
+        $dataritasi->nominal = $data['nominal'];
+        $dataritasi->statusaktif = $data['statusaktif'];
+        $dataritasi->tas_id = $data['tas_id'] ?? '';
+        $dataritasi->modifiedby = auth('api')->user()->user;
+        $dataritasi->info = html_entity_decode(request()->info);
+        if (!$dataritasi->save()) {
+            throw new \Exception('Error storing cabang.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => $dataritasi->getTable(),
+            'postingdari' => 'ENTRY DATA RITASI',
+            'idtrans' => $dataritasi->id,
+            'nobuktitrans' => $dataritasi->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $dataritasi->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        // $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        // $data['tas_id'] = $cabang->id;
+
+        // if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+        //     $this->saveToTnl('cabang', 'add', $data);
+        // }
+
+        return $dataritasi;
+    }
+
+    public function processUpdate(DataRitasi $dataritasi, array $data): DataRitasi
+    {
+        $dataritasi->statusritasi = $data['statusritasi'];
+        $dataritasi->nominal = $data['nominal'];
+        $dataritasi->statusaktif = $data['statusaktif'];
+        $dataritasi->modifiedby = auth('api')->user()->user;
+        $dataritasi->info = html_entity_decode(request()->info);
+        if (!$dataritasi->save()) {
+            throw new \Exception('Error updating dataritasi.');
+        }
+        
+        (new LogTrail())->processStore([
+            'namatabel' => $dataritasi->getTable(),
+            'postingdari' => 'EDIT DATA RITASI',
+            'idtrans' => $dataritasi->id,
+            'nobuktitrans' => $dataritasi->id,
+            'aksi' => 'EDIT',
+            'datajson' => $dataritasi->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $dataritasi;
+    }
+
+    public function processDestroy(DataRitasi $dataritasi): DataRitasi
+    {
+        $dataritasi = $dataritasi->lockAndDestroy($dataritasi->id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($dataritasi->getTable()),
+            'postingdari' => 'DELETE DATA RITASI',
+            'idtrans' => $dataritasi->id,
+            'nobuktitrans' => $dataritasi->id,
+            'aksi' => 'DELETE',
+            'datajson' => $dataritasi->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $dataritasi;
+    }
+
     public function findAll($id)
     {
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))

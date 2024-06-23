@@ -350,9 +350,9 @@ class Pelanggan extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): Pelanggan
+    public function processStore(array $data, Pelanggan $pelanggan): Pelanggan
     {
-        $pelanggan = new Pelanggan();
+        // $pelanggan = new Pelanggan();
         $pelanggan->kodepelanggan = $data['kodepelanggan'];
         $pelanggan->namapelanggan = $data['namapelanggan'];
         $pelanggan->namakontak = $data['namakontak'];
@@ -365,6 +365,7 @@ class Pelanggan extends MyModel
         $pelanggan->modifiedby = auth('api')->user()->name;
         $pelanggan->info = html_entity_decode(request()->info);
         $pelanggan->statusaktif = $data['statusaktif'];
+        $pelanggan->tas_id = $data['tas_id'] ?? '';
 
         if (!$pelanggan->save()) {
             throw new \Exception("Error storing service in header.");
@@ -415,10 +416,10 @@ class Pelanggan extends MyModel
         return $pelanggan;
     }
 
-    public function processDestroy($id): Pelanggan
+    public function processDestroy(Pelanggan $pelanggan): Pelanggan
     {
-        $pelanggan = new Pelanggan();
-        $pelanggan = $pelanggan->lockAndDestroy($id);
+        // $pelanggan = new Pelanggan();
+        $pelanggan = $pelanggan->lockAndDestroy($pelanggan->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($pelanggan->getTable()),

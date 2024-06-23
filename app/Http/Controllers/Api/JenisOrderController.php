@@ -133,7 +133,9 @@ class JenisOrderController extends Controller
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
 
             ];
-            $jenisorder = (new JenisOrder())->processStore($data);
+            // $jenisorder = (new JenisOrder())->processStore($data);
+            $jenisorder = new JenisOrder();
+            $jenisorder->processStore($data, $jenisorder);            
             if ($request->from == '') {
                 $jenisorder->position = $this->getPosition($jenisorder, $jenisorder->getTable())->position;
                 if ($request->limit == 0) {
@@ -146,7 +148,7 @@ class JenisOrderController extends Controller
             $data['tas_id'] = $jenisorder->id;
             
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('jenisorder', 'add', $data);
+                $this->SaveTnlNew('jenisorder', 'add', $data);
             }
 
             DB::commit();
@@ -174,7 +176,7 @@ class JenisOrderController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateJenisOrderRequest $request, JenisOrder $jenisorder): JsonResponse
+    public function update(UpdateJenisOrderRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -186,7 +188,10 @@ class JenisOrderController extends Controller
 
             ];
 
-            $jenisorder = (new JenisOrder())->processUpdate($jenisorder, $data);
+            // $jenisorder = (new JenisOrder())->processUpdate($jenisorder, $data);
+            $jenisorder = new JenisOrder();
+            $jenisorders = $jenisorder->findOrFail($id);
+            $jenisorder = $jenisorder->processUpdate($jenisorders, $data);
             if ($request->from == '') {
                 $jenisorder->position = $this->getPosition($jenisorder, $jenisorder->getTable())->position;
                 if ($request->limit == 0) {
@@ -200,7 +205,7 @@ class JenisOrderController extends Controller
             $data['tas_id'] = $jenisorder->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('jenisorder', 'edit', $data);
+                $this->SaveTnlNew('jenisorder', 'edit', $data);
             }
 
             DB::commit();
@@ -226,7 +231,10 @@ class JenisOrderController extends Controller
         DB::beginTransaction();
 
         try {
-            $jenisorder = (new JenisOrder())->processDestroy($id);
+            // $jenisorder = (new JenisOrder())->processDestroy($id);
+            $jenisorder = new JenisOrder();
+            $jenisorders = $jenisorder->findOrFail($id);
+            $jenisorder = $jenisorder->processDestroy($jenisorders);
             if ($request->from == '') {
                 $selected = $this->getPosition($jenisorder, $jenisorder->getTable(), true);
                 $jenisorder->position = $selected->position;
@@ -243,7 +251,7 @@ class JenisOrderController extends Controller
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('jenisorder', 'delete', $data);
+                $this->SaveTnlNew('jenisorder', 'delete', $data);
             }
 
             DB::commit();

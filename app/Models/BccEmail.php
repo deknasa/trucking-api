@@ -182,9 +182,9 @@ class BccEmail extends MyModel
     }
 
 
-    public function processStore(array $data): BccEmail
+    public function processStore(array $data, BccEmail $bccEmail): BccEmail
     {
-        $bccEmail = new BccEmail();
+        // $bccEmail = new BccEmail();
         $bccEmail->nama = $data['nama'];
         $bccEmail->email = $data['email'];
         $bccEmail->statusaktif = $data['statusaktif'];
@@ -194,12 +194,12 @@ class BccEmail extends MyModel
         $bccEmail->info = html_entity_decode(request()->info);
 
         if (!$bccEmail->save()) {
-            throw new \Exception("Error storing service in header.");
+            throw new \Exception("Error storing BCC EMAIL header.");
         }
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($bccEmail->getTable()),
-            'postingdari' => 'ENTRY To Email',
+            'postingdari' => 'ENTRY BCC Email',
             'idtrans' => $bccEmail->id,
             'nobuktitrans' => $bccEmail->id,
             'aksi' => 'ENTRY',
@@ -220,12 +220,12 @@ class BccEmail extends MyModel
         $bccEmail->info = html_entity_decode(request()->info);
 
         if (!$bccEmail->save()) {
-            throw new \Exception("Error update service in header.");
+            throw new \Exception("Error update BCC EMAIL header.");
         }
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($bccEmail->getTable()),
-            'postingdari' => 'EDIT TO Email',
+            'postingdari' => 'EDIT BCC Email',
             'idtrans' => $bccEmail->id,
             'nobuktitrans' => $bccEmail->id,
             'aksi' => 'EDIT',
@@ -242,7 +242,7 @@ class BccEmail extends MyModel
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($bccEmail->getTable()),
-            'postingdari' => 'DELETE SATUAN',
+            'postingdari' => 'DELETE BCC EMAIL',
             'idtrans' => $bccEmail->id,
             'nobuktitrans' => $bccEmail->id,
             'aksi' => 'DELETE',

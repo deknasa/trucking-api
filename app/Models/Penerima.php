@@ -280,9 +280,9 @@ class Penerima extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): Penerima
+    public function processStore(array $data, Penerima $penerima): Penerima
     {
-        $penerima = new Penerima();
+        // $penerima = new Penerima();
         $penerima->namapenerima = $data['namapenerima'];
         $penerima->npwp = $data['npwp'];
         $penerima->noktp = $data['noktp'];
@@ -290,6 +290,7 @@ class Penerima extends MyModel
         $penerima->statusaktif = $data['statusaktif'];
         $penerima->statuskaryawan = $data['statuskaryawan'];
         $penerima->modifiedby = auth('api')->user()->name;
+        $penerima->tas_id = $data['tas_id'] ?? '';
         $penerima->info = html_entity_decode(request()->info);
 
 
@@ -338,10 +339,10 @@ class Penerima extends MyModel
         return $penerima;
     }
 
-    public function processDestroy($id): Penerima
+    public function processDestroy(Penerima $penerima): Penerima
     {
-        $penerima = new Penerima();
-        $penerima = $penerima->lockAndDestroy($id);
+        // $penerima = new Penerima();
+        $penerima = $penerima->lockAndDestroy($penerima->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($penerima->getTable()),

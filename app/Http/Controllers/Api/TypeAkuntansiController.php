@@ -67,20 +67,36 @@ class TypeAkuntansiController extends Controller
     {
         DB::beginTransaction();
 
+        $data = [
+            "kodetype" => $request->kodetype,
+            "order" => $request->order,
+            "keterangantype" => $request->keterangantype,
+            "akuntansi_id" => $request->akuntansi_id,
+            "statusaktif" => $request->statusaktif,
+        ];
+
         try {
-            $typeakuntansi = (new TypeAkuntansi())->processStore([
-                "kodetype" => $request->kodetype,
-                "order" => $request->order,
-                "keterangantype" => $request->keterangantype,
-                "akuntansi_id" => $request->akuntansi_id,
-                "statusaktif" => $request->statusaktif,
-            ]);
+            // $typeakuntansi = (new TypeAkuntansi())->processStore([              
+            // ]);
+            $typeakuntansi = new TypeAkuntansi();
+            $typeakuntansi->processStore($data, $typeakuntansi);
+
+            if ($request->from == '') {
             $typeakuntansi->position = $this->getPosition($typeakuntansi, $typeakuntansi->getTable())->position;
             if ($request->limit == 0) {
                 $typeakuntansi->page = ceil($typeakuntansi->position / (10));
             } else {
                 $typeakuntansi->page = ceil($typeakuntansi->position / ($request->limit ?? 10));
             }
+        }
+
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $typeakuntansi->id;
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('typeakuntansi', 'add', $data);
+            $this->SaveTnlNew('typeakuntansi', 'add', $data);
+        }
 
             DB::commit();
 
@@ -108,24 +124,48 @@ class TypeAkuntansiController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateTypeAkuntansiRequest $request, TypeAkuntansi $typeakuntansi): JsonResponse
+    public function update(UpdateTypeAkuntansiRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
 
+        $data = [
+            "kodetype" => $request->kodetype,
+            "order" => $request->order,
+            "keterangantype" => $request->keterangantype,
+            "akuntansi_id" => $request->akuntansi_id,
+            "statusaktif" => $request->statusaktif,
+        ];
+
         try {
-            $typeakuntansi = (new TypeAkuntansi())->processUpdate($typeakuntansi, [
-                "kodetype" => $request->kodetype,
-                "order" => $request->order,
-                "keterangantype" => $request->keterangantype,
-                "akuntansi_id" => $request->akuntansi_id,
-                "statusaktif" => $request->statusaktif,
-            ]);
+            // $typeakuntansi = (new TypeAkuntansi())->processUpdate($typeakuntansi, [
+            //     "kodetype" => $request->kodetype,
+            //     "order" => $request->order,
+            //     "keterangantype" => $request->keterangantype,
+            //     "akuntansi_id" => $request->akuntansi_id,
+            //     "statusaktif" => $request->statusaktif,
+            // ]);
+            $typeakuntansi = new TypeAkuntansi();
+            $typeakuntansis = $typeakuntansi->findOrFail($id);
+            $typeakuntansi = $typeakuntansi->processUpdate($typeakuntansis, $data);
+
+
+            if ($request->from == '') {
+
             $typeakuntansi->position = $this->getPosition($typeakuntansi, $typeakuntansi->getTable())->position;
             if ($request->limit == 0) {
                 $typeakuntansi->page = ceil($typeakuntansi->position / (10));
             } else {
                 $typeakuntansi->page = ceil($typeakuntansi->position / ($request->limit ?? 10));
             }
+        }
+
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $typeakuntansi->id;
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('typeakuntansi', 'edit', $data);
+            $this->SaveTnlNew('typeakuntansi', 'edit', $data);
+        }
 
             DB::commit();
 
@@ -150,7 +190,14 @@ class TypeAkuntansiController extends Controller
         DB::beginTransaction();
 
         try {
-            $typeakuntansi = (new TypeAkuntansi())->processDestroy($id);
+            // $typeakuntansi = (new TypeAkuntansi())->processDestroy($id);
+            $typeakuntansi = new TypeAkuntansi();
+            $typeakuntansis = $typeakuntansi->findOrFail($id);
+            $typeakuntansi = $typeakuntansi->processDestroy($typeakuntansis);
+
+
+            if ($request->from == '') {
+
             $selected = $this->getPosition($typeakuntansi, $typeakuntansi->getTable(), true);
             $typeakuntansi->position = $selected->position;
             $typeakuntansi->id = $selected->id;
@@ -159,6 +206,18 @@ class TypeAkuntansiController extends Controller
             } else {
                 $typeakuntansi->page = ceil($typeakuntansi->position / ($request->limit ?? 10));
             }
+        }
+
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $id;
+
+        $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('typeakuntansi', 'delete', $data);
+            $this->SaveTnlNew('typeakuntansi', 'delete', $data);
+        }
+
 
             DB::commit();
 

@@ -12,6 +12,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCcEmailRequest;
 use App\Http\Requests\UpdateCcEmailRequest;
 use App\Http\Requests\ApprovalKaryawanRequest;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class CcEmailController extends Controller
 {
@@ -92,7 +94,7 @@ class CcEmailController extends Controller
      * @ClassName 
      * @Keterangan TAMBAH DATA
      */
-    public function store(StoreCcEmailRequest $request)
+    public function store(StoreCcEmailRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
@@ -106,7 +108,9 @@ class CcEmailController extends Controller
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
 
-            $ccEmail = (new CcEmail())->processStore($data);
+            // $ccEmail = (new CcEmail())->processStore($data);
+            $ccEmail = new CcEmail();
+            $ccEmail->processStore($data, $ccEmail);            
             if ($request->from == '') {
                 $ccEmail->position = $this->getPosition($ccEmail, $ccEmail->getTable())->position;
                 if ($request->limit == 0) {
@@ -119,7 +123,7 @@ class CcEmailController extends Controller
             $data['tas_id'] = $ccEmail->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('ccemail', 'add', $data);
+                $this->SaveTnlNew('ccemail', 'add', $data);
             }
 
 
@@ -148,12 +152,13 @@ class CcEmailController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateCcEmailRequest $request, CcEmail $ccemail)
+    public function update(UpdateCcEmailRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
 
         try {
             $data = [
+                'id' => $request->id,                
                 'nama' => $request->nama,
                 'email' => $request->email,
                 'statusaktif' => $request->statusaktif,
@@ -161,7 +166,10 @@ class CcEmailController extends Controller
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
 
-            $ccEmail = (new CcEmail())->processUpdate($ccemail, $data);
+            // $ccEmail = (new CcEmail())->processUpdate($ccemail, $data);
+            $ccEmail = new CcEmail();
+            $ccEmails = $ccEmail->findOrFail($id);
+            $ccEmail = $ccEmail->processUpdate($ccEmails, $data);            
             if ($request->from == '') {
                 $ccEmail->position = $this->getPosition($ccEmail, $ccEmail->getTable())->position;
                 if ($request->limit == 0) {
@@ -174,7 +182,7 @@ class CcEmailController extends Controller
             $data['tas_id'] = $ccEmail->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('ccemail', 'edit', $data);
+                $this->SaveTnlNew('ccemail', 'edit', $data);
             }
 
             DB::commit();
@@ -194,13 +202,15 @@ class CcEmailController extends Controller
      * @ClassName 
      * @Keterangan HAPUS DATA
      */
-    public function destroy(CcEmail $ccemail)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
         try {
-
-            $ccEmail = (new CcEmail())->processDestroy($ccemail);
+            $ccEmail = new CcEmail();
+            $ccEmails = $ccEmail->findOrFail($id);
+            $ccEmail = $ccEmail->processDestroy($ccEmails);
+            // $ccEmail = (new CcEmail())->processDestroy($ccemail);
             if (request()->from == '') {
                 $ccEmail->position = $this->getPosition($ccEmail, $ccEmail->getTable())->position;
                 if (request()->limit == 0) {
@@ -210,12 +220,12 @@ class CcEmailController extends Controller
                 }
             }
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-            $data['tas_id'] = $ccemail;
+            $data['tas_id'] = $id;
 
             $data["accessTokenTnl"] = request()->accessTokenTnl ?? '';
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('ccemail', 'delete', $data);
+                $this->SaveTnlNew('ccemail', 'delete', $data);
             }
 
             DB::commit();

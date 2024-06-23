@@ -163,13 +163,27 @@ class ShipperController extends Controller
                 'modifiedby' => auth('api')->user()->name,
                 'statusaktif' => $request->statusaktif,
             ];
-            $pelanggan = (new Pelanggan())->processStore($data);
+            // $pelanggan = (new Pelanggan())->processStore($data);
+            $pelanggan = new Pelanggan();
+            $pelanggan->processStore($data, $pelanggan);
+
+            if ($request->from == '') {
+
             $pelanggan->position = $this->getPosition($pelanggan, $pelanggan->getTable())->position;
             if ($request->limit==0) {
                 $pelanggan->page = ceil($pelanggan->position / (10));
             } else {
                 $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
             }
+        }
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $pelanggan->id;
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('pelanggan', 'add', $data);
+            $this->SaveTnlNew('pelanggan', 'add', $data);
+        }
+
 
             DB::commit();
 
@@ -197,7 +211,7 @@ class ShipperController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdatePelangganRequest $request, Pelanggan $shipper): JsonResponse
+    public function update(UpdatePelangganRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
 
@@ -216,13 +230,28 @@ class ShipperController extends Controller
                 'statusaktif' => $request->statusaktif,
             ];
 
-            $pelanggan = (new Pelanggan())->processUpdate($shipper, $data);
+            // $pelanggan = (new Pelanggan())->processUpdate($shipper, $data);
+            $pelanggan = new Pelanggan();
+            $pelanggans = $pelanggan->findOrFail($id);
+            $pelanggan = $pelanggan->processUpdate($pelanggans, $data);
+
+            if ($request->from == '') {
+
             $pelanggan->position = $this->getPosition($pelanggan, $pelanggan->getTable())->position;
             if ($request->limit==0) {
                 $pelanggan->page = ceil($pelanggan->position / (10));
             } else {
                 $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
             }
+        }
+
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $pelanggan->id;
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('pelanggan', 'edit', $data);
+            $this->SaveTnlNew('pelanggan', 'edit', $data);
+        }
 
             DB::commit();
 
@@ -246,7 +275,13 @@ class ShipperController extends Controller
         DB::beginTransaction();
 
         try {
-            $pelanggan = (new Pelanggan())->processDestroy($id);
+            // $pelanggan = (new Pelanggan())->processDestroy($id);
+            $pelanggan = new Pelanggan();
+            $pelanggans = $pelanggan->findOrFail($id);
+            $pelanggan = $pelanggan->processDestroy($pelanggans);
+
+            if ($request->from == '') {
+
             $selected = $this->getPosition($pelanggan, $pelanggan->getTable(), true);
             $pelanggan->position = $selected->position;
             $pelanggan->id = $selected->id;
@@ -255,6 +290,18 @@ class ShipperController extends Controller
             } else {
                 $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
             }
+        }
+
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $id;
+
+        $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('pelanggan', 'delete', $data);
+            $this->SaveTnlNew('pelanggan', 'delete', $data);
+        }
+
 
             DB::commit();
 

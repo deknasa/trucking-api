@@ -136,7 +136,9 @@ class AbsenTradoController extends Controller
                 'tas_id' => $request->tas_id,
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
-            $absenTrado = (new AbsenTrado())->processStore($data);
+            $absenTrado = new AbsenTrado();
+            $absenTrado->processStore($data, $absenTrado);
+            // $absenTrado = (new AbsenTrado())->processStore($data);
             if ($request->from == '') {
 
                 $absenTrado->position = $this->getPosition($absenTrado, $absenTrado->getTable())->position;
@@ -150,7 +152,7 @@ class AbsenTradoController extends Controller
             $data['tas_id'] = $absenTrado->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('absentrado', 'add', $data);
+                $this->SaveTnlNew('absentrado', 'add', $data);
             }
             DB::commit();
             return response()->json([
@@ -176,7 +178,7 @@ class AbsenTradoController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateAbsenTradoRequest $request, AbsenTrado $absentrado): JsonResponse
+    public function update(UpdateAbsenTradoRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
 
@@ -191,7 +193,10 @@ class AbsenTradoController extends Controller
 
             ];
 
-            $absentrado = (new AbsenTrado())->processUpdate($absentrado, $data);
+            // $absentrado = (new AbsenTrado())->processUpdate($absentrado, $data);
+            $absentrado = new AbsenTrado();
+            $absentrados = $absentrado->findOrFail($id);
+            $absentrado = $absentrado->processUpdate($absentrados, $data);
             if ($request->from == '') {
                 $absentrado->position = $this->getPosition($absentrado, $absentrado->getTable())->position;
                 if ($request->limit == 0) {
@@ -204,7 +209,7 @@ class AbsenTradoController extends Controller
             $data['tas_id'] = $absentrado->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('absentrado', 'edit', $data);
+                $this->SaveTnlNew('absentrado', 'edit', $data);
             }
 
             DB::commit();
@@ -230,7 +235,10 @@ class AbsenTradoController extends Controller
     {
         DB::beginTransaction();
         try {
-            $absenTrado = (new AbsenTrado())->processDestroy($id);
+            // $absenTrado = (new AbsenTrado())->processDestroy($id);
+            $absenTrado = new AbsenTrado();
+            $absenTrados = $absenTrado->findOrFail($id);
+            $absenTrado = $absenTrado->processDestroy($absenTrados);            
             if ($request->from == '') {
                 $selected = $this->getPosition($absenTrado, $absenTrado->getTable(), true);
                 $absenTrado->position = $selected->position;
@@ -248,7 +256,7 @@ class AbsenTradoController extends Controller
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('absentrado', 'delete', $data);
+                $this->SaveTnlNew('absentrado', 'delete', $data);
             }
 
             DB::commit();

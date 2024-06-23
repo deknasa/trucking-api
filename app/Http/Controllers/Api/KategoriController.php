@@ -170,7 +170,9 @@ class KategoriController extends Controller
                 'tas_id' => $request->tas_id
 
             ];
-            $kategori = (new Kategori())->processStore($data);
+            // $kategori = (new Kategori())->processStore($data);
+            $kategori = new Kategori();
+            $kategori->processStore($data, $kategori);            
             if ($request->from == '') {
                 $kategori->position = $this->getPosition($kategori, $kategori->getTable())->position;
                 if ($request->limit == 0) {
@@ -184,7 +186,7 @@ class KategoriController extends Controller
             $data['tas_id'] = $kategori->id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('kategori', 'add', $data);
+                $this->SaveTnlNew('kategori', 'add', $data);
             }
             DB::commit();
 
@@ -212,7 +214,7 @@ class KategoriController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateKategoriRequest $request, Kategori $kategori): JsonResponse
+    public function update(UpdateKategoriRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -222,7 +224,10 @@ class KategoriController extends Controller
                 'subkelompok_id' => $request->subkelompok_id,
                 'statusaktif' => $request->statusaktif
             ];
-            $kategori = (new Kategori())->processUpdate($kategori, $data);
+            // $kategori = (new Kategori())->processUpdate($kategori, $data);
+            $kategori = new Kategori();
+            $kategoris = $kategori->findOrFail($id);
+            $kategori = $kategori->processUpdate($kategoris, $data);
             if ($request->from == '') {
                 $kategori->position = $this->getPosition($kategori, $kategori->getTable())->position;
                 if ($request->limit == 0) {
@@ -236,7 +241,7 @@ class KategoriController extends Controller
             $data['tas_id'] = $kategori->id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('kategori', 'edit', $data);
+                $this->SaveTnlNew('kategori', 'edit', $data);
             }
             DB::commit();
 
@@ -259,7 +264,10 @@ class KategoriController extends Controller
         DB::beginTransaction();
 
         try {
-            $kategori = (new Kategori())->processDestroy($id);
+            // $kategori = (new Kategori())->processDestroy($id);
+            $kategori = new Kategori();
+            $kategoris = $kategori->findOrFail($id);
+            $kategori = $kategori->processDestroy($kategoris);
             if ($request->from == '') {
                 $selected = $this->getPosition($kategori, $kategori->getTable(), true);
                 $kategori->position = $selected->position;
@@ -275,7 +283,7 @@ class KategoriController extends Controller
             $data['tas_id'] = $id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('kategori', 'delete', $data);
+                $this->SaveTnlNew('kategori', 'delete', $data);
             }
             DB::commit();
 

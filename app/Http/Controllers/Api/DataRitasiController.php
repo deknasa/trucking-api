@@ -126,29 +126,17 @@ class DataRitasiController extends Controller
     public function store(StoreDataRitasiRequest $request)
     {
         DB::beginTransaction();
+        $data = [
+            'id' => $request->id,
+            'statusritasi' => $request->statusritasi,
+            'nominal' => $request->nominal,
+            'statusaktif' => $request->statusaktif,
+        ];
+
         try {
+
             $dataritasi = new DataRitasi();
-            $dataritasi->statusritasi = $request->statusritasi;
-            $dataritasi->nominal = $request->nominal;
-            $dataritasi->statusaktif = $request->statusaktif;
-            $dataritasi->modifiedby = auth('api')->user()->name;
-            $dataritasi->tas_id = $request->tas_id;
-
-            if ($dataritasi->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($dataritasi->getTable()),
-                    'postingdari' => 'ENTRY dataritasi',
-                    'idtrans' => $dataritasi->id,
-                    'nobuktitrans' => $dataritasi->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $dataritasi->toArray(),
-                    'modifiedby' => $dataritasi->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-            }
+            $dataritasi->processStore($data, $dataritasi);
             
             if ($request->from == '') {
                 /* Set position and page */
@@ -162,16 +150,11 @@ class DataRitasiController extends Controller
             }
             
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-            $data = [
-                "statusritasi" => $request->statusritasi,
-                "nominal" => $request->nominal,
-                "statusaktif" => $request->statusaktif,
-                "accessTokenTnl" => $request->accessTokenTnl ?? '',
-            ];
             $data['tas_id'] = $dataritasi->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('dataritasi', 'add', $data);
+                // $this->saveToTnl('dataritasi', 'add', $data);
+                $this->SaveTnlNew('dataritasi', 'add', $data);
             }
             DB::commit();
             return response([
@@ -198,33 +181,23 @@ class DataRitasiController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateDataRitasiRequest $request, dataritasi $dataritasi)
+    public function update(UpdateDataRitasiRequest $request, $id)
     {
         DB::beginTransaction();
+        $data = [
+            'id' => $request->id,
+            'statusritasi' => $request->statusritasi,
+            'nominal' => $request->nominal,
+            'statusaktif' => $request->statusaktif,
+        ];        
         try {
             // $dataritasi = new dataritasi();
-            $dataritasi->statusritasi = $request->statusritasi;
-            $dataritasi->nominal = $request->nominal;
-            $dataritasi->statusaktif = $request->statusaktif;
-            $dataritasi->modifiedby = auth('api')->user()->name;
-            $dataritasi->tas_id = $request->tas_id;
 
-            if ($dataritasi->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($dataritasi->getTable()),
-                    'postingdari' => 'EDIT dataritasi',
-                    'idtrans' => $dataritasi->id,
-                    'nobuktitrans' => $dataritasi->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $dataritasi->toArray(),
-                    'modifiedby' => $dataritasi->modifiedby
-                ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-            }
-
+ 
+            $dataritasi = new DataRitasi();
+            $dataritasis = $dataritasi->findOrFail($id);
+            $dataritasi = $dataritasi->processUpdate($dataritasis, $data);
             if ($request->from == '') {
                 /* Set position and page */
                 $selected = $this->getPosition($dataritasi, $dataritasi->getTable());
@@ -235,19 +208,14 @@ class DataRitasiController extends Controller
                     $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
                 }
             }
-
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-            $data = [
-                "statusritasi" => $request->statusritasi,
-                "nominal" => $request->nominal,
-                "statusaktif" => $request->statusaktif,
-                "accessTokenTnl" => $request->accessTokenTnl ?? '',
-            ];
             $data['tas_id'] = $dataritasi->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('dataritasi', 'edit', $data);
+                // $this->saveToTnl('dataritasi', 'edit', $data);
+                $this->SaveTnlNew('dataritasi', 'edit', $data);
             }
+         
             DB::commit();
             
             return response([
@@ -270,52 +238,42 @@ class DataRitasiController extends Controller
     public function destroy(DestroyDataRitasiRequest $request, $id)
     {
         DB::beginTransaction();
-        $dataritasi = new dataritasi();
-        $dataritasi = $dataritasi->lockAndDestroy($id);
-        if ($dataritasi) {
-            $logTrail = [
-                'namatabel' => strtoupper($dataritasi->getTable()),
-                'postingdari' => 'DELETE dataritasi',
-                'idtrans' => $dataritasi->id,
-                'nobuktitrans' => $dataritasi->id,
-                'aksi' => 'DELETE',
-                'datajson' => $dataritasi->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+        try {
+            $dataritasi = new DataRitasi();
+            $dataritasis = $dataritasi->findOrFail($id);
+            $dataritasi = $dataritasi->processDestroy($dataritasis);
 
-            $selected = $this->getPosition($dataritasi, $dataritasi->getTable(), true);
-            $dataritasi->position = $selected->position;
-            $dataritasi->id = $selected->id;
-            if ($request->limit==0) {
-                $dataritasi->page = ceil($dataritasi->position / (10));
-            } else {
-                $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $selected = $this->getPosition($dataritasi, $dataritasi->getTable(), true);
+                $dataritasi->position = $selected->position;
+                $dataritasi->id = $selected->id;
+                if ($request->limit == 0) {
+                    $dataritasi->page = ceil($dataritasi->position / (10));
+                } else {
+                    $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
+                }
             }
 
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-            
             $data['tas_id'] = $id;
+
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('dataritasi', 'delete', $data);
+                // $this->saveToTnl('dataritasi', 'delete', $data);
+                $this->SaveTnlNew('dataritasi', 'delete', $data);
             }
             DB::commit();
-            return response([
-                'status' => true,
+
+            return response()->json([
                 'message' => 'Berhasil dihapus',
                 'data' => $dataritasi
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 
