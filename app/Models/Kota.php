@@ -347,9 +347,9 @@ class Kota extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): Kota
+    public function processStore(array $data, Kota $kota): Kota
     {
-        $kota = new Kota();
+        // $kota = new Kota();
         $kota->kodekota = $data['kodekota'];
         $kota->keterangan = $data['keterangan'] ?? '';
         $kota->zona_id = $data['zona_id'];
@@ -402,10 +402,10 @@ class Kota extends MyModel
         return $kota;
     }
 
-    public function processDestroy($id): Kota
+    public function processDestroy(Kota $kota): Kota
     {
-        $kota = new Kota();
-        $kota = $kota->lockAndDestroy($id);
+        // $kota = new Kota();
+        $kota = $kota->lockAndDestroy($kota->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($kota->getTable()),

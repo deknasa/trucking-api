@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Http\Controllers\Controller;
 
 class Mandor extends MyModel
 {
@@ -308,9 +309,9 @@ class Mandor extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): Mandor
+    public function processStore(array $data, Mandor $mandor): Mandor
     {
-        $mandor = new Mandor();
+        // $mandor = new Mandor();
         $mandor->namamandor = $data['namamandor'];
         $mandor->keterangan = $data['keterangan'] ?? '';
         $mandor->statusaktif = $data['statusaktif'];
@@ -323,7 +324,7 @@ class Mandor extends MyModel
         if (!$mandor->save()) {
             throw new \Exception('Error storing mandor.');
         }
-
+// dd($mandor);
         $mandorLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($mandor->getTable()),
             'postingdari' => 'ENTRY MANDOR',
@@ -334,27 +335,45 @@ class Mandor extends MyModel
             'modifiedby' => $mandor->modifiedby
         ]);
 
-        if (is_iterable($data['users'])) {
-            $mandorDetails = [];
-            for ($i = 0; $i < count($data['users']); $i++) {
-                $mandorDetail = (new MandorDetail())->processStore($mandor, [
-                    'user_id' => $data['users'][$i],
-                    'tas_id' => $data['tas_id'] ?? ''
-                ]);
+        // dd($data['users']);
+        // if (is_iterable($data['users'])) {
+        //     $mandorDetails = [];
+        //     for ($i = 0; $i < count($data['users']); $i++) {
+        //         $datadetail = [
+        //             'user_id' => $data['users'][$i],
+        //             'mandor_id' => $mandor->id,
+        //             'tas_id' => 0,
+        //         ];
 
-                $mandorDetails[] = $mandorDetail->toArray();
-            }
+        //             $mandorDetail = new MandorDetail();
+        //             $mandorDetail->processStore($datadetail, $mandorDetail);
+        //         // $mandorDetail = (new MandorDetail())->processStore( [
+        //         //     'user_id' => $data['users'][$i],
+        //         //     'tas_id' => $data['tas_id'] ?? '',
+        //         //     'mandor_id' => $mandor->id,
+        //         // ]);
+        //         $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        //         $datadetail['tas_id'] = $mandorDetail->id;
+    
+        //         // if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+        //         //     // $this->saveToTnl('mandordetail', 'add', $data);
+        //         //     $controller = new Controller;
+        //         //     $controller->SaveTnlNew('mandordetail', 'add', $datadetail);
+        //         // }
 
-            (new LogTrail())->processStore([
-                'namatabel' => strtoupper($mandorDetail->getTable()),
-                'postingdari' => 'ENTRY MANDOR DETAIL',
-                'idtrans' =>  $mandorLogTrail->id,
-                'nobuktitrans' => $mandor->id,
-                'aksi' => 'ENTRY',
-                'datajson' => $mandorDetails,
-                'modifiedby' => auth('api')->user()->user,
-            ]);
-        }
+        //         $mandorDetails[] = $mandorDetail->toArray();
+        //     }
+
+        //     // (new LogTrail())->processStore([
+        //     //     'namatabel' => strtoupper($mandorDetail->getTable()),
+        //     //     'postingdari' => 'ENTRY MANDOR DETAIL',
+        //     //     'idtrans' =>  $mandorLogTrail->id,
+        //     //     'nobuktitrans' => $mandor->id,
+        //     //     'aksi' => 'ENTRY',
+        //     //     'datajson' => $mandorDetails,
+        //     //     'modifiedby' => auth('api')->user()->user,
+        //     // ]);
+        // }
 
         return $mandor;
     }
@@ -384,54 +403,54 @@ class Mandor extends MyModel
         ]);
 
 
-        if (is_iterable($data['users'])) {
-            MandorDetail::where('mandor_id', $mandor->id)->delete();
-            $mandorDetails = [];
-            for ($i = 0; $i < count($data['users']); $i++) {
-                $mandorDetail = (new MandorDetail())->processStore($mandor, [
-                    'user_id' => $data['users'][$i],
-                    'tas_id' => $data['tas_id'] ?? ''
-                ]);
+        // if (is_iterable($data['users'])) {
+        //     MandorDetail::where('mandor_id', $mandor->id)->delete();
+        //     $mandorDetails = [];
+        //     for ($i = 0; $i < count($data['users']); $i++) {
+        //         $mandorDetail = (new MandorDetail())->processStore($mandor, [
+        //             'user_id' => $data['users'][$i],
+        //             'tas_id' => $data['tas_id'] ?? ''
+        //         ]);
 
-                $mandorDetails[] = $mandorDetail->toArray();
-            }
+        //         $mandorDetails[] = $mandorDetail->toArray();
+        //     }
 
-            (new LogTrail())->processStore([
-                'namatabel' => strtoupper($mandorDetail->getTable()),
-                'postingdari' => 'EDIT MANDOR DETAIL',
-                'idtrans' =>  $mandorLogTrail->id,
-                'nobuktitrans' => $mandor->id,
-                'aksi' => 'EDIT',
-                'datajson' => $mandorDetails,
-                'modifiedby' => auth('api')->user()->user,
-            ]);
-        } else {
-            $checkDetailExist = DB::table('mandordetail')->from(DB::raw("mandordetail with (readuncommitted)"))->where('mandor_id', $mandor->id)->first();
-            if ($checkDetailExist != '') {
-                $mandorDetail = DB::table('mandordetail')->from(DB::raw("mandordetail with (readuncommitted)"))->where('mandor_id', $mandor->id)->get();
-                MandorDetail::where('mandor_id', $mandor->id)->delete();
+        //     (new LogTrail())->processStore([
+        //         'namatabel' => strtoupper($mandorDetail->getTable()),
+        //         'postingdari' => 'EDIT MANDOR DETAIL',
+        //         'idtrans' =>  $mandorLogTrail->id,
+        //         'nobuktitrans' => $mandor->id,
+        //         'aksi' => 'EDIT',
+        //         'datajson' => $mandorDetails,
+        //         'modifiedby' => auth('api')->user()->user,
+        //     ]);
+        // } else {
+        //     $checkDetailExist = DB::table('mandordetail')->from(DB::raw("mandordetail with (readuncommitted)"))->where('mandor_id', $mandor->id)->first();
+        //     if ($checkDetailExist != '') {
+        //         $mandorDetail = DB::table('mandordetail')->from(DB::raw("mandordetail with (readuncommitted)"))->where('mandor_id', $mandor->id)->get();
+        //         MandorDetail::where('mandor_id', $mandor->id)->delete();
 
-                (new LogTrail())->processStore([
-                    'namatabel' => strtoupper('mandordetail'),
-                    'postingdari' => 'EDIT MANDOR DELETE DETAIL',
-                    'idtrans' =>  $mandorLogTrail->id,
-                    'nobuktitrans' => $mandor->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $mandorDetail->toArray(),
-                    'modifiedby' => auth('api')->user()->user,
-                ]);
-            }
-        }
+        //         (new LogTrail())->processStore([
+        //             'namatabel' => strtoupper('mandordetail'),
+        //             'postingdari' => 'EDIT MANDOR DELETE DETAIL',
+        //             'idtrans' =>  $mandorLogTrail->id,
+        //             'nobuktitrans' => $mandor->id,
+        //             'aksi' => 'EDIT',
+        //             'datajson' => $mandorDetail->toArray(),
+        //             'modifiedby' => auth('api')->user()->user,
+        //         ]);
+        //     }
+        // }
 
         return $mandor;
     }
 
-    public function processDestroy($id): Mandor
+    public function processDestroy(Mandor $mandor): Mandor
     {
 
-        $mandorDetails = MandorDetail::lockForUpdate()->where('mandor_id', $id)->get();
-        $mandor = new Mandor();
-        $mandor = $mandor->lockAndDestroy($id);
+        // $mandorDetails = MandorDetail::lockForUpdate()->where('mandor_id', $mandor->id)->get();
+        // $mandor = new Mandor();
+        $mandor = $mandor->lockAndDestroy($mandor->id);
 
         $mandorLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($mandor->getTable()),
@@ -443,15 +462,7 @@ class Mandor extends MyModel
             'modifiedby' => auth('api')->user()->user
         ]);
 
-        (new LogTrail())->processStore([
-            'namatabel' => 'MANDORDETAIL',
-            'postingdari' => 'DELETE MANDOR DETAIL',
-            'idtrans' => $mandorLogTrail['id'],
-            'nobuktitrans' => $mandor->id,
-            'aksi' => 'DELETE',
-            'datajson' => $mandorDetails->toArray(),
-            'modifiedby' => auth('api')->user()->name
-        ]);
+       
 
         return $mandor;
     }

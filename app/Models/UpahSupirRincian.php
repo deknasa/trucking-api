@@ -1427,9 +1427,10 @@ class UpahSupirRincian extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(UpahSupir $upahsupir, array $data): UpahSupirRincian
+    // public function processStore(UpahSupir $upahsupir, array $data): UpahSupirRincian
+    public function processStore(array $data, UpahSupirRincian $upahSupirRincian): UpahSupirRincian
     {
-        $upahSupirRincian = new UpahSupirRincian();
+        // $upahSupirRincian = new UpahSupirRincian();
         $upahSupirRincian->upahsupir_id = $data['upahsupir_id'];
         $upahSupirRincian->container_id = $data['container_id'];
         $upahSupirRincian->statuscontainer_id = $data['statuscontainer_id'];
@@ -1440,6 +1441,7 @@ class UpahSupirRincian extends MyModel
         $upahSupirRincian->liter = $data['liter'];
         $upahSupirRincian->modifiedby = auth('api')->user()->name;
         $upahSupirRincian->info = html_entity_decode(request()->info);
+        $upahSupirRincian->tas_id = $data['tas_id'];
 
         if (!$upahSupirRincian->save()) {
             throw new \Exception("Error storing upah supir in detail.");
@@ -1861,4 +1863,28 @@ class UpahSupirRincian extends MyModel
             return $query->first();
         }
     }
+
+    public function processDestroy(UpahSupirRincian $upahsupirRincian,$idheader): UpahSupirRincian
+    {
+
+        // dd($idheader);
+        // $mandor = new Mandor();
+        // dd($mandorDetail->get());
+        UpahSupirRincian::where('upahsupir_id', $idheader)->delete();
+
+
+
+        (new LogTrail())->processStore([
+            'namatabel' => 'TARIF RINCIAN',
+            'postingdari' => 'DELETE TARIF RINCIAN',
+            'idtrans' => $idheader,
+            'nobuktitrans' => $idheader,
+            'aksi' => 'DELETE',
+            'datajson' => '',
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $upahsupirRincian;
+    }    
+
 }

@@ -1096,7 +1096,7 @@ class Supir extends MyModel
         return json_encode($storedFiles);
     }
 
-    public function processStore(array $data): Supir
+    public function processStore(array $data, Supir $supir): Supir
     {
         try {
             $statusAdaUpdateGambar = DB::table('parameter')->where('grp', 'STATUS ADA UPDATE GAMBAR')->where('default', 'YA')->first();
@@ -1173,7 +1173,7 @@ class Supir extends MyModel
                     $data['mandor_id'] = $queryidmandor->mandor_id ?? 0;
                 }
             }
-            $supir = new Supir();
+            // $supir = new Supir();
             $depositke = str_replace(',', '', $data['depositke'] ?? '');
             $supir->namasupir = $data['namasupir'];
             $supir->alamat = $data['alamat'];
@@ -1203,6 +1203,8 @@ class Supir extends MyModel
             $supir->modifiedby = auth('api')->user()->user;
             $supir->supirlama_id = $supirlama_id;
             $supir->info = html_entity_decode(request()->info);
+            $supir->tas_id = $data['tas_id'] ?? '';
+
             if ($data['mandor_id'] != 0) {
                 $supir->tglberlakumilikmandor = date('Y-m-d');
             }
@@ -1404,10 +1406,10 @@ class Supir extends MyModel
         }
     }
 
-    public function processDestroy($id): Supir
+    public function processDestroy(Supir $supir): Supir
     {
-        $supir = new Supir();
-        $supir = $supir->lockAndDestroy($id);
+        // $supir = new Supir();
+        $supir = $supir->lockAndDestroy($supir->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($supir->getTable()),

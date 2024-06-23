@@ -270,9 +270,9 @@ class Zona extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): Zona
+    public function processStore(array $data, Zona $zona): Zona
     {
-        $zona = new Zona();
+        // $zona = new Zona();
         $zona->zona = $data['zona'];
         $zona->statusaktif = $data['statusaktif'];
         $zona->keterangan = $data['keterangan'] ?? '';
@@ -323,10 +323,10 @@ class Zona extends MyModel
         return $zona;
     }
 
-    public function processDestroy($id): Zona
+    public function processDestroy(Zona $zona): Zona
     {
-        $zona = new Zona();
-        $zona = $zona->lockAndDestroy($id);
+        // $zona = new Zona();
+        $zona = $zona->lockAndDestroy($zona->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($zona->getTable()),

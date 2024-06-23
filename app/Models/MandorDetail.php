@@ -32,10 +32,11 @@ class MandorDetail extends Model
         return $query;
     }
     
-    public function processStore(Mandor $mandor, array $data): MandorDetail
+    public function processStore( array $data, MandorDetail $mandorDetail): MandorDetail
     {
-        $mandorDetail = new MandorDetail();
-        $mandorDetail->mandor_id = $mandor->id;
+        // dd( $data);
+        // $mandorDetail = new MandorDetail();
+        $mandorDetail->mandor_id = $data['mandor_id'];
         $mandorDetail->user_id =  $data['user_id'];
         $mandorDetail->tas_id = $data['tas_id'] ?? '';
         $mandorDetail->modifiedby = auth('api')->user()->name;
@@ -47,4 +48,28 @@ class MandorDetail extends Model
 
         return $mandorDetail;
     }
+
+    public function processDestroy(MandorDetail $mandorDetail,$idheader): MandorDetail
+    {
+
+        // dd($idheader);
+        // $mandor = new Mandor();
+        // dd($mandorDetail->get());
+        MandorDetail::where('mandor_id', $idheader)->delete();
+
+
+
+        (new LogTrail())->processStore([
+            'namatabel' => 'MANDORDETAIL',
+            'postingdari' => 'DELETE MANDOR DETAIL',
+            'idtrans' => $idheader,
+            'nobuktitrans' => $idheader,
+            'aksi' => 'DELETE',
+            'datajson' => '',
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $mandorDetail;
+    }
+
 }

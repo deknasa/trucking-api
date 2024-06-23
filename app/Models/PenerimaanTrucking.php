@@ -421,7 +421,7 @@ class PenerimaanTrucking extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): PenerimaanTrucking
+    public function processStore(array $data, PenerimaanTrucking $penerimaanTrucking): PenerimaanTrucking
     {
         $cabang_id = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
         ->select('text')
@@ -429,7 +429,7 @@ class PenerimaanTrucking extends MyModel
         ->where('subgrp', 'ID CABANG')
         ->first()->text ?? '';
 
-        $penerimaanTrucking = new PenerimaanTrucking();
+        // $penerimaanTrucking = new PenerimaanTrucking();
         $penerimaanTrucking->kodepenerimaan = $data['kodepenerimaan'];
         $penerimaanTrucking->keterangan = $data['keterangan'] ?? '';
         $penerimaanTrucking->coadebet = $data['coadebet'] ?? '';
@@ -489,10 +489,10 @@ class PenerimaanTrucking extends MyModel
 
         return $penerimaanTrucking;
     }
-    public function processDestroy($id): PenerimaanTrucking
+    public function processDestroy(PenerimaanTrucking $penerimaanTrucking): PenerimaanTrucking
     {
-        $penerimaanTrucking = new PenerimaanTrucking();
-        $penerimaanTrucking = $penerimaanTrucking->lockAndDestroy($id);
+        // $penerimaanTrucking = new PenerimaanTrucking();
+        $penerimaanTrucking = $penerimaanTrucking->lockAndDestroy($penerimaanTrucking->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($penerimaanTrucking->getTable()),

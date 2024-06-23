@@ -147,7 +147,9 @@ class PengeluaranTruckingController extends Controller
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
 
             ];
-            $pengeluaranTrucking = (new PengeluaranTrucking())->processStore($data);
+            // $pengeluaranTrucking = (new PengeluaranTrucking())->processStore($data);
+            $pengeluaranTrucking = new PengeluaranTrucking();
+            $pengeluaranTrucking->processStore($data, $pengeluaranTrucking);            
             if ($request->from == '') {
                 $pengeluaranTrucking->position = $this->getPosition($pengeluaranTrucking, $pengeluaranTrucking->getTable())->position;
                 if ($request->limit == 0) {
@@ -160,7 +162,7 @@ class PengeluaranTruckingController extends Controller
             $data['tas_id'] = $pengeluaranTrucking->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('pengeluarantrucking', 'add', $data);
+                $this->SaveTnlNew('pengeluarantrucking', 'add', $data);
             }
 
             DB::commit();
@@ -189,7 +191,7 @@ class PengeluaranTruckingController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdatePengeluaranTruckingRequest $request, PengeluaranTrucking $pengeluaranTrucking): JsonResponse
+    public function update(UpdatePengeluaranTruckingRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -206,7 +208,10 @@ class PengeluaranTruckingController extends Controller
 
             ];
 
-            $pengeluaranTrucking = (new PengeluaranTrucking())->processUpdate($pengeluaranTrucking, $data);
+            // $pengeluaranTrucking = (new PengeluaranTrucking())->processUpdate($pengeluaranTrucking, $data);
+            $pengeluaranTrucking = new PengeluaranTrucking();
+            $pengeluaranTruckings = $pengeluaranTrucking->findOrFail($id);
+            $pengeluaranTrucking = $pengeluaranTrucking->processUpdate($pengeluaranTruckings, $data);            
             if ($request->from == '') {
                 $pengeluaranTrucking->position = $this->getPosition($pengeluaranTrucking, $pengeluaranTrucking->getTable())->position;
                 if ($request->limit == 0) {
@@ -219,7 +224,7 @@ class PengeluaranTruckingController extends Controller
             $data['tas_id'] = $pengeluaranTrucking->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('pengeluarantrucking', 'edit', $data);
+                $this->SaveTnlNew('pengeluarantrucking', 'edit', $data);
             }
             DB::commit();
 
@@ -241,7 +246,10 @@ class PengeluaranTruckingController extends Controller
     {
         DB::beginTransaction();
         try {
-            $pengeluaranTrucking = (new PengeluaranTrucking())->processDestroy($id);
+            // $pengeluaranTrucking = (new PengeluaranTrucking())->processDestroy($id);
+            $pengeluaranTrucking = new PengeluaranTrucking();
+            $pengeluaranTruckings = $pengeluaranTrucking->findOrFail($id);
+            $pengeluaranTrucking = $pengeluaranTrucking->processDestroy($pengeluaranTruckings);            
             $selected = $this->getPosition($pengeluaranTrucking, $pengeluaranTrucking->getTable(), true);
             $pengeluaranTrucking->position = $selected->position;
             $pengeluaranTrucking->id = $selected->id;
@@ -250,6 +258,16 @@ class PengeluaranTruckingController extends Controller
             } else {
                 $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / ($request->limit ?? 10));
             }
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
+
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                // $this->saveToTnl('pengeluaranTrucking', 'delete', $data);
+                $this->SaveTnlNew('pengeluaranTrucking', 'delete', $data);
+            }
+
 
             DB::commit();
 

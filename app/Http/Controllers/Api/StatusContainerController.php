@@ -148,7 +148,9 @@ class StatusContainerController extends Controller
                 'tas_id' => $request->tas_id,
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
-            $statusContainer = (new StatusContainer())->processStore($data);
+            // $statusContainer = (new StatusContainer())->processStore($data);
+            $statusContainer = new StatusContainer();
+            $statusContainer->processStore($data, $statusContainer);            
 
             if ($request->from == '') {
                 $statusContainer->position = $this->getPosition($statusContainer, $statusContainer->getTable())->position;
@@ -162,7 +164,7 @@ class StatusContainerController extends Controller
             $data['tas_id'] = $statusContainer->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('statuscontainer', 'add', $data);
+                $this->SaveTnlNew('statuscontainer', 'add', $data);
             }
 
             DB::commit();
@@ -182,7 +184,7 @@ class StatusContainerController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateStatusContainerRequest $request, StatusContainer $statusContainer)
+    public function update(UpdateStatusContainerRequest $request, $id)
     {
 
         DB::beginTransaction();
@@ -193,7 +195,10 @@ class StatusContainerController extends Controller
                 'statusaktif' => $request->statusaktif,
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
-            $statusContainer = (new StatusContainer())->processUpdate($statusContainer, $data);
+            // $statusContainer = (new StatusContainer())->processUpdate($statusContainer, $data);
+            $statusContainer = new StatusContainer();
+            $statusContainers = $statusContainer->findOrFail($id);
+            $statusContainer = $statusContainer->processUpdate($statusContainers, $data);            
             if ($request->from == '') {
                 $statusContainer->position = $this->getPosition($statusContainer, $statusContainer->getTable())->position;
                 if ($request->limit == 0) {
@@ -206,7 +211,7 @@ class StatusContainerController extends Controller
             $data['tas_id'] = $statusContainer->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('statuscontainer', 'edit', $data);
+                $this->SaveTnlNew('statuscontainer', 'edit', $data);
             }
 
             DB::commit();
@@ -232,7 +237,11 @@ class StatusContainerController extends Controller
         DB::beginTransaction();
 
         try {
-            $statusContainer = (new StatusContainer())->processDestroy($id);
+            // $statusContainer = (new StatusContainer())->processDestroy($id);
+            $statusContainer = new StatusContainer();
+            $statusContainers = $statusContainer->findOrFail($id);
+            $statusContainer = $statusContainer->processDestroy($statusContainers);
+
             if ($request->from == '') {
                 $selected = $this->getPosition($statusContainer, $statusContainer->getTable(), true);
                 $statusContainer->position = $selected->position;
@@ -249,7 +258,7 @@ class StatusContainerController extends Controller
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('statuscontainer', 'delete', $data);
+                $this->SaveTnlNew('statuscontainer', 'delete', $data);
             }
             DB::commit();
 

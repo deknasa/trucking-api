@@ -203,7 +203,9 @@ class TradoController extends Controller
             ];
 
 
-            $trado = (new Trado())->processStore($data);
+            // $trado = (new Trado())->processStore($data);
+            $trado = new Trado();
+            $trado->processStore($data, $trado);            
 
             if ($request->from == '') {
                 $selected = $this->getPosition($trado, $trado->getTable());
@@ -241,7 +243,8 @@ class TradoController extends Controller
                     }
                     $data['phototrado'] = $phototradoBase64;
                 }
-                $this->saveToTnl('trado', 'add', $data);
+                dd('test');
+                $this->SaveTnlNew('trado', 'add', $data);
             }
 
             DB::commit();
@@ -368,7 +371,7 @@ class TradoController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateTradoRequest $request, Trado $trado): JsonResponse
+    public function update(UpdateTradoRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
 
@@ -410,7 +413,10 @@ class TradoController extends Controller
             ];
 
 
-            $trado = (new Trado())->processUpdate($trado, $data);
+            // $trado = (new Trado())->processUpdate($trado, $data);
+            $trado = new Trado();
+            $trados = $trado->findOrFail($id);
+            $trado = $trado->processUpdate($trados, $data);            
             if ($request->from == '') {
                 $trado->position = $this->getPosition($trado, $trado->getTable())->position;
                 if ($request->limit == 0) {
@@ -446,7 +452,7 @@ class TradoController extends Controller
                     }
                     $data['phototrado'] = $phototradoBase64;
                 }
-                $this->saveToTnl('trado', 'edit', $data);
+                $this->SaveTnlNew('trado', 'edit', $data);
             }
             DB::commit();
 
@@ -505,7 +511,10 @@ class TradoController extends Controller
         DB::beginTransaction();
 
         try {
-            $trado = (new Trado())->processDestroy($id);
+            // $trado = (new Trado())->processDestroy($id);
+            $trado = new Trado();
+            $trados = $trado->findOrFail($id);
+            $trado = $trado->processDestroy($trados);
 
             if ($request->from == '') {
                 $selected = $this->getPosition($trado, $trado->getTable(), true);

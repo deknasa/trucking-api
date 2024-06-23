@@ -142,7 +142,9 @@ class ZonaController extends Controller
                 'tas_id' => $request->tas_id,
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
-            $zona = (new Zona())->processStore($data);
+            // $zona = (new Zona())->processStore($data);
+            $zona = new Zona();
+            $zona->processStore($data, $zona);            
             if ($request->from == '') {
                 $zona->position = $this->getPosition($zona, $zona->getTable())->position;
                 if ($request->limit == 0) {
@@ -155,7 +157,7 @@ class ZonaController extends Controller
             $data['tas_id'] = $zona->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('zona', 'add', $data);
+                $this->SaveTnlNew('zona', 'add', $data);
             }
             DB::commit();
 
@@ -182,7 +184,7 @@ class ZonaController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateZonaRequest $request, Zona $zona)
+    public function update(UpdateZonaRequest $request, $id)
     {
         DB::beginTransaction();
         try {
@@ -192,7 +194,10 @@ class ZonaController extends Controller
                 'keterangan' => $request->keterangan ?? '',
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
-            $zona = (new Zona())->processUpdate($zona, $data);
+            // $zona = (new Zona())->processUpdate($zona, $data);
+            $zona = new Zona();
+            $zonas = $zona->findOrFail($id);
+            $zona = $zona->processUpdate($zonas, $data);            
             if ($request->from == '') {
                 $zona->position = $this->getPosition($zona, $zona->getTable())->position;
                 if ($request->limit == 0) {
@@ -205,7 +210,7 @@ class ZonaController extends Controller
             $data['tas_id'] = $zona->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('zona', 'edit', $data);
+                $this->SaveTnlNew('zona', 'edit', $data);
             }
 
             DB::commit();
@@ -229,7 +234,10 @@ class ZonaController extends Controller
         DB::beginTransaction();
         try {
 
-            $zona = (new Zona())->processDestroy($id);
+            // $zona = (new Zona())->processDestroy($id);
+            $zona = new Zona();
+            $zonas = $zona->findOrFail($id);
+            $zona = $zona->processDestroy($zonas);            
             if ($request->from == '') {
                 $selected = $this->getPosition($zona, $zona->getTable(), true);
                 $zona->position = $selected->position;
@@ -247,7 +255,7 @@ class ZonaController extends Controller
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('zona', 'delete', $data);
+                $this->SaveTnlNew('zona', 'delete', $data);
             }
             DB::commit();
 

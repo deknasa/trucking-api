@@ -146,7 +146,9 @@ class PenerimaanTruckingController extends Controller
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
 
             ];
-            $penerimaanTrucking = (new PenerimaanTrucking())->processStore($data);
+            // $penerimaanTrucking = (new PenerimaanTrucking())->processStore($data);
+            $penerimaanTrucking = new PenerimaanTrucking();
+            $penerimaanTrucking->processStore($data, $penerimaanTrucking);            
             if ($request->from == '') {
                 $penerimaanTrucking->position = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable())->position;
                 if ($request->limit == 0) {
@@ -159,7 +161,7 @@ class PenerimaanTruckingController extends Controller
             $data['tas_id'] = $penerimaanTrucking->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('penerimaantrucking', 'add', $data);
+                $this->SaveTnlNew('penerimaantrucking', 'add', $data);
             }
 
             DB::commit();
@@ -188,7 +190,7 @@ class PenerimaanTruckingController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdatePenerimaanTruckingRequest $request, PenerimaanTrucking $penerimaanTrucking): JsonResponse
+    public function update(UpdatePenerimaanTruckingRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
 
@@ -205,7 +207,10 @@ class PenerimaanTruckingController extends Controller
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
 
-            $penerimaanTrucking = (new PenerimaanTrucking())->processUpdate($penerimaanTrucking, $data);
+            // $penerimaanTrucking = (new PenerimaanTrucking())->processUpdate($penerimaanTrucking, $data);
+            $penerimaanTrucking = new PenerimaanTrucking();
+            $penerimaanTruckings = $penerimaanTrucking->findOrFail($id);
+            $penerimaanTrucking = $penerimaanTrucking->processUpdate($penerimaanTruckings, $data);            
             if ($request->from == '') {
                 $penerimaanTrucking->position = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable())->position;
                 if ($request->limit == 0) {
@@ -218,7 +223,7 @@ class PenerimaanTruckingController extends Controller
             $data['tas_id'] = $penerimaanTrucking->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('penerimaantrucking', 'edit', $data);
+                $this->SaveTnlNew('penerimaantrucking', 'edit', $data);
             }
 
             DB::commit();
@@ -245,7 +250,10 @@ class PenerimaanTruckingController extends Controller
         DB::beginTransaction();
 
         try {
-            $penerimaanTrucking = (new PenerimaanTrucking())->processDestroy($id);
+            // $penerimaanTrucking = (new PenerimaanTrucking())->processDestroy($id);
+            $penerimaanTrucking = new PenerimaanTrucking();
+            $penerimaanTruckings = $penerimaanTrucking->findOrFail($id);
+            $penerimaanTrucking = $penerimaanTrucking->processDestroy($penerimaanTruckings);            
             if ($request->from == '') {
                 $selected = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable(), true);
                 $penerimaanTrucking->position = $selected->position;
@@ -263,7 +271,7 @@ class PenerimaanTruckingController extends Controller
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('penerimaantrucking', 'delete', $data);
+                $this->SaveTnlNew('penerimaantrucking', 'delete', $data);
             }
 
             DB::commit();

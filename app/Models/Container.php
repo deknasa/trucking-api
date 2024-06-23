@@ -327,9 +327,9 @@ class Container extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): Container
+    public function processStore(array $data, Container $container): Container
     {
-        $container = new Container();
+        // $container = new Container();
         $container->kodecontainer = strtoupper($data['kodecontainer']);
         $container->keterangan = strtoupper($data['keterangan']) ?? '';
         $container->nominalsumbangan = $data['nominalsumbangan'];
@@ -381,10 +381,10 @@ class Container extends MyModel
         return $container;
     }
 
-    public function processDestroy($id): Container
+    public function processDestroy(Container $container): Container
     {
-        $container = new Container();
-        $container = $container->lockAndDestroy($id);
+        // $container = new Container();
+        $container = $container->lockAndDestroy($container->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($container->getTable()),

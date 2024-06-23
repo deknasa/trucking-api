@@ -602,10 +602,12 @@ class TarifRincian extends MyModel
         return $query->get();
     }
 
-    public function processStore(Tarif $tarif, array $data): TarifRincian
+    // public function processStore(Tarif $tarif, array $data): TarifRincian
+    public function processStore(array $data, TarifRincian $tarifRincian): TarifRincian
     {
-        $tarifRincian = new TarifRincian();
+        // $tarifRincian = new TarifRincian();
         $tarifRincian->tarif_id = $data['tarif_id'];
+        $tarifRincian->tas_id = $data['tas_id'];
         $tarifRincian->container_id = $data['container_id'];
         $tarifRincian->nominal = $data['nominal'];
         $tarifRincian->modifiedby = auth('api')->user()->user;
@@ -636,4 +638,26 @@ class TarifRincian extends MyModel
 
         return $tarifRincian;
     }
+    public function processDestroy(TarifRincian $tarifRincian,$idheader): TarifRincian
+    {
+
+        // dd($idheader);
+        // $mandor = new Mandor();
+        // dd($mandorDetail->get());
+        TarifRincian::where('tarif_id', $idheader)->delete();
+
+
+
+        (new LogTrail())->processStore([
+            'namatabel' => 'TARIF RINCIAN',
+            'postingdari' => 'DELETE TARIF RINCIAN',
+            'idtrans' => $idheader,
+            'nobuktitrans' => $idheader,
+            'aksi' => 'DELETE',
+            'datajson' => '',
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $tarifRincian;
+    }    
 }
