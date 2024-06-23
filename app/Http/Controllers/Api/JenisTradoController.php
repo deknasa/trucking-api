@@ -141,7 +141,9 @@ class JenisTradoController extends Controller
                 'tas_id' => $request->tas_id ?? '',
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
-            $jenistrado = (new JenisTrado())->processStore($data);
+            // $jenistrado = (new JenisTrado())->processStore($data);
+            $jenistrado = new JenisTrado();
+            $jenistrado->processStore($data, $jenistrado);            
             if ($request->from == '') {
                 $jenistrado->position = $this->getPosition($jenistrado, $jenistrado->getTable())->position;
                 if ($request->limit == 0) {
@@ -156,7 +158,7 @@ class JenisTradoController extends Controller
             $data['tas_id'] = $jenistrado->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('jenistrado', 'add', $data);
+                $this->SaveTnlNew('jenistrado', 'add', $data);
             }
 
 
@@ -186,7 +188,7 @@ class JenisTradoController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateJenisTradoRequest $request, JenisTrado $jenistrado)
+    public function update(UpdateJenisTradoRequest $request, $id)
     {
         DB::beginTransaction();
         try {
@@ -196,7 +198,10 @@ class JenisTradoController extends Controller
                 'keterangan' => $request->keterangan ?? '',
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
-            $jenistrado = (new JenisTrado())->processUpdate($jenistrado, $data);
+            // $jenistrado = (new JenisTrado())->processUpdate($jenistrado, $data);
+            $jenistrado = new JenisTrado();
+            $jenistrados = $jenistrado->findOrFail($id);
+            $jenistrado = $jenistrado->processUpdate($jenistrados, $data);            
             if ($request->from == '') {
                 $jenistrado->position = $this->getPosition($jenistrado, $jenistrado->getTable())->position;
                 if ($request->limit == 0) {
@@ -210,7 +215,7 @@ class JenisTradoController extends Controller
             $data['tas_id'] = $jenistrado->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('jenistrado', 'edit', $data);
+                $this->SaveTnlNew('jenistrado', 'edit', $data);
             }
 
             DB::commit();
@@ -236,7 +241,10 @@ class JenisTradoController extends Controller
         DB::beginTransaction();
 
         try {
-            $jenistrado = (new JenisTrado())->processDestroy($id);
+            // $jenistrado = (new JenisTrado())->processDestroy($id);
+            $jenistrado = new JenisTrado();
+            $jenistrados = $jenistrado->findOrFail($id);
+            $jenistrado = $jenistrado->processDestroy($jenistrados);            
             if ($request->from == '') {
                 $selected = $this->getPosition($jenistrado, $jenistrado->getTable(), true);
                 $jenistrado->position = $selected->position;
@@ -254,7 +262,7 @@ class JenisTradoController extends Controller
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('jenistrado', 'delete', $data);
+                $this->SaveTnlNew('jenistrado', 'delete', $data);
             }
 
             DB::commit();

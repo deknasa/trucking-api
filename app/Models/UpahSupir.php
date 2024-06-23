@@ -1204,6 +1204,7 @@ class UpahSupir extends MyModel
             $upahsupir->keterangan = $data['keterangan'] ?? '';
             $upahsupir->modifiedby = auth('api')->user()->user;
             $upahsupir->info = html_entity_decode(request()->info);
+            $upahsupir->tas_id = $data['tas_id'];            
             $this->deleteFiles($upahsupir);
             if (array_key_exists('gambar', $data)) {
                 if ($data['from'] != '') {
@@ -1229,30 +1230,30 @@ class UpahSupir extends MyModel
                 'modifiedby' => $upahsupir->modifiedby
             ]);
 
-            $detaillog = [];
-            for ($i = 0; $i < count($data['nominalsupir']); $i++) {
-                $upahsupirDetail = (new UpahSupirRincian())->processStore($upahsupir, [
-                    'upahsupir_id' => $upahsupir->id,
-                    'container_id' => $data['container_id'][$i],
-                    'statuscontainer_id' => $data['statuscontainer_id'][$i],
-                    'nominalsupir' => $data['nominalsupir'][$i],
-                    'nominalkenek' => $data['nominalkenek'][$i] ?? 0,
-                    'nominalkomisi' => $data['nominalkomisi'][$i] ?? 0,
-                    'nominaltol' =>  $data['nominaltol'][$i] ?? 0,
-                    'liter' => $data['liter'][$i] ?? 0
-                ]);
+            // $detaillog = [];
+            // for ($i = 0; $i < count($data['nominalsupir']); $i++) {
+            //     $upahsupirDetail = (new UpahSupirRincian())->processStore($upahsupir, [
+            //         'upahsupir_id' => $upahsupir->id,
+            //         'container_id' => $data['container_id'][$i],
+            //         'statuscontainer_id' => $data['statuscontainer_id'][$i],
+            //         'nominalsupir' => $data['nominalsupir'][$i],
+            //         'nominalkenek' => $data['nominalkenek'][$i] ?? 0,
+            //         'nominalkomisi' => $data['nominalkomisi'][$i] ?? 0,
+            //         'nominaltol' =>  $data['nominaltol'][$i] ?? 0,
+            //         'liter' => $data['liter'][$i] ?? 0
+            //     ]);
 
-                $detaillog[] = $upahsupirDetail->toArray();
-            }
-            (new LogTrail())->processStore([
-                'namatabel' => strtoupper($upahsupirDetail->getTable()),
-                'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',
-                'idtrans' =>  $storedLogTrail['id'],
-                'nobuktitrans' => $upahsupir->id,
-                'aksi' => 'ENTRY',
-                'datajson' => $detaillog,
-                'modifiedby' => auth('api')->user()->user,
-            ]);
+            //     $detaillog[] = $upahsupirDetail->toArray();
+            // }
+            // (new LogTrail())->processStore([
+            //     'namatabel' => strtoupper($upahsupirDetail->getTable()),
+            //     'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',
+            //     'idtrans' =>  $storedLogTrail['id'],
+            //     'nobuktitrans' => $upahsupir->id,
+            //     'aksi' => 'ENTRY',
+            //     'datajson' => $detaillog,
+            //     'modifiedby' => auth('api')->user()->user,
+            // ]);
 
             if ($data['statussimpankandang'] == $statusSimpanKandang->id) {
                 $getBelawanKandang = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
@@ -1396,31 +1397,31 @@ class UpahSupir extends MyModel
                 'modifiedby' => $upahsupir->modifiedby
             ]);
 
-            UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->delete();
-            /* Store detail */
-            $detaillog = [];
-            for ($i = 0; $i < count($data['nominalsupir']); $i++) {
-                $upahsupirDetail = (new UpahSupirRincian())->processStore($upahsupir, [
-                    'upahsupir_id' => $upahsupir->id,
-                    'container_id' => $data['container_id'][$i],
-                    'statuscontainer_id' => $data['statuscontainer_id'][$i],
-                    'nominalsupir' => $data['nominalsupir'][$i],
-                    'nominalkenek' => $data['nominalkenek'][$i] ?? 0,
-                    'nominalkomisi' => $data['nominalkomisi'][$i] ?? 0,
-                    'nominaltol' =>  $data['nominaltol'][$i] ?? 0,
-                    'liter' => $data['liter'][$i] ?? 0,
-                ]);
-                $detaillog[] = $upahsupirDetail->toArray();
-            }
-            (new LogTrail())->processStore([
-                'namatabel' => strtoupper($upahsupirDetail->getTable()),
-                'postingdari' => 'EDIT UPAH SUPIR RINCIAN',
-                'idtrans' =>  $storedLogTrail['id'],
-                'nobuktitrans' => $upahsupir->id,
-                'aksi' => 'EDIT',
-                'datajson' => $detaillog,
-                'modifiedby' => auth('api')->user()->user,
-            ]);
+            // UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->delete();
+            // /* Store detail */
+            // $detaillog = [];
+            // for ($i = 0; $i < count($data['nominalsupir']); $i++) {
+            //     $upahsupirDetail = (new UpahSupirRincian())->processStore($upahsupir, [
+            //         'upahsupir_id' => $upahsupir->id,
+            //         'container_id' => $data['container_id'][$i],
+            //         'statuscontainer_id' => $data['statuscontainer_id'][$i],
+            //         'nominalsupir' => $data['nominalsupir'][$i],
+            //         'nominalkenek' => $data['nominalkenek'][$i] ?? 0,
+            //         'nominalkomisi' => $data['nominalkomisi'][$i] ?? 0,
+            //         'nominaltol' =>  $data['nominaltol'][$i] ?? 0,
+            //         'liter' => $data['liter'][$i] ?? 0,
+            //     ]);
+            //     $detaillog[] = $upahsupirDetail->toArray();
+            // }
+            // (new LogTrail())->processStore([
+            //     'namatabel' => strtoupper($upahsupirDetail->getTable()),
+            //     'postingdari' => 'EDIT UPAH SUPIR RINCIAN',
+            //     'idtrans' =>  $storedLogTrail['id'],
+            //     'nobuktitrans' => $upahsupir->id,
+            //     'aksi' => 'EDIT',
+            //     'datajson' => $detaillog,
+            //     'modifiedby' => auth('api')->user()->user,
+            // ]);
 
             return $upahsupir;
         } catch (\Throwable $th) {
@@ -1429,12 +1430,12 @@ class UpahSupir extends MyModel
         }
     }
 
-    public function processDestroy($id): UpahSupir
+    public function processDestroy(UpahSupir $upahSupir): UpahSupir
     {
-        $getDetail = UpahSupirRincian::lockForUpdate()->where('upahsupir_id', $id)->get();
+        // $getDetail = UpahSupirRincian::lockForUpdate()->where('upahsupir_id', $id)->get();
 
-        $upahSupir = new UpahSupir();
-        $upahSupir = $upahSupir->lockAndDestroy($id);
+        // $upahSupir = new UpahSupir();
+        $upahSupir = $upahSupir->lockAndDestroy($upahSupir->id);
 
         $storedLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($upahSupir->getTable()),
@@ -1446,15 +1447,15 @@ class UpahSupir extends MyModel
             'modifiedby' => auth('api')->user()->name
         ]);
 
-        $logTrailUpahSupirRincian = (new LogTrail())->processStore([
-            'namatabel' => 'UPAHSUPIRRINCIAN',
-            'postingdari' => 'DELETE UPAH SUPIR RINCIAN',
-            'idtrans' => $storedLogTrail['id'],
-            'nobuktitrans' => $upahSupir->id,
-            'aksi' => 'DELETE',
-            'datajson' => $getDetail->toArray(),
-            'modifiedby' => auth('api')->user()->name
-        ]);
+        // $logTrailUpahSupirRincian = (new LogTrail())->processStore([
+        //     'namatabel' => 'UPAHSUPIRRINCIAN',
+        //     'postingdari' => 'DELETE UPAH SUPIR RINCIAN',
+        //     'idtrans' => $storedLogTrail['id'],
+        //     'nobuktitrans' => $upahSupir->id,
+        //     'aksi' => 'DELETE',
+        //     'datajson' => $getDetail->toArray(),
+        //     'modifiedby' => auth('api')->user()->name
+        // ]);
 
         return $upahSupir;
     }

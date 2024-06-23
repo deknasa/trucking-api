@@ -236,9 +236,9 @@ class Kerusakan extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): Kerusakan
+    public function processStore(array $data, Kerusakan $kerusakan): Kerusakan
     {
-        $kerusakan = new Kerusakan();
+        // $kerusakan = new Kerusakan();
         $kerusakan->keterangan = $data['keterangan'] ?? '';
         $kerusakan->statusaktif = $data['statusaktif'];
         $kerusakan->modifiedby = auth('api')->user()->user;
@@ -288,10 +288,10 @@ class Kerusakan extends MyModel
         return $kerusakan;
     }
 
-    public function processDestroy($id): Kerusakan
+    public function processDestroy(Kerusakan $kerusakan): Kerusakan
     {
-        $kerusakan = new Kerusakan();
-        $kerusakan = $kerusakan->lockAndDestroy($id);
+        // $kerusakan = new Kerusakan();
+        $kerusakan = $kerusakan->lockAndDestroy($kerusakan->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($kerusakan->getTable()),

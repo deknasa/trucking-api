@@ -1097,7 +1097,7 @@ class Trado extends MyModel
         }
     }
 
-    public function processStore(array $data): Trado
+    public function processStore(array $data, Trado $trado): Trado
     {
         $trado = '';
         try {
@@ -1160,7 +1160,7 @@ class Trado extends MyModel
                 $data['mandor_id'] = $queryidmandor->mandor_id ?? 0;
             }
 
-            $trado = new Trado();
+            // $trado = new Trado();
             $trado->keterangan = $data['keterangan'] ?? '';
             $trado->kodetrado = $data['kodetrado'];
             $trado->statusaktif = $data['statusaktif'];
@@ -1428,10 +1428,10 @@ class Trado extends MyModel
         }
     }
 
-    public function processDestroy($id): Trado
+    public function processDestroy(Trado $trado): Trado
     {
-        $trado = new Trado();
-        $trado = $trado->lockAndDestroy($id);
+        // $trado = new Trado();
+        $trado = $trado->lockAndDestroy($trado->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($trado->getTable()),

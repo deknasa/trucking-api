@@ -1456,12 +1456,12 @@ class Stok extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): Stok
+    public function processStore(array $data, Stok $stok): Stok
     {
         $kelompokBan = Kelompok::where("kodekelompok","BAN")->first();
         $kelompokAki = Kelompok::where("kodekelompok","AKI")->first();
 
-        $stok = new stok();
+        // $stok = new stok();
         $stok->keterangan = $data['keterangan'];
         $stok->namastok = $data['namastok'];
         $stok->namaterpusat = $data['namaterpusat'];
@@ -1484,6 +1484,7 @@ class Stok extends MyModel
         $stok->tas_id = $data['tas_id'];
         $stok->modifiedby = auth('api')->user()->name;
         $stok->info = html_entity_decode(request()->info);
+        $stok->tas_id = $data['tas_id'] ?? '';        
         if ($data['gambar']) {
             if(request()->from != ''){
                 $stok->gambar = $this->storeFilesBase64($data['gambar'], 'stok');
@@ -1580,10 +1581,10 @@ class Stok extends MyModel
         return $stok;
     }
 
-    public function processDestroy($id): Stok
+    public function processDestroy(Stok $stok): Stok
     {
-        $stok = new Stok;
-        $stok = $stok->lockAndDestroy($id);
+        // $stok = new Stok;
+        $stok = $stok->lockAndDestroy($stok->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($stok->getTable()),

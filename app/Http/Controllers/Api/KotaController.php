@@ -147,7 +147,9 @@ class KotaController extends Controller
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
 
-            $kota = (new Kota())->processStore($data);
+            // $kota = (new Kota())->processStore($data);
+            $kota = new Kota();
+            $kota->processStore($data, $kota);            
             if ($request->from == '') {
                 $kota->position = $this->getPosition($kota, $kota->getTable())->position;
                 if ($request->limit == 0) {
@@ -160,7 +162,7 @@ class KotaController extends Controller
             $data['tas_id'] = $kota->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('kota', 'add', $data);
+                $this->SaveTnlNew('kota', 'add', $data);
             }
             DB::commit();
 
@@ -190,7 +192,7 @@ class KotaController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateKotaRequest $request, Kota $kotum)
+    public function update(UpdateKotaRequest $request, $id)
     {
 
         DB::beginTransaction();
@@ -204,7 +206,10 @@ class KotaController extends Controller
                 'statusaktif' => $request->statusaktif,
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
-            $kota = (new Kota())->processUpdate($kotum, $data);
+            // $kota = (new Kota())->processUpdate($kotum, $data);
+            $kota = new Kota();
+            $kotas = $kota->findOrFail($id);
+            $kota = $kota->processUpdate($kotas, $data);            
             if ($request->from == '') {
                 $kota->position = $this->getPosition($kota, $kota->getTable())->position;
                 if ($request->limit == 0) {
@@ -217,7 +222,7 @@ class KotaController extends Controller
             $data['tas_id'] = $kota->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('kota', 'edit', $data);
+                $this->SaveTnlNew('kota', 'edit', $data);
             }
 
 
@@ -242,7 +247,10 @@ class KotaController extends Controller
     {
         DB::beginTransaction();
         try {
-            $kota = (new Kota())->processDestroy($id);
+            // $kota = (new Kota())->processDestroy($id);
+            $kota = new Kota();
+            $kotas = $kota->findOrFail($id);
+            $kota = $kota->processDestroy($kotas);            
             if ($request->from == '') {
                 $selected = $this->getPosition($kota, $kota->getTable(), true);
                 $kota->position = $selected->position;
@@ -259,7 +267,7 @@ class KotaController extends Controller
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('kota', 'delete', $data);
+                $this->SaveTnlNew('kota', 'delete', $data);
             }
             DB::commit();
 

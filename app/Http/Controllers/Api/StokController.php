@@ -194,7 +194,9 @@ class StokController extends Controller
                 'tas_id' => $request->tas_id
 
             ];
-            $stok = (new Stok())->processStore($data);
+            // $stok = (new Stok())->processStore($data);
+            $stok = new Stok();
+            $stok->processStore($data, $stok);            
             if ($request->from == '') {
                 $stok->position = $this->getPosition($stok, $stok->getTable())->position;
                 if ($request->limit == 0) {
@@ -216,7 +218,9 @@ class StokController extends Controller
                     }
                     $data['gambar'] = $gambarBase64;
                 }
-                $this->saveToTnl('stok', 'add', $data);
+                // $this->saveToTnl('stok', 'add', $data);
+                $this->SaveTnlNew('stok', 'add', $data);
+
             }
             // $this->stok = $stok;
             DB::commit();
@@ -292,7 +296,10 @@ class StokController extends Controller
 
             ];
 
-            $stok = (new Stok())->processUpdate($stok, $data);
+            // $stok = (new Stok())->processUpdate($stok, $data);
+            $stok = new Stok();
+            $stoks = $stok->findOrFail($id);
+            $stok = $stok->processUpdate($stoks, $data);            
             if ($request->from == '') {
                 $stok->position = $this->getPosition($stok, $stok->getTable())->position;
                 if ($request->limit == 0) {
@@ -314,7 +321,9 @@ class StokController extends Controller
                     }
                     $data['gambar'] = $gambarBase64;
                 }
-                $this->saveToTnl('stok', 'edit', $data);
+                // $this->saveToTnl('stok', 'edit', $data);
+                $this->SaveTnlNew('stok', 'edit', $data);
+
             }
             DB::commit();
 
@@ -338,7 +347,10 @@ class StokController extends Controller
         DB::beginTransaction();
 
         try {
-            $stok = (new Stok())->processDestroy($id);
+            // $stok = (new Stok())->processDestroy($id);
+            $stok = new Stok();
+            $stoks = $stok->findOrFail($id);
+            $stok = $stok->processDestroy($stoks);            
             if ($request->from == '') {
                 $selected = $this->getPosition($stok, $stok->getTable(), true);
                 $stok->position = $selected->position;
@@ -353,7 +365,7 @@ class StokController extends Controller
             $data['tas_id'] = $id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('stok', 'delete', $data);
+                $this->SaveTnlNew('stok', 'delete', $data);
             }
             DB::commit();
 

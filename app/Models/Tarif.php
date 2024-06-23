@@ -800,9 +800,9 @@ class Tarif extends MyModel
         return $data;
     }
 
-    public function processStore(array $data): Tarif
+    public function processStore(array $data, Tarif $tarif): Tarif
     {
-        $tarif = new Tarif();
+        // $tarif = new Tarif();
         $tarif->parent_id = $data['parent_id'] ?? '';
         // $tarif->upahsupir_id = $data['upahsupir_id'] ?? '';
         $tarif->tujuan = $data['tujuan'];
@@ -818,17 +818,18 @@ class Tarif extends MyModel
         $tarif->keterangan = $data['keterangan'];
         $tarif->modifiedby = auth('api')->user()->user;
         $tarif->info = html_entity_decode(request()->info);
+        $tarif->tas_id = $data['tas_id'];
 
         if (!$tarif->save()) {
             throw new \Exception("Error storing tarif.");
         }
-        $upahsupir_id = $data['upahsupir_id'] ?? 0;
-        if ($upahsupir_id != 0) {
-            $datadetailsUpahSupir = (new Upahsupir())->processUpdateTarif([
-                'tarif_id' => $tarif->id,
-                'id' => $upahsupir_id,
-            ]);
-        }
+        // $upahsupir_id = $data['upahsupir_id'] ?? 0;
+        // if ($upahsupir_id != 0) {
+        //     $datadetailsUpahSupir = (new Upahsupir())->processUpdateTarif([
+        //         'tarif_id' => $tarif->id,
+        //         'id' => $upahsupir_id,
+        //     ]);
+        // }
 
         $storedLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($tarif->getTable()),
@@ -840,26 +841,26 @@ class Tarif extends MyModel
             'modifiedby' => $tarif->modifiedby
         ]);
 
-        $detaillog = [];
-        for ($i = 0; $i < count($data['container_id']); $i++) {
+        // $detaillog = [];
+        // for ($i = 0; $i < count($data['container_id']); $i++) {
 
-            $datadetails = (new TarifRincian())->processStore($tarif, [
-                'tarif_id' => $tarif->id,
-                'container_id' => $data['container_id'][$i],
-                'nominal' => $data['nominal'][$i],
-            ]);
+        //     $datadetails = (new TarifRincian())->processStore($tarif, [
+        //         'tarif_id' => $tarif->id,
+        //         'container_id' => $data['container_id'][$i],
+        //         'nominal' => $data['nominal'][$i],
+        //     ]);
 
-            $detaillog[] = $datadetails->toArray();
-        }
-        (new LogTrail())->processStore([
-            'namatabel' => strtoupper($datadetails->getTable()),
-            'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',
-            'idtrans' =>  $storedLogTrail['id'],
-            'nobuktitrans' => $tarif->id,
-            'aksi' => 'ENTRY',
-            'datajson' => $detaillog,
-            'modifiedby' => auth('api')->user()->user
-        ]);
+        //     $detaillog[] = $datadetails->toArray();
+        // }
+        // (new LogTrail())->processStore([
+        //     'namatabel' => strtoupper($datadetails->getTable()),
+        //     'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',
+        //     'idtrans' =>  $storedLogTrail['id'],
+        //     'nobuktitrans' => $tarif->id,
+        //     'aksi' => 'ENTRY',
+        //     'datajson' => $detaillog,
+        //     'modifiedby' => auth('api')->user()->user
+        // ]);
 
 
         // $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
@@ -902,13 +903,13 @@ class Tarif extends MyModel
             throw new \Exception("Error updating tarif.");
         }
 
-        $upahsupir_id = $data['upahsupir_id'] ?? 0;
-        if ($upahsupir_id != 0) {
-            $datadetailsUpahSupir = (new Upahsupir())->processUpdateTarif([
-                'tarif_id' => $tarif->id,
-                'id' => $upahsupir_id,
-            ]);
-        }
+        // $upahsupir_id = $data['upahsupir_id'] ?? 0;
+        // if ($upahsupir_id != 0) {
+        //     $datadetailsUpahSupir = (new Upahsupir())->processUpdateTarif([
+        //         'tarif_id' => $tarif->id,
+        //         'id' => $upahsupir_id,
+        //     ]);
+        // }
 
         $storedLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($tarif->getTable()),
@@ -920,34 +921,34 @@ class Tarif extends MyModel
             'modifiedby' => $tarif->modifiedby
         ]);
 
-        $detaillog = [];
-        for ($i = 0; $i < count($data['container_id']); $i++) {
-            $datadetails = (new TarifRincian())->processUpdate($tarif, [
-                'tarif_id' => $tarif->id,
-                'detail_id' => $data['detail_id'][$i],
-                'container_id' => $data['container_id'][$i],
-                'nominal' => $data['nominal'][$i],
-            ]);
+        // $detaillog = [];
+        // for ($i = 0; $i < count($data['container_id']); $i++) {
+        //     $datadetails = (new TarifRincian())->processUpdate($tarif, [
+        //         'tarif_id' => $tarif->id,
+        //         'detail_id' => $data['detail_id'][$i],
+        //         'container_id' => $data['container_id'][$i],
+        //         'nominal' => $data['nominal'][$i],
+        //     ]);
 
-            $detaillog[] = $datadetails->toArray();
-        }
+        //     $detaillog[] = $datadetails->toArray();
+        // }
 
-        (new LogTrail())->processStore([
-            'namatabel' => strtoupper($datadetails->getTable()),
-            'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',
-            'idtrans' =>  $storedLogTrail['id'],
-            'nobuktitrans' => $tarif->id,
-            'aksi' => 'ENTRY',
-            'datajson' => $detaillog,
-        ]);
+        // (new LogTrail())->processStore([
+        //     'namatabel' => strtoupper($datadetails->getTable()),
+        //     'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',
+        //     'idtrans' =>  $storedLogTrail['id'],
+        //     'nobuktitrans' => $tarif->id,
+        //     'aksi' => 'ENTRY',
+        //     'datajson' => $detaillog,
+        // ]);
 
         return $tarif;
     }
 
-    public function processDestroy($id): Tarif
+    public function processDestroy(Tarif $tarif): Tarif
     {
-        $tarif = new Tarif();
-        $tarif = $tarif->lockAndDestroy($id);
+        // $tarif = new Tarif();
+        $tarif = $tarif->lockAndDestroy($tarif->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($tarif->getTable()),

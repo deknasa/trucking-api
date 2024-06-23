@@ -242,9 +242,9 @@ class JenisTrado extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): JenisTrado
+    public function processStore(array $data, JenisTrado $jenistrado): JenisTrado
     {
-        $jenistrado = new jenistrado();
+        // $jenistrado = new jenistrado();
         $jenistrado->kodejenistrado = $data['kodejenistrado'];
         $jenistrado->statusaktif = $data['statusaktif'];
         $jenistrado->keterangan = $data['keterangan'] ?? '';
@@ -297,10 +297,10 @@ class JenisTrado extends MyModel
         return $jenistrado;
     }
 
-    public function processDestroy($id): JenisTrado
+    public function processDestroy(JenisTrado $jenistrado): JenisTrado
     {
-        $jenistrado = new JenisTrado();
-        $jenistrado = $jenistrado->lockAndDestroy($id);
+        // $jenistrado = new JenisTrado();
+        $jenistrado = $jenistrado->lockAndDestroy($jenistrado->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($jenistrado->getTable()),

@@ -173,7 +173,9 @@ class ContainerController extends Controller
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
 
-            $container = (new container())->processStore($data);
+            // $container = (new container())->processStore($data);
+            $container = new Container();
+            $container->processStore($data, $container);            
 
             if ($request->from == '') {
                 $container->position = $this->getPosition($container, $container->getTable())->position;
@@ -187,7 +189,7 @@ class ContainerController extends Controller
             $data['tas_id'] = $container->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('container', 'add', $data);
+                $this->SaveTnlNew('container', 'add', $data);
             }
             DB::commit();
 
@@ -216,7 +218,7 @@ class ContainerController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateContainerRequest $request, Container $container)
+    public function update(UpdateContainerRequest $request, $id)
     {
         DB::beginTransaction();
         try {
@@ -228,7 +230,10 @@ class ContainerController extends Controller
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
 
-            $container = (new Container())->processUpdate($container, $data);
+            // $container = (new Container())->processUpdate($container, $data);
+            $container = new Container();
+            $containers = $container->findOrFail($id);
+            $container = $container->processUpdate($containers, $data);
             if ($request->from == '') {
                 $container->position = $this->getPosition($container, $container->getTable())->position;
                 if ($request->limit == 0) {
@@ -241,7 +246,7 @@ class ContainerController extends Controller
             $data['tas_id'] = $container->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('container', 'edit', $data);
+                $this->SaveTnlNew('container', 'edit', $data);
             }
             DB::commit();
 
@@ -264,7 +269,10 @@ class ContainerController extends Controller
     {
         DB::beginTransaction();
         try {
-            $container = (new container())->processDestroy($id);
+            // $container = (new container())->processDestroy($id);
+            $container = new Container();
+            $containers = $container->findOrFail($id);
+            $container = $container->processDestroy($containers);            
             if ($request->from == '') {
                 $selected = $this->getPosition($container, $container->getTable(), true);
                 $container->position = $selected->position;
@@ -281,7 +289,7 @@ class ContainerController extends Controller
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('container', 'delete', $data);
+                $this->SaveTnlNew('container', 'delete', $data);
             }
 
             DB::commit();

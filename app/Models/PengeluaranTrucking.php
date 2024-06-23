@@ -430,7 +430,7 @@ class PengeluaranTrucking extends MyModel
     }
 
 
-    public function processStore(array $data): PengeluaranTrucking
+    public function processStore(array $data, PengeluaranTrucking $pengeluaranTrucking): PengeluaranTrucking
     {
         $cabang_id = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->select('text')
@@ -438,7 +438,7 @@ class PengeluaranTrucking extends MyModel
             ->where('subgrp', 'ID CABANG')
             ->first()->text ?? '';
             
-        $pengeluaranTrucking = new PengeluaranTrucking();
+        // $pengeluaranTrucking = new PengeluaranTrucking();
         $pengeluaranTrucking->kodepengeluaran = $data['kodepengeluaran'];
         $pengeluaranTrucking->keterangan = $data['keterangan'] ?? '';
         $pengeluaranTrucking->coadebet = $data['coadebet'] ?? '';;
@@ -501,10 +501,10 @@ class PengeluaranTrucking extends MyModel
         return $pengeluaranTrucking;
     }
 
-    public function processDestroy($id): PengeluaranTrucking
+    public function processDestroy(PengeluaranTrucking $pengeluaranTrucking): PengeluaranTrucking
     {
-        $pengeluaranTrucking = new PengeluaranTrucking();
-        $pengeluaranTrucking = $pengeluaranTrucking->lockAndDestroy($id);
+        // $pengeluaranTrucking = new PengeluaranTrucking();
+        $pengeluaranTrucking = $pengeluaranTrucking->lockAndDestroy($pengeluaranTrucking->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($pengeluaranTrucking->getTable()),

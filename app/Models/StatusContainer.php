@@ -250,9 +250,9 @@ class StatusContainer extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): StatusContainer
+    public function processStore(array $data, StatusContainer $statusContainer): StatusContainer
     {
-        $statusContainer = new StatusContainer();
+        // $statusContainer = new StatusContainer();
         $statusContainer->kodestatuscontainer = $data['kodestatuscontainer'];
         $statusContainer->keterangan = $data['keterangan'] ?? '';
         $statusContainer->statusaktif = $data['statusaktif'];
@@ -304,10 +304,10 @@ class StatusContainer extends MyModel
         return $statusContainer;
     }
 
-    public function processDestroy($id): StatusContainer
+    public function processDestroy(StatusContainer $statusContainer): StatusContainer
     {
-        $statusContainer = new StatusContainer();
-        $statusContainer = $statusContainer->lockAndDestroy($id);
+        // $statusContainer = new StatusContainer();
+        $statusContainer = $statusContainer->lockAndDestroy($statusContainer->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($statusContainer->getTable()),

@@ -145,7 +145,9 @@ class KerusakanController extends Controller
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
 
             ];
-            $kerusakan = (new Kerusakan())->processStore($data);
+            // $kerusakan = (new Kerusakan())->processStore($data);
+            $kerusakan = new Kerusakan();
+            $kerusakan->processStore($data, $kerusakan);            
             if ($request->from == '') {
                 $kerusakan->position = $this->getPosition($kerusakan, $kerusakan->getTable())->position;
                 if ($request->limit == 0) {
@@ -159,7 +161,7 @@ class KerusakanController extends Controller
             $data['tas_id'] = $kerusakan->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('kerusakan', 'add', $data);
+                $this->SaveTnlNew('kerusakan', 'add', $data);
             }
 
             DB::commit();
@@ -186,7 +188,7 @@ class KerusakanController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateKerusakanRequest $request, Kerusakan $kerusakan)
+    public function update(UpdateKerusakanRequest $request, $id)
     {
         DB::beginTransaction();
         try {
@@ -196,7 +198,10 @@ class KerusakanController extends Controller
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
 
             ];
-            $kerusakan = (new Kerusakan())->processUpdate($kerusakan, $data);
+            // $kerusakan = (new Kerusakan())->processUpdate($kerusakan, $data);
+            $kerusakan = new Kerusakan();
+            $kerusakans = $kerusakan->findOrFail($id);
+            $kerusakan = $kerusakan->processUpdate($kerusakans, $data);            
             if ($request->from == '') {
                 $kerusakan->position = $this->getPosition($kerusakan, $kerusakan->getTable())->position;
                 if ($request->limit == 0) {
@@ -210,7 +215,7 @@ class KerusakanController extends Controller
             $data['tas_id'] = $kerusakan->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('kerusakan', 'edit', $data);
+                $this->SaveTnlNew('kerusakan', 'edit', $data);
             }
 
             DB::commit();
@@ -234,7 +239,10 @@ class KerusakanController extends Controller
         DB::beginTransaction();
 
         try {
-            $kerusakan = (new Kerusakan())->processDestroy($id);
+            // $kerusakan = (new Kerusakan())->processDestroy($id);
+            $kerusakan = new Kerusakan();
+            $kerusakans = $kerusakan->findOrFail($id);
+            $kerusakan = $kerusakan->processDestroy($kerusakans);            
             if ($request->from == '') {
                 $selected = $this->getPosition($kerusakan, $kerusakan->getTable(), true);
                 $kerusakan->position = $selected->position;
@@ -252,7 +260,7 @@ class KerusakanController extends Controller
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('kerusakan', 'delete', $data);
+                $this->SaveTnlNew('kerusakan', 'delete', $data);
             }
 
             DB::commit();

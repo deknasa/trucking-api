@@ -372,7 +372,7 @@ class SupirController extends Controller
                 'tglterbitsim' => $request->tglterbitsim,
                 'modifiedby' => auth('api')->user()->name,
                 'mandor_id' => $request->mandor_id ?? 0,
-
+                'tas_id' => $request->tas_id ?? '',
                 'photosupir' => $request->photosupir ?? [],
                 'photoktp' => $request->photoktp ?? [],
                 'photosim' => $request->photosim ?? [],
@@ -383,7 +383,10 @@ class SupirController extends Controller
                 'pdfsuratperjanjian' => $request->pdfsuratperjanjian ?? [],
                 'from' => $request->from ?? '',
             ];
-            $supir = (new supir())->processStore($data);
+            // $supir = (new supir())->processStore($data);
+            $supir = new Supir();
+            $supir->processStore($data, $supir);
+
             if ($request->from == '') {
                 $supir->position = $this->getPosition($supir, $supir->getTable())->position;
                 if ($request->limit == 0) {
@@ -394,7 +397,12 @@ class SupirController extends Controller
             }
 
             $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
-            if ($data['statuspostingtnl'] == $statusTnl->id) {
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $cabang->id;
+
+            // if ($data['statuspostingtnl'] == $statusTnl->id) {
+                if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+
                 $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
                 // posting ke tnl
                 $data['statuspostingtnl'] = $statusBukanTnl->id;
@@ -408,7 +416,8 @@ class SupirController extends Controller
                     'vaksin' => $supir->photovaksin,
                     'pdfsuratperjanjian' => $supir->pdfsuratperjanjian,
                 ];
-                $postingTNL = (new supir())->postingTnl($data, $gambar);
+                $this->SaveTnlNew('supir', 'add', $data);                
+                // $postingTNL = (new supir())->postingTnl($data, $gambar);
             }
 
             DB::commit();
@@ -428,7 +437,7 @@ class SupirController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateSupirRequest $request, Supir $supir): JsonResponse
+    public function update(UpdateSupirRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
 
@@ -469,14 +478,27 @@ class SupirController extends Controller
 
             ];
 
-            $supir = (new Supir())->processUpdate($supir, $data);
+            // $supir = (new Supir())->processUpdate($supir, $data);
 
+            $supir = new Supir();
+            $supirs = $supir->findOrFail($id);
+            $supir = $supir->processUpdate($supirs, $data);            
+
+            if ($request->from == '') {            
             $supir->position = $this->getPosition($supir, $supir->getTable())->position;
             if ($request->limit == 0) {
                 $supir->page = ceil($supir->position / (10));
             } else {
                 $supir->page = ceil($supir->position / ($request->limit ?? 10));
             }
+        }
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $supir->id;
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('supir', 'edit', $data);
+            $this->SaveTnlNew('supir', 'edit', $data);
+        }
 
             DB::commit();
 
@@ -500,7 +522,14 @@ class SupirController extends Controller
         DB::beginTransaction();
 
         try {
-            $supir = (new Supir())->processDestroy($id);
+            // $supir = (new Supir())->processDestroy($id);
+
+            $supir = new Supir();
+            $supirs = $supir->findOrFail($id);
+            $supir = $supir->processDestroy($supirs);
+
+            if ($request->from == '') {
+
             $selected = $this->getPosition($supir, $supir->getTable(), true);
             $supir->position = $selected->position;
             $supir->id = $selected->id;
@@ -509,6 +538,17 @@ class SupirController extends Controller
             } else {
                 $supir->page = ceil($supir->position / ($request->limit ?? 10));
             }
+        }
+
+        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+        $data['tas_id'] = $id;
+
+        $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+
+        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            // $this->saveToTnl('supir', 'delete', $data);
+            $this->SaveTnlNew('supir', 'delete', $data);
+        }
 
             DB::commit();
 

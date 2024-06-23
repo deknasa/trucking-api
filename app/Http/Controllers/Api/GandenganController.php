@@ -157,7 +157,9 @@ class GandenganController extends Controller
                 'tas_id' => $request->tas_id ?? '',
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
-            $gandengan = (new Gandengan())->processStore($data);
+            // $gandengan = (new Gandengan())->processStore($data);
+            $gandengan = new Gandengan();
+            $gandengan->processStore($data, $gandengan);            
             if ($request->from == '') {
                 $selected = $this->getPosition($gandengan, $gandengan->getTable());
                 $gandengan->position = $selected->position;
@@ -172,7 +174,7 @@ class GandenganController extends Controller
             $data['tas_id'] = $gandengan->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('gandengan', 'add', $data);
+                $this->SaveTnlNew('gandengan', 'add', $data);
             }
 
             DB::commit();
@@ -210,7 +212,7 @@ class GandenganController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(UpdateGandenganRequest $request, Gandengan $gandengan): JsonResponse
+    public function update(UpdateGandenganRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -225,7 +227,10 @@ class GandenganController extends Controller
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
             ];
             
-            $gandengan = (new Gandengan())->processUpdate($gandengan, $data);
+            // $gandengan = (new Gandengan())->processUpdate($gandengan, $data);
+            $gandengan = new Gandengan();
+            $gandengans = $gandengan->findOrFail($id);
+            $gandengan = $gandengan->processUpdate($gandengans, $data);            
             if ($request->from == '') {
                 $gandengan->position = $this->getPosition($gandengan, $gandengan->getTable())->position;
                 if ($request->limit == 0) {
@@ -239,7 +244,7 @@ class GandenganController extends Controller
             $data['tas_id'] = $gandengan->id;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('gandengan', 'edit', $data);
+                $this->SaveTnlNew('gandengan', 'edit', $data);
             }
 
 
@@ -266,7 +271,11 @@ class GandenganController extends Controller
         DB::beginTransaction();
 
         try {
-            $gandengan = (new Gandengan())->processDestroy($id);
+            // $gandengan = (new Gandengan())->processDestroy($id);
+            $gandengan = new Gandengan();
+            $gandengans = $gandengan->findOrFail($id);
+            $gandengan = $gandengan->processDestroy($gandengans);
+
             if ($request->from == '') {
                 $selected = $this->getPosition($gandengan, $gandengan->getTable(), true);
                 $gandengan->position = $selected->position;
@@ -284,7 +293,7 @@ class GandenganController extends Controller
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $this->saveToTnl('gandengan', 'delete', $data);
+                $this->SaveTnlNew('gandengan', 'delete', $data);
             }
 
             DB::commit();

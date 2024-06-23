@@ -518,9 +518,9 @@ class Gandengan extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data): Gandengan
+    public function processStore(array $data, Gandengan $gandengan): Gandengan
     {
-        $gandengan = new Gandengan();
+        // $gandengan = new Gandengan();
         $gandengan->kodegandengan = $data['kodegandengan'];
         $gandengan->keterangan = $data['keterangan'] ?? '';
         $gandengan->trado_id = $data['trado_id'] ?? '';
@@ -672,10 +672,10 @@ class Gandengan extends MyModel
         return $gandengan;
     }
 
-    public function processDestroy($id): Gandengan
+    public function processDestroy(Gandengan $gandengan): Gandengan
     {
-        $gandengan = new Gandengan();
-        $gandengan = $gandengan->lockAndDestroy($id);
+        // $gandengan = new Gandengan();
+        $gandengan = $gandengan->lockAndDestroy($gandengan->id);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($gandengan->getTable()),
