@@ -35,6 +35,11 @@ return [
             'root' => storage_path('app'),
         ],
 
+        'toTnl' => [
+            'driver' => 'local',
+            'root' => 'C:\xampp\htdocs\truckingtnl-laravel\storage\app',
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
