@@ -1486,7 +1486,7 @@ class Stok extends MyModel
         $stok->info = html_entity_decode(request()->info);
         $stok->tas_id = $data['tas_id'] ?? '';        
         if ($data['gambar']) {
-            if(request()->from != ''){
+            if(request()->from != '' || array_key_exists('from',$data)  ){
                 $stok->gambar = $this->storeFilesBase64($data['gambar'], 'stok');
             }else{
                 $stok->gambar = $this->storeFiles($data['gambar'], 'stok');
@@ -1549,9 +1549,9 @@ class Stok extends MyModel
             $stok->vulkanisirawal = $data['vulkanisirawal'];
         }
 
-        $this->deleteFiles($stok);
+        $this->deleteFiles($stok,array_key_exists('from',$data));
         if ($data['gambar']) {
-            if(request()->from != ''){
+            if(request()->from != ''|| array_key_exists('from',$data) ){
                 $stok->gambar = $this->storeFilesBase64($data['gambar'], 'stok');
             }else{
                 $stok->gambar = $this->storeFiles($data['gambar'], 'stok');
@@ -1747,8 +1747,9 @@ class Stok extends MyModel
         foreach ($files as $file) {
             $originalFileName = "$destinationFolder-" . hash('sha256', $file) . '.jpg';
             $imageData = base64_decode($file);
-            $storedFile = Storage::put( $destinationFolder . '/' . $originalFileName, $imageData);
-            $resizedFiles = App::imageResize(storage_path("app/$destinationFolder/"), storage_path("app/$destinationFolder/$originalFileName"), $originalFileName);
+            $storedFile = Storage::disk('toTnl')->put( $destinationFolder . '/' . $originalFileName, $imageData);
+            $pathDestination = Storage::disk('toTnl')->getDriver()->getAdapter()->applyPathPrefix(null);
+            $resizedFiles = App::imageResize($pathDestination.$destinationFolder.'/', $pathDestination.$destinationFolder.'/'.$originalFileName, $originalFileName);
 
             $storedFiles[] = $originalFileName;
         }
@@ -1757,7 +1758,7 @@ class Stok extends MyModel
     }
 
 
-    private function deleteFiles(Stok $stok)
+    private function deleteFiles(Stok $stok,$from = null)
     {
         $sizeTypes = ['', 'medium_', 'small_'];
 
@@ -1770,6 +1771,9 @@ class Stok extends MyModel
                 }
             }
             Storage::delete($relatedPhotoStok);
+            if ($from) {
+                Storage::disk('toTnl')->delete($relatedPhotoStok);
+            }
         }
     }
 

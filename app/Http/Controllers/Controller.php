@@ -855,7 +855,7 @@ class Controller extends BaseController
                 $data['mandor_id'] = $mandor->id ?? 0;                
                 $data['supirold_id'] = $supirold->id ?? 0;                
             }        
-
+            $data['from'] = 'tas';
             
             if ($aksi == 'add') {
                 $datasimpan=$models->processStore($data, $models);
