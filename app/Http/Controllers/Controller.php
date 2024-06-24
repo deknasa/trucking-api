@@ -862,6 +862,8 @@ class Controller extends BaseController
                 $getId=$datasimpan->id;
             } else {
                 $getId = $models->where('tas_id', $data['tas_id'])->first()->id ?? 0;
+                $getstatusaktif = $models->where('tas_id', $data['tas_id'])->first()->statusaktif ?? 0;
+                $data['statusaktif'] = $getstatusaktif;
                 // dd($getId);
                 // if (!$getId) {
                 //     $models->processStore($data, $models);
