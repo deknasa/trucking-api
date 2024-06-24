@@ -457,18 +457,18 @@ class Parameter extends MyModel
                 ]);
         }
 
-        $query = db::table($tempparameter)->from(db::raw($tempparameter . " a"))
+        $query = db::table($tempparameter)->from(db::raw($tempparameter . " as parameter"))
             ->select(
-                'a.id',
-                'a.grp',
-                'a.subgrp',
-                'a.kelompok',
-                'a.text',
-                'a.memo',
-                'a.type',
-                'a.default',
-                'a.info',
-                'a.modifiedby',
+                'parameter.id',
+                'parameter.grp',
+                'parameter.subgrp',
+                'parameter.kelompok',
+                'parameter.text',
+                'parameter.memo',
+                'parameter.type',
+                'parameter.default',
+                'parameter.info',
+                'parameter.modifiedby',
             );
         $this->filter($query);
         if (request()->sortIndex) {
