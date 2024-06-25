@@ -148,7 +148,7 @@ class UpahSupirController extends Controller
                 'nominaltol' =>  $request->nominaltol ?? 0,
                 'liter' => $request->liter ?? 0,
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
-
+                'tas_id' => $request->tas_id
             ];
             if ($request->from != '') {
                 $data['gambar'] = $request->gambar ?? [];
@@ -159,11 +159,11 @@ class UpahSupirController extends Controller
             $upahsupir = new UpahSupir();
             $dataupahsupir=$upahsupir->processStore($data, $upahsupir);                
             if ($request->from == '') {
-                $upahsupir->position = $this->getPosition($upahsupir, $upahsupir->getTable())->position;
+                $dataupahsupir->position = $this->getPosition($dataupahsupir, $dataupahsupir->getTable())->position;
                 if ($request->limit == 0) {
-                    $upahsupir->page = ceil($upahsupir->position / (10));
+                    $dataupahsupir->page = ceil($dataupahsupir->position / (10));
                 } else {
-                    $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
+                    $dataupahsupir->page = ceil($dataupahsupir->position / ($request->limit ?? 10));
                 }
             }
 
@@ -177,61 +177,17 @@ class UpahSupirController extends Controller
             // $this->upahsupir = $upahsupir;
 
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-            $data['tas_id'] = $upahsupir->id;
-
+            $data['tas_id'] = $dataupahsupir->id;
+            $data['detail_tas_id'] = $dataupahsupir->detailTasId;
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $upahsupir = new UpahSupir();
-                $dataupahsupirtnl=$this->SaveTnlNew('upahsupir', 'add', $data);
+                $dataupahsupirtnl=$this->SaveTnlMasterDetail('upahsupir', 'add', $data);
             } 
-
-
- //detail
- $json=json_decode(json_encode($dataupahsupirtnl),true);
- $dataupahsupirtnlid=$json['original']['id'];
- // dd($json['original']['id']);
- // dd($dataupahsupirtnl);
- if (is_iterable($data['container_id'])) {
-     $upahsupirDetails = [];
-     for ($i = 0; $i < count($data['container_id']); $i++) {
-         $datadetail = [
-            'container_id' => $data['container_id'][$i],
-            'nominal' => $data['nominal'][$i],
-            'upahsupir_id' => $dataupahsupir->id,
-             'tas_id' => 0,
-         ];
-
-             $upahsupirRincian = new UpahSupirRincian();
-             $upahsupirRincian->processStore($datadetail, $upahsupirRincian);
-
-         $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-         $datadetail['tas_id'] = $upahsupirRincian->id;
-         $datadetail['upahsupir_id'] =$dataupahsupirtnlid;
-         
-         if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-             $controller = new Controller;
-             $controller->SaveTnlNew('upahsupirrincian', 'add', $datadetail);
-         }
-
-         $upahsupirRincians[] = $upahsupirRincian->toArray();
-     }
-
-     (new LogTrail())->processStore([
-         'namatabel' => strtoupper($upahsupirRincian->getTable()),
-         'postingdari' => 'ENTRY upahsupir RINCIAN',
-         'idtrans' =>  $upahsupir->id,
-         'nobuktitrans' => $upahsupir->id,
-         'aksi' => 'ENTRY',
-         'datajson' => $upahsupirRincians,
-         'modifiedby' => auth('api')->user()->user,
-     ]);
- }
-
             DB::commit();
 
             return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
-                'data' => $upahsupir
+                'data' => $dataupahsupir
             ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -295,82 +251,40 @@ class UpahSupirController extends Controller
                 'nominalkomisi' => $request->nominalkomisi ?? 0,
                 'nominaltol' =>  $request->nominaltol ?? 0,
                 'liter' => $request->liter ?? 0,
+                'tas_id' => $request->tas_id
 
             ];
             // $upahsupir = (new UpahSupir())->processUpdate($upahsupir, $data);
             $upahsupir = new UpahSupir();
             $upahsupirs = $upahsupir->findOrFail($id);
-            $upahsupir = $upahsupir->processUpdate($upahsupirs, $data);            
-            UpahSupirRincian::where('upahsupir_id', $id)->delete();
+            $dataupahsupir = $upahsupir->processUpdate($upahsupirs, $data);            
+            // UpahSupirRincian::where('upahsupir_id', $id)->delete();
 
             if ($request->from == '') {
 
-            $upahsupir->position = $this->getPosition($upahsupir, $upahsupir->getTable())->position;
-            if ($request->limit == 0) {
-                $upahsupir->page = ceil($upahsupir->position / (10));
-            } else {
-                $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
+                $dataupahsupir->position = $this->getPosition($dataupahsupir, $dataupahsupir->getTable())->position;
+                if ($request->limit == 0) {
+                    $dataupahsupir->page = ceil($dataupahsupir->position / (10));
+                } else {
+                    $dataupahsupir->page = ceil($dataupahsupir->position / ($request->limit ?? 10));
+                }
             }
-        }
 
-        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-        $data['tas_id'] = $tarif->id;
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
 
-        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-            $dataupahsupirtnl=$this->SaveTnlNew('upahsupir', 'edit', $data);
-            $this->SaveTnlNewDetail('upahsupirrincian', 'delete', $data,'upahsupir','upahsupir_id');
-        }
+            $data['tas_id'] = $dataupahsupir->id;
+            $data['detail_tas_id'] = $dataupahsupir->detailTasId;
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
 
-
-//detail
-// dd($data);
-$json=json_decode(json_encode($dataupahsupirtnl),true);
-$dataupahsupirtnlid=$json['original']['id'];
-// dd($json['original']['id']);
-// dd($dataupahsupirtnl);
-if (is_iterable($data['container_id'])) {
-    $upahsupirDetails = [];
-    for ($i = 0; $i < count($data['container_id']); $i++) {
-        $datadetail = [
-           'container_id' => $data['container_id'][$i],
-           'nominal' => $data['nominal'][$i],
-           'upahsupir_id' => $id,
-            'tas_id' => 0,
-        ];
-
-            $upahsupirRincian = new UpahSupirRincian();
-            $upahsupirRincian->processStore($datadetail, $upahsupirRincian);
-
-        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-        $datadetail['tas_id'] = $upahsupirRincian->id;
-        $datadetail['upahsupir_id'] =$dataupahsupirtnlid;
-        
-        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-            $controller = new Controller;
-            $controller->SaveTnlNew('upahsupirrincian', 'add', $datadetail);
-        }
-
-        $upahsupirRincians[] = $upahsupirRincian->toArray();
-    }
-
-    (new LogTrail())->processStore([
-        'namatabel' => strtoupper($upahsupirRincian->getTable()),
-        'postingdari' => 'ENTRY upahsupir RINCIAN',
-        'idtrans' =>  $upahsupir->id,
-        'nobuktitrans' => $upahsupir->id,
-        'aksi' => 'ENTRY',
-        'datajson' => $upahsupirRincians,
-        'modifiedby' => auth('api')->user()->user,
-    ]);
-}
-
+                $dataupahsupirtnl=$this->SaveTnlMasterDetail('upahsupir', 'edit', $data);
+            } 
 
             DB::commit();
 
             return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
-                'data' => $upahsupir
+                'data' => $dataupahsupir
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();

@@ -19,6 +19,8 @@ class Mandor extends MyModel
         'updated_at',
     ];
 
+    public $detailTasId;
+
     public function get()
     {
         $this->setRequestParameters();
@@ -309,7 +311,7 @@ class Mandor extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function processStore(array $data, Mandor $mandor): Mandor
+    public function processStore(array $data, Mandor $mandor,$connecTnl = null): Mandor
     {
         // $mandor = new Mandor();
         $mandor->namamandor = $data['namamandor'];
@@ -336,49 +338,44 @@ class Mandor extends MyModel
         ]);
 
         // dd($data['users']);
-        // if (is_iterable($data['users'])) {
-        //     $mandorDetails = [];
-        //     for ($i = 0; $i < count($data['users']); $i++) {
-        //         $datadetail = [
-        //             'user_id' => $data['users'][$i],
-        //             'mandor_id' => $mandor->id,
-        //             'tas_id' => 0,
-        //         ];
+        if (is_iterable($data['users'])) {
+            $mandorDetails = [];
+            for ($i = 0; $i < count($data['users']); $i++) {
+                $datadetail = [
+                    'user_id' => $data['users'][$i],
+                    'mandor_id' => $mandor->id,
+                    'tas_id' => $data['detail_tas_id'][$i]??0,
+                ];
+                $mandorDetail = new MandorDetail();
+                if ($connecTnl) {
+                    $mandorDetail->setConnection('srvtnl');
+                }
+                
+                $mandorDetail->processStore($datadetail, $mandorDetail);
+                
+                $mandor->detailTasId[] = $mandorDetail->id;
 
-        //             $mandorDetail = new MandorDetail();
-        //             $mandorDetail->processStore($datadetail, $mandorDetail);
-        //         // $mandorDetail = (new MandorDetail())->processStore( [
-        //         //     'user_id' => $data['users'][$i],
-        //         //     'tas_id' => $data['tas_id'] ?? '',
-        //         //     'mandor_id' => $mandor->id,
-        //         // ]);
-        //         $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-        //         $datadetail['tas_id'] = $mandorDetail->id;
-    
-        //         // if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-        //         //     // $this->saveToTnl('mandordetail', 'add', $data);
-        //         //     $controller = new Controller;
-        //         //     $controller->SaveTnlNew('mandordetail', 'add', $datadetail);
-        //         // }
-
-        //         $mandorDetails[] = $mandorDetail->toArray();
-        //     }
-
-        //     // (new LogTrail())->processStore([
-        //     //     'namatabel' => strtoupper($mandorDetail->getTable()),
-        //     //     'postingdari' => 'ENTRY MANDOR DETAIL',
-        //     //     'idtrans' =>  $mandorLogTrail->id,
-        //     //     'nobuktitrans' => $mandor->id,
-        //     //     'aksi' => 'ENTRY',
-        //     //     'datajson' => $mandorDetails,
-        //     //     'modifiedby' => auth('api')->user()->user,
-        //     // ]);
-        // }
-
+                $mandorDetails[] = $mandorDetail->toArray();
+            }
+            
+            $logtrail = new LogTrail();
+            if ($connecTnl) {
+                $logtrail->setConnection('srvtnl');
+            }
+            $logtrail->processStore([
+                'namatabel' => strtoupper($mandorDetail->getTable()),
+                'postingdari' => 'ENTRY MANDOR DETAIL',
+                'idtrans' =>  $mandorLogTrail->id,
+                'nobuktitrans' => $mandor->id,
+                'aksi' => 'ENTRY',
+                'datajson' => $mandorDetails,
+                'modifiedby' => auth('api')->user()->user,
+            ]);
+        }
         return $mandor;
     }
 
-    public function processUpdate(Mandor $mandor, array $data): Mandor
+    public function processUpdate(Mandor $mandor, array $data,$connecTnl = null): Mandor
     {
         $mandor->namamandor = $data['namamandor'];
         $mandor->keterangan = $data['keterangan'] ?? '';
@@ -402,45 +399,67 @@ class Mandor extends MyModel
             'modifiedby' => $mandor->modifiedby
         ]);
 
+        
+        if (is_iterable($data['users'])) {
+            $mandorDetail = new MandorDetail();
+            if ($connecTnl) {
+                $mandorDetail->setConnection('srvtnl');
+            }
+            $mandorDetail->where('mandor_id', $mandor->id)->delete();
+            $mandorDetails = [];
+            for ($i = 0; $i < count($data['users']); $i++) {
+                $datadetail = [
+                    'user_id' => $data['users'][$i],
+                    'mandor_id' => $mandor->id,
+                    'tas_id' => $data['detail_tas_id'][$i]??0,
+                ];
+                $mandorDetail = new MandorDetail();
+                if ($connecTnl) {
+                    $mandorDetail->setConnection('srvtnl');
+                }
+                $mandorDetail->processStore($datadetail, $mandorDetail);
+                $mandor->detailTasId[] = $mandorDetail->id;
 
-        // if (is_iterable($data['users'])) {
-        //     MandorDetail::where('mandor_id', $mandor->id)->delete();
-        //     $mandorDetails = [];
-        //     for ($i = 0; $i < count($data['users']); $i++) {
-        //         $mandorDetail = (new MandorDetail())->processStore($mandor, [
-        //             'user_id' => $data['users'][$i],
-        //             'tas_id' => $data['tas_id'] ?? ''
-        //         ]);
+                $mandorDetails[] = $mandorDetail->toArray();
+            }
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($mandorDetail->getTable()),
+                'postingdari' => 'EDIT MANDOR DETAIL',
+                'idtrans' =>  $mandorLogTrail->id,
+                'nobuktitrans' => $mandor->id,
+                'aksi' => 'EDIT',
+                'datajson' => $mandorDetails,
+                'modifiedby' => auth('api')->user()->user,
+            ]);
+        } else {
+            $checkDetail = DB::table('mandordetail')->from(DB::raw("mandordetail with (readuncommitted)"));
+            if ($connecTnl) {
+                $checkDetail->connection('srvtnl');
+            }
+            $checkDetailExist = $checkDetail->where('mandor_id', $mandor->id)->first();
+            if ($checkDetailExist != '') {
+                $mandorDetail = DB::table('mandordetail')->from(DB::raw("mandordetail with (readuncommitted)"));
+                if ($connecTnl) {
+                    $mandorDetail->connection('srvtnl');
+                }
+                $mandorDetail->where('mandor_id', $mandor->id)->get();
+                $mandorDetail = new MandorDetail();
+                if ($connecTnl) {
+                    $mandorDetail->setConnection('srvtnl');
+                }
+                $mandorDetail->where('mandor_id', $mandor->id)->delete();
 
-        //         $mandorDetails[] = $mandorDetail->toArray();
-        //     }
-
-        //     (new LogTrail())->processStore([
-        //         'namatabel' => strtoupper($mandorDetail->getTable()),
-        //         'postingdari' => 'EDIT MANDOR DETAIL',
-        //         'idtrans' =>  $mandorLogTrail->id,
-        //         'nobuktitrans' => $mandor->id,
-        //         'aksi' => 'EDIT',
-        //         'datajson' => $mandorDetails,
-        //         'modifiedby' => auth('api')->user()->user,
-        //     ]);
-        // } else {
-        //     $checkDetailExist = DB::table('mandordetail')->from(DB::raw("mandordetail with (readuncommitted)"))->where('mandor_id', $mandor->id)->first();
-        //     if ($checkDetailExist != '') {
-        //         $mandorDetail = DB::table('mandordetail')->from(DB::raw("mandordetail with (readuncommitted)"))->where('mandor_id', $mandor->id)->get();
-        //         MandorDetail::where('mandor_id', $mandor->id)->delete();
-
-        //         (new LogTrail())->processStore([
-        //             'namatabel' => strtoupper('mandordetail'),
-        //             'postingdari' => 'EDIT MANDOR DELETE DETAIL',
-        //             'idtrans' =>  $mandorLogTrail->id,
-        //             'nobuktitrans' => $mandor->id,
-        //             'aksi' => 'EDIT',
-        //             'datajson' => $mandorDetail->toArray(),
-        //             'modifiedby' => auth('api')->user()->user,
-        //         ]);
-        //     }
-        // }
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper('mandordetail'),
+                    'postingdari' => 'EDIT MANDOR DELETE DETAIL',
+                    'idtrans' =>  $mandorLogTrail->id,
+                    'nobuktitrans' => $mandor->id,
+                    'aksi' => 'EDIT',
+                    'datajson' => $mandorDetail->toArray(),
+                    'modifiedby' => auth('api')->user()->user,
+                ]);
+            }
+        }
 
         return $mandor;
     }

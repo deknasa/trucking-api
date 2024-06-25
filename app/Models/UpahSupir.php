@@ -29,6 +29,8 @@ class UpahSupir extends MyModel
         'updated_at',
     ];
 
+    public $detailTasId;
+
     public function kota()
     {
         return $this->belongsTo(Kota::class, 'kota_id');
@@ -1055,7 +1057,7 @@ class UpahSupir extends MyModel
         return $query;
     }
 
-    private function deleteFiles(UpahSupir $upahsupir)
+    private function deleteFiles(UpahSupir $upahsupir,$from = null)
     {
         $sizeTypes = ['', 'medium_', 'small_'];
 
@@ -1068,6 +1070,9 @@ class UpahSupir extends MyModel
                 }
             }
             Storage::delete($relatedPhotoUpahSupir);
+            if ($from) {
+                Storage::disk('toTnl')->delete($relatedPhotoUpahSupir);
+            }
         }
     }
 
@@ -1076,12 +1081,18 @@ class UpahSupir extends MyModel
         $storedFiles = [];
 
         foreach ($files as $file) {
-            $originalFileName = hash('sha256', $file);
+            $originalFileName = $file->hashName();
+            // $originalFileName = hash('sha256', $file);
 
             $randomValue = substr($originalFileName, rand(0, strlen($originalFileName) - 10), 10) . '.jpg';
             $imageData = base64_decode($file);
-            $storedFile = Storage::put($destinationFolder . '/' . $randomValue, $imageData);
-            $resizedFiles = App::imageResize(storage_path("app/$destinationFolder/"), storage_path("app/upahsupir/$randomValue"), $randomValue);
+            
+            $storedFile = Storage::disk('toTnl')->putFileAs($destinationFolder, $file, $originalFileName);
+            $pathDestination = Storage::disk('toTnl')->getDriver()->getAdapter()->applyPathPrefix(null);
+            $resizedFiles = App::imageResize($pathDestination.$destinationFolder.'/', $pathDestination.$destinationFolder.'/'.$originalFileName, $originalFileName);
+            
+            // $storedFile = Storage::put($destinationFolder . '/' . $randomValue, $imageData);
+            // $resizedFiles = App::imageResize(storage_path("app/$destinationFolder/"), storage_path("app/upahsupir/$randomValue"), $randomValue);
             $storedFiles[] = $randomValue;
         }
 
@@ -1102,7 +1113,7 @@ class UpahSupir extends MyModel
 
         return json_encode($storedFiles);
     }
-    public function processStore(array $data): UpahSupir
+    public function processStore(array $data,UpahSupir $upahsupir,$connecTnl = null): UpahSupir
     {
         try {
             $group = 'STATUS SIMPAN KANDANG';
@@ -1119,68 +1130,72 @@ class UpahSupir extends MyModel
             $belawan = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))
                 ->where('kodekota', 'BELAWAN')
                 ->first();
-            if ($data['from'] != '') {
-                if ($data['tarif_id'] != 0) {
-
-                    $getTarif = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
-                        ->where('kota_id', $data['kotasampai_id'])
-                        ->where('penyesuaian', trim(strtoupper($data['penyesuaian'])))
-                        ->first();
-
-                    if ($getTarif != '') {
-                        $data['tarif_id'] = $getTarif->id;
-                    }
-                }
-                if ($data['tarifmuatan_id'] != 0) {
-
-                    $getTarif = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
-                        ->where('kota_id', $data['kotasampai_id'])
-                        ->where('penyesuaian', trim(strtoupper($data['penyesuaian'])))
-                        ->where('jenisorder_id', 1)
-                        ->first();
-
-                    if ($getTarif != '') {
-                        $data['tarifmuatan_id'] = $getTarif->id;
-                    }
-                }
-                if ($data['tarifbongkaran_id'] != 0) {
-
-                    $getTarif = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
-                        ->where('kota_id', $data['kotasampai_id'])
-                        ->where('penyesuaian', trim(strtoupper($data['penyesuaian'])))
-                        ->where('jenisorder_id', 2)
-                        ->first();
-
-                    if ($getTarif != '') {
-                        $data['tarifbongkaran_id'] = $getTarif->id;
-                    }
-                }
-                if ($data['tarifimport_id'] != 0) {
-
-                    $getTarif = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
-                        ->where('kota_id', $data['kotasampai_id'])
-                        ->where('penyesuaian', trim(strtoupper($data['penyesuaian'])))
-                        ->where('jenisorder_id', 3)
-                        ->first();
-
-                    if ($getTarif != '') {
-                        $data['tarifimport_id'] = $getTarif->id;
-                    }
-                }
-                if ($data['tarifexport_id'] != 0) {
-
-                    $getTarif = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
-                        ->where('kota_id', $data['kotasampai_id'])
-                        ->where('penyesuaian', trim(strtoupper($data['penyesuaian'])))
-                        ->where('jenisorder_id', 4)
-                        ->first();
-
-                    if ($getTarif != '') {
-                        $data['tarifexport_id'] = $getTarif->id;
-                    }
-                }
-            }
-            $upahsupir = new UpahSupir();
+            /**
+             * 
+             if ($data['from'] != '') {
+                 if ($data['tarif_id'] != 0) {
+ 
+                     $getTarif = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
+                         ->where('kota_id', $data['kotasampai_id'])
+                         ->where('penyesuaian', trim(strtoupper($data['penyesuaian'])))
+                         ->first();
+ 
+                     if ($getTarif != '') {
+                         $data['tarif_id'] = $getTarif->id;
+                     }
+                 }
+                 if ($data['tarifmuatan_id'] != 0) {
+ 
+                     $getTarif = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
+                         ->where('kota_id', $data['kotasampai_id'])
+                         ->where('penyesuaian', trim(strtoupper($data['penyesuaian'])))
+                         ->where('jenisorder_id', 1)
+                         ->first();
+ 
+                     if ($getTarif != '') {
+                         $data['tarifmuatan_id'] = $getTarif->id;
+                     }
+                 }
+                 if ($data['tarifbongkaran_id'] != 0) {
+ 
+                     $getTarif = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
+                         ->where('kota_id', $data['kotasampai_id'])
+                         ->where('penyesuaian', trim(strtoupper($data['penyesuaian'])))
+                         ->where('jenisorder_id', 2)
+                         ->first();
+ 
+                     if ($getTarif != '') {
+                         $data['tarifbongkaran_id'] = $getTarif->id;
+                     }
+                 }
+                 if ($data['tarifimport_id'] != 0) {
+ 
+                     $getTarif = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
+                         ->where('kota_id', $data['kotasampai_id'])
+                         ->where('penyesuaian', trim(strtoupper($data['penyesuaian'])))
+                         ->where('jenisorder_id', 3)
+                         ->first();
+ 
+                     if ($getTarif != '') {
+                         $data['tarifimport_id'] = $getTarif->id;
+                     }
+                 }
+                 if ($data['tarifexport_id'] != 0) {
+ 
+                     $getTarif = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
+                         ->where('kota_id', $data['kotasampai_id'])
+                         ->where('penyesuaian', trim(strtoupper($data['penyesuaian'])))
+                         ->where('jenisorder_id', 4)
+                         ->first();
+ 
+                     if ($getTarif != '') {
+                         $data['tarifexport_id'] = $getTarif->id;
+                     }
+                 }
+             }
+             *
+             */
+            // $upahsupir = new UpahSupir();
             $upahsupir->kotadari_id = $data['kotadari_id'] ?? 0;
             $upahsupir->parent_id = $data['parent_id'] ?? 0;
             $upahsupir->tarif_id = $data['tarif_id'] ?? 0;
@@ -1205,7 +1220,7 @@ class UpahSupir extends MyModel
             $upahsupir->modifiedby = auth('api')->user()->user;
             $upahsupir->info = html_entity_decode(request()->info);
             $upahsupir->tas_id = $data['tas_id'];            
-            $this->deleteFiles($upahsupir);
+            $this->deleteFiles($upahsupir,$data['from'] != '');
             if (array_key_exists('gambar', $data)) {
                 if ($data['from'] != '') {
                     $upahsupir->gambar = $this->storeFilesBase64($data['gambar'], 'upahsupir');
@@ -1230,30 +1245,45 @@ class UpahSupir extends MyModel
                 'modifiedby' => $upahsupir->modifiedby
             ]);
 
-            // $detaillog = [];
-            // for ($i = 0; $i < count($data['nominalsupir']); $i++) {
-            //     $upahsupirDetail = (new UpahSupirRincian())->processStore($upahsupir, [
-            //         'upahsupir_id' => $upahsupir->id,
-            //         'container_id' => $data['container_id'][$i],
-            //         'statuscontainer_id' => $data['statuscontainer_id'][$i],
-            //         'nominalsupir' => $data['nominalsupir'][$i],
-            //         'nominalkenek' => $data['nominalkenek'][$i] ?? 0,
-            //         'nominalkomisi' => $data['nominalkomisi'][$i] ?? 0,
-            //         'nominaltol' =>  $data['nominaltol'][$i] ?? 0,
-            //         'liter' => $data['liter'][$i] ?? 0
-            //     ]);
+            $detaillog = [];
 
-            //     $detaillog[] = $upahsupirDetail->toArray();
-            // }
-            // (new LogTrail())->processStore([
-            //     'namatabel' => strtoupper($upahsupirDetail->getTable()),
-            //     'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',
-            //     'idtrans' =>  $storedLogTrail['id'],
-            //     'nobuktitrans' => $upahsupir->id,
-            //     'aksi' => 'ENTRY',
-            //     'datajson' => $detaillog,
-            //     'modifiedby' => auth('api')->user()->user,
-            // ]);
+            for ($i = 0; $i < count($data['nominalsupir']); $i++) {
+                $upahsupirDetail = new UpahSupirRincian();
+                if ($connecTnl) {
+                    $upahsupirDetail->setConnection('srvtnl');
+                }
+
+                $datadetail = [
+                    'upahsupir_id' => $upahsupir->id,
+                    'container_id' => $data['container_id'][$i],
+                    'statuscontainer_id' => $data['statuscontainer_id'][$i],
+                    'nominalsupir' => $data['nominalsupir'][$i],
+                    'nominalkenek' => $data['nominalkenek'][$i] ?? 0,
+                    'nominalkomisi' => $data['nominalkomisi'][$i] ?? 0,
+                    'nominaltol' =>  $data['nominaltol'][$i] ?? 0,
+                    'liter' => $data['liter'][$i] ?? 0,
+                    'tas_id' => $data['detail_tas_id'][$i]??0,
+                ];
+                
+                
+                $upahsupirDetail = $upahsupirDetail->processStore( $datadetail,$upahsupirDetail,$connecTnl);
+                $detaillog[] = $upahsupirDetail->toArray();
+                $upahsupir->detailTasId[] = $upahsupirDetail->id;
+                
+            }
+            $logtrail = new LogTrail();
+            if ($connecTnl) {
+                $logtrail->setConnection('srvtnl');
+            }
+            $logtrail->processStore([
+                'namatabel' => strtoupper($upahsupirDetail->getTable()),
+                'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',
+                'idtrans' =>  $storedLogTrail['id'],
+                'nobuktitrans' => $upahsupir->id,
+                'aksi' => 'ENTRY',
+                'datajson' => $detaillog,
+                'modifiedby' => auth('api')->user()->user,
+            ]);
 
             if ($data['statussimpankandang'] == $statusSimpanKandang->id) {
                 $getBelawanKandang = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
@@ -1281,9 +1311,14 @@ class UpahSupir extends MyModel
                 $upahsupirKandang->keterangan = $data['keterangan'];
                 $upahsupirKandang->modifiedby = auth('api')->user()->user;
                 $upahsupirKandang->info = html_entity_decode(request()->info);
-                $this->deleteFiles($upahsupirKandang);
+                $this->deleteFiles($upahsupirKandang,$data['from'] != '');
                 if (array_key_exists('gambar', $data)) {
-                    $upahsupirKandang->gambar = $this->storeFiles($data['gambar'], 'upahsupir');
+                    // $upahsupirKandang->gambar = $this->storeFiles($data['gambar'], 'upahsupir');
+                    if ($data['from'] != '') {
+                        $upahsupirKandang->gambar = $this->storeFilesBase64($data['gambar'], 'upahsupir');
+                    } else {
+                        $upahsupirKandang->gambar = $this->storeFiles($data['gambar'], 'upahsupir');
+                    }
                 } else {
                     $upahsupirKandang->gambar = '';
                 }
@@ -1348,12 +1383,12 @@ class UpahSupir extends MyModel
 
             return $upahsupir;
         } catch (\Throwable $th) {
-            $this->deleteFiles($upahsupir);
+            $this->deleteFiles($upahsupir,array_key_exists('from',$data));
             throw $th;
         }
     }
 
-    public function processUpdate(UpahSupir $upahsupir, array $data): UpahSupir
+    public function processUpdate(UpahSupir $upahsupir, array $data,$connecTnl = null): UpahSupir
     {
         try {
             $upahsupir->kotadari_id = $data['kotadari_id'] ?? 0;
@@ -1377,7 +1412,7 @@ class UpahSupir extends MyModel
             $upahsupir->modifiedby = auth('api')->user()->user;
             $upahsupir->info = html_entity_decode(request()->info);
 
-            $this->deleteFiles($upahsupir);
+            $this->deleteFiles($upahsupir,array_key_exists('from',$data));
             if (array_key_exists('gambar', $data)) {
                 $upahsupir->gambar = $this->storeFiles($data['gambar'], 'upahsupir');
             } else {
@@ -1396,36 +1431,52 @@ class UpahSupir extends MyModel
                 'datajson' => $upahsupir->toArray(),
                 'modifiedby' => $upahsupir->modifiedby
             ]);
-
-            // UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->delete();
-            // /* Store detail */
-            // $detaillog = [];
-            // for ($i = 0; $i < count($data['nominalsupir']); $i++) {
-            //     $upahsupirDetail = (new UpahSupirRincian())->processStore($upahsupir, [
-            //         'upahsupir_id' => $upahsupir->id,
-            //         'container_id' => $data['container_id'][$i],
-            //         'statuscontainer_id' => $data['statuscontainer_id'][$i],
-            //         'nominalsupir' => $data['nominalsupir'][$i],
-            //         'nominalkenek' => $data['nominalkenek'][$i] ?? 0,
-            //         'nominalkomisi' => $data['nominalkomisi'][$i] ?? 0,
-            //         'nominaltol' =>  $data['nominaltol'][$i] ?? 0,
-            //         'liter' => $data['liter'][$i] ?? 0,
-            //     ]);
-            //     $detaillog[] = $upahsupirDetail->toArray();
-            // }
-            // (new LogTrail())->processStore([
-            //     'namatabel' => strtoupper($upahsupirDetail->getTable()),
-            //     'postingdari' => 'EDIT UPAH SUPIR RINCIAN',
-            //     'idtrans' =>  $storedLogTrail['id'],
-            //     'nobuktitrans' => $upahsupir->id,
-            //     'aksi' => 'EDIT',
-            //     'datajson' => $detaillog,
-            //     'modifiedby' => auth('api')->user()->user,
-            // ]);
+            $upahsupirDetail = new UpahSupirRincian();
+            if ($connecTnl) {
+                $upahsupirDetail->setConnection('srvtnl');
+            }
+            $upahsupirDetail::where('upahsupir_id', $upahsupir->id)->delete();
+            /* Store detail */
+            $detaillog = [];
+            for ($i = 0; $i < count($data['nominalsupir']); $i++) {
+                $upahsupirDetail = new UpahSupirRincian();
+                if ($connecTnl) {
+                    $upahsupirDetail->setConnection('srvtnl');
+                }
+                $datadetail = [
+                    'upahsupir_id' => $upahsupir->id,
+                    'container_id' => $data['container_id'][$i],
+                    'statuscontainer_id' => $data['statuscontainer_id'][$i],
+                    'nominalsupir' => $data['nominalsupir'][$i],
+                    'nominalkenek' => $data['nominalkenek'][$i] ?? 0,
+                    'nominalkomisi' => $data['nominalkomisi'][$i] ?? 0,
+                    'nominaltol' =>  $data['nominaltol'][$i] ?? 0,
+                    'liter' => $data['liter'][$i] ?? 0,
+                    'tas_id' => $data['detail_tas_id'][$i]??0,
+                ];
+                
+                
+                $upahsupirDetail = $upahsupirDetail->processStore( $datadetail,$upahsupirDetail);
+                $detaillog[] = $upahsupirDetail->toArray();
+                $upahsupir->detailTasId[] = $upahsupirDetail->id;
+            }
+            $logtrail = new LogTrail();
+            if ($connecTnl) {
+                $logtrail->setConnection('srvtnl');
+            }
+            $logtrail->processStore([
+                'namatabel' => strtoupper($upahsupirDetail->getTable()),
+                'postingdari' => 'EDIT UPAH SUPIR RINCIAN',
+                'idtrans' =>  $storedLogTrail['id'],
+                'nobuktitrans' => $upahsupir->id,
+                'aksi' => 'EDIT',
+                'datajson' => $detaillog,
+                'modifiedby' => auth('api')->user()->user,
+            ]);
 
             return $upahsupir;
         } catch (\Throwable $th) {
-            $this->deleteFiles($upahsupir);
+            $this->deleteFiles($upahsupir,array_key_exists('from',$data));
             throw $th;
         }
     }
