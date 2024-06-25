@@ -37,7 +37,7 @@ return [
 
         'toTnl' => [
             'driver' => 'local',
-            'root' => 'C:\xampp\htdocs\truckingtnl-laravel\storage\app',
+            'root' => env('PATH_STORAGE_TNL'),
         ],
 
         'public' => [

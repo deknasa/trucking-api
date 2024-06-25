@@ -176,70 +176,27 @@ class MandorController extends Controller
             // $mandor->processStore($data, $mandor);
 
             if ($request->from == '') {
-                $mandor->position = $this->getPosition($mandor, $mandor->getTable())->position;
+                $datamandor->position = $this->getPosition($datamandor, $datamandor->getTable())->position;
                 if ($request->limit == 0) {
-                    $mandor->page = ceil($mandor->position / (10));
+                    $datamandor->page = ceil($datamandor->position / (10));
                 } else {
-                    $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
+                    $datamandor->page = ceil($datamandor->position / ($request->limit ?? 10));
                 }
             }
 
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-            $data['tas_id'] = $mandor->id;
-
+            $data['tas_id'] = $datamandor->id;
+            $data['detail_tas_id'] = $datamandor->detailTasId;
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $mandor = new Mandor();
-                $datamandortnl=$this->SaveTnlNew('mandor', 'add', $data);
+                $datamandortnl=$this->SaveTnlMasterDetail('mandor', 'add', $data);
             }
-            //detail
-            $json=json_decode(json_encode($datamandortnl),true);
-            $datamandortnlid=$json['original']['id'];
-            // dd($json['original']['id']);
-
-            // dd($datamandortnl);
-            if (is_iterable($data['users'])) {
-                $mandorDetails = [];
-                for ($i = 0; $i < count($data['users']); $i++) {
-                    $datadetail = [
-                        'user_id' => $data['users'][$i],
-                        'mandor_id' => $datamandor->id,
-                        'tas_id' => 0,
-                    ];
-    
-                        $mandorDetail = new MandorDetail();
-                        $mandorDetail->processStore($datadetail, $mandorDetail);
-   
-                    $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-                    $datadetail['tas_id'] = $mandorDetail->id;
-                    $datadetail['mandor_id'] =$datamandortnlid;
-                    
-                    if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                        $controller = new Controller;
-                        $controller->SaveTnlNew('mandordetail', 'add', $datadetail);
-                    }
-    
-                    $mandorDetails[] = $mandorDetail->toArray();
-                }
-    
-                (new LogTrail())->processStore([
-                    'namatabel' => strtoupper($mandorDetail->getTable()),
-                    'postingdari' => 'ENTRY MANDOR DETAIL',
-                    'idtrans' =>  $mandor->id,
-                    'nobuktitrans' => $mandor->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $mandorDetails,
-                    'modifiedby' => auth('api')->user()->user,
-                ]);
-            }
-
-            //end
 
             DB::commit();
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
-                'data' => $mandor
+                'data' => $datamandor
             ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -276,65 +233,25 @@ class MandorController extends Controller
             // $mandor = (new Mandor())->processUpdate($mandor, $data);
             $mandor = new Mandor();
             $mandors = $mandor->findOrFail($id);
-            $mandor = $mandor->processUpdate($mandors, $data);            
-            MandorDetail::where('mandor_id', $id)->delete();
+            $datamandor = $mandor->processUpdate($mandors, $data);            
             if ($request->from == '') {
-                $mandor->position = $this->getPosition($mandor, $mandor->getTable())->position;
+                $datamandor->position = $this->getPosition($datamandor, $datamandor->getTable())->position;
                 if ($request->limit == 0) {
-                    $mandor->page = ceil($mandor->position / (10));
+                    $datamandor->page = ceil($datamandor->position / (10));
                 } else {
-                    $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
+                    $datamandor->page = ceil($datamandor->position / ($request->limit ?? 10));
                 }
             }
 
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-            $data['tas_id'] = $mandor->id;
-
-            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $datamandortnl=$this->SaveTnlNew('mandor', 'edit', $data);
-                $this->SaveTnlNewDetail('mandordetail', 'delete', $data,'mandor','mandor_id');
-            }
+            
             // 
-//detail
-$json=json_decode(json_encode($datamandortnl),true);
-$datamandortnlid=$json['original']['id'];
-// dd($json['original']['id']);
-
-// dd($datamandortnl);
-if (is_iterable($data['users'])) {
-    $mandorDetails = [];
-    for ($i = 0; $i < count($data['users']); $i++) {
-        $datadetail = [
-            'user_id' => $data['users'][$i],
-            'mandor_id' => $id,
-            'tas_id' => 0,
-        ];
-
-            $mandorDetail = new MandorDetail();
-            $mandorDetail->processStore($datadetail, $mandorDetail);
-
-        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-        $datadetail['tas_id'] = $mandorDetail->id;
-        $datadetail['mandor_id'] =$datamandortnlid;
-        
-        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-            $controller = new Controller;
-            $controller->SaveTnlNew('mandordetail', 'add', $datadetail);
-        }
-
-        $mandorDetails[] = $mandorDetail->toArray();
-    }
-
-    (new LogTrail())->processStore([
-        'namatabel' => strtoupper($mandorDetail->getTable()),
-        'postingdari' => 'ENTRY MANDOR DETAIL',
-        'idtrans' =>  $mandor->id,
-        'nobuktitrans' => $mandor->id,
-        'aksi' => 'ENTRY',
-        'datajson' => $mandorDetails,
-        'modifiedby' => auth('api')->user()->user,
-    ]);
-}
+            $data['tas_id'] = $datamandor->id;
+            $data['detail_tas_id'] = $datamandor->detailTasId;
+            
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $datamandortnl=$this->SaveTnlMasterDetail('mandor', 'edit', $data);
+            }
 
             // 
             DB::commit();
@@ -342,7 +259,7 @@ if (is_iterable($data['users'])) {
             return response([
                 'status' => true,
                 'message' => 'Berhasil diubah',
-                'data' => $mandor
+                'data' => $datamandor
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();

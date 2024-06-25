@@ -659,7 +659,6 @@ class Controller extends BaseController
                 $parent=db::connection('srvtnl')->table("upahsupir")->from(db::raw("upahsupir a with (readuncommitted)"))
                 ->select(
                     'a.id',
-                    'a.tujuan'
                 )
                 ->where('a.tas_id', $data['parent_id'])->first(); 
 
@@ -872,6 +871,343 @@ class Controller extends BaseController
                     if ($aksi == 'edit') {
                         $findModels = $models->findOrFail($getId);
                         $models->processUpdate($findModels, $data);
+                    }
+                    if ($aksi == 'delete') {
+                        
+                        $findModels = $models->findOrFail($getId);
+
+                        $models->processDestroy($findModels);
+                    }
+                }
+                // }
+            }
+            DB::connection('srvtnl')->commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil disimpan.',
+                'data' => $data,
+                'id' => $getId,
+            ], 201);
+        } catch (\Throwable $th) {
+            DB::connection('srvtnl')->rollBack();
+
+            throw $th;
+        }
+    }
+
+    public function SaveTnlMasterDetail($table, $aksi, $data)
+    {
+        $backSlash = " \ ";
+
+        $model = 'App\Models' . trim($backSlash) . $table;
+        $models = app($model);
+        $models->setConnection('srvtnl');
+        
+        // $idheader=0
+        DB::connection('srvtnl')->beginTransaction();
+        try {
+            if ($table=='tarif') {
+                $parent=db::connection('srvtnl')->table("tarif")->from(db::raw("tarif a with (readuncommitted)"))
+                        ->select(
+                            'a.id',
+                            'a.tujuan'
+                        )
+                        ->where('a.tas_id', $data['parent_id'])->first();
+
+                $upahsupir=db::connection('srvtnl')->table("upahsupir")->from(db::raw("upahsupir a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                )
+                ->where('a.tas_id', $data['upahsupir_id'])->first();
+
+                $kota=db::connection('srvtnl')->table("kota")->from(db::raw("kota a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    'a.kodekota',
+                )
+                ->where('a.tas_id', $data['kota_id'])->first();
+
+                $zona=db::connection('srvtnl')->table("zona")->from(db::raw("zona a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    'a.zona',
+                )
+                ->where('a.tas_id', $data['zona_id'])->first();
+
+                $jenisorder=db::connection('srvtnl')->table("jenisorder")->from(db::raw("jenisorder a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                )
+                ->where('a.tas_id', $data['jenisorder_id'])->first();
+
+                $data['parent_id'] = $parent->id ?? 0;
+                $data['parent'] = $parent->tujuan ?? '';
+                $data['upahsupir_id'] = $upahsupir->id ?? 0;
+                $data['kota_id'] = $kota->id ?? 0;
+                $data['kota'] = $kota->kodekota ?? '';
+                $data['zona_id'] = $zona->id ?? 0;
+                $data['zona'] = $zona->zona ?? '';
+                $data['jenisorder_id'] = $jenisorder->id ?? 0;
+            }
+            if ($table=='tarifrincian') {
+                $container=db::connection('srvtnl')->table("container")->from(db::raw("container a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    'a.kodecontainer'
+                )
+                ->where('a.tas_id', $data['container_id'])->first();
+
+                $data['container'] = $container->kodecontainer ?? '';
+                $data['container_id'] = $container->id ?? 0;
+
+            }
+            if ($table=='upahsupir') {
+                $parent=db::connection('srvtnl')->table("upahsupir")->from(db::raw("upahsupir a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                )
+                ->where('a.tas_id', $data['parent_id'])->first(); 
+
+
+                $kotadari=db::connection('srvtnl')->table("kota")->from(db::raw("kota a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    'a.kodekota',
+                )
+                ->where('a.tas_id', $data['kotadari_id'])->first();
+
+                $tarif=db::connection('srvtnl')->table("tarif")->from(db::raw("tarif a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    'a.tujuan'
+                )
+                ->where('a.tas_id', $data['tarif_id'])->first();     
+
+                $tarifmuatan=db::connection('srvtnl')->table("tarif")->from(db::raw("tarif a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    'a.tujuan'
+                )
+                ->where('a.tas_id', $data['tarifmuatan_id'])->first();   
+
+                $tarifbongkaran=db::connection('srvtnl')->table("tarif")->from(db::raw("tarif a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    'a.tujuan'
+                )
+                ->where('a.tas_id', $data['tarifbongkaran_id'])->first();                 
+
+                $tarifimport=db::connection('srvtnl')->table("tarif")->from(db::raw("tarif a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    'a.tujuan'
+                )
+                ->where('a.tas_id', $data['tarifimport_id'])->first();                 
+
+                $tarifexport=db::connection('srvtnl')->table("tarif")->from(db::raw("tarif a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    'a.tujuan'
+                )
+                ->where('a.tas_id', $data['tarifexport_id'])->first();                 
+
+                $kotasampai=db::connection('srvtnl')->table("kota")->from(db::raw("kota a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    'a.kodekota',
+                )
+                ->where('a.tas_id', $data['kotasampai_id'])->first();                
+
+                $zona=db::connection('srvtnl')->table("zona")->from(db::raw("zona a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    'a.zona',
+                )
+                ->where('a.tas_id', $data['zona_id'])->first();                
+
+                $zonadari=db::connection('srvtnl')->table("zona")->from(db::raw("zona a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    'a.zona',
+                )
+                ->where('a.tas_id', $data['zonadari_id'])->first();    
+
+                $zonasampai=db::connection('srvtnl')->table("zona")->from(db::raw("zona a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    'a.zona',
+                )
+                ->where('a.tas_id', $data['zonasampai_id'])->first();                  
+
+                $data['parent_id'] = $parent->id ?? 0;
+                $data['parent'] = $parent->tujuan ?? '';                
+                $data['kotadari_id'] = $kotadari->id ?? 0;
+                $data['kotadari'] = $kotadari->kodekota ?? '';                
+                $data['tarif_id'] = $tarif->id ?? 0;
+                $data['tarif'] = $tarif->tujuan ?? '';
+                $data['tarifmuatan_id'] = $tarifmuatan->id ?? 0;
+                $data['tarifbongkaran_id'] = $tarifbongkaran->id ?? 0;
+                $data['tarifimport_id'] = $tarifimport->id ?? 0;
+                $data['tarifexport_id'] = $tarifexport->id ?? 0;
+                $data['kotasampai_id'] = $kotasampai->id ?? 0;
+                $data['kotasampai'] = $kotasampai->kodekota ?? '';                
+                $data['zona_id'] = $zona->id ?? 0;
+                $data['zona'] = $zona->kodekota ?? '';                
+                $data['zonadari_id'] = $zonadari->id ?? 0;
+                $data['zonasampai_id'] = $zonasampai->id ?? 0;
+                
+                for ($i=0; $i < count($data['container_id']); $i++) { 
+                    $container=db::connection('srvtnl')->table("container")->from(db::raw("container a with (readuncommitted)"))
+                    ->select(
+                        'a.id',
+                        'a.kodecontainer'
+                    )
+                    ->where('a.tas_id', $data['container_id'][$i])->first();
+    
+                    $statuscontainer=db::connection('srvtnl')->table("statuscontainer")->from(db::raw("statuscontainer a with (readuncommitted)"))
+                    ->select(
+                        'a.id',
+                        'a.kodestatuscontainer'
+                    )
+                    ->where('a.tas_id', $data['statuscontainer_id'][$i])->first();                
+    
+                    $data['container'][$i] = $container->kodecontainer ?? '';
+                    $data['container_id'][$i] = $container->id ?? 0;
+                    $data['statuscontainer'][$i] = $statuscontainer->kodestatuscontainer ?? '';
+                    $data['statuscontainer_id'][$i] = $statuscontainer->id ?? 0;
+                }
+            }
+            if ($table=='upahsupirrincian') {
+                $container=db::connection('srvtnl')->table("container")->from(db::raw("container a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    'a.kodecontainer'
+                )
+                ->where('a.tas_id', $data['container_id'])->first();
+
+                $statuscontainer=db::connection('srvtnl')->table("statuscontainer")->from(db::raw("statuscontainer a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    'a.kodestatuscontainer'
+                )
+                ->where('a.tas_id', $data['statuscontainer_id'])->first();                
+
+                $data['container'] = $container->kodecontainer ?? '';
+                $data['container_id'] = $container->id ?? 0;
+                $data['statuscontainer'] = $statuscontainer->kodestatuscontainer ?? '';
+                $data['statuscontainer_id'] = $statuscontainer->id ?? 0;
+
+            }     
+            
+            if ($table=='subkelompok') {
+                $kelompok=db::connection('srvtnl')->table("kelompok")->from(db::raw("kelompok a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                )
+                ->where('a.tas_id', $data['kelompok_id'])->first();
+
+                $data['kelompok_id'] = $kelompok->id ?? 0;
+                
+            }
+            if ($table=='kategori') {
+                $subkelompok=db::connection('srvtnl')->table("subkelompok")->from(db::raw("subkelompok a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                )
+                ->where('a.tas_id', $data['subkelompok_id'])->first();
+
+                $data['subkelompok_id'] = $subkelompok->id ?? 0;
+                
+            }            
+
+            if ($table=='stok') {
+                $subkelompok=db::connection('srvtnl')->table("subkelompok")->from(db::raw("subkelompok a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                )
+                ->where('a.tas_id', $data['subkelompok_id'])->first();
+
+                $kelompok=db::connection('srvtnl')->table("kelompok")->from(db::raw("kelompok a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                )
+                ->where('a.tas_id', $data['kelompok_id'])->first();                
+
+                $kategori=db::connection('srvtnl')->table("kategori")->from(db::raw("kategori a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                )
+                ->where('a.tas_id', $data['kategori_id'])->first();                
+
+                $merk=db::connection('srvtnl')->table("merk")->from(db::raw("merk a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                )
+                ->where('a.tas_id', $data['merk_id'])->first();                
+
+                $jenistrado=db::connection('srvtnl')->table("jenistrado")->from(db::raw("jenistrado a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                )
+                ->where('a.tas_id', $data['jenistrado_id'])->first();                
+
+                $satuan=db::connection('srvtnl')->table("satuan")->from(db::raw("satuan a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                )
+                ->where('a.tas_id', $data['satuan_id'])->first();                
+
+                $data['subkelompok_id'] = $subkelompok->id ?? 0;
+                $data['kelompok_id'] = $kelompok->id ?? 0;
+                $data['kategori_id'] = $kategori->id ?? 0;
+                $data['merk_id'] = $merk->id ?? 0;
+                $data['jenistrado_id'] = $jenistrado->id ?? 0;
+                $data['satuan_id'] = $satuan->id ?? 0;
+                
+            }    
+            if ($table=='supir') {
+                $mandor=db::connection('srvtnl')->table("mandor")->from(db::raw("mandor a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                )
+                ->where('a.tas_id', $data['mandor_id'])->first(); 
+                $supirold=db::connection('srvtnl')->table("supir")->from(db::raw("supir a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                )
+                ->where('a.tas_id', $data['supirold_id'])->first(); 
+
+                $data['mandor_id'] = $mandor->id ?? 0;                
+                $data['supirold_id'] = $supirold->id ?? 0;                
+            }        
+            // if ($table =="mandor") {
+            //     for ($i=0; $i < count($data['users']); $i++) { 
+            //         $mandor=db::connection('srvtnl')->table("user")->from(db::raw("user a with (readuncommitted)"))
+            //         ->select(
+            //             'a.id',
+            //         )
+            //         ->where('a.tas_id', $data['users'][$id])->first(); 
+            //     }
+
+            // }
+            $data['from'] = 'tas';
+            
+            if ($aksi == 'add') {
+                $datasimpan=$models->processStore($data, $models,'srvtnl');
+                $getId=$datasimpan->id;
+            } else {
+                $getId = $models->where('tas_id', $data['tas_id'])->first()->id ?? 0;
+                $getstatusaktif = $models->where('tas_id', $data['tas_id'])->first()->statusaktif ?? 0;
+                $data['statusaktif'] = $getstatusaktif;
+                // dd($getId);
+                // if (!$getId) {
+                //     $models->processStore($data, $models);
+                // } else {
+                if ($getId!=0) {
+                    if ($aksi == 'edit') {
+                        $findModels = $models->findOrFail($getId);
+                        $models->processUpdate($findModels, $data,'srvtnl');
                     }
                     if ($aksi == 'delete') {
                         
