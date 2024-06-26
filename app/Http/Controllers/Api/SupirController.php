@@ -398,10 +398,10 @@ class SupirController extends Controller
 
             $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-            $data['tas_id'] = $cabang->id;
+            $data['tas_id'] = $supir->id;
 
             // if ($data['statuspostingtnl'] == $statusTnl->id) {
-                if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
 
                 $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
                 // posting ke tnl
@@ -466,16 +466,16 @@ class SupirController extends Controller
                 'tgllahir' => date('Y-m-d', strtotime($request->tgllahir)),
                 'tglterbitsim' => date('Y-m-d', strtotime($request->tglterbitsim)),
                 'modifiedby' => auth('api')->user()->name,
-
-                'photosupir' => ($request->photosupir) ? $this->storeFiles($request->photosupir, 'supir') : '',
-                'photoktp' => ($request->photoktp) ? $this->storeFiles($request->photoktp, 'ktp') : '',
-                'photosim' => ($request->photosim) ? $this->storeFiles($request->photosim, 'sim') : '',
-                'photokk' => ($request->photokk) ? $this->storeFiles($request->photokk, 'kk') : '',
-                'photoskck' => ($request->photoskck) ? $this->storeFiles($request->photoskck, 'skck') : '',
-                'photodomisili' => ($request->photodomisili) ? $this->storeFiles($request->photodomisili, 'domisili') : '',
-                'photovaksin' => ($request->photovaksin) ? $this->storeFiles($request->photovaksin, 'vaksin') : '',
-                'pdfsuratperjanjian' => ($request->pdfsuratperjanjian) ? $this->storePdfFiles($request->pdfsuratperjanjian, 'suratperjanjian') : ''
-
+                'mandor_id' => $request->mandor_id ?? 0,
+                'photosupir' => $request->photosupir ?? [],
+                'photoktp' => $request->photoktp ?? [],
+                'photosim' => $request->photosim ?? [],
+                'photokk' => $request->photokk ?? [],
+                'photoskck' => $request->photoskck ?? [],
+                'photodomisili' => $request->photodomisili ?? [],
+                'photovaksin' => $request->photovaksin ?? [],
+                'pdfsuratperjanjian' => $request->pdfsuratperjanjian ?? [],
+                'from' => $request->from ?? '',
             ];
 
             // $supir = (new Supir())->processUpdate($supir, $data);

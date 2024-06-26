@@ -1213,7 +1213,7 @@ class Controller extends BaseController
                         
                         $findModels = $models->findOrFail($getId);
 
-                        $models->processDestroy($findModels);
+                        $models->processDestroy($findModels,'srvtnl');
                     }
                 }
                 // }
