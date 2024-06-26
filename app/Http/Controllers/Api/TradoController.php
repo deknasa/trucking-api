@@ -200,6 +200,7 @@ class TradoController extends Controller
                 'photobpkb' => $request->photobpkb ?? [],
                 'phototrado' => $request->phototrado ?? [],
                 'tas_id' => $request->tas_id,
+                'from' => '',
             ];
 
 
@@ -221,30 +222,35 @@ class TradoController extends Controller
             $data['tas_id'] = $trado->id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $photostnk = json_decode($trado->photostnk);
-                if ($photostnk != '') {
-                    foreach ($photostnk as $imagePath) {
-                        $photostnkBase64[] = base64_encode(file_get_contents(storage_path("app/trado/stnk/" . $imagePath)));
-                    }
-                    $data['photostnk'] = $photostnkBase64;
-                }
-
-                $photobpkb = json_decode($trado->photobpkb);
-                if ($photobpkb != '') {
-                    foreach ($photobpkb as $imagePath) {
-                        $photobpkbBase64[] = base64_encode(file_get_contents(storage_path("app/trado/bpkb/" . $imagePath)));
-                    }
-                    $data['photobpkb'] = $photobpkbBase64;
-                }
-                $phototrado = json_decode($trado->phototrado);
-                if ($phototrado != '') {
-                    foreach ($phototrado as $imagePath) {
-                        $phototradoBase64[] = base64_encode(file_get_contents(storage_path("app/trado/trado/" . $imagePath)));
-                    }
-                    $data['phototrado'] = $phototradoBase64;
-                }
-                dd('test');
+                /**
+                 * 
+                 * 
+                 // $photostnk = json_decode($trado->photostnk);
+                 // if ($photostnk != '') {
+                 //     foreach ($photostnk as $imagePath) {
+                 //         $photostnkBase64[] = base64_encode(file_get_contents(storage_path("app/trado/stnk/" . $imagePath)));
+                 //     }
+                 //     $data['photostnk'] = $photostnkBase64;
+                 // }
+ 
+                 // $photobpkb = json_decode($trado->photobpkb);
+                 // if ($photobpkb != '') {
+                 //     foreach ($photobpkb as $imagePath) {
+                 //         $photobpkbBase64[] = base64_encode(file_get_contents(storage_path("app/trado/bpkb/" . $imagePath)));
+                 //     }
+                 //     $data['photobpkb'] = $photobpkbBase64;
+                 // }
+                 // $phototrado = json_decode($trado->phototrado);
+                 // if ($phototrado != '') {
+                 //     foreach ($phototrado as $imagePath) {
+                 //         $phototradoBase64[] = base64_encode(file_get_contents(storage_path("app/trado/trado/" . $imagePath)));
+                 //     }
+                 //     $data['phototrado'] = $phototradoBase64;
+                 // }
+                 // dd('test');
+                 */
                 $this->SaveTnlNew('trado', 'add', $data);
+                
             }
 
             DB::commit();
@@ -410,6 +416,7 @@ class TradoController extends Controller
                 'photostnk' => $request->photostnk ?? [],
                 'photobpkb' => $request->photobpkb ?? [],
                 'phototrado' => $request->phototrado ?? [],
+                'from' => '',
             ];
 
 
@@ -430,28 +437,32 @@ class TradoController extends Controller
             $data['tas_id'] = $trado->id;
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $photostnk = json_decode($trado->photostnk);
-                if ($photostnk != '') {
-                    foreach ($photostnk as $imagePath) {
-                        $photostnkBase64[] = base64_encode(file_get_contents(storage_path("app/trado/stnk/" . $imagePath)));
-                    }
-                    $data['photostnk'] = $photostnkBase64;
-                }
-
-                $photobpkb = json_decode($trado->photobpkb);
-                if ($photobpkb != '') {
-                    foreach ($photobpkb as $imagePath) {
-                        $photobpkbBase64[] = base64_encode(file_get_contents(storage_path("app/trado/bpkb/" . $imagePath)));
-                    }
-                    $data['photobpkb'] = $photobpkbBase64;
-                }
-                $phototrado = json_decode($trado->phototrado);
-                if ($phototrado != '') {
-                    foreach ($phototrado as $imagePath) {
-                        $phototradoBase64[] = base64_encode(file_get_contents(storage_path("app/trado/trado/" . $imagePath)));
-                    }
-                    $data['phototrado'] = $phototradoBase64;
-                }
+                /**
+                 * 
+                 // $photostnk = json_decode($trado->photostnk);
+                 // if ($photostnk != '') {
+                 //     foreach ($photostnk as $imagePath) {
+                 //         $photostnkBase64[] = base64_encode(file_get_contents(storage_path("app/trado/stnk/" . $imagePath)));
+                 //     }
+                 //     $data['photostnk'] = $photostnkBase64;
+                 // }
+ 
+                 // $photobpkb = json_decode($trado->photobpkb);
+                 // if ($photobpkb != '') {
+                 //     foreach ($photobpkb as $imagePath) {
+                 //         $photobpkbBase64[] = base64_encode(file_get_contents(storage_path("app/trado/bpkb/" . $imagePath)));
+                 //     }
+                 //     $data['photobpkb'] = $photobpkbBase64;
+                 // }
+                 // $phototrado = json_decode($trado->phototrado);
+                 // if ($phototrado != '') {
+                 //     foreach ($phototrado as $imagePath) {
+                 //         $phototradoBase64[] = base64_encode(file_get_contents(storage_path("app/trado/trado/" . $imagePath)));
+                 //     }
+                 //     $data['phototrado'] = $phototradoBase64;
+                 // }
+                 * 
+                 */
                 $this->SaveTnlNew('trado', 'edit', $data);
             }
             DB::commit();

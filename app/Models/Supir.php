@@ -1071,7 +1071,8 @@ class Supir extends MyModel
         foreach ($files as $file) {
             $originalFileName = "SURAT-" . hash('sha256', $file) . '.pdf';
             $pdfData = base64_decode($file);
-            $storedFile = Storage::put('supir/' . $destinationFolder . '/' . $originalFileName, $pdfData);
+            $storedFile = Storage::disk('toTnl')->put( 'supir/'. $destinationFolder . '/' . $originalFileName, $pdfData);
+            // $storedFile = Storage::put('supir/' . $destinationFolder . '/' . $originalFileName, $pdfData);
             $storedFiles[] = $originalFileName;
         }
 
@@ -1087,8 +1088,18 @@ class Supir extends MyModel
         foreach ($files as $file) {
             $originalFileName = "$destinationFolder-" . hash('sha256', $file) . '.jpg';
             $imageData = base64_decode($file);
-            $storedFile = Storage::put('supir/' . $destinationFolder . '/' . $originalFileName, $imageData);
-            $resizedFiles = App::imageResize(storage_path("app/supir/$destinationFolder/"), storage_path("app/supir/$destinationFolder/$originalFileName"), $originalFileName);
+
+            $storedFile = Storage::disk('toTnl')->putFileAs('supir/' . $destinationFolder, $file, $originalFileName);
+            $pathDestination = Storage::disk('toTnl')->getDriver()->getAdapter()->applyPathPrefix(null);
+            $resizedFiles = App::imageResize($pathDestination.'supir/'.$destinationFolder.'/', $pathDestination.'supir/'.$destinationFolder.'/'.$originalFileName, $originalFileName);
+
+            // $pathDestination.$destinationFolder.'/', $pathDestination.$destinationFolder.'/'.$originalFileName, $originalFileName
+            // $storedFile = Storage::disk('toTnl')->put( 'supir/'.$destinationFolder . '/' . $originalFileName, $imageData);
+            // $pathDestination = Storage::disk('toTnl')->getDriver()->getAdapter()->applyPathPrefix(null);
+            // $resizedFiles = App::imageResize($pathDestination.'supir/'.$destinationFolder.'/', $pathDestination.'supir/'.$destinationFolder.'/'.$originalFileName, $originalFileName);
+
+            // $storedFile = Storage::put('supir/' . $destinationFolder . '/' . $originalFileName, $imageData);
+            // $resizedFiles = App::imageResize(storage_path("app/supir/$destinationFolder/"), storage_path("app/supir/$destinationFolder/$originalFileName"), $originalFileName);
 
             $storedFiles[] = $originalFileName;
         }
@@ -1350,14 +1361,25 @@ class Supir extends MyModel
 
             $this->deleteFiles($supir);
 
-            $supir->photosupir = $data['photosupir'];
-            $supir->photoktp = $data['photoktp'];
-            $supir->photosim = $data['photosim'];
-            $supir->photokk = $data['photokk'];
-            $supir->photoskck = $data['photoskck'];
-            $supir->photodomisili = $data['photodomisili'];
-            $supir->photovaksin = $data['photovaksin'];
-            $supir->pdfsuratperjanjian = $data['pdfsuratperjanjian'];
+            if ($data['from'] != '') {
+                $supir->photosupir = $this->storeFilesBase64($data['photosupir'], 'supir');
+                $supir->photoktp = $this->storeFilesBase64($data['photoktp'], 'ktp');
+                $supir->photosim = $this->storeFilesBase64($data['photosim'], 'sim');
+                $supir->photokk = $this->storeFilesBase64($data['photokk'], 'kk');
+                $supir->photoskck = $this->storeFilesBase64($data['photoskck'], 'skck');
+                $supir->photodomisili = $this->storeFilesBase64($data['photodomisili'], 'domisili');
+                $supir->photovaksin = $this->storeFilesBase64($data['photovaksin'], 'vaksin');
+                $supir->pdfsuratperjanjian = $this->storePdfFilesBase64($data['pdfsuratperjanjian'], 'suratperjanjian');
+            } else {
+                $supir->photosupir = (count($data['photosupir']) > 0) ? $this->storeFiles($data['photosupir'], 'supir') : '';
+                $supir->photoktp = (count($data['photoktp']) > 0) ? $this->storeFiles($data['photoktp'], 'ktp') : '';
+                $supir->photosim = (count($data['photosim']) > 0) ? $this->storeFiles($data['photosim'], 'sim') : '';
+                $supir->photokk = (count($data['photokk']) > 0) ? $this->storeFiles($data['photokk'], 'kk') : '';
+                $supir->photoskck = (count($data['photoskck']) > 0) ? $this->storeFiles($data['photoskck'], 'skck') : '';
+                $supir->photodomisili = (count($data['photodomisili']) > 0) ? $this->storeFiles($data['photodomisili'], 'domisili') : '';
+                $supir->photovaksin = (count($data['photovaksin']) > 0) ? $this->storeFiles($data['photovaksin'], 'vaksin') : '';
+                $supir->pdfsuratperjanjian = (count($data['pdfsuratperjanjian']) > 0) ? $this->storePdfFiles($data['pdfsuratperjanjian'], 'suratperjanjian') : '';
+            }
 
             if ($oldTglMasuk != date('Y-m-d', strtotime($data['tglmasuk']))) {
                 $isBolehLuarKota = DB::table("parameter")->where('grp', 'VALIDASI SUPIR')->where('subgrp', 'BOLEH LUAR KOTA')->first()->text ?? 'TIDAK';

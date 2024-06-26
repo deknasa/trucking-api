@@ -1049,15 +1049,20 @@ class Trado extends MyModel
         foreach ($files as $file) {
             $originalFileName = hash('sha256', $file) . '.jpg';
             $imageData = base64_decode($file);
-            $storedFile = Storage::put('trado/' . $destinationFolder . '/' . $originalFileName, $imageData);
-            $resizedFiles = App::imageResize(storage_path("app/trado/$destinationFolder/"), storage_path("app/trado/$destinationFolder/$originalFileName"), $originalFileName);
+
+            $storedFile = Storage::disk('toTnl')->putFileAs("trado/".$destinationFolder, $file, $originalFileName);
+            $pathDestination = Storage::disk('toTnl')->getDriver()->getAdapter()->applyPathPrefix(null);
+            $resizedFiles = App::imageResize($pathDestination."trado/".$destinationFolder.'/', $pathDestination."trado/".$destinationFolder.'/'.$originalFileName, $originalFileName);
+
+            // $storedFile = Storage::put('trado/' . $destinationFolder . '/' . $originalFileName, $imageData);
+            // $resizedFiles = App::imageResize(storage_path("app/trado/$destinationFolder/"), storage_path("app/trado/$destinationFolder/$originalFileName"), $originalFileName);
 
             $storedFiles[] = $originalFileName;
         }
 
         return json_encode($storedFiles);
     }
-    private function deleteFiles(Trado $trado)
+    private function deleteFiles(Trado $trado,$from = null)
     {
         $sizeTypes = ['', 'medium_', 'small_'];
 
@@ -1076,6 +1081,9 @@ class Trado extends MyModel
                 }
             }
             Storage::delete($relatedPhotoTrado);
+            if ($from) {
+                Storage::disk('toTnl')->delete($relatedPhotoTrado);
+            }
         }
 
         if ($photoStnk != '') {
@@ -1085,6 +1093,9 @@ class Trado extends MyModel
                 }
             }
             Storage::delete($relatedPhotoStnk);
+            if ($from) {
+                Storage::disk('toTnl')->delete($relatedPhotoStnk);
+            }
         }
 
         if ($photoBpkb != '') {
@@ -1094,12 +1105,14 @@ class Trado extends MyModel
                 }
             }
             Storage::delete($relatedPhotoBpkb);
+            if ($from) {
+                Storage::disk('toTnl')->delete($relatedPhotoBpkb);
+            }
         }
     }
 
     public function processStore(array $data, Trado $trado): Trado
     {
-        $trado = '';
         try {
             $statusStandarisasi = DB::table('parameter')->where('grp', 'STATUS STANDARISASI')->where('default', 'YA')->first();
             $statusMutasi = DB::table('parameter')->where('grp', 'STATUS MUTASI')->where('default', 'YA')->first();
@@ -1209,7 +1222,7 @@ class Trado extends MyModel
                 $trado->tglberlakumiliksupir = date('Y-m-d');
             }
 
-            if(request()->from != ''){
+            if($data['from'] != ''){
                 $trado->photostnk = $this->storeFilesBase64($data['photostnk'], 'stnk');
                 $trado->photobpkb = $this->storeFilesBase64($data['photobpkb'], 'bpkb');
                 $trado->phototrado = $this->storeFilesBase64($data['phototrado'], 'trado');
@@ -1342,7 +1355,7 @@ class Trado extends MyModel
 
             $this->deleteFiles($trado);
 
-            if(request()->from != ''){
+            if($data['from'] != ''){
                 $trado->photostnk = $this->storeFilesBase64($data['photostnk'], 'stnk');
                 $trado->photobpkb = $this->storeFilesBase64($data['photobpkb'], 'bpkb');
                 $trado->phototrado = $this->storeFilesBase64($data['phototrado'], 'trado');
