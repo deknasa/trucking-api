@@ -28,7 +28,7 @@ class LaporanArusKas extends MyModel
 
         $cabang_id = 1;
         $blnpilih = substr($periode, 0, 2);
-        $thnpilih = substr($periode, -2);
+        $thnpilih = substr($periode, -4);
         if ($blnpilih == 1) {
             $blnbefore = 12;
             $thnbefore = $thnpilih - 1;
@@ -44,7 +44,7 @@ class LaporanArusKas extends MyModel
             ->select(
                 db::raw("sum(b.nominal) as nominal")
             )
-            ->join(db::raw("penerimaandetail b with with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(db::raw("penerimaandetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->whereRaw("a.tglbukti<cast(trim(str(" . $thnbefore . "))+'/'+trim(str(" . $blnbefore . "))+'/1' as datetime)")
             ->first()
             ->nominal ?? 0;
@@ -53,7 +53,7 @@ class LaporanArusKas extends MyModel
             ->select(
                 db::raw("sum(b.nominal*-1) as nominal")
             )
-            ->join(db::raw("pengeluarandetail b with with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(db::raw("pengeluarandetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->whereRaw("a.tglbukti<cast(trim(str(" . $thnbefore . "))+'/'+trim(str(" . $blnbefore . "))+'/1' as datetime)")
             ->first()
             ->nominal ?? 0;
@@ -64,7 +64,7 @@ class LaporanArusKas extends MyModel
             ->select(
                 db::raw("sum(b.nominal) as nominal")
             )
-            ->join(db::raw("penerimaandetail b with with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(db::raw("penerimaandetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->whereRaw("a.tglbukti<cast(trim(str(" . $thnpilih . "))+'/'+trim(str(" . $blnpilih . "))+'/1' as datetime)")
             ->first()
             ->nominal ?? 0;
@@ -73,7 +73,7 @@ class LaporanArusKas extends MyModel
             ->select(
                 db::raw("sum(b.nominal*-1) as nominal")
             )
-            ->join(db::raw("pengeluarandetail b with with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(db::raw("pengeluarandetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->whereRaw("a.tglbukti<cast(trim(str(" . $thnpilih . "))+'/'+trim(str(" . $blnpilih . "))+'/1' as datetime)")
             ->first()
             ->nominal ?? 0;
@@ -119,7 +119,7 @@ class LaporanArusKas extends MyModel
                 db::raw("year(a.tglbukti) as tahun"),
                 'b.coadebet as coa',
                 db::raw("sum(B.nominal*-1) as nominal"),
-                db::raw("1 as [order]"),
+                db::raw("2 as [order]"),
             )
             ->join(db::raw("pengeluarandetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->whereraw("month(a.tglbukti)=" . $blnbefore)
@@ -166,7 +166,7 @@ class LaporanArusKas extends MyModel
                 db::raw("year(a.tglbukti) as tahun"),
                 'b.coadebet as coa',
                 db::raw("sum(B.nominal*-1) as nominal"),
-                db::raw("1 as [order]"),
+                db::raw("2 as [order]"),
             )
             ->join(db::raw("pengeluarandetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->whereraw("month(a.tglbukti)=" . $blnpilih)
@@ -320,7 +320,7 @@ class LaporanArusKas extends MyModel
                 $join->on('a.coa', '=', 'b.coa');
                 $join->on('a.order', '=', 'b.order');
             })
-            ->leftjoin(DB::raw($temprekapdatakini . " as b"), function ($join) {
+            ->leftjoin(DB::raw($temprekapdatakini . " as c"), function ($join) {
                 $join->on('a.coa', '=', 'c.coa');
                 $join->on('a.order', '=', 'c.order');
             })
@@ -375,8 +375,8 @@ class LaporanArusKas extends MyModel
                                 ELSE '' end) +' '+trim(str(a.tahun)) as periodeakhir
                 "),                
                 'a.nominalbefore as nominalawal',
-                db::raw("(case when a.[order]=1 then 'ARUS KAS/BANK MASUK' else  'ARUS KAS/BANK KELUAR' end) as jenisarus"),
-                db::raw("(case when a.[order]=1 then 'PENDAPATAN' else  'BIAYA' end) as type"),
+                db::raw("(case when a.[orderbefore]=1 then 'ARUS KAS/BANK MASUK' else  'ARUS KAS/BANK KELUAR' end) as jenisarus"),
+                db::raw("(case when a.[orderbefore]=1 then 'PENDAPATAN' else  'BIAYA' end) as type"),
                 'a.nominal as nominalakhir',
                 'a.saldobefore',
                 'a.saldopilih',
@@ -385,7 +385,10 @@ class LaporanArusKas extends MyModel
                 db::raw("'Tgl Cetak: " . date('d-m-Y H:i:s'). "' as tglcetak"),
                 db::raw("'User: " . auth('api')->user()->name. "' as usercetak"),
             )
+            // ->where('a.order',1)
             ->orderby('a.id', 'asc');
+
+            // dd($query->get());
 
             $dataSaldo = [
 
@@ -399,5 +402,9 @@ class LaporanArusKas extends MyModel
             ];            
 
         return $data;
+
+        // 
+
+         
     }
 }
