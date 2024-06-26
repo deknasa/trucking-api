@@ -115,6 +115,7 @@ class Supplier extends MyModel
 
 
         $aktif = request()->aktif ?? '';
+        $from = request()->from ?? '';
 
         $query = DB::table($this->table)->select(
             // "$this->table.*",
@@ -168,6 +169,16 @@ class Supplier extends MyModel
                 ->first();
 
             $query->where('supplier.statusaktif', '=', $statusaktif->id);
+        }
+        if ($from == 'pelunasanhutangheader') {
+            $statusapproval = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS APPROVAL')
+                ->where('text', '=', 'APPROVAL')
+                ->first();
+
+            $query->where('supplier.statusapproval', '=', $statusapproval->id);
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
