@@ -375,8 +375,8 @@ class LaporanArusKas extends MyModel
                                 ELSE '' end) +' '+trim(str(a.tahun)) as periodeakhir
                 "),                
                 'a.nominalbefore as nominalawal',
-                db::raw("(case when a.[orderbefore]=1 then 'ARUS KAS/BANK MASUK' else  'ARUS KAS/BANK KELUAR' end) as jenisarus"),
-                db::raw("(case when a.[orderbefore]=1 then 'PENDAPATAN' else  'BIAYA' end) as type"),
+                db::raw("(case when isnull(a.[orderbefore], a.[order])=1 then 'ARUS KAS/BANK MASUK' else  'ARUS KAS/BANK KELUAR' end) as jenisarus"),
+                db::raw("(case when isnull(a.[orderbefore], a.[order])=1 then 'PENDAPATAN' else  'BIAYA' end) as type"),
                 'a.nominal as nominalakhir',
                 'a.saldobefore',
                 'a.saldopilih',
@@ -385,6 +385,7 @@ class LaporanArusKas extends MyModel
                 db::raw("'Tgl Cetak: " . date('d-m-Y H:i:s'). "' as tglcetak"),
                 db::raw("'User: " . auth('api')->user()->name. "' as usercetak"),
             )
+            ->orderby(DB::raw("isnull(a.[orderbefore], a.[order])"))
             // ->where('a.order',1)
             ->orderby('a.id', 'asc');
 
