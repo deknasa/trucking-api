@@ -46,14 +46,14 @@ class PencairanGiroPengeluaranDetail extends MyModel
             if ($cekAsal == 'PBT') {
                 $query1 = DB::table("pindahbuku")->from(DB::raw("pindahbuku with (readuncommitted)"))
                     ->select(
-                        'id',
-                        'nobukti',
-                        'nowarkat',
-                        'tgljatuhtempo',
-                        'nominal',
+                        'pindahbuku.id',
+                        'pindahbuku.nobukti',
+                        'pindahbuku.nowarkat',
+                        'pindahbuku.tgljatuhtempo',
+                        'pindahbuku.nominal',
                         'coadebet.keterangancoa as coadebet',
                         'coakredit.keterangancoa as coakredit',
-                        'keterangan'
+                        'pindahbuku.keterangan'
                     )
                     ->leftJoin('akunpusat as coadebet', 'pindahbuku.coadebet', 'coadebet.coa')
                     ->leftJoin('akunpusat as coakredit', 'pindahbuku.coakredit', 'coakredit.coa')

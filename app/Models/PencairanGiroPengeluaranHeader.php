@@ -166,7 +166,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
         $year = substr($periode, 3);
 
         $alatBayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'GIRO')->first();
-        $alatBayarCheck = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'CHECK')->first();
+        $alatBayarCheck = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'CHECK')->first()->id ?? 0;
 
         $petik = '"';
         $url = config('app.url_fe') . 'pengeluaranheader';
@@ -263,7 +263,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                     parameter.memo as statusapproval,
                     pengeluarandetail.tgljatuhtempo,
                     (SELECT (SUM(pengeluarandetail.nominal)) FROM pengeluarandetail 
-                        WHERE pengeluarandetail.nobukti= pengeluaranheader.nobukti and pengeluaranheader.alatbayar_id=$alatBayarCheck->id) as nominal,
+                        WHERE pengeluarandetail.nobukti= pengeluaranheader.nobukti and pengeluaranheader.alatbayar_id=$alatBayarCheck) as nominal,
                     (case when isnull(pgp.nobukti,'')='' then pengeluaranheader.modifiedby else pgp.modifiedby end) as modifiedby, 
                     (case when isnull(pgp.nobukti,'')='' then pengeluaranheader.created_at else pgp.created_at end) as created_at, 
                     (case when isnull(pgp.nobukti,'')='' then pengeluaranheader.updated_at else pgp.updated_at end) as updated_at
@@ -277,7 +277,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pengeluaranheader.alatbayar_id', 'alatbayar.id')
             ->whereRaw("MONTH(pengeluaranheader.tglbukti) = $month")
             ->whereRaw("YEAR(pengeluaranheader.tglbukti) = $year")
-            ->where('pengeluaranheader.alatbayar_id', $alatBayarCheck->id);
+            ->where('pengeluaranheader.alatbayar_id', $alatBayarCheck);
 
         DB::table($templist)->insertUsing([
             'pengeluaran_nobukti',
@@ -381,7 +381,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pindahbuku.alatbayar_id', 'alatbayar.id')
             ->whereRaw("MONTH(pindahbuku.tglbukti) = $month")
             ->whereRaw("YEAR(pindahbuku.tglbukti) = $year")
-            ->where('pindahbuku.alatbayar_id', $alatBayar->id);
+            ->whereRaw("pindahbuku.alatbayar_id in ($alatBayar->id, $alatBayarCheck)");
 
 
         DB::table($templist)->insertUsing([
