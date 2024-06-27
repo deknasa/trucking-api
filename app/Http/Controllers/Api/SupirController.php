@@ -32,6 +32,7 @@ use App\Http\Requests\ApprovalSupirRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\ApprovalSupirKacabRequest;
+use App\Http\Requests\ApprovalSupirResignRequest;
 use App\Http\Requests\ApprovalSupirLuarKotaRequest;
 use App\Http\Requests\ApprovalSupirNonAktifRequest;
 use Intervention\Image\ImageManagerStatic as Image;
@@ -148,7 +149,7 @@ class SupirController extends Controller
      * @ClassName 
      * @Keterangan APPROVAL SUPIR RESIGN
      */
-    public function approvalSupirResign(Request $request, $id)
+    public function approvalSupirResign(ApprovalSupirResignRequest $request, $id)
     {
         DB::beginTransaction();
         try {
