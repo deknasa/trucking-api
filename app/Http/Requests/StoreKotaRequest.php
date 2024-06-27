@@ -41,25 +41,25 @@ class StoreKotaRequest extends FormRequest
         if ($zona_id != null) {
             if ($zona_id == 0) {
                 $rulesZona_id = [
-                    'zona_id' => ['required', 'numeric', 'min:1']
+                    'zona_id' => [ 'numeric', 'min:1']
                 ];
             } else {
                 if ($this->zona == '') {
                     $rulesZona_id = [
-                        'zona' => ['required']
+                        'zona' => []
                     ];
                 }
             }
         } else if ($zona_id == null && $this->zona != '') {
             $rulesZona_id = [
-                'zona_id' => ['required', 'numeric', 'min:1']
+                'zona_id' => [ 'numeric', 'min:1']
             ];
         }
 
         $rules = [
             'kodekota' => ['required','unique:kota'],
             'keterangan' => ['nullable'],
-            'zona' => ['required'],
+            'zona' => [],
             'statusaktif' => ['required', Rule::in($status)]
         ];
 
