@@ -381,9 +381,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pindahbuku.alatbayar_id', 'alatbayar.id')
             ->whereRaw("MONTH(pindahbuku.tglbukti) = $month")
             ->whereRaw("YEAR(pindahbuku.tglbukti) = $year")
-            ->whereRaw("pindahbuku.alatbayar_id in ($alatBayar->id, $alatBayarCheck)");
-
-
+            ->where('pindahbuku.alatbayar_id', $alatBayar->id);
         DB::table($templist)->insertUsing([
             'pengeluaran_nobukti',
             'tglbukti_giro',
