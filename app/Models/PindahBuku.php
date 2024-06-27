@@ -388,19 +388,8 @@ class PindahBuku extends MyModel
             $coaKredit = $memo['JURNAL'];
         } else {
 
-            if ($alatBayarCheck != '') {
-                if ($alatabayarid == $alatBayarCheck->id) {
-                    $memo = json_decode($alatabayargiro->memo, true);
-                    $coakredit_detail[] = $memo['JURNAL'];
-                    $coaKredit = $memo['JURNAL'];
-                } else {
-                    $coaKredit = $getCoaKredit->coa;
-                    $coakredit_detail[] = $getCoaKredit->coa;
-                }
-            } else {
-                $coaKredit = $getCoaKredit->coa;
-                $coakredit_detail[] = $getCoaKredit->coa;
-            }
+            $coaKredit = $getCoaKredit->coa;
+            $coakredit_detail[] = $getCoaKredit->coa;
         }
         $getCoaDebet = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankke_id'])->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
