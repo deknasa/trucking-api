@@ -620,15 +620,15 @@ class TarifRincian extends MyModel
         return $tarifRincian;
     }
 
-    public function processUpdate(Tarif $tarif, array $data): TarifRincian
+    public function processUpdate(Tarif $tarif, array $data,TarifRincian $tarifRincian): TarifRincian
     {
-        $tarifRincian = new TarifRincian();
         if ($data['detail_id'] !== "null") {
-            $tarifRincian = TarifRincian::find($data['detail_id']);
+            $tarifRincian->find($data['detail_id']);
         }
         $tarifRincian->tarif_id = $data['tarif_id'];
         $tarifRincian->container_id = $data['container_id'];
         $tarifRincian->nominal = $data['nominal'];
+        $tarifRincian->tas_id = $data['tas_id'];
         $tarifRincian->modifiedby = auth('api')->user()->user;
         $tarifRincian->info = html_entity_decode(request()->info);
 

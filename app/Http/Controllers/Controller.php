@@ -949,6 +949,18 @@ class Controller extends BaseController
                 $data['zona_id'] = $zona->id ?? 0;
                 $data['zona'] = $zona->zona ?? '';
                 $data['jenisorder_id'] = $jenisorder->id ?? 0;
+                for ($i=0; $i < count($data['container_id']); $i++) { 
+                    $container=db::connection('srvtnl')->table("container")->from(db::raw("container a with (readuncommitted)"))
+                    ->select(
+                        'a.id',
+                        'a.kodecontainer'
+                    )
+                    ->where('a.tas_id', $data['container_id'][$i])->first();
+    
+                    $data['container'][$i] = $container->kodecontainer ?? '';
+                    $data['container_id'][$i] = $container->id ?? 0;
+
+                }
             }
             if ($table=='tarifrincian') {
                 $container=db::connection('srvtnl')->table("container")->from(db::raw("container a with (readuncommitted)"))
