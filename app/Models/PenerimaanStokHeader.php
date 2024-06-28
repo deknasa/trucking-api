@@ -723,6 +723,17 @@ class PenerimaanStokHeader extends MyModel
                 $query->leftjoin(db::raw($tempdatastokpg . " datapg"), 'penerimaanstokheader.nobukti', 'datapg.nobukti');
                 $query->whereraw("isnull(datapg.nobukti,'')=''");
                 $query->where('penerimaanstokheader.penerimaanstok_id', '=', $pg->text);
+                
+                $trado_id = request()->trado_id;
+                $gandengan_id = request()->gandengan_id;
+
+                if ($trado_id) {
+                    $query->where('penerimaanstokheader.tradodari_id',$trado_id);
+                }
+                if ($gandengan_id) {
+                    $query->where('penerimaanstokheader.gandengandari_id',$gandengan_id);
+                }
+                
                 if ($this->batasPGCabang()) {
                     $hari = (new Parameter)->cekText('BATAS HARI PINDAH GUDANG SPK', 'BATAS HARI PINDAH GUDANG SPK');
                     $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();

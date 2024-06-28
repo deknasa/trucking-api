@@ -244,53 +244,56 @@ class TarifController extends Controller
 
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
             $data['tas_id'] = $tarif->id;
+            $data['detail_tas_id'] = $tarif->detailTasId;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-                $tarif = new Tarif();
-                $datatariftnl=$this->SaveTnlNew('tarif', 'add', $data);
+                $datatariftnl=$this->SaveTnlMasterDetail('tarif', 'add', $data);
             }            
+            /**
+             * 
+             //detail
+                $json=json_decode(json_encode($datatariftnl),true);
+                $datatariftnlid=$json['original']['id'];
+                // dd($json['original']['id']);
+                // dd($datatariftnl);
+                if (is_iterable($data['container_id'])) {
+                    $tarifDetails = [];
+                    for ($i = 0; $i < count($data['container_id']); $i++) {
+                        $datadetail = [
+                            'container_id' => $data['container_id'][$i],
+                            'nominal' => $data['nominal'][$i],
+                            'tarif_id' => $datatarif->id,
+                            'tas_id' => 0,
+                        ];
 
- //detail
- $json=json_decode(json_encode($datatariftnl),true);
- $datatariftnlid=$json['original']['id'];
- // dd($json['original']['id']);
- // dd($datatariftnl);
- if (is_iterable($data['container_id'])) {
-     $tarifDetails = [];
-     for ($i = 0; $i < count($data['container_id']); $i++) {
-         $datadetail = [
-            'container_id' => $data['container_id'][$i],
-            'nominal' => $data['nominal'][$i],
-            'tarif_id' => $datatarif->id,
-             'tas_id' => 0,
-         ];
+                            $tarifRincian = new TarifRincian();
+                            $tarifRincian->processStore($datadetail, $tarifRincian);
 
-             $tarifRincian = new TarifRincian();
-             $tarifRincian->processStore($datadetail, $tarifRincian);
+                        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+                        $datadetail['tas_id'] = $tarifRincian->id;
+                        $datadetail['tarif_id'] =$datatariftnlid;
+                        
+                        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                            $controller = new Controller;
+                            $controller->SaveTnlNew('tarifrincian', 'add', $datadetail);
+                        }
 
-         $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-         $datadetail['tas_id'] = $tarifRincian->id;
-         $datadetail['tarif_id'] =$datatariftnlid;
-         
-         if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-             $controller = new Controller;
-             $controller->SaveTnlNew('tarifrincian', 'add', $datadetail);
-         }
+                        $tarifRincians[] = $tarifRincian->toArray();
+                    }
 
-         $tarifRincians[] = $tarifRincian->toArray();
-     }
-
-     (new LogTrail())->processStore([
-         'namatabel' => strtoupper($tarifRincian->getTable()),
-         'postingdari' => 'ENTRY tarif RINCIAN',
-         'idtrans' =>  $tarif->id,
-         'nobuktitrans' => $tarif->id,
-         'aksi' => 'ENTRY',
-         'datajson' => $tarifRincians,
-         'modifiedby' => auth('api')->user()->user,
-     ]);
- }
-            // 
+                    (new LogTrail())->processStore([
+                        'namatabel' => strtoupper($tarifRincian->getTable()),
+                        'postingdari' => 'ENTRY tarif RINCIAN',
+                        'idtrans' =>  $tarif->id,
+                        'nobuktitrans' => $tarif->id,
+                        'aksi' => 'ENTRY',
+                        'datajson' => $tarifRincians,
+                        'modifiedby' => auth('api')->user()->user,
+                    ]);
+                }
+                        // 
+            * 
+            */
             DB::commit();
 
             return response()->json([
@@ -357,7 +360,7 @@ class TarifController extends Controller
             $tarif = new Tarif();
             $tarifs = $tarif->findOrFail($id);
             $tarif = $tarif->processUpdate($tarifs, $data);            
-            TarifRincian::where('tarif_id', $id)->delete();
+            
             if ($request->from == '') {
             $tarif->position = $this->getPosition($tarif, $tarif->getTable())->position;
             if ($request->limit == 0) {
@@ -367,55 +370,59 @@ class TarifController extends Controller
             }
         }
 
-        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-        $data['tas_id'] = $tarif->id;
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $tarif->id;
+            $data['detail_tas_id'] = $tarif->detailTasId;
 
-        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-            $datatariftnl=$this->SaveTnlNew('tarif', 'edit', $data);
-            $this->SaveTnlNewDetail('tarifrincian', 'delete', $data,'tarif','tarif_id');
-        }
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                $datatariftnl=$this->SaveTnlMasterDetail('tarif', 'edit', $data);
+            }
+        /**
+         * 
+         //detail
+         // dd($data);
+         $json=json_decode(json_encode($datatariftnl),true);
+         $datatariftnlid=$json['original']['id'];
+         // dd($json['original']['id']);
+         // dd($datatariftnl);
+         if (is_iterable($data['container_id'])) {
+             $tarifDetails = [];
+             for ($i = 0; $i < count($data['container_id']); $i++) {
+                 $datadetail = [
+                    'container_id' => $data['container_id'][$i],
+                    'nominal' => $data['nominal'][$i],
+                    'tarif_id' => $id,
+                     'tas_id' => 0,
+                 ];
+         
+                     $tarifRincian = new TarifRincian();
+                     $tarifRincian->processStore($datadetail, $tarifRincian);
+         
+                 $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+                 $datadetail['tas_id'] = $tarifRincian->id;
+                 $datadetail['tarif_id'] =$datatariftnlid;
+                 
+                 if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                     $controller = new Controller;
+                     $controller->SaveTnlNew('tarifrincian', 'add', $datadetail);
+                 }
+         
+                 $tarifRincians[] = $tarifRincian->toArray();
+             }
+         
+             (new LogTrail())->processStore([
+                 'namatabel' => strtoupper($tarifRincian->getTable()),
+                 'postingdari' => 'ENTRY tarif RINCIAN',
+                 'idtrans' =>  $tarif->id,
+                 'nobuktitrans' => $tarif->id,
+                 'aksi' => 'ENTRY',
+                 'datajson' => $tarifRincians,
+                 'modifiedby' => auth('api')->user()->user,
+             ]);
+         }
+         * 
+         */
 
-//detail
-// dd($data);
-$json=json_decode(json_encode($datatariftnl),true);
-$datatariftnlid=$json['original']['id'];
-// dd($json['original']['id']);
-// dd($datatariftnl);
-if (is_iterable($data['container_id'])) {
-    $tarifDetails = [];
-    for ($i = 0; $i < count($data['container_id']); $i++) {
-        $datadetail = [
-           'container_id' => $data['container_id'][$i],
-           'nominal' => $data['nominal'][$i],
-           'tarif_id' => $id,
-            'tas_id' => 0,
-        ];
-
-            $tarifRincian = new TarifRincian();
-            $tarifRincian->processStore($datadetail, $tarifRincian);
-
-        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-        $datadetail['tas_id'] = $tarifRincian->id;
-        $datadetail['tarif_id'] =$datatariftnlid;
-        
-        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-            $controller = new Controller;
-            $controller->SaveTnlNew('tarifrincian', 'add', $datadetail);
-        }
-
-        $tarifRincians[] = $tarifRincian->toArray();
-    }
-
-    (new LogTrail())->processStore([
-        'namatabel' => strtoupper($tarifRincian->getTable()),
-        'postingdari' => 'ENTRY tarif RINCIAN',
-        'idtrans' =>  $tarif->id,
-        'nobuktitrans' => $tarif->id,
-        'aksi' => 'ENTRY',
-        'datajson' => $tarifRincians,
-        'modifiedby' => auth('api')->user()->user,
-    ]);
-}
 
             DB::commit();
 
