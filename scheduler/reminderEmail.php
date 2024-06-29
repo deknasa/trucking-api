@@ -11,17 +11,18 @@
 // curl_close($curlResponsesaringanhawa);
 
 
+$json_data = file_get_contents('.\fileurl-email.json');
 
-$curlHandles = array();
+$data = json_decode($json_data);
 
 // Inisialisasi beberapa handle cURL
-$curlHandles[] = curl_init("http://localhost:8074/trucking-api/public/api/reminder-expstnk");
-$curlHandles[] = curl_init("http://localhost:8074/trucking-api/public/api/reminder-spk");
-$curlHandles[] = curl_init("http://localhost:8074/trucking-api/public/api/reminder-olimesin");
-$curlHandles[] = curl_init("http://localhost:8074/trucking-api/public/api/reminder-saringanhawa");
-$curlHandles[] = curl_init("http://localhost:8074/trucking-api/public/api/reminder-perseneling");
-$curlHandles[] = curl_init("http://localhost:8074/trucking-api/public/api/reminder-oligardan");
-$curlHandles[] = curl_init("http://localhost:8074/trucking-api/public/api/reminder-servicerutin");
+$curlHandles[] = curl_init($data->app_url."public/api/reminder-expstnk");
+$curlHandles[] = curl_init($data->app_url."public/api/reminder-spk");
+$curlHandles[] = curl_init($data->app_url."public/api/reminder-olimesin");
+$curlHandles[] = curl_init($data->app_url."public/api/reminder-saringanhawa");
+$curlHandles[] = curl_init($data->app_url."public/api/reminder-perseneling");
+$curlHandles[] = curl_init($data->app_url."public/api/reminder-oligardan");
+$curlHandles[] = curl_init($data->app_url."public/api/reminder-servicerutin");
 
 // Set opsi shared di antara handles
 // Contohnya, opsi dapat diatur dengan curl_setopt()
