@@ -11,7 +11,7 @@
 // curl_close($curlResponsesaringanhawa);
 
 
-$json_data = file_get_contents('.\fileurl.json');
+$json_data = file_get_contents('.\fileurl-email.json');
 
 $data = json_decode($json_data);
 
