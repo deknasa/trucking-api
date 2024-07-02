@@ -573,23 +573,22 @@ class InvoiceHeader extends MyModel
             'nominal',
             'suratpengantar_nobukti',
         ], $queryTripAwalLongtrip);
-
         // GET LONGTRIP
-        $getLongTrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar as a with (readuncommitted)"))
-            ->select(
-                'a.jobtrucking',
-                db::raw("a.totalomset as nominal"),
-                db::raw("a.nobukti as suratpengantar_nobukti")
-            )
-            ->where('a.statuslongtrip', $statuslongtrip->id)
-            ->where('a.agen_id', $request->agen_id)
-            ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
-            ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'");
-        DB::table($temphasil)->insertUsing([
-            'jobtrucking',
-            'nominal',
-            'suratpengantar_nobukti',
-        ], $getLongTrip);
+        // $getLongTrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar as a with (readuncommitted)"))
+        //     ->select(
+        //         'a.jobtrucking',
+        //         db::raw("a.totalomset as nominal"),
+        //         db::raw("a.nobukti as suratpengantar_nobukti")
+        //     )
+        //     ->where('a.statuslongtrip', $statuslongtrip->id)
+        //     ->where('a.agen_id', $request->agen_id)
+        //     ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
+        //     ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'");
+        // DB::table($temphasil)->insertUsing([
+        //     'jobtrucking',
+        //     'nominal',
+        //     'suratpengantar_nobukti',
+        // ], $getLongTrip);
 
         // GET TRIP TOLAKAN
 
