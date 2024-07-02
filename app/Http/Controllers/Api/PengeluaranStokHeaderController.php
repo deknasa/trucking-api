@@ -716,7 +716,8 @@ class PengeluaranStokHeaderController extends Controller
             }
 
             //    dd($pengeluaran->tglbukti,$isEditAble,$printValidation);
-            if ($useredit != '' && $useredit != $user) {
+            $nameUser = auth('api')->user()->name;
+            if ($useredit != '' && $useredit != $nameUser) {
                 $waktu = (new Parameter())->cekBatasWaktuEdit('pengeluaran stok header BUKTI');
                 
                 $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
