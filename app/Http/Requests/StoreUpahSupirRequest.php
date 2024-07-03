@@ -2,24 +2,25 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use App\Http\Controllers\Api\ParameterController;
-use App\Http\Controllers\Api\ErrorController;
-use App\Models\Parameter;
 use App\Rules\ExistKota;
+use App\Rules\ExistZona;
+use App\Models\Parameter;
 use App\Rules\ExistTarif;
 use App\Rules\ExistUpahSupir;
-use App\Rules\ExistZona;
 use App\Rules\UniqueUpahSupir;
+use Illuminate\Validation\Rule;
 use App\Rules\UniqueUpahSupirDari;
+use Illuminate\Support\Facades\DB;
+use App\Rules\ValidasiKotaUpahZona;
+use App\Rules\ValidasiZonaUpahZona;
 use App\Rules\UniqueUpahSupirSampai;
 use App\Rules\UniqueUpahSupirKotaSampai;
-use App\Rules\ValidasiDariSimpanKandangUpahSupir;
-use App\Rules\ValidasiKotaUpahZona;
+use App\Rules\ValidasiKotaMilikZonaRule;
 use App\Rules\ValidasiPenyesuaianUpahSupir;
-use App\Rules\ValidasiZonaUpahZona;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
+use App\Http\Controllers\Api\ParameterController;
+use App\Rules\ValidasiDariSimpanKandangUpahSupir;
 
 class StoreUpahSupirRequest extends FormRequest
 {
@@ -52,22 +53,14 @@ class StoreUpahSupirRequest extends FormRequest
             foreach ($dataLuarKota as $item) {
                 $statusLuarKota[] = $item['id'];
             }
-            $dataSimpanKandang = $parameter->getcombodata('STATUS SIMPAN KANDANG', 'STATUS SIMPAN KANDANG');
-            $dataSimpanKandang = json_decode($dataSimpanKandang, true);
-            foreach ($dataSimpanKandang as $item) {
-                $statusSimpanKandang[] = $item['id'];
-            }
+            
 
             $dataUpahZona = $parameter->getcombodata('STATUS UPAH ZONA', 'STATUS UPAH ZONA');
             $dataUpahZona = json_decode($dataUpahZona, true);
             foreach ($dataUpahZona as $item) {
                 $statusUpahZona[] = $item['id'];
             }
-            $dataPostingTnl = $parameter->getcombodata('STATUS POSTING TNL', 'STATUS POSTING TNL');
-            $dataPostingTnl = json_decode($dataPostingTnl, true);
-            foreach ($dataPostingTnl as $item) {
-                $statusPostingTnl[] = $item['id'];
-            }
+           
 
             $getBukanUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'NON UPAH ZONA')->first();
             $getUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
@@ -194,8 +187,8 @@ class StoreUpahSupirRequest extends FormRequest
             $tglbatasawal = (date('Y-m-d', strtotime('-7 days')));
             $tglbatasakhir = (date('Y-m-d', strtotime('+7 days')));
             $rules =  [
-                'kotadari' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiDariSimpanKandangUpahSupir(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
-                'kotasampai' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id),new UniqueUpahSupirKotaSampai()],
+                'kotadari' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiDariSimpanKandangUpahSupir(), new ValidasiKotaUpahZona($getBukanUpahZona->id),new ValidasiKotaMilikZonaRule($this->kotadari_id,$this->kotasampai_id)],
+                'kotasampai' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id),new UniqueUpahSupirKotaSampai(),new ValidasiKotaMilikZonaRule($this->kotadari_id,$this->kotasampai_id)],
                 'zonadari' => ['required_if:statusupahzona,=,' . $getUpahZona->id, new ValidasiZonaUpahZona($getUpahZona->id)],
                 'zonasampai' => ['required_if:statusupahzona,=,' . $getUpahZona->id, new ValidasiZonaUpahZona($getUpahZona->id)],
                 // 'tarif' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id)],
@@ -208,7 +201,6 @@ class StoreUpahSupirRequest extends FormRequest
                 'tglmulaiberlaku' => [
                     'required', 'date_format:d-m-Y',
                 ],
-                'statuspostingtnl' => ['required', Rule::in($statusPostingTnl)],
             ];
             $rulesGambar = [];
             if (request()->from == null) {
@@ -216,17 +208,7 @@ class StoreUpahSupirRequest extends FormRequest
                     'gambar.*' => ['image','min:50']
                 ];
             }
-            if (request()->statusupahzona == $getUpahZona->id) {
-
-                $tidakSimpanKandang = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS SIMPAN KANDANG')->where('text', 'TIDAK SIMPAN KANDANG')->first();
-                $rulesStatusSimpanKandang = [
-                    'statussimpankandang' => ['required', Rule::in($tidakSimpanKandang->id)],
-                ];
-            } else {
-                $rulesStatusSimpanKandang = [
-                    'statussimpankandang' => ['required', Rule::in($statusSimpanKandang)],
-                ];
-            }
+            
 
             $getListTampilan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'UBAH TAMPILAN')->where('text', 'UPAHSUPIR')->first();
             $getListTampilan = json_decode($getListTampilan->memo);
@@ -255,7 +237,6 @@ class StoreUpahSupirRequest extends FormRequest
                     $rulesKotaSampai_id,
                     $rulesZonaDari_id,
                     $rulesZonaSampai_id,
-                    $rulesStatusSimpanKandang,
                     $rulesGambar
                 );
             }

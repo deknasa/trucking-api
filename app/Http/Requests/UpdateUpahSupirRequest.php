@@ -2,24 +2,25 @@
 
 namespace App\Http\Requests;
 
-use App\Http\Controllers\Api\ParameterController;
-use App\Http\Controllers\Api\ErrorController;
+use App\Rules\ExistKota;
+use App\Rules\ExistZona;
 use App\Models\Parameter;
 use App\Models\UpahSupir;
-use App\Rules\ExistKota;
 use App\Rules\ExistTarif;
 use App\Rules\ExistUpahSupir;
-use App\Rules\ExistZona;
-use App\Rules\SimpanKandangUpahSupir;
-use App\Rules\UniqueUpahSupirKotaSampaiEdit;
-use App\Rules\UniqueUpahSupirSampaiEdit;
-use App\Rules\ValidasiKotaUpahZona;
-use App\Rules\ValidasiPenyesuaianUpahSupir;
-use App\Rules\ValidasiZonaUpahZona;
 use Illuminate\Validation\Rule;
-
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
+use App\Rules\ValidasiKotaUpahZona;
+use App\Rules\ValidasiZonaUpahZona;
+use App\Rules\SimpanKandangUpahSupir;
+use App\Rules\UniqueUpahSupirSampaiEdit;
+use App\Rules\ValidasiKotaMilikZonaRule;
+use App\Rules\ValidasiPenyesuaianUpahSupir;
+use Illuminate\Foundation\Http\FormRequest;
+
+use App\Rules\UniqueUpahSupirKotaSampaiEdit;
+use App\Http\Controllers\Api\ErrorController;
+use App\Http\Controllers\Api\ParameterController;
 
 class UpdateUpahSupirRequest extends FormRequest
 {
@@ -177,14 +178,14 @@ class UpdateUpahSupirRequest extends FormRequest
         $tglbatasawal = $getBatas->text;
         $tglBatasAkhir = (date('Y') + 1) . '-01-01';
         $rules =  [
-            'kotadari' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id), ($check['kondisi']) ? Rule::in($dataUpahSupir->kotadari) : ''],
-            'kotasampai' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id), ($check['kondisi']) ? Rule::in($dataUpahSupir->kotasampai) : '', new UniqueUpahSupirKotaSampaiEdit()],
+            'kotadari' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id),new ValidasiKotaMilikZonaRule($this->kotadari_id,$this->kotasampai_id), ($check['kondisi']) ? Rule::in($dataUpahSupir->kotadari) : ''],
+            'kotasampai' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id),new ValidasiKotaMilikZonaRule($this->kotadari_id,$this->kotasampai_id), ($check['kondisi']) ? Rule::in($dataUpahSupir->kotasampai) : '', new UniqueUpahSupirKotaSampaiEdit()],
             'tarif' => [new ValidasiKotaUpahZona($getBukanUpahZona->id), ($check['kondisi']) ? Rule::in($dataUpahSupir->tarif) : ''],
             'penyesuaian' => [new UniqueUpahSupirSampaiEdit(), new ValidasiPenyesuaianUpahSupir(), new ValidasiKotaUpahZona($getBukanUpahZona->id), ($check['kondisi']) ? Rule::in(trim($dataUpahSupir->penyesuaian)) : ''],
             'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
             'jarakfullempty' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
             'statusaktif' => ['required', Rule::in($statusAktif)],
-            'statussimpankandang' => [new SimpanKandangUpahSupir()],
+            // 'statussimpankandang' => [new SimpanKandangUpahSupir()],
             'statusupahzona' => ['required', Rule::in($statusUpahZona)],
             'zonadari' => ['required_if:statusupahzona,=,' . $getUpahZona->id, new ValidasiZonaUpahZona($getUpahZona->id)],
             'zonasampai' => ['required_if:statusupahzona,=,' . $getUpahZona->id, new ValidasiZonaUpahZona($getUpahZona->id)],

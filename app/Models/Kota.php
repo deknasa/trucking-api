@@ -115,6 +115,8 @@ class Kota extends MyModel
             ->where('grp', 'JUDULAN LAPORAN')
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
+        $kotaPelabuhan = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'PELABUHAN CABANG')->where('subgrp', 'PELABUHAN CABANG')->first();
+        $kotaKandang = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'KANDANG')->where('subgrp', 'KANDANG')->first();
 
 
         $aktif = request()->aktif ?? '';
@@ -123,6 +125,8 @@ class Kota extends MyModel
         $pilihKotaId = request()->pilihkota_id ?? '';
         $dataRitasiId = request()->dataritasi_id ?? '';
         $ritasiDariKe = request()->ritasidarike ?? '';
+        $upahSupirDariKe = request()->upahSupirDariKe ?? '';
+        $upahSupirKotaDari = request()->upahSupirKotaDari ?? '';
         $kotaZona = request()->kotaZona ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
@@ -178,6 +182,16 @@ class Kota extends MyModel
                 } else {
                     $query->where("kodekota", 'BELAWAN RANGKA')->first();
                 }
+            }
+        }
+
+        if ($upahSupirDariKe == 'dari') {
+            $query->whereRaw("kota.id != $kotaKandang->text");
+            // dd($kotaPelabuhan,$kotaKandang);
+        }
+        if ($upahSupirDariKe == 'ke') {
+            if ($upahSupirKotaDari == $kotaPelabuhan->text) {
+                $query->whereRaw("kota.id != $kotaKandang->text");
             }
         }
 
