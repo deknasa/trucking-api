@@ -142,6 +142,7 @@ class UpahSupirController extends Controller
                 'container' => $request->container,
                 'statuscontainer_id' => $request->statuscontainer_id,
                 'statuscontainer' => $request->statuscontainer,
+                'statuslangsir' => $request->statuslangsir,
                 'nominalsupir' => $request->nominalsupir,
                 'nominalkenek' => $request->nominalkenek ?? 0,
                 'nominalkomisi' => $request->nominalkomisi ?? 0,
@@ -246,6 +247,7 @@ class UpahSupirController extends Controller
 
                 'container_id' => $request->container_id,
                 'statuscontainer_id' => $request->statuscontainer_id,
+                'statuslangsir' => $request->statuslangsir,
                 'nominalsupir' => $request->nominalsupir,
                 'nominalkenek' => $request->nominalkenek ?? 0,
                 'nominalkomisi' => $request->nominalkomisi ?? 0,

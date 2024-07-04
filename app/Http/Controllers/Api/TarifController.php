@@ -214,6 +214,7 @@ class TarifController extends Controller
                 'keterangan' => $request->keterangan,
                 'container' => $request->container,
                 'container_id' => $request->container_id,
+                'statuslangsir' => $request->statuslangsir,
                 'nominal' => $request->nominal,
                 'detail_id' => $request->detail_id,
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
@@ -352,6 +353,7 @@ class TarifController extends Controller
                 'keterangan' => $request->keterangan,
                 'container' => $request->container,
                 'container_id' => $request->container_id,
+                'statuslangsir' => $request->statuslangsir,
                 'nominal' => $request->nominal,
                 'detail_id' => $request->detail_id,
                 'tas_id' => $request->tas_id,
@@ -359,6 +361,7 @@ class TarifController extends Controller
             // $tarif = (new Tarif())->processUpdate($tarif, $data);
             $tarif = new Tarif();
             $tarifs = $tarif->findOrFail($id);
+            $statusaktifTarif = $tarifs->statusaktif;
             $tarif = $tarif->processUpdate($tarifs, $data);            
             
             if ($request->from == '') {
@@ -373,6 +376,7 @@ class TarifController extends Controller
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
             $data['tas_id'] = $tarif->id;
             $data['detail_tas_id'] = $tarif->detailTasId;
+            $data['statusaktif'] = $statusaktifTarif;
 
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
                 $datatariftnl=$this->SaveTnlMasterDetail('tarif', 'edit', $data);

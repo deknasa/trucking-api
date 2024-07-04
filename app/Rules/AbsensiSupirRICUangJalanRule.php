@@ -50,6 +50,9 @@ class AbsensiSupirRICUangJalanRule implements Rule
                 $validasi = (new MandorAbsensiSupir)->validasiRICUangJalan($data,$absensiSupirDetail);
                 $this->kodeeror = $validasi[1];
                 return $validasi[0];
+            }else {
+                $this->kodeeror ="";
+                return true;
             }
         }else {
             $this->kodeeror ="";

@@ -2,24 +2,25 @@
 
 namespace App\Http\Requests;
 
-use App\Http\Controllers\Api\ParameterController;
-use App\Http\Controllers\Api\ErrorController;
+use App\Rules\ExistKota;
+use App\Rules\ExistZona;
 use App\Models\Parameter;
 use App\Models\UpahSupir;
-use App\Rules\ExistKota;
 use App\Rules\ExistTarif;
 use App\Rules\ExistUpahSupir;
-use App\Rules\ExistZona;
-use App\Rules\SimpanKandangUpahSupir;
-use App\Rules\UniqueUpahSupirKotaSampaiEdit;
-use App\Rules\UniqueUpahSupirSampaiEdit;
-use App\Rules\ValidasiKotaUpahZona;
-use App\Rules\ValidasiPenyesuaianUpahSupir;
-use App\Rules\ValidasiZonaUpahZona;
 use Illuminate\Validation\Rule;
-
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
+use App\Rules\ValidasiKotaUpahZona;
+use App\Rules\ValidasiZonaUpahZona;
+use App\Rules\SimpanKandangUpahSupir;
+use App\Rules\UniqueUpahSupirSampaiEdit;
+use App\Rules\ValidasiKotaMilikZonaRule;
+use App\Rules\ValidasiPenyesuaianUpahSupir;
+use Illuminate\Foundation\Http\FormRequest;
+
+use App\Rules\UniqueUpahSupirKotaSampaiEdit;
+use App\Http\Controllers\Api\ErrorController;
+use App\Http\Controllers\Api\ParameterController;
 
 class UpdateUpahSupirRequest extends FormRequest
 {
@@ -49,6 +50,11 @@ class UpdateUpahSupirRequest extends FormRequest
         $dataAktif = json_decode($dataAktif, true);
         foreach ($dataAktif as $item) {
             $statusAktif[] = $item['id'];
+        }
+        $datalangsir = $parameter->getcombodata('STATUS langsir', 'STATUS langsir');
+        $datalangsir = json_decode($datalangsir, true);
+        foreach ($datalangsir as $item) {
+            $statuslangsir[] = $item['id'];
         }
         $dataLuarKota = $parameter->getcombodata('UPAH SUPIR LUAR KOTA', 'UPAH SUPIR LUAR KOTA');
         $dataLuarKota = json_decode($dataLuarKota, true);
@@ -177,14 +183,16 @@ class UpdateUpahSupirRequest extends FormRequest
         $tglbatasawal = $getBatas->text;
         $tglBatasAkhir = (date('Y') + 1) . '-01-01';
         $rules =  [
-            'kotadari' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id), ($check['kondisi']) ? Rule::in($dataUpahSupir->kotadari) : ''],
-            'kotasampai' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id), ($check['kondisi']) ? Rule::in($dataUpahSupir->kotasampai) : '', new UniqueUpahSupirKotaSampaiEdit()],
+            'kotadari' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id),new ValidasiKotaMilikZonaRule($this->kotadari_id,$this->kotasampai_id), ($check['kondisi']) ? Rule::in($dataUpahSupir->kotadari) : ''],
+            'kotasampai' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id),new ValidasiKotaMilikZonaRule($this->kotadari_id,$this->kotasampai_id), ($check['kondisi']) ? Rule::in($dataUpahSupir->kotasampai) : '', new UniqueUpahSupirKotaSampaiEdit()],
             'tarif' => [new ValidasiKotaUpahZona($getBukanUpahZona->id), ($check['kondisi']) ? Rule::in($dataUpahSupir->tarif) : ''],
             'penyesuaian' => [new UniqueUpahSupirSampaiEdit(), new ValidasiPenyesuaianUpahSupir(), new ValidasiKotaUpahZona($getBukanUpahZona->id), ($check['kondisi']) ? Rule::in(trim($dataUpahSupir->penyesuaian)) : ''],
             'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
             'jarakfullempty' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
             'statusaktif' => ['required', Rule::in($statusAktif)],
-            'statussimpankandang' => [new SimpanKandangUpahSupir()],
+            'statuslangsir' => ['required', Rule::in($statuslangsir)],
+            'statuslangsirnama' => ['required'],
+            // 'statussimpankandang' => [new SimpanKandangUpahSupir()],
             'statusupahzona' => ['required', Rule::in($statusUpahZona)],
             'zonadari' => ['required_if:statusupahzona,=,' . $getUpahZona->id, new ValidasiZonaUpahZona($getUpahZona->id)],
             'zonasampai' => ['required_if:statusupahzona,=,' . $getUpahZona->id, new ValidasiZonaUpahZona($getUpahZona->id)],
@@ -233,6 +241,8 @@ class UpdateUpahSupirRequest extends FormRequest
             'kotadari' => 'kota dari',
             'kotasampai' => 'kota sampai',
             'statusaktif' => 'status aktif',
+            'statuslangsir' => 'status langsir',
+            'statuslangsirnama' => 'status langsir',
             'statusluarkota' => 'status luar kota',
             'tglmulaiberlaku' => 'tanggal mulai berlaku',
             'tglakhirberlaku' => 'tanggal akhir berlaku',
