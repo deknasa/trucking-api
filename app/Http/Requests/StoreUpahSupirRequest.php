@@ -48,6 +48,11 @@ class StoreUpahSupirRequest extends FormRequest
             foreach ($dataAktif as $item) {
                 $statusAktif[] = $item['id'];
             }
+            $datalangsir = $parameter->getcombodata('STATUS langsir', 'STATUS langsir');
+            $datalangsir = json_decode($datalangsir, true);
+            foreach ($datalangsir as $item) {
+                $statuslangsir[] = $item['id'];
+            }
             $dataLuarKota = $parameter->getcombodata('UPAH SUPIR LUAR KOTA', 'UPAH SUPIR LUAR KOTA');
             $dataLuarKota = json_decode($dataLuarKota, true);
             foreach ($dataLuarKota as $item) {
@@ -197,6 +202,8 @@ class StoreUpahSupirRequest extends FormRequest
                 'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
                 'jarakfullempty' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
                 'statusaktif' => ['required', Rule::in($statusAktif)],
+                'statuslangsir' => ['required', Rule::in($statuslangsir)],
+                'statuslangsirnama' => ['required'],
                 'statusupahzona' => ['required', Rule::in($statusUpahZona)],
                 'tglmulaiberlaku' => [
                     'required', 'date_format:d-m-Y',
@@ -264,6 +271,8 @@ class StoreUpahSupirRequest extends FormRequest
             'kotadari' => 'kota dari',
             'kotasampai' => 'kota sampai',
             'statusaktif' => 'status aktif',
+            'statuslangsir' => 'status langsir',
+            'statuslangsirnama' => 'status langsir',
             'statusluarkota' => 'status luar kota',
             'jarakfullempty' => 'jarak full/empty',
             'tglmulaiberlaku' => 'tanggal mulai berlaku',

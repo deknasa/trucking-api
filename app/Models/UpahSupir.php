@@ -345,6 +345,8 @@ class UpahSupir extends MyModel
             // 'upahsupir.tglakhirberlaku',
             'upahsupir.statusluarkota',
             'statusluarkota.text as statusluarkotas',
+            'upahsupir.statuslangsir',
+            'statuslangsir.text as statuslangsirnama',
             'upahsupir.gambar',
 
             DB::raw("upahsupir.tarifmuatan_id"),
@@ -370,6 +372,7 @@ class UpahSupir extends MyModel
             ->leftJoin(DB::raw("tarif as tarifexport with (readuncommitted)"), 'upahsupir.tarifexport_id', 'tarifexport.id')
             ->leftJoin(DB::raw("tarif as tarifimport with (readuncommitted)"), 'upahsupir.tarifimport_id', 'tarifimport.id')
             ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'upahsupir.statusluarkota', 'statusluarkota.id')
+            ->leftJoin(DB::raw("parameter as statuslangsir with (readuncommitted)"), 'upahsupir.statuslangsir', 'statuslangsir.id')
 
             ->where('upahsupir.id', $id);
 
@@ -390,6 +393,8 @@ class UpahSupir extends MyModel
             $table->unsignedBigInteger('statussimpankandang')->nullable();
             $table->unsignedBigInteger('statusupahzona')->nullable();
             $table->unsignedBigInteger('statuspostingtnl')->nullable();
+            $table->unsignedBigInteger('statuslangsir')->nullable();
+            $table->string('statuslangsirnama')->nullable();
         });
 
         $status = Parameter::from(
@@ -457,9 +462,23 @@ class UpahSupir extends MyModel
             ->first();
 
         $iddefaultstatusPostingTnl = $status->id ?? 0;
+        $statuslangsir = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id',
+                'text'
+            )
+            ->where('grp', '=', 'STATUS LANGSIR')
+            ->where('subgrp', '=', 'STATUS LANGSIR')
+            ->where('default', '=', 'YA')
+            ->first();
+
+        $iddefaultstatusLangsir = $statuslangsir->id ?? 0;
+        $namadefaultstatusLangsir = $statuslangsir->text ?? '';
 
         DB::table($tempdefault)->insert(
-            ["statusaktif" => $iddefaultstatusaktif, "statusluarkota" => $iddefaultstatusluarkota, "statussimpankandang" => $iddefaultstatusSimpanKandang, "statusupahzona" => $iddefaultstatusUpahZona, "statuspostingtnl" => $iddefaultstatusPostingTnl]
+            ["statusaktif" => $iddefaultstatusaktif, "statusluarkota" => $iddefaultstatusluarkota, "statussimpankandang" => $iddefaultstatusSimpanKandang, "statusupahzona" => $iddefaultstatusUpahZona, "statuspostingtnl" => $iddefaultstatusPostingTnl,"statuslangsir" =>$iddefaultstatusLangsir,"statuslangsirnama" =>$namadefaultstatusLangsir]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -471,6 +490,8 @@ class UpahSupir extends MyModel
                 'statussimpankandang',
                 'statusupahzona',
                 'statuspostingtnl',
+                'statuslangsir',
+                'statuslangsirnama',
             );
 
         $data = $query->first();
@@ -1220,6 +1241,7 @@ class UpahSupir extends MyModel
             $upahsupir->statuspostingtnl = $data['statuspostingtnl'];
             $upahsupir->statusupahzona = $data['statusupahzona'];
             $upahsupir->statussimpankandang = $data['statussimpankandang'];
+            $upahsupir->statuslangsir = $data['statuslangsir'];
             $upahsupir->statusluarkota = $data['statusluarkota'] ?? '';
             $upahsupir->keterangan = $data['keterangan'] ?? '';
             $upahsupir->modifiedby = auth('api')->user()->user;
@@ -1321,6 +1343,7 @@ class UpahSupir extends MyModel
                 $upahsupirKandang->statusaktif = $data['statusaktif'];
                 $upahsupirKandang->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
                 $upahsupirKandang->statussimpankandang = $data['statussimpankandang'];
+                $upahsupirKandang->statuslangsir = $data['statuslangsir'];
                 $upahsupirKandang->keterangan = $data['keterangan'];
                 $upahsupirKandang->modifiedby = auth('api')->user()->user;
                 $upahsupirKandang->info = html_entity_decode(request()->info);
@@ -1425,6 +1448,7 @@ class UpahSupir extends MyModel
             $upahsupir->zonadari_id = $data['zonadari_id'] ?? 0;
             $upahsupir->zonasampai_id = $data['zonasampai_id'] ?? 0;
             $upahsupir->statusupahzona = $data['statusupahzona'];
+            $upahsupir->statuslangsir = $data['statuslangsir'];
             $upahsupir->jarak = $data['jarak'];
             $upahsupir->jarakfullempty = $data['jarakfullempty'];
             $upahsupir->zona_id = ($data['zona_id'] == null) ? 0 : $data['zona_id'] ?? 0;

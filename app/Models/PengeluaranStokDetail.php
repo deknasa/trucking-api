@@ -569,7 +569,9 @@ class PengeluaranStokDetail extends MyModel
         if (!$stok) {
             return false;
         }
-        $total = $stok->totalvulkanisir - $vulkan;
+        $getvulkanisir = (new Stok)->getvulkanisir($stok_id);
+
+        $total = $getvulkanisir['totalvulkan'] - $vulkan;
         if ($total < 0) {
             return false;
         }

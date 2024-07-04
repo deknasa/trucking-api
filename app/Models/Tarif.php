@@ -524,6 +524,8 @@ class Tarif extends MyModel
             $table->unsignedBigInteger('statussistemton')->nullable();
             $table->unsignedBigInteger('statuspenyesuaianharga')->nullable();
             $table->unsignedBigInteger('statuspostingtnl')->nullable();
+            $table->unsignedBigInteger('statuslangsir')->nullable();
+            $table->string('statuslangsirnama')->nullable();
         });
 
         $status = Parameter::from(
@@ -578,12 +580,29 @@ class Tarif extends MyModel
 
         $iddefaultstatuspostingtnl = $status->id ?? 0;
 
+        $statuslangsir = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id',
+                'text'
+            )
+            ->where('grp', '=', 'STATUS LANGSIR')
+            ->where('subgrp', '=', 'STATUS LANGSIR')
+            ->where('default', '=', 'YA')
+            ->first();
+
+        $iddefaultstatusLangsir = $statuslangsir->id ?? 0;
+        $namadefaultstatusLangsir = $statuslangsir->text ?? '';
+
         DB::table($tempdefault)->insert(
             [
                 "statusaktif" => $iddefaultstatusaktif,
                 "statussistemton" => $iddefaultstatussistemton,
                 "statuspenyesuaianharga" => $iddefaultstatuspenyesuaianharga,
                 "statuspostingtnl" => $iddefaultstatuspostingtnl,
+                "statuslangsir" =>$iddefaultstatusLangsir,
+                "statuslangsirnama" =>$namadefaultstatusLangsir,
             ]
         );
 
@@ -595,6 +614,8 @@ class Tarif extends MyModel
                 'statussistemton',
                 'statuspenyesuaianharga',
                 'statuspostingtnl',
+                'statuslangsir',
+                'statuslangsirnama',
             );
 
         $data = $query->first();
@@ -632,6 +653,8 @@ class Tarif extends MyModel
                 'jenisorder.keterangan as jenisorder',
                 'tarif.tglmulaiberlaku',
                 'tarif.statuspenyesuaianharga',
+                'tarif.statuslangsir',
+                'statuslangsir.text as statuslangsirnama',
                 DB::raw("(case when tarif.statuspostingtnl IS NULL then 0 else tarif.statuspostingtnl end) as statuspostingtnl"),
                 'tarif.keterangan'
             )
@@ -640,6 +663,7 @@ class Tarif extends MyModel
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'tarif.jenisorder_id', '=', 'jenisorder.id')
             ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
             
+            ->leftJoin(DB::raw("parameter as statuslangsir with (readuncommitted)"), 'tarif.statuslangsir', 'statuslangsir.id')
             ->leftJoin(DB::raw("upahsupir as upahsupir with (readuncommitted)"), 'upahsupir.tarif_id', '=', 'tarif.id')
             ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
             ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
@@ -817,6 +841,7 @@ class Tarif extends MyModel
         $tarif->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
         $tarif->statuspenyesuaianharga = $data['statuspenyesuaianharga'];
         $tarif->statuspostingtnl = $data['statuspostingtnl'];
+        $tarif->statuslangsir = $data['statuslangsir'];
         $tarif->keterangan = $data['keterangan'];
         $tarif->modifiedby = auth('api')->user()->user;
         $tarif->info = html_entity_decode(request()->info);
@@ -913,6 +938,7 @@ class Tarif extends MyModel
         $tarif->jenisorder_id = $data['jenisorder_id'] ?? 0;
         $tarif->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
         $tarif->statuspenyesuaianharga = $data['statuspenyesuaianharga'];
+        $tarif->statuslangsir = $data['statuslangsir'];
         $tarif->keterangan = $data['keterangan'];
         $tarif->info = html_entity_decode(request()->info);
 

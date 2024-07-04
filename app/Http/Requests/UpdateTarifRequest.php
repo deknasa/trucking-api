@@ -42,6 +42,11 @@ class UpdateTarifRequest extends FormRequest
         foreach ($dataAktif as $item) {
             $statusAktif[] = $item['id'];
         }
+        $datalangsir = $parameter->getcombodata('STATUS langsir', 'STATUS langsir');
+        $datalangsir = json_decode($datalangsir, true);
+        foreach ($datalangsir as $item) {
+            $statuslangsir[] = $item['id'];
+        }
         $dataTon = $parameter->getcombodata('SISTEM TON', 'SISTEM TON');
         $dataTon = json_decode($dataTon, true);
         foreach ($dataTon as $item) {
@@ -110,6 +115,8 @@ class UpdateTarifRequest extends FormRequest
             'penyesuaian' => [new UniqueTarifEdit(), ($check['kondisi']) ? Rule::in($dataTarif->penyesuaian) : ''],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'statussistemton' => ['required', Rule::in($statusTon)],
+            'statuslangsir' => ['required', Rule::in($statuslangsir)],
+            'statuslangsirnama' => ['required'],
             'tglmulaiberlaku' => [
                 'required', 'date_format:d-m-Y',
             ],
@@ -136,6 +143,8 @@ class UpdateTarifRequest extends FormRequest
         return [
             'statussistemton' => 'Status Sistem Ton',
             'tglmulaiberlaku' => 'Tanggal Mulai Berlaku',
+            'statuslangsir' => 'status langsir',
+            'statuslangsirnama' => 'status langsir',
             'statuspenyesuaianharga' => 'Status Penyesuaian Harga',
             'nominal.*' => 'nominal'
         ];
