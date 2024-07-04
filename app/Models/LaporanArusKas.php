@@ -124,6 +124,7 @@ class LaporanArusKas extends MyModel
             ->join(db::raw("pengeluarandetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->whereraw("month(a.tglbukti)=" . $blnbefore)
             ->whereraw("year(a.tglbukti)=" . $thnbefore)
+            ->whereraw("b.coakredit<>'03.02.02.05'")
             ->groupBy(db::raw("month(a.tglbukti)"))
             ->groupBy(db::raw("year(a.tglbukti)"))
             ->groupBy('b.coadebet');
@@ -135,6 +136,31 @@ class LaporanArusKas extends MyModel
             'nominal',
             'order',
         ], $queryrekap);
+
+        $queryrekap = db::table("pengeluaranheader")->from(db::raw("pengeluaranheader a with (readuncommitted)"))
+        ->select(
+            db::raw("month(a.tglbukti) as bulan"),
+            db::raw("year(a.tglbukti) as tahun"),
+            'b.coadebet as coa',
+            db::raw("sum(B.nominal*-1) as nominal"),
+            db::raw("2 as [order]"),
+        )
+        ->join(db::raw("pengeluarandetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+        ->join(db::raw("pencairangiropengeluaranheader c with (readuncommitted)"), 'a.nobukti', 'c.pengeluaran_nobukti')
+        ->whereraw("month(a.tglbukti)=" . $blnbefore)
+        ->whereraw("year(a.tglbukti)=" . $thnbefore)
+        ->whereraw("b.coakredit='03.02.02.05'")
+        ->groupBy(db::raw("month(a.tglbukti)"))
+        ->groupBy(db::raw("year(a.tglbukti)"))
+        ->groupBy('b.coadebet');
+
+    DB::table($temprekapdata)->insertUsing([
+        'bulan',
+        'tahun',
+        'coa',
+        'nominal',
+        'order',
+    ], $queryrekap);        
         // 
 
         $queryrekap = db::table("penerimaanheader")->from(db::raw("penerimaanheader a with (readuncommitted)"))
@@ -171,6 +197,7 @@ class LaporanArusKas extends MyModel
             ->join(db::raw("pengeluarandetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->whereraw("month(a.tglbukti)=" . $blnpilih)
             ->whereraw("year(a.tglbukti)=" . $thnpilih)
+            ->whereraw("b.coakredit<>'03.02.02.05'")            
             ->groupBy(db::raw("month(a.tglbukti)"))
             ->groupBy(db::raw("year(a.tglbukti)"))
             ->groupBy('b.coadebet');
@@ -182,6 +209,31 @@ class LaporanArusKas extends MyModel
             'nominal',
             'order',
         ], $queryrekap);
+
+        $queryrekap = db::table("pengeluaranheader")->from(db::raw("pengeluaranheader a with (readuncommitted)"))
+            ->select(
+                db::raw("month(a.tglbukti) as bulan"),
+                db::raw("year(a.tglbukti) as tahun"),
+                'b.coadebet as coa',
+                db::raw("sum(B.nominal*-1) as nominal"),
+                db::raw("2 as [order]"),
+            )
+            ->join(db::raw("pengeluarandetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(db::raw("pencairangiropengeluaranheader c with (readuncommitted)"), 'a.nobukti', 'c.pengeluaran_nobukti')
+            ->whereraw("month(a.tglbukti)=" . $blnpilih)
+            ->whereraw("year(a.tglbukti)=" . $thnpilih)
+            ->whereraw("b.coakredit='03.02.02.05'")            
+            ->groupBy(db::raw("month(a.tglbukti)"))
+            ->groupBy(db::raw("year(a.tglbukti)"))
+            ->groupBy('b.coadebet');
+
+        DB::table($temprekapdata)->insertUsing([
+            'bulan',
+            'tahun',
+            'coa',
+            'nominal',
+            'order',
+        ], $queryrekap);        
 
 
         $temprekapdatabefore = '##temprekapdatabefore' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
