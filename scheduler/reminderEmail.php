@@ -14,7 +14,8 @@
 $json_data = file_get_contents('.\fileurl-email.json');
 
 $data = json_decode($json_data);
-
+var_dump($data);
+die();
 // Inisialisasi beberapa handle cURL
 $curlHandles[] = curl_init($data->app_url."public/api/reminder-expstnk");
 $curlHandles[] = curl_init($data->app_url."public/api/reminder-spk");
