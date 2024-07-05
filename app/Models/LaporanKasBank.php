@@ -362,17 +362,35 @@ class LaporanKasBank extends MyModel
             ->where('a.bankke_id', '=', $bank_id)
             ->first();
 
-        $querysaldoawalpengeluaran = DB::table("pengeluaranheader")->from(
+        $querysaldoawalpengeluaran1 = DB::table("pengeluaranheader")->from(
             DB::raw("pengeluaranheader as a with (readuncommitted)")
         )
             ->select(
                 DB::raw("sum(b.nominal) as nominal")
             )
             ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->whereraw("isnull(a.alatbayar_id,0) not in(3,4)")
             ->whereRaw("a.tglbukti>=cast(ltrim(rtrim(str(year('" . $dariformat . "'))))+'/'+ltrim(rtrim(str(month('" . $dariformat . "'))))+'/1' as datetime) ")
             ->where('a.tglbukti', '<', $dari)
             ->where('a.bank_id', '=', $bank_id)
             ->first();
+
+        $querysaldoawalpengeluaran2 = DB::table("pengeluaranheader")->from(
+            DB::raw("pengeluaranheader as a with (readuncommitted)")
+        )
+            ->select(
+                DB::raw("sum(b.nominal) as nominal")
+            )
+            ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(DB::raw("pencairangiropengeluaranheader as c with (readuncommitted)"), 'a.nobukti', 'c.pengeluaran_nobukti')
+            ->whereraw("isnull(a.alatbayar_id,0)  in(3,4)")
+            ->whereRaw("a.tglbukti>=cast(ltrim(rtrim(str(year('" . $dariformat . "'))))+'/'+ltrim(rtrim(str(month('" . $dariformat . "'))))+'/1' as datetime) ")
+            ->where('a.tglbukti', '<', $dari)
+            ->where('a.bank_id', '=', $bank_id)
+            ->first();
+        $querysaldoawalpengeluaran1 = $querysaldoawalpengeluaran1->nominal ?? 0;
+        $querysaldoawalpengeluaran2 = $querysaldoawalpengeluaran2->nominal ?? 0;
+        $querysaldoawalpengeluaran = +$querysaldoawalpengeluaran1 + $querysaldoawalpengeluaran2;
 
         $querysaldoawalpengeluaranpindahbuku = DB::table("pindahbuku")->from(
             DB::raw("pindahbuku as a with (readuncommitted)")
@@ -392,26 +410,43 @@ class LaporanKasBank extends MyModel
             ->whereRaw("a.id<>" . $bank_id)
             ->first();
         if (isset($bankpengembaliankepusat)) {
-            $querysaldoawalpengembaliankepusat = DB::table("pengeluaranheader")->from(
+            $querysaldoawalpengembaliankepusat1 = DB::table("pengeluaranheader")->from(
                 DB::raw("pengeluaranheader as a with (readuncommitted)")
             )
                 ->select(
                     DB::raw("sum(b.nominal) as nominal")
                 )
                 ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                ->whereraw("isnull(a.alatbayar_id,0) not in(3,4)")
+                ->whereRaw("a.tglbukti>=cast(ltrim(rtrim(str(year('" . $dariformat . "'))))+'/'+ltrim(rtrim(str(month('" . $dariformat . "'))))+'/1' as datetime) ")
+                ->where('a.tglbukti', '<', $dari)
+                ->where('a.bank_id', '=', $bankpengembaliankepusat->id)
+                ->first();
+
+            $querysaldoawalpengembaliankepusat2 = DB::table("pengeluaranheader")->from(
+                DB::raw("pengeluaranheader as a with (readuncommitted)")
+            )
+                ->select(
+                    DB::raw("sum(b.nominal) as nominal")
+                )
+                ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                ->join(DB::raw("pencairangiropengeluaranheader as c with (readuncommitted)"), 'a.nobukti', 'c.pengeluaran_nobukti')
+                ->whereraw("isnull(a.alatbayar_id,0)  in(3,4)")
                 ->whereRaw("a.tglbukti>=cast(ltrim(rtrim(str(year('" . $dariformat . "'))))+'/'+ltrim(rtrim(str(month('" . $dariformat . "'))))+'/1' as datetime) ")
                 ->where('a.tglbukti', '<', $dari)
                 ->where('a.bank_id', '=', $bankpengembaliankepusat->id)
                 ->first();
         }
-        $saldoawalpengembaliankepusat = $querysaldoawalpengembaliankepusat->nominal ?? 0;
+        $saldoawalpengembaliankepusat1 = $querysaldoawalpengembaliankepusat1->nominal ?? 0;
+        $saldoawalpengembaliankepusat2 = $querysaldoawalpengembaliankepusat2->nominal ?? 0;
+        $saldoawalpengembaliankepusat = $saldoawalpengembaliankepusat1 + $saldoawalpengembaliankepusat2;
 
         $month = date('m', strtotime($dariformat));
         $year = date('Y', strtotime($dariformat));
 
         if ($month == 1) {
             $bulan = 12;
-            $year=$year-1;
+            $year = $year - 1;
         } else {
             $bulan = Intval($month) - 1;
         }
@@ -433,7 +468,7 @@ class LaporanKasBank extends MyModel
 
         // dd($querysaldoawal->tosql());
         // dd($querysaldoawal->to);
-        $saldoawal =  ($querysaldoawal->nominal + $querysaldoawalpenerimaan->nominal + $querysaldoawalpenerimaanpindahbuku->nominal) - ($querysaldoawalpengeluaran->nominal + $querysaldoawalpengeluaranpindahbuku->nominal + $saldoawalpengembaliankepusat);
+        $saldoawal =  ($querysaldoawal->nominal + $querysaldoawalpenerimaan->nominal + $querysaldoawalpenerimaanpindahbuku->nominal) - ($querysaldoawalpengeluaran + $querysaldoawalpengeluaranpindahbuku->nominal + $saldoawalpengembaliankepusat);
 
         // dd($querysaldoawal->nominal,$querysaldoawalpenerimaan->nominal,$querysaldoawalpenerimaanpindahbuku->nominal,$querysaldoawalpengeluaran->nominal,$querysaldoawalpengeluaranpindahbuku->nominal,$saldoawalpengembaliankepusat);
 
@@ -599,7 +634,7 @@ class LaporanKasBank extends MyModel
             'debet',
             'kredit',
             'saldo',
-        ], $querypengeluaran);        
+        ], $querypengeluaran);
         if (isset($bankpengembaliankepusat)) {
             $querypengeluaran = DB::table("pengeluaranheader")->from(
                 DB::raw("pengeluaranheader as a with (readuncommitted)")
