@@ -32,6 +32,7 @@ class LaporanDepositoSupirController extends Controller
     {
         $sampai = $request->sampai;
         $jenis = $request->jenis;
+        $periodedata_id = $request->periodedata_id ?? 0;
         $prosesneraca=0;
 
         $laporandepositosupir=new LaporanDepositoSupir();
@@ -40,12 +41,20 @@ class LaporanDepositoSupirController extends Controller
             ->join("parameter", 'parameter.text', 'cabang.id')
             ->where('parameter.grp', 'ID CABANG')
             ->first();
+
+            if ($periodedata_id ==665) {
+                    $data=$laporandepositosupir->getReportLama($sampai, $jenis,$prosesneraca);
+            } else {
+                $data=$laporandepositosupir->getReport($sampai, $jenis,$prosesneraca);
+            }
         
-        return response([
-            'data' => $laporandepositosupir->getReport($sampai, $jenis,$prosesneraca),
-            'namacabang' => 'CABANG ' . $getCabang->namacabang
-        ]);
-    }
+                // dd('test');
+                return response([
+                    'data' => $data,
+                    'namacabang' => 'CABANG ' . $getCabang->namacabang
+                ]);
+            }
+           
 
     /**
      * @ClassName
