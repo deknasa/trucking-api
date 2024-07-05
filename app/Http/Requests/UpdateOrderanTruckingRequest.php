@@ -262,6 +262,7 @@ class UpdateOrderanTruckingRequest extends FormRequest
                 // 'statusperalihan' => ['required', Rule::in($statusperalihan)],
                 'nojobemkl' => [new OrderanTruckingValidasijob2040()],
                 'nojobemkl2' => [new OrderanTruckingValidasijob2x20()],
+                'gandengan' => 'required',
                 'nocont' => 'required',
                 'noseal' => [$requiredSeal],
                 'nocont2' => [new OrderanTruckingValidasinocont2x20()],
