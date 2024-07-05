@@ -854,7 +854,7 @@ class Tarif extends MyModel
         if ($upahsupir_id != 0) {
             $upahsupir = new Upahsupir();
             if ($connecTnl) {
-                $tarifRincian->setConnection('srvtnl');
+                $upahsupir->setConnection('srvtnl');
             }
             $datadetailsUpahSupir = $upahsupir->processUpdateTarif([
                 'tarif_id' => $tarif->id,
@@ -950,7 +950,7 @@ class Tarif extends MyModel
         if ($upahsupir_id != 0) {
             $upahsupir = new Upahsupir();
             if ($connecTnl) {
-                $tarifRincian->setConnection('srvtnl');
+                $upahsupir->setConnection('srvtnl');
             }
             $datadetailsUpahSupir = $upahsupir->processUpdateTarif([
                 'tarif_id' => $tarif->id,
