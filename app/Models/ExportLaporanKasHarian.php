@@ -160,6 +160,7 @@ class ExportLaporanKasHarian extends MyModel
                 DB::raw("sum(b.nominal) as nominalkredit")
             )
             ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->whereraw("isnull(a.alatbayar_id,0)  not in(3,4)")
             ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
             ->groupby('a.bank_id')
             ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
@@ -171,6 +172,31 @@ class ExportLaporanKasHarian extends MyModel
             'nominaldebet',
             'nominalkredit',
         ], $querykredit);
+
+        $querykredit = DB::table("pengeluaranheader")->from(
+            DB::raw("pengeluaranheader as a with (readuncommitted)")
+        )
+            ->select(
+                db::raw("format(a.tglbukti,'MM-yyyy') as bulan"),
+                DB::raw("a.bank_id"),
+                DB::raw("0 as nominaldebet"),
+                DB::raw("sum(b.nominal) as nominalkredit")
+            )
+            ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(DB::raw("pencairangiropengeluaranheader as c with (readuncommitted)"), 'b.nobukti', 'c.pengeluaran_nobukti')
+            ->whereraw("isnull(a.alatbayar_id,0)  in(3,4)")
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
+            ->groupby('a.bank_id')
+            ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
+
+
+        DB::table($tempsaldoawal)->insertUsing([
+            'bulan',
+            'bank_id',
+            'nominaldebet',
+            'nominalkredit',
+        ], $querykredit);
+
 
         $querykredit = DB::table("pindahbuku")->from(
             DB::raw("pindahbuku as a with (readuncommitted)")
@@ -242,6 +268,7 @@ class ExportLaporanKasHarian extends MyModel
             )
             ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw($temppengembaliankepusat . " as c with (readuncommitted)"), 'a.bank_id', 'c.bankpengembalian_id')
+            ->whereraw("isnull(a.alatbayar_id,0) not in(3,4)")
             ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
             ->groupby('c.bank_id')
             ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
@@ -254,6 +281,32 @@ class ExportLaporanKasHarian extends MyModel
             'nominaldebet',
             'nominalkredit',
         ], $querykredit);
+
+        $querykredit = DB::table("pengeluaranheader")->from(
+            DB::raw("pengeluaranheader as a with (readuncommitted)")
+        )
+            ->select(
+                db::raw("format(a.tglbukti,'MM-yyyy') as bulan"),
+                DB::raw("c.bank_id"),
+                DB::raw("0 as nominaldebet"),
+                DB::raw("sum(b.nominal) as nominalkredit")
+            )
+            ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(DB::raw($temppengembaliankepusat . " as c with (readuncommitted)"), 'a.bank_id', 'c.bankpengembalian_id')
+            ->join(DB::raw("pencairangiropengeluaranheader as d with (readuncommitted)"), 'a.nobukti', 'd.pengeluaran_nobukti')
+            ->whereraw("isnull(a.alatbayar_id,0)  in(3,4)")
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
+            ->groupby('c.bank_id')
+            ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
+
+
+
+        DB::table($tempsaldoawal)->insertUsing([
+            'bulan',
+            'bank_id',
+            'nominaldebet',
+            'nominalkredit',
+        ], $querykredit);        
 
         DB::delete(DB::raw("delete " . $tempsaldoawal . " from " . $tempsaldoawal . " a 
               inner join " . $temppengembaliankepusat . " b on a.bank_id=b.bankpengembalian_id"));
@@ -478,6 +531,7 @@ class ExportLaporanKasHarian extends MyModel
             )
             ->join(DB::raw("pengeluaranheader as b "), 'a.nobukti', 'b.nobukti')
             ->leftjoin(DB::raw("akunpusat as c "), 'a.coadebet', 'c.coa')
+            ->whereraw("isnull(b.alatbayar_id,0) not in(3,4)")
             ->whereRaw("month(A.tgljatuhtempo)= cast(left($bulan,2) as integer)")
             ->whereRaw("year(A.tgljatuhtempo)= cast(right($tahun,4) as integer)")
             ->where('b.bank_id', '=', $jenis);
@@ -493,6 +547,78 @@ class ExportLaporanKasHarian extends MyModel
             'kredit',
             'saldo'
         ], $queryTempPengeluaran);
+
+        // $queryTempPengeluaran = DB::table('pengeluarandetail')->from(
+        //     DB::raw('pengeluarandetail as a')
+        // )
+        //     ->select(
+        //         'a.coadebet as coa',
+        //         DB::raw("4 as jenis"),
+        //         'a.tgljatuhtempo',
+        //         'a.nobukti',
+        //         DB::raw("isnull(C.keterangancoa,'') as perkiraan"),
+        //         'a.keterangan',
+        //         // DB::raw("(case when nominal<0 then abs(nominal) else 0 end) as debet"),
+        //         // DB::raw("(case when nominal>0 then nominal else 0 end) as kredit"),
+        //         DB::raw("0  as debet"),
+        //         DB::raw("nominal  as kredit"),
+        //         DB::raw("0 as saldo"),
+        //     )
+        //     ->join(DB::raw("pengeluaranheader as b "), 'a.nobukti', 'b.nobukti')
+        //     ->leftjoin(DB::raw("akunpusat as c "), 'a.coadebet', 'c.coa')
+        //     ->whereraw("isnull(a.alatbayar_id,0) not in(3,4)")
+        //     ->whereRaw("month(A.tgljatuhtempo)= cast(left($bulan,2) as integer)")
+        //     ->whereRaw("year(A.tgljatuhtempo)= cast(right($tahun,4) as integer)")
+        //     ->where('b.bank_id', '=', $jenis);
+
+        // DB::table($tempList)->insertUsing([
+        //     'coa',
+        //     'jenis',
+        //     'tgl',
+        //     'nobukti',
+        //     'perkiraan',
+        //     'keterangan',
+        //     'debet',
+        //     'kredit',
+        //     'saldo'
+        // ], $queryTempPengeluaran);
+
+        $queryTempPengeluaran = DB::table('pengeluarandetail')->from(
+            DB::raw('pengeluarandetail as a')
+        )
+            ->select(
+                'a.coadebet as coa',
+                DB::raw("4 as jenis"),
+                'a.tgljatuhtempo',
+                'a.nobukti',
+                DB::raw("isnull(C.keterangancoa,'') as perkiraan"),
+                'a.keterangan',
+                // DB::raw("(case when nominal<0 then abs(nominal) else 0 end) as debet"),
+                // DB::raw("(case when nominal>0 then nominal else 0 end) as kredit"),
+                DB::raw("0  as debet"),
+                DB::raw("nominal  as kredit"),
+                DB::raw("0 as saldo"),
+            )
+            ->join(DB::raw("pengeluaranheader as b "), 'a.nobukti', 'b.nobukti')
+            ->leftjoin(DB::raw("akunpusat as c "), 'a.coadebet', 'c.coa')
+            ->join(DB::raw("pencairangiropengeluaranheader as d with (readuncommitted)"), 'b.nobukti', 'd.pengeluaran_nobukti')
+            ->whereraw("isnull(b.alatbayar_id,0) in(3,4)")
+            ->whereRaw("month(A.tgljatuhtempo)= cast(left($bulan,2) as integer)")
+            ->whereRaw("year(A.tgljatuhtempo)= cast(right($tahun,4) as integer)")
+            ->where('b.bank_id', '=', $jenis);
+
+        DB::table($tempList)->insertUsing([
+            'coa',
+            'jenis',
+            'tgl',
+            'nobukti',
+            'perkiraan',
+            'keterangan',
+            'debet',
+            'kredit',
+            'saldo'
+        ], $queryTempPengeluaran);        
+
 
         $queryTempPindahBukuDua = DB::table('pindahbuku')->from(
             DB::raw('pindahbuku as a')
@@ -560,6 +686,7 @@ class ExportLaporanKasHarian extends MyModel
                 )
                 ->join(DB::raw("pengeluaranheader as b "), 'a.nobukti', 'b.nobukti')
                 ->leftjoin(DB::raw("akunpusat as c "), 'a.coadebet', 'c.coa')
+                ->whereraw("isnull(b.alatbayar_id,0) not in(3,4)")
                 ->whereRaw("month(A.tgljatuhtempo)= cast(left($bulan,2) as integer)")
                 ->whereRaw("year(A.tgljatuhtempo)= cast(right($tahun,4) as integer)")
                 ->where('b.bank_id', '=', $bankpengembaliankepusat->id);
@@ -575,6 +702,42 @@ class ExportLaporanKasHarian extends MyModel
                 'kredit',
                 'saldo'
             ], $queryTempPengeluaran);
+
+            $queryTempPengeluaran = DB::table('pengeluarandetail')->from(
+                DB::raw('pengeluarandetail as a')
+            )
+                ->select(
+                    'a.coadebet as coa',
+                    DB::raw("6 as jenis"),
+                    'a.tgljatuhtempo',
+                    'a.nobukti',
+                    DB::raw("isnull(C.keterangancoa,'') as perkiraan"),
+                    'a.keterangan',
+                    // DB::raw("(case when nominal<0 then abs(nominal) else 0 end) as debet"),
+                    // DB::raw("(case when nominal>0 then nominal else 0 end) as kredit"),
+                    DB::raw("0 as debet"),
+                    DB::raw("nominal as kredit"),
+                    DB::raw("0 as saldo"),
+                )
+                ->join(DB::raw("pengeluaranheader as b "), 'a.nobukti', 'b.nobukti')
+                ->leftjoin(DB::raw("akunpusat as c "), 'a.coadebet', 'c.coa')
+                ->join(DB::raw("pencairangiropengeluaranheader as d with (readuncommitted)"), 'b.nobukti', 'd.pengeluaran_nobukti')
+                ->whereraw("isnull(b.alatbayar_id,0) in(3,4)")
+                ->whereRaw("month(A.tgljatuhtempo)= cast(left($bulan,2) as integer)")
+                ->whereRaw("year(A.tgljatuhtempo)= cast(right($tahun,4) as integer)")
+                ->where('b.bank_id', '=', $bankpengembaliankepusat->id);
+
+            DB::table($tempList)->insertUsing([
+                'coa',
+                'jenis',
+                'tgl',
+                'nobukti',
+                'perkiraan',
+                'keterangan',
+                'debet',
+                'kredit',
+                'saldo'
+            ], $queryTempPengeluaran);            
         }
 
 
