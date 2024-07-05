@@ -158,6 +158,7 @@ class LaporanKasBank extends MyModel
                 DB::raw("sum(b.nominal) as nominalkredit")
             )
             ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->whereraw("isnull(a.alatbayar_id,0) not in(3,4)")
             ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
             ->groupby('a.bank_id')
             ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
@@ -169,6 +170,30 @@ class LaporanKasBank extends MyModel
             'nominaldebet',
             'nominalkredit',
         ], $querykredit);
+
+        $querykredit = DB::table("pengeluaranheader")->from(
+            DB::raw("pengeluaranheader as a with (readuncommitted)")
+        )
+            ->select(
+                db::raw("format(a.tglbukti,'MM-yyyy') as bulan"),
+                DB::raw("a.bank_id"),
+                DB::raw("0 as nominaldebet"),
+                DB::raw("sum(b.nominal) as nominalkredit")
+            )
+            ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(DB::raw("pencairangiropengeluaranheader as c with (readuncommitted)"), 'a.nobukti', 'c.pengeluaran_nobukti')
+            ->whereraw("isnull(a.alatbayar_id,0) in(3,4)")
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
+            ->groupby('a.bank_id')
+            ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
+
+
+        DB::table($tempsaldoawal)->insertUsing([
+            'bulan',
+            'bank_id',
+            'nominaldebet',
+            'nominalkredit',
+        ], $querykredit);        
 
         $querykredit = DB::table("pindahbuku")->from(
             DB::raw("pindahbuku as a with (readuncommitted)")
@@ -240,6 +265,7 @@ class LaporanKasBank extends MyModel
             )
             ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw($temppengembaliankepusat . " as c with (readuncommitted)"), 'a.bank_id', 'c.bankpengembalian_id')
+            ->whereraw("isnull(a.alatbayar_id,0) not in(3,4)")
             ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
             ->groupby('c.bank_id')
             ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
@@ -252,6 +278,32 @@ class LaporanKasBank extends MyModel
             'nominaldebet',
             'nominalkredit',
         ], $querykredit);
+
+        $querykredit = DB::table("pengeluaranheader")->from(
+            DB::raw("pengeluaranheader as a with (readuncommitted)")
+        )
+            ->select(
+                db::raw("format(a.tglbukti,'MM-yyyy') as bulan"),
+                DB::raw("c.bank_id"),
+                DB::raw("0 as nominaldebet"),
+                DB::raw("sum(b.nominal) as nominalkredit")
+            )
+            ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(DB::raw($temppengembaliankepusat . " as c with (readuncommitted)"), 'a.bank_id', 'c.bankpengembalian_id')
+            ->join(DB::raw("pencairangiropengeluaranheader as d with (readuncommitted)"), 'a.nobukti', 'd.pengeluaran_nobukti')
+            ->whereraw("isnull(a.alatbayar_id,0) in(3,4)")
+            ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tgl2 . "'")
+            ->groupby('c.bank_id')
+            ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
+
+
+
+        DB::table($tempsaldoawal)->insertUsing([
+            'bulan',
+            'bank_id',
+            'nominaldebet',
+            'nominalkredit',
+        ], $querykredit);        
 
         DB::delete(DB::raw("delete " . $tempsaldoawal . " from " . $tempsaldoawal . " a 
                     inner join " . $temppengembaliankepusat . " b on a.bank_id=b.bankpengembalian_id"));
