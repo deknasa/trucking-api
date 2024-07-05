@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Rules\ExistBank;
+use App\Rules\ExistNameParameter;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ValidasiLaporanKasBankRequest extends FormRequest
@@ -32,7 +33,15 @@ class ValidasiLaporanKasBankRequest extends FormRequest
                 'required', 'date_format:d-m-Y',
                 'after_or_equal:' . request()->dari
             ],
+            'periodedata' => ['required', new ExistNameParameter()],
             'bank' => ['required', new ExistBank()]
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'periodedata' => 'periode data',
         ];
     }
 }

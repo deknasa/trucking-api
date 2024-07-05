@@ -374,6 +374,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('parameter/getparambytext', [ParameterController::class, 'getParamByText']);
     Route::get('parameter/combolist', [ParameterController::class, 'combolist']);
     Route::get('parameter/comboapproval', [ParameterController::class, 'comboapproval']);
+    Route::get('parameter/getdegfault', [ParameterController::class, 'getParamterDefault']);
     Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
     Route::resource('harilibur', HariLiburController::class)->whereNumber('harilibur');
     Route::get('suratpengantarapprovalinputtrip/cektanggal', [SuratPengantarApprovalInputTripController::class, 'isTanggalAvaillable']);
