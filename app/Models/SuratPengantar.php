@@ -3079,7 +3079,6 @@ class SuratPengantar extends MyModel
 
                 $suratPengantar->pelanggan_id = $data['pelanggan_id'];
                 $suratPengantar->container_id = $data['container_id'];
-                $suratPengantar->gandengan_id = $data['gandengan_id'];
                 $suratPengantar->tarif_id = $getTarif->tarif_id;
                 $suratPengantar->nojob = $data['nojob'];
                 $suratPengantar->nojob2 = $data['nojob2'] ?? '';

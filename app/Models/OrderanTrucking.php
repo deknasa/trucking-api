@@ -939,8 +939,6 @@ class OrderanTrucking extends MyModel
                 'orderantrucking.nocont2',
                 'orderantrucking.noseal2',
                 'orderantrucking.statuslangsir',
-                'orderantrucking.gandengan_id',
-                'gandengan.keterangan as gandengan',
                 'orderantrucking.statusperalihan',
                 'orderantrucking.statusapprovalbukatrip',
                 'orderantrucking.statusapprovaltanpajob',
@@ -951,7 +949,6 @@ class OrderanTrucking extends MyModel
             )
             ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'orderantrucking.tarif_id', '=', 'tarif.id')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'orderantrucking.container_id', '=', 'container.id')
-            ->leftJoin(DB::raw("gandengan with (readuncommitted)"), 'orderantrucking.gandengan_id', '=', 'gandengan.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'orderantrucking.agen_id', '=', 'agen.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'orderantrucking.jenisorder_id', '=', 'jenisorder.id')
             ->leftJoin(DB::raw("jenisorder as jenisorderemkl with (readuncommitted)"), 'orderantrucking.jenisorderemkl_id', '=', 'jenisorderemkl.id')
@@ -2209,7 +2206,6 @@ class OrderanTrucking extends MyModel
         $orderanTrucking->jenisorderemkl_id = $data['jenisorderemkl_id'];
         $orderanTrucking->pelanggan_id = $data['pelanggan_id'];
         $orderanTrucking->tarif_id = 0;
-        $orderanTrucking->gandengan_id = $data['gandengan_id'] ?? '';
         $orderanTrucking->nojobemkl = $data['nojobemkl'] ?? '';
         $orderanTrucking->nocont = $data['nocont'];
         $orderanTrucking->noseal = $data['noseal'];
@@ -2256,7 +2252,6 @@ class OrderanTrucking extends MyModel
                         'jobtrucking' => $orderanTrucking->nobukti,
                         'tglbukti' =>  $item['tglbukti'] ?? '',
                         'nojob' =>  $data['nojobemkl'] ?? '',
-                        'gandengan_id' =>  $data['gandengan_id'] ?? '',
                         'nocont' =>  $data['nocont'] ?? '',
                         'noseal' =>  $data['noseal'] ?? '',
                         'nojob2' =>  $data['nojobemkl2'] ?? '',
