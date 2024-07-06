@@ -249,6 +249,7 @@ class UpahSupirTangki extends MyModel
         $user = auth('api')->user()->name;
         $class = 'UpahSupirTangkiLookupController';
         $aktif = request()->aktif ?? '';
+        $statusPenyesuaian = request()->statuspenyesuaian;
         if ($proses == 'reload') {
             $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
@@ -430,6 +431,13 @@ class UpahSupirTangki extends MyModel
                 'a.kotadarisampai',
                 'a.omset',
             );
+            
+            if($statusPenyesuaian == 662){
+                $query->whereRaw("isnull(a.penyesuaian,'') != ''");
+            }else{
+                $query->whereRaw("isnull(a.penyesuaian,'') = ''");
+            }
+
         $this->filter($query);
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

@@ -5,6 +5,7 @@ namespace App\Rules;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\TarifRincian;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class ValidasiExistOmsetTarif implements Rule
 {
@@ -30,6 +31,13 @@ class ValidasiExistOmsetTarif implements Rule
         if (request()->statuslongtrip != '') {
             if (request()->statuslongtrip == 66) {
 
+                $tripasal = request()->nobukti_tripasal ?? '';
+                if($tripasal != ''){
+                    $isLongtrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('nobukti', $tripasal)->first()->statuslongtrip ?? 0;
+                    if($isLongtrip == 65){
+                        return true;
+                    }
+                }
 
                 $tarifRincian = new TarifRincian();
                 $dataTarif = $tarifRincian->getExistNominal(request()->container_id, request()->tarifrincian_id);

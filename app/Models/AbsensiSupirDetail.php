@@ -255,6 +255,7 @@ class AbsensiSupirDetail extends MyModel
                     "$this->table.uangjalan",
                     "$this->table.absensi_id",
                     "jeniskendaraan.text as statusjeniskendaraan",
+                    "trado.statusgerobak",
                     DB::raw("left(jam, 5)"),
                     DB::raw("isnull(c.jumlah,0) as jumlahtrip"),
                     DB::raw("(CASE WHEN isnull($this->table.statustambahantrado,0)=0 THEN '' ELSE (CASE WHEN $this->table.statustambahantrado=655 THEN tradotambahan.text ELSE '' end) end) as statustambahantrado"),

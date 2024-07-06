@@ -733,12 +733,6 @@ class UpdateSuratPengantarRequest extends FormRequest
                 $statusgudangsama[] = $item['id'];
             }
 
-            $dataUpahZona = $parameter->getcombodata('STATUS UPAH ZONA', 'STATUS UPAH ZONA');
-            $dataUpahZona = json_decode($dataUpahZona, true);
-            foreach ($dataUpahZona as $item) {
-                $statusUpahZona[] = $item['id'];
-            }
-
             $getBukanUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'NON UPAH ZONA')->first();
             $getUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
             $getPeralihan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS PERALIHAN')->where('text', 'PERALIHAN')->first();
@@ -785,7 +779,6 @@ class UpdateSuratPengantarRequest extends FormRequest
                 'statusgudangsama' => ['required', Rule::in($statusgudangsama), new ValidasiLongtripGudangsama()],
                 'nosp' => 'required',
                 'upah' => ['required', new ExistNominalUpahSupir(), new ValidasiTripGudangSama($dataTripAsal)],
-                'statusupahzona' => ['required', Rule::in($statusUpahZona)],
                 'gajisupir' => new ValidasiGajiKenekSP('gajisupir'),
                 'gajikenek' => new ValidasiGajiKenekSP('gajikenek')
             ];
@@ -1600,11 +1593,9 @@ class UpdateSuratPengantarRequest extends FormRequest
 
                     $rulestarifrincian_id = [
                         'tarifrincian_id' => [
-                            'required_if:statusupahzona,=,' . $getBukanUpahZona->id,
                             'numeric',
                             'min:1',
                             new ExistTarifRincian(),
-                            new ValidasiKotaUpahZona($getBukanUpahZona->id)
                         ]
 
                     ];
@@ -1613,8 +1604,6 @@ class UpdateSuratPengantarRequest extends FormRequest
 
                         $rulestarifrincian_id = [
                             'tarifrincian' => [
-                                'required_if:statusupahzona,=,' . $getBukanUpahZona->id,
-                                new ValidasiKotaUpahZona($getBukanUpahZona->id)
                             ]
                         ];
                     }
@@ -1623,18 +1612,14 @@ class UpdateSuratPengantarRequest extends FormRequest
 
                 $rulestarifrincian_id = [
                     'tarifrincian_id' => [
-                        'required_if:statusupahzona,=,' . $getBukanUpahZona->id,
                         'numeric',
                         'min:1',
                         new ExistTarifRincian(),
-                        new ValidasiKotaUpahZona($getBukanUpahZona->id)
                     ]
                 ];
             } else {
                 $rulestarifrincian_id = [
                     'tarifrincian' => [
-                        'required_if:statusupahzona,=,' . $getBukanUpahZona->id,
-                        new ValidasiKotaUpahZona($getBukanUpahZona->id)
                     ]
                 ];
             }
