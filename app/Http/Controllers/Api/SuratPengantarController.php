@@ -239,6 +239,7 @@ class SuratPengantarController extends Controller
                 'gajisupir' => $request->gajisupir,
                 'tambahan_id' => $request->tambahan_id,
                 'nobukti_tripasal' => $request->nobukti_tripasal ?? '',
+                'statuspenyesuaian' => $request->statuspenyesuaian,
             ];
             $suratPengantar = (new SuratPengantar())->processUpdate($suratpengantar, $data);
             $suratPengantar->position = $this->getPosition($suratPengantar, $suratPengantar->getTable())->position;

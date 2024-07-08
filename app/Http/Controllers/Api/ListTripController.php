@@ -39,8 +39,11 @@ class ListTripController extends Controller
 
     public function show($id)
     {
+        $dataHeader = (new ListTrip())->findAll($id);
+        $dataDetail = (new ListTrip())->findRitasi($dataHeader->nobukti);
         return response([
-            'data' => (new ListTrip())->findAll($id)
+            'data' => $dataHeader,
+            'detail' => $dataDetail
         ]);
     }
 
@@ -62,6 +65,7 @@ class ListTripController extends Controller
                 'statuslangsir' => $request->statuslangsir,
                 'statuskandang' => $request->statuskandang,
                 'statusgudangsama' => $request->statusgudangsama,
+                'statuspenyesuaian' => $request->statuspenyesuaian,
                 'nobukti_tripasal' => $request->nobukti_tripasal,
                 'agen_id' => $request->agen_id,
                 'jenisorder_id' => $request->jenisorder_id,

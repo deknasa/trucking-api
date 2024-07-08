@@ -31,6 +31,15 @@ class ExistTarifRincianSuratPengantar implements Rule
     public function passes($attribute, $value)
     {
         $tarifRincian = new TarifRincian();
+        
+        $parameter = new Parameter();
+        $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
+        $idpelabuhan = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? 0;
+        $dari = request()->dari_id;
+        $sampai = request()->sampai_id;
+        if(($dari == $idpelabuhan && $sampai == $idkandang) || ($dari == $idkandang && $sampai == $idpelabuhan)){
+            return true;
+        }
         $dataTarif = $tarifRincian->getValidasiTarif(request()->container_id, request()->upah_id);
         if($dataTarif == null){
             return false;

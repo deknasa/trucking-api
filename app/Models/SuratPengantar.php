@@ -252,6 +252,8 @@ class SuratPengantar extends MyModel
         $supir_id = request()->supir_id ?? '';
         $gudangsama = request()->gudangsama ?? 0;
         $longtrip = request()->longtrip ?? 0;
+        $dari_id = request()->dari_id ?? 0;
+        $gandengan_id = request()->gandengan_id ?? 0;
         $from = request()->from ?? '';
 
         $getSudahbuka = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS SUDAH BUKA')->where('subgrp', 'STATUS SUDAH BUKA')->where('text', 'SUDAH BUKA')->first() ?? 0;
@@ -752,9 +754,11 @@ class SuratPengantar extends MyModel
                 'suratpengantar.tglsp',
                 'suratpengantar.nojob',
                 'pelanggan.namapelanggan as pelanggan_id',
+                'suratpengantar.pelanggan_id as pelangganid',
                 'suratpengantar.keterangan',
-                'kotadari.keterangan as dari_id',
-                'kotasampai.keterangan as sampai_id',
+                'kotadari.kodekota as dari_id',
+                'kotasampai.kodekota as sampai_id',
+                'suratpengantar.sampai_id as sampaiid',
                 'suratpengantar.penyesuaian',
                 'suratpengantar.gajisupir',
                 DB::raw("(case when suratpengantar.jarak IS NULL then 0 else suratpengantar.jarak end) as jarak"),
@@ -773,6 +777,7 @@ class SuratPengantar extends MyModel
                 'suratpengantar.trado_id as tradolookup',
                 'suratpengantar.supir_id as supirlookup',
                 'gandengan.keterangan as gandengan_id',
+                'gandengan.id as gandenganid',
                 'statuslongtrip.memo as statuslongtrip',
                 'statusperalihan.memo as statusperalihan',
                 'statusritasiomset.memo as statusritasiomset',
@@ -955,46 +960,229 @@ class SuratPengantar extends MyModel
         }
         if ($isGudangSama == 'false') {
             if ($longtrip == 66) {
-                $idtrip = request()->idTrip ?? 0;
-                $tempTripAsal = '##tempTripAsal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-                Schema::create($tempTripAsal, function ($table) {
-                    $table->string('nobukti_tripasal', 50)->nullable();
-                });
+                $parameter = new Parameter();
+                $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
+                if ($dari_id == $idkandang) {
+                    $tempJobAwal = '##tempJobAwal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                    Schema::create($tempJobAwal, function ($table) {
+                        $table->string('jobtrucking', 50)->nullable();
+                        $table->string('nobukti', 50)->nullable();
+                    });
 
-                $querytripasal = DB::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
-                    ->select(
-                        'a.nobukti_tripasal'
-                    )
-                    ->whereraw("isnull(a.nobukti_tripasal,'')<>''");
-                if ($idtrip != 0) {
-                    $querytripasal->where('id', '<>', $idtrip);
+                    $queryJobtruckingAwal = DB::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
+                        ->select(
+                            'a.jobtrucking',
+                            'a.nobukti'
+                        )
+                        ->whereraw("a.dari_id = 1");
+
+                    DB::table($tempJobAwal)->insertUsing([
+                        'jobtrucking',
+                        'nobukti'
+                    ],  $queryJobtruckingAwal);
+                    $queryJobtruckingAwal = DB::table('saldosuratpengantar')->from(db::raw("saldosuratpengantar a with (readuncommitted)"))
+                        ->select(
+                            'a.jobtrucking',
+                            'a.nobukti'
+                        )
+                        ->whereraw("a.dari_id = 1");
+
+                    DB::table($tempJobAwal)->insertUsing([
+                        'jobtrucking',
+                        'nobukti'
+                    ],  $queryJobtruckingAwal);
+
+
+                    $tempJobAkhir = '##tempJobAkhir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                    Schema::create($tempJobAkhir, function ($table) {
+                        $table->string('jobtrucking', 50)->nullable();
+                        $table->string('nobukti', 50)->nullable();
+                    });
+
+                    $queryJobtruckingAkhir = DB::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
+                        ->select(
+                            'a.jobtrucking',
+                            'a.nobukti'
+                        )
+                        ->whereraw("a.sampai_id = 1");
+
+                    DB::table($tempJobAkhir)->insertUsing([
+                        'jobtrucking',
+                        'nobukti'
+                    ],  $queryJobtruckingAkhir);
+
+                    $queryJobtruckingAkhir = DB::table('saldosuratpengantar')->from(db::raw("saldosuratpengantar a with (readuncommitted)"))
+                        ->select(
+                            'a.jobtrucking',
+                            'a.nobukti'
+                        )
+                        ->whereraw("a.sampai_id = 1");
+
+                    DB::table($tempJobAkhir)->insertUsing([
+                        'jobtrucking',
+                        'nobukti'
+                    ],  $queryJobtruckingAkhir);
+
+                    $tempJobFinal = '##tempJobFinal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                    Schema::create($tempJobFinal, function ($table) {
+                        $table->string('jobtrucking', 50)->nullable();
+                        $table->string('nobukti', 50)->nullable();
+                    });
+
+                    $queryJobTruckingFinal = DB::table($tempJobAwal)->from(db::raw("$tempJobAwal as A"))
+                        ->select('A.jobtrucking', 'A.nobukti')
+                        ->leftjoin(db::raw($tempJobAkhir . " as B"), 'A.jobtrucking', 'B.jobtrucking')
+                        ->whereRaw("isnull(B.jobtrucking,'')='' ");
+
+                    DB::table($tempJobFinal)->insertUsing([
+                        'jobtrucking',
+                        'nobukti'
+                    ],  $queryJobTruckingFinal);
+
+
+                    $tempJobKandang = '##tempJobKandang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                    Schema::create($tempJobKandang, function ($table) {
+                        $table->string('jobtrucking', 50)->nullable();
+                        $table->string('nobukti', 50)->nullable();
+                    });
+
+                    $queryJobKandang = DB::table("suratpengantar")->from(DB::raw("suratpengantar as a with (readuncommitted)"))
+                        ->select('a.jobtrucking', 'a.nobukti')
+                        ->join(DB::raw("$tempJobFinal as b with (readuncommitted)"), 'a.jobtrucking', 'b.jobtrucking')
+                        ->where('a.statuslongtrip', 66)
+                        ->where('a.sampai_id', $idkandang)
+                        ->where('a.dari_id', '!=', 1);
+                    DB::table($tempJobKandang)->insertUsing([
+                        'jobtrucking',
+                        'nobukti'
+                    ],  $queryJobKandang);
+                    $query
+                        ->join(db::raw($tempJobKandang . " a"), 'suratpengantar.nobukti', 'a.nobukti')
+                        ->where('suratpengantar.statuscontainer_id', '!=', 3)
+                        ->where('suratpengantar.gandengan_id', $gandengan_id);
+                } else {
+
+                    $idtrip = request()->idTrip ?? 0;
+                    $queryGetLongtrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+                        ->select('nobukti', 'jobtrucking')
+                        ->where('statuslongtrip', 65);
+
+                    $tempLongtripawal = '##tempLongtripawal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                    Schema::create($tempLongtripawal, function ($table) {
+                        $table->string('nobukti', 50)->nullable();
+                        $table->string('jobtrucking', 50)->nullable();
+                    });
+                    DB::table($tempLongtripawal)->insertUsing([
+                        'nobukti',
+                        'jobtrucking',
+                    ],  $queryGetLongtrip);
+
+                    $queryGetPulangLongtrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar as a with (readuncommitted)"))
+                        ->select('a.nobukti', 'a.jobtrucking')
+                        ->join(DB::raw("$tempLongtripawal as longtrip with (readuncommitted)"), 'a.jobtrucking', 'longtrip.jobtrucking')
+                        ->whereRaw("a.statuslongtrip = 66 ");
+                    if ($idtrip != 0) {
+                        $queryGetPulangLongtrip->where('id', '<>', $idtrip);
+                    }
+                    $tempLongtripakhir = '##tempLongtripakhir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                    Schema::create($tempLongtripakhir, function ($table) {
+                        $table->string('nobukti', 50)->nullable();
+                        $table->string('jobtrucking', 50)->nullable();
+                    });
+                    DB::table($tempLongtripakhir)->insertUsing([
+                        'nobukti',
+                        'jobtrucking',
+                    ],  $queryGetPulangLongtrip);
+
+                    $queryFinalLongtrip = DB::table($tempLongtripawal)->from(DB::raw("$tempLongtripawal as a with (readuncommitted)"))
+                        ->select('a.nobukti', 'a.jobtrucking')
+                        ->leftJoin(DB::raw("$tempLongtripakhir as b with (readuncommitted)"), 'a.jobtrucking', 'b.jobtrucking')
+                        ->whereRaw("isnull(b.nobukti,'')=''");
+
+                    $tempLongtripFinal = '##tempLongtripFinal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                    Schema::create($tempLongtripFinal, function ($table) {
+                        $table->string('nobukti', 50)->nullable();
+                        $table->string('jobtrucking', 50)->nullable();
+                    });
+                    DB::table($tempLongtripFinal)->insertUsing([
+                        'nobukti',
+                        'jobtrucking',
+                    ],  $queryFinalLongtrip);
+                    $tempTripAsal = '##tempTripAsal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                    Schema::create($tempTripAsal, function ($table) {
+                        $table->string('nobukti_tripasal', 50)->nullable();
+                    });
+
+                    $querytripasal = DB::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
+                        ->select(
+                            'a.nobukti_tripasal'
+                        )
+                        ->whereraw("isnull(a.nobukti_tripasal,'')<>''");
+                    if ($idtrip != 0) {
+                        $querytripasal->where('id', '<>', $idtrip);
+                    }
+                    $querytripasal->groupBY('a.nobukti_tripasal');
+
+                    DB::table($tempTripAsal)->insertUsing([
+                        'nobukti_tripasal',
+                    ],  $querytripasal);
+
+
+                    $jenisorder_id = request()->jenisorder_id ?? 0;
+                    $container_id = request()->container_id ?? 0;
+                    $agen_id = request()->agen_id ?? 0;
+
+                    $query
+                        ->join(db::raw($tempLongtripFinal . " jobfinal"), 'suratpengantar.jobtrucking', 'jobfinal.jobtrucking')
+                        ->leftjoin(db::raw($tempTripAsal . " a"), 'suratpengantar.nobukti', 'a.nobukti_tripasal')
+                        ->whereRaw("isnull(a.nobukti_tripasal,'')=''")
+                        ->where('suratpengantar.jenisorder_id', $jenisorder_id)
+                        ->where('suratpengantar.agen_id', $agen_id)
+                        ->where('suratpengantar.statuscontainer_id', '!=', 3)
+                        ->where('suratpengantar.container_id', $container_id);
+
+                    if ($idtrip != 0) {
+                        $query->where('suratpengantar.id', '<>', $idtrip);
+                    }
+                    // $tempTripAsal = '##tempTripAsal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                    // Schema::create($tempTripAsal, function ($table) {
+                    //     $table->string('nobukti_tripasal', 50)->nullable();
+                    // });
+
+                    // $querytripasal = DB::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
+                    //     ->select(
+                    //         'a.nobukti_tripasal'
+                    //     )
+                    //     ->whereraw("isnull(a.nobukti_tripasal,'')<>''");
+                    // if ($idtrip != 0) {
+                    //     $querytripasal->where('id', '<>', $idtrip);
+                    // }
+                    // $querytripasal->groupBY('a.nobukti_tripasal');
+
+                    // DB::table($tempTripAsal)->insertUsing([
+                    //     'nobukti_tripasal',
+                    // ],  $querytripasal);
+                    // $pelanggan_id = request()->pelanggan_id ?? 0;
+                    // $trado_id = request()->trado_id ?? 0;
+                    // $upah_id = request()->upah_id ?? 0;
+
+                    // $getKota = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->where('id', $upah_id)->first();
+                    // $kotaSampai = 0;
+                    // if ($getKota != '') {
+                    //     $kotaSampai = $getKota->kotasampai_id;
+                    // }
+
+                    // $query->leftjoin(db::raw($tempTripAsal . " a"), 'suratpengantar.nobukti', 'a.nobukti_tripasal')
+                    //     ->whereRaw("isnull(a.nobukti_tripasal,'')=''")
+                    //     ->where('suratpengantar.dari_id', '!=', 1)
+                    //     ->where('suratpengantar.statuslongtrip', 65)
+                    //     ->where('suratpengantar.trado_id', $trado_id)
+                    //     ->where('suratpengantar.sampai_id', $kotaSampai)
+                    //     ->where('suratpengantar.pelanggan_id', $pelanggan_id)
+                    //     ->where('suratpengantar.jenisorder_id', $jenisorder_id)
+                    //     ->where('suratpengantar.container_id', $container_id);
+
                 }
-                $querytripasal->groupBY('a.nobukti_tripasal');
-
-                DB::table($tempTripAsal)->insertUsing([
-                    'nobukti_tripasal',
-                ],  $querytripasal);
-                $jenisorder_id = request()->jenisorder_id ?? 0;
-                $container_id = request()->container_id ?? 0;
-                $pelanggan_id = request()->pelanggan_id ?? 0;
-                $trado_id = request()->trado_id ?? 0;
-                $upah_id = request()->upah_id ?? 0;
-
-                $getKota = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->where('id', $upah_id)->first();
-                $kotaSampai = 0;
-                if ($getKota != '') {
-                    $kotaSampai = $getKota->kotasampai_id;
-                }
-
-                $query->leftjoin(db::raw($tempTripAsal . " a"), 'suratpengantar.nobukti', 'a.nobukti_tripasal')
-                    ->whereRaw("isnull(a.nobukti_tripasal,'')=''")
-                    ->where('suratpengantar.dari_id', '!=', 1)
-                    ->where('suratpengantar.statuslongtrip', 65)
-                    ->where('suratpengantar.trado_id', $trado_id)
-                    ->where('suratpengantar.sampai_id', $kotaSampai)
-                    ->where('suratpengantar.pelanggan_id', $pelanggan_id)
-                    ->where('suratpengantar.jenisorder_id', $jenisorder_id)
-                    ->where('suratpengantar.container_id', $container_id);
             } else {
 
                 $idtrip = request()->idTrip ?? 0;
@@ -1043,6 +1231,8 @@ class SuratPengantar extends MyModel
                 ],  $queryJobtruckingAwal);
 
 
+                $idkandang = (new Parameter())->cekText('KANDANG', 'KANDANG') ?? 0;
+                $pelabuhan = '1,' . $idkandang;
                 $tempJobAkhir = '##tempJobAkhir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                 Schema::create($tempJobAkhir, function ($table) {
                     $table->string('jobtrucking', 50)->nullable();
@@ -1052,7 +1242,7 @@ class SuratPengantar extends MyModel
                     ->select(
                         'a.jobtrucking'
                     )
-                    ->whereraw("a.sampai_id = 1");
+                    ->whereraw("a.sampai_id in ($pelabuhan)");
 
                 DB::table($tempJobAkhir)->insertUsing([
                     'jobtrucking',
@@ -1062,7 +1252,7 @@ class SuratPengantar extends MyModel
                     ->select(
                         'a.jobtrucking'
                     )
-                    ->whereraw("a.sampai_id = 1");
+                    ->whereraw("a.sampai_id in ($pelabuhan)");
 
                 DB::table($tempJobAkhir)->insertUsing([
                     'jobtrucking',
@@ -1081,10 +1271,17 @@ class SuratPengantar extends MyModel
                 DB::table($tempJobFinal)->insertUsing([
                     'jobtrucking',
                 ],  $queryJobTruckingFinal);
-
+                $queryLongtrip = DB::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
+                    ->select(
+                        'a.jobtrucking'
+                    )
+                    ->whereraw("a.statuslongtrip=65");
+                DB::table($tempJobFinal)->insertUsing([
+                    'jobtrucking',
+                ],  $queryLongtrip);
                 $container_id = request()->container_id ?? 0;
-                $pelanggan_id = request()->pelanggan_id ?? 0;
-                //         dd($query->where('suratpengantar.nobukti','TRP 1301/III/2024')->get(),
+                $agen_id = request()->agen_id ?? 0;
+                //         dd(
                 //     DB::table($tempJobFinal)->get(),
                 // DB::table($tempTripAsal)->get());
                 $query
@@ -1092,10 +1289,13 @@ class SuratPengantar extends MyModel
                     ->leftjoin(db::raw($tempTripAsal . " a"), 'suratpengantar.nobukti', 'a.nobukti_tripasal')
                     ->whereRaw("isnull(a.nobukti_tripasal,'')=''")
                     ->whereRaw("isnull(jobfinal.jobtrucking,'')!='' ")
-                    ->where('suratpengantar.dari_id', '=', 1)
-                    ->where('suratpengantar.pelanggan_id', $pelanggan_id)
+                    ->where('suratpengantar.sampai_id', '!=', 1)
+                    ->where('suratpengantar.agen_id', $agen_id)
                     ->where('suratpengantar.statuscontainer_id', '!=', 3)
                     ->where('suratpengantar.container_id', $container_id);
+                    if ($idtrip != 0) {
+                        $query->where('suratpengantar.id', '<>', $idtrip);
+                    }
             }
         }
 
@@ -1141,6 +1341,7 @@ class SuratPengantar extends MyModel
             $table->unsignedBigInteger('statusupahzona')->nullable();
             $table->unsignedBigInteger('statuslangsir')->nullable();
             $table->unsignedBigInteger('statuskandang')->nullable();
+            $table->unsignedBigInteger('statuspenyesuaian')->nullable();
         });
 
         $getFormat = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'INPUT TRIP')->where('subgrp', 'FORMAT BATAS INPUT')->first();
@@ -1294,6 +1495,20 @@ class SuratPengantar extends MyModel
 
         $iddefaultstatusjeniskendaraan = $status->id ?? 0;
 
+        $status = Parameter::from(
+
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS PENYESUAIAN')
+            ->where('subgrp', '=', 'STATUS PENYESUAIAN')
+            ->where('default', '=', 'YA')
+            ->first();
+
+        $iddefaultstatuspenyesuaian = $status->id ?? 0;
+
         DB::table($tempdefault)->insert(
             [
                 "tglbukti" => $tglbukti,
@@ -1307,6 +1522,7 @@ class SuratPengantar extends MyModel
                 "statuslangsir" => $iddefaultstatuslangsir,
                 "statuskandang" => $iddefaultstatuskandang,
                 "statusjeniskendaraan" => $iddefaultstatusjeniskendaraan,
+                "statuspenyesuaian" => $iddefaultstatuspenyesuaian,
             ]
         );
 
@@ -1324,7 +1540,8 @@ class SuratPengantar extends MyModel
                 'statusupahzona',
                 'statuslangsir',
                 'statuskandang',
-                'statusjeniskendaraan'
+                'statusjeniskendaraan',
+                'statuspenyesuaian'
             );
 
         $data = $query->first();
@@ -1354,6 +1571,11 @@ class SuratPengantar extends MyModel
                     'suratpengantar.jobtrucking',
                     'suratpengantar.statuskandang',
                     'suratpengantar.statuslongtrip',
+                    'orderantrucking.statuslangsir',
+                    DB::raw("(case when isnull(suratpengantar.statuspenyesuaian,'')='' then
+                        (case when suratpengantar.penyesuaian='' then 663 ELSE 662 end) else
+                        suratpengantar.statuspenyesuaian
+                    end) as statuspenyesuaian"),
                     'suratpengantar.nosp',
                     'suratpengantar.trado_id',
                     'trado.kodetrado as trado',
@@ -1419,6 +1641,7 @@ class SuratPengantar extends MyModel
                 ->leftJoin('kota as kotaupah', 'kotaupah.id', '=', 'upahsupirtangki.kotasampai_id')
                 ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
                 ->leftJoin('gandengan', 'suratpengantar.gandengan_id', 'gandengan.id')
+                ->leftJoin('orderantrucking', 'suratpengantar.jobtrucking', 'orderantrucking.nobukti')
                 // ->leftJoin(DB::raw("$tempGaji with (readuncommitted)"), "$tempGaji.id", "suratpengantar.id")
 
                 ->where('suratpengantar.id', $id)->first();
@@ -1465,174 +1688,184 @@ class SuratPengantar extends MyModel
                 'liter'
             ], $getGaji);
 
-            if ($get->statusupahzona == $getBukanUpahZona->id) {
+            // if ($get->statusupahzona == $getBukanUpahZona->id) {
 
-                $data = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
-                    ->select(
-                        'suratpengantar.id',
-                        'suratpengantar.nobukti',
-                        'suratpengantar.tglbukti',
-                        'suratpengantar.jobtrucking',
-                        'suratpengantar.statuskandang',
-                        'suratpengantar.statuslongtrip',
-                        'suratpengantar.nosp',
-                        'suratpengantar.trado_id',
-                        'trado.kodetrado as trado',
-                        'trado.nominalplusborongan',
-                        'suratpengantar.supir_id',
-                        'supir.namasupir as supir',
-                        'suratpengantar.dari_id',
-                        'kotadari.kodekota as dari',
-                        'suratpengantar.gandengan_id',
-                        'gandengan.kodegandengan as gandengan',
-                        'suratpengantar.container_id',
-                        'container.kodecontainer as container',
-                        'suratpengantar.statusjeniskendaraan',
-                        'suratpengantar.nocont',
-                        'suratpengantar.noseal',
-                        'suratpengantar.statusperalihan',
-                        DB::raw("(case when suratpengantar.persentaseperalihan IS NULL then 0 else suratpengantar.persentaseperalihan end) as persentaseperalihan"),
-                        'suratpengantar.omset',
-                        'suratpengantar.statusritasiomset',
-                        'suratpengantar.nosptagihlain as nosp2',
-                        'suratpengantar.statusgudangsama',
-                        'suratpengantar.keterangan',
-                        'suratpengantar.penyesuaian',
-                        'suratpengantar.sampai_id',
-                        'kotasampai.kodekota as sampai',
-                        'suratpengantar.statuscontainer_id',
-                        'statuscontainer.kodestatuscontainer as statuscontainer',
-                        'suratpengantar.nocont2',
-                        'suratpengantar.noseal2',
-                        'suratpengantar.pelanggan_id',
-                        'pelanggan.namapelanggan as pelanggan',
-                        'suratpengantar.agen_id',
-                        'agen.namaagen as agen',
-                        'suratpengantar.jenisorder_id',
-                        'jenisorder.kodejenisorder as jenisorder',
-                        'suratpengantar.tarif_id as tarifrincian_id',
-                        'tarif.tujuan as tarifrincian',
-                        DB::raw("(case when suratpengantar.nominalperalihan IS NULL then 0 else suratpengantar.nominalperalihan end) as nominalperalihan"),
-                        'suratpengantar.nojob',
-                        'suratpengantar.nojob2',
-                        DB::raw("isnull(suratpengantar.statustolakan, 4) as statustolakan"),
-                        'suratpengantar.cabang_id',
-                        'cabang.namacabang as cabang',
-                        'suratpengantar.qtyton',
-                        'suratpengantar.gudang',
-                        'suratpengantar.statusbatalmuat',
-                        'suratpengantar.statusupahzona',
-                        'suratpengantar.statusgandengan',
-                        'suratpengantar.gajisupir',
-                        'suratpengantar.gajikenek',
-                        'suratpengantar.komisisupir',
-                        'suratpengantar.upah_id',
-                        'suratpengantar.nobukti_tripasal',
-                        'suratpengantar.statusapprovaleditsuratpengantar',
-                        'suratpengantar.statusapprovalbiayatitipanemkl',
-                        'kotaupah.kodekota as upah'
-                    )
-                    ->leftJoin('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
-                    ->leftJoin('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
-                    ->leftJoin('agen', 'suratpengantar.agen_id', 'agen.id')
-                    ->leftJoin('container', 'suratpengantar.container_id', 'container.id')
-                    ->leftJoin('statuscontainer', 'suratpengantar.statuscontainer_id', 'statuscontainer.id')
-                    ->leftJoin('trado', 'suratpengantar.trado_id', 'trado.id')
-                    ->leftJoin('supir', 'suratpengantar.supir_id', 'supir.id')
-                    ->leftJoin('jenisorder', 'suratpengantar.jenisorder_id', 'jenisorder.id')
-                    ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id')
-                    ->leftJoin('upahsupir', 'suratpengantar.upah_id', 'upahsupir.id')
-                    ->leftJoin('kota as kotaupah', 'kotaupah.id', '=', 'upahsupir.kotasampai_id')
-                    ->leftJoin('cabang', 'suratpengantar.cabang_id', 'cabang.id')
-                    ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
-                    ->leftJoin('gandengan', 'suratpengantar.gandengan_id', 'gandengan.id')
-                    // ->leftJoin(DB::raw("$tempGaji with (readuncommitted)"), "$tempGaji.id", "suratpengantar.id")
+            $data = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+                ->select(
+                    'suratpengantar.id',
+                    'suratpengantar.nobukti',
+                    'suratpengantar.tglbukti',
+                    'suratpengantar.jobtrucking',
+                    'suratpengantar.statuskandang',
+                    'suratpengantar.statuslongtrip',
+                    'orderantrucking.statuslangsir',
+                    DB::raw("(case when isnull(suratpengantar.statuspenyesuaian,'')='' then
+                            (case when suratpengantar.penyesuaian='' then 663 ELSE 662 end) else
+                            suratpengantar.statuspenyesuaian
+                        end) as statuspenyesuaian"),
+                    'suratpengantar.nosp',
+                    'suratpengantar.trado_id',
+                    'trado.kodetrado as trado',
+                    'trado.nominalplusborongan',
+                    'suratpengantar.supir_id',
+                    'supir.namasupir as supir',
+                    'suratpengantar.dari_id',
+                    'kotadari.kodekota as dari',
+                    'suratpengantar.gandengan_id',
+                    'gandengan.kodegandengan as gandengan',
+                    'suratpengantar.container_id',
+                    'container.kodecontainer as container',
+                    'suratpengantar.statusjeniskendaraan',
+                    'suratpengantar.nocont',
+                    'suratpengantar.noseal',
+                    'suratpengantar.statusperalihan',
+                    DB::raw("(case when suratpengantar.persentaseperalihan IS NULL then 0 else suratpengantar.persentaseperalihan end) as persentaseperalihan"),
+                    'suratpengantar.omset',
+                    'suratpengantar.statusritasiomset',
+                    'suratpengantar.nosptagihlain as nosp2',
+                    'suratpengantar.statusgudangsama',
+                    'suratpengantar.keterangan',
+                    'suratpengantar.penyesuaian',
+                    'suratpengantar.sampai_id',
+                    'kotasampai.kodekota as sampai',
+                    'suratpengantar.statuscontainer_id',
+                    'statuscontainer.kodestatuscontainer as statuscontainer',
+                    'suratpengantar.nocont2',
+                    'suratpengantar.noseal2',
+                    'suratpengantar.pelanggan_id',
+                    'pelanggan.namapelanggan as pelanggan',
+                    'suratpengantar.agen_id',
+                    'agen.namaagen as agen',
+                    'suratpengantar.jenisorder_id',
+                    'jenisorder.kodejenisorder as jenisorder',
+                    'suratpengantar.tarif_id as tarifrincian_id',
+                    'tarif.tujuan as tarifrincian',
+                    DB::raw("(case when suratpengantar.nominalperalihan IS NULL then 0 else suratpengantar.nominalperalihan end) as nominalperalihan"),
+                    'suratpengantar.nojob',
+                    'suratpengantar.nojob2',
+                    DB::raw("isnull(suratpengantar.statustolakan, 4) as statustolakan"),
+                    'suratpengantar.cabang_id',
+                    'cabang.namacabang as cabang',
+                    'suratpengantar.qtyton',
+                    'suratpengantar.gudang',
+                    'suratpengantar.statusbatalmuat',
+                    'suratpengantar.statusupahzona',
+                    'suratpengantar.statusgandengan',
+                    'suratpengantar.gajisupir',
+                    'suratpengantar.gajikenek',
+                    'suratpengantar.komisisupir',
+                    'suratpengantar.upah_id',
+                    'suratpengantar.nobukti_tripasal',
+                    'suratpengantar.statusapprovaleditsuratpengantar',
+                    'suratpengantar.statusapprovalbiayatitipanemkl',
+                    'kotaupah.kodekota as upah'
+                )
+                ->leftJoin('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
+                ->leftJoin('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
+                ->leftJoin('agen', 'suratpengantar.agen_id', 'agen.id')
+                ->leftJoin('container', 'suratpengantar.container_id', 'container.id')
+                ->leftJoin('statuscontainer', 'suratpengantar.statuscontainer_id', 'statuscontainer.id')
+                ->leftJoin('trado', 'suratpengantar.trado_id', 'trado.id')
+                ->leftJoin('supir', 'suratpengantar.supir_id', 'supir.id')
+                ->leftJoin('jenisorder', 'suratpengantar.jenisorder_id', 'jenisorder.id')
+                ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id')
+                ->leftJoin('upahsupir', 'suratpengantar.upah_id', 'upahsupir.id')
+                ->leftJoin('kota as kotaupah', 'kotaupah.id', '=', 'upahsupir.kotasampai_id')
+                ->leftJoin('cabang', 'suratpengantar.cabang_id', 'cabang.id')
+                ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
+                ->leftJoin('gandengan', 'suratpengantar.gandengan_id', 'gandengan.id')
+                ->leftJoin('orderantrucking', 'suratpengantar.jobtrucking', 'orderantrucking.nobukti')
+                // ->leftJoin(DB::raw("$tempGaji with (readuncommitted)"), "$tempGaji.id", "suratpengantar.id")
 
-                    ->where('suratpengantar.id', $id)->first();
-            } else {
+                ->where('suratpengantar.id', $id)->first();
+            // } else {
 
-                $data = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
-                    ->select(
-                        'suratpengantar.id',
-                        'suratpengantar.nobukti',
-                        'suratpengantar.tglbukti',
-                        'suratpengantar.jobtrucking',
-                        'suratpengantar.statuskandang',
-                        'suratpengantar.statuslongtrip',
-                        'suratpengantar.nosp',
-                        'suratpengantar.trado_id',
-                        'trado.kodetrado as trado',
-                        'trado.nominalplusborongan',
-                        'suratpengantar.supir_id',
-                        'supir.namasupir as supir',
-                        'suratpengantar.dari_id',
-                        'kotadari.kodekota as dari',
-                        'suratpengantar.gandengan_id',
-                        'gandengan.kodegandengan as gandengan',
-                        'suratpengantar.container_id',
-                        'container.kodecontainer as container',
-                        'suratpengantar.statusjeniskendaraan',
-                        DB::raw("isnull(suratpengantar.statustolakan, 4) as statustolakan"),
-                        'suratpengantar.nocont',
-                        'suratpengantar.noseal',
-                        'suratpengantar.statusperalihan',
-                        'suratpengantar.persentaseperalihan',
-                        'suratpengantar.statusritasiomset',
-                        'suratpengantar.nosptagihlain as nosp2',
-                        'suratpengantar.statusgudangsama',
-                        'suratpengantar.keterangan',
-                        'suratpengantar.penyesuaian',
-                        'suratpengantar.sampai_id',
-                        'kotasampai.kodekota as sampai',
-                        'suratpengantar.statuscontainer_id',
-                        'statuscontainer.kodestatuscontainer as statuscontainer',
-                        'suratpengantar.nocont2',
-                        'suratpengantar.noseal2',
-                        'suratpengantar.pelanggan_id',
-                        'pelanggan.namapelanggan as pelanggan',
-                        'suratpengantar.agen_id',
-                        'agen.namaagen as agen',
-                        'suratpengantar.jenisorder_id',
-                        'jenisorder.kodejenisorder as jenisorder',
-                        'suratpengantar.tarif_id as tarifrincian_id',
-                        'tarif.tujuan as tarifrincian',
-                        'suratpengantar.nominalperalihan',
-                        'suratpengantar.nojob',
-                        'suratpengantar.nojob2',
-                        'suratpengantar.cabang_id',
-                        'cabang.namacabang as cabang',
-                        'suratpengantar.qtyton',
-                        'suratpengantar.gudang',
-                        'suratpengantar.statusbatalmuat',
-                        'suratpengantar.statusupahzona',
-                        'suratpengantar.statusgandengan',
-                        'suratpengantar.gajisupir',
-                        'suratpengantar.gajikenek',
-                        'suratpengantar.komisisupir',
-                        'suratpengantar.upah_id',
-                        'suratpengantar.nobukti_tripasal',
-                        'suratpengantar.statusapprovaleditsuratpengantar',
-                        'suratpengantar.statusapprovalbiayatitipanemkl',
-                        'zonaupah.zona as upah'
-                    )
-                    ->leftJoin('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
-                    ->leftJoin('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
-                    ->leftJoin('agen', 'suratpengantar.agen_id', 'agen.id')
-                    ->leftJoin('container', 'suratpengantar.container_id', 'container.id')
-                    ->leftJoin('statuscontainer', 'suratpengantar.statuscontainer_id', 'statuscontainer.id')
-                    ->leftJoin('trado', 'suratpengantar.trado_id', 'trado.id')
-                    ->leftJoin('supir', 'suratpengantar.supir_id', 'supir.id')
-                    ->leftJoin('jenisorder', 'suratpengantar.jenisorder_id', 'jenisorder.id')
-                    ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id')
-                    ->leftJoin('upahsupir', 'suratpengantar.upah_id', 'upahsupir.id')
-                    ->leftJoin('zona as zonaupah', 'zonaupah.id', '=', 'upahsupir.zonasampai_id')
-                    ->leftJoin('cabang', 'suratpengantar.cabang_id', 'cabang.id')
-                    ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
-                    ->leftJoin('gandengan', 'suratpengantar.gandengan_id', 'gandengan.id')
-                    // ->leftJoin(DB::raw("$tempGaji with (readuncommitted)"), "$tempGaji.id", "suratpengantar.id")
+            //     $data = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+            //         ->select(
+            //             'suratpengantar.id',
+            //             'suratpengantar.nobukti',
+            //             'suratpengantar.tglbukti',
+            //             'suratpengantar.jobtrucking',
+            //             'suratpengantar.statuskandang',
+            //             'suratpengantar.statuslongtrip',
+            //             DB::raw("(case when isnull(suratpengantar.statuspenyesuaian,'')='' then
+            //                 (case when suratpengantar.penyesuaian='' then 663 ELSE 662 end) else
+            //                 suratpengantar.statuspenyesuaian
+            //             end) as statuspenyesuaian"),
+            //             'suratpengantar.nosp',
+            //             'suratpengantar.trado_id',
+            //             'trado.kodetrado as trado',
+            //             'trado.nominalplusborongan',
+            //             'suratpengantar.supir_id',
+            //             'supir.namasupir as supir',
+            //             'suratpengantar.dari_id',
+            //             'kotadari.kodekota as dari',
+            //             'suratpengantar.gandengan_id',
+            //             'gandengan.kodegandengan as gandengan',
+            //             'suratpengantar.container_id',
+            //             'container.kodecontainer as container',
+            //             'suratpengantar.statusjeniskendaraan',
+            //             DB::raw("isnull(suratpengantar.statustolakan, 4) as statustolakan"),
+            //             'suratpengantar.nocont',
+            //             'suratpengantar.noseal',
+            //             'suratpengantar.statusperalihan',
+            //             'suratpengantar.persentaseperalihan',
+            //             'suratpengantar.statusritasiomset',
+            //             'suratpengantar.nosptagihlain as nosp2',
+            //             'suratpengantar.statusgudangsama',
+            //             'suratpengantar.keterangan',
+            //             'suratpengantar.penyesuaian',
+            //             'suratpengantar.sampai_id',
+            //             'kotasampai.kodekota as sampai',
+            //             'suratpengantar.statuscontainer_id',
+            //             'statuscontainer.kodestatuscontainer as statuscontainer',
+            //             'suratpengantar.nocont2',
+            //             'suratpengantar.noseal2',
+            //             'suratpengantar.pelanggan_id',
+            //             'pelanggan.namapelanggan as pelanggan',
+            //             'suratpengantar.agen_id',
+            //             'agen.namaagen as agen',
+            //             'suratpengantar.jenisorder_id',
+            //             'jenisorder.kodejenisorder as jenisorder',
+            //             'suratpengantar.tarif_id as tarifrincian_id',
+            //             'tarif.tujuan as tarifrincian',
+            //             'suratpengantar.nominalperalihan',
+            //             'suratpengantar.nojob',
+            //             'suratpengantar.nojob2',
+            //             'suratpengantar.cabang_id',
+            //             'cabang.namacabang as cabang',
+            //             'suratpengantar.qtyton',
+            //             'suratpengantar.gudang',
+            //             'suratpengantar.statusbatalmuat',
+            //             'suratpengantar.statusupahzona',
+            //             'suratpengantar.statusgandengan',
+            //             'suratpengantar.gajisupir',
+            //             'suratpengantar.gajikenek',
+            //             'suratpengantar.komisisupir',
+            //             'suratpengantar.upah_id',
+            //             'suratpengantar.nobukti_tripasal',
+            //             'suratpengantar.statusapprovaleditsuratpengantar',
+            //             'suratpengantar.statusapprovalbiayatitipanemkl',
+            //             'zonaupah.zona as upah'
+            //         )
+            //         ->leftJoin('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
+            //         ->leftJoin('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
+            //         ->leftJoin('agen', 'suratpengantar.agen_id', 'agen.id')
+            //         ->leftJoin('container', 'suratpengantar.container_id', 'container.id')
+            //         ->leftJoin('statuscontainer', 'suratpengantar.statuscontainer_id', 'statuscontainer.id')
+            //         ->leftJoin('trado', 'suratpengantar.trado_id', 'trado.id')
+            //         ->leftJoin('supir', 'suratpengantar.supir_id', 'supir.id')
+            //         ->leftJoin('jenisorder', 'suratpengantar.jenisorder_id', 'jenisorder.id')
+            //         ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id')
+            //         ->leftJoin('upahsupir', 'suratpengantar.upah_id', 'upahsupir.id')
+            //         ->leftJoin('zona as zonaupah', 'zonaupah.id', '=', 'upahsupir.zonasampai_id')
+            //         ->leftJoin('cabang', 'suratpengantar.cabang_id', 'cabang.id')
+            //         ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
+            //         ->leftJoin('gandengan', 'suratpengantar.gandengan_id', 'gandengan.id')
+            //         // ->leftJoin(DB::raw("$tempGaji with (readuncommitted)"), "$tempGaji.id", "suratpengantar.id")
 
-                    ->where('suratpengantar.id', $id)->first();
-            }
+            //         ->where('suratpengantar.id', $id)->first();
+            // }
             // dd('find');
 
         }
@@ -1825,8 +2058,8 @@ class SuratPengantar extends MyModel
                 suratpengantar.nojob,
                 pelanggan.namapelanggan as pelanggan_id,
                 suratpengantar.keterangan,
-                kotadari.keterangan as dari_id,
-                kotasampai.keterangan as sampai_id,
+                kotadari.kodekota as dari_id,
+                kotasampai.kodekota as sampai_id,
                 suratpengantar.penyesuaian,
                 suratpengantar.gajisupir,
                 suratpengantar.jarak,
@@ -1910,18 +2143,19 @@ class SuratPengantar extends MyModel
             ->where('text', '=', $id)
             ->first();
 
-        $datakandang = DB::table('parameter')
-            ->from(DB::raw("parameter with (readuncommitted)"))
-            ->select(
-                'text as id'
-            )
-            ->where('grp', '=', 'KANDANG')
-            ->where('subgrp', '=', 'KANDANG')
-            ->where('text', '=', $id)
-            ->first();
+        // $datakandang = DB::table('parameter')
+        //     ->from(DB::raw("parameter with (readuncommitted)"))
+        //     ->select(
+        //         'text as id'
+        //     )
+        //     ->where('grp', '=', 'KANDANG')
+        //     ->where('subgrp', '=', 'KANDANG')
+        //     ->where('text', '=', $id)
+        //     ->first();
 
 
-        if (isset($data) || isset($datakandang)) {
+        // if (isset($data) || isset($datakandang)) {
+        if (isset($data)) {
             $kondisi = ['status' => '0'];
         } else {
             $kondisi = ['status' => '1'];
@@ -1943,8 +2177,8 @@ class SuratPengantar extends MyModel
             'suratpengantar.nojob',
             'pelanggan.namapelanggan as pelanggan_id',
             'suratpengantar.keterangan',
-            'kotadari.keterangan as dari_id',
-            'kotasampai.keterangan as sampai_id',
+            'kotadari.kodekota as dari_id',
+            'kotasampai.kodekota as sampai_id',
             'suratpengantar.gajisupir',
             'suratpengantar.jarak',
             'agen.namaagen as agen_id',
@@ -2035,10 +2269,11 @@ class SuratPengantar extends MyModel
             'suratpengantar.nojob',
             'pelanggan.namapelanggan as pelanggan_id',
             'suratpengantar.keterangan',
-            'kotadari.keterangan as dari_id',
-            'kotasampai.keterangan as sampai_id',
+            'kotadari.kodekota as dari_id',
+            'kotasampai.kodekota as sampai_id',
             'suratpengantar.gajisupir',
             'suratpengantar.jarak',
+            'suratpengantar.penyesuaian',
             'agen.namaagen as agen_id',
             'jenisorder.keterangan as jenisorder_id',
             'container.keterangan as container_id',
@@ -2175,7 +2410,7 @@ class SuratPengantar extends MyModel
 
 
         DB::table($temp)->insertUsing([
-            'id', 'nobukti', 'jobtrucking', 'tglbukti', 'nosp', 'tglsp', 'nojob', 'pelanggan_id', 'keterangan', 'dari_id', 'sampai_id', 'penyesuaian', 'gajisupir', 'jarak', 'agen_id', 'jenisorder_id', 'container_id', 'nocont', 'noseal', 'omset', 'nominalperalihan', 'totalomset', 'statuscontainer_id', 'gudang', 'trado_id', 'supir_id', 'gandengan_id', 'statuslongtrip', 'statusperalihan', 'statusritasiomset', 'statusapprovaleditsuratpengantar', 'statusapprovalbiayatitipanemkl', 'tarif_id', 'mandortrado_id', 'mandorsupir_id', 'statustolakan','statusgudangsama', 'statusbatalmuat', 'userapprovaleditsuratpengantar', 'userapprovalbiayatitipanemkl', 'tglapprovaleditsuratpengantar', 'tglbataseditsuratpengantar', 'tglapprovalbiayatitipanemkl', 'gajisupir_nobukti', 'invoice_nobukti', 'modifiedby', 'created_at', 'updated_at', 'statusgajisupir', 'statusinvoice'
+            'id', 'nobukti', 'jobtrucking', 'tglbukti', 'nosp', 'tglsp', 'nojob', 'pelanggan_id', 'keterangan', 'dari_id', 'sampai_id', 'penyesuaian', 'gajisupir', 'jarak', 'agen_id', 'jenisorder_id', 'container_id', 'nocont', 'noseal', 'omset', 'nominalperalihan', 'totalomset', 'statuscontainer_id', 'gudang', 'trado_id', 'supir_id', 'gandengan_id', 'statuslongtrip', 'statusperalihan', 'statusritasiomset', 'statusapprovaleditsuratpengantar', 'statusapprovalbiayatitipanemkl', 'tarif_id', 'mandortrado_id', 'mandorsupir_id', 'statustolakan', 'statusgudangsama', 'statusbatalmuat', 'userapprovaleditsuratpengantar', 'userapprovalbiayatitipanemkl', 'tglapprovaleditsuratpengantar', 'tglbataseditsuratpengantar', 'tglapprovalbiayatitipanemkl', 'gajisupir_nobukti', 'invoice_nobukti', 'modifiedby', 'created_at', 'updated_at', 'statusgajisupir', 'statusinvoice'
         ], $models);
         // dd('test');
 
@@ -2215,9 +2450,9 @@ class SuratPengantar extends MyModel
         if ($this->params['sortIndex'] == 'pelanggan_id') {
             return $query->orderBy('pelanggan.namapelanggan', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'dari_id') {
-            return $query->orderBy('kotadari.keterangan', $this->params['sortOrder']);
+            return $query->orderBy('kotadari.kodekota', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'sampai_id') {
-            return $query->orderBy('kotasampai.keterangan', $this->params['sortOrder']);
+            return $query->orderBy('kotasampai.kodekota', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'statuscontainer_id') {
             return $query->orderBy('statuscontainer.keterangan', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'container_id') {
@@ -2253,9 +2488,9 @@ class SuratPengantar extends MyModel
                             if ($filters['field'] == 'pelanggan_id') {
                                 $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'dari_id') {
-                                $query = $query->where('kotadari.keterangan', 'LIKE', "%$filters[data]%");
+                                $query = $query->where('kotadari.kodekota', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'sampai_id') {
-                                $query = $query->where('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
+                                $query = $query->where('kotasampai.kodekota', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statuscontainer_id') {
                                 $query = $query->where('statuscontainer.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'container_id') {
@@ -2321,9 +2556,9 @@ class SuratPengantar extends MyModel
                                 if ($filters['field'] == 'pelanggan_id') {
                                     $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'dari_id') {
-                                    $query = $query->orWhere('kotadari.keterangan', 'LIKE', "%$filters[data]%");
+                                    $query = $query->orWhere('kotadari.kodekota', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'sampai_id') {
-                                    $query = $query->orWhere('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
+                                    $query = $query->orWhere('kotasampai.kodekota', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'statuscontainer_id') {
                                     $query = $query->orWhere('statuscontainer.keterangan', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'container_id') {
@@ -2624,6 +2859,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->statusformat = $format->id;
             $suratPengantar->tglbataseditsuratpengantar = $data['tglbataseditsuratpengantar'];
             $suratPengantar->nobukti_tripasal = $data['nobukti_tripasal'];
+            $suratPengantar->statuspenyesuaian = $data['statuspenyesuaian'];
             $suratPengantar->statusapprovalbiayatitipanemkl = $statusNonApproval->id;
             $suratPengantar->statustolakan = $statusNonApproval->id;
             $suratPengantar->nobukti = (new RunningNumberService)->get($group, $subGroup, $suratPengantar->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
@@ -2727,7 +2963,14 @@ class SuratPengantar extends MyModel
                 $suratPengantar->triptangki_id = $data['triptangki_id'];
             } else {
 
-                $tarif = TarifRincian::where('tarif_id', $data['tarif_id'])->where('container_id', $container)->first();
+                if ($data['statuslongtrip'] == 66 && $data['nobukti_tripasal'] == '') {
+                    $tarif = TarifRincian::where('tarif_id', $data['tarif_id'])->where('container_id', $container)->first();
+                }
+                $parameter = new Parameter();
+                $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
+                if ($data['dari_id'] == $idkandang) {
+                    $tarif = TarifRincian::where('tarif_id', $data['tarif_id'])->where('container_id', $container)->first();
+                }
                 $tarifNominal = $tarif->nominal ?? 0;
                 $upahsupir = UpahSupir::where('id', $data['upah_id'])->first();
 
@@ -2803,10 +3046,14 @@ class SuratPengantar extends MyModel
             //     $suratPengantar->komisisupir = $upahsupirRincian->nominalkomisi;
             //     $suratPengantar->gajikenek = $upahsupirRincian->nominalkenek;
             // }
+            $totalOmset = $tarifNominal - $data['nominalperalihan'];
+            if ($data['statuslongtrip'] == 65) {
+                $totalOmset = $data['nominalperalihan'];
+            }
             $suratPengantar->nominalperalihan = $data['nominalperalihan'];
             $suratPengantar->persentaseperalihan = $data['persentaseperalihan'];
             $suratPengantar->discount = $data['persentaseperalihan'];
-            $suratPengantar->totalomset = $tarifNominal - $data['nominalperalihan'];
+            $suratPengantar->totalomset = $totalOmset;
             $suratPengantar->biayatambahan_id = $data['biayatambahan_id'] ?? 0;
             $suratPengantar->nosp = $data['nosp'];
             $suratPengantar->tglsp = date('Y-m-d', strtotime($data['tglbukti']));
@@ -2836,6 +3083,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->gudang = $data['gudang'];
             $suratPengantar->lokasibongkarmuat = $data['lokasibongkarmuat'];
             $suratPengantar->nobukti_tripasal = $data['nobukti_tripasal'];
+            $suratPengantar->statuspenyesuaian = $data['statuspenyesuaian'];
             $suratPengantar->editing_by = '';
             $suratPengantar->editing_at = null;
             $suratPengantar->modifiedby = auth('api')->user()->name;
@@ -3198,8 +3446,8 @@ class SuratPengantar extends MyModel
             'suratpengantar.nojob',
             'pelanggan.namapelanggan as pelanggan_id',
             'suratpengantar.keterangan',
-            'kotadari.keterangan as dari_id',
-            'kotasampai.keterangan as sampai_id',
+            'kotadari.kodekota as dari_id',
+            'kotasampai.kodekota as sampai_id',
             'suratpengantar.gajisupir',
             'suratpengantar.jarak',
             'agen.namaagen as agen_id',
@@ -3572,7 +3820,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->persentaseperalihan = 0;
             $aksi = $statusNonApproval->text;
         }
-        
+
         if ($suratPengantar->save()) {
             (new LogTrail())->processStore([
                 'namatabel' => strtoupper($suratPengantar->getTable()),

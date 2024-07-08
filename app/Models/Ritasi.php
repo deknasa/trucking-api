@@ -50,7 +50,7 @@ class Ritasi extends MyModel
                 'ritasi.created_at',
                 'ritasi.updated_at',
                 db::raw("cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheadersuratpengantar"),
-                db::raw("cast(cast(format((cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheadersuratpengantar"), 
+                db::raw("cast(cast(format((cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheadersuratpengantar"),
             )
             ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'ritasi.suratpengantar_nobukti', 'suratpengantar.nobukti')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'ritasi.statusritasi', '=', 'parameter.id')
@@ -310,7 +310,7 @@ class Ritasi extends MyModel
         if (isset($gajiSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'GAJI SUPIR '. $gajiSupir->nobukti,
+                'keterangan' => 'GAJI SUPIR ' . $gajiSupir->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -356,7 +356,7 @@ class Ritasi extends MyModel
         if (isset($querytrip)) {
             $urutke = $querytrip->suratpengantar_urutke + 1;
         } else {
-            $urutke=1;
+            $urutke = 1;
         }
 
         // dd($urutke);
@@ -477,37 +477,39 @@ class Ritasi extends MyModel
         $notripquery = db::table("ritasi")->from(
             db::raw("ritasi a with (readuncommitted)")
         )
-        ->select(
-            'a.suratpengantar_nobukti'
-        )
-        ->where('a.id',$id)
-        ->first();
+            ->select(
+                'a.suratpengantar_nobukti'
+            )
+            ->where('a.id', $id)
+            ->first();
 
         if (isset($notripquery)) {
-            $notrip=$notripquery->suratpengantar_nobukti;
+            $notrip = $notripquery->suratpengantar_nobukti;
         } else {
-            $notrip='';
+            $notrip = '';
         }
 
-        $queryritasi = DB::table("ritasi")->from(
-            db::raw("ritasi a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
+        if ($notrip != '') {
+
+            $queryritasi = DB::table("ritasi")->from(
+                db::raw("ritasi a with (readuncommitted)")
             )
-            ->where('a.suratpengantar_nobukti', $notrip)
-            ->orderBy('a.nobukti', 'asc')
-            ->get();
-        $urutke = 0;
-        $datadetail = json_decode($queryritasi, true);
-        foreach ($datadetail as $item) {
-            $urutke = $urutke + 1;
-            $ritasiUpdate  = Ritasi::lockForUpdate()->where("nobukti", $item['nobukti'])
-                ->firstorFail();
-            $ritasiUpdate->suratpengantar_urutke = $urutke;
-            $ritasiUpdate->save();
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.suratpengantar_nobukti', $notrip)
+                ->orderBy('a.nobukti', 'asc')
+                ->get();
+            $urutke = 0;
+            $datadetail = json_decode($queryritasi, true);
+            foreach ($datadetail as $item) {
+                $urutke = $urutke + 1;
+                $ritasiUpdate  = Ritasi::lockForUpdate()->where("nobukti", $item['nobukti'])
+                    ->firstorFail();
+                $ritasiUpdate->suratpengantar_urutke = $urutke;
+                $ritasiUpdate->save();
+            }
         }
-
 
 
         (new LogTrail())->processStore([

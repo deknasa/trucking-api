@@ -668,6 +668,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('gajisupirheader/default', [GajiSupirHeaderController::class, 'default']);
     
     Route::post('stok/approvalaktif', [StokController::class, 'approvalaktif']);
+    Route::resource('dataritasi', DataRitasiController::class)->whereNumber('dataritasi');
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
@@ -1898,7 +1899,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('dataritasi/report', [DataRitasiController::class, 'report']);
     Route::get('dataritasi/export', [DataRitasiController::class, 'export']);
     Route::get('dataritasi/getPosition2', [DataRitasiController::class, 'getPosition2']);
-    Route::resource('dataritasi', DataRitasiController::class)->whereNumber('dataritasi');
 
     Route::get('akuntansi/field_length', [AkuntansiController::class, 'fieldLength']);
     Route::get('akuntansi/combostatus', [AkuntansiController::class, 'combostatus']);

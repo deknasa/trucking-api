@@ -77,7 +77,15 @@ class InputTrip extends MyModel
             ->where('a.text', '=', 'BUKAN BATAL MUAT')
             ->first();
 
-        $tarifrincian = TarifRincian::where('tarif_id', $data['tarifrincian_id'])->where('container_id', $data['container_id'])->first();
+        if($data['statuslongtrip'] == 66 && $data['nobukti_tripasal'] == ''){
+            $tarifrincian = TarifRincian::where('tarif_id', $data['tarifrincian_id'])->where('container_id', $data['container_id'])->first();
+        }
+        
+        $parameter = new Parameter();
+        $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
+        if ($data['dari_id'] == $idkandang) {
+            $tarifrincian = TarifRincian::where('tarif_id', $data['tarifrincian_id'])->where('container_id',$data['container_id'])->first();
+        }
 
         $kondisi = true;
         $tanggal = date('Y-m-d', strtotime($data['tglbukti'] . '+1 days'));
@@ -115,6 +123,7 @@ class InputTrip extends MyModel
                 'nocont2' => $data['nocont2'] ?? '',
                 'noseal2' => $data['noseal2'] ?? '',
                 'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
+                'gandengan_id' => $data['gandengan_id'],
                 'statusperalihan' => $statusperalihan->id,
                 'statusjeniskendaraan' => $data['statusjeniskendaraan'],
                 'tglbataseditorderantrucking' => $tglBatasEdit,
@@ -139,6 +148,7 @@ class InputTrip extends MyModel
                     'nocont2' => $data['nocont2'] ?? '',
                     'noseal2' => $data['noseal2'] ?? '',
                     'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
+                    'gandengan_id' => $data['gandengan_id'],
                     'statusperalihan' => $statusperalihan->id,
                     'tglbataseditorderantrucking' => $tglBatasEdit,
                     'statusjeniskendaraan' => $data['statusjeniskendaraan'],
@@ -162,6 +172,7 @@ class InputTrip extends MyModel
                     'nocont2' => $data['nocont2'] ?? '',
                     'noseal2' => $data['noseal2'] ?? '',
                     'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
+                    'gandengan_id' => $data['gandengan_id'],
                     'statusperalihan' => $statusperalihan->id,
                     'tglbataseditorderantrucking' => $tglBatasEdit,
                     'statusjeniskendaraan' => $data['statusjeniskendaraan'],
@@ -434,7 +445,8 @@ class InputTrip extends MyModel
             'nominal' => '',
             'tglbataseditsuratpengantar' => $tglBatasEdit,
             'approvalbukatanggal_id' => $approvalId,
-            'nobukti_tripasal' => $data['nobukti_tripasal']
+            'nobukti_tripasal' => $data['nobukti_tripasal'],
+            'statuspenyesuaian' => $data['statuspenyesuaian']
         ];
         $suratPengantar = (new SuratPengantar())->processStore($dataSP);
 

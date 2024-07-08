@@ -44,6 +44,7 @@ use App\Rules\ValidasiReminderSaringanHawa;
 use App\Rules\validasiStatusContainerLongtrip;
 use App\Rules\validasiStatusJenisKendaraan;
 use App\Rules\ValidasiTradoTripGudangSama;
+use App\Rules\validasiTripDipakaiKeKandang;
 use App\Rules\ValidasiTripGudangSama;
 use App\Rules\validasiTripTangkiEditTrip;
 use App\Rules\validasiUpahSupirTangki;
@@ -353,6 +354,13 @@ class UpdateListTripRequest extends FormRequest
                     'absensidetail_id' => ['required', 'numeric', 'min:1', new ExistAbsensiSupirDetail()],
                 ];
             }
+            
+            $parameter = new Parameter();
+            $dataPenyesuaian = $parameter->getcombodata('STATUS PENYESUAIAN', 'STATUS PENYESUAIAN');
+            $dataPenyesuaian = json_decode($dataPenyesuaian, true);
+            foreach ($dataPenyesuaian as $item) {
+                $statusPenyesuaian[] = $item['id'];
+            }
             $rules = [
                 'tglbukti' => [
                     'required', 'date_format:d-m-Y',
@@ -367,6 +375,7 @@ class UpdateListTripRequest extends FormRequest
                 "trado" => ["required"],
                 "upah" => ["required", new validasiNominalUpahSupirTangkiTrip()],
                 "triptangki" => ["required", new validasiTripTangkiEditTrip()],
+                'statuspenyesuaian' => ['required', Rule::in($statusPenyesuaian)],
             ];
             $rulesId = [
                 'id' => new DestroyListTrip()
@@ -390,6 +399,11 @@ class UpdateListTripRequest extends FormRequest
             $dataUpahZona = json_decode($dataUpahZona, true);
             foreach ($dataUpahZona as $item) {
                 $statusUpahZona[] = $item['id'];
+            }
+            $dataPenyesuaian = $parameter->getcombodata('STATUS PENYESUAIAN', 'STATUS PENYESUAIAN');
+            $dataPenyesuaian = json_decode($dataPenyesuaian, true);
+            foreach ($dataPenyesuaian as $item) {
+                $statusPenyesuaian[] = $item['id'];
             }
 
             $trip = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))
@@ -477,8 +491,8 @@ class UpdateListTripRequest extends FormRequest
                 }
                 if ($jenisRitasi && $ritasiDari && $ritasiKe && request()->container_id != 0) {
                     $ruleCekUpahRitasi = [
-                        'ritasidari.*' => new cekUpahRitasiDariInputTrip(),
-                        'ritasike.*' => new cekUpahRitasiKeInputTrip()
+                        'ritasidari.*' => ['required', new cekUpahRitasiDariInputTrip()],
+                        'ritasike.*' => ['required', new cekUpahRitasiKeInputTrip()]
                     ];
                 }
             }
@@ -845,8 +859,9 @@ class UpdateListTripRequest extends FormRequest
                         "statuslangsir" => "required",
                         // "lokasibongkarmuat" => "required",
                         "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
-                        "upah" => ["required", new ExistNominalUpahSupir(),  new ValidasiTripGudangSama($dataTripAsal)],
-                        'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+                        "upah" => ["required", new ExistNominalUpahSupir(), new validasiTripDipakaiKeKandang(), new ValidasiTripGudangSama($dataTripAsal)],
+                        
+                        'statuspenyesuaian' => ['required', Rule::in($statusPenyesuaian)],
                     ];
                 } else {
                     $gandengan_id = $this->gandengan_id;
@@ -881,8 +896,9 @@ class UpdateListTripRequest extends FormRequest
                         "statuslangsir" => "required",
                         // "lokasibongkarmuat" => "required",
                         "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
-                        "upah" => ["required", new ExistNominalUpahSupir(),  new ValidasiTripGudangSama($dataTripAsal)],
-                        'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+                        "upah" => ["required", new ExistNominalUpahSupir(), new validasiTripDipakaiKeKandang(),  new ValidasiTripGudangSama($dataTripAsal)],
+                        
+                        'statuspenyesuaian' => ['required', Rule::in($statusPenyesuaian)],
                     ];
                 }
             } else {
@@ -909,7 +925,7 @@ class UpdateListTripRequest extends FormRequest
                         ],
                         "nobukti_tripasal" => $ruleTripAsal,
                         "agen" => ["required", $ruleAgen,  new ValidasiAgenTripGudangSama($dataTripAsal)],
-                        "tarifrincian" => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiExistOmsetTarif(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
+                        "tarifrincian" => [new ValidasiExistOmsetTarif()],
                         "container" => ["required", $ruleContainer, new ValidasiContainerTripGudangSama($dataTripAsal)],
                         "dari" => ["required"],
                         "gudang" => ["required", $ruleGudang],
@@ -923,8 +939,9 @@ class UpdateListTripRequest extends FormRequest
                         "statuslangsir" => "required",
                         // "lokasibongkarmuat" => "required",
                         "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
-                        "upah" => ["required", new cekUpahSupirEditTrip($idUpahSupir), new ExistNominalUpahSupir(),  new ValidasiTripGudangSama($dataTripAsal)],
-                        'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+                        "upah" => ["required", new cekUpahSupirEditTrip($idUpahSupir), new ExistNominalUpahSupir(), new validasiTripDipakaiKeKandang(), new ValidasiTripGudangSama($dataTripAsal)],
+                        
+                        'statuspenyesuaian' => ['required', Rule::in($statusPenyesuaian)],
                     ];
                 } else {
                     $gandengan_id = $this->gandengan_id;
@@ -945,7 +962,7 @@ class UpdateListTripRequest extends FormRequest
                         ],
                         "nobukti_tripasal" => $ruleTripAsal,
                         "agen" => ["required", $ruleAgen,  new ValidasiAgenTripGudangSama($dataTripAsal)],
-                        "tarifrincian" => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiExistOmsetTarif(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
+                        "tarifrincian" => [new ValidasiExistOmsetTarif()],
                         "container" => ["required", $ruleContainer, new ValidasiContainerTripGudangSama($dataTripAsal)],
                         "dari" => ["required"],
                         "gandengan" => ["required", 'nullable'],
@@ -960,8 +977,9 @@ class UpdateListTripRequest extends FormRequest
                         "statuslangsir" => "required",
                         // "lokasibongkarmuat" => "required",
                         "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
-                        "upah" => ["required", new cekUpahSupirEditTrip($idUpahSupir), new ExistNominalUpahSupir(),  new ValidasiTripGudangSama($dataTripAsal)],
-                        'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+                        "upah" => ["required", new cekUpahSupirEditTrip($idUpahSupir), new ExistNominalUpahSupir(),new validasiTripDipakaiKeKandang(), new ValidasiTripGudangSama($dataTripAsal)],
+                        
+                        'statuspenyesuaian' => ['required', Rule::in($statusPenyesuaian)],
                     ];
                 }
             }
@@ -1010,6 +1028,12 @@ class UpdateListTripRequest extends FormRequest
                 $ruleCekUpahRitasi,
                 $rulesJobTrucking
             );
+            if (request()->statuslongtrip == 66 && request()->nobukti_tripasal == '') {
+                $rules = array_merge(
+                    $rules,
+                    $rulesTarif_id,
+                );
+            }
         }
 
         return $rules;

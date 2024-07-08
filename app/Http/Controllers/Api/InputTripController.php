@@ -74,7 +74,9 @@ class InputTripController extends Controller
                 'ritasidari_id' => $request->ritasidari_id,
                 'ritasike_id' => $request->ritasike_id,
                 'nobukti_tripasal' => $request->nobukti_tripasal ?? '',
+                'statuspenyesuaian' => $request->statuspenyesuaian,
             ];
+            // dd($data);
             $inputTrip = (new InputTrip())->processStore($data);
             // $inputTrip->position = $this->getPosition($inputTrip, $inputTrip->getTable())->position;
             // $inputTrip->page = ceil($inputTrip->position / ($request->limit ?? 10));

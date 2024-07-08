@@ -307,7 +307,7 @@ class StoreMandorTripRequest extends FormRequest
             $rulesSampai_id = [];
 
             if ($upah_id != null) {
-               
+
                 $dari_id = $this->dari_id;
                 if ($dari_id != null) {
                     $rulesDari_id = [
@@ -330,6 +330,13 @@ class StoreMandorTripRequest extends FormRequest
                     ];
                 }
             }
+            $parameter = new Parameter();
+            $dataPenyesuaian = $parameter->getcombodata('STATUS PENYESUAIAN', 'STATUS PENYESUAIAN');
+            $dataPenyesuaian = json_decode($dataPenyesuaian, true);
+            foreach ($dataPenyesuaian as $item) {
+                $statusPenyesuaian[] = $item['id'];
+            }
+
             $rules = [
                 'tglbukti' => [
                     'required', 'date_format:d-m-Y',
@@ -344,6 +351,7 @@ class StoreMandorTripRequest extends FormRequest
                 "trado" => ["required"],
                 "upah" => ["required", new validasiUpahSupirTangki()],
                 "triptangki" => ["required"],
+                'statuspenyesuaian' => ['required', Rule::in($statusPenyesuaian)],
             ];
             $rules = array_merge(
                 $rules,
@@ -357,10 +365,15 @@ class StoreMandorTripRequest extends FormRequest
         } else {
 
             $parameter = new Parameter();
-            $dataUpahZona = $parameter->getcombodata('STATUS UPAH ZONA', 'STATUS UPAH ZONA');
-            $dataUpahZona = json_decode($dataUpahZona, true);
-            foreach ($dataUpahZona as $item) {
-                $statusUpahZona[] = $item['id'];
+            // $dataUpahZona = $parameter->getcombodata('STATUS UPAH ZONA', 'STATUS UPAH ZONA');
+            // $dataUpahZona = json_decode($dataUpahZona, true);
+            // foreach ($dataUpahZona as $item) {
+            //     $statusUpahZona[] = $item['id'];
+            // }
+            $dataPenyesuaian = $parameter->getcombodata('STATUS PENYESUAIAN', 'STATUS PENYESUAIAN');
+            $dataPenyesuaian = json_decode($dataPenyesuaian, true);
+            foreach ($dataPenyesuaian as $item) {
+                $statusPenyesuaian[] = $item['id'];
             }
 
             $idstatuskandang = $parameter->cekId('STATUS KANDANG', 'STATUS KANDANG', 'KANDANG') ?? 0;
@@ -783,7 +796,8 @@ class StoreMandorTripRequest extends FormRequest
                         // "lokasibongkarmuat" => "required",
                         "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
                         "upah" => ["required", new ExistNominalUpahSupir(), new ValidasiTripGudangSama($dataTripAsal)],
-                        'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+                        // 'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+                        'statuspenyesuaian' => ['required', Rule::in($statusPenyesuaian)],
                         "tarifrincian" => [new ValidasiExistOmsetTarif()],
                     ];
                 } else {
@@ -819,7 +833,8 @@ class StoreMandorTripRequest extends FormRequest
                         // "lokasibongkarmuat" => "required",
                         "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
                         "upah" => ["required", new ExistNominalUpahSupir(), new ValidasiTripGudangSama($dataTripAsal)],
-                        'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+                        // 'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+                        'statuspenyesuaian' => ['required', Rule::in($statusPenyesuaian)],
                         "tarifrincian" => [new ValidasiExistOmsetTarif()],
                     ];
                 }
@@ -847,7 +862,7 @@ class StoreMandorTripRequest extends FormRequest
                         ],
                         "nobukti_tripasal" => $ruleTripAsal,
                         "agen" => ["required", new ValidasiAgenTripGudangSama($dataTripAsal)],
-                        "tarifrincian" => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiExistOmsetTarif(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
+                        "tarifrincian" => [new ValidasiExistOmsetTarif()],
                         "container" => ["required", new ValidasiContainerTripGudangSama($dataTripAsal)],
                         "dari" => ["required"],
                         "gudang" => "required",
@@ -861,7 +876,8 @@ class StoreMandorTripRequest extends FormRequest
                         // "lokasibongkarmuat" => "required",
                         "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
                         "upah" => ["required", new ExistNominalUpahSupir(), new ValidasiTripGudangSama($dataTripAsal)],
-                        'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+                        // 'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+                        'statuspenyesuaian' => ['required', Rule::in($statusPenyesuaian)],
                     ];
                 } else {
                     $gandengan_id = $this->gandengan_id;
@@ -882,7 +898,7 @@ class StoreMandorTripRequest extends FormRequest
                         ],
                         "nobukti_tripasal" => $ruleTripAsal,
                         "agen" => ["required", new ValidasiAgenTripGudangSama($dataTripAsal)],
-                        "tarifrincian" => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiExistOmsetTarif(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
+                        "tarifrincian" => [new ValidasiExistOmsetTarif()],
                         "container" => ["required", new ValidasiContainerTripGudangSama($dataTripAsal)],
                         "dari" => ["required"],
                         "gandengan" => ["required", 'nullable'],
@@ -897,7 +913,8 @@ class StoreMandorTripRequest extends FormRequest
                         // "lokasibongkarmuat" => "required",
                         "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
                         "upah" => ["required", new ExistNominalUpahSupir(), new ValidasiTripGudangSama($dataTripAsal)],
-                        'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+                        // 'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+                        'statuspenyesuaian' => ['required', Rule::in($statusPenyesuaian)],
                     ];
                 }
             }
@@ -919,7 +936,7 @@ class StoreMandorTripRequest extends FormRequest
             if (request()->dari_id != '') {
                 if ((request()->statuslongtrip == 66) && (request()->statuslangsir == 80) && (request()->statusgudangsama == 205)) {
                     // dd('disini');
-                    if ($idstatuskandang != request()->statuskandang) {
+                    if (request()->dari_id != $idkandang && request()->nobukti_tripasal == '') {
                         $rulesJobTrucking = [
                             'jobtrucking' => ['required_unless:dari_id,1']
                         ];
@@ -938,11 +955,16 @@ class StoreMandorTripRequest extends FormRequest
                 $rulesJenisOrder_id,
                 $rulesStatusContainer_id,
                 $rulesTrado_id,
-                $rulesTarif_id,
                 $rulesUpah_id,
                 $ruleCekUpahRitasi,
                 $rulesJobTrucking
             );
+            if (request()->statuslongtrip == 66 && request()->nobukti_tripasal == '') {
+                $rules = array_merge(
+                    $rules,
+                    $rulesTarif_id,
+                );
+            }
         }
         return $rules;
     }
