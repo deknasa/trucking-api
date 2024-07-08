@@ -62,7 +62,7 @@ class UpdatePendapatanSupirHeaderRequest extends FormRequest
             $rulesSupir_id = [
                 'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
             ];
-        } else if ($supir_id == null && $this->supir != '') {
+        } else if ($supir_id == null && $this->supir == '') {
             $rulesSupir_id = [
                 'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
             ];
