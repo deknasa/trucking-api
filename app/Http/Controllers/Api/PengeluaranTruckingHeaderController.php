@@ -1083,4 +1083,19 @@ class PengeluaranTruckingHeaderController extends Controller
     public function pengeluarantruckingbiayalapanganborongan()
     {
     }
+
+        /**
+     * @ClassName
+     * @Keterangan BIAYA OTOBON KANTOR
+     */
+    public function pengeluarantruckingotobonkantor()
+    {
+    }
+            /**
+     * @ClassName
+     * @Keterangan BIAYA OTOBON LAPANGAN
+     */
+    public function pengeluarantruckingotobonlapangan()
+    {
+    }
 }
