@@ -58,7 +58,8 @@ class ExportLaporanKasHarianController extends Controller
             return response([
                 'data' => $export[0],
                 'dataDua' => $export[1],
-                'namacabang' => 'CABANG ' . $getCabang->namacabang
+                'namacabang' => 'CABANG ' . $getCabang->namacabang,
+                'namacabang2' =>  $getCabang->namacabang
             ]);
         }
     }

@@ -306,7 +306,7 @@ class ExportLaporanKasHarian extends MyModel
             'bank_id',
             'nominaldebet',
             'nominalkredit',
-        ], $querykredit);        
+        ], $querykredit);
 
         DB::delete(DB::raw("delete " . $tempsaldoawal . " from " . $tempsaldoawal . " a 
               inner join " . $temppengembaliankepusat . " b on a.bank_id=b.bankpengembalian_id"));
@@ -379,7 +379,7 @@ class ExportLaporanKasHarian extends MyModel
             )
             ->whereRaw("right(bulan,4)+left(bulan,2)<right('" . $tahun . "',4)+left('" . $bulan . "',2)")
             ->where('bank_id', $jenis)
-         ->first();
+            ->first();
 
         // dd($querySaldoAwal->tosql());
 
@@ -617,7 +617,7 @@ class ExportLaporanKasHarian extends MyModel
             'debet',
             'kredit',
             'saldo'
-        ], $queryTempPengeluaran);        
+        ], $queryTempPengeluaran);
 
 
         $queryTempPindahBukuDua = DB::table('pindahbuku')->from(
@@ -737,7 +737,7 @@ class ExportLaporanKasHarian extends MyModel
                 'debet',
                 'kredit',
                 'saldo'
-            ], $queryTempPengeluaran);            
+            ], $queryTempPengeluaran);
         }
 
 
@@ -1176,20 +1176,343 @@ class ExportLaporanKasHarian extends MyModel
         ], $queryRekapKredit);
 
 
+        // rekap kas harian
 
-        $getData2 = DB::table($tempRekapPerkiraan)->from(
-            DB::raw($tempRekapPerkiraan . " as a")
-        )
+        $temppenerimaan = '##temppenerimaan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temppenerimaan, function ($table) {
+            $table->string('coa', 50)->nullable();
+            $table->longtext('keterangancoa')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+
+        $temppengeluaran = '##temppengeluaran' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temppengeluaran, function ($table) {
+            $table->string('coa', 50)->nullable();
+            $table->longtext('keterangancoa')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+
+        $querypenerimaan = db::table("penerimaandetail")->from(db::raw("penerimaandetail a with (readuncommitted)"))
+            ->select(
+                'c.coa',
+                'c.keterangancoa',
+                db::raw("sum(a.nominal) as nominal")
+            )
+            ->join(db::raw("penerimaanheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(db::raw("akunpusat c with (readuncommitted)"), 'a.coakredit', 'c.coa')
+            ->whereRaw("format(b.tglbukti,'MM-yyyy')='" . $sampai . "'")
+            ->where('b.bank_id', $jenis)
+            ->groupby('c.coa')
+            ->groupby('c.keterangancoa');
+
+        DB::table($temppenerimaan)->insertUsing([
+            'coa',
+            'keterangancoa',
+            'nominal'
+        ], $querypenerimaan);
+
+        $querypenerimaan = db::table("pindahbuku")->from(db::raw("pindahbuku a with (readuncommitted)"))
+            ->select(
+                'c.coa',
+                'c.keterangancoa',
+                db::raw("sum(a.nominal) as nominal")
+            )
+            ->join(db::raw("akunpusat c with (readuncommitted)"), 'a.coakredit', 'c.coa')
+            ->whereRaw("format(a.tglbukti,'MM-yyyy')='" . $sampai . "'")
+            ->where('a.bankke_id', $jenis)
+            ->groupby('c.coa')
+            ->groupby('c.keterangancoa');
+
+        DB::table($temppenerimaan)->insertUsing([
+            'coa',
+            'keterangancoa',
+            'nominal'
+        ], $querypenerimaan);
+
+        // dd(db::table($temppenerimaan)->get());
+
+
+        $querypengeluaran = db::table("pengeluarandetail")->from(db::raw("pengeluarandetail a with (readuncommitted)"))
+            ->select(
+                'c.coa',
+                'c.keterangancoa',
+                db::raw("sum(a.nominal) as nominal")
+            )
+            ->join(db::raw("pengeluaranheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(db::raw("akunpusat c with (readuncommitted)"), 'a.coadebet', 'c.coa')
+            ->whereRaw("format(b.tglbukti,'MM-yyyy')='" . $sampai . "'")
+            ->where('b.bank_id', $jenis)
+            ->whereraw("b.alatbayar_id not in (3,4)")
+            ->groupby('c.coa')
+            ->groupby('c.keterangancoa');
+
+            // dd($querypengeluaran->toSql());
+
+        DB::table($temppengeluaran)->insertUsing([
+            'coa',
+            'keterangancoa',
+            'nominal'
+        ], $querypengeluaran);
+
+        $querypengeluaran = db::table("pengeluarandetail")->from(db::raw("pengeluarandetail a with (readuncommitted)"))
+            ->select(
+                'c.coa',
+                'c.keterangancoa',
+                db::raw("sum(a.nominal) as nominal")
+            )
+            ->join(db::raw("pengeluaranheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(db::raw("akunpusat c with (readuncommitted)"), 'a.coadebet', 'c.coa')
+            ->join(db::raw("pencairangiropengeluaranheader d with (readuncommitted)"), 'b.nobukti', 'd.pengeluaran_nobukti')
+            ->whereRaw("format(b.tglbukti,'MM-yyyy')='" . $sampai . "'")
+            ->where('b.bank_id', $jenis)
+            ->whereraw("b.alatbayar_id in (3,4)")
+            ->groupby('c.coa')
+            ->groupby('c.keterangancoa');
+
+
+        DB::table($temppengeluaran)->insertUsing([
+            'coa',
+            'keterangancoa',
+            'nominal'
+        ], $querypengeluaran);
+
+        $querypengeluaran = db::table("pindahbuku")->from(db::raw("pindahbuku a with (readuncommitted)"))
+            ->select(
+                'c.coa',
+                'c.keterangancoa',
+                db::raw("sum(a.nominal) as nominal")
+            )
+            ->join(db::raw("akunpusat c with (readuncommitted)"), 'a.coadebet', 'c.coa')
+            ->whereRaw("format(a.tglbukti,'MM-yyyy')='" . $sampai . "'")
+            ->where('a.bankdari_id', $jenis)
+            ->groupby('c.coa')
+            ->groupby('c.keterangancoa');
+
+        DB::table($temppengeluaran)->insertUsing([
+            'coa',
+            'keterangancoa',
+            'nominal'
+        ], $querypengeluaran);
+
+        // dd(db::table($temppenerimaan)->get());
+        // dd(db::table($temppengeluaran)->get());
+
+
+
+        $temppenerimaanrekap = '##temppenerimaanrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temppenerimaanrekap, function ($table) {
+            $table->string('coa', 50)->nullable();
+            $table->longtext('keterangancoa')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+
+        $temppengeluaranrekap = '##temppengeluaranrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temppengeluaranrekap, function ($table) {
+            $table->string('coa', 50)->nullable();
+            $table->longtext('keterangancoa')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+
+        $querypenerimaan = db::table($temppenerimaan)->from(db::raw($temppenerimaan . " a "))
             ->select(
                 'a.coa',
-                DB::raw("(case when A.perkiraan='' then 'SALDO AWAL' else A.perkiraan end) perkiraan"),
-                DB::raw("isnull(B.nominal,0) as nominaldebet"),
-                DB::raw("isnull(C.nominal,0) as nominalkredit"),
+                'a.keterangancoa',
+                db::raw("sum(a.nominal) as nominal")
+            )
+            ->groupby('a.coa')
+            ->groupby('a.keterangancoa');
+
+        DB::table($temppenerimaanrekap)->insertUsing([
+            'coa',
+            'keterangancoa',
+            'nominal'
+        ], $querypenerimaan);
+
+        $querypengeluaran = db::table($temppengeluaran)->from(db::raw($temppengeluaran . " a "))
+            ->select(
+                'a.coa',
+                'a.keterangancoa',
+                db::raw("sum(a.nominal) as nominal")
+            )
+            ->groupby('a.coa')
+            ->groupby('a.keterangancoa');
+
+        DB::table($temppengeluaranrekap)->insertUsing([
+            'coa',
+            'keterangancoa',
+            'nominal'
+        ], $querypengeluaran);
+
+
+
+        $temppenerimaanrekap2 = '##temppenerimaanrekap2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temppenerimaanrekap2, function ($table) {
+            $table->integer('urut')->nullable();
+            $table->string('coa', 50)->nullable();
+            $table->longtext('keterangancoa')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+
+        $temppengeluaranrekap2 = '##temppengeluaranrekap2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temppengeluaranrekap2, function ($table) {
+            $table->integer('urut')->nullable();
+            $table->string('coa', 50)->nullable();
+            $table->longtext('keterangancoa')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+
+
+        $querypenerimaan = db::table($temppenerimaanrekap)->from(db::raw($temppenerimaanrekap . " a "))
+            ->select(
+                db::raw("row_number() Over(Order By keterangancoa) As urut"),
+                'a.coa',
+                'a.keterangancoa',
+                db::raw("(a.nominal) as nominal")
+            )
+            ->Orderby('a.keterangancoa');
+
+        DB::table($temppenerimaanrekap2)->insertUsing([
+            'urut',
+            'coa',
+            'keterangancoa',
+            'nominal'
+        ], $querypenerimaan);
+
+        $querypenerimaan = db::table($temppengeluaranrekap)->from(db::raw($temppengeluaranrekap . " a "))
+            ->select(
+                db::raw("row_number() Over(Order By keterangancoa) As urut"),
+                'a.coa',
+                'a.keterangancoa',
+                db::raw("(a.nominal) as nominal")
+            )
+            ->Orderby('a.keterangancoa');
+
+        DB::table($temppengeluaranrekap2)->insertUsing([
+            'urut',
+            'coa',
+            'keterangancoa',
+            'nominal'
+        ], $querypenerimaan);
+
+        $tempurut = '##tempurut' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempurut, function ($table) {
+            $table->integer('urut')->nullable();
+        });
+
+        // dd(db::table($temppenerimaanrekap2)->get());
+        // dd(db::table($temppengeluaranrekap)->get());
+
+
+        $queryurut = db::table($temppengeluaranrekap2)->from(db::raw($temppengeluaranrekap2 . " a "))
+            ->select(
+                'a.urut',
+            );
+
+        DB::table($tempurut)->insertUsing([
+            'urut',
+        ], $queryurut);
+
+        $queryurut = db::table($temppengeluaranrekap2)->from(db::raw($temppengeluaranrekap2 . " a "))
+            ->select(
+                'a.urut',
+            )
+            ->leftjoin(db::raw($tempurut . " b"), 'a.urut', 'b.urut')
+            ->whereraw("isnull(b.urut,0)=0");
+
+
+        DB::table($tempurut)->insertUsing([
+            'urut',
+        ], $queryurut);
+
+
+        $temphasil = '##temphasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temphasil, function ($table) {
+            $table->integer('urut')->nullable();
+            $table->longtext('keterangancoapenerimaan')->nullable();
+            $table->double('nominalpenerimaan', 15, 2)->nullable();
+            $table->longtext('keterangancoapengeluaran')->nullable();
+            $table->double('nominalpengeluaran', 15, 2)->nullable();
+        });
+
+        $queryhasil = db::table($tempurut)->from(db::raw($tempurut . " a "))
+            ->select(
+                'a.urut',
+                db::raw("isnull(b.keterangancoa,'') as keterangancoapenerimaan"),
+                db::raw("isnull(b.nominal,0) as nominalpenerimaan"),
+                db::raw("isnull(c.keterangancoa,'') as keterangancoapengeluaran"),
+                db::raw("isnull(c.nominal,0) as nominalpengeluaran"),
+            )
+            ->leftjoin(db::raw($temppenerimaanrekap2 . " b"), 'a.urut', 'b.urut')
+            ->leftjoin(db::raw($temppengeluaranrekap2 . " c"), 'a.urut', 'c.urut')
+            ->orderBy('a.urut');
+
+        DB::table($temphasil)->insertUsing([
+            'urut',
+            'keterangancoapenerimaan',
+            'nominalpenerimaan',
+            'keterangancoapengeluaran',
+            'nominalpengeluaran',
+        ], $queryhasil);
+
+
+
+        $queryhasil = db::table($tempRekapPerkiraan)->from(db::raw($tempRekapPerkiraan . " a "))
+            ->select(
+                db::raw("0 as urut"),
+                db::raw("'SALDO AWAL' keterangancoapenerimaan"),
+                db::raw("isnull(b.nominal,0) as nominalpenerimaan"),
+                db::raw("'' as keterangancoapengeluaran"),
+                db::raw("0 as nominalpengeluaran"),
+            )
+            ->Join($tempRekapDebet . " as b", 'a.coa', '=', 'b.coa')
+            ->whereraw("isnull(a.perkiraan,'')=''");
+
+
+
+        DB::table($temphasil)->insertUsing([
+            'urut',
+            'keterangancoapenerimaan',
+            'nominalpenerimaan',
+            'keterangancoapengeluaran',
+            'nominalpengeluaran',
+        ], $queryhasil);
+
+                // dd(db::table($temphasil)->get());
+
+        // dd(db::table($temphasil)->get());
+
+        $getData2 = DB::table($temphasil)->from(
+            DB::raw($temphasil . " as a")
+        )
+            ->select(
+                DB::raw("a.keterangancoapenerimaan as perkiraan"),
+                DB::raw("a.keterangancoapengeluaran as perkiraanpengeluaran"),
+                DB::raw("isnull(a.nominalpenerimaan,0) as nominaldebet"),
+                DB::raw("isnull(a.nominalpengeluaran,0) as nominalkredit"),
                 DB::raw("'" . $getJudul->text . "' as judul")
             )
-            ->leftJoin($tempRekapDebet . " as b", 'a.coa', '=', 'b.coa')
-            ->leftJoin($tempRekapKredit . " as c", 'a.coa', '=', 'c.coa')
+            ->orderBy('a.urut', 'asc')
             ->get();
+
+        // 
+
+
+        // 
+
+        // $getData2 = DB::table($tempRekapPerkiraan)->from(
+        //     DB::raw($tempRekapPerkiraan . " as a")
+        // )
+        //     ->select(
+        //         'a.coa',
+        //         DB::raw("(case when A.perkiraan='' then 'SALDO AWAL' else A.perkiraan end) perkiraan"),
+        //         DB::raw("isnull(B.nominal,0) as nominaldebet"),
+        //         DB::raw("isnull(C.nominal,0) as nominalkredit"),
+        //         DB::raw("'" . $getJudul->text . "' as judul")
+        //     )
+        //     ->leftJoin($tempRekapDebet . " as b", 'a.coa', '=', 'b.coa')
+        //     ->leftJoin($tempRekapKredit . " as c", 'a.coa', '=', 'c.coa')
+        //     ->get();
+
 
 
 
