@@ -61,7 +61,7 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
             $rulesSupir_id = [
                 'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
             ];
-        } else if ($supir_id == null && $this->supir != '') {
+        } else if ($supir_id == null && $this->supir == '') {
             $rulesSupir_id = [
                 'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
             ];
@@ -93,6 +93,7 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
 
         $rules = array_merge(
             $rules,
+            $rulesSupir_id,
             $ruleBank_id
         );
         $cekBank = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'BANK')->first();

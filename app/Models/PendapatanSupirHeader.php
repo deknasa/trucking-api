@@ -553,6 +553,206 @@ class PendapatanSupirHeader extends MyModel
         // dd($data);
         return $data;
     }
+
+    public function gettrip3($tgldari, $tglsampai, $supir_id, $id, $aksi = null)
+    {
+        $tempsaldopendapatan = '##tempsaldopendapatan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsaldopendapatan, function ($table) {
+            $table->integer('pendapatansupir_id')->nullable();
+            $table->string('gajisupir_nobukti', 1000)->nullable();
+            $table->string('nobukti_trip', 1000)->nullable();
+            $table->date('tgl_ric')->nullable();
+            $table->date('tgl_trip')->nullable();
+            $table->integer('dari_id')->nullable();
+            $table->integer('sampai_id')->nullable();
+            $table->integer('supir_id')->nullable();
+            $table->double('nominal')->nullable();
+            $table->double('gajikenek')->nullable();
+            $table->longText('keterangan')->nullable();
+        });
+
+
+        if ($id != '') {
+            $querysaldopendapatan = DB::table('pendapatansupirdetail')->from(
+                db::raw("pendapatansupirdetail a with (readuncommitted)")
+            )
+                ->select(
+                    DB::raw("a.pendapatansupir_id as pendapatansupir_id"),
+                    'a.nobuktirincian as gajisupir_nobukti',
+                    'a.nobuktitrip as nobukti_trip',
+                    'b.tglbukti as tgl_ric',
+                    'c.tglbukti as tgl_trip',
+                    'c.dari_id',
+                    'c.sampai_id',
+                    'd.supir_id',
+                    DB::raw("(case when a.nominal IS NULL then 0 else a.nominal end) as nominal"),
+                    DB::raw("0 as gajikenek"),
+                    'a.keterangan',
+                )
+                
+                ->join(DB::raw("pendapatansupirheader d with (readuncommitted)"), 'a.pendapatansupir_id', 'd.id')
+                ->join(DB::raw("gajisupirheader b with (readuncommitted)"), 'a.nobuktirincian', 'b.nobukti')
+                ->join(DB::raw("suratpengantar c with (readuncommitted)"), 'a.nobuktitrip', 'c.nobukti')
+
+                ->where('a.pendapatansupir_id', $id)
+                ->Orderby('b.tglbukti', 'asc')
+                ->Orderby('b.nobukti', 'asc');
+                    
+            DB::table($tempsaldopendapatan)->insertUsing([
+                'pendapatansupir_id',
+                'gajisupir_nobukti',
+                'nobukti_trip',
+                'tgl_ric',
+                'tgl_trip',
+                'dari_id',
+                'sampai_id',
+                'supir_id',
+                'nominal',
+                'gajikenek',
+                'keterangan',
+            ], $querysaldopendapatan);
+        }
+
+        $tempAwal = '##tempAwal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempAwal, function ($table) {
+            $table->integer('pendapatansupir_id')->nullable();
+            $table->string('gajisupir_nobukti', 1000)->nullable();
+            $table->string('nobukti_trip', 1000)->nullable();
+            $table->date('tgl_ric')->nullable();
+            $table->date('tgl_trip')->nullable();
+            $table->integer('dari_id')->nullable();
+            $table->integer('sampai_id')->nullable();
+            $table->integer('supir_id')->nullable();
+            $table->double('nominal')->nullable();
+            $table->double('gajikenek')->nullable();
+            $table->longText('keterangan')->nullable();
+        });
+
+
+        $queryGajisupir = DB::table('gajisupirheader')->from(
+            db::raw("gajisupirheader a with (readuncommitted)")
+        )
+            ->select(
+                DB::raw("0 as pendapatansupir_id"),
+                'a.nobukti as gajisupir_nobukti',
+                'c.nobukti as nobukti_trip',
+                'a.tglbukti as tgl_ric',
+                'c.tglbukti as tgl_trip',
+                'c.dari_id',
+                'c.sampai_id',
+                'a.supir_id',
+                'b.komisisupir as nominal',
+                DB::raw("0 as gajikenek"),
+                DB::raw("'' as keterangan")
+            )
+            ->join(DB::raw("gajisupirdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(DB::raw("suratpengantar c with (readuncommitted)"), 'b.suratpengantar_nobukti', 'c.nobukti')
+            
+            ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($tglsampai)) . "'")
+            ->whereRaw("(a.supir_id=" . $supir_id . " or " . $supir_id . "=0)")
+            ->where('b.komisisupir', '!=', 0)
+            ->Orderby('a.tglbukti', 'asc')
+            ->Orderby('a.nobukti', 'asc');
+
+        DB::table($tempAwal)->insertUsing([
+            'pendapatansupir_id',
+            'gajisupir_nobukti',
+            'nobukti_trip',
+            'tgl_ric',
+            'tgl_trip',
+            'dari_id',
+            'sampai_id',
+            'supir_id',
+            'nominal',
+            'gajikenek',
+            'keterangan',
+        ], $queryGajisupir);
+
+        $queryPendapatan = DB::table($tempAwal)->from(
+            db::raw("$tempAwal a with (readuncommitted)")
+        )
+            ->select(
+                "a.pendapatansupir_id",
+                'a.gajisupir_nobukti',
+                'a.nobukti_trip',
+                'a.tgl_ric',
+                'a.tgl_trip',
+                'a.dari_id',
+                'a.sampai_id',
+                'a.supir_id',
+                'a.nominal',
+                DB::raw("0 as gajikenek"),
+                'a.keterangan',
+            )
+            ->leftJoin(DB::raw("pendapatansupirdetail b with (readuncommitted)"), 'a.gajisupir_nobukti', 'b.nobuktirincian')
+            ->whereRaw("isnull(b.nobukti,'')=''");
+
+        DB::table($tempsaldopendapatan)->insertUsing([
+            'pendapatansupir_id',
+            'gajisupir_nobukti',
+            'nobukti_trip',
+            'tgl_ric',
+            'tgl_trip',
+            'dari_id',
+            'sampai_id',
+            'supir_id',
+            'nominal',
+            'gajikenek',
+            'keterangan',
+        ], $queryPendapatan);
+
+        $this->setRequestParameters();
+
+        $query = DB::table($tempsaldopendapatan)->from(
+            db::raw($tempsaldopendapatan . " a ")
+        )
+            ->select(
+                DB::raw("row_number() Over(Order By a.gajisupir_nobukti) as id"),
+                'a.pendapatansupir_id',
+                'a.nobukti_trip',
+                'a.supir_id',
+                'd.namasupir',
+                'a.gajisupir_nobukti as nobukti_ric',
+                'a.tgl_ric',
+                'a.tgl_trip',
+                'a.dari_id',
+                'b.kodekota as dari',
+                'a.sampai_id',
+                'c.kodekota as sampai',
+                'a.nominal as nominal_detail',
+                DB::raw("0 as gajikenek"),
+                'a.keterangan',
+                
+            )
+            ->leftJoin(DB::raw("kota b with (readuncommitted)"), 'a.dari_id', 'b.id')
+            ->leftJoin(DB::raw("kota c with (readuncommitted)"), 'a.sampai_id', 'c.id')
+            ->leftJoin(DB::raw("supir d with (readuncommitted)"), 'a.supir_id', 'd.id');
+
+        // ->Orderby('a.suratpengantar_tglbukti', 'asc')
+        // ->Orderby('a.suratpengantar_nobukti', 'asc');
+        if ($aksi != 'show') {
+            $this->filterTrip($query, 'FORMAT 3');
+            $this->totalNominal = $query->sum('nominal');
+            // $this->totalGajiKenek = $query->sum('komisisupir');
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+            if ($this->params['sortIndex'] == 'nobukti_trip') {
+                $query->orderBy('a.gajisupir_nobukti', 'asc');
+            } else {
+                $this->sortTrip($query);
+            }
+            $query->skip($this->params['offset'])->take($this->params['limit']);
+        }
+        // else {
+        //     $query->Orderby('a.suratpengantar_tglbukti', 'asc')
+        //         ->Orderby('a.suratpengantar_nobukti', 'asc');
+        // }
+        $data = $query->get();
+
+        // dd($data);
+        return $data;
+    }
     public function sortTrip($query)
     {
         if ($this->params['sortIndex'] == 'nobukti_ric') {

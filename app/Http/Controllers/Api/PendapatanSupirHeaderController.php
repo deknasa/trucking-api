@@ -123,6 +123,8 @@ class PendapatanSupirHeaderController extends Controller
             ->first()->text;
         if ($formatTab == 'FORMAT 1') {
             $detail = (new PendapatanSupirHeader())->getTrip($data->tgldari, $data->tglsampai, $supir_id, $id, 'show');
+        } else if ($formatTab == 'FORMAT 3'){
+            $detail = (new PendapatanSupirHeader())->gettrip3($data->tgldari, $data->tglsampai, $supir_id, $id, 'show');
         } else {
             $detail = (new PendapatanSupirHeader())->getTrip2($data->tgldari, $data->tglsampai, $supir_id, $id, 'show');
         }
@@ -509,6 +511,8 @@ class PendapatanSupirHeaderController extends Controller
             ->first()->text;
         if ($formatTab == 'FORMAT 1') {
             $data = $pendapatanSupir->getTrip($tgldari, $tglsampai, $supir_id, $id, $aksi);
+        } else if ($formatTab == 'FORMAT 3'){
+            $data = $pendapatanSupir->gettrip3($tgldari, $tglsampai, $supir_id, $id, $aksi);
         } else {
             $data = $pendapatanSupir->getTrip2($tgldari, $tglsampai, $supir_id, $id, $aksi);
         }
