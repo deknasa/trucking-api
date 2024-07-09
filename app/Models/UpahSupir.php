@@ -1152,8 +1152,10 @@ class UpahSupir extends MyModel
                 ->where('kodekota', 'BELAWAN')
                 ->first();
                 
-            if ($belawan->id == $data['kotadari_id']) {
-                $data['statussimpankandang'] = $statusSimpanKandang->id;
+            if ($belawan) {
+                if ($belawan->id == $data['kotadari_id']) {
+                    $data['statussimpankandang'] = $statusSimpanKandang->id;
+                }
             }
             
             /**
