@@ -614,14 +614,14 @@ class ExportLaporanMingguanSupir extends Model
                 DB::raw("(case when isnull(a.urutric,0)=1 then isnull(d.nominaluangbbm,0) else 0 end) as uangbbm"),
                 DB::raw("(case when isnull(a.urutric,0)=1 then isnull(d.nominaluangmakan,0) else 0 end) as uangmakan"),
                 DB::raw("(isnull(A.gajisupir,0)+isnull(a.komisisupir,0)+isnull(a.gajikenek,0)+isnull(f.nominal,0) 
-                            +(case when isnull(a.urutric,0)=1 then isnull(d.nominaluangjalan,0) else 0 end)                
+                            /*+(case when isnull(a.urutric,0)=1 then isnull(d.nominaluangjalan,0) else 0 end)*/                
                             +(case when isnull(a.urutric,0)=1 then isnull(d.nominaluangbbm,0) else 0 end)
                             +(case when isnull(a.urutric,0)=1 then isnull(d.nominaluangmakan,0) else 0 end)
                             )
                             as totalbiaya"),
                 DB::raw("((isnull(a.omset,0))-
                             (isnull(A.gajisupir,0)+isnull(a.komisisupir,0)+isnull(a.gajikenek,0)+isnull(f.nominal,0) 
-                            +(case when isnull(a.urutric,0)=1 then isnull(d.nominaluangjalan,0) else 0 end)                
+                            /*+(case when isnull(a.urutric,0)=1 then isnull(d.nominaluangjalan,0) else 0 end)*/                
                             +(case when isnull(a.urutric,0)=1 then isnull(d.nominaluangbbm,0) else 0 end)
                             +(case when isnull(a.urutric,0)=1 then isnull(d.nominaluangmakan,0) else 0 end)
                             ))
