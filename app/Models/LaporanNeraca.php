@@ -225,6 +225,7 @@ class LaporanNeraca extends MyModel
                     ->groupBy('FCOA', 'FThn', 'FBln', 'cabang_id')
                     ->select('FCOA', 'FThn', 'FBln', 'cabang_id', DB::raw('round(SUM(FNominal),2) as FNominal'));
 
+                // dd($RecalKdPerkiraan->toSql());
                 if ($getcabangid == 1) {
                     if (date('Y-m-d', strtotime($ptgl)) >= date('Y-m-d', strtotime('2024-05-01'))) {
                         DB::table('akunpusatdetail')->insertUsing([
@@ -300,6 +301,7 @@ class LaporanNeraca extends MyModel
                             db::raw("sum(a.nominal) as nominal")
                         )
                         ->where('a.tahun', $tahunsaldo)
+                        // ->whereraw("a.tahun<>0")
                         ->whereRaw("cabang_id=" . $cabang_id)
                         ->groupBy('a.coa')
                         ->groupBy('a.cabang_id');
@@ -653,6 +655,7 @@ class LaporanNeraca extends MyModel
 
             goto selesai;
         }
+
         // goto mulai;
 
         // rekap akunpusat detail
@@ -1645,11 +1648,15 @@ class LaporanNeraca extends MyModel
                 ->delete();
 
 
+
+
+
             $subquery1 = DB::table('jurnalumumpusatheader as J')
                 ->select('D.coamain as FCOA', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('round(SUM(D.nominal),2) as FNominal'))
                 ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
                 ->join('mainakunpusat as C', 'C.coa', '=', 'D.coamain')
                 ->where('D.tglbukti', '>=', $ptgl)
+                ->whereraw("D.coamain<>'05.02.03.01'")
                 ->groupBy('D.coamain', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
 
             if ($cabang == 'SEMUA') {
@@ -1671,6 +1678,8 @@ class LaporanNeraca extends MyModel
                     ->where('D.tglbukti', '>=', $ptgl)
                     ->groupBy('LR.coa', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
             } else {
+
+                // dd($ptgl);
                 $subquery2 = DB::table('jurnalumumpusatheader as J')
                     ->select('LR.coa', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('round(SUM(D.nominal),2) as FNominal'))
                     ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
@@ -1687,7 +1696,7 @@ class LaporanNeraca extends MyModel
                             ->where('AT.order', '<', 9000)
                             ->where('C.type', '<>', 'Laba/Rugi');
                     })
-                    ->where('D.tglbukti', '>=', $ptgl)
+                    ->whereraw("month(D.tglbukti)=month('" . $ptgl . "') and year(D.tglbukti)=year('" . $ptgl . "')")
                     ->groupBy('LR.coa', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
             }
 
@@ -1697,6 +1706,7 @@ class LaporanNeraca extends MyModel
                 ->groupBy('FCOA', 'FThn', 'FBln')
                 ->select('FCOA', 'FThn', 'FBln', DB::raw('round(SUM(FNominal),2) as FNominal'));
 
+            // dd($RecalKdPerkiraan->toSql());
             DB::table('akunpusatdetail')->insertUsing([
                 'coa',
                 'tahun',
@@ -1704,6 +1714,119 @@ class LaporanNeraca extends MyModel
                 'nominal',
 
             ], $RecalKdPerkiraan);
+
+            // laba rugi
+
+            $tempsaldolabarugi = '##tempsaldolabarugi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempsaldolabarugi, function ($table) {
+                $table->bigIncrements('id');
+                $table->integer('tahun')->nullable();
+                $table->integer('bulan')->nullable();
+                $table->double('nominal')->nullable();
+            });
+
+            $saldolabarugi = db::table("akunpusatdetail")->from(db::raw("akunpusatdetail a with (readuncommitted)"))
+                ->select(
+                    'a.nominal'
+                )
+                ->whereraw("a.tahun=year('" . $ptgl . "')")
+                ->whereraw("a.bulan=0")
+                ->whereraw("a.coa='05.02.03.01'")
+                ->first()->nominal ?? 0;
+
+
+
+
+            $subquery1test = DB::table('jurnalumumpusatheader as J')
+                ->select(DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw("round(SUM(D.nominal),2)-(" . $saldolabarugi . ") as FNominal"))
+                ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
+                ->join('mainakunpusat as C', 'C.coa', '=', 'D.coamain')
+                // ->whereraw("month(D.tglbukti)=month('". $ptgl."') and year(D.tglbukti)=year('".$ptgl."')")
+                ->whereRaw("D.tglbukti>='" . $tahun . "/1/1'")
+                ->whereraw("year(D.tglbukti)=year('" . $ptgl . "')")
+                ->whereIn('D.coamain', function ($query) {
+                    $query->select(DB::raw('DISTINCT C.coa'))
+                        ->from('maintypeakuntansi as AT')
+                        ->join('mainakunpusat as C', 'AT.kodetype', '=', 'C.Type')
+                        ->where('AT.order', '>=', 4000)
+                        ->where('AT.order', '<', 9000)
+                        ->where('C.type', '<>', 'Laba/Rugi');
+                })
+                ->whereRaw("D.tglbukti>='" . $tahun . "/1/1'")
+                ->whereraw("year(D.tglbukti)=year('" . $ptgl . "')")
+                ->groupBy(DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'))
+                ->OrderBY(DB::raw('YEAR(D.tglbukti)'), 'asc')
+                ->OrderBY(DB::raw('MONTH(D.tglbukti)'), 'asc');
+
+            DB::table($tempsaldolabarugi)->insertUsing([
+                'tahun',
+                'bulan',
+                'nominal',
+
+            ], $subquery1test);
+
+            $tempsaldolabarugi2 = '##tempsaldolabarugi2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempsaldolabarugi2, function ($table) {
+                $table->bigIncrements('id');
+                $table->integer('tahun')->nullable();
+                $table->integer('bulan')->nullable();
+                $table->double('nominal')->nullable();
+            });
+
+            $querysaldolr2 = db::table($tempsaldolabarugi)->from(db::raw($tempsaldolabarugi . " a"))
+                ->select(
+                    'a.tahun',
+                    db::raw("(a.bulan+1) as bulan"),
+                    db::raw("a.nominal"),
+                )
+                ->orderbY('a.bulan', 'asc')
+                ->orderbY('a.tahun', 'asc');
+
+
+
+            DB::table($tempsaldolabarugi2)->insertUsing([
+                'tahun',
+                'bulan',
+                'nominal',
+
+            ], $querysaldolr2);
+
+
+
+            $querysaldolr = db::table($tempsaldolabarugi)->from(db::raw($tempsaldolabarugi . " a"))
+                ->select(
+                    db::raw("'05.02.03.01' as coa"),
+                    'a.tahun',
+                    'a.bulan',
+                    db::raw("round((case when a.bulan>1 then a.nominal-isnull(b.nominal,0) else a.nominal end),2) as nominal"),
+                    // db::raw("a.nominal"),
+                    // db::raw("isnull(b.nominal,0)"),
+                )
+                ->leftjoin(db::raw($tempsaldolabarugi2 . " as b"), 'a.bulan', '=', 'b.bulan')
+
+                ->orderbY('a.bulan', 'asc')
+                ->orderbY('a.tahun', 'asc');
+
+            // dd($querysaldolr->get());
+
+            DB::table('akunpusatdetail')
+                ->where('bulan', '<>', 0)
+                ->whereRaw("tahun=" . $tahun)
+                ->whereRaw("coa='05.02.03.01'")
+                ->delete();
+
+            DB::table('akunpusatdetail')->insertUsing([
+                'coa',
+                'tahun',
+                'bulan',
+                'nominal',
+
+            ], $querysaldolr);
+
+
+
+
+
             if ($bulan == 1) {
                 DB::table('akunpusatdetail')
                     ->where('bulan', '=', 0)
@@ -1823,6 +1946,7 @@ class LaporanNeraca extends MyModel
 
             ], $queryTempSaldoAkunPusatDetail);
 
+            // test 123455
             $queryTempAkunPusatDetail = DB::table('akunpusatdetail')->from(
                 DB::raw('akunpusatdetail')
             )
@@ -1836,6 +1960,8 @@ class LaporanNeraca extends MyModel
                     'updated_at'
 
                 )
+                // ->whereraw("bulan<" . $bulan)
+                // ->where('tahun', $tahun)
                 ->orderBy('id', 'asc');
 
             DB::table($tempAkunPusatDetail)->insertUsing([
@@ -1886,6 +2012,8 @@ class LaporanNeraca extends MyModel
                 )
                 ->join(db::raw($tempAkunPusatDetail . " cd with (readuncommitted)"), 'c.coa', 'cd.coa')
                 ->join(db::raw("maintypeakuntansi a with (readuncommitted)"), 'a.kodetype', 'c.type');
+
+            // dd(db::table($tempAkunPusatDetail)->get());
 
             DB::table($tempquery1)->insertUsing([
                 'type',
@@ -1953,6 +2081,33 @@ class LaporanNeraca extends MyModel
                 ->groupBy('d.coa')
                 ->groupBy('d.keterangancoa');
             // ->having(DB::raw('sum(d.nominal)'), '<>', 0);
+
+            $query2test = db::table($tempquery1)->from(db::raw($tempquery1 . " d"))
+                ->select(
+                    db::raw("(CASE d.akuntansi_id WHEN 1 THEN 'AKTIVA' ELSE 'PASSIVA' END) AS tipemaster"),
+                    'd.order',
+                    db::raw("(d.type) as type"),
+                    db::raw("(d.keterangantype) as keterangantype"),
+                    'd.coa',
+                    db::raw("(d.parent) as parent"),
+                    'd.keterangancoa',
+                    db::raw("( CASE d.akuntansi_id WHEN 1 THEN round((d.Nominal),2) ELSE round((d.Nominal * -1),2) END)  AS nominal"),
+                    db::raw("'" . $judulLaporan . "' as cmpyname"),
+                    db::raw($bulan . " as pbulan"),
+                    db::raw($tahun . " as ptahun"),
+                    db::raw("(d.statusneraca) as gneraca"),
+                    db::raw("(d.statuslabarugi) as glr"),
+                    db::raw("(isnull(e.keterangancoa,'')) as keterangancoaparent"),
+                    db::raw($tglsd . " as ptglsd"),
+                )
+                ->leftjoin(db::raw("akunpusat e with (readuncommitted)"), 'd.parent', 'e.coa')
+                ->where('d.tahun', $tahun)
+                ->whereRaw("d.bulan<=cast(" . $bulan . " as integer)")
+                ->where('d.order', '<', 4000)
+                ->whereraw("d.coa='05.02.03.01'");
+
+            // dd($query2test->get());
+
 
             // dd($query2->tosql());
 
