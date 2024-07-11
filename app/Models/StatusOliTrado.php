@@ -60,6 +60,7 @@ class StatusOliTrado extends MyModel
 
             Schema::create($temtabel, function (Blueprint $table) {
                 $table->id();
+                $table->integer('trado_id')->nullable();
                 $table->longText('nopol')->nullable();
                 $table->date('tanggal')->nullable();
                 $table->string('status', 100)->nullable();
@@ -69,6 +70,7 @@ class StatusOliTrado extends MyModel
             });
 
             DB::table($temtabel)->insertUsing([
+                'trado_id',
                 'nopol',
                 'tanggal',
                 'status',
@@ -95,6 +97,7 @@ class StatusOliTrado extends MyModel
         }
         $query = DB::table($temtabel)->from(DB::raw($temtabel . " a "))
             ->select(
+                'a.trado_id',
                 'a.nopol',
                 'a.tanggal',
                 'a.status',
@@ -185,6 +188,7 @@ class StatusOliTrado extends MyModel
 
             $query = db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
                 ->select(
+                    'd.id as trado_id',
                     'd.kodetrado as nopol',
                     'a.tglbukti as tanggal',
                     'e.text as status',
@@ -205,6 +209,7 @@ class StatusOliTrado extends MyModel
         } else {
             $query = db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
                 ->select(
+                    'd.id as trado_id',
                     'd.kodetrado as nopol',
                     'a.tglbukti as tanggal',
                     'e.text as status',
