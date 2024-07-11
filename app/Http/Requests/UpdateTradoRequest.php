@@ -158,14 +158,14 @@ class UpdateTradoRequest extends FormRequest
             $status[] = $item['id'];
         }
         return [
-            'kodetrado' => ['required', Rule::unique('trado')->whereNotIn('id', [$this->id])],
+            'kodetrado' => ['required', Rule::unique('trado')->whereNotIn('id', [$this->id])->where('statusaktif', 1)],
             'statusaktif' => [$ruleKeterangan, Rule::in($status)],
             'tahun' => [$ruleKeterangan, 'min:4', 'max:4', 'nullable'],
             'merek' => $ruleKeterangan,
-            'norangka' => [$ruleKeterangan, 'max:20', 'nullable', 'sometimes', Rule::unique('trado')->whereNotIn('id', [$this->id])],
-            'nomesin' =>  [$ruleKeterangan, 'max:20', 'nullable', 'sometimes', Rule::unique('trado')->whereNotIn('id', [$this->id])],
+            'norangka' => [$ruleKeterangan, 'max:20', 'nullable', 'sometimes', Rule::unique('trado')->whereNotIn('id', [$this->id])->where('statusaktif', 1)],
+            'nomesin' =>  [$ruleKeterangan, 'max:20', 'nullable', 'sometimes', Rule::unique('trado')->whereNotIn('id', [$this->id])->where('statusaktif', 1)],
             'nama' => [$ruleKeterangan],
-            'nostnk' =>  [$ruleKeterangan, 'max:50', 'nullable', 'sometimes', Rule::unique('trado')->whereNotIn('id', [$this->id])],
+            'nostnk' =>  [$ruleKeterangan, 'max:50', 'nullable', 'sometimes', Rule::unique('trado')->whereNotIn('id', [$this->id])->where('statusaktif', 1)],
             'alamatstnk' => [$ruleKeterangan],
             'statusjenisplat' => [$ruleKeterangan],
             'tglpajakstnk' => [$ruleKeterangan],
@@ -180,7 +180,7 @@ class UpdateTradoRequest extends FormRequest
             'jumlahsumbu' => [$ruleKeterangan, 'numeric', 'min:1', 'digits_between:1,2', 'nullable'],
             'jumlahroda' => [$ruleKeterangan, 'numeric', 'min:1', 'digits_between:1,2', 'nullable'],
             'model' => [$ruleKeterangan],
-            'nobpkb' => [$ruleKeterangan, 'max:15', 'nullable', 'sometimes', Rule::unique('trado')->whereNotIn('id', [$this->id])],
+            'nobpkb' => [$ruleKeterangan, 'max:15', 'nullable', 'sometimes', Rule::unique('trado')->whereNotIn('id', [$this->id])->where('statusaktif', 1)],
             'jumlahbanserap' => [$ruleKeterangan, 'numeric', 'min:1', 'digits_between:1,2', 'nullable'],
             'statusgerobak' => [$ruleKeterangan],
             'statusabsensisupir' => [$ruleKeterangan],
