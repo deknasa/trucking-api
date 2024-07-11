@@ -516,7 +516,8 @@ class ExportLaporanMingguanSupir extends Model
             $table->double('extralain', 15, 2)->nullable();
             $table->integer('id')->nullable();
             $table->string('invoice', 50)->nullable();
-            $table->string('notrip', 50)->nullable();
+            $table->longtext('notrip')->nullable();
+            $table->longtext('notripawal')->nullable();
         });
 
         $queryTempInvoice = DB::table('invoicedetail')->from(
@@ -528,7 +529,8 @@ class ExportLaporanMingguanSupir extends Model
                 DB::RAW("(a.nominalextra+a.nominalretribusi) as extralain"),
                 'b.id',
                 'a.nobukti',
-                'b.notrip'
+                'b.notrip',
+                db::raw("(case when charindex(',',suratpengantar_nobukti)=0 then suratpengantar_nobukti else  substring(suratpengantar_nobukti,0,charindex(',',suratpengantar_nobukti)) end) as notripawal")
             )
             ->join(DB::raw($tempOrderanTrucking . " as b "), 'a.orderantrucking_nobukti', 'b.nobukti');
 
@@ -539,6 +541,7 @@ class ExportLaporanMingguanSupir extends Model
             'id',
             'invoice',
             'notrip',
+            'notripawal',
         ], $queryTempInvoice);
 
         $formatric = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
@@ -566,6 +569,9 @@ class ExportLaporanMingguanSupir extends Model
 
         //     dd($data);
 
+        // dd(db::table($tempData)->where('jobtrucking','JT 0189/VI/2024')->get());
+        // dd(db::table($tempInvoice)->where('jobtrucking','JT 0189/VI/2024')->get());
+
 
         $data =  DB::table($tempData)->from(
             DB::raw($tempData . " as a")
@@ -584,7 +590,9 @@ class ExportLaporanMingguanSupir extends Model
                 'a.spempty',
                 'a.spfullempty',
                 'a.jobtrucking',
-                DB::raw("(case when isnull(c.invoice,'')='' then 0 else isnull(a.omset,0) end) as omset"),
+                DB::raw("(case when isnull(c.invoice,'')='' then 0 else 
+                        isnull(b.omset,0) 
+                        end) as omset"),
                 DB::raw("( case when isnull(c.invoice,'')='' then 0 else
                     (case when isnull(b.notrip,'')='' then isnull(e.omsettambahan,0) else isnull(b.extralain,0)  end) 
                     end) as omsettambahan"),
@@ -639,7 +647,7 @@ class ExportLaporanMingguanSupir extends Model
                 DB::raw("( case when isnull(c.invoice,'')='' then 0 else (isnull(a.omset,0) + isnull(e.omsettambahan,0)) end) as omsetsurabaya"),
                 DB::raw("isnull(a.keteranganBiayaTambahan,0) as keteranganbiayatambahan"),
             )
-            ->leftjoin(DB::raw($tempInvoice . " as b "), 'a.nobukti', 'b.notrip')
+            ->leftjoin(DB::raw($tempInvoice . " as b "), 'a.nobukti', 'b.notripawal')
             ->leftjoin(DB::raw($tempInvoice . " as c "), 'a.jobtrucking', 'c.jobtrucking')
             ->leftjoin(DB::raw($tempuangjalan . " as d "), 'a.nobuktiric', 'd.nobukti')
             ->leftjoin(DB::raw($temptrip . " as e "), 'a.nobukti', 'e.nobukti')
@@ -649,7 +657,7 @@ class ExportLaporanMingguanSupir extends Model
             ->orderBy('a.nopol')
             ->orderBy('a.tglbukti')
             ->orderBy('a.namasupir')
-
+            // ->whereraw("a.jobtrucking='JT 0189/VI/2024'")    
             ->get();
 
 
