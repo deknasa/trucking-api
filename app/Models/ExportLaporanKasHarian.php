@@ -1489,6 +1489,7 @@ class ExportLaporanKasHarian extends MyModel
                 DB::raw("a.keterangancoapengeluaran as perkiraanpengeluaran"),
                 DB::raw("isnull(a.nominalpenerimaan,0) as nominaldebet"),
                 DB::raw("isnull(a.nominalpengeluaran,0) as nominalkredit"),
+                DB::raw("'REKAP LAPORAN KAS' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul")
             )
             ->orderBy('a.urut', 'asc')

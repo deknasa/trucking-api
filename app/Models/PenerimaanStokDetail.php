@@ -324,17 +324,22 @@ class PenerimaanStokDetail extends MyModel
             $queryvulkan = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
                 ->select(
                     db::raw("a.id  as stok_id"),
-                    db::raw("((isnull(a.vulkanisirawal,0)+isnull(b.vulkan,0))-isnull(c.vulkan,0)) as vulkan"),
+                    // db::raw("((isnull(a.totalvulkanisir,0)+isnull(b.vulkan,0))-isnull(c.vulkan,0)) as vulkan"),
+                    db::raw("isnull(a.totalvulkanisir,0) as vulkan"),
                 )
-                ->leftjoin(db::raw($tempvulkanplus . " b "), 'a.id', 'b.stok_id')
-                ->leftjoin(db::raw($tempvulkanminus . " c "), 'a.id', 'c.stok_id')
+                // ->leftjoin(db::raw($tempvulkanplus . " b "), 'a.id', 'b.stok_id')
+                // ->leftjoin(db::raw($tempvulkanminus . " c "), 'a.id', 'c.stok_id')
                 ->where('a.statusreuse', $reuse);
 
             DB::table($tempvulkan)->insertUsing([
                 'stok_id',
                 'vulkan',
             ],  $queryvulkan);
-
+            // dd(
+            //     $queryvulkanplus->where('a.id',3233)->first(),
+            //     $queryvulkanminus->where('a.id',3233)->first(),
+            //     $queryvulkan->where('a.id',3233)->first()
+            // );
 
 
 
