@@ -1525,10 +1525,10 @@ class PengeluaranHeader extends MyModel
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($pengeluaranDetail->getTable()),
-            'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY PENGELUARAN DETAIL'),
+            'postingdari' => $data['postingdari'] ?? strtoupper('EDIT PENGELUARAN DETAIL'),
             'idtrans' =>  $pengeluaranHeaderLogTrail->id,
             'nobuktitrans' => $pengeluaranHeader->nobukti,
-            'aksi' => 'ENTRY',
+            'aksi' => 'EDIT',
             'datajson' => $pengeluaranDetails,
             'modifiedby' => auth('api')->user()->user,
         ]);
@@ -1554,7 +1554,7 @@ class PengeluaranHeader extends MyModel
             'tanpaprosesnobukti' => 1,
             'nobukti' => $pengeluaranHeader->nobukti,
             'tglbukti' => $pengeluaranHeader->tglbukti,
-            'postingdari' =>  $data['postingdari'] ?? "ENTRY PENGELUARAN",
+            'postingdari' =>  $data['postingdari'] ?? "EDIT PENGELUARAN",
             'statusapproval' => $statusApproval->id,
             'userapproval' => "",
             'tglapproval' => "",
@@ -1582,7 +1582,7 @@ class PengeluaranHeader extends MyModel
                 'tanpaprosesnobukti' => 1,
                 'nobukti' => $pengeluaranHeader->nobukti,
                 'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-                'postingdari' => $data['postingdari'] ?? "ENTRY PENGELUARAN",
+                'postingdari' => $data['postingdari'] ?? "EDIT PENGELUARAN",
                 'statusapproval' => $statusApproval->id,
                 'userapproval' => "",
                 'tglapproval' => "",

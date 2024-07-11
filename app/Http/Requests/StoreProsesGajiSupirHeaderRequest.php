@@ -53,7 +53,7 @@ class StoreProsesGajiSupirHeaderRequest extends FormRequest
                 'required',
                 new ValidasiHutangList($jumlahdetail),
                 new validasiRicProsesGajiSupir(),
-                new validasiUangJalanEBS()
+                // new validasiUangJalanEBS()
             ],
             'tgldari' => [
                 'required', 'date_format:d-m-Y',

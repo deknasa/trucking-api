@@ -185,9 +185,9 @@ class ExportLaporanMingguanSupir extends Model
                 'a.nobukti',
                 db::raw("sum(a.uangjalan) as nominaluangjalan"),
                 db::raw("sum(a.bbm) as nominaluangbbm"),
-                db::raw("sum(a.uangmakanharian) as nominaluangmakan"),
+                db::raw("sum(a.uangmakanharian + isnull(a.biayaextra,0)) as nominaluangmakan"),
             )
-            ->join(DB::raw($tempData . " as c "), 'a.nobukti', 'c.nobuktiric')
+            // ->join(DB::raw($tempData . " as c "), 'a.nobukti', 'c.nobuktiric')
             ->GroupBy('a.nobukti');
 
         DB::table($tempuangjalan)->insertUsing([

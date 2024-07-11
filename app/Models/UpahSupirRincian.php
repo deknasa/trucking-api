@@ -443,11 +443,11 @@ class UpahSupirRincian extends MyModel
                             DB::raw("'$getUpahPelabuhanKandang->tas_id' as tas_id")
                         )
                         ->whereRaw("isnull(a.statuslangsir,'') != 79");
-                        if ($statusPenyesuaian == 662) {
-                            $queryGetTarifForPelabuhanKandang->whereRaw("isnull(a.penyesuaian,'') != ''");
-                        } else {
-                            $queryGetTarifForPelabuhanKandang->whereRaw("isnull(a.penyesuaian,'') = ''");
-                        }
+                    if ($statusPenyesuaian == 662) {
+                        $queryGetTarifForPelabuhanKandang->whereRaw("isnull(a.penyesuaian,'') != ''");
+                    } else {
+                        $queryGetTarifForPelabuhanKandang->whereRaw("isnull(a.penyesuaian,'') = ''");
+                    }
 
                     DB::table($tempupahsupir)->insertUsing([
                         'id',
@@ -939,7 +939,7 @@ class UpahSupirRincian extends MyModel
                     DB::raw("(trim(b.kotadari)+' - '+trim(b.kotasampai)) as kotadarisampai"),
 
                 );
-                // ->Join(DB::raw($tempupahsupir . " as B1 "), 'B1.id', 'upahsupirrincian.upahsupir_id');
+            // ->Join(DB::raw($tempupahsupir . " as B1 "), 'B1.id', 'upahsupirrincian.upahsupir_id');
             if ($longtrip == 66 && $nobukti_tripasal == '') {
                 $query->leftJoin(DB::raw("$temptarif as B with (readuncommitted)"), 'B.id', 'upahsupirrincian.upahsupir_id');
             } else {
@@ -1042,7 +1042,9 @@ class UpahSupirRincian extends MyModel
                             DB::raw("$sampai_id as sampai_id"),
                             DB::raw("$zonaDari_id as zonadari_id"),
                             DB::raw("$zonaSampai_id as zonasampai_id")
-                        )->whereRaw("((a.zonadari_id = $zonaDari_id and a.zonasampai_id=$zonaSampai_id) or (a.zonadari_id = $zonaSampai_id and a.zonasampai_id=$zonaDari_id))");
+                        )
+                        ->whereRaw("isnull(a.statuslangsir,'') != 79")
+                        ->whereRaw("((a.zonadari_id = $zonaDari_id and a.zonasampai_id=$zonaSampai_id) or (a.zonadari_id = $zonaSampai_id and a.zonasampai_id=$zonaDari_id))");
 
                     DB::table($tempKotaUpah)->insertUsing([
                         'id',
@@ -1122,7 +1124,9 @@ class UpahSupirRincian extends MyModel
                             'a.id',
                             DB::raw("$dari_id as dari_id"),
                             DB::raw("$sampai_id as sampai_id")
-                        )->whereRaw("((a.kotadari_id = $dari_id and a.kotasampai_id=$sampai_id) or (a.kotadari_id = $sampai_id and a.kotasampai_id=$dari_id))");
+                        )
+                        ->whereRaw("isnull(a.statuslangsir,'') != 79")
+                        ->whereRaw("((a.kotadari_id = $dari_id and a.kotasampai_id=$sampai_id) or (a.kotadari_id = $sampai_id and a.kotasampai_id=$dari_id))");
                     DB::table($tempKotaUpah)->insertUsing([
                         'id',
                         'dari_id',
