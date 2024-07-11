@@ -17,6 +17,7 @@ class StatusOliTradoDetailController extends Controller
     public function index()
     {
         $trado_id=request()->trado_id ?? 0;
+        // dd(request()->trado_id);
 
 
         $statusOli = new StatusOliTradoDetail();

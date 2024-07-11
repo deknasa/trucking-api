@@ -16,6 +16,7 @@ class StatusOliTradoDetail extends MyModel
     {
 
         $trado_id = $trado_id ?? 0;
+        // dd($trado_id);
         $this->setRequestParameters();
 
         $datafilter = request()->filter ?? 0;
@@ -187,6 +188,8 @@ class StatusOliTradoDetail extends MyModel
     {
 
         // 
+
+        // dd($trado_id);
         $statuspergantianoli = 346;
 
         $tempstokoli = '##tempstokoli' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -265,10 +268,11 @@ class StatusOliTradoDetail extends MyModel
             ->select(
                 'a.tglbukti',
             )
-            ->where('a.trado_id', $trado_id);
+            ->where('a.trado_id', $trado_id)
+            ->first();
 
         if (isset($querycekpergantian)) {
-            $tglawal = $querycekpergantian->first()->tglbukti ?? '1900-01-01';
+            $tglawal = $querycekpergantian->tglbukti ?? '1900-01-01';
         } else {
             $tglawal = $tglsaldo;
 
@@ -299,9 +303,11 @@ class StatusOliTradoDetail extends MyModel
 
         ], $queryjarak);
 
+        // dd(db::table($tempjarak)->get());
+
         $tempjarakrekap = '##tempjarakrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempjarakrekap, function ($table) {
-            $table->dateTime('tglbukti')->nullable();
+            $table->date('tglbukti')->nullable();
             $table->double('jarak', 15, 2)->nullable();
             $table->double('jaraksaldo', 15, 2)->nullable();
         });
@@ -332,20 +338,26 @@ class StatusOliTradoDetail extends MyModel
 
         $tgl2 = date('Y-m-d');
 
+        // dd(db::table($tempjarakrekap)->get());
+        // dd($tgl1,$tgl2);
         while ($tgl1 <= $tgl2) {
 
             $querycek = db::table($tempjarakrekap)->from(db::raw($tempjarakrekap . " a "))
                 ->select(
                     'a.tglbukti'
                 )
-                ->where('a.tglbukti', $tgl1);
+                ->where('a.tglbukti', $tgl1)
+                ->first();
             if (!isset($querycek)) {
+                $tglkurang=date('Y-m-d', strtotime($tgl1 . ' -1 day'));
                 $jarakold = db::table($tempjarakrekap)->from(db::raw($tempjarakrekap . " a "))
                     ->select(
-                        'a.tglbukti',
+                        'a.jaraksaldo',
                     )
-                    ->where('a.tglbukti', date('Y-m-d', strtotime($tgl1 . ' -1 day')))
-                    ->first()->tglbukti ?? '1900-01-01';
+                    ->where('a.tglbukti',$tglkurang )
+                    ->first()->jaraksaldo ?? 0;
+
+                    // dump($tglkurang,$tgl1, $jarakold );
 
                 DB::table($tempjarakrekap)->insert(
                     [
@@ -358,7 +370,7 @@ class StatusOliTradoDetail extends MyModel
 
             $tgl1 = date('Y-m-d', strtotime($tgl1 . ' +1 day'));
         }
-
+        // dd('test');
         $temptambah = '##temptambah' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temptambah, function ($table) {
             $table->id();
@@ -372,6 +384,7 @@ class StatusOliTradoDetail extends MyModel
             $table->double('selisih', 15, 2)->nullable();
         });
 
+        // dd(db::table($tempjarakrekap)->get());
        
         $querytambah = db::table("pengeluaranstokdetail")->from(db::raw("pengeluaranstokdetail a "))
             ->select(
@@ -393,7 +406,7 @@ class StatusOliTradoDetail extends MyModel
             ->orderby('b.tglbukti', 'asc');
 
             
-            // dd($querytambah->get());
+            //  dd($querytambah->get());
         DB::table($temptambah)->insertUsing([
             'trado_id',
             'tglbukti',
@@ -468,6 +481,7 @@ class StatusOliTradoDetail extends MyModel
 
 
         // 
+        // dd($query->get());
         return $query;
     }
 }
