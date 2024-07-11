@@ -275,10 +275,10 @@ class LaporanArusDanaPusat extends MyModel
             ['cabang_id' => 5, 'coa' => '05.03.01.05',]
         );
         DB::table($tempcabang)->insert(
-            ['cabang_id' => 6, 'coa' => '05.03.01.06',]
+            ['cabang_id' => 8, 'coa' => '05.03.01.06',]
         );
         DB::table($tempcabang)->insert(
-            ['cabang_id' => 7, 'coa' => '05.03.01.07',]
+            ['cabang_id' => 9, 'coa' => '05.03.01.07',]
         );
         
 

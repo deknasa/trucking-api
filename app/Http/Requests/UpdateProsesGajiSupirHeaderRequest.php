@@ -58,7 +58,7 @@ class UpdateProsesGajiSupirHeaderRequest extends FormRequest
             'bank' => [
                 'required', new ValidasiHutangList($jumlahdetail),
                 new validasiRicProsesGajiSupir(),
-                new validasiUangJalanEBS()
+                // new validasiUangJalanEBS()
             ],
             'tgldari' => [
                 'required', 'date_format:d-m-Y',

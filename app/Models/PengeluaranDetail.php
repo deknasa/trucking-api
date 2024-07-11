@@ -107,7 +107,7 @@ class PengeluaranDetail extends MyModel
                 'akunpusat.keterangancoa as ketcoadebet',
                 DB::raw("(case when year(cast(pengeluarandetail.bulanbeban as datetime))='1900' then '' else format(pengeluarandetail.bulanbeban,'yyyy-MM-dd') end) as bulanbeban"),
             )
-            ->join(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarandetail.coadebet', 'akunpusat.coa')
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarandetail.coadebet', 'akunpusat.coa')
             ->where("pengeluarandetail.pengeluaran_id", $id)
             ->orderBy('pengeluarandetail.id');
 

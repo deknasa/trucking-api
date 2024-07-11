@@ -102,7 +102,7 @@ class ListTrip extends MyModel
                 goto selesai;
             }
         }
-        $cekJob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('nobukti_tripasal', $nobukti)->where('dari_id', '!=',$idkandang)->first();
+        $cekJob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('nobukti_tripasal', $nobukti)->where('dari_id', '!=', $idkandang)->first();
         if ($cekJob != '') {
 
             $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
@@ -589,6 +589,7 @@ class ListTrip extends MyModel
             ->where('a.text', '=', 'TANGKI')
             ->first();
 
+        $idkandang = (new Parameter())->cekText('KANDANG', 'KANDANG') ?? 0;
         $data['upahtangki_id'] = 0;
         $data['tariftangki_id'] = 0;
         $statusperalihan = DB::table('parameter')->from(
@@ -616,10 +617,30 @@ class ListTrip extends MyModel
             // $data['upah_id'] = '';
             // $data['tariftangki_id'] = $data['tarifrincian_id'];
             // $data['tarifrincian_id'] = '';
+            $getJobtrucking = OrderanTrucking::from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
+            $orderan = [
+                'container_id' => $data['container_id'],
+                'agen_id' => $data['agen_id'],
+                'jenisorder_id' => $data['jenisorder_id'],
+                'jenisorderemkl_id' => $getJobtrucking['jenisorderemkl_id'],
+                'pelanggan_id' => $data['pelanggan_id'],
+                'nojobemkl' => $getJobtrucking['nojobemkl'],
+                'nocont' => $getJobtrucking['nocont'] ?? '',
+                'noseal' => $getJobtrucking['noseal'] ?? '',
+                'nojobemkl2' => $getJobtrucking['nojobemkl2'] ?? '',
+                'nocont2' => $getJobtrucking['nocont2'] ?? '',
+                'noseal2' => $getJobtrucking['noseal2'] ?? '',
+                'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
+                'gandengan_id' => $data['gandengan_id'],
+                'statusperalihan' => $statusperalihan->id,
+                'inputtripmandor' =>  'true',
+            ];
+
+            $orderanTrucking = (new OrderanTrucking())->processUpdate($getJobtrucking, $orderan);
             goto trip;
         }
         if ($data['statuslangsir'] == $statuslangsir->id) {
-            
+
             $getJobtrucking = OrderanTrucking::from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
             $orderan = [
                 'container_id' => $data['container_id'],
@@ -663,34 +684,36 @@ class ListTrip extends MyModel
                 $getId = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
                 (new OrderanTrucking())->processDestroy($getId->id);
             }
+            if ($data['dari_id'] != $idkandang) {
 
-            $orderan = [
-                'tglbukti' => $data['tglbukti'],
-                'container_id' => $data['container_id'],
-                'agen_id' => $data['agen_id'],
-                'jenisorder_id' => $data['jenisorder_id'],
-                'pelanggan_id' => $data['pelanggan_id'],
-                'tarifrincian_id' => $data['tarifrincian_id'],
-                'statusjeniskendaraan' => $data['statusjeniskendaraan'],
-                'nojobemkl' =>  '',
-                'nocont' =>   '',
-                'noseal' =>  '',
-                'nojobemkl2' => '',
-                'nocont2' => '',
-                'noseal2' => '',
-                'statuslangsir' => $statuslangsir->id,
-                'statusperalihan' => $statusperalihan->id,
-                'gandengan_id' => $data['gandengan_id'],
-                'tglbataseditorderantrucking' => $tglBatasEdit,
-                'inputtripmandor' =>  '1',
-            ];
-            $orderanTrucking = (new OrderanTrucking())->processStore($orderan);
-            $trip->jobtrucking = $orderanTrucking->nobukti;
-            goto trip;
+                $orderan = [
+                    'tglbukti' => $data['tglbukti'],
+                    'container_id' => $data['container_id'],
+                    'agen_id' => $data['agen_id'],
+                    'jenisorder_id' => $data['jenisorder_id'],
+                    'pelanggan_id' => $data['pelanggan_id'],
+                    'tarifrincian_id' => $data['tarifrincian_id'],
+                    'statusjeniskendaraan' => $data['statusjeniskendaraan'],
+                    'nojobemkl' =>  '',
+                    'nocont' =>   '',
+                    'noseal' =>  '',
+                    'nojobemkl2' => '',
+                    'nocont2' => '',
+                    'noseal2' => '',
+                    'statuslangsir' => $statuslangsir->id,
+                    'statusperalihan' => $statusperalihan->id,
+                    'gandengan_id' => $data['gandengan_id'],
+                    'tglbataseditorderantrucking' => $tglBatasEdit,
+                    'inputtripmandor' =>  '1',
+                ];
+                $orderanTrucking = (new OrderanTrucking())->processStore($orderan);
+                $trip->jobtrucking = $orderanTrucking->nobukti;
+                goto trip;
+            }
         }
 
         if ($trip->statuscontainer_id != 3) {
-            if ($trip->dari_id != 1) {
+            if ($trip->dari_id != 1 && $data['dari_id'] != $idkandang) {
                 $cek = [$trip->agen_id, $trip->jenisorder_id, $trip->statuscontainer_id, $trip->container_id, $trip->upah_id, $trip->pelanggan_id];
 
                 $toCek = [$data['agen_id'], $data['jenisorder_id'], $data['statuscontainer_id'], $data['container_id'], $data['upah_id'], $data['pelanggan_id']];
@@ -1092,7 +1115,7 @@ class ListTrip extends MyModel
         ];
         // dd($dataSP);
         $suratPengantar = (new SuratPengantar())->processUpdate($trip, $dataSP);
-        
+
         $jenisRitasi = false;
         foreach ($data['jenisritasi_id'] as $value) {
             if ($value != null || $value != 0) {

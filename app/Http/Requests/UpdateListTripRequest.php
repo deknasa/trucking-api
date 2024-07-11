@@ -354,7 +354,7 @@ class UpdateListTripRequest extends FormRequest
                     'absensidetail_id' => ['required', 'numeric', 'min:1', new ExistAbsensiSupirDetail()],
                 ];
             }
-            
+
             $parameter = new Parameter();
             $dataPenyesuaian = $parameter->getcombodata('STATUS PENYESUAIAN', 'STATUS PENYESUAIAN');
             $dataPenyesuaian = json_decode($dataPenyesuaian, true);
@@ -860,7 +860,7 @@ class UpdateListTripRequest extends FormRequest
                         // "lokasibongkarmuat" => "required",
                         "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
                         "upah" => ["required", new ExistNominalUpahSupir(), new validasiTripDipakaiKeKandang(), new ValidasiTripGudangSama($dataTripAsal)],
-                        
+
                         'statuspenyesuaian' => ['required', Rule::in($statusPenyesuaian)],
                     ];
                 } else {
@@ -897,7 +897,7 @@ class UpdateListTripRequest extends FormRequest
                         // "lokasibongkarmuat" => "required",
                         "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
                         "upah" => ["required", new ExistNominalUpahSupir(), new validasiTripDipakaiKeKandang(),  new ValidasiTripGudangSama($dataTripAsal)],
-                        
+
                         'statuspenyesuaian' => ['required', Rule::in($statusPenyesuaian)],
                     ];
                 }
@@ -940,7 +940,7 @@ class UpdateListTripRequest extends FormRequest
                         // "lokasibongkarmuat" => "required",
                         "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
                         "upah" => ["required", new cekUpahSupirEditTrip($idUpahSupir), new ExistNominalUpahSupir(), new validasiTripDipakaiKeKandang(), new ValidasiTripGudangSama($dataTripAsal)],
-                        
+
                         'statuspenyesuaian' => ['required', Rule::in($statusPenyesuaian)],
                     ];
                 } else {
@@ -977,8 +977,8 @@ class UpdateListTripRequest extends FormRequest
                         "statuslangsir" => "required",
                         // "lokasibongkarmuat" => "required",
                         "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
-                        "upah" => ["required", new cekUpahSupirEditTrip($idUpahSupir), new ExistNominalUpahSupir(),new validasiTripDipakaiKeKandang(), new ValidasiTripGudangSama($dataTripAsal)],
-                        
+                        "upah" => ["required", new cekUpahSupirEditTrip($idUpahSupir), new ExistNominalUpahSupir(), new validasiTripDipakaiKeKandang(), new ValidasiTripGudangSama($dataTripAsal)],
+
                         'statuspenyesuaian' => ['required', Rule::in($statusPenyesuaian)],
                     ];
                 }
@@ -1001,11 +1001,14 @@ class UpdateListTripRequest extends FormRequest
                 }
             }
 
+            $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
             $rulesJobTrucking = [];
             if ((request()->statuslongtrip == 66) && (request()->statuslangsir == 80) && (request()->statusgudangsama == 205)) {
-                $rulesJobTrucking = [
-                    'jobtrucking' => ['required_unless:dari_id,1']
-                ];
+                if (request()->dari_id != $idkandang && request()->nobukti_tripasal == '') {
+                    $rulesJobTrucking = [
+                        'jobtrucking' => ['required_unless:dari_id,1']
+                    ];
+                }
             }
             $rulesId = [
                 'id' => new DestroyListTrip()
