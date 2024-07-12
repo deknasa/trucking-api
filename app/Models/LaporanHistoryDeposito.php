@@ -27,6 +27,8 @@ class LaporanHistoryDeposito extends MyModel
     public function getReport($supirdari_id)
     {
 
+   
+
         $getJudul = DB::table('parameter')
             ->select('text')
             ->where('grp', 'JUDULAN LAPORAN')
@@ -57,7 +59,7 @@ class LaporanHistoryDeposito extends MyModel
             ])
             ->join(DB::raw("penerimaantruckingdetail AS b with (readuncommitted)"), 'a.nobukti', '=', 'b.nobukti')
             ->where('a.penerimaantrucking_id', '=', $pidpenerimaantrucking)
-            ->where('a.supir_id', '=', $supirdari_id)
+            ->where('b.supir_id', '=', $supirdari_id)
             ->groupBy('a.nobukti');
 
         DB::table($Temppenerimaanpengeluaran)->insertUsing([
