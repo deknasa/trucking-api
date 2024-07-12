@@ -41,6 +41,7 @@ class MandorAbsensiSupirController extends Controller
                 'records' => $mandorabsensisupir->totalRows,
                 'tradosupir' => $mandorabsensisupir->isTradoMilikSupir(),
                 'defaultJenis' => $mandorabsensisupir->defaultJenis(),
+                'activeKolomJenisKendaraan' => $mandorabsensisupir->activeKolomJenisKendaraan(),
             ]
         ]);
     }
