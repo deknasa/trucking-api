@@ -18,11 +18,16 @@ class StatusOliTradoDetailController extends Controller
     {
         $trado_id=request()->trado_id ?? 0;
         // dd(request()->trado_id);
-
-
         $statusOli = new StatusOliTradoDetail();
+
+        if (request()->status =="GANTI") {
+            $data = $statusOli->get($trado_id);
+        }else{
+            $data = [];
+        }
+
         return response([
-            'data' => $statusOli->get($trado_id),
+            'data' => $data,
             'attributes' => [
                 'totalRows' => $statusOli->totalRows,
                 'totalPages' => $statusOli->totalPages
