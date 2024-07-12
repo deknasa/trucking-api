@@ -59,6 +59,7 @@ class StatusOliTradoDetail extends MyModel
             Schema::create($temtabel, function (Blueprint $table) {
                 $table->id();
                 $table->integer('trado_id')->nullable();
+                $table->string('kodetrado')->nullable();
                 $table->dateTime('tglbukti')->nullable();
                 $table->integer('stok_id')->nullable();
                 $table->string('nobukti', 100)->nullable();
@@ -73,6 +74,7 @@ class StatusOliTradoDetail extends MyModel
 
             DB::table($temtabel)->insertUsing([
                 'trado_id',
+                'kodetrado',
                 'tglbukti',
                 'stok_id',
                 'nobukti',
@@ -104,6 +106,7 @@ class StatusOliTradoDetail extends MyModel
         $query = DB::table($temtabel)->from(DB::raw($temtabel . " a "))
             ->select(
                 'a.trado_id',
+                'a.kodetrado',
                 'a.tglbukti',
                 'a.stok_id',
                 'a.nobukti',
@@ -463,6 +466,7 @@ class StatusOliTradoDetail extends MyModel
         $query = db::table($temptambahrekap)->from(db::raw($temptambahrekap . " a "))
             ->select(
                 'a.trado_id',
+                'd.kodetrado',
                 'a.tglbukti',
                 'a.stok_id',
                 'a.nobukti',
@@ -477,6 +481,7 @@ class StatusOliTradoDetail extends MyModel
             )
             ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
             ->join(db::raw("satuan c with (readuncommitted)"), 'b.satuan_id', 'c.id')
+            ->leftJoin(db::raw("trado d with (readuncommitted)"), 'a.trado_id', 'd.id')
             ->orderBy('a.id', 'asc');
 
 
