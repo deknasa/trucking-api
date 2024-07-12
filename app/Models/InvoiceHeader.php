@@ -610,7 +610,7 @@ class InvoiceHeader extends MyModel
             ->select(DB::raw("nobukti_tripasal as nobukti"))
             ->whereRaw("isnull(nobukti_tripasal,'') != ''")
             ->where('agen_id', $request->agen_id)
-            ->where('jenisorder_id', $request->jenisorder_id)
+            // ->where('jenisorder_id', $request->jenisorder_id)
             ->where('statusjeniskendaraan', $statusjeniskendaraan)
             ->whereRaw("tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'");
         DB::table($temptripasal)->insertUsing([
