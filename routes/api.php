@@ -596,6 +596,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('customer/approvalnonaktif', [CustomerController::class, 'approvalnonaktif']);
     Route::post('gandengan/approvalnonaktif', [GandenganController::class, 'approvalnonaktif']);
     Route::post('trado/approvalnonaktif', [TradoController::class, 'approvalnonaktif']);
+    Route::post('trado/approvalaktif', [TradoController::class, 'approvalaktif']);
     Route::post('supplier/approvalnonaktif', [SupplierController::class, 'approvalnonaktif']);
     Route::post('shipper/approvalnonaktif', [ShipperController::class, 'approvalnonaktif']);
     Route::post('orderantrucking/{id}/{aksi}/cekValidasi', [OrderanTruckingController::class, 'cekValidasi'])->name('orderantrucking.cekValidasi')->whereNumber('id');
