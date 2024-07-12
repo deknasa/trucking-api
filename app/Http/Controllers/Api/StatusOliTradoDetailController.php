@@ -20,7 +20,7 @@ class StatusOliTradoDetailController extends Controller
         // dd(request()->trado_id);
         $statusOli = new StatusOliTradoDetail();
 
-        if (request()->status =="GANTI") {
+        if (request()->status != "GANTI") {
             $data = $statusOli->get($trado_id);
         }else{
             $data = [];
