@@ -1624,7 +1624,7 @@ class UpdateSuratPengantarRequest extends FormRequest
                 ];
             }
 
-            if ((request()->dari_id == 1 && request()->sampai_id == 103) || (request()->dari_id == 103 && request()->sampai_id == 1) || (request()->statuslongtrip == 65)) {
+            if ((request()->dari_id == 1 && request()->sampai_id == 103) || (request()->dari_id == 103 && request()->sampai_id == 1) || (request()->statuslongtrip == 65) || (request()->statuslongtrip == 66 && request()->nobukti_tripasal != '')) {
                 $rulestarifrincian_id = [
                     'tarifrincian' => [
                         'nullable',
