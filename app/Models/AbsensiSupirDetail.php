@@ -256,6 +256,13 @@ class AbsensiSupirDetail extends MyModel
                     "$this->table.absensi_id",
                     "jeniskendaraan.text as statusjeniskendaraan",
                     "trado.statusgerobak",
+                    "e.nobukti as pengembaliankasgantung_nobukti",
+                    "g.nobukti as penerimaan_nobukti",
+                    "g.bank_id as bank_penerimaan",
+                    db::raw("cast((format(e.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpkgt"),
+                    db::raw("cast(cast(format((cast((format(e.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpkgt"),
+                    db::raw("cast((format(g.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaan"),
+                    db::raw("cast(cast(format((cast((format(g.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaan"),
                     DB::raw("left(jam, 5)"),
                     DB::raw("isnull(c.jumlah,0) as jumlahtrip"),
                     DB::raw("(CASE WHEN isnull($this->table.statustambahantrado,0)=0 THEN '' ELSE (CASE WHEN $this->table.statustambahantrado=655 THEN tradotambahan.text ELSE '' end) end) as statustambahantrado"),
@@ -274,6 +281,18 @@ class AbsensiSupirDetail extends MyModel
                         $join->on("$this->table.trado_id", "=", "c.trado_id");
                         $join->on("$this->table.statusjeniskendaraan", "=", "c.statusjeniskendaraan");
                     })
+                    ->leftJoin('gajisupiruangjalan as b', function($join) {
+                        $join->on($this->table.'.nobukti', '=', 'b.absensisupir_nobukti')
+                             ->on($this->table.'.supir_id', '=', 'b.supir_id');
+                    })
+                    ->leftJoin('prosesgajisupirdetail as f', function($join) {
+                        $join->on('b.gajisupir_nobukti', '=', 'f.gajisupir_nobukti')
+                             ->on($this->table.'.supir_id', '=', 'f.supir_id')
+                             ->on($this->table.'.trado_id', '=', 'f.trado_id');
+                    })
+                    ->leftJoin('prosesgajisupirheader as d', 'f.prosesgajisupir_id', '=', 'd.id')
+                    ->leftJoin('pengembaliankasgantungheader as e', 'd.pengembaliankasgantung_nobukti', '=', 'e.nobukti')
+                    ->leftJoin('penerimaanheader as g', 'e.penerimaan_nobukti', '=', 'g.nobukti')
                     ->where('trado.statusabsensisupir', $statusabsensi);
 
                 if (request()->from == 'tidaklengkap') {
