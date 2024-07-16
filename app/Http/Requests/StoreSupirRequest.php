@@ -75,6 +75,35 @@ class StoreSupirRequest extends FormRequest
             foreach ($dataPostingTnl as $item) {
                 $statusPostingTnl[] = $item['id'];
             }
+            $statuspostingtnl = $this->statuspostingtnl;
+            $rulesStatusPostingTnl = [];
+            if ($statuspostingtnl != null) {
+                $rulesStatusPostingTnl = [
+                    'statuspostingtnl' => ['required', Rule::in($statusPostingTnl)]
+                ];
+            } else if ($statuspostingtnl == null && $this->statuspostingtnlnama != '') {
+                $rulesStatusPostingTnl = [
+                    'statuspostingtnl' => ['required', Rule::in($statusPostingTnl)]
+                ];
+            }
+
+            $parameterStatusAktif = new Parameter();
+            $data = $parameterStatusAktif->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+            $data = json_decode($data, true);
+            foreach ($data as $item) {
+                $status[] = $item['id'];
+            }
+            $statusaktif = $this->statusaktif;
+            $rulesStatusAktif = [];
+            if ($statusaktif != null) {
+                $rulesStatusAktif = [
+                    'statusaktif' => ['required', Rule::in($status)]
+                ];
+            } else if ($statusaktif == null && $this->statusaktifnama != '') {
+                $rulesStatusAktif = [
+                    'statusaktif' => ['required', Rule::in($status)]
+                ];
+            }
 
             $ruleKeterangan = Rule::requiredIf(function () {
                 $noktp = request()->noktp;
@@ -138,7 +167,7 @@ class StoreSupirRequest extends FormRequest
                 'namaalias' => [$ruleKeterangan],
                 'kota' => [$ruleKeterangan],
                 'telp' => [$ruleKeterangan, new ValidasiNoHPSupir, 'min:8', 'max:50', 'nullable'],
-                'statusaktif' => [$ruleKeterangan, 'int', 'exists:parameter,id'],
+                'statusaktifnama' => ['required'],
                 'tglmasuk' => 'required',
                 'tglexpsim' => [$ruleKeterangan],
                 'nosim' => [$ruleKeterangan, new ValidasiSimSupir(), 'min:12', 'max:15', 'nullable'],
@@ -149,7 +178,7 @@ class StoreSupirRequest extends FormRequest
                     'after_or_equal:' . $tglbatasawal,
                     'before_or_equal:' . $tglbatasakhir, 'nullable'
                 ],
-                'statuspostingtnl' => ['required', Rule::in($statusPostingTnl)],
+                'statuspostingtnlnama' => ['required'],
                 'tglterbitsim' => [$ruleKeterangan],
                 'pemutihansupir_nobukti' => $rulePemutihan,
             ];
@@ -191,7 +220,9 @@ class StoreSupirRequest extends FormRequest
             }
             $rules = array_merge(
                 $rules,
-                $rulesGambar
+                $rulesGambar,
+                $rulesStatusAktif,
+                $rulesStatusPostingTnl
             );
         } else {
             $rules = [];
@@ -207,7 +238,7 @@ class StoreSupirRequest extends FormRequest
             'kota' => 'Kota',
             'namaalias' => 'nama alias',
             'telp' => 'Telp',
-            'statusaktif' => 'Status Aktif',
+            'statusaktifnama' => 'Status Aktif',
             'tglmasuk' => 'Tanggal Masuk',
             'tglexpsim' => 'Tanggal Exp SIM',
             'nosim' => 'No SIM',

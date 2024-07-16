@@ -161,11 +161,12 @@ class TripTangkiController extends Controller
         }
     }
 
-    public function show(TripTangki $triptangki)
+    public function show($id)
     {
+        $tripTangki = new TripTangki();
         return response([
             'status' => true,
-            'data' => $triptangki
+            'data' => $tripTangki->findAll($id)
         ]);
     }
 

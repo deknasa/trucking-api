@@ -13,7 +13,7 @@ class Tarif extends MyModel
     use HasFactory;
 
     protected $table = 'tarif';
-    
+
     public $detailTasId;
 
     protected $casts = [
@@ -521,40 +521,40 @@ class Tarif extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
             $table->unsignedBigInteger('statussistemton')->nullable();
+            $table->string('statussistemtonnama', 300)->nullable();
             $table->unsignedBigInteger('statuspenyesuaianharga')->nullable();
             $table->unsignedBigInteger('statuspostingtnl')->nullable();
             $table->unsignedBigInteger('statuslangsir')->nullable();
             $table->string('statuslangsirnama')->nullable();
         });
 
-        $status = Parameter::from(
+        $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
 
-        $iddefaultstatusaktif = $status->id ?? 0;
-
-        $status = Parameter::from(
+        $statussistemton = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'SISTEM TON')
             ->where('subgrp', '=', 'SISTEM TON')
             ->where('default', '=', 'YA')
             ->first();
 
-        $iddefaultstatussistemton = $status->id ?? 0;
-
-        $status = Parameter::from(
+        $statuspenyesuaianharga = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
@@ -565,9 +565,7 @@ class Tarif extends MyModel
             ->where('default', '=', 'YA')
             ->first();
 
-        $iddefaultstatuspenyesuaianharga = $status->id ?? 0;
-
-        $status = Parameter::from(
+        $statuspostingtnl = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
@@ -597,10 +595,12 @@ class Tarif extends MyModel
 
         DB::table($tempdefault)->insert(
             [
-                "statusaktif" => $iddefaultstatusaktif,
-                "statussistemton" => $iddefaultstatussistemton,
-                "statuspenyesuaianharga" => $iddefaultstatuspenyesuaianharga,
-                "statuspostingtnl" => $iddefaultstatuspostingtnl,
+                "statusaktif" => $statusaktif->id ?? 0,
+                "statusaktifnama" => $statusaktif->text ?? "",
+                "statussistemton" => $statussistemton->id ?? 0,
+                "statussistemtonnama" => $statussistemton->text ?? "",
+                "statuspenyesuaianharga" => $statuspenyesuaianharga->id ?? 0,
+                "statuspostingtnl" => $statuspostingtnl->id ?? 0,
                 "statuslangsir" =>$iddefaultstatusLangsir,
                 "statuslangsirnama" =>$namadefaultstatusLangsir,
             ]
@@ -611,7 +611,9 @@ class Tarif extends MyModel
         )
             ->select(
                 'statusaktif',
+                'statusaktifnama',
                 'statussistemton',
+                'statussistemtonnama',
                 'statuspenyesuaianharga',
                 'statuspostingtnl',
                 'statuslangsir',
@@ -633,7 +635,7 @@ class Tarif extends MyModel
                 'parent.tujuan as parent',
                 // DB::raw("(case when tarif.upahsupir_id=0 then null else tarif.upahsupir_id end) as upahsupir_id"),
                 // "$tempUpahsupir.kotasampai_id as upah",     
-                
+
                 db::raw("isnull(kotadari.keterangan,'')+(case when isnull(kotasampai.keterangan,'')='' then '' else ' - ' +isnull(kotasampai.keterangan,'') end)+ 
                 (case when isnull(upahsupir.penyesuaian,'')='' then '' else ' ( ' +isnull(upahsupir.penyesuaian,'')+ ' ) ' end) as upah
                 "),
@@ -656,7 +658,9 @@ class Tarif extends MyModel
                 'tarif.statuslangsir',
                 'statuslangsir.text as statuslangsirnama',
                 DB::raw("(case when tarif.statuspostingtnl IS NULL then 0 else tarif.statuspostingtnl end) as statuspostingtnl"),
-                'tarif.keterangan'
+                'tarif.keterangan',
+                'param_statusaktif.text as statusaktifnama',
+                'param_statussistemton.text as statussistemtonnama',
             )
             ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
@@ -664,6 +668,8 @@ class Tarif extends MyModel
             ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
             
             ->leftJoin(DB::raw("parameter as statuslangsir with (readuncommitted)"), 'tarif.statuslangsir', 'statuslangsir.id')
+            ->leftJoin(DB::raw("parameter as param_statusaktif with (readuncommitted)"), 'tarif.statusaktif', '=', 'param_statusaktif.id')
+            ->leftJoin(DB::raw("parameter as param_statussistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'param_statussistemton.id')
             ->leftJoin(DB::raw("upahsupir as upahsupir with (readuncommitted)"), 'upahsupir.tarif_id', '=', 'tarif.id')
             ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
             ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
@@ -826,7 +832,7 @@ class Tarif extends MyModel
         return $data;
     }
 
-    public function processStore(array $data, Tarif $tarif,$connecTnl = null): Tarif
+    public function processStore(array $data, Tarif $tarif, $connecTnl = null): Tarif
     {
         // $tarif = new Tarif();
         $tarif->parent_id = $data['parent_id'] ?? '';
@@ -885,8 +891,8 @@ class Tarif extends MyModel
                 'tarif_id' => $tarif->id,
                 'container_id' => $data['container_id'][$i],
                 'nominal' => $data['nominal'][$i],
-                'tas_id' => $data['detail_tas_id'][$i]??0,
-            ],$tarifRincian);
+                'tas_id' => $data['detail_tas_id'][$i] ?? 0,
+            ], $tarifRincian);
             $tarif->detailTasId[] = $datadetails->id;
             $detaillog[] = $datadetails->toArray();
         }
@@ -924,7 +930,7 @@ class Tarif extends MyModel
         return $tarif;
     }
 
-    public function processUpdate(Tarif $tarif, array $data,$connecTnl = null): Tarif
+    public function processUpdate(Tarif $tarif, array $data, $connecTnl = null): Tarif
     {
 
         $tarif->parent_id = $data['parent_id'] ?? '';
@@ -988,9 +994,9 @@ class Tarif extends MyModel
                 'detail_id' => $data['detail_id'][$i],
                 'container_id' => $data['container_id'][$i],
                 'nominal' => $data['nominal'][$i],
-                'tas_id' => $data['detail_tas_id'][$i]??0,
+                'tas_id' => $data['detail_tas_id'][$i] ?? 0,
 
-            ],$tarifRincian);
+            ], $tarifRincian);
             $tarif->detailTasId[] = $datadetails->id;
             $detaillog[] = $datadetails->toArray();
         }

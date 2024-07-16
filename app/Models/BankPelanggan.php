@@ -122,11 +122,34 @@ class BankPelanggan extends MyModel
         return $data;
     }
 
+    public function findAll($id) 
+    {
+        $this->setRequestParameters();
+
+        $data = BankPelanggan::from(DB::raw("bankpelanggan with (readuncommitted)"))
+            ->select(
+                'bankpelanggan.id',
+                'bankpelanggan.kodebank',
+                'bankpelanggan.namabank',
+                'bankpelanggan.keterangan',
+                'bankpelanggan.statusaktif',
+                'parameter.text as statusaktifnama',
+                'bankpelanggan.modifiedby',
+                'bankpelanggan.created_at',
+                'bankpelanggan.updated_at'
+            )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'bankpelanggan.statusaktif', '=', 'parameter.id')
+            ->where('bankpelanggan.id', $id)->first();
+
+        return $data;
+    }
+
     public function default()
     {
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
         });
 
         $statusaktif = Parameter::from(
@@ -134,19 +157,21 @@ class BankPelanggan extends MyModel
         )
             ->select(
                 'memo',
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
-        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id ?? 0, "statusaktifnama" => $statusaktif->text ?? ""]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
             ->select(
-                'statusaktif'
+                'statusaktif',
+                'statusaktifnama'
             );
 
         $data = $query->first();

@@ -198,6 +198,34 @@ class Pelanggan extends MyModel
         return $data;
     }
 
+    public function findAll($id)
+    {
+        $this->setRequestParameters();
+
+        $data = Pelanggan::from(DB::raw("pelanggan with (readuncommitted)"))
+            ->select(
+                'pelanggan.id',
+                'pelanggan.kodepelanggan',
+                'pelanggan.namapelanggan',
+                'pelanggan.namakontak',
+                'pelanggan.keterangan',
+                'pelanggan.telp',
+                'pelanggan.alamat',
+                'pelanggan.alamat2',
+                'pelanggan.kota',
+                'pelanggan.kodepos',
+                'pelanggan.modifiedby',
+                'parameter.memo as statusaktif',
+                'parameter.text as statusaktifnama',
+                'pelanggan.created_at',
+                'pelanggan.updated_at',
+            )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pelanggan.statusaktif', '=', 'parameter.id')
+            ->where('pelanggan.id', $id)->first();
+
+        return $data;
+    }
+
     public function selectColumns($query)
     {
         return $query->from(
@@ -249,7 +277,7 @@ class Pelanggan extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'kodepelanggan', 'namapelanggan','namakontak', 'keterangan', 'telp', 'alamat', 'alamat2', 'kota', 'kodepos', 'modifiedby', 'statusaktif', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'kodepelanggan', 'namapelanggan', 'namakontak', 'keterangan', 'telp', 'alamat', 'alamat2', 'kota', 'kodepos', 'modifiedby', 'statusaktif', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -263,36 +291,32 @@ class Pelanggan extends MyModel
 
     public function default()
     {
-
-
-
-
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
         });
 
         $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('DEFAULT', '=', 'YA')
             ->first();
 
-        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
-
-
-
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id ?? 0, "statusaktifnama" => $statusaktif->text ?? ""]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
             ->select(
-                'statusaktif'
+                'statusaktif',
+                'statusaktifnama'
             );
 
         $data = $query->first();
@@ -309,7 +333,6 @@ class Pelanggan extends MyModel
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'check') {
                             $query = $query->whereRaw('1 = 1');
-
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -324,7 +347,6 @@ class Pelanggan extends MyModel
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'check') {
                                 $query = $query->whereRaw('1 = 1');
-
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -442,14 +464,14 @@ class Pelanggan extends MyModel
         for ($i = 0; $i < count($data['Id']); $i++) {
             $Pelanggan = Pelanggan::find($data['Id'][$i]);
 
-                $Pelanggan->statusaktif = $statusnonaktif->id;
-                $aksi = $statusnonaktif->text;
+            $Pelanggan->statusaktif = $statusnonaktif->id;
+            $aksi = $statusnonaktif->text;
 
-                // dd($Pelanggan);
+            // dd($Pelanggan);
             if ($Pelanggan->save()) {
-                
+
                 (new LogTrail())->processStore([
-                    
+
                     'namatabel' => strtoupper($Pelanggan->getTable()),
                     'postingdari' => 'APPROVAL Pelanggan',
                     'idtrans' => $Pelanggan->id,
@@ -464,6 +486,4 @@ class Pelanggan extends MyModel
 
         return $Pelanggan;
     }
-
-    
 }

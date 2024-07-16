@@ -512,80 +512,80 @@ class Trado extends MyModel
     }
     public function default()
     {
-
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
             $table->unsignedBigInteger('statusgerobak')->nullable();
+            $table->string('statusgerobaknama', 300)->nullable();
             $table->unsignedBigInteger('statusjenisplat')->nullable();
+            $table->string('statusjenisplatnama', 300)->nullable();
             $table->unsignedBigInteger('statusabsensisupir')->nullable();
+            $table->string('statusabsensisupirnama', 300)->nullable();
         });
 
         // AKTIF
-        $status = Parameter::from(
+        $statusAktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('DEFAULT', '=', 'YA')
             ->first();
 
-        $datadetail = json_decode($status->get(), true);
-
-        $iddefaultstatusaktif = $status->id ?? 0;
-
         // GEROBAK
-        $status = Parameter::from(
+        $statusGerobak = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS GEROBAK')
             ->where('subgrp', '=', 'STATUS GEROBAK')
             ->where("default", '=', 'YA')
             ->first();
 
-        $iddefaultstatusGerobak = $status->id ?? 0;
-
         // STATUS ABSENSI SUPIR
-        $status = Parameter::from(
+        $statusAbsensiSupir = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS ABSENSI SUPIR')
             ->where('subgrp', '=', 'STATUS ABSENSI SUPIR')
             ->where("default", '=', 'YA')
             ->first();
 
-        $iddefaultstatusAbsensiSupir = $status->id ?? 0;
-
         // 	JENIS PLAT
-        $status = Parameter::from(
+        $statusJenisPlat = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'JENIS PLAT')
             ->where('subgrp', '=', 'JENIS PLAT')
             ->where("default", '=', 'YA')
             ->first();
 
-        $iddefaultstatusJenisPlat = $status->id ?? 0;
-
-
         DB::table($tempdefault)->insert(
             [
-                "statusaktif" => $iddefaultstatusaktif,
-                "statusgerobak" => $iddefaultstatusGerobak,
-                "statusjenisplat" => $iddefaultstatusJenisPlat,
-                "statusabsensisupir" => $iddefaultstatusAbsensiSupir,
+                "statusaktif" => $statusAktif->id ?? 0,
+                "statusaktifnama" => $statusAktif->text ?? "",
+                "statusgerobak" => $statusGerobak->id ?? 0,
+                "statusgerobaknama" => $statusGerobak->text ?? "",
+                "statusjenisplat" => $statusJenisPlat->id ?? 0,
+                "statusjenisplatnama" => $statusJenisPlat->text ?? "",
+                "statusabsensisupir" => $statusAbsensiSupir->id ?? 0,
+                "statusabsensisupirnama" => $statusAbsensiSupir->text ?? "",
             ]
         );
 
@@ -594,9 +594,13 @@ class Trado extends MyModel
         )
             ->select(
                 'statusaktif',
+                'statusaktifnama',
                 'statusgerobak',
+                'statusgerobaknama',
                 'statusjenisplat',
+                'statusjenisplatnama',
                 'statusabsensisupir',
+                'statusabsensisupirnama',
             );
 
         $data = $query->first();
@@ -686,11 +690,18 @@ class Trado extends MyModel
             db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as statusaktif_readonly"),
             db::raw("(case when " . $hakutama . "=1  or isnull(c.kodetrado,'')<>'' then '' else 'readonly' end) as statusgerobak_readonly"),
 
-
+            'param_statusabsensisupir.text as statusabsensisupirnama',
+            'param_statusjenisplat.text as statusjenisplatnama',
+            'param_statusaktif.text as statusaktifnama',
+            'param_statusgerobak.text as statusgerobaknama',
         )
 
             ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'trado.mandor_id', 'mandor.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'trado.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("parameter as param_statusabsensisupir with (readuncommitted)"), 'trado.statusabsensisupir', '=', 'param_statusabsensisupir.id')
+            ->leftJoin(DB::raw("parameter as param_statusjenisplat with (readuncommitted)"), 'trado.statusjenisplat', '=', 'param_statusjenisplat.id')
+            ->leftJoin(DB::raw("parameter as param_statusaktif with (readuncommitted)"), 'trado.statusaktif', '=', 'param_statusaktif.id')
+            ->leftJoin(DB::raw("parameter as param_statusgerobak with (readuncommitted)"), 'trado.statusgerobak', '=', 'param_statusgerobak.id')
             ->leftjoin(DB::raw($tempapproval . " as c"), function ($join) {
                 $join->on('trado.kodetrado', '=', 'c.kodetrado');
             })

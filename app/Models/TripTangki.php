@@ -139,27 +139,49 @@ class TripTangki extends MyModel
         return $data;
     }
 
+    public function findAll($id)
+    {
+        $this->setRequestParameters();
+
+        $data = TripTangki::from(DB::raw("triptangki with (readuncommitted)"))
+            ->select(
+                'triptangki.id',
+                'triptangki.kodetangki',
+                'triptangki.keterangan',
+                'triptangki.statusaktif',
+                'parameter.text as statusaktifnama',
+                'triptangki.modifiedby',
+                'triptangki.created_at',
+                'triptangki.updated_at'
+            )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'triptangki.statusaktif', '=', 'parameter.id')
+            ->where('triptangki.id', $id)->first();
+
+        return $data;
+    }
+
     public function default()
     {
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
         });
 
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
 
-        $iddefaultstatusaktif = $status->id ?? 0;
         DB::table($tempdefault)->insert(
-            ["statusaktif" => $iddefaultstatusaktif]
+            ["statusaktif" => $status->id ?? 0, "statusaktifnama" => $status->text ?? ""]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -167,6 +189,7 @@ class TripTangki extends MyModel
         )
             ->select(
                 'statusaktif',
+                'statusaktifnama'
             );
 
         $data = $query->first();

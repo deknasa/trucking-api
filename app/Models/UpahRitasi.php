@@ -135,12 +135,13 @@ class UpahRitasi extends MyModel
                 // 'upahritasi.tglakhirberlaku',
                 // 'upahritasi.statusluarkota',
                 // 'statusluarkota.text as statusluarkotas',
-
+                'parameter.text as statusaktifnama',
                 'upahritasi.modifiedby',
                 'upahritasi.updated_at'
             )
             ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahritasi.kotadari_id')
             ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahritasi.kotasampai_id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kotasampai.statusaktif', '=', 'parameter.id')
             // ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahritasi.zona_id', 'zona.id')
             // ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'upahritasi.statusluarkota', 'statusluarkota.id')
             ->where('upahritasi.id', $id);
@@ -159,23 +160,23 @@ class UpahRitasi extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
         });
 
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
 
-
-        $iddefaultstatusaktif = $status->id ?? 0;
         DB::table($tempdefault)->insert(
-            ["statusaktif" => $iddefaultstatusaktif]
+            ["statusaktif" => $status->id ?? 0, "statusaktifnama" => $status->text ?? ""]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -183,6 +184,7 @@ class UpahRitasi extends MyModel
         )
             ->select(
                 'statusaktif',
+                'statusaktifnama'
             );
 
         $data = $query->first();

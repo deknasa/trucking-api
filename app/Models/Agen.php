@@ -250,38 +250,38 @@ class Agen extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
             $table->unsignedBigInteger('statustas')->nullable();
+            $table->string('statustasnama', 300)->nullable();
             $table->unsignedBigInteger('statusinvoiceextra')->nullable();
+            $table->string('statusinvoiceextranama', 300)->nullable();
             $table->unsignedBigInteger('jenisemkl')->nullable();
             $table->string('keteranganjenisemkl', 255)->nullable();
         });
 
-        $status = Parameter::from(
+        $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
 
-        $iddefaultstatusaktif = $status->id ?? 0;
-
-        $status = Parameter::from(
+        $statustas = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS TAS')
             ->where('subgrp', '=', 'STATUS TAS')
             ->where('default', '=', 'YA')
             ->first();
-
-        $iddefaultstatustas = $status->id ?? 0;
-
 
         $jenisemkl = DB::table('jenisemkl')->from(
             DB::raw('jenisemkl with (readuncommitted)')
@@ -294,22 +294,16 @@ class Agen extends MyModel
             ->where('kodejenisemkl', '=', 'TAS')
             ->first();
             
-        $status = Parameter::from(
-            db::Raw("parameter with (readuncommitted)")
-        )
-            ->select(
-                'id'
-            )
-            ->where('grp', '=', 'STATUS AKTIF')
-            ->where('subgrp', '=', 'STATUS AKTIF')
-            ->where('default', '=', '')
-            ->first();
-
-        $iddefaultstatusinvoice = $status->id ?? 0;
         DB::table($tempdefault)->insert(
             [
-                "statusaktif" => $iddefaultstatusaktif, "statustas" => $iddefaultstatustas,
-                "jenisemkl" => $jenisemkl->jenisemkl, "keteranganjenisemkl" => $jenisemkl->keteranganjenisemkl,"statusinvoiceextra"=>$iddefaultstatusinvoice
+                "statusaktif" => $statusaktif->id ?? 0, 
+                "statusaktifnama" => $statusaktif->text ?? "", 
+                "statustas" => $statustas->id ?? 0,
+                "statustasnama" => $statustas->text ?? "",
+                "statusinvoiceextra" => $statusaktif->id ?? 0, 
+                "statusinvoiceextranama" => $statusaktif->text ?? "", 
+                "jenisemkl" => $jenisemkl->jenisemkl, 
+                "keteranganjenisemkl" => $jenisemkl->keteranganjenisemkl,
             ]
         );
 
@@ -318,10 +312,13 @@ class Agen extends MyModel
         )
             ->select(
                 'statusaktif',
+                'statusaktifnama',
                 'statustas',
+                'statustasnama',
                 'jenisemkl',
                 'keteranganjenisemkl',
-                'statusinvoiceextra'
+                'statusinvoiceextra',
+                'statusinvoiceextranama'
             );
 
         $data = $query->first();
@@ -350,9 +347,15 @@ class Agen extends MyModel
                 DB::raw("(trim(coa.coa)+' - '+trim(coa.keterangancoa)) as keterangancoa"),
                 DB::raw("(trim(coapendapatan.coa)+' - '+trim(coapendapatan.keterangancoa)) as keterangancoapendapatan"),
                 "agen.coapendapatan",
+                'param_aktif.text as statusaktifnama',
+                'param_tas.text as statustasnama',
+                'param_invharga.text as statusinvoiceextranama',
             )
             ->leftJoin(DB::raw("akunpusat as coa with (readuncommitted)"), 'agen.coa', 'coa.coa')
             ->leftJoin(DB::raw("akunpusat as coapendapatan with (readuncommitted)"), 'agen.coapendapatan', 'coapendapatan.coa')
+            ->leftJoin(DB::raw("parameter as param_aktif with (readuncommitted)"), 'agen.statusaktif', '=', 'param_aktif.id')
+            ->leftJoin(DB::raw("parameter as param_tas  with (readuncommitted)"), 'agen.statustas', '=', 'param_tas.id')
+            ->leftJoin(DB::raw("parameter as param_invharga  with (readuncommitted)"), 'agen.statusinvoiceextra', '=', 'param_invharga.id')
             ->where('agen.id', $id);
 
         return $query->first();

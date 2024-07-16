@@ -32,17 +32,50 @@ class StoreAlatBayarRequest extends FormRequest
         foreach ($dataAktif as $item) {
             $statusAktif[] = $item['id'];
         }
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($statusAktif)]
+            ];
+        } else if ($statusaktif == null && $this->statusaktifnama != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($statusAktif)]
+            ];
+        }
 
         $langsungCair = $parameter->getcombodata('STATUS LANGSUNG CAIR', 'STATUS LANGSUNG CAIR');
         $langsungCair = json_decode($langsungCair, true);
         foreach ($langsungCair as $item) {
             $statusLangsungCair[] = $item['id'];
         }
+        $statuslangsungcair = $this->statuslangsungcair;
+        $rulesLangsungCair = [];
+        if ($statuslangsungcair != null) {
+            $statuslangsungcair = [
+                'statuslangsungcair' => ['required', Rule::in($statuslangsungcair)]
+            ];
+        } else if ($statuslangsungcair == null && $this->statuslangsungcairnama != '') {
+            $statuslangsungcair = [
+                'statuslangsungcair' => ['required', Rule::in($statuslangsungcair)]
+            ];
+        }
 
         $default = $parameter->getcombodata('STATUS DEFAULT', 'STATUS DEFAULT');
         $default = json_decode($default, true);
         foreach ($default as $item) {
             $statusDefault[] = $item['id'];
+        }
+        $statusdefault = $this->statusdefault;
+        $rulesStatusDefault = [];
+        if ($statusdefault != null) {
+            $rulesStatusDefault = [
+                'statusdefault' => ['required', Rule::in($statusDefault)]
+            ];
+        } else if ($statusdefault == null && $this->statusdefaultnama != '') {
+            $rulesStatusDefault = [
+                'statusdefault' => ['required', Rule::in($statusDefault)]
+            ];
         }
 
         $coa = $this->coa;
@@ -86,11 +119,11 @@ class StoreAlatBayarRequest extends FormRequest
         }
 
         $rules = [
-            'kodealatbayar' => ['required','unique:alatbayar'],
-            'namaalatbayar' => ['required','unique:alatbayar'],
-            'statuslangsungcair' => ['required', Rule::in($statusLangsungCair)],
-            'statusdefault' => ['required', Rule::in($statusDefault)],
-            'statusaktif' => ['required', Rule::in($statusAktif)],
+            'kodealatbayar' => ['required', 'unique:alatbayar'],
+            'namaalatbayar' => ['required', 'unique:alatbayar'],
+            'statuslangsungcairnama' => ['required'],
+            'statusdefaultnama' => ['required'],
+            'statusaktifnama' => ['required'],
             'bank' => 'required',
             // 'keterangancoa' => 'required',
         ];
@@ -98,9 +131,12 @@ class StoreAlatBayarRequest extends FormRequest
         $rule = array_merge(
             $rules,
             // $rulesCoa,
-            $rulesBank_id
+            $rulesBank_id,
+            $rulesStatusAktif,
+            $rulesStatusDefault,
+            $rulesLangsungCair
         );
-        
+
         return $rule;
     }
 
@@ -109,14 +145,13 @@ class StoreAlatBayarRequest extends FormRequest
         return [
             'kodealatbayar' => 'kode alat bayar',
             'namaalatbayar' => 'nama alat bayar',
-            'statuslangsungcair' => 'status langsung cair',
-            'statusdefault' => 'status default',
-            'statusaktif' => 'status aktif',
+            'statuslangsungcairnama' => 'status langsung cair',
+            'statusdefaultnama' => 'status default',
+            'statusaktifnama' => 'status aktif',
             'keterangan' => 'keterangan',
             'bank' => 'nama bank',
             'keterangancoa' => 'coa',
         ];
-        
     }
 
     public function messages()
@@ -126,11 +161,11 @@ class StoreAlatBayarRequest extends FormRequest
         return [
             'kodealatbayar.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'namaalatbayar.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'statuslangsungcair.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'statusdefault.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statuslangsungcairnama.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusdefaultnama.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktifnama.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'bank.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'keterangancoa.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
         ];
-    }  
+    }
 }

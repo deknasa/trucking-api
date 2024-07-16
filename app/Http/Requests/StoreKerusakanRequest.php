@@ -28,18 +28,37 @@ class StoreKerusakanRequest extends FormRequest
     {
         if (request()->from == 'tas') {
             return [];
-        } 
-        
+        }
+
         $parameter = new Parameter();
         $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
         $data = json_decode($data, true);
         foreach ($data as $item) {
             $status[] = $item['id'];
         }
-        return [
-            'keterangan' => 'required|unique:kerusakan',
-            'statusaktif' => ['required', Rule::in($status)],
 
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        } else if ($statusaktif == null && $this->statusaktifnama != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        }
+
+        $rules = [
+            'keterangan' => 'required|unique:kerusakan',
+            'statusaktifnama' => ['required'],
         ];
+
+        $rules = array_merge(
+            $rules,
+            $rulesStatusAktif,
+        );
+
+        return $rules;
     }
 }

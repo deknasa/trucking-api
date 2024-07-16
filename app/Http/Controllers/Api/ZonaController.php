@@ -172,11 +172,12 @@ class ZonaController extends Controller
         }
     }
 
-    public function show(Zona $zona)
+    public function show($id)
     {
+        $zona = new Zona();
         return response([
             'status' => true,
-            'data' => $zona
+            'data' => $zona->findAll($id)
         ]);
     }
 

@@ -175,11 +175,12 @@ class JenisTradoController extends Controller
         }
     }
 
-    public function show(jenistrado $jenistrado)
+    public function show($id)
     {
+        $jenisTrado = new JenisTrado();
         return response([
             'status' => true,
-            'data' => $jenistrado
+            'data' => $jenisTrado->findAll($id)
         ]);
     }
 

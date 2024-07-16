@@ -124,11 +124,12 @@ class StatusContainerController extends Controller
         ]);
     }
 
-    public function show(StatusContainer $statusContainer)
+    public function show($id)
     {
+        $statusContainer = new StatusContainer(); 
         return response([
             'status' => true,
-            'data' => $statusContainer
+            'data' => $statusContainer->findAll($id)
         ]);
     }
 

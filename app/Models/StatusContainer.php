@@ -63,6 +63,7 @@ class StatusContainer extends MyModel
         selesai:
         return $data;
     }
+
     public function get()
     {
         $this->setRequestParameters();
@@ -114,32 +115,55 @@ class StatusContainer extends MyModel
         return $data;
     }
 
+    public function findAll($id)
+    {
+        $this->setRequestParameters();
+
+        $data = StatusContainer::from(DB::raw("statuscontainer with (readuncommitted)"))
+            ->select(
+                'statuscontainer.id',
+                'statuscontainer.kodestatuscontainer',
+                'statuscontainer.keterangan',
+                'statuscontainer.statusaktif',
+                'parameter.text as statusaktifnama',
+                'statuscontainer.modifiedby',
+                'statuscontainer.created_at',
+                'statuscontainer.updated_at'
+            )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'statuscontainer.statusaktif', '=', 'parameter.id')
+            ->where('statuscontainer.id', $id)->first();
+
+        return $data;
+    }
+
     public function default()
     {
-
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
         });
 
         $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
 
-        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id, "statusaktifnama" =>$statusaktif->text ?? ""]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
             ->select(
-                'statusaktif'
+                'statusaktif',
+                'statusaktifnama'
             );
 
         $data = $query->first();
