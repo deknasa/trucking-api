@@ -32,6 +32,8 @@ class LaporanArusDanaPusat extends MyModel
             $table->date('Ftglsd')->nullable();
         });
 
+        //  $ptahun1=2024;
+        // dd($ptahun1,$ptahun2);
         while ($ptahun1 <= $ptahun2) {
             $ptahun = $ptahun1;
             $pawal = 1;
@@ -47,11 +49,13 @@ class LaporanArusDanaPusat extends MyModel
                     if ($hit == 0) {
                         $ptgldr = $ptgl1;
                     }
-                    $datepart = DB::select("select datepart(dw," . $ptgl1 . ") as dpart");
+                    $datepart = DB::select("select datepart(dw,'" . $ptgl1 . "') as dpart");
+                
                     $dpart = json_decode(json_encode($datepart), true)[0]['dpart'];
                     if ($dpart == 7) {
+                        // dd($ptgl1);
                         $ptglsd = $ptgl1;
-
+                        // dd($ptglsd);
                         DB::table($tempBulan)->insert(
                             [
                                 'FKode' => 'Minggu Ke ' . $pminggu . ' Bulan ' . $pawal . ' Tahun ' . $ptahun,
@@ -89,7 +93,7 @@ class LaporanArusDanaPusat extends MyModel
         }
         $bulan = request()->bulan??'';
 
-       
+
         $query = db::table($tempBulan)->from(db::raw($tempBulan . " a"))
             ->select(
                 'a.fKode',
@@ -109,6 +113,7 @@ class LaporanArusDanaPusat extends MyModel
             // dd(date('Y-m-d',strtotime($bulan)));
         }
     
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $this->sort($query);
@@ -335,7 +340,9 @@ class LaporanArusDanaPusat extends MyModel
             ->join(db::raw("typeakuntansi A with (readuncommitted)"), 'A.id', 'CM.type_id')
             ->join(db::raw($tempcabang . " MC "), 'MC.coa', 'D.coa')
             ->join(db::raw("cabang c "), 'mc.cabang_id', 'c.id')
-            ->whereraw("D.tglbukti BETWEEN '" . date('Y-m-d', strtotime($tgldari)) . "' AND '" . date('Y-m-d', strtotime($tglsampai)) . "'");
+            ->whereraw("D.tglbukti BETWEEN '" . date('Y-m-d', strtotime($tgldari)) . "' AND '" . date('Y-m-d', strtotime($tglsampai)) . "'")
+            ->orderby('mc.cabang_id','asc')
+            ->orderby('d.tglbukti','asc');
 
 
         DB::table($tempdata)->insertUsing([
@@ -443,7 +450,10 @@ class LaporanArusDanaPusat extends MyModel
                     'a.FTgl as tanggal',
                     'a.FDebet as debet',
                     'a.FCredit as kredit',
-                    'a.FSaldo as saldo',
+                    // 'a.FSaldo as saldo',
+                    DB::raw("cast(sum ((
+                    0+a.fdebet)-a.FCredit) over (PARTITION BY a.cabang_id order by a.id ASC) as money) as saldo"),
+                    DB::raw('ROW_NUMBER() OVER (PARTITION BY a.cabang_id ORDER BY a.id) as urut'),                    
                     'a.FKetD as keterangan',
                     DB::raw("'ARUS DANA PUSAT - CABANG MINGGUAN' as judulLaporan"),
                     DB::raw("'" . $getJudul->text . "' as judul"),
@@ -462,7 +472,9 @@ class LaporanArusDanaPusat extends MyModel
                     'a.FTgl as tanggal',
                     'a.FDebet as debet',
                     'a.FCredit as kredit',
-                    'a.FSaldo as saldo',
+                    DB::raw("cast(sum ((0+a.fdebet)-a.FCredit) over (PARTITION BY a.cabang_id order by a.id ASC) as money) as saldo"),
+                    DB::raw('ROW_NUMBER() OVER (PARTITION BY a.cabang_id ORDER BY a.id) as urut'),
+                    // 'a.FSaldo as saldo',
                     'a.FKetD as keterangan',
                     DB::raw("'ARUS DANA PUSAT - CABANG MINGGUAN' as judulLaporan"),
                     DB::raw("'" . $getJudul->text . "' as judul"),

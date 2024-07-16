@@ -198,50 +198,58 @@ class Supplier extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
             $table->unsignedBigInteger('statusdaftarharga')->nullable();
+            $table->string('statusdaftarharganama', 300)->nullable();
             $table->unsignedBigInteger('statuspostingtnl')->nullable();
+            $table->string('statuspostingtnlnama')->nullable();
         });
 
-        $status = Parameter::from(
+        $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
 
-        $iddefaultstatusaktif = $status->id ?? 0;
-
-        $status = Parameter::from(
+        $statusdaftarharga = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS DAFTAR HARGA')
             ->where('subgrp', '=', 'STATUS DAFTAR HARGA')
             ->where('default', '=', 'YA')
             ->first();
 
-        $iddefaultstatusdaftarharga = $status->id ?? 0;
-
-        $status = Parameter::from(
+        $statuspostingtnl = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS POSTING TNL')
             ->where('subgrp', '=', 'STATUS POSTING TNL')
             ->where('default', '=', 'YA')
             ->first();
 
-        $iddefaultstatuspostingtnl = $status->id ?? 0;
         DB::table($tempdefault)->insert(
-            ["statusaktif" => $iddefaultstatusaktif, "statusdaftarharga" => $iddefaultstatusdaftarharga, "statuspostingtnl" => $iddefaultstatuspostingtnl,]
+            [
+                "statusaktif" => $statusaktif->id ?? 0,
+                "statusaktifnama" => $statusaktif->text ?? "",
+                "statusdaftarharga" => $statusdaftarharga->id ?? 0,
+                "statusdaftarharganama" => $statusdaftarharga->text ?? "",
+                "statuspostingtnl" => $statuspostingtnl->id ?? 0,
+                "statuspostingtnlnama" => $statuspostingtnl->text ?? "",
+            ]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -249,8 +257,11 @@ class Supplier extends MyModel
         )
             ->select(
                 'statusaktif',
+                'statusaktifnama',
                 'statusdaftarharga',
+                'statusdaftarharganama',
                 'statuspostingtnl',
+                'statuspostingtnlnama',
             );
 
         $data = $query->first();
@@ -327,7 +338,6 @@ class Supplier extends MyModel
             'supplier.rekeningbank',
             'supplier.namarekening',
             'supplier.jabatan',
-
             'supplier.statusdaftarharga',
             'supplier.statuspostingtnl',
             'supplier.kategoriusaha',
@@ -336,10 +346,13 @@ class Supplier extends MyModel
             'supplier.userapproval',
             'supplier.modifiedby',
             'supplier.created_at',
-            'supplier.updated_at'
-
+            'supplier.updated_at',
+            'param_aktif.text as statusaktifnama',
+            'param_daftarharga.text as statusdaftarharganama',
         )
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), "supplier.coa", 'akunpusat.coa')
+            ->leftJoin(DB::raw("parameter as param_aktif with (readuncommitted)"), 'supplier.statusaktif', '=', 'param_aktif.id')
+            ->leftJoin(DB::raw("parameter as param_daftarharga with (readuncommitted)"), 'supplier.statusdaftarharga', '=', 'param_daftarharga.id')
             ->where('supplier.id', $id);
 
         $data = $query->first();
@@ -644,7 +657,7 @@ class Supplier extends MyModel
             throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
         } else if ($getToken->getStatusCode() == '200') {
             $data['from'] = 'jkt';
-          
+
             $access_token = json_decode($getToken, TRUE)['access_token'];
             // dump($access_token);
             // dump(json_encode($data));
@@ -675,7 +688,7 @@ class Supplier extends MyModel
             throw new \Exception("server tidak bisa diakses");
         }
     }
-    
+
     public function processApproval(array $data)
     {
 
@@ -714,7 +727,7 @@ class Supplier extends MyModel
         if ($approvalTnl == 'YA') {
             (new Supplier())->approvalToTNL($data);
         }
-        
+
         return $Supplier;
     }
 
@@ -727,8 +740,8 @@ class Supplier extends MyModel
         for ($i = 0; $i < count($data['Id']); $i++) {
             $Supplier = Supplier::find($data['Id'][$i]);
 
-                $Supplier->statusaktif = $statusnonaktif->id;
-                $aksi = $statusnonaktif->text;
+            $Supplier->statusaktif = $statusnonaktif->id;
+            $aksi = $statusnonaktif->text;
 
             if ($Supplier->save()) {
                 (new LogTrail())->processStore([

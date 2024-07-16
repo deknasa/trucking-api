@@ -83,9 +83,11 @@ class ExportLaporanKasGantung extends MyModel
                 'a.nobukti',
                 db::raw("sum(b.nominal) as nominal"),
                 db::raw("max(b.keterangan) as keterangan"),
-                db::raw("'" . $gantungcoa . "' as coa")
+                db::raw("max(c.coagantung) as coa"),
+                // db::raw("'" . $gantungcoa . "' as coa")
             )
             ->join(db::raw("kasgantungdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(db::raw("bank c with (readuncommitted)"), 'a.bank_id', 'c.id')
             ->where('a.bank_id', $jenis)
             ->groupBy('a.nobukti');
 
@@ -187,7 +189,8 @@ class ExportLaporanKasGantung extends MyModel
 
                 )
                 ->join(db::raw("pengembaliankasgantungheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-                ->leftjoin(db::raw("akunpusat d with (readuncommitted)"), db::raw("'" . $gantungcoa . "'"), 'd.coa')
+                ->join(db::raw("bank c with (readuncommitted)"), 'b.bank_id', 'c.id')
+                ->leftjoin(db::raw("akunpusat d with (readuncommitted)"), 'c.coagantung', 'd.coa')
                 ->where('b.bank_id', $jenis)
                 ->whereRaw("b.tglbukti='" . $tgl1 . "'");
 
@@ -261,9 +264,12 @@ class ExportLaporanKasGantung extends MyModel
                 'a.nobukti',
                 db::raw("sum(b.nominal) as nominal"),
                 db::raw("max(b.keterangan) as keterangan"),
-                db::raw("'" . $gantungcoa . "' as coa")
+                db::raw("max(c.coagantung) as coa"),
+                // db::raw("'" . $gantungcoa . "' as coa")
             )
             ->join(db::raw("kasgantungdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(db::raw("bank c with (readuncommitted)"), 'a.bank_id', 'c.id')
+
             // ->where('a.tglbukti',$tgl2)
             ->whereRaw("a.tglbukti<='" . $tgl2 . "'")
             ->where('a.bank_id', $jenis)

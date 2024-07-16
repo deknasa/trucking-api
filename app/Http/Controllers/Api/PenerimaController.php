@@ -195,11 +195,12 @@ class PenerimaController extends Controller
         }
     }
 
-    public function show(Penerima $penerima)
+    public function show($id)
     {
+        $penerima = new Penerima();
         return response([
             'status' => true,
-            'data' => $penerima
+            'data' => $penerima->findAll($id)
         ]);
     }
 

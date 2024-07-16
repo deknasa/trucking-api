@@ -32,17 +32,32 @@ class StorePelangganRequest extends FormRequest
         foreach ($data as $item) {
             $status[] = $item['id'];
         }
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        } else if ($statusaktif == null && $this->statusaktifnama != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        }
 
-        return [
+        $rules = [
             'kodepelanggan' => ['required', 'unique:pelanggan'],
             'namapelanggan' => 'required',
             'namakontak' => 'required',
             'telp' => 'required|min:12|max:13',
             'alamat' => 'required',
             'kota' => 'required',
-            'statusaktif' => ['required', Rule::in($status),'numeric', 'min:1'],
-            
+            'statusaktifnama' => ['required'],
         ];
+        $rules = array_merge(
+            $rules,
+            $rulesStatusAktif,
+        );
+        return $rules;
     }
 
     public function attributes()
@@ -54,9 +69,9 @@ class StorePelangganRequest extends FormRequest
             'kodepos' => 'kode pos',
             'telp' => 'no telpon',
             'alamat' => 'alamat',
-            'kota' => 'kota', 
-            'keterangan' => 'keterangan',           
-            'statusaktif' => 'status aktif',  
+            'kota' => 'kota',
+            'keterangan' => 'keterangan',
+            'statusaktif' => 'status aktif',
         ];
     }
 
@@ -77,7 +92,5 @@ class StorePelangganRequest extends FormRequest
             'kodepos.min' => 'min. 5 karakter',
             'kodepos.max' => 'max. 5 karakter',
         ];
-    }  
-
-
+    }
 }

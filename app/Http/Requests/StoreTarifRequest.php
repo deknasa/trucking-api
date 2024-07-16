@@ -42,16 +42,42 @@ class StoreTarifRequest extends FormRequest
             foreach ($dataAktif as $item) {
                 $statusAktif[] = $item['id'];
             }
+            $statusaktif = $this->statusaktif;
+            $rulesStatusAktif = [];
+            if ($statusaktif != null) {
+                $rulesStatusAktif = [
+                    'statusaktif' => ['required', Rule::in($statusAktif)]
+                ];
+            } else if ($statusaktif == null && $this->statusaktifnama != '') {
+                $rulesStatusAktif = [
+                    'statusaktif' => ['required', Rule::in($statusAktif)]
+                ];
+            }
+
             $datalangsir = $parameter->getcombodata('STATUS langsir', 'STATUS langsir');
             $datalangsir = json_decode($datalangsir, true);
             foreach ($datalangsir as $item) {
                 $statuslangsir[] = $item['id'];
             }
+
+
             $dataTon = $parameter->getcombodata('SISTEM TON', 'SISTEM TON');
             $dataTon = json_decode($dataTon, true);
             foreach ($dataTon as $item) {
                 $statusTon[] = $item['id'];
             }
+            $statussistemton = $this->statussistemton;
+            $rulesStatusSistemTon = [];
+            if ($statussistemton != null) {
+                $rulesStatusSistemTon = [
+                    'statussistemton' => ['required', Rule::in($statusTon)]
+                ];
+            } else if ($statussistemton == null && $this->statussistemtonnama != '') {
+                $rulesStatusSistemTon = [
+                    'statussistemton' => ['required', Rule::in($statusTon)]
+                ];
+            }
+
             $dataPenyesuaian = $parameter->getcombodata('PENYESUAIAN HARGA', 'PENYESUAIAN HARGA');
             $dataPenyesuaian = json_decode($dataPenyesuaian, true);
             foreach ($dataPenyesuaian as $item) {
@@ -150,7 +176,9 @@ class StoreTarifRequest extends FormRequest
                     (new $relatedRequest)->rules(),
                     $rulesParent_id,
                     $rulesKota_id,
-                    $rulesZona_id
+                    $rulesZona_id,
+                    $rulesStatusAktif,
+                    $rulesStatusSistemTon
                 );
             }
         } else {
@@ -162,7 +190,7 @@ class StoreTarifRequest extends FormRequest
     public function attributes()
     {
         return [
-            'statussistemton' => 'Status Sistem Ton',
+            'statussistemtonnama' => 'Status Sistem Ton',
             'tglmulaiberlaku' => 'Tanggal Mulai Berlaku',
             'statuslangsir' => 'status langsir',
             'statuslangsirnama' => 'status langsir',

@@ -103,36 +103,58 @@ class Kerusakan extends MyModel
         return $data;
     }
 
+    public function findAll($id)
+    {
+        $this->setRequestParameters();
+
+        $data = Kerusakan::from(DB::raw("kerusakan with (readuncommitted)"))
+            ->select(
+                'kerusakan.id',
+                'kerusakan.keterangan',
+                'kerusakan.statusaktif',
+                'parameter.text as statusaktifnama',
+                'kerusakan.modifiedby',
+                'kerusakan.created_at',
+                'kerusakan.updated_at'
+            )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kerusakan.statusaktif', '=', 'parameter.id')
+            ->where('kerusakan.id', $id)->first();
+
+        return $data;
+    }
+
+
     public function default()
     {
-
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
         });
 
         $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
 
-        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id ?? 0, "statusaktifnama" =>$statusaktif->text ?? ""]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
             ->select(
-                'statusaktif'
+                'statusaktif',
+                'statusaktifnama'
             );
 
         $data = $query->first();
-        // dd($data);
         return $data;
     }
     public function selectColumns($query)

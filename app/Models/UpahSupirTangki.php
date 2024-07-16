@@ -454,23 +454,24 @@ class UpahSupirTangki extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
         });
 
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
 
-        $iddefaultstatusaktif = $status->id ?? 0;
-
         DB::table($tempdefault)->insert(
-            ["statusaktif" => $iddefaultstatusaktif]
+            ["statusaktif" => $status->id ?? 0,
+            "statusaktifnama" => $status->text ?? ""]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -478,7 +479,10 @@ class UpahSupirTangki extends MyModel
         )
             ->select(
                 'statusaktif',
+                'statusaktifnama',
             );
+
+        dd($query->get());
 
         $data = $query->first();
 
@@ -672,11 +676,11 @@ class UpahSupirTangki extends MyModel
             'upahsupirtangki.penyesuaian',
             DB::raw("(case when upahsupirtangki.kotasampai_id=0 then null else upahsupirtangki.kotasampai_id end) as kotasampai_id"),
             DB::raw("TRIM(kotasampai.keterangan) as kotasampai"),
-
             'upahsupirtangki.jarak',
             'upahsupirtangki.statusaktif',
             'upahsupirtangki.tglmulaiberlaku',
             'upahsupirtangki.gambar',
+            'parameter.text as statusaktifnama',
             'upahsupirtangki.modifiedby',
             'upahsupirtangki.updated_at'
         )
@@ -684,6 +688,7 @@ class UpahSupirTangki extends MyModel
             ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupirtangki.kotadari_id')
             ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupirtangki.kotasampai_id')
             ->leftJoin(DB::raw("tariftangki with (readuncommitted)"), 'upahsupirtangki.tariftangki_id', 'tariftangki.id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahsupirtangki.statusaktif', '=', 'parameter.id')
 
             ->where('upahsupirtangki.id', $id);
 

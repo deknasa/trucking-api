@@ -176,11 +176,12 @@ class KerusakanController extends Controller
         }
     }
 
-    public function show(Kerusakan $kerusakan)
+    public function show($id)
     {
+        $kerusakan = new Kerusakan();
         return response([
             'status' => true,
-            'data' => $kerusakan
+            'data' => $kerusakan->findAll($id)
         ]);
     }
 

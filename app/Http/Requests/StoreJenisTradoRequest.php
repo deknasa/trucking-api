@@ -29,7 +29,7 @@ class StoreJenisTradoRequest extends FormRequest
     {
         if (request()->from == 'tas') {
             return [];
-        } 
+        }
         $parameter = new Parameter();
         $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
         $data = json_decode($data, true);
@@ -37,10 +37,26 @@ class StoreJenisTradoRequest extends FormRequest
             $status[] = $item['id'];
         }
 
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        } else if ($statusaktif == null && $this->statusaktifnama != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        }
+
         $rules = [
             'kodejenistrado' => ['required', 'unique:jenistrado'],
-            'statusaktif' => ['required', Rule::in($status)]
+            'statusaktifnama' => ['required'],
         ];
+        $rules = array_merge(
+            $rules,
+            $rulesStatusAktif,
+        );
         return $rules;
     }
 

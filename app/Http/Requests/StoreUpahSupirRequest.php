@@ -48,24 +48,46 @@ class StoreUpahSupirRequest extends FormRequest
             foreach ($dataAktif as $item) {
                 $statusAktif[] = $item['id'];
             }
+            $statusaktif = $this->statusaktif;
+            $rulesStatusAktif = [];
+            if ($statusaktif != null) {
+                $rulesStatusAktif = [
+                    'statusaktif' => ['required', Rule::in($statusAktif)]
+                ];
+            } else if ($statusaktif == null && $this->statusaktifnama != '') {
+                $rulesStatusAktif = [
+                    'statusaktif' => ['required', Rule::in($statusAktif)]
+                ];
+            }
+
             $datalangsir = $parameter->getcombodata('STATUS langsir', 'STATUS langsir');
             $datalangsir = json_decode($datalangsir, true);
             foreach ($datalangsir as $item) {
                 $statuslangsir[] = $item['id'];
             }
+            $statuslangsir = $this->statuslangsir;
+            $rulesStatusLangsir = [];
+            if ($statuslangsir != null) {
+                $rulesStatusLangsir = [
+                    'statuslangsir' => ['required', Rule::in($statuslangsir)]
+                ];
+            } else if ($statuslangsir == null && $this->statuslangsirnama != '') {
+                $rulesStatusLangsir = [
+                    'statuslangsir' => ['required', Rule::in($statuslangsir)]
+                ];
+            }
+
             $dataLuarKota = $parameter->getcombodata('UPAH SUPIR LUAR KOTA', 'UPAH SUPIR LUAR KOTA');
             $dataLuarKota = json_decode($dataLuarKota, true);
             foreach ($dataLuarKota as $item) {
                 $statusLuarKota[] = $item['id'];
             }
-            
 
             $dataUpahZona = $parameter->getcombodata('STATUS UPAH ZONA', 'STATUS UPAH ZONA');
             $dataUpahZona = json_decode($dataUpahZona, true);
             foreach ($dataUpahZona as $item) {
                 $statusUpahZona[] = $item['id'];
             }
-           
 
             $getBukanUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'NON UPAH ZONA')->first();
             $getUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
@@ -108,7 +130,7 @@ class StoreUpahSupirRequest extends FormRequest
             } else if ($tarif_id == null && $this->tarif != '') {
                 $rulesTarif_id = [
                     // 'tarif_id' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, 'numeric', 'min:1', new ExistTarif()]
-                    'tarif_id' => [ 'numeric', 'min:1', new ExistTarif()]
+                    'tarif_id' => ['numeric', 'min:1', new ExistTarif()]
                 ];
             }
 
@@ -192,8 +214,8 @@ class StoreUpahSupirRequest extends FormRequest
             $tglbatasawal = (date('Y-m-d', strtotime('-7 days')));
             $tglbatasakhir = (date('Y-m-d', strtotime('+7 days')));
             $rules =  [
-                'kotadari' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiDariSimpanKandangUpahSupir(), new ValidasiKotaUpahZona($getBukanUpahZona->id),new ValidasiKotaMilikZonaRule($this->kotadari_id,$this->kotasampai_id)],
-                'kotasampai' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id),new UniqueUpahSupirKotaSampai(),new ValidasiKotaMilikZonaRule($this->kotadari_id,$this->kotasampai_id)],
+                'kotadari' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiDariSimpanKandangUpahSupir(), new ValidasiKotaUpahZona($getBukanUpahZona->id), new ValidasiKotaMilikZonaRule($this->kotadari_id, $this->kotasampai_id)],
+                'kotasampai' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id), new UniqueUpahSupirKotaSampai(), new ValidasiKotaMilikZonaRule($this->kotadari_id, $this->kotasampai_id)],
                 'zonadari' => ['required_if:statusupahzona,=,' . $getUpahZona->id, new ValidasiZonaUpahZona($getUpahZona->id)],
                 'zonasampai' => ['required_if:statusupahzona,=,' . $getUpahZona->id, new ValidasiZonaUpahZona($getUpahZona->id)],
                 // 'tarif' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id)],
@@ -201,8 +223,8 @@ class StoreUpahSupirRequest extends FormRequest
                 'penyesuaian' => [new UniqueUpahSupirSampai(), new ValidasiPenyesuaianUpahSupir(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
                 'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
                 'jarakfullempty' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
-                'statusaktif' => ['required', Rule::in($statusAktif)],
-                'statuslangsir' => ['required', Rule::in($statuslangsir)],
+                'statusaktifnama' => ['required'],
+                'statuslangsirnama' => ['required'],
                 'statuslangsirnama' => ['required'],
                 'statusupahzona' => ['required', Rule::in($statusUpahZona)],
                 'tglmulaiberlaku' => [
@@ -212,10 +234,10 @@ class StoreUpahSupirRequest extends FormRequest
             $rulesGambar = [];
             if (request()->from == null) {
                 $rulesGambar = [
-                    'gambar.*' => ['image','min:50']
+                    'gambar.*' => ['image', 'min:50']
                 ];
             }
-            
+
 
             $getListTampilan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'UBAH TAMPILAN')->where('text', 'UPAHSUPIR')->first();
             $getListTampilan = json_decode($getListTampilan->memo);
@@ -244,7 +266,9 @@ class StoreUpahSupirRequest extends FormRequest
                     $rulesKotaSampai_id,
                     $rulesZonaDari_id,
                     $rulesZonaSampai_id,
-                    $rulesGambar
+                    $rulesGambar,
+                    $rulesStatusAktif,
+                    $rulesStatusLangsir
                 );
             }
             if ((request()->tarifmuatan_id != 0 || request()->tarifmuatan_id != '') && (request()->tarifbongkaran_id != 0 || request()->tarifbongkaran_id != '')) {

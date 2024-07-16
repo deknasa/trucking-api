@@ -729,4 +729,24 @@ class StokController extends Controller
             throw $th;
         }
     }
+
+    // public function getstokvendor(ApprovalKaryawanRequest $request)
+    // {
+    //     DB::beginTransaction();
+
+    //     try {
+    //         $data = [
+    //             'Id' => $request->Id
+    //         ];
+    //         (new Stok())->processApprovalaktif($data);
+
+    //         DB::commit();
+    //         return response([
+    //             'message' => 'Berhasil'
+    //         ]);
+    //     } catch (\Throwable $th) {
+    //         DB::rollBack();
+    //         throw $th;
+    //     }
+    // }
 }

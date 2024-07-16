@@ -146,6 +146,7 @@ class PenerimaanTruckingController extends Controller
                 "accessTokenTnl" => $request->accessTokenTnl ?? '',
 
             ];
+            // dd($data);
             // $penerimaanTrucking = (new PenerimaanTrucking())->processStore($data);
             $penerimaanTrucking = new PenerimaanTrucking();
             $penerimaanTrucking->processStore($data, $penerimaanTrucking);            

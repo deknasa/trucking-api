@@ -205,11 +205,12 @@ class ContainerController extends Controller
     }
 
 
-    public function show(Container $container)
+    public function show($id)
     {
+        $container = new Container();
         return response([
             'status' => true,
-            'data' => $container
+            'data' => $container->findAll($id)
         ]);
     }
 

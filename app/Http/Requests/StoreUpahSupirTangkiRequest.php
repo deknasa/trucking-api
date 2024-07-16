@@ -29,7 +29,7 @@ class StoreUpahSupirTangkiRequest extends FormRequest
      */
     public function rules()
     {
-        
+
         if (request()->from != '') {
             return [];
         }
@@ -39,7 +39,18 @@ class StoreUpahSupirTangkiRequest extends FormRequest
         foreach ($dataAktif as $item) {
             $statusAktif[] = $item['id'];
         }
-        
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($statusAktif)]
+            ];
+        } else if ($statusaktif == null && $this->statusaktifnama != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($statusAktif)]
+            ];
+        }
+
 
         $kotadari_id = $this->kotadari_id;
         $rulesKotaDari_id = [];
@@ -73,37 +84,38 @@ class StoreUpahSupirTangkiRequest extends FormRequest
             'kotasampai' => [new UniqueUpahSupirTangkiKotaSampai()],
             'penyesuaian' => [new UniqueUpahSupirTangkiSampai(), new validasiPenyesuaianUpahSupirTangki()],
             'jarak' => ['required', 'numeric', 'gt:0',],
-            'statusaktif' => ['required', Rule::in($statusAktif)],
+            'statusaktifnama' => ['required'],
             'tglmulaiberlaku' => [
                 'required', 'date_format:d-m-Y',
             ],
             'triptangki' => 'required|array',
             'triptangki.*' => 'required',
             'triptangki_id.*' => 'required',
-            'nominalsupir.*' => ['required','numeric','min:0'],
-            
+            'nominalsupir.*' => ['required', 'numeric', 'min:0'],
+
         ];
         $rulesGambar = [];
         if (request()->from == null) {
             $rulesGambar = [
-                'gambar.*' => ['image','min:100']
+                'gambar.*' => ['image', 'min:100']
             ];
         }
         $rules = array_merge(
             $rules,
             $rulesKotaDari_id,
             $rulesKotaSampai_id,
-            $rulesGambar
+            $rulesGambar,
+            $rulesStatusAktif
         );
         return $rules;
     }
-    
+
     public function attributes()
     {
         return [
             'kotadari' => 'kota dari',
             'kotasampai' => 'kota sampai',
-            'statusaktif' => 'status aktif',
+            'statusaktifnama' => 'status aktif',
             'tglmulaiberlaku' => 'tanggal mulai berlaku',
             'triptangki.*' => 'trip',
             'nominalsupir.*' => 'nominal supir'

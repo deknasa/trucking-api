@@ -3256,6 +3256,19 @@ class SuratPengantar extends MyModel
                     ->where('a.subgrp', 'JENIS ORDERAN EXPORT')
                     ->first()->id;
 
+                $idkandang = (new Parameter())->cekText('KANDANG', 'KANDANG') ?? 0;
+                if (($suratPengantar->dari_id == 1 && $suratPengantar->sampai_id == $idkandang) || ($suratPengantar->dari_id == $idkandang && $suratPengantar->sampai_id == 1)) {
+                    $tarifId = $suratPengantar->tarifrincian_id;
+                    goto cek;
+                }
+                if ($suratPengantar->statuslongtrip == 65) {
+                    $tarifId = $suratPengantar->tarifrincian_id;
+                    goto cek;
+                }
+                if ($suratPengantar->statuslongtrip == 66 && $suratPengantar->nobukti_tripasal != '') {
+                    $tarifId = $suratPengantar->tarifrincian_id;
+                    goto cek;
+                }
                 $getTarif = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
                     ->select(db::raw("(case when isnull(tarifmuatan.id,0)<>0 and " . $jenisorderanmuatan . "=" . $data['jenisorder_id']  . " then isnull(tarifmuatan.id,0)  
                     when isnull(tarifbongkaran.id,0)<>0 and " . $jenisorderanbongkaran . "=" . $data['jenisorder_id']  . "then isnull(tarifbongkaran.id,0)  
@@ -3271,8 +3284,10 @@ class SuratPengantar extends MyModel
                     ->where('upahsupir.id', $suratPengantar->upah_id)
                     ->first();
 
+                $tarifId = $getTarif->tarif_id ?? 0;
+                cek:
                 $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $suratPengantar->upah_id)->where('container_id', $data['container_id'])->where('statuscontainer_id', $suratPengantar->statuscontainer_id)->first();
-                $tarif = TarifRincian::where('tarif_id', $getTarif->tarif_id)->where('container_id', $data['container_id'])->first();
+                $tarif = TarifRincian::where('tarif_id', $tarifId)->where('container_id', $data['container_id'])->first();
                 $params = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'GAJI KENEK')->first();
                 $komisi_gajisupir = $params->text;
                 // if ($komisi_gajisupir == 'YA') {
@@ -3386,7 +3401,7 @@ class SuratPengantar extends MyModel
                 $suratPengantar->pelanggan_id = $data['pelanggan_id'];
                 $suratPengantar->container_id = $data['container_id'];
                 $suratPengantar->gandengan_id = $data['gandengan_id'];
-                $suratPengantar->tarif_id = $getTarif->tarif_id;
+                $suratPengantar->tarif_id = $tarifId;
                 $suratPengantar->nojob = $data['nojob'];
                 $suratPengantar->nojob2 = $data['nojob2'] ?? '';
                 $suratPengantar->nocont = $data['nocont'] ?? '';
@@ -3403,16 +3418,24 @@ class SuratPengantar extends MyModel
                 $suratPengantar->tolsupir = $upahsupirRincian->nominaltol;
                 $suratPengantar->liter = $upahsupirRincian->liter ?? 0;
                 $suratPengantar->omset = $tarifNominal;
-                $nominalPeralihan = 0;
-                if ($suratPengantar->persentaseperalihan != 0) {
-                    $nominalPeralihan = ($tarifNominal * ($suratPengantar->persentaseperalihan / 100));
-                }
+                // $nominalPeralihan = 0;
+                // if ($suratPengantar->persentaseperalihan != 0) {
+                //     $nominalPeralihan = ($tarifNominal * ($suratPengantar->persentaseperalihan / 100));
+                // }
 
                 // $suratPengantar->mandorsupir_id = $supir->mandor_id;
                 // $suratPengantar->mandortrado_id = $trado->mandor_id;
-                $suratPengantar->nominalperalihan = $nominalPeralihan;
+                $totalOmset = $tarifNominal - $suratPengantar->nominalperalihan;
+                if ($suratPengantar->statuslongtrip == 65) {
+                    $totalOmset = $suratPengantar->nominalperalihan;
+                }
+
+                if ($suratPengantar->statuslongtrip == 66 && $suratPengantar->nobukti_tripasal != '') {
+                    $totalOmset = $suratPengantar->nominalperalihan;
+                }
+                $suratPengantar->nominalperalihan = $suratPengantar->nominalperalihan;
                 $suratPengantar->persentaseperalihan = $suratPengantar->persentaseperalihan;
-                $suratPengantar->totalomset = $tarifNominal - ($tarifNominal * ($suratPengantar->persentaseperalihan / 100));
+                $suratPengantar->totalomset = $totalOmset;
 
                 // $suratPengantar->tarif_id = $data['tarif_id'];
 

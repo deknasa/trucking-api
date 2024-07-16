@@ -743,13 +743,14 @@ class PencairanGiroPengeluaranHeader extends MyModel
     public function processStore(array $data)
     {
 
-        $group = 'PENCAIRAN GIRO BUKTI';
-        $subGroup = 'PENCAIRAN GIRO BUKTI';
+        // $group = 'PENCAIRAN GIRO BUKTI';
+        // $subGroup = 'PENCAIRAN GIRO BUKTI';
 
-        $format = DB::table('parameter')
-            ->where('grp', $group)
-            ->where('subgrp', $subGroup)
-            ->first();
+        // $format = DB::table('parameter')
+        //     ->where('grp', $group)
+        //     ->where('subgrp', $subGroup)
+        //     ->first();
+
 
         if ($data['status'] == 591) {
 
@@ -761,6 +762,24 @@ class PencairanGiroPengeluaranHeader extends MyModel
                 if ($cekAsal == 'PBT') {
                     $pindahBuku = PindahBuku::from(DB::raw("pindahbuku with (readuncommitted)"))->where('nobukti', $data['nobukti'][$i])->first();
                     if ($pindahBuku != '') {
+                        $format=db::table("bank")->from(db::raw("bank a with (readuncommitted)"))
+                        ->select(
+                            'a.formatpencairan'
+                        )
+                        ->join(db::raw("pengeluaranheader b with (readuncommitted)"),'a.id','b.bank_id')
+                        ->where('b.nobukti',$data['nobukti'][$i])
+                        ->first()->formatpencairan ?? 674 ;
+
+                        $param=db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                        ->select (
+                            'a.grp',
+                            'a.subgrp',
+                        )
+                        ->where('a.id', $format)
+                        ->first();
+                        $group=$param->grp ?? '';
+                        $subGroup=$param->subgrp ?? '';                        
+        
                         $cekPencairan = PencairanGiroPengeluaranHeader::from(DB::raw("pencairangiropengeluaranheader with (readuncommitted)"))->where('pengeluaran_nobukti', $pindahBuku->nobukti)->first();
                         if ($cekPencairan != null) {
                             $getJurnalHeader = JurnalUmumHeader::where('nobukti', $cekPencairan->nobukti)->first();
@@ -779,7 +798,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                             $pencairanGiro->tglapproval = '';
                             $pencairanGiro->modifiedby = auth('api')->user()->name;
                             $pencairanGiro->info = html_entity_decode(request()->info);
-                            $pencairanGiro->statusformat = $format->id;
+                            $pencairanGiro->statusformat = $format;
 
                             if (!$pencairanGiro->save()) {
                                 throw new \Exception("Error storing pencairan giro pengeluaran header.");
@@ -851,6 +870,24 @@ class PencairanGiroPengeluaranHeader extends MyModel
                     }
                 } else {
 
+                    $format=db::table("bank")->from(db::raw("bank a with (readuncommitted)"))
+                    ->select(
+                        'a.formatpencairan'
+                    )
+                    ->join(db::raw("pengeluaranheader b with (readuncommitted)"),'a.id','b.bank_id')
+                    ->where('b.nobukti',$data['nobukti'][$i])
+                    ->first()->formatpencairan ?? 674 ;
+
+                    $param=db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                    ->select (
+                        'a.grp',
+                        'a.subgrp',
+                    )
+                    ->where('a.id', $format)
+                    ->first();
+                    $group=$param->grp ?? '';
+                    $subGroup=$param->subgrp ?? '';
+
                     $pengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))
                         ->select('nobukti', 'alatbayar_id', 'bank_id')->where('nobukti', $data['nobukti'][$i])->first();
                     if ($pengeluaran == null) {
@@ -878,7 +915,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                             $pencairanGiro->tglapproval = '';
                             $pencairanGiro->modifiedby = auth('api')->user()->name;
                             $pencairanGiro->info = html_entity_decode(request()->info);
-                            $pencairanGiro->statusformat = $format->id;
+                            $pencairanGiro->statusformat = $format;
 
                             if (!$pencairanGiro->save()) {
                                 throw new \Exception("Error storing pencairan giro pengeluaran header.");
@@ -975,7 +1012,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                             $pencairanGiro->tglapproval = '';
                             $pencairanGiro->modifiedby = auth('api')->user()->name;
                             $pencairanGiro->info = html_entity_decode(request()->info);
-                            $pencairanGiro->statusformat = $format->id;
+                            $pencairanGiro->statusformat = $format;
 
                             if (!$pencairanGiro->save()) {
                                 throw new \Exception("Error storing pencairan giro pengeluaran header.");
