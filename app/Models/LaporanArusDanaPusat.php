@@ -93,7 +93,7 @@ class LaporanArusDanaPusat extends MyModel
         }
         $bulan = request()->bulan??'';
 
-
+       
         $query = db::table($tempBulan)->from(db::raw($tempBulan . " a"))
             ->select(
                 'a.fKode',
@@ -113,7 +113,6 @@ class LaporanArusDanaPusat extends MyModel
             // dd(date('Y-m-d',strtotime($bulan)));
         }
     
-
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $this->sort($query);
