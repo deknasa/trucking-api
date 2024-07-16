@@ -386,6 +386,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('saldoumuraki/getUmurAki', [SaldoUmurAkiController::class, 'getUmurAki']);
     Route::get('saldoumuraki/getUmurAkiAll', [SaldoUmurAkiController::class, 'getUmurAkiAll']);
     Route::resource('saldoumuraki', SaldoUmurAkiController::class)->whereNumber('saldoumuraki');
+    Route::get('absensisupirheader/getStatusJeniskendaraan', [AbsensiSupirHeaderController::class, 'getStatusJeniskendaraan']);
 
     Route::resource('customer', CustomerController::class)->whereNumber('customer');
     Route::resource('jenisorder', JenisOrderController::class)->whereNumber('jenisorder');
