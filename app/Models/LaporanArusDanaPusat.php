@@ -87,7 +87,9 @@ class LaporanArusDanaPusat extends MyModel
             }
             $ptahun1 = $ptahun1 + 1;
         }
+        $bulan = request()->bulan??'';
 
+       
         $query = db::table($tempBulan)->from(db::raw($tempBulan . " a"))
             ->select(
                 'a.fKode',
@@ -97,6 +99,16 @@ class LaporanArusDanaPusat extends MyModel
                 'a.fTglDr',
                 'a.fTglSd',
             );
+
+        if ($bulan != '') {
+            $tanggal_dari = date('Y-m-d',strtotime($bulan));
+            $tanggal_sampai = date('Y-m-d',strtotime($tanggal_dari .' +1 month'));
+            // dd($tanggal_dari,$tanggal_sampai);
+            $query->where('a.fTglDr','>=',$tanggal_dari);
+            $query->where('a.fTglSd','<=',$tanggal_sampai);
+            // dd(date('Y-m-d',strtotime($bulan)));
+        }
+    
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $this->sort($query);
