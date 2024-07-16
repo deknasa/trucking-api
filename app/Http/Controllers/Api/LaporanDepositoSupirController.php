@@ -6,10 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\LaporanDepositoSupir;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\Parameter;
 
 class LaporanDepositoSupirController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -33,28 +34,33 @@ class LaporanDepositoSupirController extends Controller
         $sampai = $request->sampai;
         $jenis = $request->jenis;
         $periodedata_id = $request->periodedata_id ?? 0;
-        $prosesneraca=0;
+        $prosesneraca = 0;
 
-        $laporandepositosupir=new LaporanDepositoSupir();
+        $laporandepositosupir = new LaporanDepositoSupir();
         $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
             ->select('cabang.namacabang')
             ->join("parameter", 'parameter.text', 'cabang.id')
             ->where('parameter.grp', 'ID CABANG')
             ->first();
 
-            if ($periodedata_id ==665) {
-                    $data=$laporandepositosupir->getReportLama($sampai, $jenis,$prosesneraca);
-            } else {
-                $data=$laporandepositosupir->getReport($sampai, $jenis,$prosesneraca);
-            }
-        
-                // dd('test');
-                return response([
-                    'data' => $data,
-                    'namacabang' => 'CABANG ' . $getCabang->namacabang
-                ]);
-            }
-           
+        $parameter = new Parameter();
+
+        $tglsaldo = $parameter->cekText('SALDO', 'SALDO') ?? '1900-01-01';
+        $tglsaldo = date('Y-m-d', strtotime($tglsaldo));
+
+        if ($sampai < $tglsaldo) {
+            $data = $laporandepositosupir->getReportLama($sampai, $jenis, $prosesneraca);
+        } else {
+            $data = $laporandepositosupir->getReport($sampai, $jenis, $prosesneraca);
+        }
+
+        // dd('test');
+        return response([
+            'data' => $data,
+            'namacabang' => 'CABANG ' . $getCabang->namacabang
+        ]);
+    }
+
 
     /**
      * @ClassName
@@ -64,9 +70,9 @@ class LaporanDepositoSupirController extends Controller
     {
         $sampai = $request->sampai;
         $jenis = $request->jenis;
-        $prosesneraca=0;
+        $prosesneraca = 0;
 
-        $laporandepositosupir=new LaporanDepositoSupir();
+        $laporandepositosupir = new LaporanDepositoSupir();
         $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
             ->select('cabang.namacabang')
             ->join("parameter", 'parameter.text', 'cabang.id')
@@ -74,7 +80,7 @@ class LaporanDepositoSupirController extends Controller
             ->first();
 
         return response([
-            'data' => $laporandepositosupir->getReport($sampai, $jenis,$prosesneraca),
+            'data' => $laporandepositosupir->getReport($sampai, $jenis, $prosesneraca),
             'namacabang' => 'CABANG ' . $getCabang->namacabang
         ]);
     }
