@@ -247,14 +247,19 @@ class UpdateOrderanTruckingRequest extends FormRequest
                 $kondisiukuran = false;
             }
             $requiredGandengan =  Rule::requiredIf(function () {
-                $cekTrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar as sp with (readuncommitted)"))
-                ->select('trado.statusgerobak')
-                ->join(DB::raw("trado with (readuncommitted)"), 'sp.trado_id', 'trado.id')
-                ->where('sp.jobtrucking', $this->nobukti)->first();
-                $idgerobak = (new Parameter())->cekId('STATUS GEROBAK', 'STATUS GEROBAK', 'GEROBAK');
-                if($cekTrip->statusgerobak == $idgerobak){
+                $idCabang = (new Parameter())->cekText('ID CABANG', 'ID CABANG');
+                if ($idCabang != 2) {
                     return false;
-                }else{
+                }
+
+                $cekTrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar as sp with (readuncommitted)"))
+                    ->select('trado.statusgerobak')
+                    ->join(DB::raw("trado with (readuncommitted)"), 'sp.trado_id', 'trado.id')
+                    ->where('sp.jobtrucking', $this->nobukti)->first();
+                $idgerobak = (new Parameter())->cekId('STATUS GEROBAK', 'STATUS GEROBAK', 'GEROBAK');
+                if ($cekTrip->statusgerobak == $idgerobak) {
+                    return false;
+                } else {
                     return true;
                 }
             });
