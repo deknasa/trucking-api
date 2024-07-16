@@ -26,6 +26,7 @@ class StorePenerimaanTruckingRequest extends FormRequest
      */
     public function rules()
     {
+        // dd($this->format);
         if (request()->from == 'tas') {
             return [];
         }
@@ -34,6 +35,35 @@ class StorePenerimaanTruckingRequest extends FormRequest
         $dataFormat = json_decode($dataFormat, true);
         foreach ($dataFormat as $item) {
             $format[] = $item['id'];
+        }
+        $statusformat = $this->input("format");
+        $rulesFormat = [];
+        if ($format != null) {
+            $rulesFormat = [
+                'format' => ['required', Rule::in($statusformat)]
+            ];
+        } else if ($format == null && $this->formatnama != '') {
+            $rulesFormat = [
+                'format' => ['required', Rule::in($statusformat)]
+            ];
+        }
+
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        } else if ($statusaktif == null && $this->statusaktifnama != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
         }
 
         $coadebet = $this->coadebet;
@@ -117,12 +147,13 @@ class StorePenerimaanTruckingRequest extends FormRequest
         }
 
         $rules =  [
-            'kodepenerimaan' => ['required','unique:penerimaantrucking'],
-            'format' => ['required', Rule::in($format)],
+            'kodepenerimaan' => ['required', 'unique:penerimaantrucking'],
+            'formatnama' => ['required'],
             'coadebetKeterangan' => 'required',
             'coakreditKeterangan' => 'required',
             'coapostingdebetKeterangan' => 'required',
             'coapostingkreditKeterangan' => 'required',
+            'statusaktifnama' => ['required'],
         ];
 
         $rule = array_merge(
@@ -130,7 +161,9 @@ class StorePenerimaanTruckingRequest extends FormRequest
             $rulesCoaDebet,
             $rulesCoaKredit,
             $rulesCoaPostingDebet,
-            $rulesCoaPostingKredit
+            $rulesCoaPostingKredit,
+            $rulesStatusAktif,
+            $rulesFormat
         );
 
         return $rule;
@@ -141,7 +174,8 @@ class StorePenerimaanTruckingRequest extends FormRequest
         return [
             'kodepenerimaan' => 'kode penerimaan',
             'keterangan' => 'keterangan',
-            'format' => 'format bukti',
+            'formatnama' => 'format bukti',
+            'statusaktifnama' => 'status aktif',
             'coadebetKeterangan' => 'coa debet',
             'coakreditKeterangan' => 'coa kredit',
             'coapostingdebetKeterangan' => 'coa posting debet',
@@ -155,7 +189,8 @@ class StorePenerimaanTruckingRequest extends FormRequest
 
         return [
             'kodepenerimaan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'format.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'formatnama.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktifnama.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'coadebetKeterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'coakreditKeterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'coapostingdebetKeterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,

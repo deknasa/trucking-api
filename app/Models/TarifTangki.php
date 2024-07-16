@@ -238,36 +238,36 @@ class TarifTangki extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
             $table->unsignedBigInteger('statuspenyesuaianharga')->nullable();
+            $table->string('statuspenyesuaianharganama', 300)->nullable();
             $table->unsignedBigInteger('statuspostingtnl')->nullable();
         });
 
-        $status = Parameter::from(
+        $statusAktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
 
-        $iddefaultstatusaktif = $status->id ?? 0;
 
-
-        $status = Parameter::from(
+        $statusPenyesuaianHarga = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'PENYESUAIAN HARGA')
             ->where('subgrp', '=', 'PENYESUAIAN HARGA')
             ->where('default', '=', 'YA')
             ->first();
-
-        $iddefaultstatuspenyesuaianharga = $status->id ?? 0;
 
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
@@ -284,8 +284,10 @@ class TarifTangki extends MyModel
 
         DB::table($tempdefault)->insert(
             [
-                "statusaktif" => $iddefaultstatusaktif,
-                "statuspenyesuaianharga" => $iddefaultstatuspenyesuaianharga,
+                "statusaktif" => $statusAktif->id ?? 0,
+                "statusaktifnama" => $statusAktif->text ?? "",
+                "statuspenyesuaianharga" => $statusPenyesuaianHarga->id ?? 0,
+                "statuspenyesuaianharganama" => $statusPenyesuaianHarga->text ?? "",
                 "statuspostingtnl" => $iddefaultstatuspostingtnl,
             ]
         );
@@ -295,7 +297,9 @@ class TarifTangki extends MyModel
         )
             ->select(
                 'statusaktif',
+                'statusaktifnama',
                 'statuspenyesuaianharga',
+                'statuspenyesuaianharganama',
                 'statuspostingtnl',
             );
 
@@ -606,7 +610,9 @@ class TarifTangki extends MyModel
                 'tariftangki.tglmulaiberlaku',
                 'tariftangki.nominal',
                 'tariftangki.statuspenyesuaianharga',
-                'tariftangki.keterangan'
+                'tariftangki.keterangan',
+                'param_statusaktif.text as statusaktifnama',
+                'param_statuspnyharga.text as statuspenyesuaianharganama'
             )
 
             ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tariftangki.kota_id', '=', 'kota.id')
@@ -614,6 +620,8 @@ class TarifTangki extends MyModel
             ->leftJoin(DB::raw("upahsupirtangki as upahsupirtangki with (readuncommitted)"), 'upahsupirtangki.tariftangki_id', '=', 'tariftangki.id')
             ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupirtangki.kotadari_id')
             ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupirtangki.kotasampai_id')
+            ->leftJoin(DB::raw("parameter as param_statusaktif with (readuncommitted)"), 'tariftangki.statusaktif', '=', 'param_statusaktif.id')
+            ->leftJoin(DB::raw("parameter as param_statuspnyharga with (readuncommitted)"), 'tariftangki.statuspenyesuaianharga', '=', 'param_statuspnyharga.id')
             ->where('tariftangki.id', $id);
 
         $data = $query->first();

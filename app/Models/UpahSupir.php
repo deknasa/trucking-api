@@ -337,6 +337,7 @@ class UpahSupir extends MyModel
             'zona.keterangan as zona',
             DB::raw("(case when upahsupir.zona_id=0 then null else upahsupir.zona_id end) as zona_id"),
             'upahsupir.statusaktif',
+            'statusaktif.text as statusaktifnama',
             'upahsupir.statusupahzona',
             'upahsupir.statuspostingtnl',
             'upahsupir.statussimpankandang',
@@ -373,6 +374,7 @@ class UpahSupir extends MyModel
             ->leftJoin(DB::raw("tarif as tarifimport with (readuncommitted)"), 'upahsupir.tarifimport_id', 'tarifimport.id')
             ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'upahsupir.statusluarkota', 'statusluarkota.id')
             ->leftJoin(DB::raw("parameter as statuslangsir with (readuncommitted)"), 'upahsupir.statuslangsir', 'statuslangsir.id')
+            ->leftJoin(DB::raw("parameter as statusaktif with (readuncommitted)"), 'upahsupir.statusaktif', 'statusaktif.id')
 
             ->where('upahsupir.id', $id);
 
@@ -389,26 +391,26 @@ class UpahSupir extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
             $table->unsignedBigInteger('statusluarkota')->nullable();
             $table->unsignedBigInteger('statussimpankandang')->nullable();
             $table->unsignedBigInteger('statusupahzona')->nullable();
             $table->unsignedBigInteger('statuspostingtnl')->nullable();
             $table->unsignedBigInteger('statuslangsir')->nullable();
-            $table->string('statuslangsirnama')->nullable();
+            $table->string('statuslangsirnama', 300)->nullable();
         });
 
-        $status = Parameter::from(
+        $statusAktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
-
-        $iddefaultstatusaktif = $status->id ?? 0;
 
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
@@ -462,6 +464,7 @@ class UpahSupir extends MyModel
             ->first();
 
         $iddefaultstatusPostingTnl = $status->id ?? 0;
+
         $statuslangsir = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
@@ -474,11 +477,17 @@ class UpahSupir extends MyModel
             ->where('default', '=', 'YA')
             ->first();
 
-        $iddefaultstatusLangsir = $statuslangsir->id ?? 0;
-        $namadefaultstatusLangsir = $statuslangsir->text ?? '';
-
         DB::table($tempdefault)->insert(
-            ["statusaktif" => $iddefaultstatusaktif, "statusluarkota" => $iddefaultstatusluarkota, "statussimpankandang" => $iddefaultstatusSimpanKandang, "statusupahzona" => $iddefaultstatusUpahZona, "statuspostingtnl" => $iddefaultstatusPostingTnl,"statuslangsir" =>$iddefaultstatusLangsir,"statuslangsirnama" =>$namadefaultstatusLangsir]
+            [
+                "statusaktif" => $statusAktif->id ?? 0,
+                "statusaktifnama" => $statusAktif->text ?? "",
+                "statusluarkota" => $iddefaultstatusluarkota,
+                "statussimpankandang" => $iddefaultstatusSimpanKandang,
+                "statusupahzona" => $iddefaultstatusUpahZona,
+                "statuspostingtnl" => $iddefaultstatusPostingTnl,
+                "statuslangsir" => $statuslangsir->id ?? 0,
+                "statuslangsirnama" => $statuslangsir->text ?? ''
+            ]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -486,6 +495,7 @@ class UpahSupir extends MyModel
         )
             ->select(
                 'statusaktif',
+                'statusaktifnama',
                 'statusluarkota',
                 'statussimpankandang',
                 'statusupahzona',
@@ -1078,7 +1088,7 @@ class UpahSupir extends MyModel
         return $query;
     }
 
-    private function deleteFiles(UpahSupir $upahsupir,$from = null)
+    private function deleteFiles(UpahSupir $upahsupir, $from = null)
     {
         $sizeTypes = ['', 'medium_', 'small_'];
 
@@ -1107,11 +1117,11 @@ class UpahSupir extends MyModel
 
             $randomValue = substr($originalFileName, rand(0, strlen($originalFileName) - 10), 10) . '.jpg';
             $imageData = base64_decode($file);
-            
+
             $storedFile = Storage::disk('toTnl')->putFileAs($destinationFolder, $file, $originalFileName);
             $pathDestination = Storage::disk('toTnl')->getDriver()->getAdapter()->applyPathPrefix(null);
-            $resizedFiles = App::imageResize($pathDestination.$destinationFolder.'/', $pathDestination.$destinationFolder.'/'.$originalFileName, $originalFileName);
-            
+            $resizedFiles = App::imageResize($pathDestination . $destinationFolder . '/', $pathDestination . $destinationFolder . '/' . $originalFileName, $originalFileName);
+
             // $storedFile = Storage::put($destinationFolder . '/' . $randomValue, $imageData);
             // $resizedFiles = App::imageResize(storage_path("app/$destinationFolder/"), storage_path("app/upahsupir/$randomValue"), $randomValue);
             $storedFiles[] = $randomValue;
@@ -1134,7 +1144,7 @@ class UpahSupir extends MyModel
 
         return json_encode($storedFiles);
     }
-    public function processStore(array $data,UpahSupir $upahsupir,$connecTnl = null): UpahSupir
+    public function processStore(array $data, UpahSupir $upahsupir, $connecTnl = null): UpahSupir
     {
         try {
             $group = 'STATUS SIMPAN KANDANG';
@@ -1151,13 +1161,13 @@ class UpahSupir extends MyModel
             $belawan = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))
                 ->where('kodekota', 'BELAWAN')
                 ->first();
-                
+
             if ($belawan) {
                 if ($belawan->id == $data['kotadari_id']) {
                     $data['statussimpankandang'] = $statusSimpanKandang->id;
                 }
             }
-            
+
             /**
              * 
              if ($data['from'] != '') {
@@ -1248,8 +1258,8 @@ class UpahSupir extends MyModel
             $upahsupir->keterangan = $data['keterangan'] ?? '';
             $upahsupir->modifiedby = auth('api')->user()->user;
             $upahsupir->info = html_entity_decode(request()->info);
-            $upahsupir->tas_id = $data['tas_id'];            
-            $this->deleteFiles($upahsupir,$data['from'] != '');
+            $upahsupir->tas_id = $data['tas_id'];
+            $this->deleteFiles($upahsupir, $data['from'] != '');
             if (array_key_exists('gambar', $data)) {
                 if ($data['from'] != '') {
                     $upahsupir->gambar = $this->storeFilesBase64($data['gambar'], 'upahsupir');
@@ -1291,14 +1301,13 @@ class UpahSupir extends MyModel
                     'nominalkomisi' => $data['nominalkomisi'][$i] ?? 0,
                     'nominaltol' =>  $data['nominaltol'][$i] ?? 0,
                     'liter' => $data['liter'][$i] ?? 0,
-                    'tas_id' => $data['detail_tas_id'][$i]??0,
+                    'tas_id' => $data['detail_tas_id'][$i] ?? 0,
                 ];
-                
-                
-                $upahsupirDetail = $upahsupirDetail->processStore( $datadetail,$upahsupirDetail,$connecTnl);
+
+
+                $upahsupirDetail = $upahsupirDetail->processStore($datadetail, $upahsupirDetail, $connecTnl);
                 $detaillog[] = $upahsupirDetail->toArray();
                 $upahsupir->detailTasId[] = $upahsupirDetail->id;
-                
             }
             $logtrail = new LogTrail();
             if ($connecTnl) {
@@ -1349,7 +1358,7 @@ class UpahSupir extends MyModel
                 $upahsupirKandang->keterangan = $data['keterangan'];
                 $upahsupirKandang->modifiedby = auth('api')->user()->user;
                 $upahsupirKandang->info = html_entity_decode(request()->info);
-                $this->deleteFiles($upahsupirKandang,$data['from'] != '');
+                $this->deleteFiles($upahsupirKandang, $data['from'] != '');
                 if (array_key_exists('gambar', $data)) {
                     // $upahsupirKandang->gambar = $this->storeFiles($data['gambar'], 'upahsupir');
                     if ($data['from'] != '') {
@@ -1394,11 +1403,11 @@ class UpahSupir extends MyModel
                         'nominalkomisi' => ($nomKomisi < 0) ? 0 : $nomKomisi,
                         'nominaltol' => ($nomTol < 0) ? 0 : $nomTol,
                         'liter' => ($liter < 0) ? 0 : $liter,
-                        'tas_id' => $getRincianBelawanKandang[$i]->tas_id??0,
+                        'tas_id' => $getRincianBelawanKandang[$i]->tas_id ?? 0,
                     ];
-                    
-                    
-                    $upahsupirDetail = $upahsupirDetail->processStore( $datadetail,$upahsupirDetail,$connecTnl);
+
+
+                    $upahsupirDetail = $upahsupirDetail->processStore($datadetail, $upahsupirDetail, $connecTnl);
 
                     $detaillog[] = $upahsupirDetail->toArray();
                 }
@@ -1430,12 +1439,12 @@ class UpahSupir extends MyModel
 
             return $upahsupir;
         } catch (\Throwable $th) {
-            $this->deleteFiles($upahsupir,array_key_exists('from',$data));
+            $this->deleteFiles($upahsupir, array_key_exists('from', $data));
             throw $th;
         }
     }
 
-    public function processUpdate(UpahSupir $upahsupir, array $data,$connecTnl = null): UpahSupir
+    public function processUpdate(UpahSupir $upahsupir, array $data, $connecTnl = null): UpahSupir
     {
         try {
             $upahsupir->kotadari_id = $data['kotadari_id'] ?? 0;
@@ -1460,7 +1469,7 @@ class UpahSupir extends MyModel
             $upahsupir->modifiedby = auth('api')->user()->user;
             $upahsupir->info = html_entity_decode(request()->info);
 
-            $this->deleteFiles($upahsupir,array_key_exists('from',$data));
+            $this->deleteFiles($upahsupir, array_key_exists('from', $data));
             if (array_key_exists('gambar', $data)) {
                 $upahsupir->gambar = $this->storeFiles($data['gambar'], 'upahsupir');
             } else {
@@ -1500,11 +1509,11 @@ class UpahSupir extends MyModel
                     'nominalkomisi' => $data['nominalkomisi'][$i] ?? 0,
                     'nominaltol' =>  $data['nominaltol'][$i] ?? 0,
                     'liter' => $data['liter'][$i] ?? 0,
-                    'tas_id' => $data['detail_tas_id'][$i]??0,
+                    'tas_id' => $data['detail_tas_id'][$i] ?? 0,
                 ];
-                
-                
-                $upahsupirDetail = $upahsupirDetail->processStore( $datadetail,$upahsupirDetail);
+
+
+                $upahsupirDetail = $upahsupirDetail->processStore($datadetail, $upahsupirDetail);
                 $detaillog[] = $upahsupirDetail->toArray();
                 $upahsupir->detailTasId[] = $upahsupirDetail->id;
             }
@@ -1524,7 +1533,7 @@ class UpahSupir extends MyModel
 
             return $upahsupir;
         } catch (\Throwable $th) {
-            $this->deleteFiles($upahsupir,array_key_exists('from',$data));
+            $this->deleteFiles($upahsupir, array_key_exists('from', $data));
             throw $th;
         }
     }
@@ -1652,7 +1661,7 @@ class UpahSupir extends MyModel
     public function getRincian($statuskandang, $upah_id, $container_id, $statuscontainer_id)
     {
         if ($statuscontainer_id != '' && $container_id != '' && $upah_id != '') {
-          
+
             $parameter = new Parameter();
             $idstatuskandang = $parameter->cekId('STATUS KANDANG', 'STATUS KANDANG', 'KANDANG') ?? 0;
             $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;

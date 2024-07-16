@@ -30,23 +30,35 @@ class StoreMandorRequest extends FormRequest
     public function rules()
     {
         $mandor = (new Mandor())->select('user.name')->leftJoin(DB::raw("[user] with (readuncommitted)"), 'mandor.user_id', '=', 'user.id')->get();
-        $namauser=[];
+        $namauser = [];
         foreach ($mandor as $item) {
             if ($item->name) {
                 $namauser[] = $item->name;
             }
-        } 
+        }
         $parameter = new Parameter();
         $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
         $data = json_decode($data, true);
         foreach ($data as $item) {
             $status[] = $item['id'];
-        } 
+        }
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        } else if ($statusaktif == null && $this->statusaktifnama != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        }
+
         return [
             'namamandor' => 'required|unique:mandor',
-            'statusaktif' => ['required', Rule::in($status)],
+            'statusaktifnama' => ['required'],
             'user' => ['nullable', Rule::notIn($namauser)],
-            'user_id' => ['nullable','unique:mandor'],
+            'user_id' => ['nullable', 'unique:mandor'],
         ];
     }
 
@@ -54,9 +66,8 @@ class StoreMandorRequest extends FormRequest
     {
         return [
             'namamandor' => 'nama mandor',
-            'statusaktif' => 'status aktif',
+            'statusaktifnama' => ['required'],
             'user_id' => 'user',
         ];
-        
     }
 }

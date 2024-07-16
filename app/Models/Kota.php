@@ -211,6 +211,7 @@ class Kota extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
         });
 
         $statusaktif = Parameter::from(
@@ -218,19 +219,21 @@ class Kota extends MyModel
         )
             ->select(
                 'memo',
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
 
-        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id ?? 0, "statusaktifnama" => $statusaktif->text ?? ""]);
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
             ->select(
-                'statusaktif'
+                'statusaktif',
+                'statusaktifnama'
             );
 
         $data = $query->first();
@@ -241,8 +244,9 @@ class Kota extends MyModel
     {
 
         $query = Kota::from(DB::raw("kota with (readuncommitted)"))
-            ->select(DB::raw('kota.*, zona.zona as zona'))
-            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'kota.zona_id', 'zona.id')->whereRaw("kota.id = $id");
+            ->select(DB::raw('kota.*, zona.zona as zona, parameter.text as statusaktifnama'))
+            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'kota.zona_id', 'zona.id')->whereRaw("kota.id = $id")
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kota.statusaktif', '=', 'parameter.id');
 
         $data = $query->first();
         return $data;

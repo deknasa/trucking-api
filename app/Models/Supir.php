@@ -385,25 +385,27 @@ class Supir extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
             $table->unsignedBigInteger('statusadaupdategambar')->nullable();
             $table->unsignedBigInteger('statusluarkota')->nullable();
             $table->unsignedBigInteger('statuszonatertentu')->nullable();
             $table->unsignedBigInteger('statusblacklist')->nullable();
             $table->unsignedBigInteger('statuspostingtnl')->nullable();
+            $table->string('statuspostingtnlnama', 300)->nullable();
         });
 
         // AKTIF
-        $statusaktif = Parameter::from(
+        $statusAktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('DEFAULT', '=', 'YA')
             ->first();
-        $iddefaultstatusaktif = $statusaktif->id ?? 0;
 
         // STATUS ADA UPDATE GAMBAR
         $status = Parameter::from(
@@ -464,28 +466,29 @@ class Supir extends MyModel
 
 
         $iddefaultstatusBlacklist = $status->id ?? 0;
-        $status = Parameter::from(
+        
+        $statusPostingTNL = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS POSTING TNL')
             ->where('subgrp', '=', 'STATUS POSTING TNL')
             ->where('default', '=', 'YA')
             ->first();
 
-        $iddefaultstatuspostingtnl = $status->id ?? 0;
-
-
         DB::table($tempdefault)->insert(
             [
-                "statusaktif" => $iddefaultstatusaktif,
+                "statusaktif" => $statusAktif->id ?? 0,
+                "statusaktifnama" => $statusAktif->text ?? "",
                 "statusadaupdategambar" => $iddefaultstatusUpdGambar,
                 "statusluarkota" => $iddefaultstatusLuarKota,
                 "statuszonatertentu" => $iddefaultstatusZonaTertentu,
                 "statusblacklist" => $iddefaultstatusBlacklist,
-                "statuspostingtnl" => $iddefaultstatuspostingtnl
+                "statuspostingtnl" => $statusPostingTNL->id ?? 0,
+                "statuspostingtnlnama" => $statusPostingTNL->text ?? ""
             ]
         );
 
@@ -494,11 +497,13 @@ class Supir extends MyModel
         )
             ->select(
                 'statusaktif',
+                'statusaktifnama',
                 'statusadaupdategambar',
                 'statusluarkota',
                 'statuszonatertentu',
                 'statusblacklist',
                 'statuspostingtnl',
+                'statuspostingtnlnama',
             );
 
         $data = $query->first();
@@ -618,7 +623,8 @@ class Supir extends MyModel
                 'supir.tglterbitsim',
                 'mandor.namamandor as mandor',
                 'supir.mandor_id',
-
+                'param_statusaktif.text as statusaktifnama',
+                'param_statuspostingtnl.text as statuspostingtnlnama',
                 'supir.modifiedby',
                 'supir.created_at',
                 'supir.updated_at',
@@ -646,7 +652,8 @@ class Supir extends MyModel
                 'supir.tglberlakumilikmandor as tglberlakumilikmandor',
 
             )
-
+            ->leftJoin(DB::raw("parameter as param_statusaktif with (readuncommitted)"), 'supir.statusaktif', 'param_statusaktif.id')
+            ->leftJoin(DB::raw("parameter as param_statuspostingtnl with (readuncommitted)"), 'supir.statuspostingtnl', 'param_statuspostingtnl.id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'supir.zona_id', 'zona.id')
             ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'supir.mandor_id', 'mandor.id')
             ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id')

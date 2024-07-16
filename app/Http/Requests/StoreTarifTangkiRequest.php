@@ -36,30 +36,60 @@ class StoreTarifTangkiRequest extends FormRequest
         foreach ($dataAktif as $item) {
             $statusAktif[] = $item['id'];
         }
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($statusAktif)]
+            ];
+        } else if ($statusaktif == null && $this->statusaktifnama != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($statusAktif)]
+            ];
+        }
+
         $dataPenyesuaian = $parameter->getcombodata('PENYESUAIAN HARGA', 'PENYESUAIAN HARGA');
         $dataPenyesuaian = json_decode($dataPenyesuaian, true);
         foreach ($dataPenyesuaian as $item) {
             $statusPenyesuaian[] = $item['id'];
         }
-        return [
+        $statuspenyesuaianharga = $this->statuspenyesuaianharg;
+        $rulesStatusPenyesuaianHarga = [];
+        if ($statuspenyesuaianharga != null) {
+            $rulesStatusPenyesuaianHarga = [
+                'statuspenyesuaianharga' => ['required', Rule::in($statusPenyesuaian)]
+            ];
+        } else if ($statuspenyesuaianharga == null && $this->statuspenyesuaianharganama != '') {
+            $rulesStatusPenyesuaianHarga = [
+                'statuspenyesuaianharga' => ['required', Rule::in($statusPenyesuaian)]
+            ];
+        }
+
+        $rules = [
             'nominal' => ['required', 'numeric', 'gt:0'],
             'kota' => ['required'],
             'tujuan' => ['required', new ValidasiTujuanKota()],
             'penyesuaian' => [new uniqueTujuanTarifTangki()],
-            'statusaktif' => ['required', Rule::in($statusAktif)],
-            'statuspenyesuaianharga' => ['required', Rule::in($statusPenyesuaian)],
+            'statusaktifnama' => ['required'],
+            'statuspenyesuaianharga' => ['required'],
             'tglmulaiberlaku' => [
                 'required', 'date_format:d-m-Y',
             ],
         ];
+        $rules = array_merge(
+            $rules,
+            $rulesStatusAktif,
+            $rulesStatusPenyesuaianHarga
+        );
+        return $rules;
     }
 
     public function attributes()
     {
         return [
-            'statusaktif' => 'Status Aktif',
+            'statusaktifnama' => 'Status Aktif',
             'tglmulaiberlaku' => 'Tanggal Mulai Berlaku',
-            'statuspenyesuaianharga' => 'Status Penyesuaian Harga'
+            'statuspenyesuaianharganama' => 'Status Penyesuaian Harga'
         ];
     }
 }

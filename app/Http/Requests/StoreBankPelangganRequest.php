@@ -32,21 +32,37 @@ class StoreBankPelangganRequest extends FormRequest
         foreach ($data as $item) {
             $status[] = $item['id'];
         }
-        
-        return [
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        } else if ($statusaktif == null && $this->statusaktifnama != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        }
+
+        $rules = [
             'kodebank' => ['required', 'unique:bankpelanggan'],
             'namabank' => ['required', 'unique:bankpelanggan'],
-            'statusaktif' => ['required', Rule::in($status),'numeric', 'min:1'],
+            'statusaktifnama' => ['required'],
         ];
+
+        $rules = array_merge(
+            $rules,
+            $rulesStatusAktif,
+        );
+        return $rules;
     }
 
-    
     public function attributes()
     {
         return [
             'kodebank' => 'kode bank',
             'namabank' => 'nama bank',
-            'statusaktif' => 'status aktif',
+            'statusaktifnama' => 'status aktif',
             'keterangan' => 'keterangan',
         ];
     }
@@ -54,12 +70,10 @@ class StoreBankPelangganRequest extends FormRequest
     // public function messages()
     // {
     //     $controller = new ErrorController;
-
     //     return [
     //         'kodebank.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
     //         'namabank.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
     //         'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            
     //     ];
     // }
 }

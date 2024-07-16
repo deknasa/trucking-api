@@ -50,13 +50,15 @@ class StoreUpahRitasiRequest extends FormRequest
             if ($kotasampai_id == 0) {
                 $rulesKotaSampai_id = [
                     'kotasampai_id' => [
-                        'required', 'numeric', 'min:1', new UniqueUpahRitasiSampai(), new ExistKota()]
+                        'required', 'numeric', 'min:1', new UniqueUpahRitasiSampai(), new ExistKota()
+                    ]
                 ];
             }
         } else if ($kotasampai_id == null && $this->kotasampai != '') {
             $rulesKotaSampai_id = [
                 'kotasampai_id' => [
-                    'required', 'numeric', 'min:1', new UniqueUpahRitasiSampai(), new ExistKota()]
+                    'required', 'numeric', 'min:1', new UniqueUpahRitasiSampai(), new ExistKota()
+                ]
             ];
         }
 
@@ -70,7 +72,7 @@ class StoreUpahRitasiRequest extends FormRequest
                 function ($attribute, $value, $fail) {
                     // Mendapatkan nilai kotadari_i d dari input atau model yang relevan
                     $kotadari_id = $this->kotadari_id;
-        
+
                     if ($value == $kotadari_id) {
                         // Jika kotasampai_id sama dengan kotadari_id, maka atur pesan kesalahan
                         $fail('Kota tujuan tidak boleh sama dengan Kota dari.');
@@ -78,7 +80,7 @@ class StoreUpahRitasiRequest extends FormRequest
                 },
             ],
         ];
-        
+
 
         $parameter = new Parameter();
         $dataAktif = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
@@ -86,13 +88,24 @@ class StoreUpahRitasiRequest extends FormRequest
         foreach ($dataAktif as $item) {
             $statusAktif[] = $item['id'];
         }
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($statusAktif)]
+            ];
+        } else if ($statusaktif == null && $this->statusaktifnama != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($statusAktif)]
+            ];
+        }
 
         $tglBatasAkhir = (date('Y') + 1) . '-01-01';
         $rules =  [
             'kotadari' => 'required',
-            'kotasampai' => ['required', new UniqueUpahRitasiSampai(),new ValidasiKotaSampaiUpahRitasi()],
+            'kotasampai' => ['required', new UniqueUpahRitasiSampai(), new ValidasiKotaSampaiUpahRitasi()],
             'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS NILAI JARAK', 'BATAS NILAI JARAK')->text],
-            'statusaktif' => ['required', Rule::in($statusAktif)],
+            'statusaktifnama' => ['required'],
             'tglmulaiberlaku' => [
                 'required', 'date_format:d-m-Y',
                 'before:' . $tglBatasAkhir,
@@ -110,7 +123,8 @@ class StoreUpahRitasiRequest extends FormRequest
                 $rules,
                 (new $relatedRequest)->rules(),
                 $rulesKotaDari_id,
-                $rulesKotaSampai_id
+                $rulesKotaSampai_id,
+                $rulesStatusAktif
             );
         }
 

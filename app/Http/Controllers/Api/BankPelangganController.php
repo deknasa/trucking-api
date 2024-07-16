@@ -193,11 +193,12 @@ class BankPelangganController extends Controller
         }
     }
 
-    public function show(BankPelanggan $bankpelanggan)
+    public function show($id)
     {
+        $bankpelanggan = new BankPelanggan();
         return response([
             'status' => true,
-            'data' => $bankpelanggan
+            'data' => $bankpelanggan->findAll($id)
         ]);
     }
 
