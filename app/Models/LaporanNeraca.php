@@ -1197,11 +1197,12 @@ class LaporanNeraca extends MyModel
 
                 $kas_idtnl = 6;
 
-                if ($tglsaldo == $tgluji) {
-                    $tglkasbank = date('Y-m-d', strtotime($tglsd1));
-                } else {
-                    $tglkasbank = date('Y-m-d', strtotime($tglsd1 . ' -1 days'));
-                }
+                // if ($tglsaldo == $tgluji) {
+                $tglkasbank = date('Y-m-d', strtotime($tglsd1));
+                // } else {
+                //     $tglkasbank = date('Y-m-d', strtotime($tglsd1 . ' -1 days'));
+                // }
+                // dd($tglkasbank, $kas_idtnl,$tgluji,$tglsd1);
                 DB::table($tempkastnl)->insertUsing([
                     'urut',
                     'urutdetail',
@@ -1428,6 +1429,7 @@ class LaporanNeraca extends MyModel
                 ]
             );
             if ($getcabang == 'MAKASSAR') {
+                // dd(db::table($tempkastnl)->get());
                 // kas fisik tnl
                 $coakastnl = DB::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
                     ->select(
@@ -1572,7 +1574,7 @@ class LaporanNeraca extends MyModel
                 ->first();
             $memo = json_decode($coakas->memo, true);
 
-
+            //    dd(db::table($tempkas)->get());
             $kas = db::table($tempkas)->from(db::raw($tempkas . " a"))
                 ->select(
                     db::raw("saldo as nominal")
@@ -1648,16 +1650,51 @@ class LaporanNeraca extends MyModel
                 ->delete();
 
 
+            if ($getcabangid == 1) {
+                $coalabarugiberjalan = '05.02.01.01';
+            } else if ($getcabangid == 2) {
+                $coalabarugiberjalan = '05.02.02.01';
+            } else if ($getcabangid == 3) {
+                $coalabarugiberjalan = '05.02.03.01';
+            } else if ($getcabangid == 4) {
+                $coalabarugiberjalan = '05.02.04.01';
+            } else if ($getcabangid == 5) {
+                $coalabarugiberjalan = '05.02.05.01';
+            } else if ($getcabangid == 6) {
+                $coalabarugiberjalan = '05.02.07.01';
+            } else if ($getcabangid == 7) {
+                $coalabarugiberjalan = '05.02.03.01';
+            } else {
+                $coalabarugiberjalan = '05.02.01.01';
+            }
 
+            $querytahunsaldo = db::table("akunpusatdetail")->from(db::raw("akunpusatdetail a with (readuncommitted)"))
+                ->select(
+                    'a.coa'
+                )
+                ->where('bulan', '=', 0)
+                ->whereRaw("tahun=" . $tahun)
+                ->whereRaw("coa='" . $coalabarugiberjalan . "'")
+                ->First();
 
-
-            $subquery1 = DB::table('jurnalumumpusatheader as J')
-                ->select('D.coamain as FCOA', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('round(SUM(D.nominal),2) as FNominal'))
-                ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
-                ->join('mainakunpusat as C', 'C.coa', '=', 'D.coamain')
-                ->where('D.tglbukti', '>=', $ptgl)
-                ->whereraw("D.coamain<>'05.02.03.01'")
-                ->groupBy('D.coamain', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
+                if (isset($querytahunsaldo)) {
+                    $subquery1 = DB::table('jurnalumumpusatheader as J')
+                    ->select('D.coamain as FCOA', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('round(SUM(D.nominal),2) as FNominal'))
+                    ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
+                    ->join('mainakunpusat as C', 'C.coa', '=', 'D.coamain')
+                    ->where('D.tglbukti', '>=', $ptgl)
+                    ->whereraw("D.coamain<>'" . $coalabarugiberjalan . "'")
+                    ->groupBy('D.coamain', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
+                } else {
+                    $subquery1 = DB::table('jurnalumumpusatheader as J')
+                    ->select('D.coamain as FCOA', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('round(SUM(D.nominal),2) as FNominal'))
+                    ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
+                    ->join('mainakunpusat as C', 'C.coa', '=', 'D.coamain')
+                    ->where('D.tglbukti', '>=', $ptgl)
+                    // ->whereraw("D.coamain<>'" . $coalabarugiberjalan . "'")
+                    ->groupBy('D.coamain', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
+                }
+        
 
             if ($cabang == 'SEMUA') {
                 $subquery2 = DB::table('jurnalumumpusatheader as J')
@@ -1731,7 +1768,7 @@ class LaporanNeraca extends MyModel
                 )
                 ->whereraw("a.tahun=year('" . $ptgl . "')")
                 ->whereraw("a.bulan=0")
-                ->whereraw("a.coa='05.02.03.01'")
+                ->whereraw("a.coa='" . $coalabarugiberjalan . "'")
                 ->first()->nominal ?? 0;
 
 
@@ -1795,7 +1832,7 @@ class LaporanNeraca extends MyModel
 
             $querysaldolr = db::table($tempsaldolabarugi)->from(db::raw($tempsaldolabarugi . " a"))
                 ->select(
-                    db::raw("'05.02.03.01' as coa"),
+                    db::raw("'" . $coalabarugiberjalan . "' as coa"),
                     'a.tahun',
                     'a.bulan',
                     db::raw("round((case when a.bulan>1 then a.nominal-isnull(b.nominal,0) else a.nominal end),2) as nominal"),
@@ -1809,19 +1846,24 @@ class LaporanNeraca extends MyModel
 
             // dd($querysaldolr->get());
 
-            DB::table('akunpusatdetail')
-                ->where('bulan', '<>', 0)
-                ->whereRaw("tahun=" . $tahun)
-                ->whereRaw("coa='05.02.03.01'")
-                ->delete();
 
-            DB::table('akunpusatdetail')->insertUsing([
-                'coa',
-                'tahun',
-                'bulan',
-                'nominal',
+            if (isset($querytahunsaldo)) {
+                // dd('test');
+                DB::table('akunpusatdetail')
+                    ->where('bulan', '<>', 0)
+                    ->whereRaw("tahun=" . $tahun)
+                    ->whereRaw("coa='" . $coalabarugiberjalan . "'")
+                    ->delete();
 
-            ], $querysaldolr);
+                DB::table('akunpusatdetail')->insertUsing([
+                    'coa',
+                    'tahun',
+                    'bulan',
+                    'nominal',
+
+                ], $querysaldolr);
+            }
+
 
 
 
@@ -2104,7 +2146,7 @@ class LaporanNeraca extends MyModel
                 ->where('d.tahun', $tahun)
                 ->whereRaw("d.bulan<=cast(" . $bulan . " as integer)")
                 ->where('d.order', '<', 4000)
-                ->whereraw("d.coa='05.02.03.01'");
+                ->whereraw("d.coa='" . $coalabarugiberjalan . "'");
 
             // dd($query2test->get());
 
