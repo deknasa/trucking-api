@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use Illuminate\Validation\Rule;
+
 class StoreContainerRequest extends FormRequest
 {
     /**
@@ -28,18 +29,36 @@ class StoreContainerRequest extends FormRequest
         if (request()->from == 'tas') {
             return [];
         }
-        
+
         $parameter = new Parameter();
         $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
         $data = json_decode($data, true);
         foreach ($data as $item) {
             $status[] = $item['id'];
         }
-        return [
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        } else if ($statusaktif == null && $this->statusaktifnama != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        }
+
+        $rules = [
             'kodecontainer' => 'required|unique:container',
             'nominalsumbangan' => 'required|gt:0|numeric',
-            'statusaktif' => ['required', Rule::in($status)],
+            'statusaktifnama' => ['required'],
         ];
+
+        $rules = array_merge(
+            $rules,
+            $rulesStatusAktif,
+        );
+        return $rules;
     }
 
     public function attributes()
@@ -47,7 +66,7 @@ class StoreContainerRequest extends FormRequest
         return [
             'kodecontainer' => 'Kode Container',
             'keterangan' => 'Keterangan',
-            'statusaktif' => 'Status Aktif',
+            'statusaktifnama' => 'Status Aktif',
             'nominalsumbangan' => 'Nominal Sumbangan',
         ];
     }
@@ -55,12 +74,12 @@ class StoreContainerRequest extends FormRequest
     public function messages()
     {
         $controller = new ErrorController;
-        
+
         return [
-            'kodecontainer.required' => ':attribute '. $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute '. $controller->geterror('WI')->keterangan,
-            'nominalsumbangan.required' => ':attribute '. $controller->geterror('WI')->keterangan
-          
+            'kodecontainer.required' => ':attribute ' . $controller->geterror('WI')->keterangan,
+            'statusaktifnama.required' => ':attribute ' . $controller->geterror('WI')->keterangan,
+            'nominalsumbangan.required' => ':attribute ' . $controller->geterror('WI')->keterangan
+
         ];
     }
 }

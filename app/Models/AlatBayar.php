@@ -221,56 +221,59 @@ class AlatBayar extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusdefault')->nullable();
+            $table->string('statusdefaultnama', 300)->nullable();
             $table->unsignedBigInteger('statuslangsungcair')->nullable();
+            $table->string('statuslangsungcairnama', 300)->nullable();
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
         });
 
         // STATUS DEFAULT
-        $status = Parameter::from(
+        $statusDefault = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS DEFAULT')
             ->where('subgrp', '=', 'STATUS DEFAULT')
             ->where('default', '=', 'YA')
             ->first();
 
-        $iddefaultstatusdefault = $status->id ?? 0;
-
         //  STATUS LANGSUNG CAIR
-        $status = Parameter::from(
+        $statusLangsungCair = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS LANGSUNG CAIR')
             ->where('subgrp', '=', 'STATUS LANGSUNG CAIR')
             ->where('default', '=', 'YA')
             ->first();
 
-        $iddefaultstatuslangsung = $status->id ?? 0;
-
-
-        $statusaktif = Parameter::from(
+        $statusAktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('DEFAULT', '=', 'YA')
             ->first();
 
-        $iddefaultstatusaktif = $statusaktif->id ?? 0;
-
         DB::table($tempdefault)->insert(
             [
-                "statusdefault" => $iddefaultstatusdefault, "statuslangsungcair" => $iddefaultstatuslangsung,
-                "statusaktif" => $iddefaultstatusaktif
+                "statusdefault" => $statusDefault->id ?? 0, 
+                "statusdefaultnama" => $statusDefault->text ?? "", 
+                "statuslangsungcair" => $statusLangsungCair->id ?? 0,
+                "statuslangsungcairnama" => $statusLangsungCair->text ?? "",
+                "statusaktif" => $statusAktif->id ?? 0,
+                "statusaktifnama" => $statusAktif->text ?? ""
             ]
         );
 
@@ -279,8 +282,11 @@ class AlatBayar extends MyModel
         )
             ->select(
                 'statusdefault',
+                'statusdefaultnama',
                 'statuslangsungcair',
+                'statuslangsungcairnama',
                 'statusaktif',
+                'statusaktifnama',
             );
 
         $data = $query->first();
@@ -304,10 +310,16 @@ class AlatBayar extends MyModel
                 'alatbayar.bank_id',
                 'bank.namabank as bank',
                 'alatbayar.coa',
-                'akunpusat.keterangancoa'
+                'akunpusat.keterangancoa',
+                'param_aktif.text as statusaktifnama',
+                'param_default.text as statusdefaultnama',
+                'param_langsungcair.text as statuslangsungcairnama'
             )
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'alatbayar.bank_id', 'bank.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'alatbayar.coa', 'akunpusat.coa')
+            ->leftJoin(DB::raw("parameter as param_aktif with (readuncommitted)"), 'alatbayar.statusaktif', '=', 'param_aktif.id')
+            ->leftJoin(DB::raw("parameter as param_default with (readuncommitted)"), 'alatbayar.statusdefault', '=', 'param_default.id')
+            ->leftJoin(DB::raw("parameter as param_langsungcair with (readuncommitted)"), 'alatbayar.statuslangsungcair', '=', 'param_langsungcair.id')
             ->where('alatbayar.id', $id);
 
         $data = $query->first();

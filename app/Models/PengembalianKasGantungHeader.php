@@ -624,7 +624,7 @@ class PengembalianKasGantungHeader extends MyModel
 
         $format = DB::table('parameter')->where('grp', $group)->where('subgrp', $subgroup)->first();
         $bankid = $data['bank_id'];
-        $querysubgrppenerimaan = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('parameter.grp', 'parameter.subgrp', 'bank.formatpenerimaan', 'bank.coa')->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')->whereRaw("bank.id = $bankid")->first();
+        $querysubgrppenerimaan = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('parameter.grp', 'parameter.subgrp', 'bank.formatpenerimaan', 'bank.coa', 'bank.coagantung')->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')->whereRaw("bank.id = $bankid")->first();
         $coaKasMasuk = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL PENGEMBALIAN KAS GANTUNG')->where('subgrp', 'KREDIT')->first();
         $coaKasGantung = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
         $memoKasGantung = json_decode($coaKasGantung->memo, true);
@@ -672,7 +672,7 @@ class PengembalianKasGantungHeader extends MyModel
                 "pengembaliankasgantung_id" => $pengembalianKasGantungHeader->id,
                 "nobukti" => $pengembalianKasGantungHeader->nobukti,
                 "nominal" => $data['nominal'][$i],
-                "coadetail" => $data['coadetail'][$i] ?? $memoKasGantung['JURNAL'],
+                "coadetail" => $querysubgrppenerimaan->coagantung,
                 "keterangandetail" => $data['keterangandetail'][$i] ?? '',
                 "kasgantung_nobukti" => $data['kasgantung_nobukti'][$i],
             ]);
@@ -680,7 +680,7 @@ class PengembalianKasGantungHeader extends MyModel
             $tglJatuhTempo[] = $data['tglbukti'];
             $nominal_detail[] = $data['nominal'][$i];
             $coadebet_detail[] = $bank->coa;
-            $coakredit_detail[] = $memoKasGantung['JURNAL'];
+            $coakredit_detail[] = $querysubgrppenerimaan->coagantung;
             $keterangan_detail[] = $data['keterangandetail'][$i];
         }
 
@@ -744,7 +744,7 @@ class PengembalianKasGantungHeader extends MyModel
         $subgroup = 'PENGEMBALIAN KAS GANTUNG BUKTI';
 
         $bankid = $data['bank_id'];
-        $querysubgrppenerimaan = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('parameter.grp', 'parameter.subgrp', 'bank.formatpenerimaan', 'bank.coa')->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')->whereRaw("bank.id = $bankid")->first();
+        $querysubgrppenerimaan = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('parameter.grp', 'parameter.subgrp', 'bank.formatpenerimaan', 'bank.coa','bank.coagantung')->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')->whereRaw("bank.id = $bankid")->first();
         $coaKasMasuk = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL PENGEMBALIAN KAS GANTUNG')->where('subgrp', 'KREDIT')->first();
         $coaKasGantung = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
         $memoKasGantung = json_decode($coaKasGantung->memo, true);
@@ -803,7 +803,7 @@ class PengembalianKasGantungHeader extends MyModel
                 "pengembaliankasgantung_id" => $pengembalianKasGantungHeader->id,
                 "nobukti" => $pengembalianKasGantungHeader->nobukti,
                 "nominal" => $data['nominal'][$i],
-                "coadetail" => $data['coadetail'][$i] ?? $memoKasGantung['JURNAL'],
+                "coadetail" => $querysubgrppenerimaan->coagantung,
                 "keterangandetail" => $data['keterangandetail'][$i],
                 "kasgantung_nobukti" => $data['kasgantung_nobukti'][$i],
             ]);
@@ -811,7 +811,7 @@ class PengembalianKasGantungHeader extends MyModel
             $tglJatuhTempo[] = $data['tglbukti'];
             $nominal_detail[] = $data['nominal'][$i];
             $coadebet_detail[] = $bank->coa;
-            $coakredit_detail[] = $memoKasGantung['JURNAL'];
+            $coakredit_detail[] = $querysubgrppenerimaan->coagantung;
             $keterangan_detail[] = $data['keterangandetail'][$i];
         }
 

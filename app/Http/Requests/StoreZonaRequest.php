@@ -35,11 +35,27 @@ class StoreZonaRequest extends FormRequest
         foreach ($data as $item) {
             $status[] = $item['id'];
         }
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        } else if ($statusaktif == null && $this->statusaktifnama != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        }
 
         $rules = [
             'zona' => ['required', 'unique:zona'],
-            'statusaktif' => ['required', Rule::in($status)]
+            'statusaktifnama' => ['required'],
         ];
+
+        $rules = array_merge(
+            $rules,
+            $rulesStatusAktif,
+        );
 
         return $rules;
     }
@@ -48,7 +64,7 @@ class StoreZonaRequest extends FormRequest
     {
         return [
             'zona' => 'kode cabang',
-            'statusaktif' => 'status',
+            'statusaktifnama' => 'status',
         ];
     }
 
@@ -58,7 +74,7 @@ class StoreZonaRequest extends FormRequest
 
         return [
             'zona.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktifnama.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
         ];
     }
 }

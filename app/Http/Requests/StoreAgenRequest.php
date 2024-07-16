@@ -32,19 +32,40 @@ class StoreAgenRequest extends FormRequest
         foreach ($data as $item) {
             $status[] = $item['id'];
         }
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        } else if ($statusaktif == null && $this->statusaktifnama != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        }
 
         $dataTas = $parameter->getcombodata('STATUS TAS', 'STATUS TAS');
         $dataTas = json_decode($dataTas, true);
         foreach ($dataTas as $item) {
             $statusTas[] = $item['id'];
         }
+        $statustas = $this->statustas;
+        $rulesStatusTas = [];
+        if ($statustas != null) {
+            $rulesStatusTas = [
+                'statustas' => ['required', Rule::in($statustas)]
+            ];
+        } else if ($statustas == null && $this->statustasnama != '') {
+            $rulesStatusTas = [
+                'statustas' => ['required', Rule::in($statustas)]
+            ];
+        }
 
-
-        return [
+        $rules = [
             "kodeagen" => "required|unique:agen",
             "namaagen" => "required|unique:agen",
-            "statusaktif" => ['required', Rule::in($status),'numeric', 'min:1'],
-            "statusinvoiceextra" => ['required', Rule::in($status),'numeric', 'min:1'],
+            "statusaktifnama" => ['required'],
+            "statusinvoiceextranama" => ['required'],
             "namaperusahaan" => "required",
             "alamat" => "required",
             "notelp" => "required|unique:agen|min:11|max:13",
@@ -52,9 +73,16 @@ class StoreAgenRequest extends FormRequest
             // "keterangancoa" => "required",
             // "keterangancoapendapatan" => "required",
             "top" => "required|numeric|gt:0|max:999",
-            "statustas" => ["required",Rule::in($statusTas),'numeric','min:1'],
+            "statustasnama" => ["required"],
             // "keteranganjenisemkl" => "required",
         ];
+
+        $rules = array_merge(
+            $rules,
+            $rulesStatusAktif,
+            $rulesStatusTas
+        );
+        return $rules;
     }
 
     public function attributes()
@@ -62,13 +90,13 @@ class StoreAgenRequest extends FormRequest
         return [
             "kodeagen" => "kode agen (emkl)",
             "namaagen" => "nama agen (emkl)",
-            "statusaktif" => "status aktif",
-            "statusinvoiceextra" => "status invoice extra",
+            "statusaktifnama" => "status aktif",
+            "statusinvoiceextranama" => "status invoice extra",
             "namaperusahaan" => "nama perusahaan",
             "notelp" => "no telepon/handphone",
             "contactperson" => "nama kontak",
             "top" => "status pembayaran (top)",
-            "statustas" => "status tas",
+            "statustasnama" => "status tas",
             "keterangancoa" => "keterangan coa",
             "keterangancoapendapatan" => "keterangan coa pendapatan",
             // "keteranganjenisemkl" => "jenis emkl",
@@ -83,14 +111,14 @@ class StoreAgenRequest extends FormRequest
         return [
             'kodeagen.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'namaagen.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktifnama.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'namaperusahaan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'alamat.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'notelp.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'contactperson.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'top.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'jenisusaha.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'statustas.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statustasnama.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             // 'keteranganjenisemkl.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
 
             'top.gt' => ':attribute' . ' ' . $controller->geterror('GT-ANGKA-0')->keterangan,
@@ -102,5 +130,5 @@ class StoreAgenRequest extends FormRequest
             'nohp.min' => 'Min 11 Karakter',
             'nohp.max' => 'Max 13 Karakter',
         ];
-    }    
+    }
 }

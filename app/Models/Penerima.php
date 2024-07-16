@@ -114,44 +114,73 @@ class Penerima extends MyModel
 
         return $data;
     }
+
+    public function findAll($id) 
+    {
+        $this->setRequestParameters();
+
+        $data = Penerima::from(DB::raw("penerima with (readuncommitted)"))
+            ->select(
+                'penerima.id',
+                'penerima.namapenerima',
+                'penerima.npwp',
+                'penerima.noktp',
+                'penerima.keterangan',
+                'penerima.statusaktif',
+                'param_aktif.text as statusaktifnama',
+                'param_karyawan.text as statuskaryawannama',
+                'penerima.modifiedby',
+                'penerima.created_at',
+                'penerima.updated_at'
+            )
+            ->leftJoin(DB::raw("parameter as param_aktif with (readuncommitted)"), 'penerima.statusaktif', '=', 'param_aktif.id')
+            ->leftJoin(DB::raw("parameter as param_karyawan with (readuncommitted)"), 'penerima.statuskaryawan', '=', 'param_karyawan.id')
+            ->where('penerima.id', $id)->first();
+
+        return $data;
+    }
+
     public function default()
     {
-
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
             $table->unsignedBigInteger('statuskaryawan')->nullable();
+            $table->string('statuskaryawannama', 300)->nullable();
         });
 
-        $status = Parameter::from(
+        $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
 
-        $iddefaultstatusaktif = $status->id ?? 0;
-
-        $status = Parameter::from(
+        $statuskaryawan = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS KARYAWAN')
             ->where('subgrp', '=', 'STATUS KARYAWAN')
             ->where('default', '=', 'YA')
             ->first();
 
-        $iddefaultstatuskaryawan = $status->id ?? 0;
-
-
         DB::table($tempdefault)->insert(
-            ["statusaktif" => $iddefaultstatusaktif, "statuskaryawan" => $iddefaultstatuskaryawan]
+            [
+                "statusaktif" => $statusaktif->id ?? 0,
+                "statusaktifnama" => $statusaktif->text ?? "",
+                "statuskaryawan" => $statuskaryawan->id ?? 0,
+                "statuskaryawannama" => $statuskaryawan->text ?? ""
+            ]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -159,7 +188,9 @@ class Penerima extends MyModel
         )
             ->select(
                 'statusaktif',
+                'statusaktifnama',
                 'statuskaryawan',
+                'statuskaryawannama',
             );
 
         $data = $query->first();
@@ -212,7 +243,7 @@ class Penerima extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'namapenerima', 'npwp', 'noktp','keterangan', 'statusaktif', 'statuskaryawan', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'namapenerima', 'npwp', 'noktp', 'keterangan', 'statusaktif', 'statuskaryawan', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;

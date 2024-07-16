@@ -35,13 +35,24 @@ class StoreKotaRequest extends FormRequest
         foreach ($data as $item) {
             $status[] = $item['id'];
         }
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        } else if ($statusaktif == null && $this->statusaktifnama != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        }
 
         $zona_id = $this->zona_id;
         $rulesZona_id = [];
         if ($zona_id != null) {
             if ($zona_id == 0) {
                 $rulesZona_id = [
-                    'zona_id' => [ 'numeric', 'min:1']
+                    'zona_id' => ['numeric', 'min:1']
                 ];
             } else {
                 if ($this->zona == '') {
@@ -52,30 +63,31 @@ class StoreKotaRequest extends FormRequest
             }
         } else if ($zona_id == null && $this->zona != '') {
             $rulesZona_id = [
-                'zona_id' => [ 'numeric', 'min:1']
+                'zona_id' => ['numeric', 'min:1']
             ];
         }
 
         $rules = [
-            'kodekota' => ['required','unique:kota'],
+            'kodekota' => ['required', 'unique:kota'],
             'keterangan' => ['nullable'],
             'zona' => [],
-            'statusaktif' => ['required', Rule::in($status)]
+            'statusaktifnama' => ['required'],
         ];
 
         $rule = array_merge(
             $rules,
-            $rulesZona_id
+            $rulesZona_id,
+            $rulesStatusAktif
         );
-        
+
         return $rule;
     }
-    
+
     public function attributes()
     {
         return [
             'kodekota' => 'kode kota',
-            'statusaktif' => 'statusaktif'
+            'statusaktifnama' => 'statusaktif'
         ];
     }
 
@@ -85,7 +97,7 @@ class StoreKotaRequest extends FormRequest
 
         return [
             'kodekota.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktifnama.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
         ];
     }
 }

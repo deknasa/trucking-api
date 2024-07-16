@@ -58,10 +58,10 @@ class PenerimaanTrucking extends MyModel
 
     public function default()
     {
-
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->string('statusaktifnama', 300)->nullable();
         });
 
         $statusaktif = Parameter::from(
@@ -69,19 +69,22 @@ class PenerimaanTrucking extends MyModel
         )
             ->select(
                 'memo',
-                'id'
+                'id',
+                'text'
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
 
-        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
+        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id ?? 0, "statusaktifnama" => $statusaktif->text ?? ""]);
+        // dd(DB::table($tempdefault)->get());
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
             ->select(
-                'statusaktif'
+                'statusaktif',
+                'statusaktifnama'
             );
 
         $data = $query->first();
@@ -269,13 +272,19 @@ class PenerimaanTrucking extends MyModel
                 'penerimaantrucking.coapostingkredit',
                 'postingkredit.keterangancoa as coapostingkreditKeterangan',
                 'penerimaantrucking.format',
-                'penerimaantrucking.statusaktif'
+                'param_format.text as formatnama',
+                'penerimaantrucking.statusaktif',
+                'param_statusaktif.text as statusaktifnama'
             )
             ->leftJoin(DB::raw("akunpusat as debet  with (readuncommitted)"), "penerimaantrucking.coadebet", "debet.coa")
             ->leftJoin(DB::raw("akunpusat as kredit  with (readuncommitted)"), "penerimaantrucking.coakredit", "kredit.coa")
             ->leftJoin(DB::raw("akunpusat as postingdebet  with (readuncommitted)"), "penerimaantrucking.coapostingdebet", "postingdebet.coa")
             ->leftJoin(DB::raw("akunpusat as postingkredit  with (readuncommitted)"), "penerimaantrucking.coapostingkredit", "postingkredit.coa")
+            ->leftJoin(DB::raw("parameter as param_statusaktif with(readuncommitted)"), 'penerimaantrucking.statusaktif', '=', 'param_statusaktif.id')
+            ->leftJoin(DB::raw("parameter as param_format with (readuncommitted)"), 'penerimaantrucking.format', '=', 'param_format.id')
             ->where('penerimaantrucking.id', $id);
+
+        // dd($query->first());
 
         return $query->first();
     }

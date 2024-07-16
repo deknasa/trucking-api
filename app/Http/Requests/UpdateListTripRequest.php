@@ -1037,6 +1037,9 @@ class UpdateListTripRequest extends FormRequest
                     $rulesTarif_id,
                 );
             }
+            if (request()->statuslongtrip == 66 && request()->nobukti_tripasal != '') {
+                unset($rules['tarifrincian_id']);
+            }
         }
 
         return $rules;

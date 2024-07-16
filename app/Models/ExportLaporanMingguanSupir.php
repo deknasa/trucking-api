@@ -525,7 +525,7 @@ class ExportLaporanMingguanSupir extends Model
         )
             ->select(
                 'a.orderantrucking_nobukti',
-                'a.total as nominal',
+                'a.nominal as omset',
                 DB::RAW("(a.nominalextra+a.nominalretribusi) as extralain"),
                 'b.id',
                 'a.nobukti',

@@ -198,11 +198,12 @@ class ShipperController extends Controller
         }
     }
 
-    public function show(Pelanggan $shipper)
+    public function show($id)
     {
+        $shipper = new Pelanggan();
         return response([
             'status' => true,
-            'data' => $shipper
+            'data' => $shipper->findAll($id)
         ]);
     }
 

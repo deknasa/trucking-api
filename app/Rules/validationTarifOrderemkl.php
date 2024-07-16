@@ -3,6 +3,7 @@
 namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
 use App\Models\TarifRincian;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +30,14 @@ class validationTarifOrderemkl implements Rule
     public function passes($attribute, $value)
     {
 
+        $idkandang = (new Parameter())->cekText('KANDANG', 'KANDANG') ?? 0;
         $suratPengantar = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', request()->nobukti)->first();
+
+        if ($suratPengantar->dari_id == 1 && $suratPengantar->sampai_id == $idkandang) {
+            $tarifId = $suratPengantar->tarif_id;
+            goto cek;
+        }
+
         $jenisorderanmuatan = DB::table('parameter')->from(db::raw("parameter a  with (readuncommitted)"))->select('a.text as id')
             ->where('a.grp', 'JENIS ORDERAN MUATAN')
             ->where('a.subgrp', 'JENIS ORDERAN MUATAN')
@@ -64,12 +72,14 @@ class validationTarifOrderemkl implements Rule
             ->leftJoin(DB::raw("tarif as tarifexport with (readuncommitted)"), 'upahsupir.tarifexport_id', 'tarifexport.id')
             ->where('upahsupir.id', $suratPengantar->upah_id)
             ->first();
+        $tarifId = $getTarif->tarif_id ?? 0;
 
-        $tarif = TarifRincian::where('tarif_id', $getTarif->tarif_id)->where('container_id', request()->container_id)->first();
-        if($tarif == ''){
+        cek:
+        $tarif = TarifRincian::where('tarif_id', $tarifId)->where('container_id', request()->container_id)->first();
+        if ($tarif == '') {
             return false;
-        }else{
-            if($tarif->nominal == 0){
+        } else {
+            if ($tarif->nominal == 0) {
                 return false;
             }
         }

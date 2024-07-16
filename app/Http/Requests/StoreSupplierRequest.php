@@ -48,11 +48,34 @@ class StoreSupplierRequest extends FormRequest
         foreach ($data as $item) {
             $status[] = $item['id'];
         }
+        $statusaktif = $this->statusaktif;
+        $rulesStatusAktif = [];
+        if ($statusaktif != null) {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        } else if ($statusaktif == null && $this->statusaktifnama != '') {
+            $rulesStatusAktif = [
+                'statusaktif' => ['required', Rule::in($status)]
+            ];
+        }
+
         $daftarharga = $parameter->getcombodata('STATUS DAFTAR HARGA', 'STATUS DAFTAR HARGA');
         $daftarharga = json_decode($daftarharga, true);
         foreach ($daftarharga as $item) {
             $statusDaftarHarga[] = $item['id'];
         }
+        $statusdaftarharga = $this->statusdaftarharga;
+            $rulesStatusDaftarHarga = [];
+            if ($statusdaftarharga != null) {
+                $rulesStatusDaftarHarga = [
+                    'statusdaftarharga' => ['required', Rule::in($statusDaftarHarga)]
+                ];
+            } else if ($statusdaftarharga == null && $this->statusdaftarharganama != '') {
+                $rulesStatusDaftarHarga = [
+                    'statusdaftarharga' => ['required', Rule::in($statusDaftarHarga)]
+                ];
+            }
 
         return [
             'namasupplier' => ['required', 'unique:supplier'],
@@ -62,12 +85,12 @@ class StoreSupplierRequest extends FormRequest
             'top' => ['required', 'numeric', 'min:1'],
             'notelp1' => 'required|min:10|max:50',
             'email' => 'email:rfc,dns|nullable',
-            'statusaktif' => ['required', Rule::in($status), 'numeric', 'min:1'],
+            'statusaktifnama' => ['required'],
             'namapemilik' => 'required',
             'jenisusaha' => 'required',
             'ketcoa' => ['required'],
             'namarekening' => 'required',
-            'statusdaftarharga' => ['required', 'numeric', Rule::in($statusDaftarHarga)],
+            'statusdaftarharganama' => ['required'],
         ];
     }
 
@@ -83,7 +106,7 @@ class StoreSupplierRequest extends FormRequest
             'notelp1' => 'no telp 1',
             'web' => 'web',
             'email' => 'email',
-            'statusaktif' => 'status aktif',
+            'statusaktifnama' => 'status aktif',
             'namapemilik' => 'nama pemilik',
             'jenisusaha' => 'jenis usaha',
             'bank' => 'bank',
@@ -91,7 +114,7 @@ class StoreSupplierRequest extends FormRequest
             'rekeningbank' => 'rekening bank',
             'namarekening' => 'nama rekening',
             'jabatan' => 'jabatan',
-            'statusdaftarharga' => 'status daftar arga',
+            'statusdaftarharganama' => 'status daftar arga',
             'kategoriusaha' => 'karegori usaha',
         ];
     }
@@ -109,7 +132,7 @@ class StoreSupplierRequest extends FormRequest
             'notelp1.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'web.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'email.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktifnama.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'top.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'namapemilik.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'jenisusaha.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
@@ -118,7 +141,7 @@ class StoreSupplierRequest extends FormRequest
             'rekeningbank.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'namarekening.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'jabatan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'statusdaftarharga.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusdaftarharganama.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'kategoriusaha.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'email.email' => ':attribute' . ' ' . $controller->geterror('EMAIL')->keterangan,
             'kodepos.max' => 'max 5 karakter',
