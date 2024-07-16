@@ -468,7 +468,7 @@ class MandorAbsensiSupir extends MyModel
         });
         
         //jika tanggal hari ini gak ada ambil 1 tanggal sebelum
-        if ($this->activeKolomJenisKendaraan()) {
+        if ($this->canGetYesterday()) {
             if (!$queryabsensisupirheader->first()) {
                 $lastAbsensi = (new AbsensiSupirHeader)->getYesterdayAbsensi($date);
                 if ($lastAbsensi) {
@@ -901,7 +901,7 @@ class MandorAbsensiSupir extends MyModel
         // 
         // dd(db::table($tempTrado)->where('kodetrado','1234567890')->get());
         $isTampilSupir = (new Parameter)->cekText('ABSENSI SUPIR','TRADO MILIK SUPIR');
-        if ($this->activeKolomJenisKendaraan()) {
+        if ($this->canGetYesterday()) {
             $isTampilSupir = 'YA';
         }
         $trados = DB::table("$tempTrado as a")
@@ -1214,6 +1214,19 @@ class MandorAbsensiSupir extends MyModel
         if ($query->text == '5') {//MAKASSAR
             return true;
         }
+        return false;
+    }
+    public function canGetYesterday()
+    {
+        $query = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp','ID CABANG')
+            ->where('subgrp','ID CABANG')
+            ->first();
+        if (in_array($query->text, ['5','2'])) {//MAKASSAR,MEDAN
+            return true;
+        }
+        
         return false;
     }
     public function defaultJenis()

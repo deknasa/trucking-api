@@ -57,6 +57,14 @@ class AbsensiSupirHeaderController extends Controller
             ]
         ]);
     }
+    public function getStatusJeniskendaraan()
+    {
+
+        return response([
+            'activeKolomJenisKendaraan' => (new MandorAbsensiSupir)->activeKolomJenisKendaraan(),
+        ]);
+    }
+
 
     /**
      * @ClassName 
