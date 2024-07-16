@@ -102,7 +102,7 @@ class ListTrip extends MyModel
                 goto selesai;
             }
         }
-        $cekJob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('nobukti_tripasal', $nobukti)->where('dari_id', '!=',$idkandang)->first();
+        $cekJob = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('nobukti_tripasal', $nobukti)->where('dari_id', '!=', $idkandang)->first();
         if ($cekJob != '') {
 
             $keteranganerror = $error->cekKeteranganError('SATL2') ?? '';
@@ -432,7 +432,8 @@ class ListTrip extends MyModel
                     'suratpengantar.statuslongtrip',
                     'suratpengantar.statusjeniskendaraan',
                     'suratpengantar.statusupahzona',
-                    'orderantrucking.statuslangsir',
+                    // 'orderantrucking.statuslangsir',
+                    DB::raw("(case when isnull(orderantrucking.statuslangsir,'')='' then saldoorderantrucking.statuslangsir else orderantrucking.statuslangsir end) as statuslangsir"),
                     DB::raw("(case when isnull(suratpengantar.statuspenyesuaian,'')='' then
                             (case when suratpengantar.penyesuaian='' then 663 ELSE 662 end) else
                             suratpengantar.statuspenyesuaian
@@ -486,6 +487,7 @@ class ListTrip extends MyModel
                 ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
                 ->leftJoin('gandengan', 'suratpengantar.gandengan_id', 'gandengan.id')
                 ->leftJoin('orderantrucking', 'suratpengantar.jobtrucking', 'orderantrucking.nobukti')
+                ->leftJoin('saldoorderantrucking', 'suratpengantar.jobtrucking', 'saldoorderantrucking.nobukti')
                 ->leftJoin('absensisupirheader', 'suratpengantar.tglbukti', 'absensisupirheader.tglbukti')
                 ->leftJoin('absensisupirdetail', 'absensisupirheader.id', 'absensisupirdetail.absensi_id')
                 ->where('suratpengantar.id', $id)->first();
@@ -589,6 +591,7 @@ class ListTrip extends MyModel
             ->where('a.text', '=', 'TANGKI')
             ->first();
 
+        $idkandang = (new Parameter())->cekText('KANDANG', 'KANDANG') ?? 0;
         $data['upahtangki_id'] = 0;
         $data['tariftangki_id'] = 0;
         $statusperalihan = DB::table('parameter')->from(
@@ -616,10 +619,6 @@ class ListTrip extends MyModel
             // $data['upah_id'] = '';
             // $data['tariftangki_id'] = $data['tarifrincian_id'];
             // $data['tarifrincian_id'] = '';
-            goto trip;
-        }
-        if ($data['statuslangsir'] == $statuslangsir->id) {
-            
             $getJobtrucking = OrderanTrucking::from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
             $orderan = [
                 'container_id' => $data['container_id'],
@@ -640,6 +639,31 @@ class ListTrip extends MyModel
             ];
 
             $orderanTrucking = (new OrderanTrucking())->processUpdate($getJobtrucking, $orderan);
+            goto trip;
+        }
+        if ($data['statuslangsir'] == $statuslangsir->id) {
+
+            $getJobtrucking = OrderanTrucking::from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
+            $orderan = [
+                'container_id' => $data['container_id'],
+                'agen_id' => $data['agen_id'],
+                'jenisorder_id' => $data['jenisorder_id'],
+                'jenisorderemkl_id' => $getJobtrucking['jenisorderemkl_id'],
+                'pelanggan_id' => $data['pelanggan_id'],
+                'nojobemkl' => $getJobtrucking['nojobemkl'],
+                'nocont' => $getJobtrucking['nocont'] ?? '',
+                'noseal' => $getJobtrucking['noseal'] ?? '',
+                'nojobemkl2' => $getJobtrucking['nojobemkl2'] ?? '',
+                'nocont2' => $getJobtrucking['nocont2'] ?? '',
+                'noseal2' => $getJobtrucking['noseal2'] ?? '',
+                'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
+                'gandengan_id' => $data['gandengan_id'],
+                'statusperalihan' => $statusperalihan->id,
+                'inputtripmandor' =>  'true',
+            ];
+            if($getJobtrucking != ''){
+                $orderanTrucking = (new OrderanTrucking())->processUpdate($getJobtrucking, $orderan);
+            }
             goto trip;
         }
 
@@ -663,34 +687,36 @@ class ListTrip extends MyModel
                 $getId = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
                 (new OrderanTrucking())->processDestroy($getId->id);
             }
+            if ($data['dari_id'] != $idkandang) {
 
-            $orderan = [
-                'tglbukti' => $data['tglbukti'],
-                'container_id' => $data['container_id'],
-                'agen_id' => $data['agen_id'],
-                'jenisorder_id' => $data['jenisorder_id'],
-                'pelanggan_id' => $data['pelanggan_id'],
-                'tarifrincian_id' => $data['tarifrincian_id'],
-                'statusjeniskendaraan' => $data['statusjeniskendaraan'],
-                'nojobemkl' =>  '',
-                'nocont' =>   '',
-                'noseal' =>  '',
-                'nojobemkl2' => '',
-                'nocont2' => '',
-                'noseal2' => '',
-                'statuslangsir' => $statuslangsir->id,
-                'statusperalihan' => $statusperalihan->id,
-                'gandengan_id' => $data['gandengan_id'],
-                'tglbataseditorderantrucking' => $tglBatasEdit,
-                'inputtripmandor' =>  '1',
-            ];
-            $orderanTrucking = (new OrderanTrucking())->processStore($orderan);
-            $trip->jobtrucking = $orderanTrucking->nobukti;
-            goto trip;
+                $orderan = [
+                    'tglbukti' => $data['tglbukti'],
+                    'container_id' => $data['container_id'],
+                    'agen_id' => $data['agen_id'],
+                    'jenisorder_id' => $data['jenisorder_id'],
+                    'pelanggan_id' => $data['pelanggan_id'],
+                    'tarifrincian_id' => $data['tarifrincian_id'],
+                    'statusjeniskendaraan' => $data['statusjeniskendaraan'],
+                    'nojobemkl' =>  '',
+                    'nocont' =>   '',
+                    'noseal' =>  '',
+                    'nojobemkl2' => '',
+                    'nocont2' => '',
+                    'noseal2' => '',
+                    'statuslangsir' => $statuslangsir->id,
+                    'statusperalihan' => $statusperalihan->id,
+                    'gandengan_id' => $data['gandengan_id'],
+                    'tglbataseditorderantrucking' => $tglBatasEdit,
+                    'inputtripmandor' =>  '1',
+                ];
+                $orderanTrucking = (new OrderanTrucking())->processStore($orderan);
+                $trip->jobtrucking = $orderanTrucking->nobukti;
+                goto trip;
+            }
         }
 
         if ($trip->statuscontainer_id != 3) {
-            if ($trip->dari_id != 1) {
+            if ($trip->dari_id != 1 && $data['dari_id'] != $idkandang) {
                 $cek = [$trip->agen_id, $trip->jenisorder_id, $trip->statuscontainer_id, $trip->container_id, $trip->upah_id, $trip->pelanggan_id];
 
                 $toCek = [$data['agen_id'], $data['jenisorder_id'], $data['statuscontainer_id'], $data['container_id'], $data['upah_id'], $data['pelanggan_id']];
@@ -701,7 +727,9 @@ class ListTrip extends MyModel
                         if ($trip->statuslongtrip != $data['statuslongtrip']) {
                             if ($data['statusgudangsama'] != 65) {
                                 $getId = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
-                                (new OrderanTrucking())->processDestroy($getId->id);
+                                if ($getId != '') {
+                                    (new OrderanTrucking())->processDestroy($getId->id);
+                                }
                             }
                         }
                         $isDifferent = true;
@@ -710,7 +738,9 @@ class ListTrip extends MyModel
                         if ($trip->statusgudangsama != $data['statusgudangsama']) {
                             if ($data['statusgudangsama'] != 204) {
                                 $getId = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
-                                (new OrderanTrucking())->processDestroy($getId->id);
+                                if ($getId != '') {
+                                    (new OrderanTrucking())->processDestroy($getId->id);
+                                }
                             }
                         }
                         $trip->jobtrucking = $data['jobtrucking'];
@@ -729,7 +759,10 @@ class ListTrip extends MyModel
                         $count = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', $trip->jobtrucking)->count();
                         if ($count == 1) {
                             $getId = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
-                            (new OrderanTrucking())->processDestroy($getId->id);
+
+                            if ($getId != '') {
+                                (new OrderanTrucking())->processDestroy($getId->id);
+                            }
                         }
 
                         $trip->jobtrucking = $data['jobtrucking'];
@@ -753,7 +786,9 @@ class ListTrip extends MyModel
                         if ($trip->statusgudangsama != $data['statusgudangsama']) {
                             if ($data['statusgudangsama'] != 204) {
                                 $getId = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
-                                (new OrderanTrucking())->processDestroy($getId->id);
+                                if ($getId != '') {
+                                    (new OrderanTrucking())->processDestroy($getId->id);
+                                }
                             }
                         }
                         $trip->jobtrucking = $data['jobtrucking'];
@@ -763,7 +798,9 @@ class ListTrip extends MyModel
             } else {
                 if ($data['nobukti_tripasal'] != '') {
                     $getId = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
-                    (new OrderanTrucking())->processDestroy($getId->id);
+                    if ($getId != '') {
+                        (new OrderanTrucking())->processDestroy($getId->id);
+                    }
                     if ($data['jobtrucking'] != '') {
                         $trip->jobtrucking = $data['jobtrucking'];
                     } else {
@@ -820,8 +857,9 @@ class ListTrip extends MyModel
                     'statusperalihan' => $statusperalihan->id,
                     'inputtripmandor' =>  'true',
                 ];
-
-                $orderanTrucking = (new OrderanTrucking())->processUpdate($getJobtrucking, $orderan);
+                if ($getJobtrucking != '') {
+                    $orderanTrucking = (new OrderanTrucking())->processUpdate($getJobtrucking, $orderan);
+                }
             }
         } else {
             if ($trip->statusgudangsama != $data['statusgudangsama']) {
@@ -853,7 +891,9 @@ class ListTrip extends MyModel
                     'inputtripmandor' =>  'true',
                 ];
 
-                $orderanTrucking = (new OrderanTrucking())->processUpdate($getJobtrucking, $orderan);
+                if ($getJobtrucking != '') {
+                    $orderanTrucking = (new OrderanTrucking())->processUpdate($getJobtrucking, $orderan);
+                }
             } else {
                 $tglBatasEdit = date('Y-m-d', strtotime($data['tglbukti'])) . ' ' . '12:00:00';
                 $orderan = [
@@ -1092,7 +1132,7 @@ class ListTrip extends MyModel
         ];
         // dd($dataSP);
         $suratPengantar = (new SuratPengantar())->processUpdate($trip, $dataSP);
-        
+
         $jenisRitasi = false;
         foreach ($data['jenisritasi_id'] as $value) {
             if ($value != null || $value != 0) {

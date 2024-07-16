@@ -125,6 +125,7 @@ use App\Http\Controllers\Api\LaporanKasBankController;
 use App\Http\Controllers\Api\PemutihanSupirController;
 use App\Http\Controllers\Api\PenerimaanStokController;
 use App\Http\Controllers\Api\StatusOliTradoController;
+use App\Http\Controllers\Api\StatusOliTradoDetailController;
 use App\Http\Controllers\Api\StokPersediaanController;
 use App\Http\Controllers\Api\SuratPengantarController;
 use App\Http\Controllers\Api\AkunPusatDetailController;
@@ -332,6 +333,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('token', [AuthController::class, 'token']);
 Route::get('cekIp', [AuthController::class, 'cekIp']);
 // Route::post('oauth/token', '\Laravel\Passport\Http\Controllers\AccessTokenController@issueToken');
+
+Route::resource('statusolitradodetail', StatusOliTradoDetailController::class)->whereNumber('statusolitradodetail');
 
 Route::get('supir/image/{field}/{filename}/{type}/{aksi}', [SupirController::class, 'getImage']);
 Route::get('supir/pdf/{field}/{filename}', [SupirController::class, 'getPdf']);
@@ -593,6 +596,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('customer/approvalnonaktif', [CustomerController::class, 'approvalnonaktif']);
     Route::post('gandengan/approvalnonaktif', [GandenganController::class, 'approvalnonaktif']);
     Route::post('trado/approvalnonaktif', [TradoController::class, 'approvalnonaktif']);
+    Route::post('trado/approvalaktif', [TradoController::class, 'approvalaktif']);
     Route::post('supplier/approvalnonaktif', [SupplierController::class, 'approvalnonaktif']);
     Route::post('shipper/approvalnonaktif', [ShipperController::class, 'approvalnonaktif']);
     Route::post('orderantrucking/{id}/{aksi}/cekValidasi', [OrderanTruckingController::class, 'cekValidasi'])->name('orderantrucking.cekValidasi')->whereNumber('id');
@@ -1870,6 +1874,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('laporanbangudangsementara', LaporanBanGudangSementaraController::class)->whereNumber('laporanbangudangsementara');;
     Route::get('exportrincianmingguan/export', [ExportRincianMingguanController::class, 'export'])->name('exportrincianmingguan.export');
     Route::resource('exportrincianmingguan', ExportRincianMingguanController::class)->whereNumber('exportrincianmingguan');;
+    Route::get('exportlaporankasharian/report', [ExportLaporanKasHarianController::class, 'report'])->name('exportlaporankasharian.report');
     Route::get('exportlaporankasharian/export', [ExportLaporanKasHarianController::class, 'export'])->name('exportlaporankasharian.export');
     Route::resource('exportlaporankasharian', ExportLaporanKasHarianController::class)->whereNumber('exportlaporankasharian');
 
@@ -1966,6 +1971,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('expasuransi', ExpAsuransiController::class)->whereNumber('expasuransi');
     Route::resource('reminderstok', ReminderStokController::class)->whereNumber('reminderstok');
     Route::resource('statusolitrado', StatusOliTradoController::class)->whereNumber('statusolitrado');
+    // Route::resource('statusolitradodetail', StatusOliTradoDetailController::class)->whereNumber('statusolitradodetail');
     Route::resource('reminderspk', ReminderSpkController::class)->whereNumber('reminderspk');
     Route::resource('reminderspkdetail', ReminderSpkDetailController::class)->whereNumber('reminderspkdetail');
     Route::get('reminderspkdetail/export', [ReminderSpkDetailController::class, 'export']);

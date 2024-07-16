@@ -2158,6 +2158,7 @@ class OrderanTrucking extends MyModel
         $orderanTrucking->jenisorderemkl_id = $data['jenisorder_id'];
         $orderanTrucking->pelanggan_id = $data['pelanggan_id'];
         $orderanTrucking->tarif_id = 0 ?? '';
+        $orderanTrucking->gandengan_id = $data['gandengan_id'] ?? '';
         $orderanTrucking->nojobemkl = $data['nojobemkl'] ?? '';
         $orderanTrucking->nocont = $data['nocont'];
         $orderanTrucking->noseal = $data['noseal'];

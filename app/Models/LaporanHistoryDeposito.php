@@ -27,6 +27,12 @@ class LaporanHistoryDeposito extends MyModel
     public function getReport($supirdari_id)
     {
 
+        $parameter = new Parameter();
+
+        $tglsaldo = $parameter->cekText('SALDO', 'SALDO') ?? '1900-01-01';
+        $tglsaldo = date('Y-m-d', strtotime($tglsaldo));
+
+
         $getJudul = DB::table('parameter')
             ->select('text')
             ->where('grp', 'JUDULAN LAPORAN')
@@ -57,7 +63,7 @@ class LaporanHistoryDeposito extends MyModel
             ])
             ->join(DB::raw("penerimaantruckingdetail AS b with (readuncommitted)"), 'a.nobukti', '=', 'b.nobukti')
             ->where('a.penerimaantrucking_id', '=', $pidpenerimaantrucking)
-            ->where('a.supir_id', '=', $supirdari_id)
+            ->where('b.supir_id', '=', $supirdari_id)
             ->groupBy('a.nobukti');
 
         DB::table($Temppenerimaanpengeluaran)->insertUsing([
@@ -67,6 +73,36 @@ class LaporanHistoryDeposito extends MyModel
             'nominal',
             'tipe',
         ], $select_Temppenerimaanpengeluaran);
+
+        $select_Temppenerimaanpengeluaran = DB::table('penerimaantruckinglamaheader')->from(DB::raw("penerimaantruckinglamaheader AS A WITH (READUNCOMMITTED)"))
+            ->select([
+                'a.nobukti',
+                DB::raw('MAX(A.tglbukti) as tglbukti'),
+                DB::raw('MAX(B.keterangan) as keterangan'),
+                DB::raw('SUM(B.nominal) as nominal'),
+                DB::raw('1'),
+
+            ])
+            ->join(DB::raw("penerimaantruckinglamadetail AS b with (readuncommitted)"), 'a.nobukti', '=', 'b.nobukti')
+            ->where('a.penerimaantrucking_id', '=', $pidpenerimaantrucking)
+            ->where('b.supir_id', '=', $supirdari_id)
+            ->groupBy('a.nobukti');
+
+        DB::table($Temppenerimaanpengeluaran)->insertUsing([
+            'nobukti',
+            'tglbukti',
+            'keterangan',
+            'nominal',
+            'tipe',
+        ], $select_Temppenerimaanpengeluaran);
+
+        $datapenerimaan = $select_Temppenerimaanpengeluaran->first();
+        if (isset($datapenerimaan)) {
+            DB::delete(DB::raw("delete  " . $Temppenerimaanpengeluaran . " from " . $Temppenerimaanpengeluaran . " as a  
+            WHERE a.tglbukti='" .  $tglsaldo . "'"));
+        }
+
+
         // dd($select_Temppenerimaanpengeluaran->get());
 
 
@@ -80,6 +116,29 @@ class LaporanHistoryDeposito extends MyModel
                 DB::raw('2')
             ])
             ->join(DB::raw("pengeluarantruckingdetail AS b with (readuncommitted)"), 'a.nobukti', '=', 'b.nobukti')
+            ->where('a.pengeluarantrucking_id', '=', $pidpengeluarantrucking)
+            ->where('a.supir_id', '=', $supirdari_id)
+            ->groupBy('a.nobukti');
+
+        // dd($select_Temppenerimaanpengeluaran2->get());
+
+        DB::table($Temppenerimaanpengeluaran)->insertUsing([
+            'nobukti',
+            'tglbukti',
+            'keterangan',
+            'nominal',
+            'tipe',
+        ], $select_Temppenerimaanpengeluaran2);
+
+        $select_Temppenerimaanpengeluaran2 = DB::table('pengeluarantruckinglamaheader')->from(DB::raw("pengeluarantruckinglamaheader AS A WITH (READUNCOMMITTED)"))
+            ->select([
+                'a.nobukti',
+                DB::raw('MAX(a.tglbukti) as tglbukti'),
+                DB::raw('MAX(b.keterangan) as keterangan'),
+                DB::raw('SUM(b.nominal * -1) as nominal'),
+                DB::raw('2')
+            ])
+            ->join(DB::raw("pengeluarantruckinglamadetail AS b with (readuncommitted)"), 'a.nobukti', '=', 'b.nobukti')
             ->where('a.pengeluarantrucking_id', '=', $pidpengeluarantrucking)
             ->where('a.supir_id', '=', $supirdari_id)
             ->groupBy('a.nobukti');
