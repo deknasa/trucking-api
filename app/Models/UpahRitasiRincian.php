@@ -8,6 +8,7 @@ use App\Http\Requests\StoreUpahRitasiRequest;
 use App\Http\Requests\StoreUpahRitasiRincianRequest;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -50,12 +51,218 @@ class UpahRitasiRincian extends MyModel
                 $join->on('upahritasirincian.container_id', '=', 'container.id')
                     ->where('upahritasirincian.upahritasi_id', '=', $id);
             });
-            
+
 
 
         $data = $query->get();
 
         return $data;
+    }
+
+    public function getLookup()
+    {
+        $this->setRequestParameters();
+
+        $proses = request()->proses ?? 'reload';
+        $tglbukti = date('Y-m-d', strtotime(request()->tglbukti)) ?? '1900-01-01';
+        $user = auth('api')->user()->name;
+        $class = 'UpahRitasiRincianController';
+        $pilihKotaId = request()->pilihkota_id ?? 0;
+        $ritasiDariKe = request()->ritasidarike ?? '';
+
+        if ($proses == 'reload') {
+
+            $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel a with (readuncommitted)")
+            )
+                ->select(
+                    'id',
+                    'class',
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+            if (isset($querydata)) {
+                Schema::dropIfExists($querydata->namatabel);
+                DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+            }
+
+            DB::table('listtemporarytabel')->insert(
+                [
+                    'class' => $class,
+                    'namatabel' => $temtabel,
+                    'modifiedby' => $user,
+                    'created_at' => date('Y/m/d H:i:s'),
+                    'updated_at' => date('Y/m/d H:i:s'),
+                ]
+            );
+
+            Schema::create($temtabel, function (Blueprint $table) {
+                $table->bigInteger('id')->nullable();
+                $table->longtext('kodekota')->nullable();
+                $table->longtext('keterangan')->nullable();
+                $table->longtext('modifiedby')->nullable();
+                $table->datetime('created_at')->nullable();
+                $table->datetime('updated_at')->nullable();
+            });
+
+            // GET KOTA DENGAN UPAH AKTIF
+
+            $tempKotaUpah = '##tempkotaupah' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempKotaUpah, function (Blueprint $table) {
+                $table->bigInteger('kota_id')->nullable();
+            });
+            $queryGetKota = DB::table('upahritasi')->from(DB::raw("upahritasi with (readuncommitted)"))
+                ->select('kotadari_id as kota_id')
+                ->where('statusaktif', 1)
+                ->where("nominalsupir", "<>", 0)
+                ->groupBy('kotadari_id');
+
+            DB::table($tempKotaUpah)->insertUsing([
+                'kota_id',
+            ],  $queryGetKota);
+
+            $queryGetKota = DB::table('upahritasi')->from(DB::raw("upahritasi as a with (readuncommitted)"))
+                ->select('a.kotasampai_id as kota_id')
+                ->where('a.statusaktif', 1)
+                ->leftJoin(DB::raw("$tempKotaUpah as b with (readuncommitted)"), 'a.kotasampai_id', 'b.kota_id')
+                ->where("a.nominalsupir", "<>", 0)
+                ->groupBy('a.kotasampai_id');
+
+            DB::table($tempKotaUpah)->insertUsing([
+                'kota_id',
+            ],  $queryGetKota);
+
+            $tempKotaFinal = '##tempKotaFinal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempKotaFinal, function (Blueprint $table) {
+                $table->bigInteger('kota_id')->nullable();
+            });
+
+            if ($pilihKotaId != 0) {
+
+                $query = DB::table("upahritasi")->from(DB::raw("upahritasi with (readuncommitted)"))
+                    ->select('kotadari_id as kota_id')->where('kotasampai_id', $pilihKotaId)->where('nominalsupir','<>',0)->where('statusaktif',1);
+
+                DB::table($tempKotaFinal)->insertUsing([
+                    'kota_id',
+                ],  $query);
+
+                $query = DB::table("upahritasi")->from(DB::raw("upahritasi with (readuncommitted)"))
+                    ->select('kotasampai_id as kota_id')->where('kotadari_id', $pilihKotaId)->where('nominalsupir','<>',0)->where('statusaktif',1);
+
+                DB::table($tempKotaFinal)->insertUsing([
+                    'kota_id',
+                ],  $query);
+            } else {
+                $query = DB::table($tempKotaUpah)->from(DB::raw("$tempKotaUpah with (readuncommitted)"))
+                    ->select('kota_id')
+                    ->groupBy('kota_id');
+
+                DB::table($tempKotaFinal)->insertUsing([
+                    'kota_id',
+                ],  $query);
+            }
+
+            $query = db::table($tempKotaFinal)->from(DB::raw("$tempKotaFinal as a with (readuncommitted)"))
+                ->select(
+                    'kota.id',
+                    'kota.kodekota',
+                    'kota.keterangan',
+                    'kota.modifiedby',
+                    'kota.created_at',
+                    'kota.updated_at',
+                )
+                ->join(DB::raw("kota with (readuncommitted)"), 'a.kota_id', 'kota.id');
+
+            DB::table($temtabel)->insertUsing([
+                'id',
+                'kodekota',
+                'keterangan',
+                'modifiedby',
+                'created_at',
+                'updated_at'
+            ],  $query);
+        } else {
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel with (readuncommitted)")
+            )
+                ->select(
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            $temtabel = $querydata->namatabel;
+        }
+
+        $query = DB::table(DB::raw($temtabel))->from(
+            DB::raw(DB::raw($temtabel) . " a with (readuncommitted)")
+        )
+            ->select(
+                'a.id',
+                'a.kodekota',
+                'a.keterangan',
+                'a.modifiedby',
+                'a.created_at',
+                'a.updated_at',
+            );
+
+        $this->sort($query);
+        $this->filter($query);
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        $this->paginate($query);
+
+        $data = $query->get();
+
+        return $data;
+    }
+
+
+    public function sort($query)
+    {
+        return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
+    }
+
+    public function filter($query, $relationFields = [])
+    {
+
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+                        $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    }
+
+                    break;
+                case "OR":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
+                    });
+
+                    break;
+                default:
+
+                    break;
+            }
+
+            $this->totalRows = $query->count();
+            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+        }
+
+        return $query;
+    }
+
+    public function paginate($query)
+    {
+        return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
 
@@ -101,7 +308,7 @@ class UpahRitasiRincian extends MyModel
 
         DB::table($temptgl)->insertUsing(['kotadari', 'kotasampai', 'tglmulaiberlaku'], $querytgl);
 
-                // dd( DB::table($tempdata)->get(),  DB::table($temptgl)->get());
+        // dd( DB::table($tempdata)->get(),  DB::table($temptgl)->get());
         $query = DB::table($tempdata)
             ->from(DB::raw($tempdata . " as a"))
             ->join(DB::raw($temptgl . " as b"), 'a.tglmulaiberlaku', 'b.tglmulaiberlaku')
@@ -115,7 +322,7 @@ class UpahRitasiRincian extends MyModel
         } else {
             $kondisi = false;
         }
-        
+
         return $kondisi;
     }
 
