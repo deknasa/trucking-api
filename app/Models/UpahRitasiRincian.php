@@ -39,6 +39,18 @@ class UpahRitasiRincian extends MyModel
             )
             ->leftJoin('container', 'container.id', 'upahritasirincian.container_id')
             ->where('upahritasi_id', '=', $id);
+        $query = DB::table('container')->from(DB::raw("container with (readuncommitted)"))
+            ->select(
+                'container.id as container_id',
+                'container.keterangan as container',
+                'upahritasirincian.nominalsupir',
+                'upahritasirincian.liter',
+            )
+            ->leftJoin('upahritasirincian', function ($join)  use ($id) {
+                $join->on('upahritasirincian.container_id', '=', 'container.id')
+                    ->where('upahritasirincian.upahritasi_id', '=', $id);
+            });
+            
 
 
         $data = $query->get();

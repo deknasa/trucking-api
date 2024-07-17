@@ -2035,37 +2035,39 @@ class OrderanTrucking extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] != '') {
-                            if ($filters['field'] == 'statusapprovaledit') {
-                                $query = $query->orWhere('param3.text', '', "$filters[data]");
-                            } elseif ($filters['field'] == 'statusapprovaltanpajob') {
-                                $query = $query->orWhere('param4.text', '', "$filters[data]");
-                            } elseif ($filters['field'] == 'statusapprovalbukatrip') {
-                                $query = $query->orWhere('statusapprovalbukatrip.text', '', "$filters[data]");
-                            } elseif ($filters['field'] == 'agen_id') {
-                                $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
-                            } elseif ($filters['field'] == 'pelanggan_id') {
-                                $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                            } elseif ($filters['field'] == 'container_id') {
-                                $query = $query->orWhere('container.keterangan', 'LIKE', "%$filters[data]%");
-                            } elseif ($filters['field'] == 'tarif_id') {
-                                $query = $query->orWhere('tarif.tujuan', 'LIKE', "%$filters[data]%");
-                            } elseif ($filters['field'] == 'jenisorder_id') {
-                                $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'nominal') {
-                                $query = $query->orWhereRaw("format(orderantrucking.nominal, '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'tglbukti') {
-                                $query = $query->orWhereRaw("format(orderantrucking." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(orderantrucking." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
-                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw("orderantrucking.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusapprovaledit') {
+                                    $query = $query->orWhere('param3.text', '', "$filters[data]");
+                                } elseif ($filters['field'] == 'statusapprovaltanpajob') {
+                                    $query = $query->orWhere('param4.text', '', "$filters[data]");
+                                } elseif ($filters['field'] == 'statusapprovalbukatrip') {
+                                    $query = $query->orWhere('statusapprovalbukatrip.text', '', "$filters[data]");
+                                } elseif ($filters['field'] == 'agen_id') {
+                                    $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                                } elseif ($filters['field'] == 'pelanggan_id') {
+                                    $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                                } elseif ($filters['field'] == 'container_id') {
+                                    $query = $query->orWhere('container.keterangan', 'LIKE', "%$filters[data]%");
+                                } elseif ($filters['field'] == 'tarif_id') {
+                                    $query = $query->orWhere('tarif.tujuan', 'LIKE', "%$filters[data]%");
+                                } elseif ($filters['field'] == 'jenisorder_id') {
+                                    $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'nominal') {
+                                    $query = $query->orWhereRaw("format(orderantrucking.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'tglbukti') {
+                                    $query = $query->orWhereRaw("format(orderantrucking." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(orderantrucking." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw("orderantrucking.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
-                    }
-
+                    });
+                    
                     break;
                 default:
 
