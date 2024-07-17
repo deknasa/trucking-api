@@ -31,6 +31,8 @@ class LaporanPinjamanSupir extends MyModel
         $pengeluarantrucking_id = 1;
         $penerimaantrucking_id = 2;
 
+        // dd($sampai);
+
         $temphistory = '##temphistory' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         Schema::create($temphistory, function ($table) {
@@ -58,7 +60,7 @@ class LaporanPinjamanSupir extends MyModel
             ->join(DB::raw("pengeluarantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
             ->leftjoin(DB::raw("supir as c with (readuncommitted) "), 'b.supir_id', 'c.id')
             ->where('a.pengeluarantrucking_id', '=', $pengeluarantrucking_id)
-            ->whereRaw("a.tglbukti<='" . date('Y/m/d', strtotime($sampai)) . "'")
+            ->whereRaw("a.tglbukti<'" . date('Y/m/d', strtotime($sampai)) . "'")
             // ->whereRaw("isnull(b.supir_id,0)<>0")
             ->where('a.statusposting', '=', $jenis)
 
@@ -82,29 +84,30 @@ class LaporanPinjamanSupir extends MyModel
             DB::raw("penerimaantruckingheader a with (readuncommitted) ")
         )
             ->select(
-                'a.nobukti',
+                db::raw("b.pengeluarantruckingheader_nobukti as nobukti"),
+                // db::raw("a.nobukti as nobukti"),
                 'a.tglbukti',
                 'b.supir_id',
-                'b.nominal',
+                db::raw("(b.nominal*-1) as nominal"),
                 DB::raw("1 as tipe"),
                 db::raw("isnull(f.namasupir,'') as namasupir"),
                 'a.created_at',
 
             )
             ->join(DB::raw("penerimaantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
-            ->join(DB::raw("gajisupirpelunasanpinjaman as c with(readuncommitted)"), function ($join) {
-                $join->on('a.nobukti', '=', 'c.penerimaantrucking_nobukti');
-                $join->on('b.supir_id', '=', 'c.supir_id');
-                $join->on('b.pengeluarantruckingheader_nobukti', '=', 'c.pengeluarantrucking_nobukti');
-            })
+            // ->join(DB::raw("gajisupirpelunasanpinjaman as c with(readuncommitted)"), function ($join) {
+            //     $join->on('a.nobukti', '=', 'c.penerimaantrucking_nobukti');
+            //     $join->on('b.supir_id', '=', 'c.supir_id');
+            //     $join->on('b.pengeluarantruckingheader_nobukti', '=', 'c.pengeluarantrucking_nobukti');
+            // })
 
-            ->leftjoin(DB::raw("prosesgajisupirdetail as d with (readuncommitted) "), 'c.gajisupir_nobukti', 'd.gajisupir_nobukti')
+            // ->leftjoin(DB::raw("prosesgajisupirdetail as d with (readuncommitted) "), 'c.gajisupir_nobukti', 'd.gajisupir_nobukti')
             ->leftjoin(DB::raw("pengeluarantruckingheader as e with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'e.nobukti')
             ->leftjoin(DB::raw("supir as f with (readuncommitted) "), 'b.supir_id', 'f.id')
 
 
             ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
-            ->whereRaw("a.tglbukti<='" . date('Y/m/d', strtotime($sampai)) . "'")
+            ->whereRaw("a.tglbukti<'" . date('Y/m/d', strtotime($sampai)) . "'")
             // ->whereRaw("isnull(b.supir_id,0)<>0")
             ->where('e.statusposting', '=', $jenis)
 
@@ -121,6 +124,15 @@ class LaporanPinjamanSupir extends MyModel
             'namasupir',
             'created_at',
         ], $queryhistory);
+
+        // $queryhistory=db::table($temphistory)->from(db::raw($temphistory . " a with (readuncommitted)"))
+        // ->select(
+        //     db::raw("sum(a.nominal) as nominal")
+        // )
+        // ->where('a.nobukti','PJT 0005/VI/2024')
+        // ->get();
+
+        // dd($queryhistory);
 
         $temprekapdata = '##temprekapdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
@@ -160,12 +172,24 @@ class LaporanPinjamanSupir extends MyModel
             'created_at',
         ], $queryrekapdata);
 
+        // dd(db::table($temprekapdata)->get());
+
+        // $queryhistory=db::table($temprekapdata)->from(db::raw($temprekapdata . " a with (readuncommitted)"))
+        // ->select(
+        //     // 'a.nobukti',
+        //     db::raw("sum(a.nominal) as nominal")
+        // )
+        // // ->groupby('a.nobukti')
+        // ->get();
+
+        // dd($queryhistory);        
+
         $queryrekapdata = DB::table('penerimaantruckingheader')->from(
             DB::raw("penerimaantruckingheader a with (readuncommitted) ")
         )
             ->select(
                 'b.pengeluarantruckingheader_nobukti as nobukti',
-                DB::raw("a.nobukti+(case when isnull(d.nobukti,'')='' then '' else ' ( ' +isnull(d.nobukti,'') +' ) ' end) 
+                DB::raw("a.nobukti+(case when isnull(e.nobukti,'')='' then '' else ' ( ' +isnull(e.nobukti,'') +' ) ' end) 
              as nobuktipelunasan"),
                 'e.tglbukti',
                 'a.tglbukti as tglbuktipelunasan',
@@ -174,22 +198,24 @@ class LaporanPinjamanSupir extends MyModel
                 'a.created_at'
             )
             ->join(DB::raw("penerimaantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
-            ->leftjoin(DB::raw("gajisupirpelunasanpinjaman as c with(readuncommitted)"), function ($join) {
-                $join->on('a.nobukti', '=', 'c.penerimaantrucking_nobukti');
-                $join->on('b.supir_id', '=', 'c.supir_id');
-                $join->on('b.pengeluarantruckingheader_nobukti', '=', 'c.pengeluarantrucking_nobukti');
-            })
+            // ->leftjoin(DB::raw("gajisupirpelunasanpinjaman as c with(readuncommitted)"), function ($join) {
+            //     $join->on('a.nobukti', '=', 'c.penerimaantrucking_nobukti');
+            //     $join->on('b.supir_id', '=', 'c.supir_id');
+            //     $join->on('b.pengeluarantruckingheader_nobukti', '=', 'c.pengeluarantrucking_nobukti');
+            // })
 
-            ->leftjoin(DB::raw("prosesgajisupirdetail as d with (readuncommitted) "), 'c.gajisupir_nobukti', 'd.gajisupir_nobukti')
-            ->leftjoin(DB::raw("pengeluarantruckingheader as e with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'e.nobukti')
-            ->leftjoin(DB::raw("supir as f with (readuncommitted) "), 'b.supir_id', 'f.id')
+            // ->leftjoin(DB::raw("prosesgajisupirdetail as d with (readuncommitted) "), 'c.gajisupir_nobukti', 'd.gajisupir_nobukti')
+            ->join(DB::raw("pengeluarantruckingheader as e with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'e.nobukti')
+            ->join(DB::raw("supir as f with (readuncommitted) "), 'b.supir_id', 'f.id')
             ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
-            ->whereRaw("a.tglbukti<='" . date('Y/m/d', strtotime($sampai)) . "'")
+            ->whereRaw("a.tglbukti='" . date('Y/m/d', strtotime($sampai)) . "'")
             ->where('e.statusposting', '=', $jenis)
 
             ->OrderBy('f.namasupir', 'asc')
             ->OrderBy('a.tglbukti', 'asc')
             ->OrderBy('a.nobukti', 'asc');
+            // ->whereraw('e.nobukti','PJT 0005/VI/2024');
+            // dd($queryrekapdata->tosql
 
         DB::table($temprekapdata)->insertUsing([
             'nobukti',
@@ -200,6 +226,40 @@ class LaporanPinjamanSupir extends MyModel
             'namasupir',
             'created_at',
         ], $queryrekapdata);
+
+        // $queryhistory = DB::table('pengeluarantruckingheader')->from(
+        //     DB::raw("pengeluarantruckingheader a with (readuncommitted) ")
+        // )
+        //     ->select(
+        //         'a.nobukti',
+        //         'a.tglbukti',
+        //         'b.supir_id',
+        //         'b.nominal',
+        //         DB::raw("1 as tipe"),
+        //         db::raw("isnull(c.namasupir,'') as namasupir"),
+        //         'a.created_at'
+        //     )
+        //     ->join(DB::raw("pengeluarantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+        //     ->leftjoin(DB::raw("supir as c with (readuncommitted) "), 'b.supir_id', 'c.id')
+        //     ->where('a.pengeluarantrucking_id', '=', $pengeluarantrucking_id)
+        //     ->whereRaw("a.tglbukti='" . date('Y/m/d', strtotime($sampai)) . "'")
+        //     // ->whereRaw("isnull(b.supir_id,0)<>0")
+        //     ->where('a.statusposting', '=', $jenis)
+
+        //     ->OrderBy('c.namasupir', 'asc')
+        //     ->OrderBy('a.tglbukti', 'asc')
+        //     ->OrderBy('a.nobukti', 'asc');
+
+        //     DB::table($temprekapdata)->insertUsing([
+        //         'nobukti',
+        //         'nobuktipelunasan',
+        //         'tglbukti',
+        //         'tglbuktipelunasan',
+        //         'nominal',
+        //         'namasupir',
+        //         'created_at',
+        //     ], $queryrekapdata);            
+
 
         $temprekapdatahasil = '##temprekapdatahasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
@@ -227,10 +287,11 @@ class LaporanPinjamanSupir extends MyModel
                 'a.namasupir',
                 'a.created_at'
             )
-            ->OrderBy('a.namasupir', 'asc')
+            ->whereraw("isnull(a.nominal,0)<>0")
             ->OrderBy('a.tglbukti', 'asc')
             ->OrderBy('a.created_at', 'asc')
-            ->OrderBy('a.nobukti', 'asc');
+            ->OrderBy('a.nobukti', 'asc')
+            ->OrderBy('a.id', 'asc');            
 
 
         DB::table($temprekapdatahasil)->insertUsing([
