@@ -226,6 +226,7 @@ class SubKelompok extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', $filters['data']);
+                        } else if ($filters['field'] == '') {
                         } else if ($filters['field'] == 'kelompok_id') {
                             $query = $query->where('kelompok.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'kelompokid') {
