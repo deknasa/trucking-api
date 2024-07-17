@@ -67,9 +67,11 @@ class LaporanPinjamanSupirKaryawanController extends Controller
     {
 
         $sampai = $request->sampai;
+        $jenis = $request->jenis ?? 83;
         $prosesneraca = 0;
 
-        $export = LaporanPinjamanSupirKaryawan::getReport($sampai, $prosesneraca);
+        $laporanPinjSupir = new LaporanPinjamanSupirKaryawan();
+        $export = $laporanPinjSupir->getReport($sampai, $prosesneraca,$jenis);
 
 
         $getCabang = DB::table('cabang')->from(DB::raw("cabang with (readuncommitted)"))
