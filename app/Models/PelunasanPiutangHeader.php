@@ -1838,7 +1838,7 @@ class PelunasanPiutangHeader extends MyModel
         ]);
 
         (new LogTrail())->processStore([
-            'namatabel' => 'INVOICEDETAIL',
+            'namatabel' => 'PELUNASANPIUTANGDETAIL',
             'postingdari' => $postingDari,
             'idtrans' => $pelunasanPiutangHeaderLogTrail['id'],
             'nobuktitrans' => $pelunasanPiutangHeader->nobukti,
@@ -1866,6 +1866,16 @@ class PelunasanPiutangHeader extends MyModel
 
         if ($pelunasanPiutangHeader->notakredit_nobukti != '-') {
             $getNotaKredit = NotaKreditHeader::from(DB::raw("notakreditheader with (readuncommitted)"))->where('nobukti', $pelunasanPiutangHeader->notakredit_nobukti)->first();
+            if (isset($getNotaKredit)) {
+
+                if ($getNotaKredit != null) {
+                    (new NotaKreditHeader())->processDestroy($getNotaKredit->id, $postingDari);
+                }
+            }
+        }
+
+        if ($pelunasanPiutangHeader->notakreditpph_nobukti != '-') {
+            $getNotaKredit = NotaKreditHeader::from(DB::raw("notakreditheader with (readuncommitted)"))->where('nobukti', $pelunasanPiutangHeader->notakreditpph_nobukti)->first();
             if (isset($getNotaKredit)) {
 
                 if ($getNotaKredit != null) {
