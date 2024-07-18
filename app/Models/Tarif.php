@@ -161,7 +161,7 @@ class Tarif extends MyModel
                 ->select(
                     'tarif.id',
                     'parent.tujuan as parent_id',
-                    db::raw("isnull(kotadari.keterangan,'')+(case when isnull(kotasampai.keterangan,'')='' then '' else ' - ' +isnull(kotasampai.keterangan,'') end)+ 
+                    db::raw("isnull(kotadari.kodekota,'')+(case when isnull(kotasampai.kodekota,'')='' then '' else ' - ' +isnull(kotasampai.kodekota,'') end)+ 
              (case when isnull(upahsupir.penyesuaian,'')='' then '' else ' ( ' +isnull(upahsupir.penyesuaian,'')+ ' ) ' end) as upahsupir
              "),
                     'tarif.tujuan',
