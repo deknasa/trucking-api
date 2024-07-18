@@ -305,9 +305,9 @@ class PengeluaranTruckingHeader extends MyModel
             $url = config('app.url_fe') . 'penerimaantruckingheader';
 
             $getpenerimaantruckingdetail = DB::table("penerimaantruckingdetail")->from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
-                ->select(DB::raw(" penerimaantruckingdetail.pengeluarantruckingheader_nobukti, STRING_AGG(penerimaantruckingdetail.nobukti, ', ') as nobuktipenerimaan,
-            STRING_AGG('<a href=$petik" . $url . "?tgldari='+(format(penerimaantruckingheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(penerimaantruckingheader.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+penerimaantruckingheader.nobukti+'$petik 
-            class=$petik link-color $petik target=$petik _blank $petik>'+penerimaantruckingdetail.nobukti+'</a>', ',') as url"))
+                ->select(DB::raw(" penerimaantruckingdetail.pengeluarantruckingheader_nobukti, STRING_AGG(cast(penerimaantruckingdetail.nobukti as nvarchar(max)), ', ') as nobuktipenerimaan,
+            STRING_AGG(cast('<a href=$petik" . $url . "?tgldari='+(format(penerimaantruckingheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(penerimaantruckingheader.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+penerimaantruckingheader.nobukti+'$petik 
+            class=$petik link-color $petik target=$petik _blank $petik>'+penerimaantruckingdetail.nobukti+'</a>' as nvarchar(max)), ',') as url"))
                 ->join(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.nobukti', 'penerimaantruckingheader.nobukti')
                 ->whereRaw("isnull(penerimaantruckingdetail.pengeluarantruckingheader_nobukti,'') != ''")
                 ->groupBy("penerimaantruckingdetail.pengeluarantruckingheader_nobukti");

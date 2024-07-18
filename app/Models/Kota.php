@@ -129,6 +129,8 @@ class Kota extends MyModel
         $upahSupirKotaDari = request()->upahSupirKotaDari ?? '';
         $kotaZona = request()->kotaZona ?? '';
 
+        $idkandang = (new Parameter())->cekText('KANDANG', 'KANDANG') ?? 0;
+
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'kota.id',
@@ -167,27 +169,28 @@ class Kota extends MyModel
         if ($pilihKotaId > 0) {
             $query->whereRaw("kota.id != $pilihKotaId");
         }
-        if ($dataRitasiId != '') {
-            $ritasiPulang = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS RITASI')->where('text', 'PULANG RANGKA')->first();
-            $ritasiTurun = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS RITASI')->where('text', 'TURUN RANGKA')->first();
-            if ($dataRitasiId == $ritasiPulang->id) {
-                if ($ritasiDariKe == 'dari') {
-                    $query->where("kodekota", 'BELAWAN RANGKA')->first();
-                } else {
-                    $query->where("kodekota", 'KIM (KANDANG)')->first();
-                }
-            } else if ($dataRitasiId == $ritasiTurun->id) {
-                if ($ritasiDariKe == 'dari') {
-                    $query->where("kodekota", 'KIM (KANDANG)')->first();
-                } else {
-                    $query->where("kodekota", 'BELAWAN RANGKA')->first();
-                }
-            }
+        // if ($dataRitasiId != '') {
+        //     $ritasiPulang = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS RITASI')->where('text', 'PULANG RANGKA')->first();
+        //     $ritasiTurun = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS RITASI')->where('text', 'TURUN RANGKA')->first();
+        //     if ($dataRitasiId == $ritasiPulang->id) {
+        //         if ($ritasiDariKe == 'dari') {
+        //             $query->where("kodekota", 'BELAWAN RANGKA')->first();
+        //         } else {
+        //             $query->where("kodekota", 'KIM (KANDANG)')->first();
+        //         }
+        //     } else if ($dataRitasiId == $ritasiTurun->id) {
+        //         if ($ritasiDariKe == 'dari') {
+        //             $query->where("kodekota", 'KIM (KANDANG)')->first();
+        //         } else {
+        //             $query->where("kodekota", 'BELAWAN RANGKA')->first();
+        //         }
+        //     }
+        // }
+        if($ritasiDariKe != ''){
+            $query->whereRaw("kota.id != $idkandang");
         }
-
         if ($upahSupirDariKe == 'dari') {
             $query->whereRaw("kota.id != $kotaKandang->text");
-            // dd($kotaPelabuhan,$kotaKandang);
         }
         if ($upahSupirDariKe == 'ke') {
             if ($upahSupirKotaDari == $kotaPelabuhan->text) {
