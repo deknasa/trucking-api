@@ -173,6 +173,7 @@ class ExportLaporanMingguanSupir extends Model
         $tempuangjalan = '##tempdatauangjalan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempuangjalan, function ($table) {
             $table->string('nobukti', 50)->nullable();
+            $table->string('suratpengantar_nobukti', 50)->nullable();
             $table->double('nominaluangjalan', 15, 2)->nullable();
             $table->double('nominaluangbbm', 15, 2)->nullable();
             $table->double('nominaluangmakan', 15, 2)->nullable();
@@ -181,17 +182,19 @@ class ExportLaporanMingguanSupir extends Model
         $querytempuangjalan = DB::table("gajisupirheader")->from(
             DB::raw("gajisupirheader as a with (readuncommitted)")
         )
-            ->select(
-                'a.nobukti',
-                db::raw("sum(a.uangjalan) as nominaluangjalan"),
-                db::raw("sum(a.bbm) as nominaluangbbm"),
-                db::raw("sum(a.uangmakanharian + isnull(a.biayaextra,0)) as nominaluangmakan"),
-            )
+        ->select(
+            'a.nobukti',
+            'a.suratpengantar_nobukti',
+            db::raw("a.uangjalan as nominaluangjalan"),
+            db::raw("a.bbm as nominaluangbbm"),
+            db::raw("a.uangmakanharian + isnull(a.biayaextra,0) as nominaluangmakan"),
+        );
             // ->join(DB::raw($tempData . " as c "), 'a.nobukti', 'c.nobuktiric')
-            ->GroupBy('a.nobukti');
+            // ->GroupBy('a.nobukti');
 
         DB::table($tempuangjalan)->insertUsing([
             'nobukti',
+            'suratpengantar_nobukti',
             'nominaluangjalan',
             'nominaluangbbm',
             'nominaluangmakan',
@@ -649,7 +652,7 @@ class ExportLaporanMingguanSupir extends Model
             )
             ->leftjoin(DB::raw($tempInvoice . " as b "), 'a.nobukti', 'b.notripawal')
             ->leftjoin(DB::raw($tempInvoice . " as c "), 'a.jobtrucking', 'c.jobtrucking')
-            ->leftjoin(DB::raw($tempuangjalan . " as d "), 'a.nobuktiric', 'd.nobukti')
+            ->leftjoin(DB::raw($tempuangjalan . " as d "), 'a.nobukti', 'd.suratpengantar_nobukti')
             ->leftjoin(DB::raw($temptrip . " as e "), 'a.nobukti', 'e.nobukti')
             ->leftjoin(DB::raw($tempuanglain . " as f "), 'a.nobukti', 'f.nobukti')
             ->leftjoin(DB::raw($tempbuktikomisi . " as g "), 'a.nobukti', 'g.nobukti')
