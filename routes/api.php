@@ -426,6 +426,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('listtrip', ListTripController::class)->whereNumber('listtrip');
     Route::post('listtrip/{id}/cekValidasi', [ListTripController::class, 'cekValidasi'])->name('listtrip.cekvalidasi')->whereNumber('id');
     Route::resource('mekanik', MekanikController::class)->whereNumber('mekanik');
+    Route::post('upahsupir/approvalaktif', [UpahSupirController::class, 'approvalaktif']);
     Route::resource('upahsupir', UpahSupirController::class)->whereNumber('upahsupir');
     Route::resource('upahsupirrincian', UpahSupirRincianController::class)->whereNumber('upahsupirrincian');
     Route::resource('upahsupirtangki', UpahSupirTangkiController::class)->whereNumber('upahsupirtangki');
