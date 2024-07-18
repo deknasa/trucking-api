@@ -1657,6 +1657,36 @@ class UpahSupir extends MyModel
 
         return $UpahSupir;
     }
+    public function processApprovalaktif(array $data)
+    {
+
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $UpahSupir = UpahSupir::find($data['Id'][$i]);
+
+            $UpahSupir->statusaktif = $statusaktif->id;
+            $aksi = $statusaktif->text;
+
+            // dd($UpahSupir);
+            if ($UpahSupir->save()) {
+
+                (new LogTrail())->processStore([
+
+                    'namatabel' => strtoupper($UpahSupir->getTable()),
+                    'postingdari' => 'APPROVAL UPAH SUPIR',
+                    'idtrans' => $UpahSupir->id,
+                    'nobuktitrans' => $UpahSupir->id,
+                    'aksi' => $aksi,
+                    'datajson' => $UpahSupir->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+
+        return $UpahSupir;
+    }
 
     public function getRincian($statuskandang, $upah_id, $container_id, $statuscontainer_id)
     {
