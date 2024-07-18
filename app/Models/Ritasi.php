@@ -328,13 +328,11 @@ class Ritasi extends MyModel
     public function cekUpahRitasi($dari, $sampai)
     {
         $query = DB::table("upahritasi")->from(DB::raw("upahritasi with (readuncommitted)"))
-            ->select(DB::raw("upahritasi.nominalsupir, upahritasirincian.liter"))
-            ->join(DB::raw("upahritasirincian with (readuncommitted)"), 'upahritasi.id', 'upahritasirincian.upahritasi_id')
-            ->whereRaw("(upahritasi.kotadari_id=" . $dari . " and upahritasi.kotasampai_id=" . $sampai . ") or (upahritasi.kotasampai_id=" . $dari . " and upahritasi.kotadari_id=" . $sampai . ")")
+            ->select(DB::raw("upahritasi.nominalsupir"))
+            ->whereRaw("((upahritasi.kotadari_id=" . $dari . " and upahritasi.kotasampai_id=" . $sampai . ") or (upahritasi.kotasampai_id=" . $dari . " and upahritasi.kotadari_id=" . $sampai . "))")
             // ->whereRaw('upahritasi.kotasampai_id', $sampai)
-            ->whereRaw("upahritasi.nominalsupir != 0")
+            ->whereRaw("upahritasi.nominalsupir <> 0")
             ->first();
-
         return $query;
     }
 
