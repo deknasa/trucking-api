@@ -332,6 +332,7 @@ class Ritasi extends MyModel
             ->whereRaw("((upahritasi.kotadari_id=" . $dari . " and upahritasi.kotasampai_id=" . $sampai . ") or (upahritasi.kotasampai_id=" . $dari . " and upahritasi.kotadari_id=" . $sampai . "))")
             // ->whereRaw('upahritasi.kotasampai_id', $sampai)
             ->whereRaw("upahritasi.nominalsupir <> 0")
+            ->where("upahritasi.statusaktif", '1')
             ->first();
         return $query;
     }
