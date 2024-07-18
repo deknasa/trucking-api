@@ -414,6 +414,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('merk', MerkController::class)->whereNumber('merk');
     Route::resource('satuan', SatuanController::class)->whereNumber('satuan');
     Route::resource('zona', ZonaController::class)->whereNumber('zona');
+    Route::post('tarif/approvalaktif', [TarifController::class, 'approvalaktif']);
     Route::resource('tarif', TarifController::class)->whereNumber('tarif');
     Route::resource('tariftangki', TarifTangkiController::class)->whereNumber('tariftangki');
     Route::resource('tarifrincian', TarifRincianController::class)->whereNumber('tarifrincian');

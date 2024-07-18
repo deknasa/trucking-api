@@ -1111,4 +1111,34 @@ class Tarif extends MyModel
 
         return $Tarif;
     }
+    public function processApprovalaktif(array $data)
+    {
+
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $Tarif = Tarif::find($data['Id'][$i]);
+
+            $Tarif->statusaktif = $statusaktif->id;
+            $aksi = $statusaktif->text;
+
+            // dd($Tarif);
+            if ($Tarif->save()) {
+
+                (new LogTrail())->processStore([
+
+                    'namatabel' => strtoupper($Tarif->getTable()),
+                    'postingdari' => 'APPROVAL Tarif',
+                    'idtrans' => $Tarif->id,
+                    'nobuktitrans' => $Tarif->id,
+                    'aksi' => $aksi,
+                    'datajson' => $Tarif->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+
+        return $Tarif;
+    }
 }
