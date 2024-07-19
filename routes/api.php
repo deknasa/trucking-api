@@ -310,6 +310,8 @@ use App\Http\Controllers\Api\LaporanKartuPiutangPerPlgDetailController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanPerEBSController;
 use App\Http\Controllers\Api\SuratPengantarApprovalInputTripController;
 use App\Http\Controllers\Api\ApprovalBukaTanggalSuratPengantarController;
+use App\Http\Controllers\Api\BiayaExtraSupirDetailController;
+use App\Http\Controllers\Api\BiayaExtraSupirHeaderController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
 
@@ -398,6 +400,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('tarifhargatertentu', TarifHargaTertentuController::class)->whereNumber('tarifhargatertentu');
     Route::resource('shipper', ShipperController::class)->whereNumber('shipper');
     Route::get('upahsupirrincian/get', [UpahSupirRincianController::class, 'get']);
+    Route::get('upahritasirincian/get', [UpahRitasiRincianController::class, 'get']);
     Route::get('absensisupirdetail/get', [AbsensiSupirDetailController::class, 'getDetailAbsensi']);
     Route::get('absensisupirproses/get', [AbsensiSupirDetailController::class, 'getProsesKGT']);
     Route::get('absensisupirapprovalproses/get', [AbsensiSupirApprovalDetailController::class, 'getProsesKBT']);
@@ -1482,6 +1485,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('suratpengantar/batalmuat', [SuratPengantarController::class, 'approvalBatalMuat'])->whereNumber('id');
     Route::post('suratpengantar/edittujuan', [SuratPengantarController::class, 'approvalEditTujuan'])->whereNumber('id');
     Route::post('suratpengantar/titipanemkl', [SuratPengantarController::class, 'approvalTitipanEmkl']);
+    Route::post('suratpengantar/biayaextra', [SuratPengantarController::class, 'approvalBiayaExtra']);
     Route::get('suratpengantar/getOrderanTrucking', [SuratPengantarController::class, 'getOrderanTrucking']);
     Route::get('suratpengantar/getGaji/{dari}/{sampai}/{container}/{statuscontainer}', [SuratPengantarController::class, 'getGaji']);
     Route::get('suratpengantar/{id}/getTolakan', [SuratPengantarController::class, 'getTolakan']);
@@ -2091,6 +2095,11 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('upahsupirtangki/{id}/cekValidasi', [UpahSupirTangkiController::class, 'cekValidasi'])->name('upahsupirtangki.cekValidasi')->whereNumber('id');
     Route::get('upahsupirtangkirincian/setuprow', [UpahSupirTangkiRincianController::class, 'setUpRow']);
     Route::get('upahsupirtangkirincian/setuprowshow/{id}', [UpahSupirTangkiRincianController::class, 'setUpRowExcept'])->whereNumber('id');
+
+    Route::post('biayaextrasupirheader/{id}/cekvalidasi', [BiayaExtraSupirHeaderController::class, 'cekvalidasi'])->name('biayaextrasupirheader.cekvalidasi')->whereNumber('id');
+    Route::get('biayaextrasupirheader/field_length', [BiayaExtraSupirHeaderController::class, 'fieldLength']);
+    Route::resource('biayaextrasupirheader', BiayaExtraSupirHeaderController::class)->whereNumber('biayaextrasupirheader');
+    Route::resource('biayaextrasupirdetail', BiayaExtraSupirDetailController::class)->whereNumber('biayaextrasupirdetail');
 
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);

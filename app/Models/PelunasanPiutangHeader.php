@@ -924,25 +924,25 @@ class PelunasanPiutangHeader extends MyModel
             $coaDebetPengeluaran[] = $memoJurnalPengeluaran['JURNAL'];
             $nominal = $nominal + $data['bayar'][$i];
 
-            if ($notakreditpph) {
+            // if ($notakreditpph) {
 
-                if ($potonganpph > 0) {
-                    $noWarkat[] = $data['nowarkat'] ?? '';
-                    $nominalDetail[] = -$potonganpph;
-                    $coaKredit[] = $memoNotaKreditCoaPPH['JURNAL'] ?? '';
-                    $keteranganDetail[] = $data['keteranganpotonganpph'][$i];
-                    $invoiceNobukti[] = $piutang->invoice_nobukti ?? '';
-                    $pelunasanNobukti[] = $pelunasanPiutangHeader->nobukti;
-                    if ($data['alatbayar_id'] != $alatbayarGiro->id) {
-                        $tglJatuhTempo[] = $data['tglbukti'];
-                    } else {
-                        $top = intval($getCoa->top);
-                        $dateNow = date('Y-m-d');
-                        $nextDay = date('d-m-Y', strtotime($dateNow . " +$top day"));
-                        $tglJatuhTempo[] = $data['tgljatuhtempo'];
-                    }
-                }
-            }
+            //     if ($potonganpph > 0) {
+            //         $noWarkat[] = $data['nowarkat'] ?? '';
+            //         $nominalDetail[] = -$potonganpph;
+            //         $coaKredit[] = $memoNotaKreditCoaPPH['JURNAL'] ?? '';
+            //         $keteranganDetail[] = $data['keteranganpotonganpph'][$i];
+            //         $invoiceNobukti[] = $piutang->invoice_nobukti ?? '';
+            //         $pelunasanNobukti[] = $pelunasanPiutangHeader->nobukti;
+            //         if ($data['alatbayar_id'] != $alatbayarGiro->id) {
+            //             $tglJatuhTempo[] = $data['tglbukti'];
+            //         } else {
+            //             $top = intval($getCoa->top);
+            //             $dateNow = date('Y-m-d');
+            //             $nextDay = date('d-m-Y', strtotime($dateNow . " +$top day"));
+            //             $tglJatuhTempo[] = $data['tgljatuhtempo'];
+            //         }
+            //     }
+            // }
         }
 
 
@@ -1321,25 +1321,25 @@ class PelunasanPiutangHeader extends MyModel
             $coaDebetPengeluaran[] = $memoJurnalPengeluaran['JURNAL'];
             $nominal = $nominal + $data['bayar'][$i];
 
-            if ($notakreditpph) {
-                if ($potonganpph > 0) {
+            // if ($notakreditpph) {
+            //     if ($potonganpph > 0) {
 
-                    $noWarkat[] = $data['nowarkat'] ?? '';
-                    $nominalDetail[] = -$potonganpph;
-                    $coaKredit[] = $memoNotaKreditCoaPPH['JURNAL'] ?? '';
-                    $keteranganDetail[] = $data['keteranganpotonganpph'][$i];
-                    $invoiceNobukti[] = $piutang->invoice_nobukti ?? '';
-                    $pelunasanNobukti[] = $pelunasanPiutangHeader->nobukti;
-                    if ($data['alatbayar_id'] != $alatbayarGiro->id) {
-                        $tglJatuhTempo[] = $data['tglbukti'];
-                    } else {
-                        $top = intval($getCoa->top);
-                        $dateNow = date('Y-m-d');
-                        $nextDay = date('d-m-Y', strtotime($dateNow . " +$top day"));
-                        $tglJatuhTempo[] = $data['tgljatuhtempo'];
-                    }
-                }
-            }
+            //         $noWarkat[] = $data['nowarkat'] ?? '';
+            //         $nominalDetail[] = -$potonganpph;
+            //         $coaKredit[] = $memoNotaKreditCoaPPH['JURNAL'] ?? '';
+            //         $keteranganDetail[] = $data['keteranganpotonganpph'][$i];
+            //         $invoiceNobukti[] = $piutang->invoice_nobukti ?? '';
+            //         $pelunasanNobukti[] = $pelunasanPiutangHeader->nobukti;
+            //         if ($data['alatbayar_id'] != $alatbayarGiro->id) {
+            //             $tglJatuhTempo[] = $data['tglbukti'];
+            //         } else {
+            //             $top = intval($getCoa->top);
+            //             $dateNow = date('Y-m-d');
+            //             $nextDay = date('d-m-Y', strtotime($dateNow . " +$top day"));
+            //             $tglJatuhTempo[] = $data['tgljatuhtempo'];
+            //         }
+            //     }
+            // }
         }
 
         if ($pelunasanPiutangHeader->notakreditpph_nobukti != '-') {
@@ -1838,7 +1838,7 @@ class PelunasanPiutangHeader extends MyModel
         ]);
 
         (new LogTrail())->processStore([
-            'namatabel' => 'INVOICEDETAIL',
+            'namatabel' => 'PELUNASANPIUTANGDETAIL',
             'postingdari' => $postingDari,
             'idtrans' => $pelunasanPiutangHeaderLogTrail['id'],
             'nobuktitrans' => $pelunasanPiutangHeader->nobukti,
@@ -1866,6 +1866,16 @@ class PelunasanPiutangHeader extends MyModel
 
         if ($pelunasanPiutangHeader->notakredit_nobukti != '-') {
             $getNotaKredit = NotaKreditHeader::from(DB::raw("notakreditheader with (readuncommitted)"))->where('nobukti', $pelunasanPiutangHeader->notakredit_nobukti)->first();
+            if (isset($getNotaKredit)) {
+
+                if ($getNotaKredit != null) {
+                    (new NotaKreditHeader())->processDestroy($getNotaKredit->id, $postingDari);
+                }
+            }
+        }
+
+        if ($pelunasanPiutangHeader->notakreditpph_nobukti != '-') {
+            $getNotaKredit = NotaKreditHeader::from(DB::raw("notakreditheader with (readuncommitted)"))->where('nobukti', $pelunasanPiutangHeader->notakreditpph_nobukti)->first();
             if (isset($getNotaKredit)) {
 
                 if ($getNotaKredit != null) {

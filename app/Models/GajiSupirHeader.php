@@ -2338,6 +2338,17 @@ class GajiSupirHeader extends MyModel
         }
         $nominal = ($total - $gajiSupirHeader->uangjalan - $gajiSupirHeader->bbm - $gajiSupirHeader->potonganpinjaman - $gajiSupirHeader->potonganpinjamansemua - $gajiSupirHeader->deposito) + $gajiSupirHeader->uangmakanharian + $gajiSupirHeader->uangmakanberjenjang + $gajiSupirHeader->biayaextra;
 
+        $subquery = DB::table('gajisupirheader as a')
+            ->select('a.nobukti', 'b.suratpengantar_nobukti', DB::raw('ROW_NUMBER() OVER(PARTITION BY a.nobukti ORDER BY b.suratpengantar_nobukti) as furut'))
+            ->join('gajisupirdetail as b', 'a.nobukti', '=', 'b.nobukti')
+            ->where('a.nobukti', $gajiSupirHeader->nobukti);
+
+        $result = DB::table(DB::raw("({$subquery->toSql()}) as sub"))
+            ->mergeBindings($subquery)
+            ->select('sub.*')
+            ->where('sub.furut', 1)
+            ->first();
+        $gajiSupirHeader->suratpengantar_nobukti = $result->suratpengantar_nobukti;
         $gajiSupirHeader->nominal = $nominal;
         $gajiSupirHeader->total = $total;
 
@@ -2672,7 +2683,17 @@ class GajiSupirHeader extends MyModel
             $urut++;
         }
         $nominal = ($total - $gajiSupirHeader->uangjalan - $gajiSupirHeader->bbm - $gajiSupirHeader->potonganpinjaman - $gajiSupirHeader->potonganpinjamansemua - $gajiSupirHeader->deposito) + $gajiSupirHeader->uangmakanharian + $gajiSupirHeader->uangmakanberjenjang + $gajiSupirHeader->biayaextra;
+        $subquery = DB::table('gajisupirheader as a')
+            ->select('a.nobukti', 'b.suratpengantar_nobukti', DB::raw('ROW_NUMBER() OVER(PARTITION BY a.nobukti ORDER BY b.suratpengantar_nobukti) as furut'))
+            ->join('gajisupirdetail as b', 'a.nobukti', '=', 'b.nobukti')
+            ->where('a.nobukti', $gajiSupirHeader->nobukti);
 
+        $result = DB::table(DB::raw("({$subquery->toSql()}) as sub"))
+            ->mergeBindings($subquery)
+            ->select('sub.*')
+            ->where('sub.furut', 1)
+            ->first();
+        $gajiSupirHeader->suratpengantar_nobukti = $result->suratpengantar_nobukti;
         $gajiSupirHeader->nominal = $nominal;
         $gajiSupirHeader->total = $total;
 

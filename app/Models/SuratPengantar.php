@@ -468,6 +468,11 @@ class SuratPengantar extends MyModel
             // $querysuratpengantar->whereBetween('suratpengantar.tglbukti', [$batas, date('Y-m-d')]);
             $querysuratpengantar->where('suratpengantar.tglbukti', date('Y-m-d', strtotime(request()->tglabsensi)));
         }
+        if ($from == 'biayaextrasupir') {
+            $tglBatas = date('Y-m-d', strtotime('-3 days'));
+
+            $querysuratpengantar->whereBetween('suratpengantar.tglbukti', [$tglBatas, date('Y-m-d')]);
+        }
 
         DB::table($tempsuratpengantar)->insertUsing([
             'id',
@@ -1756,7 +1761,8 @@ class SuratPengantar extends MyModel
                     'suratpengantar.jobtrucking',
                     'suratpengantar.statuskandang',
                     'suratpengantar.statuslongtrip',
-                    'orderantrucking.statuslangsir',
+                    // 'orderantrucking.statuslangsir',
+                    DB::raw("(case when isnull(orderantrucking.statuslangsir,'')='' then saldoorderantrucking.statuslangsir else orderantrucking.statuslangsir end) as statuslangsir"),
                     DB::raw("(case when isnull(suratpengantar.statuspenyesuaian,'')='' then
                             (case when suratpengantar.penyesuaian='' then 663 ELSE 662 end) else
                             suratpengantar.statuspenyesuaian
@@ -1833,6 +1839,7 @@ class SuratPengantar extends MyModel
                 ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
                 ->leftJoin('gandengan', 'suratpengantar.gandengan_id', 'gandengan.id')
                 ->leftJoin('orderantrucking', 'suratpengantar.jobtrucking', 'orderantrucking.nobukti')
+                ->leftJoin('saldoorderantrucking', 'suratpengantar.jobtrucking', 'saldoorderantrucking.nobukti')
                 // ->leftJoin(DB::raw("$tempGaji with (readuncommitted)"), "$tempGaji.id", "suratpengantar.id")
 
                 ->where('suratpengantar.id', $id)->first();
@@ -3915,5 +3922,55 @@ class SuratPengantar extends MyModel
         }
 
         return $suratPengantar;
+    }
+
+    public function approvalBiayaExtra(array $data)
+    {
+
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+        $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
+        $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
+
+        for ($i = 0; $i < count($data['nobukti']); $i++) {
+
+            $nobukti = $data['nobukti'][$i] ?? '';
+            $querysuratpengantar = DB::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+                ->select(
+                    'a.id'
+                )->where('a.nobukti', $nobukti)
+                ->first();
+
+            $id = $querysuratpengantar->id ?? 0;
+            $suratPengantar = SuratPengantar::lockForUpdate()->findOrFail($id);
+
+            if ($suratPengantar->statusapprovalbiayaextra == $statusApproval->id) {
+                $suratPengantar->statusapprovalbiayaextra = $statusNonApproval->id;
+                $suratPengantar->tglapprovalbiayaextra = null;
+                $suratPengantar->tglbatasapprovalbiayaextra = null;
+                $suratPengantar->userapprovalbiayaextra = '';
+                $aksi = $statusNonApproval->text;
+            } else {
+                $suratPengantar->statusapprovalbiayaextra = $statusApproval->id;
+                $suratPengantar->tglapprovalbiayaextra = date('Y-m-d');
+                $suratPengantar->tglbatasapprovalbiayaextra = $tglbatas;
+                $suratPengantar->userapprovalbiayaextra = auth('api')->user()->name;
+                $aksi = $statusApproval->text;
+            }
+            if ($suratPengantar->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($suratPengantar->getTable()),
+                    'postingdari' =>  "$aksi BIAYA EXTRA SURAT PENGANTAR",
+                    'idtrans' => $suratPengantar->id,
+                    'nobuktitrans' => $suratPengantar->nobukti,
+                    'aksi' => $aksi,
+                    'datajson' => $suratPengantar->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+
+        return $data;
     }
 }

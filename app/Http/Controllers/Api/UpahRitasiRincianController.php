@@ -108,6 +108,18 @@ class UpahRitasiRincianController extends Controller
             ]);
         }
     }
+    public function get()
+    {
+        $upahRitasiRincian = new UpahRitasiRincian();
+
+        return response([
+            'data' => $upahRitasiRincian->getLookup(),
+            'attributes' => [
+                'totalRows' => $upahRitasiRincian->totalRows,
+                'totalPages' => $upahRitasiRincian->totalPages
+            ]
+        ]);
+    }
 
     public function store(StoreUpahRitasiRincianRequest $request)
     {

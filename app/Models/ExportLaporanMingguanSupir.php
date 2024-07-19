@@ -173,6 +173,7 @@ class ExportLaporanMingguanSupir extends Model
         $tempuangjalan = '##tempdatauangjalan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempuangjalan, function ($table) {
             $table->string('nobukti', 50)->nullable();
+            $table->string('suratpengantar_nobukti', 50)->nullable();
             $table->double('nominaluangjalan', 15, 2)->nullable();
             $table->double('nominaluangbbm', 15, 2)->nullable();
             $table->double('nominaluangmakan', 15, 2)->nullable();
@@ -181,17 +182,19 @@ class ExportLaporanMingguanSupir extends Model
         $querytempuangjalan = DB::table("gajisupirheader")->from(
             DB::raw("gajisupirheader as a with (readuncommitted)")
         )
-            ->select(
-                'a.nobukti',
-                db::raw("sum(a.uangjalan) as nominaluangjalan"),
-                db::raw("sum(a.bbm) as nominaluangbbm"),
-                db::raw("sum(a.uangmakanharian + isnull(a.biayaextra,0)) as nominaluangmakan"),
-            )
+        ->select(
+            'a.nobukti',
+            'a.suratpengantar_nobukti',
+            db::raw("a.uangjalan as nominaluangjalan"),
+            db::raw("a.bbm as nominaluangbbm"),
+            db::raw("a.uangmakanharian + isnull(a.biayaextra,0) as nominaluangmakan"),
+        );
             // ->join(DB::raw($tempData . " as c "), 'a.nobukti', 'c.nobuktiric')
-            ->GroupBy('a.nobukti');
+            // ->GroupBy('a.nobukti');
 
         DB::table($tempuangjalan)->insertUsing([
             'nobukti',
+            'suratpengantar_nobukti',
             'nominaluangjalan',
             'nominaluangbbm',
             'nominaluangmakan',
@@ -262,6 +265,7 @@ class ExportLaporanMingguanSupir extends Model
         Schema::create($tempketeranganlain, function ($table) {
             $table->string('nobukti', 50)->nullable();
             $table->double('nominal', 15, 2)->nullable();
+            $table->double('nominaltagih', 15, 2)->nullable();
             $table->longText('keterangan')->nullable();
         });
 
@@ -269,6 +273,7 @@ class ExportLaporanMingguanSupir extends Model
         Schema::create($temprekapketeranganlain, function ($table) {
             $table->string('nobukti', 50)->nullable();
             $table->longText('keterangan')->nullable();
+            $table->longText('keteranganomset')->nullable();
         });
 
         $querytempketeranganlain = DB::table("suratpengantar")->from(
@@ -277,7 +282,8 @@ class ExportLaporanMingguanSupir extends Model
             ->select(
                 'a.nobukti',
                 'b.keteranganbiaya as keterangan',
-                'b.nominal'
+                'b.nominal',
+                'b.nominaltagih'
             )
             ->leftjoin(DB::raw("suratpengantarbiayatambahan as b with(readuncommitted) "), 'a.id', 'b.suratpengantar_id')
             ->join(DB::raw($tempData . " as c "), 'a.nobukti', 'c.nobukti');
@@ -286,6 +292,7 @@ class ExportLaporanMingguanSupir extends Model
             'nobukti',
             'keterangan',
             'nominal',
+            'nominaltagih',
         ], $querytempketeranganlain);
 
         $querytemprekapketeranganlain = DB::table($tempketeranganlain)->from(
@@ -296,13 +303,18 @@ class ExportLaporanMingguanSupir extends Model
                     distinct b.nobukti,Stuff((SELECT DISTINCT ', ' + trim(a.keterangan)+' ( '+ format(a.nominal,'#,#') +' ) '
                         FROM " . $tempketeranganlain . " a
                         WHERE  a.nobukti=b.nobukti
-                        FOR XML PATH('')), 1, 2, '') AS keterangan
+                        FOR XML PATH('')), 1, 2, '') AS keterangan,
+                        Stuff((SELECT DISTINCT ', ' + trim(a.keterangan)+' ( '+ format(a.nominaltagih,'#,#') +' ) '
+                        FROM " . $tempketeranganlain . " a
+                        WHERE  a.nobukti=b.nobukti
+                        FOR XML PATH('')), 1, 2, '') AS keteranganomset
                     ")
             );
 
         DB::table($temprekapketeranganlain)->insertUsing([
             'nobukti',
             'keterangan',
+            'keteranganomset'
         ], $querytemprekapketeranganlain);
 
 
@@ -612,6 +624,7 @@ class ExportLaporanMingguanSupir extends Model
                 DB::raw("isnull(g.nobuktikbtkomisi,'') as nobuktikbtkomisi"),
                 DB::raw("isnull(f.nominal,0) as uanglain"),
                 DB::raw("isnull(h.keterangan,'') as ketuanglain"),
+                DB::raw("isnull(h.keteranganomset,'') as kettagihomset"),
                 DB::raw("isnull(f.tolsupir,0) as tolsupir"),
                 DB::raw("0 as uangbon"),
                 DB::raw("isnull(A.pengeluarannobuktiebs,'') as nobuktikbtebs2"),
@@ -649,7 +662,7 @@ class ExportLaporanMingguanSupir extends Model
             )
             ->leftjoin(DB::raw($tempInvoice . " as b "), 'a.nobukti', 'b.notripawal')
             ->leftjoin(DB::raw($tempInvoice . " as c "), 'a.jobtrucking', 'c.jobtrucking')
-            ->leftjoin(DB::raw($tempuangjalan . " as d "), 'a.nobuktiric', 'd.nobukti')
+            ->leftjoin(DB::raw($tempuangjalan . " as d "), 'a.nobukti', 'd.suratpengantar_nobukti')
             ->leftjoin(DB::raw($temptrip . " as e "), 'a.nobukti', 'e.nobukti')
             ->leftjoin(DB::raw($tempuanglain . " as f "), 'a.nobukti', 'f.nobukti')
             ->leftjoin(DB::raw($tempbuktikomisi . " as g "), 'a.nobukti', 'g.nobukti')

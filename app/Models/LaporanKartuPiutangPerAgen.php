@@ -102,7 +102,7 @@ class LaporanKartuPiutangPerAgen extends MyModel
             ->whereRaw("a.tglbukti<'" . $dari1 . "'")
             ->whereRaw("(a.agen_id>=" . $agenDari . " and a.agen_id<=" . $agenSampai . ")")
             ->groupby('a.nobukti');
-            // dd($querypiutangsaldo->get());
+        // dd($querypiutangsaldo->get());
 
         DB::table($temppiutangsaldo)->insertUsing([
             'nobukti',
@@ -242,7 +242,7 @@ class LaporanKartuPiutangPerAgen extends MyModel
             'urut',
         ], $queryrekapdata);
 
-
+        // get nota kredit pendapatan
         $queryrekapdata = db::table($temprekappiutang)->from(db::raw($temprekappiutang . " a  "))
             ->select(
                 'b.agen_id',
@@ -276,6 +276,40 @@ class LaporanKartuPiutangPerAgen extends MyModel
             'urut',
         ], $queryrekapdata);
 
+        // get nota kredit pph
+        $queryrekapdata = db::table($temprekappiutang)->from(db::raw($temprekappiutang . " a  "))
+            ->select(
+                'b.agen_id',
+                'e.nobukti',
+                db::raw("'1900/1/1' as tglbukti"),
+                db::raw("0 as nominal"),
+                "d.tglbukti as tgllunas",
+                db::raw("(isnull(c.potonganpph,0)) as nominallunas"),
+                'a.nobukti as nobuktipiutang',
+                'b.tglbukti as tglberjalan',
+                db::raw(" 'PIUTANG USAHA' as jenispiutang"),
+                db::raw("3 as urut"),
+            )
+            ->join(db::raw("piutangheader b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+            ->join(db::raw("pelunasanpiutangdetail c with (readuncommitted) "), 'a.nobukti', 'c.piutang_nobukti')
+            ->join(db::raw("pelunasanpiutangheader d with (readuncommitted) "), 'c.nobukti', 'd.nobukti')
+            ->leftjoin(db::raw("notakreditdetail e with (readuncommitted) "), 'c.invoice_nobukti', 'e.invoice_nobukti')
+            ->whereRaw("(d.tglbukti>='" . $dari1 . "' and d.tglbukti<='" . $sampai . "')")
+            ->whereRaw("isnull(c.potonganpph,0)<>0");
+
+        DB::table($temprekapdata)->insertUsing([
+            'agen_id',
+            'nobukti',
+            'tglbukti',
+            'nominalpiutang',
+            'tgllunas',
+            'nominallunas',
+            'nobuktipiutang',
+            'tglberjalan',
+            'jenispiutang',
+            'urut',
+        ], $queryrekapdata);
+
         $queryrekapdata = db::table($temprekappiutang)->from(db::raw($temprekappiutang . " a  "))
             ->select(
                 'b.agen_id',
@@ -287,7 +321,7 @@ class LaporanKartuPiutangPerAgen extends MyModel
                 'a.nobukti as nobuktipiutang',
                 'b.tglbukti as tglberjalan',
                 db::raw(" 'PIUTANG USAHA' as jenispiutang"),
-                db::raw("3 as urut"),
+                db::raw("4 as urut"),
             )
             ->join(db::raw("piutangheader b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
             ->join(db::raw("pelunasanpiutangdetail c with (readuncommitted) "), 'a.nobukti', 'c.piutang_nobukti')
@@ -445,7 +479,7 @@ class LaporanKartuPiutangPerAgen extends MyModel
             $coapiutangusaha = $memo['JURNAL'];
 
             $select_data->join(db::raw("piutangheader b with (readuncommitted)"), 'a.nobuktipiutang', 'b.nobukti');
-            $select_data->where('b.coadebet',$coapiutangusaha);
+            $select_data->where('b.coadebet', $coapiutangusaha);
 
             // dd($select_data->get());
             $data = $select_data;

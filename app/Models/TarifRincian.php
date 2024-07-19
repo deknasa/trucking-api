@@ -410,6 +410,11 @@ class TarifRincian extends MyModel
             ->first();
         if ($statusjenis->text == 'YA') {
             $jenisorder = strtolower(request()->jenisorder);
+            $getjenisorder = db::table("jenisorder")->from(db::raw("jenisorder with (readuncommitted)"))->where('id', request()->jenisorder_id)->first()->keterangan ?? '';
+            if ($getjenisorder == 'EKSPORT') {
+                $jenisorder = 'export';
+            }
+            
             $query = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
                 ->select(
                     'tarif_id',
