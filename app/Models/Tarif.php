@@ -295,7 +295,7 @@ class Tarif extends MyModel
         $query = DB::table(DB::raw($temtabel))->from(
             DB::raw(DB::raw($temtabel) . " tarif with (readuncommitted)")
         )
-            ->select(
+        ->distinct()->select(
                 'tarif.id',
                 'tarif.parent_id',
                 'tarif.upahsupir',

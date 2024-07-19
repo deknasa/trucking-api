@@ -191,6 +191,27 @@ class UpahRitasi extends MyModel
         return $data;
     }
 
+    public function triplookup() {
+        return [
+            [
+                "jenisritasi_id"=> "1" ,
+                "jenisritasi"=> "PULANG RANGKA" ,
+                "ritasidari_id"=> "2" ,
+                "ritasidari"=> "BELAWAN RANGKA" ,
+                "ritasike_id"=> "3" ,
+                "ritasike"=> "KIM (KANDANG)" 
+            ],
+            [
+                "jenisritasi_id"=> "2" ,
+                "jenisritasi"=> "TURUN RANGKA" ,
+                "ritasidari_id"=> "3" ,
+                "ritasidari"=> "KIM (KANDANG)" ,
+                "ritasike_id"=> "2" ,
+                "ritasike"=> "BELAWAN RANGKA" 
+            ]
+        ];
+    }
+
     public function selectColumns($query)
     {
         return $query->select(
