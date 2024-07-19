@@ -165,6 +165,7 @@ class LaporanHistoryDeposito extends MyModel
             $table->string('keterangan', 1000);
             $table->double('nominal');
             $table->double('saldo')->nullable();
+            // $table->string('user', 50);
         });
 
         $select_Temprekap = DB::table($Temppenerimaanpengeluaran)->from(DB::raw($Temppenerimaanpengeluaran))
@@ -173,6 +174,8 @@ class LaporanHistoryDeposito extends MyModel
                 'tglbukti',
                 'keterangan',
                 'nominal',
+                // 'user'
+                // DB::raw(" 'User :".auth('api')->user()->name."' as user")
             ])
             ->orderBy('tglbukti', 'asc')
             ->orderBy('tipe', 'asc');
@@ -184,6 +187,7 @@ class LaporanHistoryDeposito extends MyModel
             'tglbukti',
             'keterangan',
             'nominal',
+            // 'user'
         ], $select_Temprekap);
 
         $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
@@ -206,12 +210,16 @@ class LaporanHistoryDeposito extends MyModel
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
-
+                DB::raw("'" . auth('api')->user()->name . "' as username")
             ])
             ->orderBy('id');
 
         $data = $select_Temprekap2->get();
+
+        // dd($data);
         return $data;
+
+        
     }
 
     public function getExport($supirdari_id)
