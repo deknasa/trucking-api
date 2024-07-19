@@ -224,6 +224,19 @@ class UpahRitasiController extends Controller
         }
     }
 
+    public function triplookup()
+    {
+
+        $upahritasi = new UpahRitasi();
+
+        return response([
+            'data' => $upahritasi->triplookup(),
+            'attributes' => [
+                'totalRows' => 0,
+                'totalPages' => 0,
+            ]
+        ]);
+    }
 
     public function combo(Request $request)
     {
