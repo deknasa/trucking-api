@@ -37,8 +37,8 @@ class AbsensiSupirApprovalHeader extends MyModel
                 DB::raw("
                 absensisupirapprovalproses.absensisupirapproval_id,
                 absensisupirapprovalproses.nobukti,
-                STRING_AGG(absensisupirapprovalproses.pengeluaran_nobukti, ', ') as pengeluaran_nobukti,
-                STRING_AGG('<a href=$petik".$url."?tgldari='+(format(absensisupirapprovalheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(absensisupirapprovalheader.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+absensisupirapprovalproses.pengeluaran_nobukti+'&bank_id='+trim(str(pengeluaranheader.bank_id))+'$petik class=$petik link-color $petik target=$petik _blank $petik title=$petik '+absensisupirapprovalproses.pengeluaran_nobukti+' $petik>'+absensisupirapprovalproses.pengeluaran_nobukti+'</a>', ',') as url"
+                STRING_AGG(cast(absensisupirapprovalproses.pengeluaran_nobukti as nvarchar(max)), ', ') as pengeluaran_nobukti,
+                STRING_AGG(cast('<a href=$petik".$url."?tgldari='+(format(absensisupirapprovalheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(absensisupirapprovalheader.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+absensisupirapprovalproses.pengeluaran_nobukti+'&bank_id='+trim(str(pengeluaranheader.bank_id))+'$petik class=$petik link-color $petik target=$petik _blank $petik title=$petik '+absensisupirapprovalproses.pengeluaran_nobukti+' $petik>'+absensisupirapprovalproses.pengeluaran_nobukti+'</a>' as nvarchar(max)), ',') as url"
                 ))
             ->join(DB::raw("absensisupirapprovalheader with (readuncommitted)"),'absensisupirapprovalproses.absensisupirapproval_id','absensisupirapprovalheader.id')
             ->join(DB::raw("pengeluaranheader with (readuncommitted)"),'absensisupirapprovalproses.pengeluaran_nobukti', 'pengeluaranheader.nobukti')    

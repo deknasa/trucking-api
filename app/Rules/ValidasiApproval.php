@@ -78,7 +78,7 @@ class ValidasiApproval implements Rule
         $tgltutup=date('Y-m-d', strtotime($tgltutup));   
         $querytutup=db::table($table)->from(db::raw($table ." a with (readuncommitted)"))        
         ->select(
-            db::raw("isnull(STRING_AGG(a.nobukti, ', '),'') as nobukti")   
+            db::raw("isnull(STRING_AGG(cast(a.nobukti  as nvarchar(max)), ', '),'') as nobukti")   
             // 'a.nobukti'
         )
         ->join(db::raw($tempbukti." b"),'a.nobukti','b.nobukti')

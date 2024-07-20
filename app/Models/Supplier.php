@@ -840,4 +840,18 @@ class Supplier extends MyModel
 
         return $Supplier;
     }
+
+    public function cekdataText($id)
+    {
+        $query = DB::table('supplier')->from(db::raw("supplier a with (readuncommitted)"))
+            ->select(
+                'a.namasupplier as keterangan'
+            )
+            ->where('id', $id)
+            ->first();
+
+        $keterangan = $query->keterangan ?? '';
+
+        return $keterangan;
+    }
 }

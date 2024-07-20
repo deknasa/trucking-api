@@ -702,7 +702,7 @@ class InvoiceHeader extends MyModel
         $fetch = DB::table("suratpengantar")->from(DB::raw("suratpengantar"))
             ->select(
                 'c.jobtrucking',
-                DB::raw("STRING_AGG(suratpengantarbiayatambahan.keteranganbiaya, ', ') AS keterangan"),
+                DB::raw("STRING_AGG(cast(suratpengantarbiayatambahan.keteranganbiaya as nvarchar(max)), ', ') AS keterangan"),
                 DB::raw("sum(suratpengantarbiayatambahan.nominaltagih) as nominal")
             )
             ->join(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"), 'suratpengantar.id', 'suratpengantarbiayatambahan.suratpengantar_id')

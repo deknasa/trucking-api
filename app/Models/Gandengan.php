@@ -721,4 +721,19 @@ class Gandengan extends MyModel
 
         return $Gandengan;
     }
+
+    public function cekdataText($id)
+    {
+        $query = DB::table('gandengan')->from(db::raw("gandengan a with (readuncommitted)"))
+            ->select(
+                'a.kodegandengan as keterangan'
+            )
+            ->where('id', $id)
+            ->first();
+
+        $keterangan = $query->keterangan ?? '';
+
+        return $keterangan;
+    }
+
 }

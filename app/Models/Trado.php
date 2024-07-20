@@ -1053,7 +1053,7 @@ class Trado extends MyModel
 
         return json_encode($storedFiles);
     }
-    
+
     private function storeFilesBase64(array $files, string $destinationFolder): string
     {
         $storedFiles = [];
@@ -1061,9 +1061,9 @@ class Trado extends MyModel
             $originalFileName = hash('sha256', $file) . '.jpg';
             $imageData = base64_decode($file);
 
-            $storedFile = Storage::disk('toTnl')->putFileAs("trado/".$destinationFolder, $file, $originalFileName);
+            $storedFile = Storage::disk('toTnl')->putFileAs("trado/" . $destinationFolder, $file, $originalFileName);
             $pathDestination = Storage::disk('toTnl')->getDriver()->getAdapter()->applyPathPrefix(null);
-            $resizedFiles = App::imageResize($pathDestination."trado/".$destinationFolder.'/', $pathDestination."trado/".$destinationFolder.'/'.$originalFileName, $originalFileName);
+            $resizedFiles = App::imageResize($pathDestination . "trado/" . $destinationFolder . '/', $pathDestination . "trado/" . $destinationFolder . '/' . $originalFileName, $originalFileName);
 
             // $storedFile = Storage::put('trado/' . $destinationFolder . '/' . $originalFileName, $imageData);
             // $resizedFiles = App::imageResize(storage_path("app/trado/$destinationFolder/"), storage_path("app/trado/$destinationFolder/$originalFileName"), $originalFileName);
@@ -1073,7 +1073,7 @@ class Trado extends MyModel
 
         return json_encode($storedFiles);
     }
-    private function deleteFiles(Trado $trado,$from = null)
+    private function deleteFiles(Trado $trado, $from = null)
     {
         $sizeTypes = ['', 'medium_', 'small_'];
 
@@ -1233,7 +1233,7 @@ class Trado extends MyModel
                 $trado->tglberlakumiliksupir = date('Y-m-d');
             }
 
-            if($data['from'] != ''){
+            if ($data['from'] != '') {
                 $trado->photostnk = $this->storeFilesBase64($data['photostnk'], 'stnk');
                 $trado->photobpkb = $this->storeFilesBase64($data['photobpkb'], 'bpkb');
                 $trado->phototrado = $this->storeFilesBase64($data['phototrado'], 'trado');
@@ -1241,7 +1241,6 @@ class Trado extends MyModel
                 $trado->photostnk = (count($data['photostnk']) > 0) ? $this->storeFiles($data['photostnk'], 'stnk') : '';
                 $trado->photobpkb = (count($data['photobpkb']) > 0) ? $this->storeFiles($data['photobpkb'], 'bpkb') : '';
                 $trado->phototrado = (count($data['phototrado']) > 0) ? $this->storeFiles($data['phototrado'], 'trado') : '';
-              
             }
 
             if (!$trado->save()) {
@@ -1366,7 +1365,7 @@ class Trado extends MyModel
 
             $this->deleteFiles($trado);
 
-            if($data['from'] != ''){
+            if ($data['from'] != '') {
                 $trado->photostnk = $this->storeFilesBase64($data['photostnk'], 'stnk');
                 $trado->photobpkb = $this->storeFilesBase64($data['photobpkb'], 'bpkb');
                 $trado->phototrado = $this->storeFilesBase64($data['phototrado'], 'trado');
@@ -1374,7 +1373,6 @@ class Trado extends MyModel
                 $trado->photostnk = (count($data['photostnk']) > 0) ? $this->storeFiles($data['photostnk'], 'stnk') : '';
                 $trado->photobpkb = (count($data['photobpkb']) > 0) ? $this->storeFiles($data['photobpkb'], 'bpkb') : '';
                 $trado->phototrado = (count($data['phototrado']) > 0) ? $this->storeFiles($data['phototrado'], 'trado') : '';
-              
             }
             $trado->modifiedby = auth('api')->user()->user;
             $trado->info = html_entity_decode(request()->info);
@@ -2229,5 +2227,19 @@ class Trado extends MyModel
                     ]);
             }
         }
+    }
+
+    public function cekdataText($id)
+    {
+        $query = DB::table('trado')->from(db::raw("trado a with (readuncommitted)"))
+            ->select(
+                'a.kodetrado as keterangan'
+            )
+            ->where('id', $id)
+            ->first();
+
+        $keterangan = $query->keterangan ?? '';
+
+        return $keterangan;
     }
 }
