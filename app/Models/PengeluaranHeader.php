@@ -111,7 +111,7 @@ class PengeluaranHeader extends MyModel
                 $table->string('penerima')->nullable();
             });
             $getPenerima = DB::table("pengeluaranpenerima")->from(DB::raw("pengeluaranpenerima"))
-                ->select(DB::raw("pengeluaranpenerima.nobukti, STRING_AGG(penerima.namapenerima, ', ') AS penerima"))
+                ->select(DB::raw("pengeluaranpenerima.nobukti, STRING_AGG(cast(penerima.namapenerima  as nvarchar(max)), ', ') AS penerima"))
                 ->leftJoin(DB::raw("penerima with (readuncommitted)"), 'pengeluaranpenerima.penerima_id', 'penerima.id')
                 ->groupBy("pengeluaranpenerima.nobukti");
 
@@ -359,7 +359,7 @@ class PengeluaranHeader extends MyModel
             $table->string('penerima')->nullable();
         });
         $getPenerima = DB::table("pengeluaranpenerima")->from(DB::raw("pengeluaranpenerima"))
-            ->select(DB::raw("pengeluaranpenerima.nobukti, STRING_AGG(penerima.namapenerima, ', ') AS penerima"))
+            ->select(DB::raw("pengeluaranpenerima.nobukti, STRING_AGG(cast(penerima.namapenerima  as nvarchar(max)), ', ') AS penerima"))
             ->leftJoin(DB::raw("penerima with (readuncommitted)"), 'pengeluaranpenerima.penerima_id', 'penerima.id')
             ->groupBy("pengeluaranpenerima.nobukti");
 

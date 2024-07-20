@@ -30,7 +30,7 @@ class ListTrip extends MyModel
             ->first();
         if ($trip->statusjeniskendaraan == $jenisTangki->id && $aksi == 'DELETE') {
             $getTripTangki = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-                ->select(db::raw("STRING_AGG(nobukti, ', ') as nobukti"))
+                ->select(db::raw("STRING_AGG(cast(nobukti as nvarchar(max)), ', ') as nobukti"))
                 ->where('supir_id', $trip->supir_id)
                 ->where('trado_id', $trip->trado_id)
                 ->where('tglbukti', date('Y-m-d', strtotime($trip->tglbukti)))

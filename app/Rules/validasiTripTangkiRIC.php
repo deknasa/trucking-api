@@ -58,7 +58,7 @@ class validasiTripTangkiRIC implements Rule
             foreach ($period as $date) {
                 $tgl = $date->format('Y-m-d');
                 $getData = DB::table("triptangki")->from(DB::raw("triptangki as t with (readuncommitted)"))
-                    ->select(DB::raw("STRING_AGG(keterangan, ', ') as keterangan"))
+                    ->select(DB::raw("STRING_AGG(cast(keterangan  as nvarchar(max)), ', ') as keterangan"))
                     ->whereRaw("t.id BETWEEN (SELECT MIN(triptangki_id) FROM suratpengantar where supir_id=$supir_id and tglbukti='$tgl' and statusjeniskendaraan=$jenisTangki) 
                  AND (SELECT MAX(triptangki_id) FROM  suratpengantar where supir_id=$supir_id and tglbukti='$tgl' and statusjeniskendaraan=$jenisTangki)")
                     ->whereRaw(" t.id NOT in (

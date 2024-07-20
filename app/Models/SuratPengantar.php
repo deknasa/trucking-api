@@ -213,7 +213,7 @@ class SuratPengantar extends MyModel
 
         if ($trip->statusjeniskendaraan == $jenisTangki->id && $aksi == 'DELETE') {
             $getTripTangki = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-                ->select(db::raw("STRING_AGG(nobukti, ', ') as nobukti"))
+                ->select(db::raw("STRING_AGG(cast(nobukti  as nvarchar(max)), ', ') as nobukti"))
                 ->where('supir_id', $trip->supir_id)
                 ->where('trado_id', $trip->trado_id)
                 ->where('tglbukti', date('Y-m-d', strtotime($trip->tglbukti)))
@@ -914,8 +914,8 @@ class SuratPengantar extends MyModel
                 $table->longText('ketextratagih')->nullable();
             });
             $tambahan = DB::table("suratpengantarbiayatambahan")->from(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"))
-                ->select(DB::raw("suratpengantar_id, STRING_AGG(keteranganbiaya+' ('+ FORMAT(nominal,'#,#0.00')+')',', ') as ketextra, sum(nominal) as biayaextra, sum(nominaltagih) as biayatagih,
-                STRING_AGG(keteranganbiaya+' ('+ FORMAT(nominaltagih,'#,#0.00')+')',', ') as ketextratagih"))
+                ->select(DB::raw("suratpengantar_id, STRING_AGG(cast(keteranganbiaya+' ('+ FORMAT(nominal,'#,#0.00')+')'  as nvarchar(max)),', ') as ketextra, sum(nominal) as biayaextra, sum(nominaltagih) as biayatagih,
+                STRING_AGG(cast(keteranganbiaya+' ('+ FORMAT(nominaltagih,'#,#0.00')+')'  as nvarchar(max)),', ') as ketextratagih"))
                 ->join(db::raw("suratpengantar b with (readuncommitted)"), 'suratpengantarbiayatambahan.suratpengantar_id', 'b.id')
                 ->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
                 ->groupBy('suratpengantar_id');

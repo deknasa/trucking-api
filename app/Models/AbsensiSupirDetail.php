@@ -996,7 +996,7 @@ class AbsensiSupirDetail extends MyModel
             ->select(
                 'c.nobukti',
                 'a.supir_id',
-                db::raw("isnull(STRING_AGG(a.gajisupir_nobukti, ', '),'') as gajisupir_nobukti")
+                db::raw("isnull(STRING_AGG(cast(a.gajisupir_nobukti  as nvarchar(max)), ', '),'') as gajisupir_nobukti")
 
             )
             ->join(DB::raw("absensisupirdetail as b with (readuncommitted)"), function ($join) {

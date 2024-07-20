@@ -145,7 +145,7 @@ class AlatBayar extends MyModel
             $table->string('tipe', 50)->nullable();
         });
         $queryBank = DB::table("bank")->from(DB::raw("bank with (readuncommitted)"))
-            ->select(DB::raw("STRING_AGG(namabank, ', ') as namabank, tipe"))
+            ->select(DB::raw("STRING_AGG(cast(namabank as nvarchar(max)), ', ') as namabank, tipe"))
             ->where('statusaktif', 1)
             ->whereRaw("namabank not like '%pengembalian%'")
             ->groupBy('tipe');
@@ -335,7 +335,7 @@ class AlatBayar extends MyModel
             $table->string('tipe', 50)->nullable();
         });
         $queryBank = DB::table("bank")->from(DB::raw("bank with (readuncommitted)"))
-            ->select(DB::raw("STRING_AGG(namabank, ', ') as namabank, tipe"))
+            ->select(DB::raw("STRING_AGG(cast(namabank  as nvarchar(max)), ', ') as namabank, tipe"))
             ->where('statusaktif', 1)
             ->whereRaw("namabank not like '%pengembalian%'")
             ->groupBy('tipe');

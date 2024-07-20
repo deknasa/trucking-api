@@ -639,4 +639,18 @@ class Gudang extends MyModel
         }
         return $gudang;
     }
+
+    public function cekdataText($id)
+    {
+        $query = DB::table('gudang')->from(db::raw("gudang a with (readuncommitted)"))
+            ->select(
+                'a.gudang as keterangan'
+            )
+            ->where('id', $id)
+            ->first();
+
+        $keterangan = $query->keterangan ?? '';
+
+        return $keterangan;
+    }
 }

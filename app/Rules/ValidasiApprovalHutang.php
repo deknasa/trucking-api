@@ -78,7 +78,7 @@ class ValidasiApprovalHutang implements Rule
 
         $querytutup=db::table("hutangheader")->from(db::raw("hutangheader a with (readuncommitted)"))        
         ->select(
-            db::raw("isnull(STRING_AGG(a.nobukti, ', '),'') as nobukti")   
+            db::raw("isnull(STRING_AGG(cast(a.nobukti  as nvarchar(max)), ', '),'') as nobukti")   
         )
         ->join(db::raw($tempbukti." b"),'a.nobukti','b.nobukti')
         ->whereraw("a.tglbukti<='". $tgltutup ."'")

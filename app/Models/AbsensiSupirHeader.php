@@ -88,8 +88,8 @@ class AbsensiSupirHeader extends MyModel
                 DB::raw("
                 absensisupirproses.absensi_id,
                 absensisupirproses.nobukti,
-                STRING_AGG(absensisupirproses.kasgantung_nobukti, ', ') as kasgantung_nobukti,
-                STRING_AGG('<a href=$petik".$url."?tgldari='+(format(absensisupirheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(absensisupirheader.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+absensisupirproses.kasgantung_nobukti+'$petik class=$petik link-color $petik target=$petik _blank $petik title=$petik '+absensisupirproses.kasgantung_nobukti+' $petik>'+absensisupirproses.kasgantung_nobukti+'</a>', ',') as url"
+                STRING_AGG(cast(absensisupirproses.kasgantung_nobukti  as nvarchar(max)), ', ') as kasgantung_nobukti,
+                STRING_AGG(cast('<a href=$petik".$url."?tgldari='+(format(absensisupirheader.tglbukti,'yyyy-MM')+'-1')+'&tglsampai='+(format(absensisupirheader.tglbukti,'yyyy-MM')+'-31')+'&nobukti='+absensisupirproses.kasgantung_nobukti+'$petik class=$petik link-color $petik target=$petik _blank $petik title=$petik '+absensisupirproses.kasgantung_nobukti+' $petik>'+absensisupirproses.kasgantung_nobukti+'</a>'  as nvarchar(max)), ',') as url"
                 ))
             ->join(DB::raw("absensisupirheader with (readuncommitted)"),'absensisupirproses.absensi_id','absensisupirheader.id')    
             ->groupBy("absensisupirproses.absensi_id","absensisupirproses.nobukti");

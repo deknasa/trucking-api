@@ -56,7 +56,7 @@ class TripTangki extends MyModel
                 ->where('a.text', '=', 'TANGKI')
                 ->first();
             $getTripTangki = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-                ->select(DB::raw("STRING_AGG(triptangki_id, ',') as triptangki"))
+                ->select(DB::raw("STRING_AGG(cast(triptangki_id  as nvarchar(max)), ',') as triptangki"))
                 ->where('supir_id', $supir_id)
                 ->where('tglbukti', date('Y-m-d', strtotime($tglbukti)))
                 ->where('statusjeniskendaraan', $jenisTangki->id)

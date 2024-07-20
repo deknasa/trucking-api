@@ -578,7 +578,7 @@ class GajiSupirHeader extends MyModel
 
         $tempTambahan = '##tempTambahan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $biayaTambahan = DB::table("suratpengantarbiayatambahan")->from(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"))
-            ->select(DB::raw("suratpengantar_id, STRING_AGG(keteranganbiaya, ', ') AS keteranganbiaya, SUM(isnull(nominal, 0)) as biayaextra"))
+            ->select(DB::raw("suratpengantar_id, STRING_AGG(cast(keteranganbiaya as nvarchar(max)), ', ') AS keteranganbiaya, SUM(isnull(nominal, 0)) as biayaextra"))
             ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'suratpengantar.id', 'suratpengantarbiayatambahan.suratpengantar_id')
             ->where('suratpengantar.supir_id', $supirId)
             ->where('suratpengantar.tglbukti', '>=', $tglDari)
@@ -603,7 +603,7 @@ class GajiSupirHeader extends MyModel
 
         $tempTambahan = '##tempSaldoTambahan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $biayaTambahan = DB::table("saldosuratpengantarbiayatambahan")->from(DB::raw("saldosuratpengantarbiayatambahan with (readuncommitted)"))
-            ->select(DB::raw("saldosuratpengantarbiayatambahan.suratpengantar_id, STRING_AGG(saldosuratpengantarbiayatambahan.keteranganbiaya, ', ') AS keteranganbiaya, SUM(isnull(saldosuratpengantarbiayatambahan.nominal, 0)) as biayaextra"))
+            ->select(DB::raw("saldosuratpengantarbiayatambahan.suratpengantar_id, STRING_AGG(cast(saldosuratpengantarbiayatambahan.keteranganbiaya  as nvarchar(max)), ', ') AS keteranganbiaya, SUM(isnull(saldosuratpengantarbiayatambahan.nominal, 0)) as biayaextra"))
             ->leftJoin(DB::raw("saldosuratpengantar with (readuncommitted)"), 'saldosuratpengantar.id', 'saldosuratpengantarbiayatambahan.suratpengantar_id')
             ->where('saldosuratpengantar.supir_id', $supirId)
             ->where('saldosuratpengantar.tglbukti', '>=', $tglDari)
@@ -629,7 +629,7 @@ class GajiSupirHeader extends MyModel
 
         $tempTambahan = '##tempTambahanedit' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $biayaTambahan = DB::table("suratpengantarbiayatambahan")->from(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"))
-            ->select(DB::raw("suratpengantar_id, STRING_AGG(keteranganbiaya, ', ') AS keteranganbiaya, SUM(isnull(nominal, 0)) as biayaextra"))
+            ->select(DB::raw("suratpengantar_id, STRING_AGG(cast(keteranganbiaya  as nvarchar(max)), ', ') AS keteranganbiaya, SUM(isnull(nominal, 0)) as biayaextra"))
             ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'suratpengantar.id', 'suratpengantarbiayatambahan.suratpengantar_id')
             ->where('suratpengantar.supir_id', $supirId)
             ->where('suratpengantar.tglbukti', '>=', $tglDari)
@@ -655,7 +655,7 @@ class GajiSupirHeader extends MyModel
 
         $tempTambahan = '##tempSaldoTambahanedit' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $biayaTambahan = DB::table("saldosuratpengantarbiayatambahan")->from(DB::raw("saldosuratpengantarbiayatambahan with (readuncommitted)"))
-            ->select(DB::raw("saldosuratpengantarbiayatambahan.suratpengantar_id, STRING_AGG(saldosuratpengantarbiayatambahan.keteranganbiaya, ', ') AS keteranganbiaya, SUM(isnull(saldosuratpengantarbiayatambahan.nominal, 0)) as biayaextra"))
+            ->select(DB::raw("saldosuratpengantarbiayatambahan.suratpengantar_id, STRING_AGG(cast(saldosuratpengantarbiayatambahan.keteranganbiaya as nvarchar(max)), ', ') AS keteranganbiaya, SUM(isnull(saldosuratpengantarbiayatambahan.nominal, 0)) as biayaextra"))
             ->leftJoin(DB::raw("saldosuratpengantar with (readuncommitted)"), 'saldosuratpengantar.id', 'saldosuratpengantarbiayatambahan.suratpengantar_id')
             ->where('saldosuratpengantar.supir_id', $supirId)
             ->where('saldosuratpengantar.tglbukti', '>=', $tglDari)

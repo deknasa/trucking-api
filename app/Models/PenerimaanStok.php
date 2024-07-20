@@ -608,4 +608,19 @@ class PenerimaanStok extends MyModel
         }
         return $penerimaanStok;
     }
+
+    public function cekdataText($id)
+    {
+        $query = DB::table('penerimaanstok')->from(db::raw("penerimaanstok a with (readuncommitted)"))
+            ->select(
+                'a.kodepenerimaan as keterangan'
+            )
+            ->where('id', $id)
+            ->first();
+
+        $keterangan = $query->keterangan ?? '';
+
+        return $keterangan;
+    }
+
 }

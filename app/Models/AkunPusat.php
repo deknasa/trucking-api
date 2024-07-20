@@ -680,4 +680,19 @@ class AkunPusat extends MyModel
         }
         return $akunPusat;
     }
+
+    public function cekdataText($coa)
+    {
+        $query = DB::table('akunpusat')->from(db::raw("akunpusat a with (readuncommitted)"))
+            ->select(
+                'a.keterangancoa as keterangan'
+            )
+            ->where('coa', $coa)
+            ->first();
+
+        $keterangan = $query->keterangan ?? '';
+
+        return $keterangan;
+    }
+
 }
