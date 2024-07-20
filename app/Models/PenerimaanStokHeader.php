@@ -1301,7 +1301,7 @@ class PenerimaanStokHeader extends MyModel
         $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
         $penerimaanstok_nobukti = $this->table . ".penerimaanstok_nobukti";
         if (request()->penerimaanheader_id == $po->text) {
-            $penerimaanstok_nobukti = "nobuktispb.nobukti as penerimaanstok_nobukti";
+            $penerimaanstok_nobukti = "a.nobuktispb as penerimaanstok_nobukti";
         }
 
         $tempNominal = '##tempNominal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -1468,6 +1468,7 @@ class PenerimaanStokHeader extends MyModel
             ]);
         }
 
+        // dd('test');
 
 
 
@@ -1564,6 +1565,7 @@ class PenerimaanStokHeader extends MyModel
             ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'penerimaanstokheader.nobukti', 'nominal.nobukti');
         // ->leftJoin(db::raw("supplier with (readuncommitted)"), 'penerimaanstokheader.supplier_id', 'supplier.id');
 
+  
         DB::table($temptable)->insertUsing([
             'id',
             'nominal',
@@ -1598,6 +1600,7 @@ class PenerimaanStokHeader extends MyModel
             'gandengandari',
             'gandenganke',
         ], $query);
+        // dd('test');
         $query = DB::table($temptable)->from(DB::raw($temptable . " a "))
             ->select(
                 'a.id',
