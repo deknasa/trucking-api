@@ -77,7 +77,7 @@ class InputTrip extends MyModel
             ->where('a.text', '=', 'BUKAN BATAL MUAT')
             ->first();
 
-        if($data['statuslongtrip'] == 66 && $data['nobukti_tripasal'] == ''){
+        if($data['statuslongtrip'] == 66){
             $tarifrincian = TarifRincian::where('tarif_id', $data['tarifrincian_id'])->where('container_id', $data['container_id'])->first();
         }
         

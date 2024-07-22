@@ -470,7 +470,6 @@ class SuratPengantar extends MyModel
         }
         if ($from == 'biayaextrasupir') {
             $tglBatas = date('Y-m-d', strtotime('-3 days'));
-
             $querysuratpengantar->whereBetween('suratpengantar.tglbukti', [$tglBatas, date('Y-m-d')]);
         }
 
@@ -570,6 +569,82 @@ class SuratPengantar extends MyModel
         ], $querysuratpengantar);
 
 
+        if ($from == 'biayaextrasupir') {
+            $querysuratpengantar = DB::table('suratpengantar')->from(
+                DB::raw("suratpengantar with (readuncommitted)")
+            )
+                ->select(
+                    'suratpengantar.id',
+                    'suratpengantar.nobukti',
+                    'suratpengantar.jobtrucking',
+                    'suratpengantar.tglbukti',
+                    'suratpengantar.pelanggan_id',
+                    'suratpengantar.jenisorder_id',
+                    'suratpengantar.statuscontainer_id',
+                    'suratpengantar.dari_id',
+                    'suratpengantar.sampai_id',
+                    'suratpengantar.agen_id',
+                    'suratpengantar.container_id',
+                    'suratpengantar.nocont',
+                    'suratpengantar.nocont2',
+                    'suratpengantar.trado_id',
+                    'suratpengantar.supir_id',
+                    'suratpengantar.gandengan_id',
+                    'suratpengantar.keterangan',
+                    'suratpengantar.nojob',
+                    'suratpengantar.nojob2',
+                    'suratpengantar.statuslongtrip',
+                    'suratpengantar.gajisupir',
+                    'suratpengantar.gajikenek',
+                    'suratpengantar.statusperalihan',
+                    'suratpengantar.tarif_id',
+                    'suratpengantar.nominalperalihan',
+                    'suratpengantar.nosp',
+                    'suratpengantar.tglsp',
+                    'suratpengantar.upah_id',
+                    'suratpengantar.penyesuaian',
+                    'suratpengantar.modifiedby',
+                    'suratpengantar.created_at',
+                    'suratpengantar.updated_at',
+
+                )
+                ->where('suratpengantar.statusapprovalbiayaextra', 3)
+                ->where('suratpengantar.tglbatasapprovalbiayaextra', '>=', date('Y-m-d H:i:s'));
+            DB::table($tempsuratpengantar)->insertUsing([
+                'id',
+                'nobukti',
+                'jobtrucking',
+                'tglbukti',
+                'pelanggan_id',
+                'jenisorder_id',
+                'statuscontainer_id',
+                'dari_id',
+                'sampai_id',
+                'agen_id',
+                'container_id',
+                'nocont',
+                'nocont2',
+                'trado_id',
+                'supir_id',
+                'gandengan_id',
+                'keterangan',
+                'nojob',
+                'nojob2',
+                'statuslongtrip',
+                'gajisupir',
+                'gajikenek',
+                'statusperalihan',
+                'tarif_id',
+                'nominalperalihan',
+                'nosp',
+                'tglsp',
+                'upah_id',
+                'penyesuaian',
+                'modifiedby',
+                'created_at',
+                'updated_at'
+            ], $querysuratpengantar);
+        }
         $querysuratpengantar = DB::table('saldosuratpengantar')->from(
             DB::raw("saldosuratpengantar suratpengantar with (readuncommitted)")
         )
@@ -968,6 +1043,9 @@ class SuratPengantar extends MyModel
             if ($longtrip == 66) {
                 $parameter = new Parameter();
                 $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
+                if($idkandang == 0){
+                    goto bukankandang;
+                }
                 if ($dari_id == $idkandang) {
                     $tempJobAwal = '##tempJobAwal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                     Schema::create($tempJobAwal, function ($table) {
@@ -1122,7 +1200,7 @@ class SuratPengantar extends MyModel
                         ->where('suratpengantar.statuscontainer_id', '!=', 3)
                         ->where('suratpengantar.gandengan_id', $gandengan_id);
                 } else {
-
+                    bukankandang:
                     $idtrip = request()->idTrip ?? 0;
                     $queryGetLongtrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
                         ->select('nobukti', 'jobtrucking')
@@ -3028,7 +3106,7 @@ class SuratPengantar extends MyModel
                 $suratPengantar->triptangki_id = $data['triptangki_id'];
             } else {
 
-                if ($data['statuslongtrip'] == 66 && $data['nobukti_tripasal'] == '') {
+                if ($data['statuslongtrip'] == 66) {
                     $tarif = TarifRincian::where('tarif_id', $data['tarif_id'])->where('container_id', $container)->first();
                 }
                 $parameter = new Parameter();
@@ -3404,7 +3482,7 @@ class SuratPengantar extends MyModel
                         $suratPengantar->gajisupir = $upahsupirRincian->nominalsupir;
                     }
                 }
-
+                
                 $suratPengantar->pelanggan_id = $data['pelanggan_id'];
                 $suratPengantar->container_id = $data['container_id'];
                 $suratPengantar->gandengan_id = $data['gandengan_id'];
@@ -3437,9 +3515,9 @@ class SuratPengantar extends MyModel
                     $totalOmset = $suratPengantar->nominalperalihan;
                 }
 
-                if ($suratPengantar->statuslongtrip == 66 && $suratPengantar->nobukti_tripasal != '') {
-                    $totalOmset = $suratPengantar->nominalperalihan;
-                }
+                // if ($suratPengantar->statuslongtrip == 66 && $suratPengantar->nobukti_tripasal != '') {
+                //     $totalOmset = $suratPengantar->nominalperalihan;
+                // }
                 $suratPengantar->nominalperalihan = $suratPengantar->nominalperalihan;
                 $suratPengantar->persentaseperalihan = $suratPengantar->persentaseperalihan;
                 $suratPengantar->totalomset = $totalOmset;
