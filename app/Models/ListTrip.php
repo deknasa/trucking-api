@@ -929,7 +929,7 @@ class ListTrip extends MyModel
             ->where('container_id', $data['container_id'])
             ->where('statuscontainer_id', $data['statuscontainer_id'])
             ->first();
-        if ($data['statuslongtrip'] == 66 && $data['nobukti_tripasal'] == '') {
+        if ($data['statuslongtrip'] == 66) {
             $tarifrincian = TarifRincian::where('tarif_id', $data['tarifrincian_id'])->where('container_id', $data['container_id'])->first();
         }
         $getZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
