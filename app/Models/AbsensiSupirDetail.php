@@ -554,6 +554,18 @@ class AbsensiSupirDetail extends MyModel
             ->where('text', '=', 'TIDAK ADA TRIP')
             ->first();
 
+        $tempsp = '##tempsp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsp, function ($table) {
+            $table->unsignedBigInteger('absensi_id')->nullable();
+            $table->unsignedBigInteger('trado_id')->nullable();
+            $table->unsignedBigInteger('supir_id')->nullable();
+            $table->unsignedBigInteger('statusjeniskendaraan')->nullable();
+            $table->date('tglabsensi')->nullable();
+            $table->string('nobukti', 100)->nullable();
+            $table->bigInteger('nominalplusborongan')->nullable();
+        });
+        
+        $param1 = date('Y-m-d', strtotime($date));
         $statustriplengkap = DB::table("parameter")->from(
             DB::raw("parameter with (readuncommitted)")
         )
@@ -704,6 +716,7 @@ class AbsensiSupirDetail extends MyModel
             $table->string('statusjeniskendaraannama')->nullable();
             $table->integer('statussupirserap')->Length(11)->nullable();
             $table->integer('statustambahantrado')->Length(11)->nullable();
+            $table->integer('statustrip')->Length(11)->nullable();
         });
         $tempAbsensi = '##tempAbsensi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempAbsensi, function ($table) {
