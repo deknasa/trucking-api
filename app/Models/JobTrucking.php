@@ -494,8 +494,8 @@ class JobTrucking extends MyModel
                 ->where('a.pelanggan_id', '=', $pelanggan_id)
                 ->where('a.tarif_id', '=', $tarif_id);
             if ($dari_id == $idkandang) {
-                $querydata->where('a.dari_id', 1)
-                    ->where('a.sampai_id', $idkandang);
+                $querydata->where('a.dari_id', 1);
+                // ->where('a.sampai_id', $idkandang);
             }
             // dd($querydata->get());
             if ($edit == 'true') {
