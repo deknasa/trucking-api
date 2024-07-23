@@ -985,7 +985,6 @@ class UpahSupirTangki extends MyModel
 
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -1000,7 +999,7 @@ class UpahSupirTangki extends MyModel
                 (new LogTrail())->processStore([
 
                     'namatabel' => strtoupper($UpahSupir->getTable()),
-                    'postingdari' => 'APPROVAL UPAH SUPIR TANGKI',
+                    'postingdari' => 'APPROVAL NON AKTIF UPAH SUPIR TANGKI',
                     'idtrans' => $UpahSupir->id,
                     'nobuktitrans' => $UpahSupir->id,
                     'aksi' => $aksi,
@@ -1009,8 +1008,34 @@ class UpahSupirTangki extends MyModel
                 ]);
             }
         }
+        return $UpahSupir;
+    }
 
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $UpahSupir = UpahSupirTangki::find($data['Id'][$i]);
 
+            $UpahSupir->statusaktif = $statusaktif->id;
+            $aksi = $statusaktif->text;
+
+            // dd($UpahSupir);
+            if ($UpahSupir->save()) {
+
+                (new LogTrail())->processStore([
+
+                    'namatabel' => strtoupper($UpahSupir->getTable()),
+                    'postingdari' => 'APPROVAL AKTIF UPAH SUPIR TANGKI',
+                    'idtrans' => $UpahSupir->id,
+                    'nobuktitrans' => $UpahSupir->id,
+                    'aksi' => $aksi,
+                    'datajson' => $UpahSupir->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
         return $UpahSupir;
     }
 

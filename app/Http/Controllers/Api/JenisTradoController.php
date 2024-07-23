@@ -379,6 +379,7 @@ class JenisTradoController extends Controller
             $this->toExcel($judulLaporan, $jenisTrados, $columns);
         }
     }
+
     /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
@@ -392,6 +393,30 @@ class JenisTradoController extends Controller
                 'Id' => $request->Id,
             ];
             (new JenisTrado())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL AKTIF
+     */
+    public function approvalaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new JenisTrado())->processApprovalaktif($data);
 
             DB::commit();
             return response([

@@ -525,9 +525,9 @@ class PengeluaranTrucking extends MyModel
 
         return $pengeluaranTrucking;
     }
+
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -548,8 +548,31 @@ class PengeluaranTrucking extends MyModel
                 ]);
             }
         }
+        return $pengeluaranTrucking;
+    }
 
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $pengeluaranTrucking = PengeluaranTrucking::find($data['Id'][$i]);
 
+            $pengeluaranTrucking->statusaktif = $statusaktif->id;
+            $aksi = $statusaktif->text;
+
+            if ($pengeluaranTrucking->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($pengeluaranTrucking->getTable()),
+                    'postingdari' => 'APPROVAL AKTIF PENGELUARAN TRUCKING',
+                    'idtrans' => $pengeluaranTrucking->id,
+                    'nobuktitrans' => $pengeluaranTrucking->id,
+                    'aksi' => $aksi,
+                    'datajson' => $pengeluaranTrucking->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
         return $pengeluaranTrucking;
     }
 }

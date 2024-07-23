@@ -381,7 +381,6 @@ class AbsenTrado extends MyModel
 
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -402,8 +401,31 @@ class AbsenTrado extends MyModel
                 ]);
             }
         }
+        return $absenTrado;
+    }
 
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $absenTrado = AbsenTrado::find($data['Id'][$i]);
 
+            $absenTrado->statusaktif = $statusaktif->id;
+            $aksi = $statusaktif->text;
+
+            if ($absenTrado->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($absenTrado->getTable()),
+                    'postingdari' => 'APPROVAL AKTIF ABSEN TRADO',
+                    'idtrans' => $absenTrado->id,
+                    'nobuktitrans' => $absenTrado->id,
+                    'aksi' => $aksi,
+                    'datajson' => $absenTrado->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
         return $absenTrado;
     }
 }

@@ -433,10 +433,10 @@ class PenerimaanTrucking extends MyModel
     public function processStore(array $data, PenerimaanTrucking $penerimaanTrucking): PenerimaanTrucking
     {
         $cabang_id = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'ID CABANG')
-        ->where('subgrp', 'ID CABANG')
-        ->first()->text ?? '';
+            ->select('text')
+            ->where('grp', 'ID CABANG')
+            ->where('subgrp', 'ID CABANG')
+            ->first()->text ?? '';
 
         // $penerimaanTrucking = new PenerimaanTrucking();
         $penerimaanTrucking->kodepenerimaan = $data['kodepenerimaan'];
@@ -515,9 +515,9 @@ class PenerimaanTrucking extends MyModel
 
         return $penerimaanTrucking;
     }
+
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -538,8 +538,31 @@ class PenerimaanTrucking extends MyModel
                 ]);
             }
         }
+        return $penerimaanTrucking;
+    }
 
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $penerimaanTrucking = PenerimaanTrucking::find($data['Id'][$i]);
 
+            $penerimaanTrucking->statusaktif = $statusaktif->id;
+            $aksi = $statusaktif->text;
+
+            if ($penerimaanTrucking->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($penerimaanTrucking->getTable()),
+                    'postingdari' => 'APPROVAL AKTIF PENERIMAAN TRUCKING',
+                    'idtrans' => $penerimaanTrucking->id,
+                    'nobuktitrans' => $penerimaanTrucking->id,
+                    'aksi' => $aksi,
+                    'datajson' => $penerimaanTrucking->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
         return $penerimaanTrucking;
     }
 }

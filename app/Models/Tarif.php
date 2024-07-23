@@ -601,8 +601,8 @@ class Tarif extends MyModel
                 "statussistemtonnama" => $statussistemton->text ?? "",
                 "statuspenyesuaianharga" => $statuspenyesuaianharga->id ?? 0,
                 "statuspostingtnl" => $statuspostingtnl->id ?? 0,
-                "statuslangsir" =>$iddefaultstatusLangsir,
-                "statuslangsirnama" =>$namadefaultstatusLangsir,
+                "statuslangsir" => $iddefaultstatusLangsir,
+                "statuslangsirnama" => $namadefaultstatusLangsir,
             ]
         );
 
@@ -666,7 +666,7 @@ class Tarif extends MyModel
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'tarif.jenisorder_id', '=', 'jenisorder.id')
             ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
-            
+
             ->leftJoin(DB::raw("parameter as statuslangsir with (readuncommitted)"), 'tarif.statuslangsir', 'statuslangsir.id')
             ->leftJoin(DB::raw("parameter as param_statusaktif with (readuncommitted)"), 'tarif.statusaktif', '=', 'param_statusaktif.id')
             ->leftJoin(DB::raw("parameter as param_statussistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'param_statussistemton.id')
@@ -1083,7 +1083,6 @@ class Tarif extends MyModel
 
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -1098,7 +1097,7 @@ class Tarif extends MyModel
                 (new LogTrail())->processStore([
 
                     'namatabel' => strtoupper($Tarif->getTable()),
-                    'postingdari' => 'APPROVAL Tarif',
+                    'postingdari' => 'APPROVAL NON AKTIF TARIF',
                     'idtrans' => $Tarif->id,
                     'nobuktitrans' => $Tarif->id,
                     'aksi' => $aksi,
@@ -1107,13 +1106,10 @@ class Tarif extends MyModel
                 ]);
             }
         }
-
-
         return $Tarif;
     }
     public function processApprovalaktif(array $data)
     {
-
         $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -1128,7 +1124,7 @@ class Tarif extends MyModel
                 (new LogTrail())->processStore([
 
                     'namatabel' => strtoupper($Tarif->getTable()),
-                    'postingdari' => 'APPROVAL Tarif',
+                    'postingdari' => 'APPROVAL AKTIF TARIF',
                     'idtrans' => $Tarif->id,
                     'nobuktitrans' => $Tarif->id,
                     'aksi' => $aksi,
@@ -1137,8 +1133,6 @@ class Tarif extends MyModel
                 ]);
             }
         }
-
-
         return $Tarif;
     }
 }
