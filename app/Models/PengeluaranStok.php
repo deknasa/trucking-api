@@ -65,11 +65,11 @@ class PengeluaranStok extends MyModel
         $user_id = auth('api')->user()->id ?? 0;
 
         $cabang_id = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'ID CABANG')
-        ->where('subgrp', 'ID CABANG')
-        ->first()->text ?? '';
-        
+            ->select('text')
+            ->where('grp', 'ID CABANG')
+            ->where('subgrp', 'ID CABANG')
+            ->first()->text ?? '';
+
 
         $temprole = '##temprole' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temprole, function ($table) {
@@ -136,11 +136,11 @@ class PengeluaranStok extends MyModel
 
         $roleinput = request()->roleinput ?? '';
         if ($roleinput != '') {
-            $getParam = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp','ID CABANG')->first();
+            $getParam = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'ID CABANG')->first();
             $query->where('pengeluaranstok.cabang_id', $getParam->text)
-            ->where('pengeluaranstok.statusaktif', 1);
+                ->where('pengeluaranstok.statusaktif', 1);
         }
-   
+
         if ($isLookup != '') {
             $temprole = '##temprole' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($temprole, function ($table) {
@@ -165,7 +165,7 @@ class PengeluaranStok extends MyModel
 
             DB::table($temprole)->insertUsing(['aco_id'], $queryrole);
             $query
-                ->join($temprole, 'pengeluaranstok.aco_id', $temprole.'.aco_id');
+                ->join($temprole, 'pengeluaranstok.aco_id', $temprole . '.aco_id');
         }
 
 
@@ -255,8 +255,8 @@ class PengeluaranStok extends MyModel
             ->where('subgrp', '=', 'STATUS AKTIF')
             ->where('default', '=', 'YA')
             ->first();
-        
-        DB::table($tempdefault)->insert(["statushitungstok" => $statushitungstok->id, "statushitungstoknama" => $statushitungstok->text,"statusaktif" => $statusaktif->id, "statusaktifnama" => $statusaktif->text]);
+
+        DB::table($tempdefault)->insert(["statushitungstok" => $statushitungstok->id, "statushitungstoknama" => $statushitungstok->text, "statusaktif" => $statusaktif->id, "statusaktifnama" => $statusaktif->text]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
@@ -295,7 +295,7 @@ class PengeluaranStok extends MyModel
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
         $query->leftJoin('parameter as parameterstatusaktif', 'pengeluaranstok.statusaktif', '=', 'parameterstatusaktif.id')
-        ->leftJoin('parameter as parameterstatushitungstok', 'pengeluaranstok.statushitungstok', '=', 'parameterstatushitungstok.id');
+            ->leftJoin('parameter as parameterstatushitungstok', 'pengeluaranstok.statushitungstok', '=', 'parameterstatushitungstok.id');
         $query = $this->sort($query);
         $models = $this->filter($query);
 
@@ -420,13 +420,13 @@ class PengeluaranStok extends MyModel
     public function processStore(array $data, PengeluaranStok $pengeluaranStok): PengeluaranStok
     {
         $cabang_id = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'ID CABANG')
-        ->where('subgrp', 'ID CABANG')
-        ->first()->text ?? '';
+            ->select('text')
+            ->where('grp', 'ID CABANG')
+            ->where('subgrp', 'ID CABANG')
+            ->first()->text ?? '';
 
         $cabang_id = (request()->cabang == "kosong") ? null : $cabang_id;
-        
+
         // $pengeluaranStok = new PengeluaranStok();
         $pengeluaranStok->kodepengeluaran = $data['kodepengeluaran'];
         $pengeluaranStok->keterangan = $data['keterangan'] ?? '';
@@ -508,7 +508,7 @@ class PengeluaranStok extends MyModel
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
-            $penerimaanStok = $this->where('id',$data['Id'][$i])->first();
+            $penerimaanStok = $this->where('id', $data['Id'][$i])->first();
 
             $penerimaanStok->statusaktif = $statusnonaktif->id;
             $penerimaanStok->modifiedby = auth('api')->user()->name;
@@ -527,8 +527,21 @@ class PengeluaranStok extends MyModel
                 'datajson' => $penerimaanStok->toArray(),
                 'modifiedby' => auth('api')->user()->user
             ]);
-
         }
         return $penerimaanStok;
+    }
+
+    public function cekdataText($id)
+    {
+        $query = DB::table('pengeluaranstok')->from(db::raw("pengeluaranstok a with (readuncommitted)"))
+            ->select(
+                'a.kodepengeluaran as keterangan'
+            )
+            ->where('id', $id)
+            ->first();
+
+        $keterangan = $query->keterangan ?? '';
+
+        return $keterangan;
     }
 }

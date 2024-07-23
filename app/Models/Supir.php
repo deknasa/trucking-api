@@ -2394,4 +2394,18 @@ class Supir extends MyModel
             }
         }
     }
+
+        public function cekdataText($id)
+    {
+        $query = DB::table('supir')->from(db::raw("supir a with (readuncommitted)"))
+            ->select(
+                'a.namasupir as keterangan'
+            )
+            ->where('id', $id)
+            ->first();
+
+        $keterangan = $query->keterangan ?? '';
+
+        return $keterangan;
+    }
 }

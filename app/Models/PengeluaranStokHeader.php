@@ -980,50 +980,187 @@ class PengeluaranStokHeader extends MyModel
             ->select(DB::raw("pengeluaranstokheader.nobukti,SUM(pengeluaranstokdetail.total) AS nominal"))
             ->join(DB::raw("pengeluaranstokheader with (readuncommitted)"), 'pengeluaranstokheader.id', 'pengeluaranstokdetail.pengeluaranstokheader_id')
             ->groupBy("pengeluaranstokheader.nobukti");
+
+            if (request()->tgldari) {
+                $getNominal->whereBetween('pengeluaranstokheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+            }
+            if (request()->penerimaanheader_id) {
+                $getNominal->where('pengeluaranstokheader.pengeluaranstok_id', request()->pengeluaranheader_id);
+            }            
         DB::table($tempNominal)->insertUsing(['nobukti', 'nominal'], $getNominal);
 
-        $query = DB::table('pengeluaranstokheader');
+       
+        $temppengeluaranstokheader2 = '##temppengeluaranstokheader2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temppengeluaranstokheader2, function ($table) {
+            $table->integer('id')->nullable();
+            $table->string('nobukti', 1000)->nullable();
+            $table->integer('statuscetak')->nullable();
+            $table->integer('statuskirimberkas')->nullable();
+            $table->integer('gudang_id')->nullable();
+            $table->integer('trado_id')->nullable();
+            $table->integer('gandengan_id')->nullable();
+            $table->integer('supplier_id')->nullable();
+            $table->integer('supir_id')->nullable();
+            $table->integer('pengeluaranstok_id')->nullable();
+            $table->integer('statuspotongretur')->nullable();
+            $table->integer('kerusakan_id')->nullable();
+            $table->integer('bank_id')->nullable();
+        });
+
+        $temppengeluaranstokheader = '##temppengeluaranstokheader' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temppengeluaranstokheader, function ($table) {
+            $table->integer('id')->nullable();
+            $table->string('nobukti', 1000)->nullable();
+            $table->longtext('statuscetak')->nullable();
+            $table->longtext('statuskirimberkas')->nullable();
+            $table->longtext('gudang_id')->nullable();
+            $table->longtext('trado_id')->nullable();
+            $table->longtext('gandengan_id')->nullable();
+            $table->longtext('supplier_id')->nullable();
+            $table->longtext('supir_id')->nullable();
+            $table->longtext('pengeluaranstok_id')->nullable();
+            $table->longtext('statuspotongretur')->nullable();
+            $table->longtext('kerusakan_id')->nullable();
+            $table->longtext('bank_id')->nullable();
+        });        
+
+        $querypengeluaranstokheader = db::table('pengeluaranstokheader')->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
+        ->select(
+            'a.id',
+            'a.nobukti',
+            'a.gudang_id',
+            'a.statuscetak',
+            'a.statuskirimberkas',
+            'a.trado_id',
+            'a.gandengan_id',
+            'a.supplier_id',
+            'a.supir_id',
+            'a.pengeluaranstok_id',
+            'a.statuspotongretur',
+            'a.kerusakan_id',
+            'a.bank_id',
+        );        
+        if (request()->tgldari) {
+            $querypengeluaranstokheader->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        if (request()->pengeluaranheader_id) {
+            $querypengeluaranstokheader->where('a.pengeluaranstok_id', request()->pengeluaranheader_id);
+        }
+
+        $datadetail = json_decode($querypengeluaranstokheader->get(), true);
+        foreach ($datadetail as $item) {
+
+            $gudang = new Gudang();
+            $parameter = new Parameter();
+            $pengeluaranstok = new PengeluaranStok();
+            $trado = new Trado();
+            $gandengan = new Gandengan();
+            $supplier = new Supplier();
+            $kerusakan = new Kerusakan();
+            $bank = new Bank();
+            $supir = new Supir();
+
+            $gudang_id = $gudang->cekdataText($item['gudang_id']) ?? '';
+            $statuscetak = $parameter->cekdataText($item['statuscetak']) ?? '';
+            $pengeluaranstok_id = $pengeluaranstok->cekdataText($item['pengeluaranstok_id']) ?? '';
+            $statuspotongretur = $parameter->cekdataText($item['statuspotongretur']) ?? '';
+            $statuskirimberkas = $parameter->cekdataText($item['statuskirimberkas']) ?? '';
+            $trado_id = $trado->cekdataText($item['trado_id']) ?? '';
+            $gandengan_id = $gandengan->cekdataText($item['gandengan_id']) ?? '';
+            $supplier_id = $supplier->cekdataText($item['supplier_id']) ?? '';
+            $supir_id = $supir->cekdataText($item['supir_id']) ?? '';
+            $bank_id = $bank->cekdataText($item['bank_id']) ?? '';
+            $kerusakan_id = $kerusakan->cekdataText($item['kerusakan_id']) ?? '';
+
+            DB::table($temppengeluaranstokheader)->insert([
+                'id' => $item['id'],
+                'nobukti' => $item['nobukti'],
+                'gudang_id' => $gudang_id,
+                'statuscetak' => $statuscetak,
+                'statuspotongretur' => $statuspotongretur,
+                'statuskirimberkas' => $statuskirimberkas,
+                'pengeluaranstok_id' => $pengeluaranstok_id,
+                'trado_id' => $trado_id,
+                'supir_id' => $supir_id,
+                'kerusakan_id' => $kerusakan_id,
+                'gandengan_id' => $gandengan_id,
+                'bank_id' => $bank_id,
+                'supplier_id' => $supplier_id,
+            ]);
+        }
+
+
+
+        $query = DB::table($temppengeluaranstokheader)->from(db::raw($temppengeluaranstokheader . " a"));
         $query->select(
             "pengeluaranstokheader.id",
             "nominal.nominal",
-            'statuscetak.text as statuscetak',
-            "statuscetak.id as  statuscetak_id",
-            'statuskirimberkas.text as statuskirimberkas',
-            "statuskirimberkas.id as  statuskirimberkas_id",
+            'a.statuscetak as statuscetak',
+            "pengeluaranstokheader.statuscetak as  statuscetak_id",
+            'a.statuskirimberkas as statuskirimberkas',
+            "pengeluaranstokheader.statuskirimberkas as  statuskirimberkas_id",
             "pengeluaranstokheader.nobukti",
             "pengeluaranstokheader.tglbukti",
-            "gudang.gudang as gudang",
-            "trado.kodetrado as trado",
-            "gandengan.kodegandengan as gandengan",
-            "supplier.namasupplier as supplier",
-            "supir.namasupir as supir",
+            "a.gudang_id as gudang",
+            "a.trado_id as trado",
+            "a.gandengan_id as gandengan",
+            "a.supplier_id as supplier",
+            "a.supir_id as supir",
             "pengeluaranstokheader.pengeluaranstok_id",
-            "pengeluaranstok.kodepengeluaran as pengeluaranstok",
+            "a.pengeluaranstok_id as pengeluaranstok",
             "pengeluaranstokheader.pengeluarantrucking_nobukti",
             "pengeluaranstokheader.servicein_nobukti",
             "pengeluaranstokheader.penerimaanstok_nobukti",
             "pengeluaranstokheader.pengeluaranstok_nobukti",
             "pengeluaranstokheader.penerimaan_nobukti",
             "pengeluaranstokheader.hutangbayar_nobukti",
-            "kerusakan.keterangan as kerusakan",
-            "statuspotongretur.text as statuspotongretur",
-            "bank.namabank as bank",
+            "a.kerusakan_id as kerusakan",
+            "a.statuspotongretur as statuspotongretur",
+            "a.bank_id as bank",
             "pengeluaranstokheader.modifiedby",
             "pengeluaranstokheader.created_at",
             "pengeluaranstokheader.updated_at"
+
+            // 'statuscetak.text as statuscetak',
+            // "statuscetak.id as  statuscetak_id",
+            // 'statuskirimberkas.text as statuskirimberkas',
+            // "statuskirimberkas.id as  statuskirimberkas_id",
+            // "pengeluaranstokheader.nobukti",
+            // "pengeluaranstokheader.tglbukti",
+            // "gudang.gudang as gudang",
+            // "trado.kodetrado as trado",
+            // "gandengan.kodegandengan as gandengan",
+            // "supplier.namasupplier as supplier",
+            // "supir.namasupir as supir",
+            // "pengeluaranstokheader.pengeluaranstok_id",
+            // "pengeluaranstok.kodepengeluaran as pengeluaranstok",
+            // "pengeluaranstokheader.pengeluarantrucking_nobukti",
+            // "pengeluaranstokheader.servicein_nobukti",
+            // "pengeluaranstokheader.penerimaanstok_nobukti",
+            // "pengeluaranstokheader.pengeluaranstok_nobukti",
+            // "pengeluaranstokheader.penerimaan_nobukti",
+            // "pengeluaranstokheader.hutangbayar_nobukti",
+            // "kerusakan.keterangan as kerusakan",
+            // "statuspotongretur.text as statuspotongretur",
+            // "bank.namabank as bank",
+            // "pengeluaranstokheader.modifiedby",
+            // "pengeluaranstokheader.created_at",
+            // "pengeluaranstokheader.updated_at"
+
         )
-            ->leftJoin('gudang', 'pengeluaranstokheader.gudang_id', 'gudang.id')
-            ->leftJoin('gandengan', 'pengeluaranstokheader.gandengan_id', 'gandengan.id')
-            ->leftJoin('pengeluaranstok', 'pengeluaranstokheader.pengeluaranstok_id', 'pengeluaranstok.id')
-            ->leftJoin('trado', 'pengeluaranstokheader.trado_id', 'trado.id')
-            ->leftJoin('supplier', 'pengeluaranstokheader.supplier_id', 'supplier.id')
-            ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id')
-            ->leftJoin('kerusakan', 'pengeluaranstokheader.kerusakan_id', 'kerusakan.id')
-            ->leftJoin('bank', 'pengeluaranstokheader.bank_id', 'bank.id')
-            ->leftJoin('parameter as statuspotongretur', 'pengeluaranstokheader.statuspotongretur', 'statuspotongretur.id')
-            ->leftJoin('parameter as statuscetak', 'pengeluaranstokheader.statuscetak', 'statuscetak.id')
-            ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'pengeluaranstokheader.nobukti', 'nominal.nobukti')
-            ->leftJoin('parameter as statuskirimberkas', 'pengeluaranstokheader.statuskirimberkas', 'statuskirimberkas.id');
+        ->Join(db::raw("pengeluaranstokheader with (readuncommitted)"), 'a.nobukti', 'pengeluaranstokheader.nobukti')
+            // ->leftJoin('gudang', 'pengeluaranstokheader.gudang_id', 'gudang.id')
+            // ->leftJoin('gandengan', 'pengeluaranstokheader.gandengan_id', 'gandengan.id')
+            // ->leftJoin('pengeluaranstok', 'pengeluaranstokheader.pengeluaranstok_id', 'pengeluaranstok.id')
+            // ->leftJoin('trado', 'pengeluaranstokheader.trado_id', 'trado.id')
+            // ->leftJoin('supplier', 'pengeluaranstokheader.supplier_id', 'supplier.id')
+            // ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id')
+            // ->leftJoin('kerusakan', 'pengeluaranstokheader.kerusakan_id', 'kerusakan.id')
+            // ->leftJoin('bank', 'pengeluaranstokheader.bank_id', 'bank.id')
+            // ->leftJoin('parameter as statuspotongretur', 'pengeluaranstokheader.statuspotongretur', 'statuspotongretur.id')
+            // ->leftJoin('parameter as statuscetak', 'pengeluaranstokheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'pengeluaranstokheader.nobukti', 'nominal.nobukti');
+            // ->leftJoin('parameter as statuskirimberkas', 'pengeluaranstokheader.statuskirimberkas', 'statuskirimberkas.id');
 
         DB::table($temptable)->insertUsing([
             'id',
@@ -3373,4 +3510,6 @@ class PengeluaranStokHeader extends MyModel
             throw $th;
         }
     }
+
+     
 }
