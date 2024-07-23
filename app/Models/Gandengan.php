@@ -693,7 +693,6 @@ class Gandengan extends MyModel
 
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -708,7 +707,7 @@ class Gandengan extends MyModel
                 (new LogTrail())->processStore([
 
                     'namatabel' => strtoupper($Gandengan->getTable()),
-                    'postingdari' => 'APPROVAL Gandengan',
+                    'postingdari' => 'APPROVAL NON AKTIF Gandengan',
                     'idtrans' => $Gandengan->id,
                     'nobuktitrans' => $Gandengan->id,
                     'aksi' => $aksi,
@@ -717,8 +716,34 @@ class Gandengan extends MyModel
                 ]);
             }
         }
+        return $Gandengan;
+    }
 
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $Gandengan = Gandengan::find($data['Id'][$i]);
 
+            $Gandengan->statusaktif = $statusaktif->id;
+            $aksi = $statusaktif->text;
+
+            // dd($Gandengan);
+            if ($Gandengan->save()) {
+
+                (new LogTrail())->processStore([
+
+                    'namatabel' => strtoupper($Gandengan->getTable()),
+                    'postingdari' => 'APPROVAL AKTIF Gandengan',
+                    'idtrans' => $Gandengan->id,
+                    'nobuktitrans' => $Gandengan->id,
+                    'aksi' => $aksi,
+                    'datajson' => $Gandengan->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
         return $Gandengan;
     }
 

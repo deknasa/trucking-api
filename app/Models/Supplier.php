@@ -192,6 +192,138 @@ class Supplier extends MyModel
         return $data;
     }
 
+    public function getStokSupplier($stok_id){
+        $this->setRequestParameters();
+        $tempSetSupplier = '##tempSetSupplier' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempSetSupplier, function ($table) {
+            $table->bigInteger('id')->nullable();
+            $table->longText('namasupplier')->nullable();
+            $table->string('namakontak', 150)->nullable();
+            $table->longText('alamat')->nullable();
+            $table->string('kota', 150)->nullable();
+            $table->string('kodepos', 50)->nullable();
+            $table->string('notelp1', 50)->nullable();
+            $table->string('notelp2', 50)->nullable();
+            $table->string('email', 50)->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->string('web', 50)->nullable();
+            $table->string('namapemilik', 150)->nullable();
+            $table->string('jenisusaha', 150)->nullable();
+            $table->string('bank', 150)->nullable();
+            $table->string('rekeningbank', 150)->nullable();
+            $table->string('namarekening', 150)->nullable();
+            $table->string('jabatan', 150)->nullable();
+            $table->integer('statusdaftarharga')->length(11)->nullable();
+            $table->integer('statuspostingtnl')->length(11)->nullable();
+            $table->string('kategoriusaha', 150)->nullable();
+            $table->double('top', 15, 2)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->integer('statusapproval')->Length(11)->nullable();
+            $table->date('tglapproval')->nullable();
+            $table->string('userapproval', 50)->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->unsignedBigInteger('tas_id')->nullable();
+            $table->string('editing_by',50)->nullable();
+            $table->dateTime('editing_at')->nullable(); 
+            $table->string('coa', 50)->nullable();
+            $table->longText('info')->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
+        });
+       
+        $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
+
+        $query = DB::table('supplier')
+        ->distinct()
+        ->leftJoin('penerimaanstokheader', 'penerimaanstokheader.supplier_id', '=', 'supplier.id')
+        ->leftJoin('penerimaanstokdetail', 'penerimaanstokdetail.nobukti', '=', 'penerimaanstokheader.nobukti')
+        ->where('penerimaanstokheader.penerimaanstok_id', $spb->text)
+        ->where('penerimaanstokdetail.stok_id', $stok_id)
+        ->select('supplier.id', 
+        'supplier.namasupplier', 
+        'supplier.namakontak', 
+        'supplier.top', 
+        'supplier.keterangan', 
+        'supplier.alamat', 
+        'supplier.kota', 
+        'supplier.kodepos', 
+        'supplier.notelp1', 
+        'supplier.notelp2', 
+        'supplier.email', 
+        'supplier.statusaktif', 
+        'supplier.web', 
+        'supplier.namapemilik', 
+        'supplier.jenisusaha', 
+        'supplier.bank', 
+        'supplier.coa', 
+        'supplier.rekeningbank', 
+        'supplier.namarekening', 
+        'supplier.jabatan', 
+        'supplier.statusdaftarharga', 
+        'supplier.kategoriusaha', 
+        'supplier.statusapproval', 
+        'supplier.tglapproval', 
+        'supplier.userapproval', 
+        'supplier.modifiedby', 
+        'supplier.created_at', 
+        'supplier.updated_at');
+        // ->get();
+        
+        DB::table($tempSetSupplier)->insertUsing(['id','namasupplier','namakontak','top','keterangan','alamat','kota','kodepos','notelp1','notelp2','email','statusaktif','web','namapemilik','jenisusaha','bank','coa','rekeningbank','namarekening','jabatan','statusdaftarharga','kategoriusaha','statusapproval','tglapproval','userapproval','modifiedby','created_at','updated_at'], $query);
+        
+        $query = DB::table($this->tempSetSupplier)->from(db::raw("$tempSetSupplier supplier with (readuncommitted)"))
+        ->select(
+            // "$this->table.*",
+            'supplier.id',
+            'supplier.namasupplier',
+            'supplier.namakontak',
+            'supplier.top',
+            'supplier.keterangan',
+            'supplier.alamat',
+            'supplier.kota',
+            'supplier.kodepos',
+            'supplier.notelp1',
+            'supplier.notelp2',
+            'supplier.email',
+
+            'parameter_statusaktif.memo as statusaktif',
+            'supplier.web',
+            'supplier.namapemilik',
+            'supplier.jenisusaha',
+            'supplier.bank',
+            'supplier.coa',
+            'supplier.rekeningbank',
+            'supplier.namarekening',
+            'supplier.jabatan',
+
+            'parameter_statusdaftarharga.memo as statusdaftarharga',
+            'supplier.kategoriusaha',
+            'statusapproval.memo as statusapproval',
+            'statuspostingtnl.memo as statuspostingtnl',
+            'supplier.modifiedby',
+            'supplier.created_at',
+            'supplier.updated_at',
+           
+            DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+
+        )
+            ->leftJoin('parameter as parameter_statusaktif', "supplier.statusaktif", '=', 'parameter_statusaktif.id')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'supplier.statusapproval', 'statusapproval.id')
+            ->leftJoin(DB::raw("parameter as statuspostingtnl with (readuncommitted)"), 'supplier.statuspostingtnl', 'statuspostingtnl.id')
+            ->leftJoin('parameter as parameter_statusdaftarharga', "supplier.statusdaftarharga", '=', 'parameter_statusdaftarharga.id');
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);
+        $this->filter($query);
+        $this->paginate($query);
+
+        $data = $query->get();
+
+        return $data;
+    }
+
     public function default()
     {
 
@@ -734,7 +866,6 @@ class Supplier extends MyModel
 
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -746,7 +877,7 @@ class Supplier extends MyModel
             if ($Supplier->save()) {
                 (new LogTrail())->processStore([
                     'namatabel' => strtoupper($Supplier->getTable()),
-                    'postingdari' => 'APPROVAL SUPPLIER',
+                    'postingdari' => 'APPROVAL NON AKTIF SUPPLIER',
                     'idtrans' => $Supplier->id,
                     'nobuktitrans' => $Supplier->id,
                     'aksi' => $aksi,
@@ -755,8 +886,31 @@ class Supplier extends MyModel
                 ]);
             }
         }
+        return $Supplier;
+    }
 
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $Supplier = Supplier::find($data['Id'][$i]);
 
+            $Supplier->statusaktif = $statusaktif->id;
+            $aksi = $statusaktif->text;
+
+            if ($Supplier->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($Supplier->getTable()),
+                    'postingdari' => 'APPROVAL AKTIF SUPPLIER',
+                    'idtrans' => $Supplier->id,
+                    'nobuktitrans' => $Supplier->id,
+                    'aksi' => $aksi,
+                    'datajson' => $Supplier->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
         return $Supplier;
     }
 

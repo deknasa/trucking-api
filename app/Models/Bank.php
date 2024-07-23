@@ -598,9 +598,9 @@ class Bank extends MyModel
 
         return $bank;
     }
+
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -626,6 +626,7 @@ class Bank extends MyModel
         return $bank;
     }
 
+
     public function cekdataText($id)
     {
         $query = DB::table('bank')->from(db::raw("bank a with (readuncommitted)"))
@@ -638,5 +639,32 @@ class Bank extends MyModel
         $keterangan = $query->keterangan ?? '';
 
         return $keterangan;
+}
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $bank = $this->where('id',$data['Id'][$i])->first();
+
+            $bank->statusaktif = $statusaktif->id;
+            $bank->modifiedby = auth('api')->user()->name;
+            $bank->info = html_entity_decode(request()->info);
+            $aksi = $statusaktif->text;
+
+            if ($bank->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($bank->getTable()),
+                    'postingdari' => 'APPROVAL AKTIF KAS/BANK ',
+                    'idtrans' => $bank->id,
+                    'nobuktitrans' => $bank->id,
+                    'aksi' => $aksi,
+                    'datajson' => $bank->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+        return $bank;
+
     }
 }

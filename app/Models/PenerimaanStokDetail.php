@@ -565,6 +565,50 @@ class PenerimaanStokDetail extends MyModel
         return $temtabel;
     }
 
+    function getSpbSuplier($supplier){
+        $this->setRequestParameters();
+
+        $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
+
+        $query = DB::table("penerimaanstokdetail")->from(DB::raw("penerimaanstokdetail "));
+
+        $query->select(
+            "$this->table.penerimaanstokheader_id",
+            "$this->table.nobukti",
+            "$this->table.stok_id",
+            "stok.namastok as stok",
+            "satuan.satuan as satuan",
+            "$this->table.qty",
+            "$this->table.harga",
+            "$this->table.persentasediscount",
+            "$this->table.penerimaanstok_nobukti",
+            "$this->table.nominaldiscount",
+            "$this->table.total",
+            "$this->table.keterangan",
+            "statusban.text as statusban",
+            "$this->table.modifiedby",
+        )
+
+        ->where('penerimaanstokheader.penerimaanstok_id', $spb->text)
+        ->where('penerimaanstokheader.supplier_id', $supplier)
+        ->where('penerimaanstokdetail.stok_id', request()->stok_id)
+            ->leftJoin(db::raw("penerimaanstokheader"), "$this->table.nobukti", "penerimaanstokheader.nobukti")
+            ->leftJoin("stok", "$this->table.stok_id", "stok.id")
+            ->leftJoin("satuan", "stok.satuan_id", "satuan.id")
+            ->leftJoin('parameter as statusban', 'stok.statusban', 'statusban.id');
+
+            $this->totalNominal = $query->sum($this->table . '.total');
+            $this->filter($query);
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+            $this->sort($query);
+            $this->paginate($query);
+        
+        return $query->get();
+    }
+
+
 
     public function getAll($id)
     {

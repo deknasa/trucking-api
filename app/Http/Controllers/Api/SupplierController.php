@@ -440,6 +440,44 @@ class SupplierController extends Controller
     }
 
 
+    public function stokGetSupplier($stok_id){
+        $supplier = new Supplier;
+        return response([
+            'data' => $supplier->getStokSupplier($stok_id),
+            'attributes' => [
+                'totalRows' => $supplier->totalRows,
+                'totalPages' => $supplier->totalPages
+            ]
+        ]);
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL AKTIF
+     */
+    public function approvalaktif(ApprovalSupplierRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+                'nama' => $request->nama
+            ];
+            (new Supplier())->processApprovalaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+
+
     public function approvalTNL(Request $request)
     {
         DB::beginTransaction();

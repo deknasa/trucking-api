@@ -342,7 +342,6 @@ class JenisTrado extends MyModel
 
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -363,8 +362,31 @@ class JenisTrado extends MyModel
                 ]);
             }
         }
+        return $jenisTrado;
+    }
 
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $jenisTrado = JenisTrado::find($data['Id'][$i]);
 
+            $jenisTrado->statusaktif = $statusaktif->id;
+            $aksi = $statusaktif->text;
+
+            if ($jenisTrado->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($jenisTrado->getTable()),
+                    'postingdari' => 'APPROVAL AKTIF JENIS TRADO',
+                    'idtrans' => $jenisTrado->id,
+                    'nobuktitrans' => $jenisTrado->id,
+                    'aksi' => $aksi,
+                    'datajson' => $jenisTrado->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
         return $jenisTrado;
     }
 }

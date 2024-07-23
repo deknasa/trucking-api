@@ -317,6 +317,30 @@ class PenerimaanStokController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan APRROVAL AKTIF
+     */
+    public function approvalaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new PenerimaanStok())->processApprovalaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
      * @Keterangan APRROVAL TIDAK BERLAKU DI CABANG
      */
     public function approvalTidakCabang(ApprovalKaryawanRequest $request)

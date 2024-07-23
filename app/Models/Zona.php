@@ -364,9 +364,9 @@ class Zona extends MyModel
 
         return $zona;
     }
+
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -387,8 +387,31 @@ class Zona extends MyModel
                 ]);
             }
         }
+        return $zona;
+    }
 
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $zona = Zona::find($data['Id'][$i]);
 
+            $zona->statusaktif = $statusaktif->id;
+            $aksi = $statusaktif->text;
+
+            if ($zona->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($zona->getTable()),
+                    'postingdari' => 'APPROVAL AKTIF ZONA',
+                    'idtrans' => $zona->id,
+                    'nobuktitrans' => $zona->id,
+                    'aksi' => $aksi,
+                    'datajson' => $zona->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
         return $zona;
     }
 }

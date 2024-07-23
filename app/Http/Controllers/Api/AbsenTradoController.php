@@ -418,6 +418,7 @@ class AbsenTradoController extends Controller
             'data' => $absenTrado->getRekapAbsenTrado($id),
         ]);
     }
+
     /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
@@ -431,6 +432,30 @@ class AbsenTradoController extends Controller
                 'Id' => $request->Id,
             ];
             (new AbsenTrado())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL AKTIF
+     */
+    public function approvalaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new AbsenTrado())->processApprovalaktif($data);
 
             DB::commit();
             return response([

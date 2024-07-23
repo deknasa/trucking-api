@@ -416,6 +416,7 @@ class MandorController extends Controller
     public function report()
     {
     }
+
     /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
@@ -429,6 +430,30 @@ class MandorController extends Controller
                 'Id' => $request->Id,
             ];
             (new Mandor())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL AKTIF
+     */
+    public function approvalaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new Mandor())->processApprovalaktif($data);
 
             DB::commit();
             return response([
