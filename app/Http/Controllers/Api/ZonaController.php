@@ -372,6 +372,7 @@ class ZonaController extends Controller
     public function report()
     {
     }
+
     /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
@@ -385,6 +386,30 @@ class ZonaController extends Controller
                 'Id' => $request->Id,
             ];
             (new Zona())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL AKTIF
+     */
+    public function approvalaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new Zona())->processApprovalaktif($data);
 
             DB::commit();
             return response([

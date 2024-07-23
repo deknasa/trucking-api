@@ -480,6 +480,7 @@ class UpahRitasiController extends Controller
         selesai:
         return response($data);
     }
+
     /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
@@ -493,6 +494,30 @@ class UpahRitasiController extends Controller
                 'Id' => $request->Id,
             ];
             (new UpahRitasi())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL AKTIF
+     */
+    public function approvalaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new UpahRitasi())->processApprovalaktif($data);
 
             DB::commit();
             return response([

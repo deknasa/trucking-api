@@ -440,9 +440,9 @@ class Kota extends MyModel
 
         return $kota;
     }
+
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -463,8 +463,31 @@ class Kota extends MyModel
                 ]);
             }
         }
+        return $kota;
+    }
 
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $kota = Kota::find($data['Id'][$i]);
 
+            $kota->statusaktif = $statusaktif->id;
+            $aksi = $statusaktif->text;
+
+            if ($kota->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($kota->getTable()),
+                    'postingdari' => 'APPROVAL AKTIF KOTA',
+                    'idtrans' => $kota->id,
+                    'nobuktitrans' => $kota->id,
+                    'aksi' => $aksi,
+                    'datajson' => $kota->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
         return $kota;
     }
 }

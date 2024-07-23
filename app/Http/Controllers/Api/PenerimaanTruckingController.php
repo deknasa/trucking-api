@@ -524,6 +524,7 @@ class PenerimaanTruckingController extends Controller
         $data = $querydata->first();
         return $data;
     }
+
     /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
@@ -537,6 +538,30 @@ class PenerimaanTruckingController extends Controller
                 'Id' => $request->Id,
             ];
             (new PenerimaanTrucking())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL AKTIF
+     */
+    public function approvalaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new PenerimaanTrucking())->processApprovalaktif($data);
 
             DB::commit();
             return response([

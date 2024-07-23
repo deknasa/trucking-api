@@ -350,7 +350,6 @@ class Kategori extends MyModel
 
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -365,6 +364,33 @@ class Kategori extends MyModel
                 (new LogTrail())->processStore([
                     'namatabel' => strtoupper($kategori->getTable()),
                     'postingdari' => 'APPROVAL NON AKTIF KATEGORI',
+                    'idtrans' => $kategori->id,
+                    'nobuktitrans' => $kategori->id,
+                    'aksi' => $aksi,
+                    'datajson' => $kategori->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+        return $kategori;
+    }
+
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $kategori = Kategori::find($data['Id'][$i]);
+
+            $kategori->statusaktif = $statusaktif->id;
+            $kategori->modifiedby = auth('api')->user()->name;
+            $kategori->info = html_entity_decode(request()->info);
+            $aksi = $statusaktif->text;
+
+            if ($kategori->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($kategori->getTable()),
+                    'postingdari' => 'APPROVAL AKTIF KATEGORI',
                     'idtrans' => $kategori->id,
                     'nobuktitrans' => $kategori->id,
                     'aksi' => $aksi,

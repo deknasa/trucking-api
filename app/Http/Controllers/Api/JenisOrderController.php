@@ -366,6 +366,7 @@ class JenisOrderController extends Controller
             $this->toExcel($judulLaporan, $jenisorders, $columns);
         }
     }
+
     /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
@@ -379,6 +380,30 @@ class JenisOrderController extends Controller
                 'Id' => $request->Id,
             ];
             (new JenisOrder())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL AKTIF
+     */
+    public function approvalaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new JenisOrder())->processApprovalaktif($data);
 
             DB::commit();
             return response([

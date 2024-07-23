@@ -22,7 +22,7 @@ use DateTime;
 
 class ShipperController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -43,18 +43,18 @@ class ShipperController extends Controller
     {
         $pelanggan = new Pelanggan();
         $cekdata = $pelanggan->cekvalidasihapus($id);
-        $dataMaster = Pelanggan::where('id',$id)->first();
+        $dataMaster = Pelanggan::where('id', $id)->first();
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
         $useredit = $dataMaster->editing_by ?? '';
         $aksi = request()->aksi ?? '';
-        $aksi =strtoupper($aksi);
-        if( $aksi == 'EDIT'){
+        $aksi = strtoupper($aksi);
+        if ($aksi == 'EDIT') {
             $cekdata['kondisi'] = false;
         }
         if ($useredit != '' && $useredit != $user) {
-           
+
             $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
 
             $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
@@ -84,10 +84,8 @@ class ShipperController extends Controller
                 ];
 
                 return response($data);
-            }            
-            
-
-            } else if ($cekdata['kondisi'] == true) {
+            }
+        } else if ($cekdata['kondisi'] == true) {
             // $query = DB::table('error')
             //     ->select(
             //         DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
@@ -111,16 +109,15 @@ class ShipperController extends Controller
             ];
 
             return response($data);
-
         } else {
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                 (new MyModel())->updateEditingBy('pelanggan', $id, $aksi);
-            }            
+            }
             $data = [
                 'error' => false,
                 'message' => '',
                 'kodeerror' => '',
-                'statuspesan' => 'success',                
+                'statuspesan' => 'success',
                 // 'status' => false,
                 // 'message' => '',
                 // 'errors' => '',
@@ -169,20 +166,20 @@ class ShipperController extends Controller
 
             if ($request->from == '') {
 
-            $pelanggan->position = $this->getPosition($pelanggan, $pelanggan->getTable())->position;
-            if ($request->limit==0) {
-                $pelanggan->page = ceil($pelanggan->position / (10));
-            } else {
-                $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
+                $pelanggan->position = $this->getPosition($pelanggan, $pelanggan->getTable())->position;
+                if ($request->limit == 0) {
+                    $pelanggan->page = ceil($pelanggan->position / (10));
+                } else {
+                    $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
+                }
             }
-        }
-        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-        $data['tas_id'] = $pelanggan->id;
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $pelanggan->id;
 
-        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-            // $this->saveToTnl('pelanggan', 'add', $data);
-            $this->SaveTnlNew('pelanggan', 'add', $data);
-        }
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                // $this->saveToTnl('pelanggan', 'add', $data);
+                $this->SaveTnlNew('pelanggan', 'add', $data);
+            }
 
 
             DB::commit();
@@ -238,21 +235,21 @@ class ShipperController extends Controller
 
             if ($request->from == '') {
 
-            $pelanggan->position = $this->getPosition($pelanggan, $pelanggan->getTable())->position;
-            if ($request->limit==0) {
-                $pelanggan->page = ceil($pelanggan->position / (10));
-            } else {
-                $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
+                $pelanggan->position = $this->getPosition($pelanggan, $pelanggan->getTable())->position;
+                if ($request->limit == 0) {
+                    $pelanggan->page = ceil($pelanggan->position / (10));
+                } else {
+                    $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
+                }
             }
-        }
 
-        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-        $data['tas_id'] = $pelanggan->id;
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $pelanggan->id;
 
-        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-            // $this->saveToTnl('pelanggan', 'edit', $data);
-            $this->SaveTnlNew('pelanggan', 'edit', $data);
-        }
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                // $this->saveToTnl('pelanggan', 'edit', $data);
+                $this->SaveTnlNew('pelanggan', 'edit', $data);
+            }
 
             DB::commit();
 
@@ -283,25 +280,25 @@ class ShipperController extends Controller
 
             if ($request->from == '') {
 
-            $selected = $this->getPosition($pelanggan, $pelanggan->getTable(), true);
-            $pelanggan->position = $selected->position;
-            $pelanggan->id = $selected->id;
-            if ($request->limit==0) {
-                $pelanggan->page = ceil($pelanggan->position / (10));
-            } else {
-                $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
+                $selected = $this->getPosition($pelanggan, $pelanggan->getTable(), true);
+                $pelanggan->position = $selected->position;
+                $pelanggan->id = $selected->id;
+                if ($request->limit == 0) {
+                    $pelanggan->page = ceil($pelanggan->position / (10));
+                } else {
+                    $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
+                }
             }
-        }
 
-        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-        $data['tas_id'] = $id;
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
 
-        $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
 
-        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-            // $this->saveToTnl('pelanggan', 'delete', $data);
-            $this->SaveTnlNew('pelanggan', 'delete', $data);
-        }
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                // $this->saveToTnl('pelanggan', 'delete', $data);
+                $this->SaveTnlNew('pelanggan', 'delete', $data);
+            }
 
 
             DB::commit();
@@ -350,7 +347,7 @@ class ShipperController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan
@@ -363,8 +360,6 @@ class ShipperController extends Controller
                 return response([
                     'status' => true,
                 ]);
-                
-
             }
         } else {
 
@@ -479,7 +474,7 @@ class ShipperController extends Controller
         ]);
     }
 
-         /**
+    /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
      */
@@ -504,5 +499,28 @@ class ShipperController extends Controller
         }
     }
 
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL AKTIF
+     */
+    public function approvalaktif(ApprovalShipperRequest $request)
+    {
+        DB::beginTransaction();
 
+        try {
+            $data = [
+                'Id' => $request->Id,
+                'nama' => $request->nama
+            ];
+            (new Pelanggan())->processApprovalaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
 }

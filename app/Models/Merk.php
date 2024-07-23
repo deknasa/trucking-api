@@ -332,7 +332,6 @@ class Merk extends MyModel
 
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -347,6 +346,33 @@ class Merk extends MyModel
                 (new LogTrail())->processStore([
                     'namatabel' => strtoupper($merk->getTable()),
                     'postingdari' => 'APPROVAL NON AKTIF MERK',
+                    'idtrans' => $merk->id,
+                    'nobuktitrans' => $merk->id,
+                    'aksi' => $aksi,
+                    'datajson' => $merk->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+        return $merk;
+    }
+
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $merk = Merk::find($data['Id'][$i]);
+
+            $merk->statusaktif = $statusaktif->id;
+            $merk->modifiedby = auth('api')->user()->name;
+            $merk->info = html_entity_decode(request()->info);
+            $aksi = $statusaktif->text;
+
+            if ($merk->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($merk->getTable()),
+                    'postingdari' => 'APPROVAL AKTIF MERK',
                     'idtrans' => $merk->id,
                     'nobuktitrans' => $merk->id,
                     'aksi' => $aksi,

@@ -330,7 +330,6 @@ class Kerusakan extends MyModel
     
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -351,8 +350,31 @@ class Kerusakan extends MyModel
                 ]);
             }
         }
+        return $kerusakan;
+    }
 
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $kerusakan = Kerusakan::find($data['Id'][$i]);
 
+            $kerusakan->statusaktif = $statusaktif->id;
+            $aksi = $statusaktif->text;
+
+            if ($kerusakan->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($kerusakan->getTable()),
+                    'postingdari' => 'APPROVAL AKTIF KERUSAKAN',
+                    'idtrans' => $kerusakan->id,
+                    'nobuktitrans' => $kerusakan->id,
+                    'aksi' => $aksi,
+                    'datajson' => $kerusakan->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
         return $kerusakan;
     }
 }

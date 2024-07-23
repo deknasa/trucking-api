@@ -387,6 +387,7 @@ class KotaController extends Controller
             $this->toExcel($judulLaporan, $kotas, $columns);
         }
     }
+
     /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
@@ -400,6 +401,30 @@ class KotaController extends Controller
                 'Id' => $request->Id,
             ];
             (new Kota())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+     /**
+     * @ClassName 
+     * @Keterangan APRROVAL AKTIF
+     */
+    public function approvalaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new Kota())->processApprovalaktif($data);
 
             DB::commit();
             return response([

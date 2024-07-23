@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+
 use DateTime;
 use App\Models\Bank;
 use App\Models\Error;
@@ -27,7 +28,7 @@ use App\Http\Requests\RangeExportReportRequest;
 
 class AlatBayarController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -48,19 +49,19 @@ class AlatBayarController extends Controller
     {
         $alatBayar = new AlatBayar();
         $cekdata = $alatBayar->cekvalidasihapus($id);
-        $dataMaster = AlatBayar::where('id',$id)->first();
+        $dataMaster = AlatBayar::where('id', $id)->first();
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
         $useredit = $dataMaster->editing_by ?? '';
-      
+
         $aksi = request()->aksi ?? '';
-        $aksi =strtoupper($aksi);
-        if( $aksi == 'EDIT'){
+        $aksi = strtoupper($aksi);
+        if ($aksi == 'EDIT') {
             $cekdata['kondisi'] = false;
         }
         if ($useredit != '' && $useredit != $user) {
-           
+
             $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
 
             $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
@@ -90,10 +91,8 @@ class AlatBayarController extends Controller
                 ];
 
                 return response($data);
-            }            
-            
-
-            } else if ($cekdata['kondisi'] == true) {
+            }
+        } else if ($cekdata['kondisi'] == true) {
             // $query = DB::table('error')
             //     ->select(
             //         DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
@@ -117,16 +116,15 @@ class AlatBayarController extends Controller
             ];
 
             return response($data);
-
         } else {
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                 (new MyModel())->updateEditingBy('alatbayar', $id, $aksi);
-            }            
+            }
             $data = [
                 'error' => false,
                 'message' => '',
                 'kodeerror' => '',
-                'statuspesan' => 'success',                
+                'statuspesan' => 'success',
                 // 'status' => false,
                 // 'message' => '',
                 // 'errors' => '',
@@ -164,14 +162,14 @@ class AlatBayarController extends Controller
                 'bank_id' => $request->bank_id,
                 'coa' => $request->coa ?? '',
                 'statusaktif' => $request->statusaktif,
-                'tas_id' => $request->tas_id ?? '',                
+                'tas_id' => $request->tas_id ?? '',
             ];
 
             // $alatbayar = (new AlatBayar())->processStore($data);
             $alatbayar = new AlatBayar();
             $alatbayar->processStore($data, $alatbayar);
             $alatbayar->position = $this->getPosition($alatbayar, $alatbayar->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $alatbayar->page = ceil($alatbayar->position / (10));
             } else {
                 $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
@@ -229,9 +227,9 @@ class AlatBayarController extends Controller
             // $alatbayar = (new AlatBayar())->processUpdate($alatbayar, $data);
             $alatbayar = new AlatBayar();
             $alatbayars = $alatbayar->findOrFail($id);
-            $alatbayar = $alatbayar->processUpdate($alatbayars, $data);            
+            $alatbayar = $alatbayar->processUpdate($alatbayars, $data);
             $alatbayar->position = $this->getPosition($alatbayar, $alatbayar->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $alatbayar->page = ceil($alatbayar->position / (10));
             } else {
                 $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
@@ -270,25 +268,25 @@ class AlatBayarController extends Controller
             // $alatbayar = (new AlatBayar())->processDestroy($id);
             $alatbayar = new AlatBayar();
             $alatbayars = $alatbayar->findOrFail($id);
-            $alatbayar = $alatbayar->processDestroy($alatbayars);            
+            $alatbayar = $alatbayar->processDestroy($alatbayars);
             $selected = $this->getPosition($alatbayar, $alatbayar->getTable(), true);
             $alatbayar->position = $selected->position;
             $alatbayar->id = $selected->id;
-            if ($request->from == '') {            
-            if ($request->limit==0) {
-                $alatbayar->page = ceil($alatbayar->position / (10));
-            } else {
-                $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                if ($request->limit == 0) {
+                    $alatbayar->page = ceil($alatbayar->position / (10));
+                } else {
+                    $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
+                }
             }
-        }
             $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
             $data['tas_id'] = $id;
 
             $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
-        
+
             if ($cekStatusPostingTnl->text == 'POSTING TNL') {
                 // $this->saveToTnl('alatbayar', 'delete', $data);
-              
+
                 $this->SaveTnlNew('alatbayar', 'delete', $data);
                 // dd('test1');
             }
@@ -335,7 +333,7 @@ class AlatBayarController extends Controller
         ]);
     }
 
-     /**
+    /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
      */
@@ -348,6 +346,30 @@ class AlatBayarController extends Controller
                 'Id' => $request->Id,
             ];
             (new AlatBayar())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL AKTIF
+     */
+    public function approvalaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new AlatBayar())->processApprovalaktif($data);
 
             DB::commit();
             return response([
@@ -376,7 +398,7 @@ class AlatBayarController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan

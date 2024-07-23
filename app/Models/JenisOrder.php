@@ -374,7 +374,6 @@ class JenisOrder extends MyModel
 
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -395,8 +394,31 @@ class JenisOrder extends MyModel
                 ]);
             }
         }
+        return $jenisorder;
+    }
 
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $jenisorder = JenisOrder::find($data['Id'][$i]);
 
+            $jenisorder->statusaktif = $statusaktif->id;
+            $aksi = $statusaktif->text;
+
+            if ($jenisorder->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($jenisorder->getTable()),
+                    'postingdari' => 'APPROVAL AKTIF JENIS ORDER',
+                    'idtrans' => $jenisorder->id,
+                    'nobuktitrans' => $jenisorder->id,
+                    'aksi' => $aksi,
+                    'datajson' => $jenisorder->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
         return $jenisorder;
     }
 }

@@ -458,7 +458,6 @@ class Pelanggan extends MyModel
 
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -473,7 +472,7 @@ class Pelanggan extends MyModel
                 (new LogTrail())->processStore([
 
                     'namatabel' => strtoupper($Pelanggan->getTable()),
-                    'postingdari' => 'APPROVAL Pelanggan',
+                    'postingdari' => 'APPROVAL NON AKTIF PELANGGAN',
                     'idtrans' => $Pelanggan->id,
                     'nobuktitrans' => $Pelanggan->id,
                     'aksi' => $aksi,
@@ -482,8 +481,34 @@ class Pelanggan extends MyModel
                 ]);
             }
         }
+        return $Pelanggan;
+    }
 
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $Pelanggan = Pelanggan::find($data['Id'][$i]);
 
+            $Pelanggan->statusaktif = $statusaktif->id;
+            $aksi = $statusaktif->text;
+
+            // dd($Pelanggan);
+            if ($Pelanggan->save()) {
+
+                (new LogTrail())->processStore([
+
+                    'namatabel' => strtoupper($Pelanggan->getTable()),
+                    'postingdari' => 'APPROVAL AKTIF PELANGGAN',
+                    'idtrans' => $Pelanggan->id,
+                    'nobuktitrans' => $Pelanggan->id,
+                    'aksi' => $aksi,
+                    'datajson' => $Pelanggan->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
         return $Pelanggan;
     }
 }

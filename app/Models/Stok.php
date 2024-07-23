@@ -2158,7 +2158,6 @@ class Stok extends MyModel
     
     public function processApprovalaktif(array $data)
     {
-
         $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -2173,7 +2172,7 @@ class Stok extends MyModel
                 (new LogTrail())->processStore([
 
                     'namatabel' => strtoupper($stok->getTable()),
-                    'postingdari' => 'APPROVAL STOK',
+                    'postingdari' => 'APPROVAL AKTIF STOK',
                     'idtrans' => $stok->id,
                     'nobuktitrans' => $stok->id,
                     'aksi' => $aksi,
@@ -2182,8 +2181,6 @@ class Stok extends MyModel
                 ]);
             }
         }
-
-
         return $stok;
     }    
 }

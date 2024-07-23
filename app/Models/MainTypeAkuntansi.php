@@ -341,9 +341,9 @@ class MainTypeAkuntansi extends MyModel
 
         return $maintypeakuntansi;
     }
+
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -357,7 +357,34 @@ class MainTypeAkuntansi extends MyModel
             if ($maintypeakuntansi->save()) {
                 (new LogTrail())->processStore([
                     'namatabel' => strtoupper($maintypeakuntansi->getTable()),
-                    'postingdari' => 'APPROVAL NON AKTIF type akuntansi pusat ',
+                    'postingdari' => 'APPROVAL NON AKTIF TYPE AKUNTANSI PUSAT',
+                    'idtrans' => $maintypeakuntansi->id,
+                    'nobuktitrans' => $maintypeakuntansi->id,
+                    'aksi' => $aksi,
+                    'datajson' => $maintypeakuntansi->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+        return $maintypeakuntansi;
+    }
+
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $maintypeakuntansi = MainTypeAkuntansi::find($data['Id'][$i]);
+
+            $maintypeakuntansi->statusaktif = $statusaktif->id;
+            $maintypeakuntansi->modifiedby = auth('api')->user()->name;
+            $maintypeakuntansi->info = html_entity_decode(request()->info);
+            $aksi = $statusaktif->text;
+
+            if ($maintypeakuntansi->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($maintypeakuntansi->getTable()),
+                    'postingdari' => 'APPROVAL AKTIF TYPE AKUNTANSI PUSAT ',
                     'idtrans' => $maintypeakuntansi->id,
                     'nobuktitrans' => $maintypeakuntansi->id,
                     'aksi' => $aksi,

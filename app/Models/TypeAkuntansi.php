@@ -342,7 +342,6 @@ class TypeAkuntansi extends MyModel
 
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -356,7 +355,34 @@ class TypeAkuntansi extends MyModel
             if ($typeakuntansi->save()) {
                 (new LogTrail())->processStore([
                     'namatabel' => strtoupper($typeakuntansi->getTable()),
-                    'postingdari' => 'APPROVAL NON AKTIF type akuntansi',
+                    'postingdari' => 'APPROVAL NON AKTIF TYPE AKUNTANSI',
+                    'idtrans' => $typeakuntansi->id,
+                    'nobuktitrans' => $typeakuntansi->id,
+                    'aksi' => $aksi,
+                    'datajson' => $typeakuntansi->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+        return $typeakuntansi;
+    }
+
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $typeakuntansi = TypeAkuntansi::find($data['Id'][$i]);
+
+            $typeakuntansi->statusaktif = $statusaktif->id;
+            $typeakuntansi->modifiedby = auth('api')->user()->name;
+            $typeakuntansi->info = html_entity_decode(request()->info);
+            $aksi = $statusaktif->text;
+
+            if ($typeakuntansi->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($typeakuntansi->getTable()),
+                    'postingdari' => 'APPROVAL AKTIF TYPE AKUNTANSI',
                     'idtrans' => $typeakuntansi->id,
                     'nobuktitrans' => $typeakuntansi->id,
                     'aksi' => $aksi,
