@@ -190,7 +190,8 @@ class LaporanKartuHutangPerSupplier extends MyModel
                 db::raw("0 as nominalbayar"),
                 'a.nobukti as nobuktihutang',
                 'b.tglbukti as tglberjalan',
-                db::raw("(case when isnull(c.nobukti,'')=''  and b.tglbukti>'" . $tglsaldo . "'  then 'HUTANG PREDIKSI' else 'HUTANG USAHA' END) as jenishutang"),
+                // db::raw("(case when isnull(c.nobukti,'')=''  and b.tglbukti>'" . $tglsaldo . "'  then 'HUTANG PREDIKSI' else 'HUTANG USAHA' END) as jenishutang"),
+                db::raw("(case when isnull(c.nobukti,'')=''  and b.tglbukti>'" . $tglsaldo . "'  then 'HUTANG USAHA' else 'HUTANG USAHA' END) as jenishutang"),
                 db::raw("0 as urut"),
                 )
             ->join(db::raw("hutangheader b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
@@ -220,7 +221,8 @@ class LaporanKartuHutangPerSupplier extends MyModel
                 db::raw("(isnull(c.nominal,0)+isnull(c.potongan,0)) as nominalbayar"),
                 'a.nobukti as nobuktihutang',
                 'b.tglbukti as tglberjalan',
-                db::raw("(case when isnull(b.nobukti,'')=''  and b.tglbukti>'" . $tglsaldo . "'  then 'HUTANG PREDIKSI' else 'HUTANG USAHA' END) as jenishutang"),
+                // db::raw("(case when isnull(b.nobukti,'')=''  and b.tglbukti>'" . $tglsaldo . "'  then 'HUTANG PREDIKSI' else 'HUTANG USAHA' END) as jenishutang"),
+                db::raw("(case when isnull(b.nobukti,'')=''  and b.tglbukti>'" . $tglsaldo . "'  then 'HUTANG USAHA' else 'HUTANG USAHA' END) as jenishutang"),
                 db::raw("1 as urut"),                
             )
             ->join(db::raw("hutangheader b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')

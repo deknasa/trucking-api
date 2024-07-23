@@ -306,7 +306,7 @@ class Bank extends MyModel
             $query->where('bank.tipe', '=', 'KAS');
         }
         if ($format != '') {
-            $query->where('bank.format'.$format, '!=', '0');
+            $query->where('bank.format' . $format, '!=', '0');
         }
         if ($tipe == 'BANK') {
             $query->where('bank.tipe', '=', 'BANK');
@@ -317,10 +317,10 @@ class Bank extends MyModel
         if ($bankExclude != 0) {
             $query->where('bank.id', '!=', $bankExclude);
         }
-        if($from != 'pengeluaran'){
+        if ($from != 'pengeluaran') {
             $query->where('bank.kodebank', 'NOT LIKE', '%PENGEMBALIAN KE PUSAT%');
         }
-        if($withPusat == 0){
+        if ($withPusat == 0) {
             $query->where('bank.kodebank', 'NOT LIKE', '%PENGEMBALIAN KE PUSAT%');
         }
         $this->totalRows = $query->count();
@@ -604,7 +604,7 @@ class Bank extends MyModel
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
-            $bank = $this->where('id',$data['Id'][$i])->first();
+            $bank = $this->where('id', $data['Id'][$i])->first();
 
             $bank->statusaktif = $statusnonaktif->id;
             $bank->modifiedby = auth('api')->user()->name;
@@ -639,13 +639,14 @@ class Bank extends MyModel
         $keterangan = $query->keterangan ?? '';
 
         return $keterangan;
-}
+    }
+    
     public function processApprovalaktif(array $data)
     {
         $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
-            $bank = $this->where('id',$data['Id'][$i])->first();
+            $bank = $this->where('id', $data['Id'][$i])->first();
 
             $bank->statusaktif = $statusaktif->id;
             $bank->modifiedby = auth('api')->user()->name;
@@ -665,6 +666,5 @@ class Bank extends MyModel
             }
         }
         return $bank;
-
     }
 }
