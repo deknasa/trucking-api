@@ -348,7 +348,6 @@ class StatusContainer extends MyModel
 
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -369,8 +368,31 @@ class StatusContainer extends MyModel
                 ]);
             }
         }
+        return $container;
+    }
 
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $container = StatusContainer::find($data['Id'][$i]);
 
+            $container->statusaktif = $statusaktif->id;
+            $aksi = $statusaktif->text;
+
+            if ($container->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($container->getTable()),
+                    'postingdari' => 'APPROVAL AKTIF STATUS CONTAINER',
+                    'idtrans' => $container->id,
+                    'nobuktitrans' => $container->id,
+                    'aksi' => $aksi,
+                    'datajson' => $container->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
         return $container;
     }
 }

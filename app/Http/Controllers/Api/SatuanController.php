@@ -24,7 +24,7 @@ use App\Http\Requests\RangeExportReportRequest;
 
 class SatuanController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -43,7 +43,7 @@ class SatuanController extends Controller
                     'totalPages' => $satuan->totalPages
                 ]
             ]);
-         } catch (\Throwable $th) {
+        } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
@@ -74,10 +74,10 @@ class SatuanController extends Controller
 
             // $satuan = (new Satuan())->processStore($data);
             $satuan = new Satuan();
-            $satuan->processStore($data, $satuan);            
+            $satuan->processStore($data, $satuan);
             if ($request->from == '') {
                 $satuan->position = $this->getPosition($satuan, $satuan->getTable())->position;
-                if ($request->limit==0) {
+                if ($request->limit == 0) {
                     $satuan->page = ceil($satuan->position / (10));
                 } else {
                     $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
@@ -134,10 +134,10 @@ class SatuanController extends Controller
             // $satuan = (new Satuan())->processUpdate($satuan, $data);
             $satuan = new Satuan();
             $satuans = $satuan->findOrFail($id);
-            $satuan = $satuan->processUpdate($satuans, $data);            
+            $satuan = $satuan->processUpdate($satuans, $data);
             if ($request->from == '') {
                 $satuan->position = $this->getPosition($satuan, $satuan->getTable())->position;
-                if ($request->limit==0) {
+                if ($request->limit == 0) {
                     $satuan->page = ceil($satuan->position / (10));
                 } else {
                     $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
@@ -174,12 +174,12 @@ class SatuanController extends Controller
             // $satuan = (new Satuan())->processDestroy($id);
             $satuan = new Satuan();
             $satuans = $satuan->findOrFail($id);
-            $satuan = $satuan->processDestroy($satuans);            
+            $satuan = $satuan->processDestroy($satuans);
             if ($request->from == '') {
                 $selected = $this->getPosition($satuan, $satuan->getTable(), true);
                 $satuan->position = $selected->position;
                 $satuan->id = $selected->id;
-                if ($request->limit==0) {
+                if ($request->limit == 0) {
                     $satuan->page = ceil($satuan->position / (10));
                 } else {
                     $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
@@ -205,7 +205,7 @@ class SatuanController extends Controller
         }
     }
 
-     /**
+    /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
      */
@@ -218,6 +218,30 @@ class SatuanController extends Controller
                 'Id' => $request->Id,
             ];
             (new Satuan())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL AKTIF
+     */
+    public function approvalaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new Satuan())->processApprovalaktif($data);
 
             DB::commit();
             return response([
@@ -254,20 +278,20 @@ class SatuanController extends Controller
         ]);
     }
 
-  /**
+    /**
      * @ClassName 
      * @Keterangan EDIT DATA USER
      */
     public function updateuser()
     {
     }
-    
+
 
     public function cekValidasi($id, request $request)
     {
         $satuan = new Satuan();
-        
-        $dataMaster = $satuan->where('id',$id)->first();
+
+        $dataMaster = $satuan->where('id', $id)->first();
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
@@ -275,7 +299,7 @@ class SatuanController extends Controller
         $aksi = request()->aksi ?? '';
 
         $cekdata = $satuan->cekvalidasihapus($id);
-        $aksi=$request->aksi ?? '';
+        $aksi = $request->aksi ?? '';
         $acoid = db::table('acos')->from(db::raw("acos a with (readuncommitted)"))
             ->select(
                 'a.id'
@@ -324,7 +348,7 @@ class SatuanController extends Controller
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                     (new MyModel())->updateEditingBy('satuan', $id, $aksi);
                 }
-                
+
                 $data = [
                     'status' => false,
                     'message' => '',
@@ -332,21 +356,21 @@ class SatuanController extends Controller
                     'kondisi' => false,
                     'editblok' => false,
                 ];
-                
+
                 // return response($data);
             } else {
-                
+
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
                 $keterror = 'Data <b>' . $dataMaster->satuan . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
-                
+
                 $data = [
                     'status' => true,
-                    'message' => ["keterangan"=>$keterror],
+                    'message' => ["keterangan" => $keterror],
                     'errors' => '',
                     'kondisi' => true,
                     'editblok' => true,
                 ];
-                
+
                 return response($data);
             }
         } else {
@@ -381,7 +405,7 @@ class SatuanController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan

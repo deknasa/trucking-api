@@ -1947,7 +1947,7 @@ class Trado extends MyModel
                 (new LogTrail())->processStore([
 
                     'namatabel' => strtoupper($Trado->getTable()),
-                    'postingdari' => 'APPROVAL TRADO',
+                    'postingdari' => 'APPROVAL NON AKTIF TRADO',
                     'idtrans' => $Trado->id,
                     'nobuktitrans' => $Trado->id,
                     'aksi' => $aksi,
@@ -1956,8 +1956,6 @@ class Trado extends MyModel
                 ]);
             }
         }
-
-
         return $Trado;
     }
 
@@ -1978,7 +1976,7 @@ class Trado extends MyModel
                 (new LogTrail())->processStore([
 
                     'namatabel' => strtoupper($Trado->getTable()),
-                    'postingdari' => 'APPROVAL TRADO',
+                    'postingdari' => 'APPROVAL AKTIF TRADO',
                     'idtrans' => $Trado->id,
                     'nobuktitrans' => $Trado->id,
                     'aksi' => $aksi,

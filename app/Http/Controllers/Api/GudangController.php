@@ -297,6 +297,30 @@ class GudangController extends Controller
         }
     }
 
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL AKTIF
+     */
+    public function approvalaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new Gudang())->processApprovalaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
     public function fieldLength()
     {
         $data = [];

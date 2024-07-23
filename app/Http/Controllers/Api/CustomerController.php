@@ -22,7 +22,7 @@ use App\Models\Error;
 
 class CustomerController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -43,21 +43,21 @@ class CustomerController extends Controller
     {
         $agen = new Agen();
         $aksi = request()->aksi ?? '';
-        $aksi =strtoupper($aksi);
+        $aksi = strtoupper($aksi);
         $cekdata = $agen->cekvalidasihapus($id);
-        if( $aksi == 'EDIT'){
+        if ($aksi == 'EDIT') {
             $cekdata['kondisi'] = false;
         }
-        $dataMaster = Agen::where('id',$id)->first();
+        $dataMaster = Agen::where('id', $id)->first();
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
         $useredit = $dataMaster->editing_by ?? '';
-      
+
         // dd($cekdata['kondisi']);
 
         if ($useredit != '' && $useredit != $user) {
-           
+
             $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
 
             $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
@@ -87,10 +87,8 @@ class CustomerController extends Controller
                 ];
 
                 return response($data);
-            }            
-            
-
-            } else if ($cekdata['kondisi'] == true) {
+            }
+        } else if ($cekdata['kondisi'] == true) {
             // $query = DB::table('error')
             //     ->select(
             //         DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
@@ -114,16 +112,15 @@ class CustomerController extends Controller
             ];
 
             return response($data);
-
         } else {
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                 (new MyModel())->updateEditingBy('agen', $id, $aksi);
-            }            
+            }
             $data = [
                 'error' => false,
                 'message' => '',
                 'kodeerror' => '',
-                'statuspesan' => 'success',                
+                'statuspesan' => 'success',
                 // 'status' => false,
                 // 'message' => '',
                 // 'errors' => '',
@@ -170,23 +167,23 @@ class CustomerController extends Controller
         try {
             // $agen = (new Agen())->processStore($data);
             $agen = new Agen();
-            $agen->processStore($data, $agen);            
-            if ($request->from == '') {            
-            $agen->position = $this->getPosition($agen, $agen->getTable())->position;
-            if ($request->limit==0) {
-                $agen->page = ceil($agen->position / (10));
-            } else {
-                $agen->page = ceil($agen->position / ($request->limit ?? 10));
+            $agen->processStore($data, $agen);
+            if ($request->from == '') {
+                $agen->position = $this->getPosition($agen, $agen->getTable())->position;
+                if ($request->limit == 0) {
+                    $agen->page = ceil($agen->position / (10));
+                } else {
+                    $agen->page = ceil($agen->position / ($request->limit ?? 10));
+                }
             }
-        }
 
-        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-        $data['tas_id'] = $agen->id;
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $agen->id;
 
-        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-            // $this->saveToTnl('agen', 'add', $data);
-            $this->SaveTnlNew('agen', 'add', $data);
-        }        
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                // $this->saveToTnl('agen', 'add', $data);
+                $this->SaveTnlNew('agen', 'add', $data);
+            }
 
             DB::commit();
 
@@ -238,23 +235,23 @@ class CustomerController extends Controller
             // $agen = (new Agen())->processUpdate($customer, $data);
             $agen = new Agen();
             $agens = $agen->findOrFail($id);
-            $agen = $agen->processUpdate($agens, $data);            
+            $agen = $agen->processUpdate($agens, $data);
             if ($request->from == '') {
-            $agen->position = $this->getPosition($agen, $agen->getTable())->position;
-            if ($request->limit==0) {
-                $agen->page = ceil($agen->position / (10));
-            } else {
-                $agen->page = ceil($agen->position / ($request->limit ?? 10));
+                $agen->position = $this->getPosition($agen, $agen->getTable())->position;
+                if ($request->limit == 0) {
+                    $agen->page = ceil($agen->position / (10));
+                } else {
+                    $agen->page = ceil($agen->position / ($request->limit ?? 10));
+                }
             }
-        }
 
-        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-        $data['tas_id'] = $agen->id;
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $agen->id;
 
-        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-            // $this->saveToTnl('agen', 'edit', $data);
-            $this->SaveTnlNew('agen', 'edit', $data);
-        }
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                // $this->saveToTnl('agen', 'edit', $data);
+                $this->SaveTnlNew('agen', 'edit', $data);
+            }
 
             DB::commit();
 
@@ -286,26 +283,26 @@ class CustomerController extends Controller
 
             if ($request->from == '') {
 
-            $selected = $this->getPosition($agen, $agen->getTable(), true);
-            $agen->position = $selected->position;
-            $agen->id = $selected->id;
-            if ($request->limit==0) {
-                $agen->page = ceil($agen->position / (10));
-            } else {
-                $agen->page = ceil($agen->position / ($request->limit ?? 10));
+                $selected = $this->getPosition($agen, $agen->getTable(), true);
+                $agen->position = $selected->position;
+                $agen->id = $selected->id;
+                if ($request->limit == 0) {
+                    $agen->page = ceil($agen->position / (10));
+                } else {
+                    $agen->page = ceil($agen->position / ($request->limit ?? 10));
+                }
             }
-        }
 
 
-        $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
-        $data['tas_id'] = $id;
+            $cekStatusPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('default', 'YA')->first();
+            $data['tas_id'] = $id;
 
-        $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
+            $data["accessTokenTnl"] = $request->accessTokenTnl ?? '';
 
-        if ($cekStatusPostingTnl->text == 'POSTING TNL') {
-            // $this->saveToTnl('cabang', 'delete', $data);
-            $this->SaveTnlNew('agen', 'delete', $data);
-        }
+            if ($cekStatusPostingTnl->text == 'POSTING TNL') {
+                // $this->saveToTnl('cabang', 'delete', $data);
+                $this->SaveTnlNew('agen', 'delete', $data);
+            }
 
             DB::commit();
 
@@ -339,7 +336,7 @@ class CustomerController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan
@@ -486,7 +483,7 @@ class CustomerController extends Controller
         }
     }
 
-    
+
     public function approvalOld(Agen $agen)
     {
         DB::beginTransaction();
@@ -532,7 +529,7 @@ class CustomerController extends Controller
         }
     }
 
-     /**
+    /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
      */
@@ -546,6 +543,31 @@ class CustomerController extends Controller
                 'nama' => $request->nama
             ];
             (new Agen())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL AKTIF
+     */
+    public function approvalaktif(ApprovalAgenRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+                'nama' => $request->nama
+            ];
+            (new Agen())->processApprovalaktif($data);
 
             DB::commit();
             return response([

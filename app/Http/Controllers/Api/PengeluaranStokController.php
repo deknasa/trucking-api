@@ -23,7 +23,7 @@ use App\Http\Requests\DestroyPengeluaranStokRequest;
 
 class PengeluaranStokController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
@@ -44,7 +44,7 @@ class PengeluaranStokController extends Controller
     public function cekValidasi($id)
     {
         $pengeluaranStok = new PengeluaranStok();
-        $dataMaster = $pengeluaranStok->where('id',$id)->first();
+        $dataMaster = $pengeluaranStok->where('id', $id)->first();
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
@@ -80,7 +80,7 @@ class PengeluaranStokController extends Controller
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                     (new MyModel())->updateEditingBy('pengeluaranStok', $id, $aksi);
                 }
-                
+
                 $data = [
                     'status' => false,
                     'message' => '',
@@ -88,21 +88,21 @@ class PengeluaranStokController extends Controller
                     'kondisi' => false,
                     'editblok' => false,
                 ];
-                
+
                 // return response($data);
             } else {
-                
+
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
                 $keterror = 'Data <b>' . $dataMaster->keterangan . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
-                
+
                 $data = [
                     'status' => true,
-                    'message' => ["keterangan"=>$keterror],
+                    'message' => ["keterangan" => $keterror],
                     'errors' => '',
                     'kondisi' => true,
                     'editblok' => true,
                 ];
-                
+
                 return response($data);
             }
         } else {
@@ -146,10 +146,10 @@ class PengeluaranStokController extends Controller
             ];
             // $pengeluaranStok = (new PengeluaranStok())->processStore($data);
             $pengeluaranStok = new PengeluaranStok();
-            $pengeluaranStok->processStore($data, $pengeluaranStok);            
+            $pengeluaranStok->processStore($data, $pengeluaranStok);
             if ($request->from == '') {
                 $pengeluaranStok->position = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable())->position;
-                if ($request->limit==0) {
+                if ($request->limit == 0) {
                     $pengeluaranStok->page = ceil($pengeluaranStok->position / (10));
                 } else {
                     $pengeluaranStok->page = ceil($pengeluaranStok->position / ($request->limit ?? 10));
@@ -209,10 +209,10 @@ class PengeluaranStokController extends Controller
             // $pengeluaranStok = (new PengeluaranStok())->processUpdate($pengeluaranStok, $data);
             $pengeluaranStok = new PengeluaranStok();
             $pengeluaranStoks = $pengeluaranStok->findOrFail($id);
-            $pengeluaranStok = $pengeluaranStok->processUpdate($pengeluaranStoks, $data);            
+            $pengeluaranStok = $pengeluaranStok->processUpdate($pengeluaranStoks, $data);
             if ($request->from == '') {
                 $pengeluaranStok->position = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable())->position;
-                if ($request->limit==0) {
+                if ($request->limit == 0) {
                     $pengeluaranStok->page = ceil($pengeluaranStok->position / (10));
                 } else {
                     $pengeluaranStok->page = ceil($pengeluaranStok->position / ($request->limit ?? 10));
@@ -269,7 +269,7 @@ class PengeluaranStokController extends Controller
                 $selected = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable(), true);
                 $pengeluaranStok->position = $selected->position;
                 $pengeluaranStok->id = $selected->id;
-                if ($request->limit==0) {
+                if ($request->limit == 0) {
                     $pengeluaranStok->page = ceil($pengeluaranStok->position / (10));
                 } else {
                     $pengeluaranStok->page = ceil($pengeluaranStok->position / ($request->limit ?? 10));
@@ -295,7 +295,7 @@ class PengeluaranStokController extends Controller
         }
     }
 
-     /**
+    /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
      */
@@ -308,6 +308,30 @@ class PengeluaranStokController extends Controller
                 'Id' => $request->Id,
             ];
             (new PengeluaranStok())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL AKTIF
+     */
+    public function approvalaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new PengeluaranStok())->processApprovalaktif($data);
 
             DB::commit();
             return response([
@@ -337,7 +361,7 @@ class PengeluaranStokController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan

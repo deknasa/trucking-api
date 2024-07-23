@@ -350,7 +350,6 @@ class BankPelanggan extends MyModel
 
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -364,7 +363,34 @@ class BankPelanggan extends MyModel
             if ($bankPelanggan->save()) {
                 (new LogTrail())->processStore([
                     'namatabel' => strtoupper($bankPelanggan->getTable()),
-                    'postingdari' => 'APPROVAL NON AKTIF Bank Pelanggan ',
+                    'postingdari' => 'APPROVAL NON AKTIF BANK PELANGGAN',
+                    'idtrans' => $bankPelanggan->id,
+                    'nobuktitrans' => $bankPelanggan->id,
+                    'aksi' => $aksi,
+                    'datajson' => $bankPelanggan->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
+        return $bankPelanggan;
+    }
+
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $bankPelanggan = $this->where('id',$data['Id'][$i])->first();
+
+            $bankPelanggan->statusaktif = $statusaktif->id;
+            $bankPelanggan->modifiedby = auth('api')->user()->name;
+            $bankPelanggan->info = html_entity_decode(request()->info);
+            $aksi = $statusaktif->text;
+
+            if ($bankPelanggan->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($bankPelanggan->getTable()),
+                    'postingdari' => 'APPROVAL AKTIF BANK PELANGGAN',
                     'idtrans' => $bankPelanggan->id,
                     'nobuktitrans' => $bankPelanggan->id,
                     'aksi' => $aksi,

@@ -519,6 +519,7 @@ class PengeluaranTruckingController extends Controller
         $data = $querydata->first();
         return $data;
     }
+
     /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
@@ -532,6 +533,30 @@ class PengeluaranTruckingController extends Controller
                 'Id' => $request->Id,
             ];
             (new PengeluaranTrucking())->processApprovalnonaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL AKTIF
+     */
+    public function approvalaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new PengeluaranTrucking())->processApprovalaktif($data);
 
             DB::commit();
             return response([

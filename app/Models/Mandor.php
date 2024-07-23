@@ -492,7 +492,6 @@ class Mandor extends MyModel
 
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -513,8 +512,31 @@ class Mandor extends MyModel
                 ]);
             }
         }
+        return $mandor;
+    }
 
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $mandor = Mandor::find($data['Id'][$i]);
 
+            $mandor->statusaktif = $statusaktif->id;
+            $aksi = $statusaktif->text;
+
+            if ($mandor->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($mandor->getTable()),
+                    'postingdari' => 'APPROVAL AKTIF MANDOR',
+                    'idtrans' => $mandor->id,
+                    'nobuktitrans' => $mandor->id,
+                    'aksi' => $aksi,
+                    'datajson' => $mandor->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
         return $mandor;
     }
 }

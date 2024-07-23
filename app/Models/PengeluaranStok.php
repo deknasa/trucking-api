@@ -520,7 +520,36 @@ class PengeluaranStok extends MyModel
             }
             (new LogTrail())->processStore([
                 'namatabel' => strtoupper($penerimaanStok->getTable()),
-                'postingdari' => 'APPROVAL NON AKTIF PENEIRMAAN STOK',
+                'postingdari' => 'APPROVAL NON AKTIF PENERIMAAN STOK',
+                'idtrans' => $penerimaanStok->id,
+                'nobuktitrans' => $penerimaanStok->id,
+                'aksi' => $aksi,
+                'datajson' => $penerimaanStok->toArray(),
+                'modifiedby' => auth('api')->user()->user
+            ]);
+
+        }
+        return $penerimaanStok;
+    }
+
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $penerimaanStok = $this->where('id',$data['Id'][$i])->first();
+
+            $penerimaanStok->statusaktif = $statusaktif->id;
+            $penerimaanStok->modifiedby = auth('api')->user()->name;
+            $penerimaanStok->info = html_entity_decode(request()->info);
+            $aksi = $statusaktif->text;
+
+            if (!$penerimaanStok->save()) {
+                throw new \Exception("Error update service in header.");
+            }
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($penerimaanStok->getTable()),
+                'postingdari' => 'APPROVAL AKTIF PENERIMAAN STOK',
                 'idtrans' => $penerimaanStok->id,
                 'nobuktitrans' => $penerimaanStok->id,
                 'aksi' => $aksi,

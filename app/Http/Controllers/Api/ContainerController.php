@@ -440,6 +440,7 @@ class ContainerController extends Controller
             $this->toExcel($judulLaporan, $containers, $columns);
         }
     }
+
     /**
      * @ClassName 
      * @Keterangan APRROVAL NON AKTIF
@@ -463,6 +464,31 @@ class ContainerController extends Controller
             throw $th;
         }
     }
+
+    /**
+     * @ClassName 
+     * @Keterangan APRROVAL NON AKTIF
+     */
+    public function approvalaktif(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+            ];
+            (new Container())->processApprovalaktif($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
     public function processApprovalnonaktif(array $data)
     {
 

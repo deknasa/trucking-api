@@ -367,7 +367,6 @@ class TripTangki extends MyModel
 
     public function processApprovalnonaktif(array $data)
     {
-
         $statusnonaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         for ($i = 0; $i < count($data['Id']); $i++) {
@@ -388,8 +387,31 @@ class TripTangki extends MyModel
                 ]);
             }
         }
+        return $tripTangki;
+    }
 
+    public function processApprovalaktif(array $data)
+    {
+        $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        for ($i = 0; $i < count($data['Id']); $i++) {
+            $tripTangki = TripTangki::find($data['Id'][$i]);
 
+            $tripTangki->statusaktif = $statusaktif->id;
+            $aksi = $statusaktif->text;
+
+            if ($tripTangki->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($tripTangki->getTable()),
+                    'postingdari' => 'APPROVAL AKTIF TRIP TANGKI',
+                    'idtrans' => $tripTangki->id,
+                    'nobuktitrans' => $tripTangki->id,
+                    'aksi' => $aksi,
+                    'datajson' => $tripTangki->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+        }
         return $tripTangki;
     }
 }
