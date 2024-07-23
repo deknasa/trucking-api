@@ -41,6 +41,17 @@ class PenerimaanStokDetailController extends Controller
         ]);
     }
 
+    public function supplierGetSpb($supplier){
+        $penerimaanStokDetail = new PenerimaanStokDetail;
+        return response([
+            'data' => $penerimaanStokDetail->getSpbSuplier($supplier),
+            'attributes' => [
+                'totalRows' => $penerimaanStokDetail->totalRows,
+                'totalPages' => $penerimaanStokDetail->totalPages
+            ]
+        ]);
+    }
+
 
     public function hutang(): JsonResponse
     {

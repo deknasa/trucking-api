@@ -449,7 +449,10 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('logtrail', LogTrailController::class)->whereNumber('logtrail');
     Route::resource('trado', TradoController::class)->whereNumber('trado');
     Route::resource('subkelompok', SubKelompokController::class)->parameters(['subkelompok' => 'subKelompok'])->whereNumber('subKelompok');
+    Route::get('supplier/stok/{stok_id}', [SupplierController::class,'stokGetSupplier']);
     Route::resource('supplier', SupplierController::class)->whereNumber('supplier');
+    
+    Route::get('stoks/supplier/{supplier_id}', [StokController::class,'supplierGetStok']);
     Route::apiResource('stok', StokController::class)->whereNumber('stok');
     Route::resource('penerima', PenerimaController::class)->whereNumber('penerima');
     Route::resource('penerimaantrucking', PenerimaanTruckingController::class)->parameters(['penerimaantrucking' => 'penerimaanTrucking'])->whereNumber('penerimaanTrucking');
@@ -482,6 +485,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('maintypeakuntansi', MainTypeAkuntansiController::class)->whereNumber('maintypeakuntansi');
     Route::apiResource('absensisupirheader', AbsensiSupirHeaderController::class)->parameter('absensisupirheader', 'absensiSupirHeader')->whereNumber('absensisupirheader');
     Route::get('suratpengantar/{id}/getpelabuhan', [SuratPengantarController::class, 'getpelabuhan'])->whereNumber('id');
+    Route::get('upahritasi/triplookup', [UpahRitasiController::class, 'triplookup']);
     Route::get('upahritasi/comboluarkota', [UpahRitasiController::class, 'comboluarkota']);
     Route::resource('approvaltradogambar', ApprovalTradoGambarController::class)->whereNumber('approvaltradogambar');
     Route::resource('approvaltradoketerangan', ApprovalTradoKeteranganController::class)->whereNumber('approvaltradoketerangan');
@@ -1250,6 +1254,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('penerimaanstokheader/{id}/detailspbp', [PenerimaanStokHeaderController::class, 'getDetailSPBP']);
     Route::apiResource('penerimaanstokheader', PenerimaanStokHeaderController::class)->whereNumber('penerimaanstokheader');
     Route::get('penerimaanstokdetail/hutang', [PenerimaanStokDetailController::class, 'hutang']);
+    Route::get('penerimaanstokdetail/supplier/{supplier_id}', [PenerimaanStokDetailController::class,'supplierGetSpb']);
     Route::apiResource('penerimaanstokdetail', PenerimaanStokDetailController::class)->whereNumber('penerimaanstokdetail');
 
 
