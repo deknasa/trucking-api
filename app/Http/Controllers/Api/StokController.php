@@ -454,6 +454,17 @@ class StokController extends Controller
         }
     }
 
+    function supplierGetStok($supplier_id) {
+        $stok = new Stok;
+        return response([
+            'data' => $stok->getSupplierStok($supplier_id),
+            'attributes' => [
+                'totalRows' => $stok->totalRows,
+                'totalPages' => $stok->totalPages
+            ]
+        ]);
+    }
+
     private function storeFiles(array $files, string $destinationFolder): string
     {
         $storedFiles = [];

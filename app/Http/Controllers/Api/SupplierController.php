@@ -439,6 +439,18 @@ class SupplierController extends Controller
         }
     }
 
+
+    public function stokGetSupplier($stok_id){
+        $supplier = new Supplier;
+        return response([
+            'data' => $supplier->getStokSupplier($stok_id),
+            'attributes' => [
+                'totalRows' => $supplier->totalRows,
+                'totalPages' => $supplier->totalPages
+            ]
+        ]);
+    }
+
     /**
      * @ClassName 
      * @Keterangan APRROVAL AKTIF
@@ -463,6 +475,7 @@ class SupplierController extends Controller
             throw $th;
         }
     }
+
 
 
     public function approvalTNL(Request $request)
