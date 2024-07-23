@@ -87,6 +87,8 @@ class LogAbsensi extends MyModel
             ->groupBy('tgl');
 
         $datadetail = json_decode($querywaktu1->get(), true);
+        dd('test');
+
 
         foreach ($datadetail as $item) {
             $querywaktu2 = DB::table($tempwaktu)->from(

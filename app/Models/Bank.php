@@ -626,6 +626,20 @@ class Bank extends MyModel
         return $bank;
     }
 
+
+    public function cekdataText($id)
+    {
+        $query = DB::table('bank')->from(db::raw("bank a with (readuncommitted)"))
+            ->select(
+                'a.kodebank as keterangan'
+            )
+            ->where('id', $id)
+            ->first();
+
+        $keterangan = $query->keterangan ?? '';
+
+        return $keterangan;
+}
     public function processApprovalaktif(array $data)
     {
         $statusaktif = Parameter::from(DB::raw("parameter with (readuncommitted)"))
@@ -651,5 +665,6 @@ class Bank extends MyModel
             }
         }
         return $bank;
+
     }
 }

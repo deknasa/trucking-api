@@ -377,4 +377,18 @@ class Kerusakan extends MyModel
         }
         return $kerusakan;
     }
+
+    public function cekdataText($id)
+    {
+        $query = DB::table('kerusakan')->from(db::raw("kerusakan a with (readuncommitted)"))
+            ->select(
+                'a.keterangan as keterangan'
+            )
+            ->where('id', $id)
+            ->first();
+
+        $keterangan = $query->keterangan ?? '';
+
+        return $keterangan;
+    }
 }
