@@ -561,6 +561,7 @@ class KasGantungHeader extends MyModel
         $dataCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
         $memo = json_decode($dataCoaDebet->memo, true);
+        $memo['JURNAL'] = $bank->coagantung;
 
         for ($i = 0; $i < count($data['nominal']); $i++) {
 
@@ -713,6 +714,7 @@ class KasGantungHeader extends MyModel
         $coakredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
         $memo =  json_decode($coakredit->memo, true);
+        $memo['JURNAL'] = $bank->coagantung;
 
         // $penerima = Penerima::from(DB::raw("penerima with (readuncommitted)"))->where("id", $request->penerima_id)->first();
         $namaPenerima = ($data['penerima'] != null) ? $data['penerima'] : '';
