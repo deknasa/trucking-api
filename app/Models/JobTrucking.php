@@ -273,6 +273,8 @@ class JobTrucking extends MyModel
             ], $queryjob);
             // END TRIP PULANG
 
+
+
             // START TRIP KANDANG
             $tempstartkandang = '##tempstartkandang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempstartkandang, function ($table) {
@@ -465,6 +467,99 @@ class JobTrucking extends MyModel
                 'statuslongtrip',
             ], $querydata1);
 
+            // cek belum lengkap
+            $atglnow = date('Y-m-d');
+            $aptgl = date('Y-m-d', strtotime($atglnow . ' -60 days'));
+            $aptglbatas = date('Y-m-d', strtotime($aptgl . ' +20 days'));
+
+            $parameter = new Parameter();
+            $pelabuhanid = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? '0';
+            $kandangid = $parameter->cekText('KANDANG', 'KANDANG') ?? '0';
+
+            $tempbelumkomplit = '##tempbelumkomplit' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempbelumkomplit, function ($table) {
+                $table->string('jobtrucking', 1000)->nullable();
+            });
+
+            $tempbelumkomplit1 = '##tempbelumkomplit1' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempbelumkomplit1, function ($table) {
+                $table->string('jobtrucking', 1000)->nullable();
+                $table->integer('dari_id')->nullable();
+                $table->integer('sampai_id')->nullable();
+                $table->integer('nilai1')->nullable();
+                $table->integer('nilai2')->nullable();
+                $table->integer('nilai3')->nullable();
+                $table->integer('nilai4')->nullable();
+            });
+
+            $tempbelumkomplit2 = '##tempbelumkomplit2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempbelumkomplit2, function ($table) {
+                $table->string('jobtrucking', 1000)->nullable();
+                $table->integer('jumlah')->nullable();
+            });
+
+            $querybelumkomplit1 = db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+                ->select(
+                    'a.jobtrucking',
+                    'a.dari_id',
+                    'a.sampai_id',
+                    db::raw("(case when a.dari_id=" . $pelabuhanid . " and A.sampai_id=" . $kandangid . " THEN 1 ELSE 0 END) as nilai1"),
+                    db::raw("(case when a.dari_id=" . $pelabuhanid . " and a.sampai_id<>" . $kandangid . " THEN 2 
+        when a.dari_id=" . $kandangid . " and A.sampai_id NOT IN(" . $kandangid . "," . $pelabuhanid . ") THEN 1
+          ELSE 0 END) as nilai2"),
+                    db::raw(" (case when a.dari_id NOT IN(" . $pelabuhanid . "," . $kandangid . ") and a.sampai_id=" . $kandangid . "  THEN 1 
+        when A.dari_id NOT IN(" . $pelabuhanid . "," . $kandangid . ") and a.sampai_id=" . $pelabuhanid . "  THEN 2
+          ELSE 0 END) as nilai3"),
+                    db::raw("(case when A.dari_id =" . $kandangid . " and A.sampai_id=" . $pelabuhanid . "  THEN 1 ELSE 0 END) as nilai4")
+                )
+                ->join(db::raw("orderantrucking b with (readuncommitted)"), 'a.jobtrucking', 'b.nobukti')
+                ->whereraw("a.tglbukti>='" . $aptgl . "'")
+                ->whereraw("b.tglbukti>='" . $aptglbatas . "'")
+                ->whereraw("isnull(a.statuslangsir,0) in(0,80)");
+
+            DB::table($tempbelumkomplit1)->insertUsing([
+                'jobtrucking',
+                'dari_id',
+                'sampai_id',
+                'nilai1',
+                'nilai2',
+                'nilai3',
+                'nilai4',
+            ], $querybelumkomplit1);
+
+
+            $querybelumkomplit2 = db::table($tempbelumkomplit1)->from(db::raw($tempbelumkomplit1 . " a "))
+                ->select(
+                    'a.jobtrucking',
+                    db::raw("sum(a.nilai1+a.nilai2+a.nilai3+a.nilai4) as jumlah")
+                )
+                ->groupby('a.jobtrucking');
+
+            DB::table($tempbelumkomplit2)->insertUsing([
+                'jobtrucking',
+                'jumlah',
+            ], $querybelumkomplit2);
+
+            
+
+            $querybelumkomplit = db::table($tempbelumkomplit2)->from(db::raw($tempbelumkomplit2 . " a "))
+                ->select(
+                    'a.jobtrucking'
+                )
+                ->whereraw("a.jumlah<4");
+
+            DB::table($tempbelumkomplit)->insertUsing([
+                'jobtrucking',
+            ], $querybelumkomplit);
+     
+
+            // dd(db::table($tempselesai)->where('jobtrucking','JT 0030/VII/2024')->get());
+
+            DB::delete(DB::raw("delete  " . $tempselesai . " from " . $tempselesai . " as a inner join " . $tempbelumkomplit . " b on a.jobtrucking=b.jobtrucking "));
+
+
+
+
 
 
             $querydata = DB::table($temprekap)->from(
@@ -523,6 +618,8 @@ class JobTrucking extends MyModel
                 'jobtrucking',
             ], $queryjob);
 
+
+
             $queryjob = DB::table('saldosuratpengantar')->from(
                 DB::raw("saldosuratpengantar as a with(readuncommitted)")
             )
@@ -545,6 +642,97 @@ class JobTrucking extends MyModel
             DB::table($tempselesai)->insertUsing([
                 'jobtrucking',
             ], $queryjob);
+
+
+            // cek belum lengkap
+            $atglnow = date('Y-m-d');
+            $aptgl = date('Y-m-d', strtotime($atglnow . ' -60 days'));
+            $aptglbatas = date('Y-m-d', strtotime($aptgl . ' +20 days'));
+
+            $parameter = new Parameter();
+            $pelabuhanid = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? '0';
+            $kandangid = $parameter->cekText('KANDANG', 'KANDANG') ?? '0';
+
+            $tempbelumkomplit = '##tempbelumkomplit' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempbelumkomplit, function ($table) {
+                $table->string('jobtrucking', 1000)->nullable();
+            });
+
+            $tempbelumkomplit1 = '##tempbelumkomplit1' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempbelumkomplit1, function ($table) {
+                $table->string('jobtrucking', 1000)->nullable();
+                $table->integer('dari_id')->nullable();
+                $table->integer('sampai_id')->nullable();
+                $table->integer('nilai1')->nullable();
+                $table->integer('nilai2')->nullable();
+                $table->integer('nilai3')->nullable();
+                $table->integer('nilai4')->nullable();
+            });
+
+            $tempbelumkomplit2 = '##tempbelumkomplit2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempbelumkomplit2, function ($table) {
+                $table->string('jobtrucking', 1000)->nullable();
+                $table->integer('jumlah')->nullable();
+            });
+
+            $querybelumkomplit1 = db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+                ->select(
+                    'a.jobtrucking',
+                    'a.dari_id',
+                    'a.sampai_id',
+                    db::raw("(case when a.dari_id=" . $pelabuhanid . " and A.sampai_id=" . $kandangid . " THEN 1 ELSE 0 END) as nilai1"),
+                    db::raw("(case when a.dari_id=" . $pelabuhanid . " and a.sampai_id<>" . $kandangid . " THEN 2 
+        when a.dari_id=" . $kandangid . " and A.sampai_id NOT IN(" . $kandangid . "," . $pelabuhanid . ") THEN 1
+          ELSE 0 END) as nilai2"),
+                    db::raw(" (case when a.dari_id NOT IN(" . $pelabuhanid . "," . $kandangid . ") and a.sampai_id=" . $kandangid . "  THEN 1 
+        when A.dari_id NOT IN(" . $pelabuhanid . "," . $kandangid . ") and a.sampai_id=" . $pelabuhanid . "  THEN 2
+          ELSE 0 END) as nilai3"),
+                    db::raw("(case when A.dari_id =" . $kandangid . " and A.sampai_id=" . $pelabuhanid . "  THEN 1 ELSE 0 END) as nilai4")
+
+                )
+                ->join(db::raw("orderantrucking b with (readuncommitted)"), 'a.jobtrucking', 'b.nobukti')
+                ->whereraw("a.tglbukti>='" . $aptgl . "'")
+                ->whereraw("b.tglbukti>='" . $aptglbatas . "'")
+                ->whereraw("isnull(a.statuslangsir,0) in(0,80)");
+
+            DB::table($tempbelumkomplit1)->insertUsing([
+                'jobtrucking',
+                'dari_id',
+                'sampai_id',
+                'nilai1',
+                'nilai2',
+                'nilai3',
+                'nilai4',
+            ], $querybelumkomplit1);
+
+            $querybelumkomplit2 = db::table($tempbelumkomplit1)->from(db::raw($tempbelumkomplit1 . " a "))
+                ->select(
+                    'a.jobtrucking',
+                    db::raw("sum(a.nilai1+a.nilai2+a.nilai3+a.nilai4) as jumlah")
+                )
+                ->groupby('a.jobtrucking');
+
+            DB::table($tempbelumkomplit2)->insertUsing([
+                'jobtrucking',
+                'jumlah',
+            ], $querybelumkomplit2);
+
+            $querybelumkomplit = db::table($tempbelumkomplit2)->from(db::raw($tempbelumkomplit2 . " a "))
+                ->select(
+                    'a.jobtrucking'
+                )
+                ->whereraw("a.jumlah<4");
+
+            DB::table($tempbelumkomplit)->insertUsing([
+                'jobtrucking',
+            ], $querybelumkomplit);
+
+
+
+            DB::delete(DB::raw("delete  " . $tempselesai . " from " . $tempselesai . " as a inner join " . $tempbelumkomplit . " b on a.jobtrucking=b.jobtrucking "));
+
+
+
 
 
             // START TRIP KANDANG
@@ -904,6 +1092,11 @@ class JobTrucking extends MyModel
                 }
             }
         }
+
+                    // dd(db::table($tempselesai)->get());
+
+                    // DB::delete(DB::raw("delete  " . $tempselesai . " from " . $tempselesai . " as a inner join " . $tempbelumkomplit . " b on a.jobtrucking=b.jobtrucking "));
+
         // dd($querydata->get());
         pulanglongtrip:
         if ($tripasal != '') {
@@ -929,8 +1122,12 @@ class JobTrucking extends MyModel
                 ->where('a.nobukti', '=', request()->tripasal);
             $this->filter($querydata);
         } else {
+        //   dd(db::table($tempbelumkomplit1)->where('jobtrucking','JT 0030/VII/2024')->get());
+        //   dd(db::table($tempselesai)->get());
 
-            // dd($querydata->tosql());
+                    DB::delete(DB::raw("delete  " . $tempselesai . " from " . $tempselesai . " as a inner join " . $tempbelumkomplit . " b on a.jobtrucking=b.jobtrucking "));
+
+            // dd($querydata->tosql(),$tempselesai);
 
             $temprekapdata2 = '##temprekapdata2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($temprekapdata2, function ($table) {
@@ -959,7 +1156,7 @@ class JobTrucking extends MyModel
 
             // dd(db::table($temprekapdata2)->get());
             // dd($trado_id);
-            if( $jobBedaTanggal == 'TIDAK'){
+            if ($jobBedaTanggal == 'TIDAK') {
                 $querydata->join(DB::raw($temprekapdata2 . "  as d2 "), 'a.trado_id', 'd2.trado_id'); //untuk surabaya dan jakarta
             }
             $querydata->whereraw("a.tglbukti<='" . $date . "'"); //untuk surabaya dan jakarta
