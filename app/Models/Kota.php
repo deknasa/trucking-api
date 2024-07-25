@@ -490,4 +490,18 @@ class Kota extends MyModel
         }
         return $kota;
     }
+
+    public function cekdataText($id)
+    {
+        $query = DB::table('kota')->from(db::raw("kota a with (readuncommitted)"))
+            ->select(
+                'a.kodekota as keterangan'
+            )
+            ->where('id', $id)
+            ->first();
+
+        $keterangan = $query->keterangan ?? '';
+
+        return $keterangan;
+    }
 }

@@ -191,25 +191,250 @@ class UpahRitasi extends MyModel
         return $data;
     }
 
-    public function triplookup() {
-        return [
-            [
-                "jenisritasi_id"=> "1" ,
-                "jenisritasi"=> "PULANG RANGKA" ,
-                "ritasidari_id"=> "2" ,
-                "ritasidari"=> "BELAWAN RANGKA" ,
-                "ritasike_id"=> "3" ,
-                "ritasike"=> "KIM (KANDANG)" 
-            ],
-            [
-                "jenisritasi_id"=> "2" ,
-                "jenisritasi"=> "TURUN RANGKA" ,
-                "ritasidari_id"=> "3" ,
-                "ritasidari"=> "KIM (KANDANG)" ,
-                "ritasike_id"=> "2" ,
-                "ritasike"=> "BELAWAN RANGKA" 
-            ]
-        ];
+    public function triplookup()
+    {
+
+        $this->setRequestParameters();
+        $user_id = auth('api')->user()->id ?? 0;
+        $proses = request()->proses ?? 'reload';
+        $user = auth('api')->user()->name;
+        $class = 'UpahRitasiController';
+
+        if ($proses == 'reload') {
+
+
+            $pulangrangkadari_id = 447;
+            $pulangrangkasampai_id = 213;
+            $turunrangkadari_id = 213;
+            $turunrangkasampai_id = 447;
+
+            $kota = new Kota();
+
+            $pulangrangkadari = $kota->cekdataText($pulangrangkadari_id) ?? '';
+            $pulangrangkasampai = $kota->cekdataText($pulangrangkasampai_id) ?? '';
+            $turunrangkadari = $kota->cekdataText($turunrangkadari_id) ?? '';
+            $turunrangkasampai = $kota->cekdataText($turunrangkasampai_id) ?? '';
+
+            $pnominal = db::table("upahritasi")->from(db::raw("upahritasi a with (readuncommitted)"))
+                ->select(
+                    'a.nominalsupir'
+                )
+                ->where('a.kotadari_id', $turunrangkadari_id)
+                ->where('a.kotasampai_id', $turunrangkasampai_id)
+                ->first()->nominalsupir ?? 0;
+
+            $tempritasi = '##tempritasi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempritasi, function ($table) {
+                $table->id();
+                $table->integer('jenisritasi_id')->nullable();
+                $table->longtext('jenisritasi')->nullable();
+                $table->integer('ritasidari_id')->nullable();
+                $table->longtext('ritasidari')->nullable();
+                $table->integer('ritasike_id')->nullable();
+                $table->longtext('ritasike')->nullable();
+                $table->double('nominal')->nullable();
+            });
+
+            $querytempritasi = db::table("dataritasi")->from(db::raw("dataritasi a with (readuncommitted)"))
+                ->select(
+                    'a.id as jenisritasi_id',
+                    db::raw("isnull(B.[text],'') as jenisritasi"),
+                    db::raw("(case when b.id=91 then  " . $pulangrangkadari_id  . " 
+              when b.id=92 then  " . $turunrangkadari_id . "
+              else 0 end) as ritasidari_id"),
+                    db::raw("(case when b.id=91 then  '" . $pulangrangkadari . "'
+              when b.id=92 then  '" . $turunrangkadari . "'
+              else '' end) as ritasidari"),
+                    db::raw("(case when b.id=91 then  " . $pulangrangkasampai_id . "
+              when b.id=92 then  " . $turunrangkasampai_id . " 
+              else 0 end) as ritasike_id"),
+                    db::raw("(case when b.id=91 then  '" . $turunrangkadari . "'
+              when b.id=92 then  '" . $turunrangkasampai . "'
+              else '' end) as ritasike"),
+                    db::raw($pnominal . " as nominal")
+                )
+                ->join(db::raw("parameter b with (readuncommitted)"), 'a.statusritasi', 'b.id')
+                ->whereRaw("a.id in(1,2)");
+
+            DB::table($tempritasi)->insertUsing([
+                'jenisritasi_id',
+                'jenisritasi',
+                'ritasidari_id',
+                'ritasidari',
+                'ritasike_id',
+                'ritasike',
+                'nominal',
+            ], $querytempritasi);
+
+            $jenisritasi = db::table("dataritasi")->from(db::raw("dataritasi a with (readuncommitted)"))
+                ->select(
+                    'b.text'
+                )
+                ->join(db::raw("parameter b with (readuncommitted)"), 'a.statusritasi', 'b.id')
+                ->whereRaw("a.id in(3)")
+                ->first()->text ?? '';
+
+            $querytempritasi = db::table("upahritasi")->from(db::raw("upahritasi a with (readuncommitted)"))
+                ->select(
+                    db::raw("3 as jenisritasi_id"),
+                    db::raw("'" . $jenisritasi . "' as jenisritasi"),
+                    'a.kotadari_id as ritasidari_id',
+                    db::raw("isnull(B.kodekota,'') as ritasidari"),
+                    'a.kotasampai_id as ritasike_id',
+                    db::raw("isnull(c.kodekota,'') as ritasike"),
+                    'a.nominalsupir'
+                )
+                ->join(db::raw("kota b with (readuncommitted)"), 'a.kotadari_id', 'b.id')
+                ->join(db::raw("kota c with (readuncommitted)"), 'a.kotasampai_id', 'c.id')
+                ->whereraw("isnull(a.statusaktif,0)=1")
+                ->whereraw("isnull(a.nominalsupir,0)<>0")
+                ->whereraw("isnull(a.kotadari_id,0)<>" . $turunrangkadari_id)
+                ->whereraw("isnull(a.kotasampai_id,0)<>" . $turunrangkasampai_id)
+                ->orderby(db::raw("isnull(B.kodekota,'')"), 'asc')
+                ->orderby(db::raw(" isnull(c.kodekota,'')"), 'asc');
+
+
+            DB::table($tempritasi)->insertUsing([
+                'jenisritasi_id',
+                'jenisritasi',
+                'ritasidari_id',
+                'ritasidari',
+                'ritasike_id',
+                'ritasike',
+                'nominal',
+            ], $querytempritasi);
+
+
+            $querytempritasi = db::table("upahritasi")->from(db::raw("upahritasi a with (readuncommitted)"))
+                ->select(
+                    db::raw("3 as jenisritasi_id"),
+                    db::raw("'" . $jenisritasi . "' as jenisritasi"),
+                    'a.kotasampai_id as ritasidari_id',
+                    db::raw("isnull(B.kodekota,'') as ritasidari"),
+                    'a.kotadari_id as ritasike_id',
+                    db::raw("isnull(c.kodekota,'') as ritasike"),
+                    'a.nominalsupir'
+                )
+                ->join(db::raw("kota c with (readuncommitted)"), 'a.kotadari_id', 'c.id')
+                ->join(db::raw("kota b with (readuncommitted)"), 'a.kotasampai_id', 'b.id')
+                ->whereraw("isnull(a.statusaktif,0)=1")
+                ->whereraw("isnull(a.nominalsupir,0)<>0")
+                ->whereraw("isnull(a.kotadari_id,0)<>" . $turunrangkadari_id)
+                ->whereraw("isnull(a.kotasampai_id,0)<>" . $turunrangkasampai_id)
+                ->orderby(db::raw("isnull(B.kodekota,'')"), 'asc')
+                ->orderby(db::raw(" isnull(c.kodekota,'')"), 'asc');
+
+
+            DB::table($tempritasi)->insertUsing([
+                'jenisritasi_id',
+                'jenisritasi',
+                'ritasidari_id',
+                'ritasidari',
+                'ritasike_id',
+                'ritasike',
+                'nominal',
+            ], $querytempritasi);
+
+            $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel a with (readuncommitted)")
+            )
+                ->select(
+                    'id',
+                    'class',
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            if (isset($querydata)) {
+                Schema::dropIfExists($querydata->namatabel);
+                DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+            }
+
+            DB::table('listtemporarytabel')->insert(
+                [
+                    'class' => $class,
+                    'namatabel' => $temtabel,
+                    'modifiedby' => $user,
+                    'created_at' => date('Y/m/d H:i:s'),
+                    'updated_at' => date('Y/m/d H:i:s'),
+                ]
+            );
+
+
+            Schema::create($temtabel, function ($table) {
+                $table->id();
+                $table->integer('jenisritasi_id')->nullable();
+                $table->longtext('jenisritasi')->nullable();
+                $table->integer('ritasidari_id')->nullable();
+                $table->longtext('ritasidari')->nullable();
+                $table->integer('ritasike_id')->nullable();
+                $table->longtext('ritasike')->nullable();
+                $table->double('nominal')->nullable();
+            });
+
+            $queryritasireal = db::table($tempritasi)->from(db::raw($tempritasi . " a"))
+                ->select(
+                    'a.jenisritasi_id',
+                    'a.jenisritasi',
+                    'a.ritasidari_id',
+                    'a.ritasidari',
+                    'a.ritasike_id',
+                    'a.ritasike',
+                    'a.nominal',
+                )
+                ->orderby('a.jenisritasi_id', 'asc')
+                ->orderby('a.ritasidari', 'asc')
+                ->orderby('a.ritasike', 'asc');
+
+            DB::table($temtabel)->insertUsing([
+                'jenisritasi_id',
+                'jenisritasi',
+                'ritasidari_id',
+                'ritasidari',
+                'ritasike_id',
+                'ritasike',
+                'nominal',
+            ], $queryritasireal);
+        } else {
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel with (readuncommitted)")
+            )
+                ->select(
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            // dd($querydata);
+            $temtabel = $querydata->namatabel;
+        }
+
+        $query = db::table($temtabel)->from(db::raw($temtabel . " a "))
+            ->select(
+                'a.jenisritasi_id',
+                'a.jenisritasi',
+                'a.ritasidari_id',
+                'a.ritasidari',
+                'a.ritasike_id',
+                'a.ritasike',
+                'a.nominal',
+            );
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sorttriplookup($query);
+        $this->filtertriplookup($query);
+        $this->paginate($query);
+
+        $data = $query->get();
+
+        return $data;
     }
 
     public function selectColumns($query)
@@ -264,6 +489,12 @@ class UpahRitasi extends MyModel
         return $temp;
     }
 
+    public function sorttriplookup($query)
+    {
+            return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
+    }
+
+
     public function sort($query)
     {
         if ($this->params['sortIndex'] == 'kotadari_id') {
@@ -275,7 +506,114 @@ class UpahRitasi extends MyModel
         }
     }
 
+    public function filtertriplookup($query, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] != '') {
+                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        }
+                    }
+
+                    break;
+                case "OR":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] != '') {
+                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
+                        }
+                    });
+                    break;
+                default:
+
+                    break;
+            }
+
+            $this->totalRows = $query->count();
+            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+        }
+
+        return $query;
+    }
+    // 
+
     public function filter($query, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->where('parameter.text', '=', $filters['data']);
+                                // } elseif ($filters['field'] == 'statusluarkota') {
+                                //     $query = $query->where('statusluarkota.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'kotadari_id') {
+                                $query = $query->where('kotadari.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'kotasampai_id') {
+                                $query = $query->where('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
+                                // } else if ($filters['field'] == 'zona_id') {
+                                //     $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'jarak') {
+                                $query = $query->whereRaw("format($this->table.jarak, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglmulaiberlaku') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
+                        }
+                    }
+
+                    break;
+                case "OR":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusaktif') {
+                                    $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                                    // } elseif ($filters['field'] == 'statusluarkota') {
+                                    // $query = $query->orWhere('statusluarkota.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'kotadari_id') {
+                                    $query = $query->orWhere('kotadari.keterangan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'kotasampai_id') {
+                                    $query = $query->orWhere('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
+                                    // } else if ($filters['field'] == 'zona_id') {
+                                    //     $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'jarak') {
+                                    $query = $query->orWhereRaw("format($this->table.jarak, '#,#0.00') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'tglmulaiberlaku') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
+                            }
+                        }
+                    });
+                    break;
+                default:
+
+                    break;
+            }
+
+            $this->totalRows = $query->count();
+            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+        }
+
+        return $query;
+    }
+
+    public function filterlookup($query, $relationFields = [])
     {
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
             switch ($this->params['filters']['groupOp']) {
