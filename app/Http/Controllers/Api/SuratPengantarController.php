@@ -792,4 +792,27 @@ class SuratPengantarController extends Controller
             'data' => (new SuratPengantar())->getTolakan($id),
         ]);
     }
+    
+    /**
+     * @ClassName 
+     * @Keterangan APPROVAL BIAYA EXTRA
+     */
+    public function approvalBiayaExtra(ApprovalKaryawanRequest $request)
+    {
+        DB::beginTransaction();
+        try {
+            $data = [
+                'nobukti' => $request->Id,
+            ];
+            (new SuratPengantar())->approvalBiayaExtra($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
 }

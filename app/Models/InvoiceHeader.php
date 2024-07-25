@@ -712,6 +712,7 @@ class InvoiceHeader extends MyModel
             )
             ->join(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"), 'suratpengantar.id', 'suratpengantarbiayatambahan.suratpengantar_id')
             ->join(DB::raw($temphasil . " c"), 'suratpengantar.jobtrucking', 'c.jobtrucking')
+            ->whereRaw("isnull(suratpengantarbiayatambahan.nominaltagih,0)!=0")
             ->groupby('c.jobtrucking');
         // if ($cekStatus->text == 'YA') {
         //     $fetch->where('suratpengantarbiayatambahan.statusapproval', 3);
@@ -734,6 +735,7 @@ class InvoiceHeader extends MyModel
             ->join(DB::raw("biayaextrasupirheader as a with (readuncommitted)"), 'suratpengantar.nobukti', 'a.suratpengantar_nobukti')
             ->join(DB::raw("biayaextrasupirdetail as b with (readuncommitted)"), 'b.nobukti', 'a.nobukti')
             ->join(DB::raw($temphasil . " c"), 'suratpengantar.jobtrucking', 'c.jobtrucking')
+            ->whereRaw("isnull(b.nominaltagih,0)!=0")
             ->groupby('c.jobtrucking');
 
         DB::table($tempomsettambahanrinci)->insertUsing(['jobtrucking', 'keterangan', 'nominal'], $fetch);
