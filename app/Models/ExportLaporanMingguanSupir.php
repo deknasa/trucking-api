@@ -75,7 +75,11 @@ class ExportLaporanMingguanSupir extends Model
             $table->double('omset', 15, 2)->nullable();
             $table->double('biayatambahan', 15, 2)->nullable();
             $table->longtext('keteranganbiayatambahan')->nullable();
-            
+            $table->string('biayaextrasupir_nobukti', 100)->nullable();
+            $table->double('biayaextrasupir_nominal', 15, 2)->nullable();
+            $table->string('biayaextrasupir_keterangan', 500)->nullable();
+            $table->integer('urutextra')->nullable();
+
         });
 
 
@@ -102,7 +106,8 @@ class ExportLaporanMingguanSupir extends Model
                 DB::raw("(case when c.statuscontainer_id =$fullId then c.nosp else '' end) as spfull"),
                 DB::raw("(case when c.statuscontainer_id =$emptyId then c.nosp else '' end) as spempty"),
                 DB::raw("(case when c.statuscontainer_id =$fullEmptyId then c.nosp else '' end) as spfullempty"),
-                DB::raw("isnull(C.jobtrucking,'') as jobtrucking,isnull(c.gajisupir,0) as gajisupir"),
+                DB::raw("isnull(C.jobtrucking,'') as jobtrucking"),
+                db::raw("(case when b.urutextra=1 then isnull(c.gajisupir,0) else 0 end) as gajisupir"),
                 DB::raw("isnull(k.nobukti,'') as nobuktiebs"),
                 DB::raw("isnull(A.nobukti,'') as nobuktiric"),
                 DB::raw("isnull(l.pengeluaran_nobukti,'') as pengeluarannobuktiebs"),
@@ -116,6 +121,10 @@ class ExportLaporanMingguanSupir extends Model
                 DB::raw("isnull(c.omset,0) as omset"),
                 DB::raw("isnull(b.biayatambahan,0) as biayatambahan"),
                 DB::raw("isnull(b.keteranganbiayatambahan,'') as keteranganbiayatambahan"),
+                'b.biayaextrasupir_nobukti',
+                DB::raw("isnull(b.nominalbiayaextrasupir,0) as biayaextrasupir_nominal"),
+                'b.keteranganbiayaextrasupir as biayaextrasupir_keterangan',
+                'b.urutextra'
 
             )
             ->join(DB::raw("gajisupirdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
@@ -167,7 +176,11 @@ class ExportLaporanMingguanSupir extends Model
             'urutric',
             'omset',
             'biayatambahan',
-            'keteranganbiayatambahan'
+            'keteranganbiayatambahan',
+            'biayaextrasupir_nobukti',
+            'biayaextrasupir_nominal',
+            'biayaextrasupir_keterangan',
+            'urutextra'
         ], $queryTempdata);
 
         $tempuangjalan = '##tempdatauangjalan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -182,15 +195,15 @@ class ExportLaporanMingguanSupir extends Model
         $querytempuangjalan = DB::table("gajisupirheader")->from(
             DB::raw("gajisupirheader as a with (readuncommitted)")
         )
-        ->select(
-            'a.nobukti',
-            'a.suratpengantar_nobukti',
-            db::raw("a.uangjalan as nominaluangjalan"),
-            db::raw("a.bbm as nominaluangbbm"),
-            db::raw("a.uangmakanharian + isnull(a.biayaextra,0) as nominaluangmakan"),
-        );
-            // ->join(DB::raw($tempData . " as c "), 'a.nobukti', 'c.nobuktiric')
-            // ->GroupBy('a.nobukti');
+            ->select(
+                'a.nobukti',
+                'a.suratpengantar_nobukti',
+                db::raw("a.uangjalan as nominaluangjalan"),
+                db::raw("a.bbm as nominaluangbbm"),
+                db::raw("a.uangmakanharian + isnull(a.biayaextra,0) as nominaluangmakan"),
+            );
+        // ->join(DB::raw($tempData . " as c "), 'a.nobukti', 'c.nobuktiric')
+        // ->GroupBy('a.nobukti');
 
         DB::table($tempuangjalan)->insertUsing([
             'nobukti',
@@ -245,7 +258,7 @@ class ExportLaporanMingguanSupir extends Model
             ->select(
                 'a.nobukti',
                 db::raw("sum(isnull(a.tolsupir,0)) as tolsupir"),
-                db::raw("sum(isnull(b.nominal,0)) as nominal"),
+                db::raw("sum((case when c.urutextra=1 then isnull(b.nominal,0) else 0 end)) as nominal"),
             )
             ->leftjoin(DB::raw("suratpengantarbiayatambahan as b with(readuncommitted) "), 'a.id', 'b.suratpengantar_id')
             ->join(DB::raw($tempData . " as c "), 'a.nobukti', 'c.nobukti')
@@ -281,9 +294,13 @@ class ExportLaporanMingguanSupir extends Model
         )
             ->select(
                 'a.nobukti',
-                'b.keteranganbiaya as keterangan',
-                'b.nominal',
-                'b.nominaltagih'
+                db::raw("(case when c.urutextra=1 then b.keteranganbiaya end) as keterangan"),
+                db::raw("(case when c.urutextra=1 then isnull(b.nominal,0) else 0 end) as nominal"),
+                db::raw("(case when c.urutextra=1 then isnull(b.nominaltagih,0) else 0 end) as nominaltagih"),
+                
+                // 'b.keteranganbiaya as keterangan',
+                // 'b.nominal',
+                // 'b.nominaltagih'
             )
             ->leftjoin(DB::raw("suratpengantarbiayatambahan as b with(readuncommitted) "), 'a.id', 'b.suratpengantar_id')
             ->join(DB::raw($tempData . " as c "), 'a.nobukti', 'c.nobukti');
@@ -603,10 +620,12 @@ class ExportLaporanMingguanSupir extends Model
                 'a.spfullempty',
                 'a.jobtrucking',
                 DB::raw("(case when isnull(c.invoice,'')='' then 0 else 
-                        isnull(b.omset,0) 
-                        end) as omset"),
+                            (case when a.urutextra=1 then isnull(b.omset,0) else 0 end)
+                         end) as omset"),
                 DB::raw("( case when isnull(c.invoice,'')='' then 0 else
-                    (case when isnull(b.notrip,'')='' then isnull(e.omsettambahan,0) else isnull(b.extralain,0)  end) 
+                    (case when isnull(b.notrip,'')='' then isnull(e.omsettambahan,0) else 
+                    (case when a.urutextra=1 then isnull(b.extralain,0) else 0 end)
+                      end) 
                     end) as omsettambahan"),
                 DB::raw("0 as omsetextrabbm"),
                 DB::raw("isnull(c.invoice,'') as invoice"),
@@ -622,9 +641,9 @@ class ExportLaporanMingguanSupir extends Model
                 DB::raw("0 as gajilain"),
                 DB::raw("'' as ket"),
                 DB::raw("isnull(g.nobuktikbtkomisi,'') as nobuktikbtkomisi"),
-                DB::raw("isnull(f.nominal,0) as uanglain"),
-                DB::raw("isnull(h.keterangan,'') as ketuanglain"),
-                DB::raw("isnull(h.keteranganomset,'') as kettagihomset"),
+                DB::raw("(case when a.urutextra=1 then isnull(f.nominal,0) else 0 end) as uanglain"),
+                DB::raw("(case when a.urutextra=1 then isnull(h.keterangan,'') else '' end) as ketuanglain"),
+                DB::raw("(case when a.urutextra=1 then isnull(h.keteranganomset,'') else '' end) as kettagihomset"),
                 DB::raw("isnull(f.tolsupir,0) as tolsupir"),
                 DB::raw("0 as uangbon"),
                 DB::raw("isnull(A.pengeluarannobuktiebs,'') as nobuktikbtebs2"),
@@ -653,12 +672,15 @@ class ExportLaporanMingguanSupir extends Model
                 DB::raw("'' as supirex"),
                 DB::raw("isnull(e.liter,0) as liter"),
                 db::raw($formatric . " as formatric"),
-                
+
                 // SURABAYA
                 DB::raw("isnull(a.gajikenek,0) as uangburuh"),
-                DB::raw("isnull(a.biayatambahan,0) as uangextra"),                
+                DB::raw("isnull(a.biayatambahan,0) as uangextra"),
                 DB::raw("( case when isnull(c.invoice,'')='' then 0 else (isnull(a.omset,0) + isnull(e.omsettambahan,0)) end) as omsetsurabaya"),
                 DB::raw("isnull(a.keteranganBiayaTambahan,0) as keteranganbiayatambahan"),
+                'a.biayaextrasupir_nobukti',
+                DB::raw("isnull(a.biayaextrasupir_nominal,0) as biayaextrasupir_nominal"),
+                'a.biayaextrasupir_keterangan',
             )
             ->leftjoin(DB::raw($tempInvoice . " as b "), 'a.nobukti', 'b.notripawal')
             ->leftjoin(DB::raw($tempInvoice . " as c "), 'a.jobtrucking', 'c.jobtrucking')

@@ -146,6 +146,9 @@ class GajiSupirHeaderController extends Controller
                 'absensi_nobukti' => $request->absensi_nobukti,
                 'absensi_uangjalan' => $request->absensi_uangjalan,
                 'absensi_trado_id' => $request->absensi_trado_id,
+                'rincian_biayaextrasupir_nobukti' => $request->rincian_biayaextrasupir_nobukti,
+                'rincian_biayaextrasupir_nominal' => $request->rincian_biayaextrasupir_nominal,
+                'rincian_biayaextrasupir_keterangan' => $request->rincian_biayaextrasupir_keterangan,
             ];
             $gajiSupirHeader = (new GajiSupirHeader())->processStore($data);
             $gajiSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
@@ -244,6 +247,9 @@ class GajiSupirHeaderController extends Controller
                 'absensi_nobukti' => $request->absensi_nobukti,
                 'absensi_uangjalan' => $request->absensi_uangjalan,
                 'absensi_trado_id' => $request->absensi_trado_id,
+                'rincian_biayaextrasupir_nobukti' => $request->rincian_biayaextrasupir_nobukti,
+                'rincian_biayaextrasupir_nominal' => $request->rincian_biayaextrasupir_nominal,
+                'rincian_biayaextrasupir_keterangan' => $request->rincian_biayaextrasupir_keterangan,
             ];
             $gajiSupirHeader = (new GajiSupirHeader())->processUpdate($gajisupirheader, $data);
             $gajiSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));

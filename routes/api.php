@@ -2140,6 +2140,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::post('biayaextrasupirheader/{id}/cekvalidasi', [BiayaExtraSupirHeaderController::class, 'cekvalidasi'])->name('biayaextrasupirheader.cekvalidasi')->whereNumber('id');
     Route::get('biayaextrasupirheader/field_length', [BiayaExtraSupirHeaderController::class, 'fieldLength']);
+    Route::post('biayaextrasupirheader/addrow', [BiayaExtraSupirHeaderController::class, 'addrow']);
+    Route::post('biayaextrasupirheader/{id}/cekValidasiAksi', [BiayaExtraSupirHeaderController::class, 'cekValidasiAksi'])->name('biayaextrasupirheader.cekValidasiAksi')->whereNumber('id');
     Route::resource('biayaextrasupirheader', BiayaExtraSupirHeaderController::class)->whereNumber('biayaextrasupirheader');
     Route::resource('biayaextrasupirdetail', BiayaExtraSupirDetailController::class)->whereNumber('biayaextrasupirdetail');
 

@@ -1840,6 +1840,7 @@ class ProsesGajiSupirHeader extends MyModel
             ->join(DB::raw("gajisupirdetail as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
             ->join(DB::raw("suratpengantar as C with (readuncommitted)"), 'B.suratpengantar_nobukti', 'C.nobukti')
             ->leftjoin(DB::raw("suratpengantarbiayatambahan as D with (readuncommitted)"), 'c.id', 'd.suratpengantar_id')
+            ->where('b.urutextra',1)
             ->groupBy('C.nobukti');
 
         DB::table($tempsuratpengantartambahan)->insertUsing(['nobukti', 'nominal'], $fetchsuratpengantartambahan);
@@ -1860,7 +1861,7 @@ class ProsesGajiSupirHeader extends MyModel
         $tempRincian = '##Temprincian' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $fetchTempRincian = DB::table($tempGaji)->from(DB::raw("$tempGaji as A with (readuncommitted)"))
             ->select(
-                DB::raw("C.tglbukti, sum(isnull(B.gajisupir,0)+isnull(B.gajiritasi,0)+isnull(d.nominal,0)) as gajisupir")
+                DB::raw("C.tglbukti, sum(isnull(B.gajisupir,0) + isnull(B.gajiritasi,0) + isnull(B.nominalbiayaextrasupir,0) + (case when b.urutextra=1 then isnull(d.nominal,0) else 0 end)) as gajisupir")
             )
             ->join(DB::raw("gajisupirdetail as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
             ->join(DB::raw("suratpengantar as C with (readuncommitted)"), 'B.suratpengantar_nobukti', 'C.nobukti')
