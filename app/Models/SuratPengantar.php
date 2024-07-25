@@ -355,7 +355,17 @@ class SuratPengantar extends MyModel
             $table->datetime('tgldariorderantrucking')->nullable();
             $table->datetime('tglsampaiorderantrucking')->nullable();
         });
-
+        $tempspric = '##tempspric' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempspric, function ($table) {
+            $table->string('nobukti', 50)->nullable();
+            $table->string('suratpengantar_nobukti', 50)->nullable();
+        });
+        $queryric = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail with (readuncommitted)"))
+        ->select(db::raw("max(nobukti) as nobukti"),'suratpengantar_nobukti')->groupBy('suratpengantar_nobukti');
+        DB::table($tempspric)->insertUsing([
+            'nobukti',
+            'suratpengantar_nobukti',
+        ], $queryric);
 
         $querysuratpengantar = DB::table('suratpengantar')->from(
             DB::raw("suratpengantar with (readuncommitted)")
@@ -453,7 +463,7 @@ class SuratPengantar extends MyModel
                 db::raw("cast(cast(format((cast((format(orderantrucking.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiorderantrucking"),
 
             )
-            ->leftJoin(DB::raw("gajisupirdetail as b with (readuncommitted)"), 'suratpengantar.nobukti', 'b.suratpengantar_nobukti')
+            ->leftJoin(DB::raw("$tempspric as b with (readuncommitted)"), 'suratpengantar.nobukti', 'b.suratpengantar_nobukti')
             ->leftJoin(DB::raw("invoicedetail as c with (readuncommitted)"), 'suratpengantar.jobtrucking', 'c.orderantrucking_nobukti')
             ->leftJoin(DB::raw("orderantrucking  with (readuncommitted)"), 'suratpengantar.jobtrucking', 'orderantrucking.nobukti');
 
@@ -2459,8 +2469,8 @@ class SuratPengantar extends MyModel
             ->leftJoin('parameter as statusbatalmuat', 'suratpengantar.statusbatalmuat', 'statusbatalmuat.id')
             ->leftJoin('mandor as mandortrado', 'suratpengantar.mandortrado_id', 'mandortrado.id')
             ->leftJoin('mandor as mandorsupir', 'suratpengantar.mandorsupir_id', 'mandorsupir.id')
-            ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id')
-            ->orderBy('suratpengantar.tglbukti', 'desc');
+            ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id');
+            // ->orderBy('suratpengantar.tglbukti', 'desc');
         if (!$isAdmin) {
             if ($isMandor) {
                 $query->Join(DB::raw($tempmandordetail . " as mandordetail"), 'trado.mandor_id', 'mandordetail.mandor_id');
