@@ -47,8 +47,9 @@ class LaporanDepositoSupirController extends Controller
 
         $tglsaldo = $parameter->cekText('SALDO', 'SALDO') ?? '1900-01-01';
         $tglsaldo = date('Y-m-d', strtotime($tglsaldo));
-
-        if ($sampai < $tglsaldo) {
+        $tglsampai = date('Y-m-d', strtotime($sampai));
+        if ($tglsampai < $tglsaldo) {
+            dd('test');
             $data = $laporandepositosupir->getReportLama($sampai, $jenis, $prosesneraca);
         } else {
             $data = $laporandepositosupir->getReport($sampai, $jenis, $prosesneraca);

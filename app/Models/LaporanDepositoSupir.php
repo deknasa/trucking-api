@@ -33,7 +33,7 @@ class LaporanDepositoSupir extends MyModel
         $pengeluarantrucking_id = 2;
         $sampai = date('Y-m-d', strtotime($sampai)) ?? '1900/1/1';
         $jenis = request()->jenis ?? '';
-
+        
         $temppenerimaantrucking = '##temppenerimaantrucking' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temppenerimaantrucking, function ($table) {
             $table->unsignedBigInteger('supir_id')->nullable();
@@ -82,6 +82,7 @@ class LaporanDepositoSupir extends MyModel
             'nominal',
         ], $querypengeluarantrucking);
 
+   
         // 
         $temppenerimaantruckinglist = '##temppenerimaantruckinglist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temppenerimaantruckinglist, function ($table) {
