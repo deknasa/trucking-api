@@ -1031,6 +1031,7 @@ class PengeluaranStokHeader extends MyModel
         Schema::create($tempgudang, function ($table) {
             $table->integer('id')->nullable();
             $table->longtext('gudang')->nullable();
+            $table->index('id');
         });
 
         $querytempgudang = db::table("gudang")->from(db::raw("gudang a with (readuncommitted)"))
@@ -1058,6 +1059,7 @@ class PengeluaranStokHeader extends MyModel
         Schema::create($tempparameter, function ($table) {
             $table->integer('id')->nullable();
             $table->longtext('text')->nullable();
+            $table->index('id');
         });
 
         $querytempparameter = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
@@ -1083,6 +1085,7 @@ class PengeluaranStokHeader extends MyModel
         Schema::create($temppengeluaranstok, function ($table) {
             $table->integer('id')->nullable();
             $table->longtext('kodepengeluaran')->nullable();
+            $table->index('id');
         });
 
         $querytemppengeluaranstok = db::table("pengeluaranstok")->from(db::raw("pengeluaranstok a with (readuncommitted)"))
@@ -1108,6 +1111,7 @@ class PengeluaranStokHeader extends MyModel
         Schema::create($temptrado, function ($table) {
             $table->integer('id')->nullable();
             $table->longtext('kodetrado')->nullable();
+            $table->index('id');
         });
 
         $querytemptrado = db::table("trado")->from(db::raw("trado a with (readuncommitted)"))
@@ -1134,6 +1138,7 @@ class PengeluaranStokHeader extends MyModel
         Schema::create($tempgandengan, function ($table) {
             $table->integer('id')->nullable();
             $table->longtext('kodegandengan')->nullable();
+            $table->index('id');
         });
 
         $querytempgandengan = db::table("gandengan")->from(db::raw("gandengan a with (readuncommitted)"))
@@ -1160,6 +1165,7 @@ class PengeluaranStokHeader extends MyModel
         Schema::create($tempsupplier, function ($table) {
             $table->integer('id')->nullable();
             $table->longtext('namasupplier')->nullable();
+            $table->index('id');
         });
 
         $querytempsupplier = db::table("supplier")->from(db::raw("supplier a with (readuncommitted)"))
@@ -1186,6 +1192,7 @@ class PengeluaranStokHeader extends MyModel
         Schema::create($tempkerusakan, function ($table) {
             $table->integer('id')->nullable();
             $table->longtext('keterangan')->nullable();
+            $table->index('id');
         });
 
         $querytempkerusakan = db::table("kerusakan")->from(db::raw("kerusakan a with (readuncommitted)"))
@@ -1212,6 +1219,7 @@ class PengeluaranStokHeader extends MyModel
         Schema::create($tempbank, function ($table) {
             $table->integer('id')->nullable();
             $table->longtext('namabank')->nullable();
+            $table->index('id');
         });
 
         $querytempbank = db::table("bank")->from(db::raw("bank a with (readuncommitted)"))
@@ -1238,6 +1246,7 @@ class PengeluaranStokHeader extends MyModel
         Schema::create($tempsupir, function ($table) {
             $table->integer('id')->nullable();
             $table->longtext('namasupir')->nullable();
+            $table->index('id');
         });
 
         $querytempsupir = db::table("supir")->from(db::raw("supir a with (readuncommitted)"))
@@ -1260,7 +1269,69 @@ class PengeluaranStokHeader extends MyModel
         //           
 
 
-        $querypengeluaranstokheader = db::table('pengeluaranstokheader')->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
+        $temppengeluaranstokheadertemp = '##temppengeluaranstokheadertemp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temppengeluaranstokheadertemp, function ($table) {
+            $table->integer('id')->nullable();
+            $table->string('nobukti', 1000)->nullable();
+            $table->integer('statuscetak')->nullable();
+            $table->integer('statuskirimberkas')->nullable();
+            $table->integer('gudang_id')->nullable();
+            $table->integer('trado_id')->nullable();
+            $table->integer('gandengan_id')->nullable();
+            $table->integer('supplier_id')->nullable();
+            $table->integer('supir_id')->nullable();
+            $table->integer('pengeluaranstok_id')->nullable();
+            $table->integer('statuspotongretur')->nullable();
+            $table->integer('kerusakan_id')->nullable();
+            $table->integer('bank_id')->nullable();
+            $table->index('id','nobukti','statuscetak','statuskirimberkas','gudang_id','gandengan_id','supplier_id','supir_id','pengeluaranstok_id',
+                'statuspotongretur','kerusakan_id','bank_id');
+        });
+
+        $querypengeluaranstokheadertemp = db::table('pengeluaranstokheader')->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
+        ->select(
+            'a.id',
+            'a.nobukti',
+            'a.gudang_id',
+            'a.statuscetak',
+            'a.statuskirimberkas',
+            'a.trado_id',
+            'a.gandengan_id',
+            'a.supplier_id',
+            'a.supir_id',
+            'a.pengeluaranstok_id',
+            'a.statuspotongretur',
+            'a.kerusakan_id',
+            'a.bank_id',
+        );
+   
+
+
+    if (request()->tgldari) {
+        $querypengeluaranstokheadertemp->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+    }
+    if (request()->pengeluaranheader_id) {
+        $querypengeluaranstokheadertemp->where('a.pengeluaranstok_id', request()->pengeluaranheader_id);
+    }
+
+    DB::table($temppengeluaranstokheadertemp)->insertUsing([
+        'id',
+        'nobukti',
+        'gudang_id',
+        'statuscetak',
+        'statuskirimberkas',
+        'trado_id',
+        'gandengan_id',
+        'supplier_id',
+        'supir_id',
+        'pengeluaranstok_id',
+        'statuspotongretur',
+        'kerusakan_id',
+        'bank_id',
+    ], $querypengeluaranstokheadertemp);
+
+
+        $querypengeluaranstokheader = db::table($temppengeluaranstokheadertemp)->from(db::raw($temppengeluaranstokheadertemp ." a "))
             ->select(
                 'a.id',
                 'a.nobukti',
@@ -1289,12 +1360,7 @@ class PengeluaranStokHeader extends MyModel
             ->join(db::raw($temppengeluaranstok ." l "),db::raw("isnull(a.pengeluaranstok_id,0)"),'l.id');
 
 
-        if (request()->tgldari) {
-            $querypengeluaranstokheader->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
-        }
-        if (request()->pengeluaranheader_id) {
-            $querypengeluaranstokheader->where('a.pengeluaranstok_id', request()->pengeluaranheader_id);
-        }
+       
 
         DB::table($temppengeluaranstokheader)->insertUsing([
             'id',
