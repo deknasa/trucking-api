@@ -375,12 +375,12 @@ class BiayaExtraSupirHeader extends MyModel
             ->select(
                 'a.nobukti',
             )
-            ->where('a.suratpengantar_nobukti', '=', $query->suratpengantar_nobukti)
+            ->where('a.biayaextrasupir_nobukti', '=', $query->nobukti)
             ->first();
         if (isset($gajisupirdetail)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Trip <b>' . $query->suratpengantar_nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Gaji Supir <b>' . $gajisupirdetail->nobukti . '</b> <br> ' . $keterangantambahanerror,
+                'keterangan' => 'No bukti <b>' . $query->nobukti . '</b><br>' . $keteranganerror . '<br> No Bukti Gaji Supir <b>' . $gajisupirdetail->nobukti . '</b> <br> ' . $keterangantambahanerror,
                 'kodeerror' => 'TDT',
                 'editcoa' => false
             ];
