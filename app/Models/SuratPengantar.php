@@ -354,6 +354,10 @@ class SuratPengantar extends MyModel
             $table->unsignedBigInteger('statusinvoice')->nullable();
             $table->datetime('tgldariorderantrucking')->nullable();
             $table->datetime('tglsampaiorderantrucking')->nullable();
+            $table->integer('statusapprovalbiayaextra')->Length(11)->nullable();
+            $table->string('userapprovalbiayaextra', 50)->nullable();
+            $table->date('tglapprovalbiayaextra')->nullable();
+            $table->datetime('tglbatasapprovalbiayaextra')->nullable();
         });
         $tempspric = '##tempspric' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempspric, function ($table) {
@@ -361,7 +365,7 @@ class SuratPengantar extends MyModel
             $table->string('suratpengantar_nobukti', 50)->nullable();
         });
         $queryric = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail with (readuncommitted)"))
-        ->select(db::raw("max(nobukti) as nobukti"),'suratpengantar_nobukti')->groupBy('suratpengantar_nobukti');
+            ->select(db::raw("max(nobukti) as nobukti"), 'suratpengantar_nobukti')->groupBy('suratpengantar_nobukti');
         DB::table($tempspric)->insertUsing([
             'nobukti',
             'suratpengantar_nobukti',
@@ -461,7 +465,10 @@ class SuratPengantar extends MyModel
                 db::raw("(case when isnull(c.nobukti,'')='' then " . $getBelumbuka->id . " else " . $getSudahbuka->id . " end) as statusinvoice"),
                 db::raw("cast((format(orderantrucking.tglbukti,'yyyy/MM')+'/1') as date) as tgldariorderantrucking"),
                 db::raw("cast(cast(format((cast((format(orderantrucking.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiorderantrucking"),
-
+                'statusapprovalbiayaextra',
+                'userapprovalbiayaextra',
+                'tglapprovalbiayaextra',
+                'tglbatasapprovalbiayaextra'
             )
             ->leftJoin(DB::raw("$tempspric as b with (readuncommitted)"), 'suratpengantar.nobukti', 'b.suratpengantar_nobukti')
             ->leftJoin(DB::raw("invoicedetail as c with (readuncommitted)"), 'suratpengantar.jobtrucking', 'c.orderantrucking_nobukti')
@@ -574,6 +581,10 @@ class SuratPengantar extends MyModel
             'statusinvoice',
             'tgldariorderantrucking',
             'tglsampaiorderantrucking',
+            'statusapprovalbiayaextra',
+            'userapprovalbiayaextra',
+            'tglapprovalbiayaextra',
+            'tglbatasapprovalbiayaextra'
 
 
         ], $querysuratpengantar);
@@ -900,7 +911,10 @@ class SuratPengantar extends MyModel
                 db::raw("cast((format(invoiceheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariinvoiceheader"),
                 db::raw("cast(cast(format((cast((format(invoiceheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiinvoiceheader"),
 
-
+                'statusapprovalbiayaextra.memo as statusapprovalbiayaextra',
+                'suratpengantar.userapprovalbiayaextra',
+                DB::raw("(case when year(isnull(suratpengantar.tglapprovalbiayaextra,'1900/1/1'))<2000 then null else suratpengantar.tglapprovalbiayaextra end) as tglapprovalbiayaextra"),
+                DB::raw("(case when year(isnull(suratpengantar.tglbatasapprovalbiayaextra,'1900/1/1 00:00:00.000'))<2000 then null else suratpengantar.tglbatasapprovalbiayaextra end) as tglbatasapprovalbiayaextra"),
             )
 
             ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
@@ -920,6 +934,7 @@ class SuratPengantar extends MyModel
             ->leftJoin('parameter as statustolakan', 'suratpengantar.statustolakan', 'statustolakan.id')
             ->leftJoin('parameter as statusbatalmuat', 'suratpengantar.statusbatalmuat', 'statusbatalmuat.id')
             ->leftJoin('parameter as statusapprovaleditsuratpengantar', 'suratpengantar.statusapprovaleditsuratpengantar', 'statusapprovaleditsuratpengantar.id')
+            ->leftJoin('parameter as statusapprovalbiayaextra', 'suratpengantar.statusapprovalbiayaextra', 'statusapprovalbiayaextra.id')
             ->leftJoin('parameter as statusapprovalbiayatitipanemkl', 'suratpengantar.statusapprovalbiayatitipanemkl', 'statusapprovalbiayatitipanemkl.id')
             ->leftJoin('parameter as statusgajisupir', 'suratpengantar.statusgajisupir', 'statusgajisupir.id')
             ->leftJoin('parameter as statusinvoice', 'suratpengantar.statusinvoice', 'statusinvoice.id')
@@ -1053,7 +1068,7 @@ class SuratPengantar extends MyModel
             if ($longtrip == 66) {
                 $parameter = new Parameter();
                 $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
-                if($idkandang == 0){
+                if ($idkandang == 0) {
                     goto bukankandang;
                 }
                 if ($dari_id == $idkandang) {
@@ -2079,11 +2094,26 @@ class SuratPengantar extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->unsignedBigInteger('statusgajisupir')->nullable();
             $table->unsignedBigInteger('statusinvoice')->nullable();
+            $table->integer('statusapprovalbiayaextra')->Length(11)->nullable();
+            $table->string('userapprovalbiayaextra', 50)->nullable();
+            $table->date('tglapprovalbiayaextra')->nullable();
+            $table->datetime('tglbatasapprovalbiayaextra')->nullable();
         });
 
         $getSudahbuka = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS SUDAH BUKA')->where('subgrp', 'STATUS SUDAH BUKA')->where('text', 'SUDAH BUKA')->first() ?? 0;
         $getBelumbuka = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS SUDAH BUKA')->where('subgrp', 'STATUS SUDAH BUKA')->where('text', 'BELUM BUKA')->first() ?? 0;
 
+        $tempspric = '##tempspric' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempspric, function ($table) {
+            $table->string('nobukti', 50)->nullable();
+            $table->string('suratpengantar_nobukti', 50)->nullable();
+        });
+        $queryric = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail with (readuncommitted)"))
+            ->select(db::raw("max(nobukti) as nobukti"), 'suratpengantar_nobukti')->groupBy('suratpengantar_nobukti');
+        DB::table($tempspric)->insertUsing([
+            'nobukti',
+            'suratpengantar_nobukti',
+        ], $queryric);
 
         $querysuratpengantar = DB::table('suratpengantar')->from(
             DB::raw("suratpengantar with (readuncommitted)")
@@ -2139,9 +2169,13 @@ class SuratPengantar extends MyModel
                 'suratpengantar.updated_at',
                 db::raw("(case when isnull(b.nobukti,'')='' then " . $getBelumbuka->id . " else " . $getSudahbuka->id . " end) as statusgajisupir"),
                 db::raw("(case when isnull(c.nobukti,'')='' then " . $getBelumbuka->id . " else " . $getSudahbuka->id . " end) as statusinvoice"),
+                'statusapprovalbiayaextra',
+                'userapprovalbiayaextra',
+                'tglapprovalbiayaextra',
+                'tglbatasapprovalbiayaextra'
 
             )
-            ->leftJoin(DB::raw("gajisupirdetail as b with (readuncommitted)"), 'suratpengantar.nobukti', 'b.suratpengantar_nobukti')
+            ->leftJoin(DB::raw("$tempspric as b with (readuncommitted)"), 'suratpengantar.nobukti', 'b.suratpengantar_nobukti')
             ->leftJoin(DB::raw("invoicedetail as c with (readuncommitted)"), 'suratpengantar.jobtrucking', 'c.orderantrucking_nobukti');
         DB::table($tempsuratpengantar)->insertUsing([
             'id',
@@ -2194,6 +2228,10 @@ class SuratPengantar extends MyModel
             'updated_at',
             'statusgajisupir',
             'statusinvoice',
+            'statusapprovalbiayaextra',
+            'userapprovalbiayaextra',
+            'tglapprovalbiayaextra',
+            'tglbatasapprovalbiayaextra'
 
 
         ], $querysuratpengantar);
@@ -2217,29 +2255,29 @@ class SuratPengantar extends MyModel
                 suratpengantar.gajisupir,
                 suratpengantar.jarak,
                 agen.namaagen as agen_id,
-                'jenisorder.keterangan as jenisorder_id',
-                'container.keterangan as container_id',
+                jenisorder.keterangan as jenisorder_id,
+                container.keterangan as container_id,
                 suratpengantar.nocont,
                 suratpengantar.noseal,
                 suratpengantar.omset,
                 suratpengantar.nominalperalihan,
                 suratpengantar.totalomset,
-                'statuscontainer.keterangan as statuscontainer_id',
+                statuscontainer.keterangan as statuscontainer_id,
                 suratpengantar.gudang,
-                'trado.kodetrado as trado_id',
-                'supir.namasupir as supir_id',
-                'gandengan.keterangan as gandengan_id',
-                'statuslongtrip.memo as statuslongtrip',
-                'statusperalihan.memo as statusperalihan',
-                'statusritasiomset.memo as statusritasiomset',
-                'statusapprovaleditsuratpengantar.memo as statusapprovaleditsuratpengantar',
-                'statusapprovalbiayatitipanemkl.memo as statusapprovalbiayatitipanemkl',
-                'tarif.tujuan as tarif_id',
-                'mandortrado.namamandor as mandortrado_id',
-                'mandorsupir.namamandor as mandorsupir_id',
-                'statustolakan.memo as statustolakan',
-                'statusgudangsama.memo as statusgudangsama',
-                'statusbatalmuat.memo as statusbatalmuat',
+                trado.kodetrado as trado_id,
+                supir.namasupir as supir_id,
+                gandengan.keterangan as gandengan_id,
+                statuslongtrip.memo as statuslongtrip,
+                statusperalihan.memo as statusperalihan,
+                statusritasiomset.memo as statusritasiomset,
+                statusapprovaleditsuratpengantar.memo as statusapprovaleditsuratpengantar,
+                statusapprovalbiayatitipanemkl.memo as statusapprovalbiayatitipanemkl,
+                tarif.tujuan as tarif_id,
+                mandortrado.namamandor as mandortrado_id,
+                mandorsupir.namamandor as mandorsupir_id,
+                statustolakan.memo as statustolakan,
+                statusgudangsama.memo as statusgudangsama,
+                statusbatalmuat.memo as statusbatalmuat,
                 suratpengantar.userapprovaleditsuratpengantar,
                 suratpengantar.userapprovalbiayatitipanemkl,
                 suratpengantar.tglapprovaleditsuratpengantar,
@@ -2250,8 +2288,12 @@ class SuratPengantar extends MyModel
                 suratpengantar.modifiedby,
                 suratpengantar.created_at,
                 suratpengantar.updated_at,
-                'statusgajisupir.memo as statusgajisupir',
-                'statusinvoice.memo as statusinvoice'
+                statusgajisupir.memo as statusgajisupir,
+                statusinvoice.memo as statusinvoice,
+                statusapprovalbiayaextra.memo as statusapprovalbiayaextra,
+                suratpengantar.userapprovalbiayaextra,
+                suratpengantar.tglapprovalbiayaextra,
+                suratpengantar.tglbatasapprovalbiayaextra
                 "
 
             )
@@ -2274,6 +2316,7 @@ class SuratPengantar extends MyModel
             ->leftJoin('parameter as statustolakan', 'suratpengantar.statustolakan', 'statustolakan.id')
             ->leftJoin('parameter as statusbatalmuat', 'suratpengantar.statusbatalmuat', 'statusbatalmuat.id')
             ->leftJoin('parameter as statusapprovaleditsuratpengantar', 'suratpengantar.statusapprovaleditsuratpengantar', 'statusapprovaleditsuratpengantar.id')
+            ->leftJoin('parameter as statusapprovalbiayaextra', 'suratpengantar.statusapprovalbiayaextra', 'statusapprovalbiayaextra.id')
             ->leftJoin('parameter as statusapprovalbiayatitipanemkl', 'suratpengantar.statusapprovalbiayatitipanemkl', 'statusapprovalbiayatitipanemkl.id')
             ->leftJoin('parameter as statusgajisupir', 'suratpengantar.statusgajisupir', 'statusgajisupir.id')
             ->leftJoin('parameter as statusinvoice', 'suratpengantar.statusinvoice', 'statusinvoice.id')
@@ -2470,7 +2513,7 @@ class SuratPengantar extends MyModel
             ->leftJoin('mandor as mandortrado', 'suratpengantar.mandortrado_id', 'mandortrado.id')
             ->leftJoin('mandor as mandorsupir', 'suratpengantar.mandorsupir_id', 'mandorsupir.id')
             ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id');
-            // ->orderBy('suratpengantar.tglbukti', 'desc');
+        // ->orderBy('suratpengantar.tglbukti', 'desc');
         if (!$isAdmin) {
             if ($isMandor) {
                 $query->Join(DB::raw($tempmandordetail . " as mandordetail"), 'trado.mandor_id', 'mandordetail.mandor_id');
@@ -2543,6 +2586,10 @@ class SuratPengantar extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->longText('statusgajisupir')->nullable();
             $table->longText('statusinvoice')->nullable();
+            $table->longText('statusapprovalbiayaextra')->nullable();
+            $table->string('userapprovalbiayaextra', 50)->nullable();
+            $table->date('tglapprovalbiayaextra')->nullable();
+            $table->datetime('tglbatasapprovalbiayaextra')->nullable();
 
             $table->increments('position');
         });
@@ -2560,10 +2607,8 @@ class SuratPengantar extends MyModel
 
 
         $models = $this->filter($query);
-
-
         DB::table($temp)->insertUsing([
-            'id', 'nobukti', 'jobtrucking', 'tglbukti', 'nosp', 'tglsp', 'nojob', 'pelanggan_id', 'keterangan', 'dari_id', 'sampai_id', 'penyesuaian', 'gajisupir', 'jarak', 'agen_id', 'jenisorder_id', 'container_id', 'nocont', 'noseal', 'omset', 'nominalperalihan', 'totalomset', 'statuscontainer_id', 'gudang', 'trado_id', 'supir_id', 'gandengan_id', 'statuslongtrip', 'statusperalihan', 'statusritasiomset', 'statusapprovaleditsuratpengantar', 'statusapprovalbiayatitipanemkl', 'tarif_id', 'mandortrado_id', 'mandorsupir_id', 'statustolakan', 'statusgudangsama', 'statusbatalmuat', 'userapprovaleditsuratpengantar', 'userapprovalbiayatitipanemkl', 'tglapprovaleditsuratpengantar', 'tglbataseditsuratpengantar', 'tglapprovalbiayatitipanemkl', 'gajisupir_nobukti', 'invoice_nobukti', 'modifiedby', 'created_at', 'updated_at', 'statusgajisupir', 'statusinvoice'
+            'id', 'nobukti', 'jobtrucking', 'tglbukti', 'nosp', 'tglsp', 'nojob', 'pelanggan_id', 'keterangan', 'dari_id', 'sampai_id', 'penyesuaian', 'gajisupir', 'jarak', 'agen_id', 'jenisorder_id', 'container_id', 'nocont', 'noseal', 'omset', 'nominalperalihan', 'totalomset', 'statuscontainer_id', 'gudang', 'trado_id', 'supir_id', 'gandengan_id', 'statuslongtrip', 'statusperalihan', 'statusritasiomset', 'statusapprovaleditsuratpengantar', 'statusapprovalbiayatitipanemkl', 'tarif_id', 'mandortrado_id', 'mandorsupir_id', 'statustolakan', 'statusgudangsama', 'statusbatalmuat', 'userapprovaleditsuratpengantar', 'userapprovalbiayatitipanemkl', 'tglapprovaleditsuratpengantar', 'tglbataseditsuratpengantar', 'tglapprovalbiayatitipanemkl', 'gajisupir_nobukti', 'invoice_nobukti', 'modifiedby', 'created_at', 'updated_at', 'statusgajisupir', 'statusinvoice', 'statusapprovalbiayaextra', 'userapprovalbiayaextra', 'tglapprovalbiayaextra', 'tglbatasapprovalbiayaextra'
         ], $models);
         // dd('test');
 
@@ -2684,15 +2729,17 @@ class SuratPengantar extends MyModel
                                 $query = $query->where('statusinvoice.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statusapprovaleditsuratpengantar') {
                                 $query = $query->where('statusapprovaleditsuratpengantar.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusapprovalbiayaextra') {
+                                $query = $query->where('statusapprovalbiayaextra.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statusapprovalbiayatitipanemkl') {
                                 $query = $query->where('statusapprovalbiayatitipanemkl.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak' || $filters['field'] == 'omset' || $filters['field'] == 'nominalperalihan' || $filters['field'] == 'totalomset') {
                                 $query = $query->whereRaw("format(suratpengantar." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'biayaextra' || $filters['field'] == 'biayatagih') {
                                 $query = $query->whereRaw("format(suratpengantarbiayatambahan." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglsp') {
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglsp' || $filters['field'] == 'tglapprovalbiayaextra' || $filters['field'] == 'tglapprovaleditsuratpengantar') {
                                 $query = $query->whereRaw("format(suratpengantar." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at' || $filters['field'] == 'tglbatasapprovalbiayaextra' || $filters['field'] == 'tglbataseditsuratpengantar') {
                                 $query = $query->whereRaw("format(suratpengantar." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -2752,15 +2799,17 @@ class SuratPengantar extends MyModel
                                     $query = $query->orWhere('statusbatalmuat.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'statusapprovaleditsuratpengantar') {
                                     $query = $query->orWhere('statusapprovaleditsuratpengantar.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusapprovalbiayaextra') {
+                                    $query = $query->orWhere('statusapprovalbiayaextra.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'statusapprovalbiayatitipanemkl') {
                                     $query = $query->orWhere('statusapprovalbiayatitipanemkl.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak' || $filters['field'] == 'omset' || $filters['field'] == 'nominalperalihan' || $filters['field'] == 'totalomset') {
                                     $query = $query->orWhereRaw("format(suratpengantar." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'biayaextra' || $filters['field'] == 'biayatagih') {
                                     $query = $query->orWhereRaw("format(suratpengantarbiayatambahan." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
-                                } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglsp') {
+                                } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglsp' || $filters['field'] == 'tglapprovalbiayaextra' || $filters['field'] == 'tglapprovaleditsuratpengantar') {
                                     $query = $query->orWhereRaw("format(suratpengantar." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at' || $filters['field'] == 'tglbatasapprovalbiayaextra' || $filters['field'] == 'tglbataseditsuratpengantar') {
                                     $query = $query->orWhereRaw("format(suratpengantar." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                                 } else {
                                     // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -2797,6 +2846,9 @@ class SuratPengantar extends MyModel
             $data = DB::table("suratpengantar")->where('statusapprovaleditsuratpengantar', $statusApproval->id)
                 ->where('tglbataseditsuratpengantar', '<', $now)
                 ->update(['statusapprovaleditsuratpengantar' => $statusNonApproval->id]);
+            $data = DB::table("suratpengantar")->where('statusapprovalbiayaextra', $statusApproval->id)
+                ->where('tglbatasapprovalbiayaextra', '<', $now)
+                ->update(['statusapprovalbiayaextra' => $statusNonApproval->id]);
             DB::commit();
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -3492,7 +3544,7 @@ class SuratPengantar extends MyModel
                         $suratPengantar->gajisupir = $upahsupirRincian->nominalsupir;
                     }
                 }
-                
+
                 $suratPengantar->pelanggan_id = $data['pelanggan_id'];
                 $suratPengantar->container_id = $data['container_id'];
                 $suratPengantar->gandengan_id = $data['gandengan_id'];
