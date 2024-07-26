@@ -50,27 +50,51 @@ class LaporanPinjamanSupirKaryawan extends MyModel
             $table->string('namakaryawan', 1000)->nullable();            
         });
 
-        $queryhistory = DB::table('pengeluarantruckingheader')->from(
-            DB::raw("pengeluarantruckingheader a with (readuncommitted) ")
-        )
-            ->select(
-                'a.nobukti',
-                'a.tglbukti',
-                'b.karyawan_id',
-                'b.nominal',
-                DB::raw("1 as tipe"),
-                db::raw("isnull(c.namakaryawan,'') as namakaryawan")
+        if ($jenis==0) {
+            $queryhistory = DB::table('pengeluarantruckingheader')->from(
+                DB::raw("pengeluarantruckingheader a with (readuncommitted) ")
             )
-            ->join(DB::raw("pengeluarantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
-            ->leftjoin(DB::raw("karyawan as c with (readuncommitted) "), 'b.karyawan_id', 'c.id')
-
-            ->where('a.pengeluarantrucking_id', '=', $pengeluarantrucking_id)
-            ->whereRaw("a.tglbukti<='" . date('Y/m/d', strtotime($sampai)) . "'")
-            ->whereRaw("isnull(b.karyawan_id,0)<>0")
-            ->where('a.statusposting', '=', $jenis)
-            ->OrderBy('c.namakaryawan', 'asc')
-            ->OrderBy('a.tglbukti', 'asc')
-            ->OrderBy('a.nobukti', 'asc');
+                ->select(
+                    'a.nobukti',
+                    'a.tglbukti',
+                    'b.karyawan_id',
+                    'b.nominal',
+                    DB::raw("1 as tipe"),
+                    db::raw("isnull(c.namakaryawan,'') as namakaryawan")
+                )
+                ->join(DB::raw("pengeluarantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+                ->leftjoin(DB::raw("karyawan as c with (readuncommitted) "), 'b.karyawan_id', 'c.id')
+    
+                ->where('a.pengeluarantrucking_id', '=', $pengeluarantrucking_id)
+                ->whereRaw("a.tglbukti<='" . date('Y/m/d', strtotime($sampai)) . "'")
+                ->whereRaw("isnull(b.karyawan_id,0)<>0")
+                ->OrderBy('c.namakaryawan', 'asc')
+                ->OrderBy('a.tglbukti', 'asc')
+                ->OrderBy('a.nobukti', 'asc');
+        } else {
+            $queryhistory = DB::table('pengeluarantruckingheader')->from(
+                DB::raw("pengeluarantruckingheader a with (readuncommitted) ")
+            )
+                ->select(
+                    'a.nobukti',
+                    'a.tglbukti',
+                    'b.karyawan_id',
+                    'b.nominal',
+                    DB::raw("1 as tipe"),
+                    db::raw("isnull(c.namakaryawan,'') as namakaryawan")
+                )
+                ->join(DB::raw("pengeluarantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+                ->leftjoin(DB::raw("karyawan as c with (readuncommitted) "), 'b.karyawan_id', 'c.id')
+    
+                ->where('a.pengeluarantrucking_id', '=', $pengeluarantrucking_id)
+                ->whereRaw("a.tglbukti<='" . date('Y/m/d', strtotime($sampai)) . "'")
+                ->whereRaw("isnull(b.karyawan_id,0)<>0")
+                ->where('a.statusposting', '=', $jenis)
+                ->OrderBy('c.namakaryawan', 'asc')
+                ->OrderBy('a.tglbukti', 'asc')
+                ->OrderBy('a.nobukti', 'asc');
+        }
+       
 
             // dd($queryhistory->tosql());
         DB::table($temphistory)->insertUsing([
@@ -85,31 +109,57 @@ class LaporanPinjamanSupirKaryawan extends MyModel
 
         // dd(db::table($temphistory)->get());
 
-
-        $queryhistory = DB::table('penerimaantruckingheader')->from(
-            DB::raw("penerimaantruckingheader a with (readuncommitted) ")
-        )
-            ->select(
-                'c.nobukti',
-                'a.tglbukti',
-                'b.karyawan_id',
-                db::raw("(b.nominal*-1) as nominal"),
-                DB::raw("1 as tipe"),
-                db::raw("isnull(f.namakaryawan,'') as namakaryawan")
-
+        if ($jenis==0) {
+            $queryhistory = DB::table('penerimaantruckingheader')->from(
+                DB::raw("penerimaantruckingheader a with (readuncommitted) ")
             )
-            ->join(DB::raw("penerimaantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
-            ->join(DB::raw("pengeluarantruckingheader as c with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'c.nobukti')
-            ->leftjoin(DB::raw("karyawan as f with (readuncommitted) "), 'b.karyawan_id', 'f.id')
-
-            ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
-            ->whereRaw("a.tglbukti<'" . date('Y/m/d', strtotime($sampai)) . "'")
-            ->whereRaw("isnull(b.karyawan_id,0)<>0")
-            ->where('c.statusposting', '=', $jenis)
-            ->OrderBy('f.namakaryawan', 'asc')
-            ->OrderBy('a.tglbukti', 'asc')
-            ->OrderBy('a.nobukti', 'asc');
-
+                ->select(
+                    'c.nobukti',
+                    'a.tglbukti',
+                    'b.karyawan_id',
+                    db::raw("(b.nominal*-1) as nominal"),
+                    DB::raw("1 as tipe"),
+                    db::raw("isnull(f.namakaryawan,'') as namakaryawan")
+    
+                )
+                ->join(DB::raw("penerimaantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+                ->join(DB::raw("pengeluarantruckingheader as c with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'c.nobukti')
+                ->leftjoin(DB::raw("karyawan as f with (readuncommitted) "), 'b.karyawan_id', 'f.id')
+    
+                ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
+                ->whereRaw("a.tglbukti<'" . date('Y/m/d', strtotime($sampai)) . "'")
+                ->whereRaw("isnull(b.karyawan_id,0)<>0")
+                ->OrderBy('f.namakaryawan', 'asc')
+                ->OrderBy('a.tglbukti', 'asc')
+                ->OrderBy('a.nobukti', 'asc');
+    
+        } else {
+            $queryhistory = DB::table('penerimaantruckingheader')->from(
+                DB::raw("penerimaantruckingheader a with (readuncommitted) ")
+            )
+                ->select(
+                    'c.nobukti',
+                    'a.tglbukti',
+                    'b.karyawan_id',
+                    db::raw("(b.nominal*-1) as nominal"),
+                    DB::raw("1 as tipe"),
+                    db::raw("isnull(f.namakaryawan,'') as namakaryawan")
+    
+                )
+                ->join(DB::raw("penerimaantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+                ->join(DB::raw("pengeluarantruckingheader as c with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'c.nobukti')
+                ->leftjoin(DB::raw("karyawan as f with (readuncommitted) "), 'b.karyawan_id', 'f.id')
+    
+                ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
+                ->whereRaw("a.tglbukti<'" . date('Y/m/d', strtotime($sampai)) . "'")
+                ->whereRaw("isnull(b.karyawan_id,0)<>0")
+                ->where('c.statusposting', '=', $jenis)
+                ->OrderBy('f.namakaryawan', 'asc')
+                ->OrderBy('a.tglbukti', 'asc')
+                ->OrderBy('a.nobukti', 'asc');
+    
+        }
+       
    
 //  dd($queryhistory->get());
 
@@ -158,28 +208,53 @@ class LaporanPinjamanSupirKaryawan extends MyModel
             'namakaryawan',
         ], $queryrekapdata);
 
-        $queryrekapdata = DB::table('penerimaantruckingheader')->from(
-            DB::raw("penerimaantruckingheader a with (readuncommitted) ")
-        )
-            ->select(
-                'b.pengeluarantruckingheader_nobukti as nobukti',
-                DB::raw("isnull(a.penerimaan_nobukti,'') as nobuktipelunasan"),
-                'e.tglbukti',
-                'a.tglbukti as tglbuktipelunasan',
-                DB::raw("(b.nominal*-1) as nominal"),
-                db::raw("isnull(f.namakaryawan,'') as namakaryawan")
-
+        if ($jenis==0) {
+            $queryrekapdata = DB::table('penerimaantruckingheader')->from(
+                DB::raw("penerimaantruckingheader a with (readuncommitted) ")
             )
-            ->join(DB::raw("penerimaantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
-            ->leftjoin(DB::raw("pengeluarantruckingheader as e with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'e.nobukti')
-            ->leftjoin(DB::raw("karyawan as f with (readuncommitted) "), 'b.karyawan_id', 'f.id')
-            ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
-            ->whereRaw("a.tglbukti='" . date('Y/m/d', strtotime($sampai)) . "'")
-            ->whereRaw("isnull(b.karyawan_id,0)<>0")
-            ->where('e.statusposting', '=', $jenis)            
-            ->OrderBy('f.namakaryawan', 'asc')
-            ->OrderBy('a.tglbukti', 'asc')
-            ->OrderBy('a.nobukti', 'asc');
+                ->select(
+                    'b.pengeluarantruckingheader_nobukti as nobukti',
+                    DB::raw("isnull(a.penerimaan_nobukti,'') as nobuktipelunasan"),
+                    'e.tglbukti',
+                    'a.tglbukti as tglbuktipelunasan',
+                    DB::raw("(b.nominal*-1) as nominal"),
+                    db::raw("isnull(f.namakaryawan,'') as namakaryawan")
+    
+                )
+                ->join(DB::raw("penerimaantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+                ->leftjoin(DB::raw("pengeluarantruckingheader as e with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'e.nobukti')
+                ->leftjoin(DB::raw("karyawan as f with (readuncommitted) "), 'b.karyawan_id', 'f.id')
+                ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
+                ->whereRaw("a.tglbukti='" . date('Y/m/d', strtotime($sampai)) . "'")
+                ->whereRaw("isnull(b.karyawan_id,0)<>0")
+                ->OrderBy('f.namakaryawan', 'asc')
+                ->OrderBy('a.tglbukti', 'asc')
+                ->OrderBy('a.nobukti', 'asc');
+        } else {
+            $queryrekapdata = DB::table('penerimaantruckingheader')->from(
+                DB::raw("penerimaantruckingheader a with (readuncommitted) ")
+            )
+                ->select(
+                    'b.pengeluarantruckingheader_nobukti as nobukti',
+                    DB::raw("isnull(a.penerimaan_nobukti,'') as nobuktipelunasan"),
+                    'e.tglbukti',
+                    'a.tglbukti as tglbuktipelunasan',
+                    DB::raw("(b.nominal*-1) as nominal"),
+                    db::raw("isnull(f.namakaryawan,'') as namakaryawan")
+    
+                )
+                ->join(DB::raw("penerimaantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+                ->leftjoin(DB::raw("pengeluarantruckingheader as e with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'e.nobukti')
+                ->leftjoin(DB::raw("karyawan as f with (readuncommitted) "), 'b.karyawan_id', 'f.id')
+                ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
+                ->whereRaw("a.tglbukti='" . date('Y/m/d', strtotime($sampai)) . "'")
+                ->whereRaw("isnull(b.karyawan_id,0)<>0")
+                ->where('e.statusposting', '=', $jenis)            
+                ->OrderBy('f.namakaryawan', 'asc')
+                ->OrderBy('a.tglbukti', 'asc')
+                ->OrderBy('a.nobukti', 'asc');
+        }
+      
 
             // dd($queryrekapdata->get());
 
@@ -289,6 +364,14 @@ class LaporanPinjamanSupirKaryawan extends MyModel
             ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
 
+            
+        if ($jenis == 0) {
+            $judul1 = 'POSTING / NON POSTING';
+        } else {
+            $parameter = new Parameter();
+            $judul1 = $parameter->cekdataText($jenis) ?? '';
+        }
+
         $query = DB::table($temphasil)->from(
             DB::raw($temphasil . " a ")
         )
@@ -305,7 +388,7 @@ class LaporanPinjamanSupirKaryawan extends MyModel
                 'a.debet',
                 db::raw("abs(a.kredit) as kredit"),
                 DB::raw("sum ((isnull(a.saldo,0)+a.debet+a.kredit)) over (order by a.id asc) as Saldo"),
-                DB::raw("'Laporan Pinjaman Karyawan' as judulLaporan"),
+                DB::raw("'LAPORAN PINJAMAN KARYAWAN " . $judul1 . "' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
