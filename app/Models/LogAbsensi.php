@@ -23,16 +23,499 @@ class LogAbsensi extends MyModel
     {
 
         $datacabang = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'CABANG')
-        ->where('subgrp', 'CABANG')
-        ->first() ->text ?? '';
+            ->select('text')
+            ->where('grp', 'CABANG')
+            ->where('subgrp', 'CABANG')
+            ->first()->text ?? '';
 
-        if ($datacabang=='MEDAN') {
+        if ($datacabang == 'MEDAN') {
+            DB::update(DB::raw("UPDATE logabsensi SET id=288 from logabsensi where id=280"));
+        }
+        $ptgl1 = $tgldari;
+        $ptgl2 = $tglsampai;
+        $tempdataabsen = '##tempdataabsen' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdataabsen, function ($table) {
+            $table->integer('id')->nullable();
+            $table->longtext('personname')->nullable();
+            $table->datetime('tgl')->nullable();
+            $table->time('jam')->nullable();
+            $table->time('jamdetail')->nullable();
+            $table->integer('urut')->nullable();
+        });
+
+
+        $querytempdataabsen = DB::table("logabsensi")->from(
+            DB::raw("logabsensi a with (readuncommitted)")
+        )
+            ->select(
+                'a.id',
+                DB::raw("upper(a.personname) as personname"),
+                DB::raw("a.[date] as tgl"),
+                DB::raw("cast(left(cast(a.[time] as varchar(100)),5) as time)"),
+                DB::raw("a.[time]"),
+                DB::raw("ROW_NUMBER() OVER(PARTITION BY  a.id,a.[date],cast(left(cast(a.[time] as varchar(100)),5) as time) ORDER BY  a.[time])  as urut")
+            )
+            ->whereRaw("a.[date]>='" . $ptgl1 . "' and a.[date]<='" . $ptgl2 . "'");
+
+
+        DB::table($tempdataabsen)->insertUsing([
+            'id',
+            'personname',
+            'tgl',
+            'jam',
+            'jamdetail',
+            'urut',
+        ], $querytempdataabsen);
+        // 
+
+        $tempdataabsenrekap = '##tempdataabsenrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdataabsenrekap, function ($table) {
+            $table->integer('id')->nullable();
+            $table->longtext('personname')->nullable();
+            $table->datetime('tgl')->nullable();
+            $table->time('jam')->nullable();
+        });
+
+        $querytempdataabsenrekap = DB::table($tempdataabsen)->from(
+            DB::raw($tempdataabsen . " a ")
+        )
+            ->select(
+                'a.id',
+                'a.personname',
+                'a.tgl',
+                'a.jam'
+            )
+            ->groupby('a.id')
+            ->groupby('a.personname')
+            ->groupby('a.tgl')
+            ->groupby('a.jam');
+
+        DB::table($tempdataabsenrekap)->insertUsing([
+            'id',
+            'personname',
+            'tgl',
+            'jam',
+        ], $querytempdataabsenrekap);
+
+        $tempkaryawan = '##tempkaryawan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempkaryawan, function ($table) {
+            $table->integer('id')->nullable();
+            $table->longtext('namakaryawan')->nullable();
+        });
+
+        $querytempkaryawan = DB::table($tempdataabsenrekap)->from(
+            DB::raw($tempdataabsenrekap . " a ")
+        )
+            ->select(
+                'a.id',
+                db::raw("max(a.personname) as namakaryawan")
+            )
+            ->groupby('a.id');
+
+        DB::table($tempkaryawan)->insertUsing([
+            'id',
+            'namakaryawan',
+        ], $querytempkaryawan);
+
+        $tempshift = '##tempshift' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempshift, function ($table) {
+            $table->integer('hari')->nullable();
+            $table->time('jammasukmulai', 7)->nullable();
+            $table->time('jammasuk', 7)->nullable();
+            $table->time('jampulang', 7)->nullable();
+            $table->Time('batasjammasuk')->nullable();
+        });
+
+
+        DB::table($tempshift)->insert([
+            'hari' => 2,
+            'jammasukmulai' => '08:30:59',
+            'jammasuk' => '08:30',
+            'jampulang' => '17:00',
+            'batasjammasuk' => '12:45',
+        ]);
+        DB::table($tempshift)->insert([
+            'hari' => 3,
+            'jammasukmulai' => '08:30:59',
+            'jammasuk' => '08:30',
+            'jampulang' => '17:00',
+            'batasjammasuk' => '12:45',
+        ]);
+        DB::table($tempshift)->insert([
+            'hari' => 4,
+            'jammasukmulai' => '08:30:59',
+            'jammasuk' => '08:30',
+            'jampulang' => '17:00',
+            'batasjammasuk' => '12:45',
+        ]);
+        DB::table($tempshift)->insert([
+            'hari' => 5,
+            'jammasukmulai' => '08:30:59',
+            'jammasuk' => '08:30',
+            'jampulang' => '17:00',
+            'batasjammasuk' => '12:45',
+        ]);
+        DB::table($tempshift)->insert([
+            'hari' => 6,
+            'jammasukmulai' => '08:30:59',
+            'jammasuk' => '08:30',
+            'jampulang' => '17:00',
+            'batasjammasuk' => '12:45',
+        ]);
+        DB::table($tempshift)->insert([
+            'hari' => 7,
+            'jammasukmulai' => '08:30:59',
+            'jammasuk' => '08:30',
+            'jampulang' => '12:00',
+            'batasjammasuk' => '11:30',
+        ]);
+
+        $tempdataabsenhasil = '##tempdataabsenhasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdataabsenhasil, function ($table) {
+            $table->integer('id')->nullable();
+            $table->longtext('personname')->nullable();
+            $table->datetime('tgl')->nullable();
+            $table->time('jam')->nullable();
+            $table->time('jammasukmulai')->nullable();
+            $table->time('jammasuk')->nullable();
+            $table->time('jampulang')->nullable();
+            $table->time('batasjammasuk')->nullable();
+            $table->string('statusabsen', 1000)->nullable();
+        });
+
+   
+        $querytempdataabsenhasil = DB::table($tempdataabsenrekap)->from(
+            DB::raw($tempdataabsenrekap . " a ")
+        )
+            ->select(
+                'a.id',
+                'a.personname',
+                'a.tgl',
+                'a.jam',
+                db::raw("isnull(b.jammasukmulai,'00:00:00.0000000') as jammasukmulai"),
+                db::raw("isnull(b.jammasuk,'00:00:00.0000000') as jammasuk"),
+                db::raw("isnull(b.jampulang,'00:00:00.0000000') as jampulang"),
+                db::raw("isnull(b.batasjammasuk,'00:00:00.0000000') as batasjammasuk"),
+                db::raw("(case when isnull(b.hari,0)=0 then 'LIBUR'
+                      when a.jam<=b.batasjammasuk then 'MASUK'
+                      when a.jam>b.batasjammasuk then 'PULANG'
+                      when year(isnull(c.tgl,'1900/1/1'))=1900  then 'LIBUR'
+                      else '' end) as statusabsen")
+            )
+            ->leftjoin(db::raw($tempshift . " b"), db::raw("datepart(dw,a.tgl)"), 'b.hari')
+            ->leftjoin(db::raw("harilibur c with (readuncommitted)"), 'a.tgl', 'c.tgl');
+
+            // dd($querytempdataabsenhasil->get());
+
+        DB::table($tempdataabsenhasil)->insertUsing([
+            'id',
+            'personname',
+            'tgl',
+            'jam',
+            'jammasukmulai',
+            'jammasuk',
+            'jampulang',
+            'batasjammasuk',
+            'statusabsen',
+        ], $querytempdataabsenhasil);
+
+      
+        $tempdataabsenhasil2 = '##tempdataabsenhasil2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdataabsenhasil2, function ($table) {
+            $table->integer('urut')->nullable();
+            $table->integer('id')->nullable();
+            $table->longtext('personname')->nullable();
+            $table->datetime('tgl')->nullable();
+            $table->time('jam')->nullable();
+            $table->time('jammasukmulai')->nullable();
+            $table->time('jammasuk')->nullable();
+            $table->time('jampulang')->nullable();
+            $table->time('batasjammasuk')->nullable();
+            $table->string('statusabsen', 1000)->nullable();
+        });
+
+        $querytempdataabsenhasil2 = DB::table($tempdataabsenhasil)->from(
+            DB::raw($tempdataabsenhasil . " a ")
+        )
+            ->select(
+                db::raw("ROW_NUMBER() OVER(PARTITION BY  a.id,a.tgl,a.statusabsen ORDER BY  a.jam)  as urut"),
+                'a.id',
+                'a.personname',
+                'a.tgl',
+                'a.jam',
+                'a.jammasukmulai',
+                'a.jammasuk',
+                'a.jampulang',
+                'a.batasjammasuk',
+                'a.statusabsen'
+
+            );
+
+
+
+        DB::table($tempdataabsenhasil2)->insertUsing([
+            'urut',
+            'id',
+            'personname',
+            'tgl',
+            'jam',
+            'jammasukmulai',
+            'jammasuk',
+            'jampulang',
+            'batasjammasuk',
+            'statusabsen',
+        ], $querytempdataabsenhasil2);
+
+        DB::delete(DB::raw("delete " . $tempdataabsen . " where urut<>1"));
+
+
+        $templogabsen = '##templogabsen' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($templogabsen, function ($table) {
+            $table->integer('urut')->nullable();
+            $table->integer('id')->nullable();
+            $table->longtext('personname')->nullable();
+            $table->datetime('tgl')->nullable();
+            $table->time('jam')->nullable();
+            $table->string('jadwalkerja', 1000)->nullable();
+            $table->string('statusabsen', 1000)->nullable();
+            $table->longtext('terlambatmasuk')->nullable();
+            $table->longtext('terlambatpulang')->nullable();
+            $table->longtext('cepatmasuk')->nullable();
+            $table->longtext('cepatpulang')->nullable();
+        });
+
+
+        $querytemplogabsen = DB::table($tempdataabsenhasil2)->from(
+            DB::raw($tempdataabsenhasil2 . " a ")
+        )
+            ->select(
+                'a.urut',
+                'a.id',
+                'a.personname',
+                'a.tgl',
+                'b.jamdetail as jam',
+                db::raw("trim(cast(left(a.jammasuk,5) as varchar(100)))+' : '+trim(cast(left(a.jampulang,5) as varchar(100))) as jadwalkerja"),
+                db::raw("'HADIR' AS statusabsen"),
+                db::raw("(case when a.statusabsen='MASUK' and a.urut=1 and b.jamdetail>a.jammasukmulai then 
+                    right('0' + convert(varchar(9),(datediff(second,a.jammasukmulai,b.jamdetail) / 3600 )),2) + ':' 
+                                + right('0' + convert(varchar(2),(datediff(second,a.jammasukmulai,b.jamdetail) / 60) % 60 ),2) + ':' 
+                                + right('0' + convert(varchar(2),(datediff(second,a.jammasukmulai,b.jamdetail) % 60 )),2)
+                    else '' end) as terlambatmasuk"),
+                db::raw("(case when a.statusabsen='PULANG' and a.urut=1 and b.jamdetail>a.jampulang then 
+                    right('0' + convert(varchar(9),(datediff(second,a.jampulang,b.jamdetail) / 3600 )),2) + ':' 
+                                + right('0' + convert(varchar(2),(datediff(second,a.jampulang,b.jamdetail) / 60) % 60 ),2) + ':' 
+                                + right('0' + convert(varchar(2),(datediff(second,a.jampulang,b.jamdetail) % 60 )),2)
+                    else '' end) as terlambatpulang"),
+                db::raw("(case when a.statusabsen='MASUK' and a.urut=1 and b.jamdetail<a.jammasukmulai then 
+                        right('0' + convert(varchar(9),(datediff(second,b.jamdetail,a.jammasukmulai) / 3600 )),2) + ':' 
+                                + right('0' + convert(varchar(2),(datediff(second,b.jamdetail,a.jammasukmulai) / 60) % 60 ),2) + ':' 
+                                + right('0' + convert(varchar(2),(datediff(second,b.jamdetail,a.jammasukmulai) % 60 )),2)
+                    else '' end) as cepatmasuk"),
+                db::raw("(case when a.statusabsen='PULANG' and a.urut=1 and b.jamdetail<a.jampulang then 
+                            right('0' + convert(varchar(9),(datediff(second,b.jamdetail,a.jampulang) / 3600 )),2) + ':' 
+                                + right('0' + convert(varchar(2),(datediff(second,b.jamdetail,a.jampulang) / 60) % 60 ),2) + ':' 
+                                + right('0' + convert(varchar(2),(datediff(second,b.jamdetail,a.jampulang) % 60 )),2)
+                    else '' end) as cepatpulang")
+
+            )
+            ->join(DB::raw($tempdataabsen . " as b"), function ($join) {
+                $join->on('a.id', '=', 'b.id');
+                $join->on('a.tgl', '=', 'b.tgl');
+                $join->on('a.jam', '=', 'b.jam');
+            });
+
+        DB::table($templogabsen)->insertUsing([
+            'urut',
+            'id',
+            'personname',
+            'tgl',
+            'jam',
+            'jadwalkerja',
+            'statusabsen',
+            'terlambatmasuk',
+            'terlambatpulang',
+            'cepatmasuk',
+            'cepatpulang',
+        ], $querytemplogabsen);
+
+
+        $temphadir = '##temphadir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temphadir, function ($table) {
+            $table->integer('id')->nullable();
+            $table->longtext('personname')->nullable();
+            $table->datetime('tgl')->nullable();
+            $table->string('jadwalkerja', 1000)->nullable();
+            $table->string('statusabsen', 1000)->nullable();
+            $table->longtext('logabsensi')->nullable();
+            $table->longtext('terlambatmasuk')->nullable();
+            $table->longtext('terlambatpulang')->nullable();
+            $table->longtext('cepatmasuk')->nullable();
+            $table->longtext('cepatpulang')->nullable();
+        });
+
+        $querytemphadir = DB::table($templogabsen)->from(
+            DB::raw($templogabsen . " a ")
+        )
+            ->select(
+                'a.id',
+                db::raw("max(a.personname) as personname"),
+                'a.tgl',
+                db::raw("max(a.jadwalkerja) as jadwalkerja"),
+                db::raw("max(a.statusabsen) as statusabsen"),
+                db::raw("isnull(STRING_AGG(cast(left(a.jam,8) as nvarchar(max)), ', '),'') as logabsensi"),
+                db::raw("max(a.terlambatmasuk) as terlambatmasuk"),
+                db::raw("max(a.terlambatpulang) as terlambatpulang"),
+                db::raw("max(a.cepatmasuk) as cepatmasuk"),
+                db::raw("max(a.cepatpulang) as cepatpulang")
+
+            )
+            ->groupby('a.id')
+            ->groupby('a.tgl');
+
+        DB::table($temphadir)->insertUsing([
+            'id',
+            'personname',
+            'tgl',
+            'jadwalkerja',
+            'statusabsen',
+            'logabsensi',
+            'terlambatmasuk',
+            'terlambatpulang',
+            'cepatmasuk',
+            'cepatpulang',
+        ], $querytemphadir);
+
+        $temptanggal = '##temptanggal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temptanggal, function ($table) {
+            $table->datetime('tgl')->nullable();
+        });
+
+        while ($ptgl1 <= $ptgl2) {
+            DB::table($temptanggal)->insert([
+                'tgl' => $ptgl1,
+            ]);
+            $ptgl1 = date("Y-m-d", strtotime("+1 day", strtotime($ptgl1)));
+        }
+
+        $tempdatakaryawan = '##tempdatakaryawan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdatakaryawan, function ($table) {
+            $table->integer('id')->nullable();
+            $table->longtext('namakaryawan')->nullable();
+            $table->datetime('tgl')->nullable();
+        });
+
+        $querytempdatakaryawan = DB::table($tempkaryawan)->from(
+            DB::raw($tempkaryawan . " a ")
+        )
+            ->select(
+                'a.id',
+                'a.namakaryawan',
+                'b.tgl'
+
+            )
+            ->crossjoin(db::raw($temptanggal . " b"));
+
+        DB::table($tempdatakaryawan)->insertUsing([
+            'id',
+            'namakaryawan',
+            'tgl',
+        ], $querytempdatakaryawan);
+
+
+        $temphadirrekap = '##temphadirrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temphadirrekap, function ($table) {
+            $table->id();            
+            $table->longtext('karyawan')->nullable();
+            $table->datetime('tanggal')->nullable();
+            $table->string('jadwalkerja', 1000)->nullable();
+            $table->string('statusabsen', 1000)->nullable();
+            $table->string('jamkerja', 1000)->nullable();
+            $table->longtext('terlambatmasuk')->nullable();
+            $table->longtext('terlambatpulang')->nullable();
+            $table->longtext('cepatmasuk')->nullable();
+            $table->longtext('cepatpulang')->nullable();
+            $table->longtext('logwaktu')->nullable();
+        });
+
+        $querytemphadirrekap = DB::table($tempdatakaryawan)->from(
+            DB::raw($tempdatakaryawan . " a ")
+        )
+            ->select(
+                'a.namakaryawan',
+                'a.tgl',
+                db::raw("(case when isnull(c.hari,0)=0  then 'LIBUR' else trim(cast(left(c.jammasuk,5) as varchar(100)))+' : '+trim(cast(left(c.jampulang,5) as varchar(100))) end) as jadwalkerja"),
+                db::raw("(case when  isnull(c.hari,0)=0  then 'LIBUR'
+           when  d.tgl<>null  then 'LIBUR'
+           else isnull(b.statusabsen,'ABSEN') end) as statusabsen"),
+                db::raw("(case when isnull(c.hari,0)=0  then 'LIBUR' else trim(cast(left(c.jammasuk,5) as varchar(100)))+' : '+trim(cast(left(c.jampulang,5) as varchar(100))) end) as jamkerja"),
+                db::raw("isnull(b.terlambatmasuk,'') as terlambatmasuk"),
+                db::raw("isnull(b.terlambatpulang,'') as terlambatmasuk"),
+                db::raw("isnull(b.cepatmasuk,'') as cepatmasuk"),
+                db::raw("isnull(b.cepatpulang,'') as cepatpulang"),
+                db::raw("isnull(b.logabsensi,'') as logabsensi")
+
+            )
+            ->leftjoin(DB::raw($temphadir . " as b"), function ($join) {
+                $join->on('a.id', '=', 'b.id');
+                $join->on('a.tgl', '=', 'b.tgl');
+            })
+            ->leftjoin(db::raw($tempshift . " c"), db::raw("datepart(dw,a.tgl)"), 'c.hari')
+            ->leftjoin(db::raw("harilibur d with (readuncommitted)"), 'a.tgl', 'd.tgl')
+            ->orderby('a.tgl','asc')
+            ->orderby('a.namakaryawan','asc');
+
+        DB::table($temphadirrekap)->insertUsing([
+            'karyawan',
+            'tanggal',
+            'jadwalkerja',
+            'statusabsen',
+            'jamkerja',
+            'terlambatmasuk',
+            'terlambatpulang',
+            'cepatmasuk',
+            'cepatpulang',
+            'logwaktu',
+        ], $querytemphadirrekap);
+
+        $query = DB::table($temphadirrekap)->from(
+            db::raw($temphadirrekap . " a")
+        )
+
+        
+            ->select(
+                'a.id',
+                'a.karyawan',
+                'a.tanggal',
+                'a.jadwalkerja',
+                'a.statusabsen',
+                'a.jamkerja',
+                'a.cepatmasuk',
+                'a.cepatpulang',        
+                'a.terlambatmasuk',
+                'a.terlambatpulang',
+                'a.logwaktu',
+            )
+            ->orderby('a.id','asc');
+
+            
+
+        return $query;
+    }
+
+    public function getdataold($tgldari, $tglsampai)
+    {
+
+        $datacabang = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'CABANG')
+            ->where('subgrp', 'CABANG')
+            ->first()->text ?? '';
+
+        if ($datacabang == 'MEDAN') {
             DB::update(DB::raw("UPDATE logabsensi SET id=288 from logabsensi where id=280"));
         }
 
-        
+
 
 
         $tempwaktu = '##tempwaktu' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -87,7 +570,7 @@ class LogAbsensi extends MyModel
             ->groupBy('tgl');
 
         $datadetail = json_decode($querywaktu1->get(), true);
-        dd('test');
+        // dd('test');
 
 
         foreach ($datadetail as $item) {
@@ -124,10 +607,10 @@ class LogAbsensi extends MyModel
         $tempshift = '##tempshift' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempshift, function ($table) {
             $table->integer('hari')->nullable();
-            $table->time('jammasukmulai', 7)->nullable();
-            $table->time('jammasuk', 7)->nullable();
-            $table->time('jampulang', 7)->nullable();
-            $table->dateTime('batasjammasuk')->nullable();
+            $table->time('jammasukmulai')->nullable();
+            $table->time('jammasuk')->nullable();
+            $table->time('jampulang')->nullable();
+            $table->time('batasjammasuk')->nullable();
         });
 
         $tempshiftkaryawan = '##tempshiftkaryawan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -707,7 +1190,7 @@ class LogAbsensi extends MyModel
             );
 
             Schema::create($temtabel, function (Blueprint $table) {
-                $table->id();
+                $table->integer('id')->nullable();
                 $table->string('karyawan', 255)->nullable();
                 $table->date('tanggal')->nullable();
                 $table->string('jadwalkerja', 1000)->nullable();
@@ -721,6 +1204,7 @@ class LogAbsensi extends MyModel
             });
 
             DB::table($temtabel)->insertUsing([
+                'id',
                 'karyawan',
                 'tanggal',
                 'jadwalkerja',
@@ -808,7 +1292,7 @@ class LogAbsensi extends MyModel
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         $this->sort($query);
-
+            // dd($query->tosql());
         $this->filter($query);
 
         $this->paginate($query);
