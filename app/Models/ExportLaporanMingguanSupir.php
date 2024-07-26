@@ -204,7 +204,6 @@ class ExportLaporanMingguanSupir extends Model
             );
         // ->join(DB::raw($tempData . " as c "), 'a.nobukti', 'c.nobuktiric')
         // ->GroupBy('a.nobukti');
-
         DB::table($tempuangjalan)->insertUsing([
             'nobukti',
             'suratpengantar_nobukti',
@@ -650,9 +649,12 @@ class ExportLaporanMingguanSupir extends Model
                 DB::raw("isnull(a.gajiritasi,0) as ritasi"),
                 DB::raw("0 as extrabbm"),
                 DB::raw("isnull(a.ketritasi,'') as ketritasi"),
-                DB::raw("(case when isnull(a.urutric,0)=1 then isnull(d.nominaluangjalan,0) else 0 end) as uangjalan"),
-                DB::raw("(case when isnull(a.urutric,0)=1 then isnull(d.nominaluangbbm,0) else 0 end) as uangbbm"),
-                DB::raw("(case when isnull(a.urutric,0)=1 then isnull(d.nominaluangmakan,0) else 0 end) as uangmakan"),
+                DB::raw("(case when a.urutextra=1 then
+                    (case when isnull(a.urutric,0)=1 then isnull(d.nominaluangjalan,0) else 0 end) else 0 end) as uangjalan"),
+                DB::raw("(case when a.urutextra=1 then
+                    (case when isnull(a.urutric,0)=1 then isnull(d.nominaluangbbm,0) else 0 end) else 0 end) as uangbbm"),
+                DB::raw("(case when a.urutextra=1 then
+                    (case when isnull(a.urutric,0)=1 then isnull(d.nominaluangmakan,0) else 0 end) else 0 end) as uangmakan"),
                 DB::raw("(isnull(A.gajisupir,0)+isnull(a.komisisupir,0)+isnull(a.gajikenek,0)+isnull(f.nominal,0) 
                             /*+(case when isnull(a.urutric,0)=1 then isnull(d.nominaluangjalan,0) else 0 end)*/                
                             +(case when isnull(a.urutric,0)=1 then isnull(d.nominaluangbbm,0) else 0 end)

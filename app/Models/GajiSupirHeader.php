@@ -799,18 +799,31 @@ class GajiSupirHeader extends MyModel
                     'suratpengantar.upah_id',
                     'container.kodecontainer as container',
                     'statuscontainer.kodestatuscontainer as statuscontainer',
-                    DB::raw("(case when extrasupir.furut > 1 then 0 else suratpengantar.gajisupir end) as gajisupir"),
-                    DB::raw("(case when extrasupir.furut > 1 then 0 else suratpengantar.gajikenek end) as gajikenek"),
-                    DB::raw("(case when extrasupir.furut > 1 then 0 else suratpengantar.komisisupir end) as komisisupir"),
-                    DB::raw("(case when extrasupir.furut > 1 then 0 else suratpengantar.tolsupir end) as tolsupir"),
+                    DB::raw(" (case when isnull(gajisupirdetail.urutextra,'')='' then 
+                        (case when extrasupir.furut > 1 then 0 else suratpengantar.gajisupir end) 
+                        else 0 end) as gajisupir"),
+                    DB::raw("(case when isnull(gajisupirdetail.urutextra,'')='' then 
+                        (case when extrasupir.furut > 1 then 0 else suratpengantar.gajikenek end) 
+                        else 0 end) as gajikenek"),
+                    DB::raw("(case when isnull(gajisupirdetail.urutextra,'')='' then 
+                        (case when extrasupir.furut > 1 then 0 else suratpengantar.komisisupir end) 
+                        else 0 end) as komisisupir"),
+                    DB::raw("(case when isnull(gajisupirdetail.urutextra,'')='' then 
+                        (case when extrasupir.furut > 1 then 0 else suratpengantar.tolsupir end) 
+                        else 0 end) as tolsupir"),
                     'extrasupir.nominal as biayaextrasupir_nominal',
                     'extrasupir.nobukti as biayaextrasupir_nobukti',
                     'extrasupir.keterangan as biayaextrasupir_keterangan',
 
-                    DB::raw("(case when extrasupir.furut > 1 then 0 else biayatambahan.biayaextra end) as biayaextra"),
-                    DB::raw("(case when extrasupir.furut > 1 then '-' else 
-                (case when biayatambahan.biayaextra = 0 then '-' else biayatambahan.keteranganbiaya end)  end) as keteranganbiaya"),
+                    DB::raw("(case when isnull(gajisupirdetail.urutextra,'')='' then 
+                        (case when extrasupir.furut > 1 then 0 else biayatambahan.biayaextra end)
+                         else 0 end) as biayaextra"),
+                    DB::raw("(case when isnull(gajisupirdetail.urutextra,'')='' then 
+                        (case when extrasupir.furut > 1 then '-' else 
+                        (case when biayatambahan.biayaextra = 0 then '-' else biayatambahan.keteranganbiaya end)  end)
+                        else '-' end)  as keteranganbiaya"),
                 )
+                ->leftJoin(DB::raw("gajisupirdetail with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'suratpengantar.nobukti')
                 ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
                 ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
                 ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
@@ -1756,16 +1769,21 @@ class GajiSupirHeader extends MyModel
                     'container.kodecontainer as container',
                     'statuscontainer.kodestatuscontainer as statuscontainer',
 
-                    DB::raw("(case when extrasupir.furut > 1 then 0 else suratpengantar.gajisupir end) as gajisupir"),
-                    DB::raw("(case when extrasupir.furut > 1 then 0 else suratpengantar.gajikenek end) as gajikenek"),
-                    DB::raw("(case when extrasupir.furut > 1 then 0 else suratpengantar.komisisupir end) as komisisupir"),
-                    DB::raw("(case when extrasupir.furut > 1 then 0 else suratpengantar.tolsupir end) as tolsupir"),
+                    DB::raw("(case when isnull(gajisupirdetail.urutextra,'')='' then 
+                    (case when extrasupir.furut > 1 then 0 else suratpengantar.gajisupir end)  else 0 end) as gajisupir"),
+                    DB::raw("(case when isnull(gajisupirdetail.urutextra,'')='' then 
+                    (case when extrasupir.furut > 1 then 0 else suratpengantar.gajikenek end)  else 0 end) as gajikenek"),
+                    DB::raw("(case when isnull(gajisupirdetail.urutextra,'')='' then 
+                    (case when extrasupir.furut > 1 then 0 else suratpengantar.komisisupir end)  else 0 end) as komisisupir"),
+                    DB::raw("(case when isnull(gajisupirdetail.urutextra,'')='' then 
+                    (case when extrasupir.furut > 1 then 0 else suratpengantar.tolsupir end)  else 0 end) as tolsupir"),
                     'extrasupir.nominal as biayaextrasupir_nominal',
                     'extrasupir.nobukti as biayaextrasupir_nobukti',
                     'extrasupir.keterangan as biayaextrasupir_keterangan',
                     DB::raw("(case when extrasupir.furut > 1 then 0 else biayatambahan.biayaextra end) as biayaextra"),
                     DB::raw("(case when extrasupir.furut > 1 then '-' else biayatambahan.keteranganbiaya end) as keteranganbiaya"),
                 )
+                ->leftJoin(DB::raw("gajisupirdetail with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'suratpengantar.nobukti')
                 ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
                 ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
                 ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
@@ -2528,7 +2546,15 @@ class GajiSupirHeader extends MyModel
             ->select('sub.*')
             ->where('sub.furut', 1)
             ->first();
-        $gajiSupirHeader->suratpengantar_nobukti = $result->suratpengantar_nobukti;
+
+        $cekIfExistTrip = DB::table("gajisupirheader")->from(db::raw("gajisupirheader with (readuncommitted)"))
+            ->where('suratpengantar_nobukti', $result->suratpengantar_nobukti)->first();
+        $trip = '';
+        if (!isset($cekIfExistTrip)) {
+            $trip = $result->suratpengantar_nobukti;
+        }
+
+        $gajiSupirHeader->suratpengantar_nobukti = $trip;
         $gajiSupirHeader->nominal = $nominal;
         $gajiSupirHeader->total = $total;
 
@@ -2920,7 +2946,15 @@ class GajiSupirHeader extends MyModel
             ->select('sub.*')
             ->where('sub.furut', 1)
             ->first();
-        $gajiSupirHeader->suratpengantar_nobukti = $result->suratpengantar_nobukti;
+
+        $cekIfExistTrip = DB::table("gajisupirheader")->from(db::raw("gajisupirheader with (readuncommitted)"))
+            ->where('suratpengantar_nobukti', $result->suratpengantar_nobukti)->first();
+        $trip = '';
+        if (!isset($cekIfExistTrip)) {
+            $trip = $result->suratpengantar_nobukti;
+        }
+
+        $gajiSupirHeader->suratpengantar_nobukti = $trip;
         $gajiSupirHeader->nominal = $nominal;
         $gajiSupirHeader->total = $total;
 
