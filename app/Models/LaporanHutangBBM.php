@@ -223,7 +223,7 @@ class LaporanHutangBBM extends MyModel
                 'a.updated_at'
 
             )
-            ->where('a.tglbukti', '<=', $sampai)
+            ->where('a.tglbukti', '<', $sampai)
             ->where('a.pengeluarantrucking_id', '=', $pengeluarantrucking_id);
 
         DB::table($pengeluaranTruckingHeader)->insertUsing([
@@ -314,6 +314,36 @@ class LaporanHutangBBM extends MyModel
             'nominal',
 
         ], $queryTempLaporan);
+
+        $queryTempLaporan = DB::table("pengeluarantruckingheader")->from(
+            DB::raw("pengeluarantruckingheader as a with (readuncommitted)")
+        )
+            ->select(
+                'a.tglbukti',
+                'a.tglbukti',
+                'c.nobukti',
+                'c.Keterangan',
+                DB::raw("0 as flag"),
+                DB::raw("(c.nominal*-1) as nominal"),
+
+            )
+            ->join(DB::raw("pengeluarantruckingdetail as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+            ->where('a.tglbukti',$sampai)
+            ->where('a.pengeluarantrucking_id', '=', $pengeluarantrucking_id)            
+            ->orderBy('a.tglbukti', 'ASC')
+            ->orderBy('c.nobukti', 'ASC');
+
+            // dd($queryTempLaporan->get());
+
+        DB::table($tempLaporan)->insertUsing([
+            'tglbuktibbm',
+            'tglbukti',
+            'nobukti',
+            'keterangan',
+            'flag',
+            'nominal',
+
+        ], $queryTempLaporan);        
 
         $tempLaporan2 = '##tempLaporan2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempLaporan2, function ($table) {
