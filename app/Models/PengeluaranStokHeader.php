@@ -671,7 +671,7 @@ class PengeluaranStokHeader extends MyModel
                 ->Join(db::raw($temppelunasanhutangheader . " as pelunasanhutangheader"), db::raw("isnull(pengeluaranstokheader.hutangbayar_nobukti,'')"), 'pelunasanhutangheader.nobukti')
                 ->Join(db::raw($temppengeluaranstokheader . " as pengeluaran"), db::raw("isnull(pengeluaranstokheader.pengeluaranstok_nobukti,'')"), 'pengeluaran.nobukti')
                 ->Join(db::raw($tempserviceinheader . " as serviceinheader"), db::raw("isnull(pengeluaranstokheader.servicein_nobukti,'')"), 'serviceinheader.nobukti')
-                ->Join(db::raw($temppengeluarantruckingheader . " as pengeluarantruckingheader"), 'pengeluaranstokheader.pengeluarantrucking_nobukti', 'pengeluarantruckingheader.nobukti')
+                ->Join(db::raw($temppengeluarantruckingheader . " as pengeluarantruckingheader"), db::raw("isnull(pengeluaranstokheader.pengeluarantrucking_nobukti,'')"), 'pengeluarantruckingheader.nobukti')
                 ->Join(DB::raw("$tempNominal as nominal with (readuncommitted)"), db::raw("isnull(pengeluaranstokheader.nobukti,'')"), 'nominal.nobukti')
 
                 ->Join(db::raw($tempsupir . " supir "), db::raw("isnull(pengeluaranstokheader.supir_id,0)"), 'supir.id');
