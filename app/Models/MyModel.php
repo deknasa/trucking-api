@@ -250,4 +250,63 @@ class MyModel extends Model
 
         return true;
     }
+
+    public function batalEdit($table, $id, $userEdit){
+        $getLocking = DB::table('locks')->from(DB::raw("locks"))
+            ->select(
+                'id',
+                'table',
+                'tableid',
+                'editing_by',
+                'editing_at',
+            )
+            ->where('table', '=', $table)
+            ->where('tableid', '=', $id)
+            ->where('editing_by', '=', $userEdit);
+
+        $data = $getLocking->first();
+
+        if ($data) {
+            $getLocking->delete();
+        }
+    }
+
+    public function createLockEditing($id, $table,$useredit='')
+    {
+        $getLocking = DB::table('locks')->from(DB::raw("locks with (readuncommitted)"))
+            ->select(
+                'id',
+                'table',
+                'tableid',
+                'editing_by',
+                'editing_at',
+            )
+            ->where('table', '=', $table)
+            ->where('tableid', '=', $id)
+            ->where('editing_by', '=', $useredit)
+            ->first();
+
+        if ($getLocking && $useredit != '') {
+
+            DB::table('locks')
+                ->where('editing_by', '=', $useredit)
+                ->delete();
+        }
+
+
+        $locking = new Locking();
+        $locking->table = $table ?? '';
+        $locking->tableid = $id;
+        $locking->editing_by = auth('api')->user()->user;
+        $locking->editing_at = date('Y-m-d H:i:s');
+        $locking->modifiedby = auth('api')->user()->user;
+
+        if (!$locking->save()) {
+            throw new \Exception('Error storing hari libur.');
+        }
+
+        return true;
+    }
+
+
 }

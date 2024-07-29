@@ -23,6 +23,7 @@ use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use stdClass;
+use App\Models\Locking;
 
 class Controller extends BaseController
 {
@@ -587,6 +588,25 @@ class Controller extends BaseController
         return response([
             // 'data' => (new MyModel())->updateEditingBy($table, $id, $aksi,$tablelink),
             'data' => (new MyModel())->updateEditingBy($table, $id, $aksi),
+        ]);
+    }
+
+    public function removeEditingBy()
+    {
+        $id = request()->id ?? '';
+        $table = request()->table ?? '';
+        $aksi = request()->aksi ?? '';
+
+        $locking = new Locking();
+        $getEditing = $locking->getEditing($table, $id);
+
+        $userEdit = $getEditing->editing_by ?? '';
+
+        // $tablelink = request()->tablelink ?? '';
+        return response([
+            // 'data' => (new MyModel())->updateEditingBy($table, $id, $aksi,$tablelink),
+            // 'data' => (new MyModel())->updateEditingBy($table, $id, $userEdit),
+            'data' => (new MyModel())->bataledit($table, $id, auth('api')->user()->name),
         ]);
     }
 
