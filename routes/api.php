@@ -361,6 +361,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('approvalkirimberkas', ApprovalKirimBerkasController::class)->whereNumber('approvalkirimberkas');
 
     Route::post('bataledit', [Controller::class, 'batalEditingBy']);
+    Route::post('removeedit', [Controller::class, 'removeEditingBy']);
     Route::get('jurnalumumpusatheader/importdatacabang', [JurnalUmumPusatHeaderController::class, 'importdatacabang']);
     Route::get('saldoakunpusatdetail/importdatacabang', [SaldoAkunPusatDetailController::class, 'importdatacabang']);
     Route::get('saldoakunpusatdetail/importdatacabangtahun', [SaldoAkunPusatDetailController::class, 'importdatacabangtahun']);

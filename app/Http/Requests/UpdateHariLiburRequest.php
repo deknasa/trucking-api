@@ -7,6 +7,7 @@ use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
 use App\Http\Controllers\Api\ParameterController;
+use App\Rules\DestroyHariLibur;
 use App\Rules\UniqueTglHariLiburEdit ;
 class UpdateHariLiburRequest extends FormRequest
 {
@@ -38,6 +39,7 @@ class UpdateHariLiburRequest extends FormRequest
         $tglbatasawal=(date('Y')-1).'-01-01';
 
         $rules = [
+            'id' => [new DestroyHariLibur()],
             'keterangan' => ['required',Rule::unique('harilibur')->whereNotIn('id', [$this->id])],
             'tgl' => [
                 'required' => ['required',Rule::unique('harilibur')->whereNotIn('id', [$this->id])], 'date_format:d-m-Y', 

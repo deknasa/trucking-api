@@ -16,6 +16,7 @@ use App\Http\Requests\StoreHariLiburRequest;
 use App\Http\Requests\UpdateHariLiburRequest;
 use App\Http\Requests\DestroyHariLiburRequest;
 use App\Http\Requests\RangeExportReportRequest;
+use App\Models\Locking;
 
 class HariLiburController extends Controller
 {
@@ -37,36 +38,38 @@ class HariLiburController extends Controller
 
     public function cekValidasi($id)
     {
-        $dataMaster = HariLibur::where('id',$id)->first();
+        $locking = new Locking();
+        $getEditing = $locking->getEditing('harilibur', $id);
+
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+
         $user = auth('api')->user()->name;
-        $useredit = $dataMaster->editing_by ?? '';
+        $useredit = $getEditing->editing_by ?? '';
         $aksi = request()->aksi ?? '';
        
         if ($useredit != '' && $useredit != $user) {
-           
             $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
 
-            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+
             if ($diffNow->i > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-
-                    (new MyModel())->updateEditingBy('harilibur', $id, $aksi);
+                    (new MyModel())->createLockEditing($id, 'harilibur',$useredit);                  
                 }
 
                 $data = [
-                    'message' => '',
                     'error' => false,
+                    'message' => '',
+                    'kodeerror' => '',
                     'statuspesan' => 'success',
                 ];
-
-                // return response($data);
+                return response($data);
             } else {
-
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
-                $keterror = 'Data <b>' . date('d-m-Y', strtotime($dataMaster->tgl)) . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $queryHariLibur = DB::table("harilibur")->from(DB::raw("harilibur with (readuncommitted)"))->where('id', $id)->first();
+                $keterror = 'Data ' . $queryHariLibur->keterangan . ' ' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
                 $data = [
                     'error' => true,
                     'message' => $keterror,
@@ -79,7 +82,9 @@ class HariLiburController extends Controller
             
         } else {
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                (new MyModel())->updateEditingBy('harilibur', $id, $aksi);
+                
+                // (new MyModel())->updateEditingBy('harilibur', $id, $aksi);
+                (new MyModel())->createLockEditing($id, 'harilibur');
             }
             $data = [
                 'error' => false,
