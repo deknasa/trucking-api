@@ -35,6 +35,7 @@ use PhpParser\Builder\Param;
 use App\Models\MyModel;
 use DateTime;
 use App\Http\Requests\ApprovalValidasiApprovalRequest;
+use App\Models\Locking;
 
 class PenerimaanHeaderController extends Controller
 {
@@ -396,7 +397,8 @@ class PenerimaanHeaderController extends Controller
         $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
         $tgltutup=date('Y-m-d', strtotime($tgltutup));
         $user = auth('api')->user()->name;
-        $useredit = $pengeluaran->editing_by ?? '';
+        $getEditing = (new Locking())->getEditing('penerimaanheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
 
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
@@ -435,11 +437,12 @@ class PenerimaanHeaderController extends Controller
         } else if ($useredit != '' && $useredit != $user) {
             $waktu = (new Parameter())->cekBatasWaktuEdit('PENERIMAAN KAS/BANK BUKTI');
 
-            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
             if ($diffNow->i > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                    (new MyModel())->updateEditingBy('penerimaanheader', $id, $aksi);
+                    // (new MyModel())->updateEditingBy('penerimaanheader', $id, $aksi);
+                    (new MyModel())->createLockEditing($id, 'penerimaanheader',$useredit);  
                 }
 
                 $data = [
@@ -495,7 +498,10 @@ class PenerimaanHeaderController extends Controller
             return response($data);
         } else {
 
-            (new MyModel())->updateEditingBy('penerimaanheader', $id, 'EDIT');
+            $getEditing = (new Locking())->getEditing('penerimaanheader', $id);
+            $useredit = $getEditing->editing_by ?? '';
+            (new MyModel())->createLockEditing($id, 'penerimaanheader',$useredit);   
+            // (new MyModel())->updateEditingBy('penerimaanheader', $id, 'EDIT');
 
             $data = [
                 'error' => false,
