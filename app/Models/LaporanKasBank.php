@@ -862,12 +862,11 @@ class LaporanKasBank extends MyModel
                 $tempsaldo . " as a"
             )
                 ->select(
-                    'a.tglbukti',                    
                     'a.urut',
                     'a.urutdetail',
                     DB::raw("isnull(b.keterangancoa,'') as keterangancoa"),
                     DB::raw("'" . $querykasbank->namabank . "' as namabank"),
-                    DB::raw("(case when year(isnull(a.tglbukti,'1900/1/1')) < '2000' then '" . $dari . "' else a.tglbukti end) as tglbukti2"),
+                    DB::raw("(case when year(isnull(a.tglbukti,'1900/1/1')) < '2000' then '" . $dari . "' else a.tglbukti end) as tglbukti"),
                     'a.nobukti',
                     'a.keterangan',
                     'a.debet',
@@ -895,7 +894,6 @@ class LaporanKasBank extends MyModel
                 $tempsaldo . " as a"
             )
                 ->select(
-                    'a.tglbukti',
                     'a.id',
                     'a.urut',
                     'a.urutdetail',
@@ -917,14 +915,18 @@ class LaporanKasBank extends MyModel
                           when month(a.tglbukti)=12 then 'DES' ELSE '' END)
 
                     +format(a.tglbukti,'-yy') 
-                     end) as tglbukti2"),
+                     end) as tglbukti"),
                     'a.nobukti',
                     'a.keterangan',
                     'a.debet',
                     'a.kredit',
                     'c.totaldebet',
                     'c.totalkredit',
-                    DB::raw("sum ((isnull(a.saldo,0)+isnull(a.debet,0))-isnull(a.Kredit,0)) over (order by a.tglbukti,a.urut,a.nobukti,a.id) as saldo"),
+                    DB::raw("sum ((isnull(a.saldo,0)+
+                    (case when isnull(a.urutdetail,0)=1 then  isnull(c.totaldebet,0) else 0 end)
+                    )-
+                    (case when isnull(a.urutdetail,0)=1 then  isnull(c.totalkredit,0) else 0 end)
+                    ) over (order by a.tglbukti,a.urut,a.nobukti,a.id) as saldo"),
                     DB::raw("'Laporan Buku " . ucwords(strtolower($querykasbank->tipe)) . "' as judulLaporan"),
                     DB::raw("'" . $getJudul->text . "' as judul"),
                     DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
