@@ -125,7 +125,6 @@ use App\Http\Controllers\Api\LaporanKasBankController;
 use App\Http\Controllers\Api\PemutihanSupirController;
 use App\Http\Controllers\Api\PenerimaanStokController;
 use App\Http\Controllers\Api\StatusOliTradoController;
-use App\Http\Controllers\Api\StatusOliTradoDetailController;
 use App\Http\Controllers\Api\StokPersediaanController;
 use App\Http\Controllers\Api\SuratPengantarController;
 use App\Http\Controllers\Api\AkunPusatDetailController;
@@ -221,8 +220,11 @@ use App\Http\Controllers\Api\PenerimaanStokDetailController;
 use App\Http\Controllers\Api\PenerimaanStokHeaderController;
 use App\Http\Controllers\Api\SaldoAkunPusatDetailController;
 use App\Http\Controllers\Api\StatusGandenganTruckController;
+use App\Http\Controllers\Api\StatusOliTradoDetailController;
 use App\Http\Controllers\Api\TradoTambahanAbsensiController;
 use App\Http\Controllers\Api\ApprovalInvoiceHeaderController;
+use App\Http\Controllers\Api\BiayaExtraSupirDetailController;
+use App\Http\Controllers\Api\BiayaExtraSupirHeaderController;
 use App\Http\Controllers\Api\ExportPemakaianBarangController;
 use App\Http\Controllers\Api\ExportPembelianBarangController;
 use App\Http\Controllers\Api\ExportRincianMingguanController;
@@ -284,6 +286,7 @@ use App\Http\Controllers\Api\ExportLaporanMingguanSupirController;
 use App\Http\Controllers\Api\LaporanKartuHutangPrediksiController;
 use App\Http\Controllers\Api\LaporanKartuPiutangPerAgenController;
 use App\Http\Controllers\Api\LaporanSupirLebihDariTradoController;
+use App\Http\Controllers\Api\LaporanSupplierBandingStokController;
 use App\Http\Controllers\Api\LaporanTripGandenganDetailController;
 use App\Http\Controllers\Api\ProsesUangJalanSupirDetailController;
 use App\Http\Controllers\Api\ProsesUangJalanSupirHeaderController;
@@ -310,8 +313,6 @@ use App\Http\Controllers\Api\LaporanKartuPiutangPerPlgDetailController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanPerEBSController;
 use App\Http\Controllers\Api\SuratPengantarApprovalInputTripController;
 use App\Http\Controllers\Api\ApprovalBukaTanggalSuratPengantarController;
-use App\Http\Controllers\Api\BiayaExtraSupirDetailController;
-use App\Http\Controllers\Api\BiayaExtraSupirHeaderController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
 
@@ -724,6 +725,9 @@ route::middleware(['auth:api'])->group(function () {
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
+    Route::get('laporansupplierbandingstok/export', [LaporanSupplierBandingStokController::class, 'export'])->name('laporansupplierbandingstok.export');
+    Route::get('laporansupplierbandingstok/report', [LaporanSupplierBandingStokController::class, 'report'])->name('laporansupplierbandingstok.report');
+
     Route::post('penerimaanstok/approvaltidakcabang', [PenerimaanStokController::class, 'approvalTidakCabang']);
     Route::post('penerimaanstok/approvalberlakucabang', [PenerimaanStokController::class, 'approvalBerlakuCabang']);
 
@@ -1882,6 +1886,9 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporansaldoinventory/export', [LaporanSaldoInventoryController::class, 'export'])->name('laporansaldoinventory.export');
     Route::get('laporansaldoinventory/report', [LaporanSaldoInventoryController::class, 'report'])->name('laporansaldoinventory.report');
     Route::resource('laporansaldoinventory', LaporanSaldoInventoryController::class)->whereNumber('laporansaldoinventory');
+
+    // Route::get('laporansupplierbandingstok/export', [LaporanSupplierBandingStokController::class, 'export'])->name('laporansupplierbandingstok.export');
+    // Route::get('laporansupplierbandingstok/report', [LaporanSupplierBandingStokController::class, 'report'])->name('laporansupplierbandingstok.report');
 
     Route::get('laporansaldoinventorylama/export', [LaporanSaldoInventoryLamaController::class, 'export'])->name('laporansaldoinventorylama.export');
     Route::get('laporansaldoinventorylama/report', [LaporanSaldoInventoryLamaController::class, 'report'])->name('laporansaldoinventorylama.report');

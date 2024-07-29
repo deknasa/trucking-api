@@ -232,8 +232,8 @@ class UpahRitasiController extends Controller
         return response([
             'data' => $upahritasi->triplookup(),
             'attributes' => [
-                'totalRows' => 0,
-                'totalPages' => 0,
+                'totalRows' => $upahritasi->totalRows,
+                'totalPages' => $upahritasi->totalPages
             ]
         ]);
     }
