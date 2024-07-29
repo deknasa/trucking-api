@@ -297,12 +297,12 @@ class MyModel extends Model
         $locking = new Locking();
         $locking->table = $table ?? '';
         $locking->tableid = $id;
-        $locking->editing_by = auth('api')->user()->user;
+        $locking->editing_by = auth('api')->user()->name;
         $locking->editing_at = date('Y-m-d H:i:s');
-        $locking->modifiedby = auth('api')->user()->user;
+        $locking->modifiedby = auth('api')->user()->name;
 
         if (!$locking->save()) {
-            throw new \Exception('Error storing hari libur.');
+            throw new \Exception('Error storing Lock Editing.');
         }
 
         return true;
