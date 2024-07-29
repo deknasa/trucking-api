@@ -759,7 +759,9 @@ class GajiSupirHeader extends MyModel
                 ->where(function ($query) {
                     $query->whereRaw("suratpengantar.nobukti not in(select suratpengantar_nobukti from gajisupirdetail)")
                         ->orWhereRaw("ritasi.nobukti not in(select ritasi_nobukti from gajisupirdetail)");
-                });
+                })
+                ->orderBy('suratpengantar.nobukti','asc')
+                ->orderBy('ritasi.suratpengantar_urutke', 'asc');
             // ->whereRaw("suratpengantar.nobukti not in(select suratpengantar_nobukti from gajisupirdetail)");
             $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
         } else {
@@ -2418,6 +2420,12 @@ class GajiSupirHeader extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
+        $formatCetak = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'FORMAT CETAK')
+            ->where('subgrp', 'GAJI SUPIR')
+            ->first();
+
         $query = DB::table($this->table)->from(DB::raw("gajisupirheader with (readuncommitted)"))
             ->select(
                 'gajisupirheader.id',
@@ -2440,6 +2448,7 @@ class GajiSupirHeader extends MyModel
                 DB::raw('(case when (year(gajisupirheader.tglbukacetak) <= 2000) then null else gajisupirheader.tglbukacetak end ) as tglbukacetak'),
                 DB::raw("'Bukti Rincian Gaji Supir' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'" . $formatCetak->text . "' as formatcetak"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
