@@ -48,6 +48,7 @@ class AbsensiSupirHeaderController extends Controller
     public function index(GetIndexRangeRequest $request)
     {
         $absensiSupirHeader = new AbsensiSupirHeader();
+        $absensiSupirHeader->returnUnApprovalEdit();
 
         return response([
             'data' => $absensiSupirHeader->get(),

@@ -1527,4 +1527,22 @@ class AbsensiSupirHeader extends MyModel
 
         }
     }
+    public function returnUnApprovalEdit()
+    {
+        DB::beginTransaction();
+        try {
+            $absensiSupirHeader = new AbsensiSupirHeader();
+            $statusBolehEdit = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT ABSENSI')->where('text', '=', 'BOLEH EDIT ABSENSI')->first();
+            $statusTidakBolehEdit = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT ABSENSI')->where('text', '=', 'TIDAK BOLEH EDIT ABSENSI')->first();
+       
+            $now = date('Y-m-d', strtotime('now'));
+            $data = DB::table("AbsensiSupirHeader")->where('statusapprovaleditabsensi', $statusBolehEdit->id)
+                ->where('tglapprovaleditabsensi', '<', $now)
+                ->update(['statusapprovaleditabsensi' => $statusTidakBolehEdit->id]);
+            DB::commit();
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
 }
