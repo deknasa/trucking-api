@@ -51,7 +51,7 @@ class UpdateKotaRequest extends FormRequest
         $rules =  [
             'kodekota' => ['required',Rule::unique('kota')->whereNotIn('id', [$this->id])],
             'keterangan' => 'nullable',
-            'zona' => 'required',
+            'zona' => [],
             'statusaktif' => ['required', Rule::in($status)]
         ];
 
