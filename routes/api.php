@@ -719,6 +719,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('upahsupirtangki/get', [UpahSupirTangkiController::class, 'get']);
     Route::post('upahsupirtangki/getrincian', [UpahSupirTangkiController::class, 'getrincian']);
     Route::get('gajisupirheader/default', [GajiSupirHeaderController::class, 'default']);
+    Route::get('kota/getlongtrip', [KotaController::class, 'getlongtrip']);
     
     Route::post('stok/approvalaktif', [StokController::class, 'approvalaktif']);
     Route::resource('dataritasi', DataRitasiController::class)->whereNumber('dataritasi');
