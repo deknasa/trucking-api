@@ -141,7 +141,7 @@ class UpahRitasi extends MyModel
             )
             ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahritasi.kotadari_id')
             ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahritasi.kotasampai_id')
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kotasampai.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahritasi.statusaktif', '=', 'parameter.id')
             // ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahritasi.zona_id', 'zona.id')
             // ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'upahritasi.statusluarkota', 'statusluarkota.id')
             ->where('upahritasi.id', $id);
