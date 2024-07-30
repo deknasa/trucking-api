@@ -57,6 +57,16 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
 
         $supir_id = $this->supir_id;
         $rulesSupir_id = [];
+        $cekCabang = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'CABANG')->where('text', 'MEDAN')->first();
+        if ($cekCabang) {
+            $rulesSupir_id = [
+                'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
+            ];
+        }
+
+        /**
+         * 
+         * 
         if ($supir_id != null) {
             $rulesSupir_id = [
                 'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
@@ -66,6 +76,9 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
                 'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
             ];
         }
+         * 
+         */
+        
 
         $rules = [
             'tglbukti' => [
