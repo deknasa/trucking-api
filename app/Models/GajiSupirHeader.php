@@ -767,13 +767,13 @@ class GajiSupirHeader extends MyModel
         } else {
 
             $queryBiayaExtra = DB::table("biayaextrasupirheader")->from(db::raw("biayaextrasupirheader as a with (readuncommitted)"))
-                ->select('a.nobukti', db::raw("max(a.suratpengantar_nobukti) as suratpengantar_nobukti"), db::raw("STRING_AGG(b.keteranganbiaya, ', ') as keterangan"), db::raw("sum(b.nominal) as nominal"),  DB::raw('ROW_NUMBER() OVER(ORDER BY a.nobukti) as furut'))
+                ->select('a.nobukti', db::raw("max(a.suratpengantar_nobukti) as suratpengantar_nobukti"), db::raw("STRING_AGG(b.keteranganbiaya, ', ') as keterangan"), db::raw("sum(b.nominal) as nominal"),  DB::raw('ROW_NUMBER() OVER(PARTITION BY a.suratpengantar_nobukti ORDER BY a.suratpengantar_nobukti, a.nobukti) as furut'))
                 ->join(db::raw("biayaextrasupirdetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
                 ->join(db::raw("suratpengantar with (readuncommitted)"), 'a.suratpengantar_nobukti', 'suratpengantar.nobukti')
                 ->where('suratpengantar.supir_id', $supirId)
                 ->where('suratpengantar.tglbukti', '>=', $tglDari)
                 ->where('suratpengantar.tglbukti', '<=', $tglSampai)
-                ->groupBy('a.nobukti');
+                ->groupBy('a.nobukti','a.suratpengantar_nobukti');
 
             $tempbiayaextra = '##tempbiayaextra' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempbiayaextra, function ($table) {
@@ -1736,13 +1736,13 @@ class GajiSupirHeader extends MyModel
             $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'pelanggan_id', 'nocont', 'nosp', 'container_id', 'statuscontainer_id', 'upah_id', 'container', 'statuscontainer', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
         } else {
             $queryBiayaExtra = DB::table("biayaextrasupirheader")->from(db::raw("biayaextrasupirheader as a with (readuncommitted)"))
-                ->select('a.nobukti', db::raw("max(a.suratpengantar_nobukti) as suratpengantar_nobukti"), db::raw("STRING_AGG(b.keteranganbiaya, ', ') as keterangan"), db::raw("sum(b.nominal) as nominal"),  DB::raw('ROW_NUMBER() OVER(ORDER BY a.nobukti) as furut'))
+                ->select('a.nobukti', db::raw("max(a.suratpengantar_nobukti) as suratpengantar_nobukti"), db::raw("STRING_AGG(b.keteranganbiaya, ', ') as keterangan"), db::raw("sum(b.nominal) as nominal"),  DB::raw('ROW_NUMBER() OVER(PARTITION BY a.suratpengantar_nobukti ORDER BY a.suratpengantar_nobukti, a.nobukti) as furut'))
                 ->join(db::raw("biayaextrasupirdetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
                 ->join(db::raw("suratpengantar with (readuncommitted)"), 'a.suratpengantar_nobukti', 'suratpengantar.nobukti')
                 ->where('suratpengantar.supir_id', $supir_id)
                 ->where('suratpengantar.tglbukti', '>=', $dari)
                 ->where('suratpengantar.tglbukti', '<=', $sampai)
-                ->groupBy('a.nobukti');
+                ->groupBy('a.nobukti','a.suratpengantar_nobukti');
 
             $tempbiayaextra = '##tempbiayaextra' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempbiayaextra, function ($table) {
@@ -1772,7 +1772,8 @@ class GajiSupirHeader extends MyModel
                     'statuscontainer.kodestatuscontainer as statuscontainer',
 
                     DB::raw("(case when isnull(gajisupirdetail.urutextra,'')='' then 
-                    (case when extrasupir.furut > 1 then 0 else suratpengantar.gajisupir end)  else 0 end) as gajisupir"),
+                    (case when extrasupir.furut > 1 then 0 else suratpengantar.gajisupir end)  else 
+                    (case when extrasupir.furut > 1 then 0 else suratpengantar.gajisupir end) end) as gajisupir"),
                     DB::raw("(case when isnull(gajisupirdetail.urutextra,'')='' then 
                     (case when extrasupir.furut > 1 then 0 else suratpengantar.gajikenek end)  else 0 end) as gajikenek"),
                     DB::raw("(case when isnull(gajisupirdetail.urutextra,'')='' then 
