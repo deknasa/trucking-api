@@ -1663,7 +1663,7 @@ class LaporanNeraca extends MyModel
             } else if ($getcabangid == 6) {
                 $coalabarugiberjalan = '05.02.07.01';
             } else if ($getcabangid == 7) {
-                $coalabarugiberjalan = '05.02.03.01';
+                $coalabarugiberjalan = '05.02.08.01';
             } else {
                 $coalabarugiberjalan = '05.02.01.01';
             }
