@@ -286,11 +286,19 @@ class PengeluaranTruckingHeader extends MyModel
             });
             if (request()->pengeluaranheader_id == 1) {
                 $getSupir = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail"))
-                    ->select(DB::raw("pengeluarantruckingdetail.nobukti, STRING_AGG(cast(supir.namasupir  as nvarchar(max)), ', ') AS supir"))
+                    ->select(DB::raw("pengeluarantruckingdetail.nobukti,supir.namasupir AS supir"))
                     ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingdetail.supir_id', 'supir.id')
                     ->whereRaw("nobukti like '%pjt%'")
-                    ->groupBy("pengeluarantruckingdetail.nobukti");
+                    ->groupBy("pengeluarantruckingdetail.nobukti","supir.namasupir");
+                $tempSupirSupir = '##tempsupirSupir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempSupirSupir, function ($table) {
+                    $table->string('nobukti')->nullable();
+                    $table->string('supir')->nullable();
+                });
+                DB::table($tempSupirSupir)->insertUsing(['nobukti', 'supir'], $getSupir);
 
+                $getSupir = DB::table($tempSupirSupir)
+                ->select(DB::raw("nobukti, STRING_AGG(cast(supir  as nvarchar(max)), ', ') AS supir"))->groupBy('nobukti');
                 DB::table($tempSupir)->insertUsing(['nobukti', 'supir'], $getSupir);
             } else {
 

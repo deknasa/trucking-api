@@ -2,15 +2,17 @@
 
 namespace App\Http\Requests;
 
-use App\Http\Controllers\Api\ErrorController;
-use App\Rules\ValidasiKeteranganPengeluaranTrucking;
+use App\Rules\ValidasiSupirPJT;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
+use App\Rules\ValidasiKlaimSPKPGRule;
+use App\Rules\ValidasiStatusTitipanEMKL;
 use App\Rules\ValidasiKlaimPenerimaanStok;
 use App\Rules\ValidasiKlaimPengeluaranStok;
-use App\Rules\ValidasiStatusTitipanEMKL;
-use App\Rules\ValidasiSupirPJT;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
+use App\Http\Controllers\Api\ErrorController;
+use Illuminate\Validation\ValidationException;
+use App\Rules\ValidasiKeteranganPengeluaranTrucking;
 
 class StorePengeluaranTruckingDetailRequest extends FormRequest
 {
@@ -137,7 +139,13 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
                 ->first();
             if ($klaim->id ==  request()->pengeluarantrucking_id) {
                 $rulseKlaim = [
-                    "stok_id.*"  => ["required",],
+                    "stok_id.*"  => ["required",
+                    new ValidasiKlaimSPKPGRule(
+                        request()->stok_id,
+                        request()->pengeluaranstok_nobukti,
+                        request()->penerimaanstok_nobukti
+                    )
+                ],
                     "pengeluaranstok_nobukti.*"  => [new ValidasiKlaimPengeluaranStok()],
                     "penerimaanstok_nobukti.*"  => [new ValidasiKlaimPenerimaanStok()],
                     "qty.*"  => ["required",],
@@ -199,6 +207,8 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
             'kbbm_id' => 'bbm',
             'id_detail' => 'invoice',
             'supir.*' => 'supir',
+            'stok_id.*' => 'stok',
+            'qty.*' => 'qty',
             'nominal.*' => 'nominal',
             'keterangan.*' => 'keterangan',
             'suratpengantar_nobukti.*' => 'no bukti SP',
@@ -214,5 +224,26 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
             'nominal.*.gt' => app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan,
             'sisa.*.min' => 'SISA ' . app(ErrorController::class)->geterror('NTM')->keterangan,
         ];
+    }
+    protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
+    {
+        $errors = $validator->errors()->getMessages();
+
+        $newErrors = [];
+    
+        // Iterasi melalui semua pesan kesalahan
+        foreach ($errors as $key => $messages) {
+            // Jika kunci error adalah stok_id.N, ganti dengan stok.N
+            if (preg_match('/stok_id\.\d+/', $key)) {
+                $newKey = preg_replace('/stok_id/', 'stok', $key);
+                $newErrors[$newKey] = $messages;
+            } else {
+                $newErrors[$key] = $messages;
+            }
+        }
+    
+        // Lemparkan ValidationException dengan pesan kesalahan yang disesuaikan
+        throw new ValidationException($validator, response()->json([  "message"=>"asdasdas."
+            ,"errors"=>$newErrors], 422));
     }
 }
