@@ -813,7 +813,7 @@ class UpahSupirRincian extends MyModel
                 DB::table($temp)->insertUsing(['id', 'kotadari_id', 'kotasampai_id', 'kotadari', 'kotasampai', 'zonadari_id', 'zonasampai_id', 'zonadari', 'zonasampai', 'tarif_id', 'tarif', 'penyesuaian', 'jarak', 'omset', 'statusaktif', 'tglmulaiberlaku', 'modifiedby', 'created_at', 'updated_at'], $getKota);
             }
             // UNTUK TRIP NORMAL, YG TARIFNYA KOSONG DIHAPUS
-            if ($longtrip == 66 && $nobukti_tripasal == '') {
+            if ($longtrip == 66) {
                 DB::table($temp)->where('tarif_id', 0)->delete();
             }
 
@@ -866,7 +866,7 @@ class UpahSupirRincian extends MyModel
                 )
                 ->leftJoin(DB::raw("$temp as B with (readuncommitted)"), 'B.tarif_id', 'tarifrincian.tarif_id')
                 ->where('tarifrincian.container_id', $container_id);
-            if ($longtrip == 66 && $nobukti_tripasal == '') {
+            if ($longtrip == 66) {
                 $query->where('tarifrincian.nominal', '!=', 0);
             }
             DB::table($temptarif)->insertUsing([
@@ -940,7 +940,7 @@ class UpahSupirRincian extends MyModel
 
                 );
             // ->Join(DB::raw($tempupahsupir . " as B1 "), 'B1.id', 'upahsupirrincian.upahsupir_id');
-            if ($longtrip == 66 && $nobukti_tripasal == '') {
+            if ($longtrip == 66) {
                 $query->leftJoin(DB::raw("$temptarif as B with (readuncommitted)"), 'B.id', 'upahsupirrincian.upahsupir_id');
             } else {
                 $query->leftJoin(DB::raw("$temp as B with (readuncommitted)"), 'B.id', 'upahsupirrincian.upahsupir_id');
@@ -1023,6 +1023,9 @@ class UpahSupirRincian extends MyModel
             if ($longtrip == 65) {
                 $getInfoZonaDari = DB::table("kota")->select(DB::raw("isnull(zona_id,0) as zona_id"))->from(DB::raw("kota with (readuncommitted)"))->where('id', $dari_id)->first();
                 $getInfoZonaSampai = DB::table("kota")->select(DB::raw("isnull(zona_id,0) as zona_id"))->from(DB::raw("kota with (readuncommitted)"))->where('id', $sampai_id)->first();
+                if($getInfoZonaDari == null || $getInfoZonaSampai == null){
+                    goto getupahkota;
+                }
                 if ($getInfoZonaDari->zona_id != '0' && $getInfoZonaSampai->zona_id != '0') {
                     $zonaDari_id = $getInfoZonaDari->zona_id;
                     $zonaSampai_id = $getInfoZonaSampai->zona_id;
@@ -1112,7 +1115,7 @@ class UpahSupirRincian extends MyModel
                     }
                     $query->whereRaw("((a.zonadari_id = $zonaDari_id and a.zonasampai_id=$zonaSampai_id) or (a.zonadari_id = $zonaSampai_id and a.zonasampai_id=$zonaDari_id))");
                 } else {
-
+                    getupahkota:
                     $tempKotaUpah = '##tempKotaUpah' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                     Schema::create($tempKotaUpah, function ($table) {
                         $table->bigInteger('id')->nullable();

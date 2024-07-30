@@ -43,6 +43,19 @@ class KotaController extends Controller
         ]);
     }
 
+    public function getlongtrip()
+    {
+        $kota = new Kota();
+
+        return response([
+            'data' => $kota->getLongTrip(),
+            'attributes' => [
+                'totalRows' => $kota->totalRows,
+                'totalPages' => $kota->totalPages
+            ]
+        ]);
+    }
+
     public function cekValidasi($id)
     {
         $kota = new Kota();
