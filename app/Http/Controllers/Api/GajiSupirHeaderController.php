@@ -49,6 +49,7 @@ use App\Http\Requests\UpdatePenerimaanTruckingHeaderRequest;
 use App\Http\Requests\StoreGajiSupirPelunasanPinjamanRequest;
 use App\Http\Requests\UpdatePengeluaranTruckingHeaderRequest;
 use App\Http\Requests\UpdateGajiSupirPelunasanPinjamanRequest;
+use App\Models\Locking;
 
 class GajiSupirHeaderController extends Controller
 {
@@ -442,9 +443,10 @@ class GajiSupirHeaderController extends Controller
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
 
-        $aksi = $request->aksi ?? '';
+        $aksi = request()->aksi ?? '';
         $user = auth('api')->user()->name;
-        $useredit = $gajisupir->editing_by ?? '';
+        $getEditing = (new Locking())->getEditing('gajisupirheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
 
         if ($statusdatacetak == $statusCetak->id) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
@@ -473,12 +475,12 @@ class GajiSupirHeaderController extends Controller
 
             $waktu = (new Parameter())->cekBatasWaktuEdit('gaji supir header BUKTI');
 
-            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($gajisupir->editing_at)));
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
             if ($diffNow->i > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
 
-                    (new MyModel())->updateEditingBy('gajisupirheader', $id, $aksi);
+                    (new MyModel())->createLockEditing($id, 'gajisupirheader',$useredit);
                 }
 
                 $data = [
@@ -503,7 +505,7 @@ class GajiSupirHeaderController extends Controller
             }
         } else {
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                (new MyModel())->updateEditingBy('gajisupirheader', $id, $aksi);
+                (new MyModel())->createLockEditing($id, 'gajisupirheader',$useredit);
             }
 
             $data = [
@@ -536,6 +538,9 @@ class GajiSupirHeaderController extends Controller
 
             return response($data);
         } else {
+            $getEditing = (new Locking())->getEditing('gajisupirheader', $id);
+            $useredit = $getEditing->editing_by ?? '';
+            (new MyModel())->createLockEditing($id, 'gajisupirheader',$useredit);
 
             $data = [
                 'error' => false,

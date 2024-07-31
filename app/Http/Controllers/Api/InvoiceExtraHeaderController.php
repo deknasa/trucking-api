@@ -28,6 +28,7 @@ use App\Http\Requests\StoreInvoiceExtraDetailRequest;
 use App\Http\Requests\StoreInvoiceExtraHeaderRequest;
 use App\Http\Requests\UpdateInvoiceExtraHeaderRequest;
 use App\Http\Requests\DestroyInvoiceExtraHeaderRequest;
+use App\Models\Locking;
 
 class InvoiceExtraHeaderController extends Controller
 {
@@ -258,7 +259,8 @@ class InvoiceExtraHeaderController extends Controller
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
         $user = auth('api')->user()->name;
-        $useredit = $pengeluaran->editing_by ?? '';
+        $getEditing = (new Locking())->getEditing('invoiceextraheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
 
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
@@ -298,12 +300,12 @@ class InvoiceExtraHeaderController extends Controller
 
             $waktu = (new Parameter())->cekBatasWaktuEdit('Invoice Extra Header BUKTI');
 
-            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
             if ($diffNow->i > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
 
-                    (new MyModel())->updateEditingBy('InvoiceExtraHeader', $id, $aksi);
+                    (new MyModel())->createLockEditing($id, 'invoiceextraheader', $useredit);
                 }
 
                 $data = [
@@ -312,7 +314,7 @@ class InvoiceExtraHeaderController extends Controller
                     'statuspesan' => 'success',
                 ];
 
-                // return response($data);
+                return response($data);
             } else {
 
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
@@ -327,8 +329,10 @@ class InvoiceExtraHeaderController extends Controller
                 return response($data);
             }
         } else {
-            (new MyModel())->updateEditingBy('InvoiceExtraHeader', $id, $aksi);
 
+            if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                (new MyModel())->createLockEditing($id, 'invoiceextraheader', $useredit);
+            }
             $data = [
                 'error' => false,
                 'message' => '',
@@ -464,7 +468,9 @@ class InvoiceExtraHeaderController extends Controller
 
             return response($data);
         } else {
-
+            $getEditing = (new Locking())->getEditing('invoiceextraheader', $id);
+            $useredit = $getEditing->editing_by ?? '';
+            (new MyModel())->createLockEditing($id, 'invoiceextraheader',$useredit);      
             $data = [
                 'error' => false,
                 'message' => '',

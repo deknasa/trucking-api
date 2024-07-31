@@ -468,7 +468,8 @@ class PenerimaanHeaderController extends Controller
             
         } else {
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                (new MyModel())->updateEditingBy('penerimaanheader', $id, $aksi);
+                // (new MyModel())->updateEditingBy('penerimaanheader', $id, $aksi);
+                (new MyModel())->createLockEditing($id, 'penerimaanheader',$useredit);  
             }
 
             $data = [

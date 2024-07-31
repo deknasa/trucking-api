@@ -30,6 +30,7 @@ use App\Http\Requests\UpdateSuratPengantarRequest;
 use App\Http\Requests\UpdateOrderanTruckingRequest;
 use App\Http\Requests\DestroyOrderanTruckingRequest;
 use App\Http\Requests\ValidasiApprovalOrderanTruckingRequest;
+use App\Models\Locking;
 
 class OrderanTruckingController extends Controller
 {
@@ -121,7 +122,8 @@ class OrderanTruckingController extends Controller
         $isEditAble = OrderanTrucking::isEditAble($nobukti->id);
         $edit = true;
         $user = auth('api')->user()->name;
-        $useredit = $nobukti->editing_by ?? '';
+        $getEditing = (new Locking())->getEditing('orderantrucking', $id);
+        $useredit = $getEditing->editing_by ?? '';
 
 
 
@@ -192,12 +194,11 @@ class OrderanTruckingController extends Controller
            
             $waktu = (new Parameter())->cekBatasWaktuEdit('Nota Kredit Header BUKTI');
 
-            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($nobukti->editing_at)));
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
             if ($diffNow->i > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-
-                    (new MyModel())->updateEditingBy('orderantrucking', $id, $aksi);
+                    (new MyModel())->createLockEditing($id, 'orderantrucking',$useredit);  
                 }
 
                 $data = [
@@ -222,7 +223,7 @@ class OrderanTruckingController extends Controller
             }            
             
         } else {
-            (new MyModel())->updateEditingBy('orderantrucking', $id, $aksi);
+            (new MyModel())->createLockEditing($id, 'orderantrucking',$useredit);  
 
             $data = [
                 'message' => '',

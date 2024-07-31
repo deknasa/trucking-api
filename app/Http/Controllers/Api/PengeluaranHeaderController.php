@@ -516,7 +516,8 @@ class PengeluaranHeaderController extends Controller
         } else {
 
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                (new MyModel())->updateEditingBy('pengeluaranheader', $id, $aksi);
+                // (new MyModel())->updateEditingBy('pengeluaranheader', $id, $aksi);
+                (new MyModel())->createLockEditing($id, 'pengeluaranheader',$useredit);  
             }
 
             $data = [

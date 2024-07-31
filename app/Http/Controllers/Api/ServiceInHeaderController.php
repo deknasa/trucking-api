@@ -19,6 +19,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StoreServiceInHeaderRequest;
 use App\Http\Requests\UpdateServiceInHeaderRequest;
 use App\Http\Requests\DestroyServiceInHeaderRequest;
+use App\Models\Locking;
 
 class ServiceInHeaderController extends Controller
 {
@@ -193,7 +194,8 @@ class ServiceInHeaderController extends Controller
 
         $aksi = request()->aksi ?? '';
         $user = auth('api')->user()->name;
-        $useredit = $pengeluaran->editing_by ?? '';
+        $getEditing = (new Locking())->getEditing('serviceinheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
 
@@ -227,12 +229,12 @@ class ServiceInHeaderController extends Controller
 
             $waktu = (new Parameter())->cekBatasWaktuEdit('Service In Header BUKTI');
 
-            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
             if ($diffNow->i > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
 
-                    (new MyModel())->updateEditingBy('ServiceInHeader', $id, $aksi);
+                    (new MyModel())->createLockEditing($id, 'serviceinheader',$useredit); 
                 }
 
                 $data = [
@@ -241,14 +243,14 @@ class ServiceInHeaderController extends Controller
                     'statuspesan' => 'success',
                 ];
 
-                // return response($data);
+                return response($data);
             } else {
 
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
                 $keterror = 'No Bukti <b>' . $pengeluaran->nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
                 $data = [
                     'error' => true,
-                    'message' => ["keterangan" => $keterror],
+                    'message' =>  $keterror,
                     'kodeerror' => 'SDE',
                     'statuspesan' => 'warning',
                 ];
@@ -257,7 +259,7 @@ class ServiceInHeaderController extends Controller
             }
         } else {
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                (new MyModel())->updateEditingBy('ServiceInHeader', $id, $aksi);
+                (new MyModel())->createLockEditing($id, 'serviceinheader',$useredit); 
             }
             $data = [
                 'error' => false,
@@ -284,7 +286,9 @@ class ServiceInHeaderController extends Controller
             return response($data);
         } else {
 
-            (new MyModel())->updateEditingBy('serviceinheader', $id, 'EDIT');
+            $getEditing = (new Locking())->getEditing('serviceinheader', $id);
+            $useredit = $getEditing->editing_by ?? '';
+            (new MyModel())->createLockEditing($id, 'serviceinheader',$useredit); 
 
             $data = [
                 'error' => false,

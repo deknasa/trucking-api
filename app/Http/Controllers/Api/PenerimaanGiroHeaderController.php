@@ -31,6 +31,7 @@ use App\Http\Requests\StorePenerimaanGiroHeaderRequest;
 use App\Http\Requests\UpdatePenerimaanGiroHeaderRequest;
 use App\Http\Requests\DestroyPenerimaanGiroHeaderRequest;
 use App\Http\Requests\ValidasiApprovalPenerimaanGiroRequest;
+use App\Models\Locking;
 
 class PenerimaanGiroHeaderController extends Controller
 {
@@ -315,7 +316,8 @@ class PenerimaanGiroHeaderController extends Controller
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
         $aksi = request()->aksi ?? '';
         $user = auth('api')->user()->name;
-        $useredit = $pengeluaran->editing_by ?? '';
+        $getEditing = (new Locking())->getEditing('penerimaangiroheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
 
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
@@ -354,11 +356,11 @@ class PenerimaanGiroHeaderController extends Controller
         } else if ($useredit != '' && $useredit != $user) {
             $waktu = (new Parameter())->cekBatasWaktuEdit('Penerimaan Giro Header BUKTI');
 
-            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
             if ($diffNow->i > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                    (new MyModel())->updateEditingBy('penerimaangiroheader', $id, $aksi);
+                    (new MyModel())->createLockEditing($id, 'penerimaangiroheader',$useredit); 
                 }
 
                 $data = [
@@ -384,7 +386,7 @@ class PenerimaanGiroHeaderController extends Controller
         } else {
 
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                (new MyModel())->updateEditingBy('penerimaangiroheader', $id, $aksi);
+                (new MyModel())->createLockEditing($id, 'penerimaangiroheader',$useredit); 
             }
 
             $data = [
@@ -414,7 +416,9 @@ class PenerimaanGiroHeaderController extends Controller
 
             return response($data);
         } else {
-            (new MyModel())->updateEditingBy('penerimaangiroheader', $id, 'EDIT');
+            $getEditing = (new Locking())->getEditing('penerimaangiroheader', $id);
+            $useredit = $getEditing->editing_by ?? '';
+            (new MyModel())->createLockEditing($id, 'penerimaangiroheader',$useredit); 
 
             $data = [
                 'error' => false,

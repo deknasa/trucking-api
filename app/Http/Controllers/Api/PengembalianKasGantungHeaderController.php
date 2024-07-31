@@ -38,6 +38,7 @@ use App\Http\Requests\StorePengembalianKasGantungDetailRequest;
 use App\Http\Requests\StorePengembalianKasGantungHeaderRequest;
 use App\Http\Requests\UpdatePengembalianKasGantungHeaderRequest;
 use App\Http\Requests\DestroyPengembalianKasGantungHeaderRequest;
+use App\Models\Locking;
 
 class PengembalianKasGantungHeaderController extends Controller
 {
@@ -343,7 +344,8 @@ class PengembalianKasGantungHeaderController extends Controller
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
         $user = auth('api')->user()->name;
-        $useredit = $pengembaliankasgantung->editing_by ?? '';
+        $getEditing = (new Locking())->getEditing('pengembaliankasgantungheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
 
         if ($statusdatacetak == $statusCetak->id) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
@@ -371,11 +373,11 @@ class PengembalianKasGantungHeaderController extends Controller
         } else if ($useredit != '' && $useredit != $user) {
             $waktu = (new Parameter())->cekBatasWaktuEdit('pengembalian kasgantung header BUKTI');
 
-            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengembaliankasgantung->editing_at)));
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
             if ($diffNow->i > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                    (new MyModel())->updateEditingBy('pengembaliankasgantungheader', $id, $aksi);
+                    (new MyModel())->createLockEditing($id, 'pengembaliankasgantungheader',$useredit); 
                 }
 
                 $data = [
@@ -402,7 +404,7 @@ class PengembalianKasGantungHeaderController extends Controller
         } else {
 
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                (new MyModel())->updateEditingBy('pengembaliankasgantungheader', $id, $aksi);
+                (new MyModel())->createLockEditing($id, 'pengembaliankasgantungheader',$useredit); 
             }
             $data = [
                 'error' => false,
@@ -436,7 +438,9 @@ class PengembalianKasGantungHeaderController extends Controller
 
             return response($data);
         } else {
-            (new MyModel())->updateEditingBy('pengembaliankasgantungheader', $id, 'EDIT');
+            $getEditing = (new Locking())->getEditing('pengembaliankasgantungheader', $id);
+            $useredit = $getEditing->editing_by ?? '';
+            (new MyModel())->createLockEditing($id, 'pengembaliankasgantungheader',$useredit); 
             $data = [
                 'error' => false,
                 'message' => '',

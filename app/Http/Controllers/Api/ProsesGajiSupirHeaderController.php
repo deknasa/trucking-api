@@ -59,6 +59,7 @@ use App\Http\Requests\StorePengembalianKasGantungHeaderRequest;
 use App\Http\Requests\UpdatePengembalianKasGantungHeaderRequest;
 use App\Http\Requests\DestroyPengembalianKasGantungHeaderRequest;
 use App\Http\Controllers\Api\ProsesGajiSupirDetailController as ApiProsesGajiSupirDetailController;
+use App\Models\Locking;
 
 class ProsesGajiSupirHeaderController extends Controller
 {
@@ -419,7 +420,8 @@ class ProsesGajiSupirHeaderController extends Controller
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
         $aksi = request()->aksi ?? '';
         $user = auth('api')->user()->name;
-        $useredit = $prosesgaji->editing_by ?? '';
+        $getEditing = (new Locking())->getEditing('prosesgajisupirheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
 
         $pengeluaran = $prosesgaji->pengeluaran_nobukti ?? '';
         $idpengeluaran = db::table('pengeluaranheader')->from(db::raw("pengeluaranheader a with (readuncommitted)"))
@@ -484,12 +486,12 @@ class ProsesGajiSupirHeaderController extends Controller
 
             $waktu = (new Parameter())->cekBatasWaktuEdit('gaji supir header BUKTI');
 
-            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($prosesgaji->editing_at)));
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
             if ($diffNow->i > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
 
-                    (new MyModel())->updateEditingBy('prosesgajisupirheader', $id, $aksi);
+                    (new MyModel())->createLockEditing($id, 'prosesgajisupirheader', $useredit);
                 }
 
                 $data = [
@@ -498,7 +500,7 @@ class ProsesGajiSupirHeaderController extends Controller
                     'statuspesan' => 'success',
                 ];
 
-                // return response($data);
+                return response($data);
             } else {
 
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
@@ -513,8 +515,10 @@ class ProsesGajiSupirHeaderController extends Controller
                 return response($data);
             }
         } else {
-            (new MyModel())->updateEditingBy('prosesgajisupirheader', $id, $aksi);
 
+            if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                (new MyModel())->createLockEditing($id, 'prosesgajisupirheader', $useredit);
+            }
             $data = [
                 'error' => false,
                 'message' => '',
@@ -546,6 +550,9 @@ class ProsesGajiSupirHeaderController extends Controller
 
             return response($data);
         } else {
+            $getEditing = (new Locking())->getEditing('prosesgajisupirheader', $id);
+            $useredit = $getEditing->editing_by ?? '';
+            (new MyModel())->createLockEditing($id, 'prosesgajisupirheader', $useredit);
 
             $data = [
                 'error' => false,

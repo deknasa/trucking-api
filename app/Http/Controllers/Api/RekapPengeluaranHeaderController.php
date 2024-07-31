@@ -22,6 +22,7 @@ use App\Http\Requests\StoreRekapPengeluaranDetailRequest;
 use App\Http\Requests\StoreRekapPengeluaranHeaderRequest;
 use App\Http\Requests\UpdateRekapPengeluaranHeaderRequest;
 use App\Http\Requests\DestroyRekapPengeluaranHeaderRequest;
+use App\Models\Locking;
 
 class RekapPengeluaranHeaderController extends Controller
 {
@@ -206,7 +207,8 @@ class RekapPengeluaranHeaderController extends Controller
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $parameter = new Parameter();
         $user = auth('api')->user()->name;
-        $useredit = $pengeluaran->editing_by ?? '';
+        $getEditing = (new Locking())->getEditing('rekappengeluaranheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
 
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
@@ -248,12 +250,10 @@ class RekapPengeluaranHeaderController extends Controller
         } else if ($useredit != '' && $useredit != $user) {
             $waktu = (new Parameter())->cekBatasWaktuEdit('Rekap Pengeluaran Header BUKTI');
 
-            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
             if ($diffNow->i > $waktu) {
-                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                    (new MyModel())->updateEditingBy('rekappengeluaranheader', $id, $aksi);
-                }
+                (new MyModel())->createLockEditing($id, 'rekappengeluaranheader',$useredit);
 
                 $data = [
                     'message' => '',
@@ -276,7 +276,7 @@ class RekapPengeluaranHeaderController extends Controller
                 return response($data);
             }
         } else {
-            (new MyModel())->updateEditingBy('rekappengeluaranheader', $id, $aksi);
+            (new MyModel())->createLockEditing($id, 'rekappengeluaranheader',$useredit);
 
             $data = [
                 'error' => false,

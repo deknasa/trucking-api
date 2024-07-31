@@ -24,6 +24,7 @@ use App\Http\Requests\StoreRekapPenerimaanDetailRequest;
 use App\Http\Requests\StoreRekapPenerimaanHeaderRequest;
 use App\Http\Requests\UpdateRekapPenerimaanHeaderRequest;
 use App\Http\Requests\DestroyRekapPenerimaanHeaderRequest;
+use App\Models\Locking;
 
 class RekapPenerimaanHeaderController extends Controller
 {
@@ -217,11 +218,11 @@ class RekapPenerimaanHeaderController extends Controller
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $parameter = new Parameter();
 
-        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
-        $tgltutup=date('Y-m-d', strtotime($tgltutup));
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
         $user = auth('api')->user()->name;
-        $useredit = $pengeluaran->editing_by ?? '';
-
+        $getEditing = (new Locking())->getEditing('rekappenerimaanheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
             $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
@@ -246,7 +247,7 @@ class RekapPenerimaanHeaderController extends Controller
             return response($data);
         } else if ($tgltutup >= $pengeluaran->tglbukti) {
             $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
-            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
                 'message' => $keterror,
@@ -254,16 +255,16 @@ class RekapPenerimaanHeaderController extends Controller
                 'statuspesan' => 'warning',
             ];
 
-            return response($data);            
+            return response($data);
         } else if ($useredit != '' && $useredit != $user) {
             $waktu = (new Parameter())->cekBatasWaktuEdit('Rekap Penerimaan Header BUKTI');
 
-            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
-            if ($diffNow->i > $waktu) {
-                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                    (new MyModel())->updateEditingBy('rekappenerimaanheader', $id, $aksi);
-                }
+            $totalminutes =  ($diffNow->days * 24 * 60) + ($diffNow->h * 60) + $diffNow->i;
+            if ($totalminutes > $waktu) {
+                (new MyModel())->createLockEditing($id, 'rekappenerimaanheader', $useredit);
+
 
                 $data = [
                     'message' => '',
@@ -284,10 +285,9 @@ class RekapPenerimaanHeaderController extends Controller
                 ];
 
                 return response($data);
-            }            
-            
+            }
         } else {
-            (new MyModel())->updateEditingBy('rekappenerimaanheader', $id, $aksi);
+            (new MyModel())->createLockEditing($id, 'rekappenerimaanheader', $useredit);
 
             $data = [
                 'error' => false,
@@ -378,7 +378,7 @@ class RekapPenerimaanHeaderController extends Controller
     {
     }
 
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */
@@ -398,7 +398,7 @@ class RekapPenerimaanHeaderController extends Controller
         ]);
     }
 
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL KIRIM BERKAS
      */
