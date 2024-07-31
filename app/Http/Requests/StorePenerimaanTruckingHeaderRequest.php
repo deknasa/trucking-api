@@ -9,9 +9,11 @@ use App\Rules\DateTutupBuku;
 use App\Rules\ExistSupirDPOPenerimaanTrucking;
 use App\Rules\SupirDPOPenerimaanTrucking;
 use App\Rules\ValidasiDetail;
+use App\Rules\validasiPenembalianPinjamanDetail;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use App\Rules\ValidasiPenerimaanTrucking;
+use App\Rules\validasiPengembalianPinjamanKaryawanDetail;
 use App\Rules\ValidasiSupirDeposito;
 
 class StorePenerimaanTruckingHeaderRequest extends FormRequest
@@ -134,9 +136,31 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
                 'penerimaantrucking' => ['required', Rule::in($penerimaanName)],
                 'bank' => [$ruleBank, $bank, 'required'],
                 'bank_id' => [Rule::in($bankIds), 'required', 'min:1', 'numeric'],
-                // 'supir' => ['required', $supir, new ValidasiDetail($jumlahdetail),
-                // // new ValidasiPenerimaanTrucking()
+                'supir' => [ new validasiPenembalianPinjamanDetail()
+                    // new ValidasiDetail($jumlahdetail),
+                // new ValidasiPenerimaanTrucking()
+                ],
+                // 'supirheader_id' => [
+                //     'required', $supirId, 'numeric', 'min:1'
                 // ],
+                // 'keterangancoa' => 'required'
+            ];
+        } elseif ($kodepenerimaan == 'PJPK') {
+            $jumlahdetail = $this->jumlahdetail ?? 0;
+            $rules = [
+                'tglbukti' => [
+                    'required',
+                    'date_format:d-m-Y',
+                    'before_or_equal:' . date('d-m-Y'),
+                    new DateTutupBuku(),
+                ],
+                'penerimaantrucking' => ['required', Rule::in($penerimaanName)],
+                'bank' => [$ruleBank, $bank, 'required'],
+                'bank_id' => [Rule::in($bankIds), 'required', 'min:1', 'numeric'],
+                'karyawan' => [ new validasiPengembalianPinjamanKaryawanDetail()
+                    // new ValidasiDetail($jumlahdetail),
+                // new ValidasiPenerimaanTrucking()
+                ],
                 // 'supirheader_id' => [
                 //     'required', $supirId, 'numeric', 'min:1'
                 // ],

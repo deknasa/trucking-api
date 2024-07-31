@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\DB;
 use App\Rules\ValidasiPenerimaanTrucking;
 use App\Rules\ValidasiSupirDeposito;
 use App\Rules\ValidasiDestroyPenerimaanTruckingHeader;
-
+use App\Rules\validasiPenembalianPinjamanDetail;
+use App\Rules\validasiPengembalianPinjamanKaryawanDetail;
 
 class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
 {
@@ -146,9 +147,32 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
                 'penerimaantrucking' => ['required', Rule::in($getDataPenerimaan->kodepenerimaan)],
                 'bank' => [$ruleBank, Rule::in($getDataPenerimaan->bank), 'required'],
                 'bank_id' => [Rule::in($getDataPenerimaan->bank_id), 'required', 'min:1', 'numeric'],
-                // 'supir' => ['required', Rule::in($getDataPenerimaan->supir),new ValidasiDetail($jumlahdetail),
-                // // new ValidasiPenerimaanTrucking()
-                // ],
+                'supir' => [new validasiPenembalianPinjamanDetail()
+                    // new ValidasiDetail($jumlahdetail),
+                // new ValidasiPenerimaanTrucking()
+                ],
+                // 'supirheader_id' => ['required', Rule::in($getDataPenerimaan->supirheader_id), 'numeric','min:1'],
+                // 'keterangancoa' => 'required'
+            ];
+        } else if ($kodepenerimaan == 'PJPK') {
+            $jumlahdetail = $this->jumlahdetail ?? 0;
+            $rules = [
+                'id' => [ new ValidasiDestroyPenerimaanTruckingHeader()],
+                // "id" => new DestroyPenerimaanTruckingHeader(),
+
+                'nobukti' => [Rule::in($getDataPenerimaan->nobukti)],
+                "tglbukti" => [
+                    "required", 'date_format:d-m-Y',
+                    'before_or_equal:' . date('d-m-Y'),
+                    new DateTutupBuku(),
+                ],
+                'penerimaantrucking' => ['required', Rule::in($getDataPenerimaan->kodepenerimaan)],
+                'bank' => [$ruleBank, Rule::in($getDataPenerimaan->bank), 'required'],
+                'bank_id' => [Rule::in($getDataPenerimaan->bank_id), 'required', 'min:1', 'numeric'],
+                'karyawan' => [new validasiPengembalianPinjamanKaryawanDetail()
+                    // new ValidasiDetail($jumlahdetail),
+                // new ValidasiPenerimaanTrucking()
+                ],
                 // 'supirheader_id' => ['required', Rule::in($getDataPenerimaan->supirheader_id), 'numeric','min:1'],
                 // 'keterangancoa' => 'required'
             ];
