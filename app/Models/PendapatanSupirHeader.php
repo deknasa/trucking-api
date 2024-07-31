@@ -1556,7 +1556,7 @@ class PendapatanSupirHeader extends MyModel
 
             if ($data['nominal_depo'] != '') {
                 $dataDeposito = [
-                    'tanpaprosesnobukti' => 3,
+                    'tanpaprosesnobukti' => 2,
                     'penerimaantrucking_id' => $fetchFormat->id,
                     'bank_id' => $data['bank_id'],
                     'prevBank' => $prevBank,
@@ -1581,6 +1581,10 @@ class PendapatanSupirHeader extends MyModel
                     if ($data['bank_id'] != '' && $data['bank_id'] != 0) {
                         $dataDeposito['tanpaprosesnobukti'] = 3;
                     }
+                    if($data['bank_id'] == 0){
+                        
+                        $dataDeposito['tanpaprosesnobukti'] = 2;
+                    }
                     $penerimaanPS = (new PenerimaanTruckingHeader())->processStore($dataDeposito);
                 }
             } else {
@@ -1598,7 +1602,7 @@ class PendapatanSupirHeader extends MyModel
                 ->first();
             if ($data['pinj_nominal'] != '') {
                 $dataPinjaman = [
-                    'tanpaprosesnobukti' => 3,
+                    'tanpaprosesnobukti' => 2,
                     'penerimaantrucking_id' => $fetchFormat->id,
                     'bank_id' => $data['bank_id'],
                     'tglbukti' => $pendapatanSupirHeader->tglbukti,
@@ -1622,6 +1626,10 @@ class PendapatanSupirHeader extends MyModel
                 } else {
                     if ($data['bank_id'] != '' && $data['bank_id'] != 0) {
                         $dataPinjaman['tanpaprosesnobukti'] = 3;
+                    }
+                    if($data['bank_id'] == 0){
+                        
+                        $dataDeposito['tanpaprosesnobukti'] = 2;
                     }
                     $penerimaanPS = (new PenerimaanTruckingHeader())->processStore($dataPinjaman);
                 }
