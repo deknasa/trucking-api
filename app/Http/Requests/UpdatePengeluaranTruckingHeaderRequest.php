@@ -16,6 +16,8 @@ use App\Rules\ExistKaryawanForPengeluaranTrucking;
 use App\Rules\validasiJenisOrderanPengeluaranTrucking;
 use App\Rules\ValidasiKlaimPosting;
 use App\Rules\ValidasiDestroyPengeluaranTruckingHeader;
+use App\Rules\validasiTarikDeposito;
+use App\Rules\validasiTarikDepositoKaryawan;
 
 class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
 {
@@ -226,7 +228,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
                 'pengeluarantrucking' => 'required','numeric', 'min:1',
                 // 'statusposting' => 'required',
                 'bank' => [$ruleBank],
-                'supirheader' => ['required',  new ValidasiDetail($jumlahdetail)],
+                'supirheader' => ['required',  new ValidasiDetail($jumlahdetail), new validasiTarikDeposito()],
                 // 'keterangancoa' => 'required',
             ];
         }else if($kodepengeluaran == 'TDEK'){
@@ -251,7 +253,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
                 'pengeluarantrucking' => 'required','numeric', 'min:1',
                 // 'statusposting' => 'required',
                 'bank' => [$ruleBank],
-                'karyawanheader' => ['required',  new ValidasiDetail($jumlahdetail)],
+                'karyawanheader' => ['required',  new ValidasiDetail($jumlahdetail), new validasiTarikDepositoKaryawan()],
                 // 'keterangancoa' => 'required',
             ];
         }elseif($kodepengeluaran == 'BBT'){
