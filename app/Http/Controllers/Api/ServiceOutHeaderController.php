@@ -23,6 +23,7 @@ use App\Http\Requests\StoreServiceOutDetailRequest;
 use App\Http\Requests\StoreServiceOutHeaderRequest;
 use App\Http\Requests\UpdateServiceOutHeaderRequest;
 use App\Http\Requests\DestroyServiceOutHeaderRequest;
+use App\Models\Locking;
 
 class ServiceOutHeaderController extends Controller
 {
@@ -202,7 +203,8 @@ class ServiceOutHeaderController extends Controller
         // } else 
         $aksi = request()->aksi ?? '';
         $user = auth('api')->user()->name;
-        $useredit = $pengeluaran->editing_by ?? '';
+        $getEditing = (new Locking())->getEditing('serviceoutheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
 
@@ -235,12 +237,12 @@ class ServiceOutHeaderController extends Controller
 
             $waktu = (new Parameter())->cekBatasWaktuEdit('Service Out Header BUKTI');
 
-            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
             if ($diffNow->i > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
 
-                    (new MyModel())->updateEditingBy('ServiceOutHeader', $id, $aksi);
+                    (new MyModel())->createLockEditing($id, 'serviceoutheader', $useredit);
                 }
 
                 $data = [
@@ -249,14 +251,14 @@ class ServiceOutHeaderController extends Controller
                     'statuspesan' => 'success',
                 ];
 
-                // return response($data);
+                return response($data);
             } else {
 
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
                 $keterror = 'No Bukti <b>' . $pengeluaran->nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
                 $data = [
                     'error' => true,
-                    'message' => ["keterangan" => $keterror],
+                    'message' => $keterror,
                     'kodeerror' => 'SDE',
                     'statuspesan' => 'warning',
                 ];
@@ -264,7 +266,7 @@ class ServiceOutHeaderController extends Controller
                 return response($data);
             }
         } else {
-            (new MyModel())->updateEditingBy('ServiceOutHeader', $id, $aksi);
+            (new MyModel())->createLockEditing($id, 'serviceoutheader', $useredit);
 
 
             $data = [

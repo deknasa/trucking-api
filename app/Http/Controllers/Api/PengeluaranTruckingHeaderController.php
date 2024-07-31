@@ -31,9 +31,12 @@ use App\Models\LogTrail;
 use App\Models\PenerimaanTruckingHeader;
 use App\Models\PengeluaranHeader;
 use App\Models\InvoiceHeader;
+use App\Models\Locking;
+use App\Models\MyModel;
 use App\Models\PengeluaranTrucking;
 use App\Models\PengeluaranTruckingDetail;
 use App\Models\Supir;
+use DateTime;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use PhpParser\Node\Stmt\Else_;
@@ -566,7 +569,9 @@ class PengeluaranTruckingHeaderController extends Controller
 
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
-
+        $user = auth('api')->user()->name;
+        $getEditing = (new Locking())->getEditing('pengeluarantruckingheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
 
         if ($statusdatacetak == $statusCetak->id) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
@@ -581,18 +586,41 @@ class PengeluaranTruckingHeaderController extends Controller
             ];
 
             return response($data);
-        } else if ($tgltutup >= $pengeluarantrucking->tglbukti) {
-            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
-            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' )';
-            $data = [
-                'error' => true,
-                'message' => $keterror,
-                'kodeerror' => 'TUTUPBUKU',
-                'statuspesan' => 'warning',
-            ];
+        } else if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('PENGELUARAN TRUCKING');
 
-            return response($data);
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->createLockEditing($id, 'pengeluarantruckingheader', $useredit);
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                return response($data);
+            } else {
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                    // 'force' => $force
+                ];
+
+                return response($data);
+            }
         } else {
+
+            if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                (new MyModel())->createLockEditing($id, 'pengeluarantruckingheader',$useredit);  
+            }
 
             $data = [
                 'error' => false,
@@ -659,6 +687,9 @@ class PengeluaranTruckingHeaderController extends Controller
             return response($data);
         } else {
 
+            $getEditing = (new Locking())->getEditing('pengeluarantruckingheader', $id);
+            $useredit = $getEditing->editing_by ?? '';
+            (new MyModel())->createLockEditing($id, 'pengeluarantruckingheader',$useredit); 
             $data = [
                 'error' => false,
                 'message' => '',
@@ -1084,14 +1115,14 @@ class PengeluaranTruckingHeaderController extends Controller
     {
     }
 
-        /**
+    /**
      * @ClassName
      * @Keterangan BIAYA OTOBON KANTOR
      */
     public function pengeluarantruckingotobonkantor()
     {
     }
-            /**
+    /**
      * @ClassName
      * @Keterangan BIAYA OTOBON LAPANGAN
      */
@@ -1106,5 +1137,4 @@ class PengeluaranTruckingHeaderController extends Controller
     public function pengeluarantruckinglapangantambahantol()
     {
     }
-
 }

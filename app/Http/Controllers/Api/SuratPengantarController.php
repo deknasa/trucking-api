@@ -42,6 +42,7 @@ use App\Http\Requests\ApprovalTolakanRequest;
 use App\Http\Requests\StoreSuratPengantarRequest;
 use App\Http\Requests\UpdateSuratPengantarRequest;
 use App\Http\Requests\DestroySuratPengantarRequest;
+use App\Models\Locking;
 
 class SuratPengantarController extends Controller
 {
@@ -477,7 +478,8 @@ class SuratPengantarController extends Controller
         // $todayValidation = SuratPengantar::todayValidation($nobukti->id);
         $isEditAble = SuratPengantar::isEditAble($nobukti->id);
         $user = auth('api')->user()->name;
-        $useredit = $nobukti->editing_by ?? '';
+        $getEditing = (new Locking())->getEditing('suratpengantar', $id);
+        $useredit = $getEditing->editing_by ?? '';
 
         $edit = true;
         // if (!$todayValidation) {
@@ -528,12 +530,12 @@ class SuratPengantarController extends Controller
            
             $waktu = (new Parameter())->cekBatasWaktuEdit('surat pengantar BUKTI');
 
-            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($nobukti->editing_at)));
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
             if ($diffNow->i > $waktu) {
                 if ($aksi == 'DELETE' || $aksi == 'EDIT') {
 
-                    (new MyModel())->updateEditingBy('suratpengantar', $id, $aksi);
+                    (new MyModel())->createLockEditing($id, 'suratpengantar',$useredit);  
                 }
                 $data = [
                     'message' => '',
@@ -557,7 +559,7 @@ class SuratPengantarController extends Controller
             
         } else {
             if ($aksi == 'DELETE' || $aksi == 'EDIT') {
-                (new MyModel())->updateEditingBy('suratpengantar', $id, $aksi);
+                (new MyModel())->createLockEditing($id, 'suratpengantar',$useredit);  
             }
             $data = [
                 'status' => false,

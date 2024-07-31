@@ -36,7 +36,7 @@ use App\Http\Requests\DestroyInvoiceHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Controllers\Api\InvoiceDetailController as ApiInvoiceDetailController;
-
+use App\Models\Locking;
 
 class InvoiceHeaderController extends Controller
 {
@@ -446,7 +446,8 @@ class InvoiceHeaderController extends Controller
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
         $aksi = request()->aksi ?? '';
         $user = auth('api')->user()->name;
-        $useredit = $pengeluaran->editing_by ?? '';
+        $getEditing = (new Locking())->getEditing('invoiceheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
 
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
@@ -507,12 +508,13 @@ class InvoiceHeaderController extends Controller
 
             $waktu = (new Parameter())->cekBatasWaktuEdit('Invoice Header BUKTI');
 
-            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
-            if ($diffNow->i > $waktu) {
+            $totalminutes =  ($diffNow->days * 24 * 60) + ($diffNow->h * 60) + $diffNow->i;
+            if ($totalminutes > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
 
-                    (new MyModel())->updateEditingBy('InvoiceHeader', $id, $aksi);
+                    (new MyModel())->createLockEditing($id, 'invoiceheader', $useredit);
                 }
 
                 $data = [
@@ -521,7 +523,7 @@ class InvoiceHeaderController extends Controller
                     'statuspesan' => 'success',
                 ];
 
-                // return response($data);
+                return response($data);
             } else {
 
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
@@ -536,7 +538,9 @@ class InvoiceHeaderController extends Controller
                 return response($data);
             }
         } else {
-            (new MyModel())->updateEditingBy('InvoiceHeader', $id, $aksi);
+            if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                (new MyModel())->createLockEditing($id, 'invoiceheader', $useredit);
+            }
 
             $data = [
                 'error' => false,
@@ -571,6 +575,9 @@ class InvoiceHeaderController extends Controller
             return response($data);
         } else {
 
+            $getEditing = (new Locking())->getEditing('invoiceheader', $id);
+            $useredit = $getEditing->editing_by ?? '';
+            (new MyModel())->createLockEditing($id, 'invoiceheader',$useredit);   
             $data = [
                 'error' => false,
                 'message' => '',

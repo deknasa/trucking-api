@@ -35,6 +35,7 @@ use App\Http\Requests\DestroyKasGantungHeaderRequest;
 use App\Http\Requests\UpdatePengeluaranHeaderRequest;
 use App\Http\Requests\DestroyPengeluaranHeaderRequest;
 use App\Http\Controllers\Api\PengeluaranHeaderController;
+use App\Models\Locking;
 use DateTime;
 
 class KasGantungHeaderController extends Controller
@@ -287,7 +288,9 @@ class KasGantungHeaderController extends Controller
 
             return response($data);
         } else {
-            (new MyModel())->updateEditingBy('kasgantungheader', $id, 'EDIT');
+            $getEditing = (new Locking())->getEditing('kasgantungheader', $id);
+            $useredit = $getEditing->editing_by ?? '';
+            (new MyModel())->createLockEditing($id, 'kasgantungheader',$useredit);  
             $data = [
                 'error' => false,
                 'message' => '',
@@ -337,7 +340,8 @@ class KasGantungHeaderController extends Controller
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
         $user = auth('api')->user()->name;
-        $useredit = $kasgantung->editing_by ?? '';
+        $getEditing = (new Locking())->getEditing('kasgantungheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
 
         if ($statusdatacetak == $statusCetak->id) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
@@ -365,11 +369,11 @@ class KasGantungHeaderController extends Controller
         } else if ($useredit != '' && $useredit != $user) {
             $waktu = (new Parameter())->cekBatasWaktuEdit('kasgantung header BUKTI');
 
-            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($kasgantung->editing_at)));
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
             if ($diffNow->i > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                    (new MyModel())->updateEditingBy('kasgantungheader', $id, $aksi);
+                    (new MyModel())->createLockEditing($id, 'kasgantungheader',$useredit);  
                 }
 
                 $data = [
@@ -396,7 +400,7 @@ class KasGantungHeaderController extends Controller
         } else {
 
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                (new MyModel())->updateEditingBy('kasgantungheader', $id, $aksi);
+                (new MyModel())->createLockEditing($id, 'kasgantungheader',$useredit);  
             }
             $data = [
                 'error' => false,

@@ -46,8 +46,7 @@ use App\Http\Requests\StorePelunasanPiutangDetailRequest;
 use App\Http\Requests\StorePelunasanPiutangHeaderRequest;
 use App\Http\Requests\UpdatePelunasanPiutangHeaderRequest;
 use App\Http\Requests\DestroyPelunasanPiutangHeaderRequest;
-
-
+use App\Models\Locking;
 
 class PelunasanPiutangHeaderController extends Controller
 {
@@ -493,7 +492,8 @@ class PelunasanPiutangHeaderController extends Controller
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
         $user = auth('api')->user()->name;
-        $useredit = $pengeluaran->editing_by ?? '';
+        $getEditing = (new Locking())->getEditing('pelunasanpiutangheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
         $aksi = request()->aksi ?? '';
 
         if ($statusdatacetak == $statusCetak->id) {
@@ -521,11 +521,11 @@ class PelunasanPiutangHeaderController extends Controller
         } else if ($useredit != '' && $useredit != $user) {
             $waktu = (new Parameter())->cekBatasWaktuEdit('Pelunasan Piutang Header BUKTI');
 
-            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
             if ($diffNow->i > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                    (new MyModel())->updateEditingBy('pelunasanpiutangheader', $id, $aksi);
+                    (new MyModel())->createLockEditing($id, 'pelunasanpiutangheader',$useredit);  
                 }
 
                 $data = [
@@ -552,7 +552,7 @@ class PelunasanPiutangHeaderController extends Controller
         } else {
 
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                (new MyModel())->updateEditingBy('pelunasanpiutangheader', $id, $aksi);
+                (new MyModel())->createLockEditing($id, 'pelunasanpiutangheader',$useredit);
             }
 
             $data = [
@@ -585,7 +585,9 @@ class PelunasanPiutangHeaderController extends Controller
 
             return response($data);
         } else {
-            (new MyModel())->updateEditingBy('pelunasanpiutangheader', $id, 'EDIT');
+            $getEditing = (new Locking())->getEditing('pelunasanpiutangheader', $id);
+            $useredit = $getEditing->editing_by ?? '';
+            (new MyModel())->createLockEditing($id, 'pelunasanpiutangheader',$useredit);
 
             $data = [
                 'error' => false,

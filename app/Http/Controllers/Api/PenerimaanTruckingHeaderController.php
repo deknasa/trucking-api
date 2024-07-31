@@ -25,12 +25,15 @@ use App\Models\AkunPusat;
 use App\Models\Parameter;
 use App\Models\Bank;
 use App\Models\Error;
+use App\Models\Locking;
 use App\Models\LogTrail;
+use App\Models\MyModel;
 use App\Models\PengeluaranTruckingHeader;
 use App\Models\PenerimaanHeader;
 use App\Models\PenerimaanTrucking;
 use App\Models\PenerimaanTruckingDetail;
 use App\Models\Supir;
+use DateTime;
 use Illuminate\Database\QueryException;
 
 class PenerimaanTruckingHeaderController extends Controller
@@ -408,7 +411,6 @@ class PenerimaanTruckingHeaderController extends Controller
 
         lanjut:
 
-
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
 
@@ -417,7 +419,9 @@ class PenerimaanTruckingHeaderController extends Controller
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
 
-
+        $getEditing = (new Locking())->getEditing('penerimaantruckingheader', $id);
+        $user = auth('api')->user()->name;
+        $useredit = $getEditing->editing_by ?? '';
         if ((new PenerimaanTruckingHeader())->printValidation($id)) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
             $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
@@ -442,7 +446,41 @@ class PenerimaanTruckingHeaderController extends Controller
             ];
 
             return response($data);
+        } else if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('PENERIMAAN TRUCKING');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            if ($diffNow->i > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->createLockEditing($id, 'penerimaantruckingheader',$useredit);  
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                return response($data);
+            } else {
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                    // 'force' => $force
+                ];
+
+                return response($data);
+            }
         } else {
+
+            if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                (new MyModel())->createLockEditing($id, 'penerimaantruckingheader',$useredit);  
+            }
 
             $data = [
                 'error' => false,
@@ -462,19 +500,19 @@ class PenerimaanTruckingHeaderController extends Controller
 
         $penerimaankb = $PenerimaanTruckingHeader->penerimaan_nobukti ?? '';
         // dd($penerimaankb);
-        $idpenerimaan = db::table('penerimaanheader')->from(db::raw("penerimaanheader a with (readuncommitted)"))
-            ->select(
-                'a.id'
-            )
-            ->where('a.nobukti', $penerimaankb)
-            ->first()->id ?? 0;
-        $validasipenerimaan = app(PenerimaanHeaderController::class)->cekvalidasi($idpenerimaan);
-        $msg = json_decode(json_encode($validasipenerimaan), true)['original']['error'] ?? false;
-        if ($msg == false) {
-            goto lanjut;
-        } else {
-            return $validasipenerimaan;
-        }
+        // $idpenerimaan = db::table('penerimaanheader')->from(db::raw("penerimaanheader a with (readuncommitted)"))
+        //     ->select(
+        //         'a.id'
+        //     )
+        //     ->where('a.nobukti', $penerimaankb)
+        //     ->first()->id ?? 0;
+        // $validasipenerimaan = app(PenerimaanHeaderController::class)->cekvalidasi($idpenerimaan);
+        // $msg = json_decode(json_encode($validasipenerimaan), true)['original']['error'] ?? false;
+        // if ($msg == false) {
+        //     goto lanjut;
+        // } else {
+        //     return $validasipenerimaan;
+        // }
 
 
 
@@ -524,6 +562,10 @@ class PenerimaanTruckingHeaderController extends Controller
             return response($data);
         }
 
+        
+        $getEditing = (new Locking())->getEditing('penerimaantruckingheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
+        (new MyModel())->createLockEditing($id, 'penerimaantruckingheader',$useredit);  
         $data = [
             'error' => false,
             'message' => '',

@@ -15,6 +15,7 @@ use App\Http\Requests\StoreMandorTripRequest;
 use App\Http\Requests\UpdateListTripRequest;
 use App\Models\Error;
 use App\Models\ListTrip;
+use App\Models\Locking;
 use App\Models\MyModel;
 use App\Models\Parameter;
 use DateTime;
@@ -153,7 +154,8 @@ class ListTripController extends Controller
             ->where('id', $id)
             ->first();
         $user = auth('api')->user()->name;
-        $useredit = $cektrip->editing_by ?? '';
+        $getEditing = (new Locking())->getEditing('suratpengantar', $id);
+        $useredit = $getEditing->editing_by ?? '';
 
         if ($cekdata['kondisi'] == true) {
 
@@ -169,7 +171,7 @@ class ListTripController extends Controller
 
             $waktu = (new Parameter())->cekBatasWaktuEdit('PENGELUARAN KAS/BANK BUKTI');
 
-            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($cektrip->editing_at)));
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
 
             $error = new Error();
@@ -188,7 +190,7 @@ class ListTripController extends Controller
             return response($data);
         } else {
 
-            (new MyModel())->updateEditingBy('suratpengantar', $id, 'EDIT');
+            (new MyModel())->createLockEditing($id, 'suratpengantar',$useredit); 
             $data = [
                 'status' => false,
                 'message' => '',

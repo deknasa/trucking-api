@@ -36,6 +36,7 @@ use App\Http\Requests\ApprovalValidasiApprovalRequest;
 use App\Http\Controllers\Api\PengeluaranHeaderController;
 use App\Http\Requests\ApprovalAbsensiFinalAppEditRequest;
 use App\Http\Requests\ApprovalPengajuanTripInapAbsensiRequest;
+use App\Models\Locking;
 
 class AbsensiSupirHeaderController extends Controller
 {
@@ -529,7 +530,8 @@ class AbsensiSupirHeaderController extends Controller
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
         $user = auth('api')->user()->name;
-        $useredit = $absensisupir->editing_by ?? '';
+        $getEditing = (new Locking())->getEditing('absensisupirheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
 
         $cekgajisupiruangjalan = DB::table("gajisupiruangjalan")->from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
             ->where('absensisupir_nobukti', $nobukti)
@@ -610,11 +612,12 @@ class AbsensiSupirHeaderController extends Controller
 
             $waktu = (new Parameter())->cekBatasWaktuEdit('ABSENSI SUPIR BUKTI');
 
-            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($absensisupir->editing_at)));
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
             if ($diffNow->i > $waktu) {
                 // if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                (new MyModel())->updateEditingBy('absensisupirheader', $id, $aksi);
+                // (new MyModel())->updateEditingBy('absensisupirheader', $id, $aksi);
+                (new MyModel())->createLockEditing($id, 'absensisupirheader',$useredit); 
                 // }
 
                 $data = [
@@ -778,7 +781,8 @@ class AbsensiSupirHeaderController extends Controller
             if (($todayValidation && $isApproved) || ($isEditAble && $printValidation) || $isDateAllowed) {
                 // dd($aksi);
                 // if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                (new MyModel())->updateEditingBy('absensisupirheader', $id, $aksi);
+                // (new MyModel())->updateEditingBy('absensisupirheader', $id, $aksi);                
+                (new MyModel())->createLockEditing($id, 'absensisupirheader',$useredit);  
                 // }                
                 $data = [
                     'error' => false,
@@ -832,7 +836,10 @@ class AbsensiSupirHeaderController extends Controller
 
             return response($data);
         } else {
-            (new MyModel())->updateEditingBy('absensisupirheader', $id, 'EDIT');
+            $getEditing = (new Locking())->getEditing('absensisupirheader', $id);
+            $useredit = $getEditing->editing_by ?? '';
+            (new MyModel())->createLockEditing($id, 'absensisupirheader',$useredit);     
+            // (new MyModel())->updateEditingBy('absensisupirheader', $id, 'EDIT');
             $data = [
                 'error' => false,
                 'message' => '',

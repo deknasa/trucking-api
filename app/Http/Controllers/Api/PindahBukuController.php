@@ -22,6 +22,7 @@ use App\Http\Requests\DestroyPindahBukuRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
+use App\Models\Locking;
 
 class PindahBukuController extends Controller
 {
@@ -350,7 +351,8 @@ class PindahBukuController extends Controller
         $tgltutup = (new Parameter())->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
         $user = auth('api')->user()->name;
-        $useredit = $pengeluaran->editing_by ?? '';
+        $getEditing = (new Locking())->getEditing('pindahbuku', $id);
+        $useredit = $getEditing->editing_by ?? '';
         $aksi = request()->aksi ?? '';
 
         $cekPencairan = DB::table("pencairangiropengeluaranheader")->from(DB::raw("pencairangiropengeluaranheader with (readuncommitted)"))
@@ -405,13 +407,10 @@ class PindahBukuController extends Controller
         } else if ($useredit != '' && $useredit != $user) {
             $waktu = (new Parameter())->cekBatasWaktuEdit('Pindah Buku BUKTI');
 
-            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
             if ($diffNow->i > $waktu) {
-                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                    (new MyModel())->updateEditingBy('pindahbuku', $id, $aksi);
-                }
-
+                (new MyModel())->createLockEditing($id, 'pindahbuku',$useredit);
                 $data = [
                     'message' => '',
                     'error' => false,
@@ -433,7 +432,7 @@ class PindahBukuController extends Controller
                 return response($data);
             }
         } else {
-            (new MyModel())->updateEditingBy('pindahbuku', $id, $aksi);
+            (new MyModel())->createLockEditing($id, 'pindahbuku',$useredit);
 
             $data = [
                 'error' => false,
