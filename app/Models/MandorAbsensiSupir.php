@@ -482,7 +482,7 @@ class MandorAbsensiSupir extends MyModel
         });
         
         //jika tanggal hari ini gak ada ambil 1 tanggal sebelum
-        if ($this->canGetYesterday()) {
+        if ($this->canGetYesterday() && !request()->readonly) {
             if (!$queryabsensisupirheader->first()) {
                 $lastAbsensi = (new AbsensiSupirHeader)->getYesterdayAbsensi($date);
                 if ($lastAbsensi) {

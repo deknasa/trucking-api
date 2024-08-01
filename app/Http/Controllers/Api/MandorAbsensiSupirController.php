@@ -12,17 +12,19 @@ use App\Models\AbsensiSupirDetail;
 use App\Models\AbsensiSupirHeader;
 use App\Models\MandorAbsensiSupir;
 use Illuminate\Support\Facades\DB;
+use App\Rules\GetAbsensiMandorRule;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Schema;
+
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\MandorAbsensiSupirRequest;
-
 use App\Http\Requests\GetMandorAbsensiSupirRequest;
 use App\Http\Requests\MandorAbsensiSupirAllRequest;
 use App\Http\Requests\StoreKasGantungDetailRequest;
 use App\Http\Requests\StoreKasGantungHeaderRequest;
 use App\Http\Requests\StoreAbsensiSupirDetailRequest;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Schema;
 use App\Http\Requests\MandorAbsensiSupirAllSupirSerapRequest;
 
 class MandorAbsensiSupirController extends Controller
@@ -31,9 +33,34 @@ class MandorAbsensiSupirController extends Controller
      * @ClassName 
      * @Keterangan TAMPILKAN DATA
      */
-    public function index(GetMandorAbsensiSupirRequest $request)
+    public function index(Request $request)
     {
         $mandorabsensisupir = new MandorAbsensiSupir();
+
+        $validator = Validator::make(
+            $request->all(),
+            [
+                "tglbukaabsensi" => [new GetAbsensiMandorRule()]
+            ],
+            [
+               
+            ],
+            [
+                'tglbukaabsensi' => 'tglbukaabsensi',
+            ],
+        );
+        if (!$validator->passes()) {
+            // return response([
+            //     'error' => true,
+            //     'errors' => $validator->messages()
+            // ],422);
+            $readonly = true;
+            $request->merge([
+                "readonly"=>$readonly
+            ]);
+        }else {
+            $readonly = false;
+        }
         return response([
             'data' => $mandorabsensisupir->get(),
             'attributes' => [
@@ -42,6 +69,7 @@ class MandorAbsensiSupirController extends Controller
                 'tradosupir' => $mandorabsensisupir->isTradoMilikSupir(),
                 'defaultJenis' => $mandorabsensisupir->defaultJenis(),
                 'activeKolomJenisKendaraan' => $mandorabsensisupir->activeKolomJenisKendaraan(),
+                'readonly' => $readonly,
             ]
         ]);
     }
