@@ -9,6 +9,7 @@ use App\Rules\DestroyBank;
 use App\Rules\DestroyBankPelanggan;
 use App\Rules\DestroyJurnalUmum;
 use App\Rules\DestroyPenerima;
+use App\Rules\validasiDestroyJurnalUmum;
 use Illuminate\Validation\Rule;
 
 class DestroyJurnalUmumRequest extends FormRequest
@@ -32,6 +33,7 @@ class DestroyJurnalUmumRequest extends FormRequest
     {
       
         return [
+            'id' => [new validasiDestroyJurnalUmum()],
             'nobukti' => new DestroyJurnalUmum(),
         ];
       

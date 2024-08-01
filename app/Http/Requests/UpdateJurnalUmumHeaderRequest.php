@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\JurnalUmumHeader;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\validasiDestroyJurnalUmum;
 use Illuminate\Validation\Rule;
 
 class UpdateJurnalUmumHeaderRequest extends FormRequest
@@ -31,6 +32,7 @@ class UpdateJurnalUmumHeaderRequest extends FormRequest
         $getData = $jurnalumum->find(request()->id);
 
         $rules = [
+            'id' => [new validasiDestroyJurnalUmum()],
             'nobukti' => [Rule::in($getData->nobukti)],
             "tglbukti" => [
                 "required",'date_format:d-m-Y',
