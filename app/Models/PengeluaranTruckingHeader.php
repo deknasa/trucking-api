@@ -270,6 +270,8 @@ class PengeluaranTruckingHeader extends MyModel
                 $table->longText('statuskirimberkastext')->nullable();
                 $table->string('userkirimberkas', 200)->nullable();
                 $table->string('coa', 200)->nullable();
+                $table->date('tgldariheaderpengeluarantruckingheader')->nullable();
+                $table->date('tglsampaiheaderpengeluarantruckingheader')->nullable();
                 $table->date('tgldariheaderpengeluaranheader')->nullable();
                 $table->date('tglsampaiheaderpengeluaranheader')->nullable();
                 $table->longText('statusposting')->nullable();
@@ -289,7 +291,7 @@ class PengeluaranTruckingHeader extends MyModel
                     ->select(DB::raw("pengeluarantruckingdetail.nobukti,supir.namasupir AS supir"))
                     ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingdetail.supir_id', 'supir.id')
                     ->whereRaw("nobukti like '%pjt%'")
-                    ->groupBy("pengeluarantruckingdetail.nobukti","supir.namasupir");
+                    ->groupBy("pengeluarantruckingdetail.nobukti", "supir.namasupir");
                 $tempSupirSupir = '##tempsupirSupir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                 Schema::create($tempSupirSupir, function ($table) {
                     $table->string('nobukti')->nullable();
@@ -298,7 +300,7 @@ class PengeluaranTruckingHeader extends MyModel
                 DB::table($tempSupirSupir)->insertUsing(['nobukti', 'supir'], $getSupir);
 
                 $getSupir = DB::table($tempSupirSupir)
-                ->select(DB::raw("nobukti, STRING_AGG(cast(supir  as nvarchar(max)), ', ') AS supir"))->groupBy('nobukti');
+                    ->select(DB::raw("nobukti, STRING_AGG(cast(supir  as nvarchar(max)), ', ') AS supir"))->groupBy('nobukti');
                 DB::table($tempSupir)->insertUsing(['nobukti', 'supir'], $getSupir);
             } else {
 
@@ -356,6 +358,8 @@ class PengeluaranTruckingHeader extends MyModel
                     'statuskirimberkas.text as statuskirimberkastext',
                     'pengeluarantruckingheader.userkirimberkas',
                     'akunpusat.keterangancoa as coa',
+                    db::raw("cast((format(pengeluarantruckingheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluarantruckingheader"),
+                    db::raw("cast(cast(format((cast((format(pengeluarantruckingheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluarantruckingheader"),
                     db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
                     db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
                     'statusposting.memo as statusposting',
@@ -459,6 +463,8 @@ class PengeluaranTruckingHeader extends MyModel
                     'statuskirimberkastext' => $item['statuskirimberkastext'],
                     'userkirimberkas' => $item['userkirimberkas'],
                     'coa' => $item['coa'],
+                    'tgldariheaderpengeluarantruckingheader' => $item['tgldariheaderpengeluarantruckingheader'],
+                    'tglsampaiheaderpengeluarantruckingheader' => $item['tglsampaiheaderpengeluarantruckingheader'],
                     'tgldariheaderpengeluaranheader' => $item['tgldariheaderpengeluaranheader'],
                     'tglsampaiheaderpengeluaranheader' => $item['tglsampaiheaderpengeluaranheader'],
                     'statusposting' => $item['statusposting'],
@@ -507,6 +513,8 @@ class PengeluaranTruckingHeader extends MyModel
                 'a.statuskirimberkas',
                 'a.userkirimberkas',
                 'a.coa',
+                'a.tgldariheaderpengeluarantruckingheader',
+                'a.tglsampaiheaderpengeluarantruckingheader',
                 'a.tgldariheaderpengeluaranheader',
                 'a.tglsampaiheaderpengeluaranheader',
                 'a.statusposting',
@@ -1145,7 +1153,7 @@ class PengeluaranTruckingHeader extends MyModel
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $this->totalNominal = $query->sum('nominal_detail');
-        
+
         $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
         $this->filter($query);
         $this->paginate($query);
