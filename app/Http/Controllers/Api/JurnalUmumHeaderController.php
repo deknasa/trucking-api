@@ -24,7 +24,10 @@ use App\Models\Parameter;
 use App\Models\Error;
 use App\Models\JurnalUmumPusatDetail;
 use App\Models\JurnalUmumPusatHeader;
+use App\Models\Locking;
 use App\Models\LogTrail;
+use App\Models\MyModel;
+use DateTime;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Throwable;
@@ -539,6 +542,9 @@ class JurnalUmumHeaderController extends Controller
         $aksi = request()->aksi ?? '';
         $tutupBuku = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'TUTUP BUKU')->first();
 
+        $user = auth('api')->user()->name;
+        $getEditing = (new Locking())->getEditing('jurnalumumheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             if ($jurnalumum->statusformat == 115) {
                 if (date('Y-m-d', strtotime($jurnalumum->tglbukti)) < date('Y-m-d', strtotime($tutupBuku->text))) {
@@ -553,7 +559,44 @@ class JurnalUmumHeaderController extends Controller
                         'kodestatus' => '1',
                         'kodenobukti' => '1'
                     ];
+                } else if ($useredit != '' && $useredit != $user) {
+                    $waktu = (new Parameter())->cekBatasWaktuEdit('PENGELUARAN KAS/BANK BUKTI');
+
+                    $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
+                    $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+                    $totalminutes =  ($diffNow->days * 24 * 60) + ($diffNow->h * 60) + $diffNow->i;
+                    if ($totalminutes > $waktu) {
+                        (new MyModel())->createLockEditing($id, 'jurnalumumheader', $useredit);
+                        $data = [
+                            'message' => '',
+                            'error' => false,
+                            'statuspesan' => 'success',
+                            'message' => '',
+                            'errors' => 'belum approve',
+                            'kodestatus' => '0',
+                            'kodenobukti' => '1'
+                        ];
+
+                        return response($data);
+                    } else {
+
+                        $error = new Error();
+                        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
+                        $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                        $keterror = 'No Bukti <b>' . $jurnalumum->nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                        $data = [
+                            'error' => true,
+                            'message' => ['keterangan' => $keterror],
+                            'kodeerror' => 'SDE',
+                            'statuspesan' => 'warning',
+                            'status' => false,
+                            // 'force' => $force
+                        ];
+
+                        return response($data);
+                    }
                 } else {
+                    (new MyModel())->createLockEditing($id, 'jurnalumumheader', $useredit);
                     $data = [
                         'message' => '',
                         'errors' => 'belum approve',
@@ -591,6 +634,7 @@ class JurnalUmumHeaderController extends Controller
 
             return response($data);
         } else {
+
             $data = [
                 'message' => '',
                 'errors' => 'belum approve',
