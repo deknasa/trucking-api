@@ -8,6 +8,7 @@ use App\Models\Parameter;
 use App\Rules\DestroyAgen;
 use App\Rules\DestroyBank;
 use App\Rules\DestroyRitasi;
+use App\Rules\validasiDestroyRitasi;
 use Illuminate\Validation\Rule;
 
 class DestroyRitasiRequest extends FormRequest
@@ -31,7 +32,7 @@ class DestroyRitasiRequest extends FormRequest
     {
       
         return [
-            'nobukti' => new DestroyRitasi(),
+            'id' => new validasiDestroyRitasi(),
         ];
       
     }

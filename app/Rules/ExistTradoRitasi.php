@@ -50,6 +50,6 @@ class ExistTradoRitasi implements Rule
     public function message()
     {
         $controller = new ErrorController;
-        return ':attribute' . ' ' . $controller->geterror('TVD')->keterangan;
+        return ':attribute' . ' ' . $controller->geterror('TVD')->keterangan.'. trado tidak sama dengan trado di trip';
     }
 }
