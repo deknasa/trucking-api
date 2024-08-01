@@ -37,7 +37,7 @@ use App\Http\Requests\StorePenerimaanStokDetailRequest;
 use App\Http\Requests\StorePenerimaanStokHeaderRequest;
 use App\Http\Requests\UpdatePenerimaanStokHeaderRequest;
 use App\Http\Requests\DestroyPenerimaanStokHeaderRequest;
-
+use App\Models\Locking;
 
 class PenerimaanStokHeaderController extends Controller
 {
@@ -346,9 +346,9 @@ class PenerimaanStokHeaderController extends Controller
         $pgdo = Parameter::where('grp', 'DO STOK')->where('subgrp', 'DO STOK')->first();
 
         $aksi = request()->aksi ?? '';
-        $peneimaan = $penerimaanStokHeader->where('nobukti',request()->nobukti)->first();
+        $peneimaan = $penerimaanStokHeader->where('nobukti', request()->nobukti)->first();
 
-       
+
         if (!isset($peneimaan)) {
             $keteranganerror = $error->cekKeteranganError('DTA') ?? '';
             $keterror = 'No Bukti <b>' . request()->nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
@@ -377,7 +377,8 @@ class PenerimaanStokHeaderController extends Controller
 
         $nobukti = $peneimaan->nobukti ?? '';
         $user = auth('api')->user()->name;
-        $useredit = $peneimaan->editing_by ?? '';
+        $getEditing = (new Locking())->getEditing('penerimaanstokheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
         if ($tgltutup >= $peneimaan->tglbukti) {
             $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
             $keterangan = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
@@ -667,11 +668,12 @@ class PenerimaanStokHeaderController extends Controller
                 if ($useredit != '' && $useredit != $user) {
                     $waktu = (new Parameter())->cekBatasWaktuEdit('Nota Kredit Header BUKTI');
 
-                    $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($peneimaan->editing_at)));
+                    $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
                     $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
-                    if ($diffNow->i > $waktu) {
+                    $totalminutes =  ($diffNow->days * 24 * 60) + ($diffNow->h * 60) + $diffNow->i;
+                    if ($totalminutes > $waktu) {
                         if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                            (new MyModel())->updateEditingBy('penerimaanstokheader', $id, $aksi);
+                            (new MyModel())->createLockEditing($id, 'penerimaanstokheader', $useredit);
                         }
 
                         $data = [
@@ -698,7 +700,7 @@ class PenerimaanStokHeaderController extends Controller
 
                 if (!$isPGUsed) {
                     // if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                    (new MyModel())->updateEditingBy('penerimaanstokheader', $id, $aksi);
+                            (new MyModel())->createLockEditing($id, 'penerimaanstokheader', $useredit);
                     // }
 
                     $data = [
@@ -861,7 +863,7 @@ class PenerimaanStokHeaderController extends Controller
             throw $th;
         }
     }
-    
+
     public function printReport($id)
     {
         DB::beginTransaction();
@@ -1023,5 +1025,5 @@ class PenerimaanStokHeaderController extends Controller
      */
     public function approvalkirimberkas()
     {
-    }    
+    }
 }

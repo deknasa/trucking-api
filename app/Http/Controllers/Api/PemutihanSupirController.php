@@ -15,12 +15,14 @@ use App\Http\Requests\UpdatePenerimaanHeaderRequest;
 use App\Http\Requests\GetUpahSupirRangeRequest;
 use App\Models\Bank;
 use App\Models\Error;
+use App\Models\Locking;
 use App\Models\MyModel;
 use App\Models\Parameter;
 use App\Models\PemutihanSupirDetail;
 use App\Models\PenerimaanHeader;
 use App\Models\PenerimaanTrucking;
 use App\Models\Supir;
+use DateTime;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -401,6 +403,9 @@ class PemutihanSupirController extends Controller
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
 
         $parameter = new Parameter();
+        $user = auth('api')->user()->name;
+        $getEditing = (new Locking())->getEditing('pemutihansupirheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
 
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
@@ -442,8 +447,44 @@ class PemutihanSupirController extends Controller
             ];
 
             return response($data);
-        } else {
+        }  else if ($useredit != '' && $useredit != $user) {
+            
+            $waktu = (new Parameter())->cekBatasWaktuEdit('Nota Kredit Header BUKTI');
 
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            $totalminutes =  ($diffNow->days * 24 * 60) + ($diffNow->h * 60) + $diffNow->i;
+            if ($totalminutes > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    (new MyModel())->createLockEditing($id, 'pemutihansupirheader',$useredit);  
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                ];
+
+                return response($data);
+            }            
+            
+        }else {
+
+            if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                (new MyModel())->createLockEditing($id, 'pemutihansupirheader',$useredit);  
+            }
             $data = [
                 'error' => false,
                 'message' => '',
@@ -474,7 +515,9 @@ class PemutihanSupirController extends Controller
 
             return response($data);
         } else {
-            (new MyModel())->updateEditingBy('pemutihansupirheader', $id, 'EDIT');
+            $getEditing = (new Locking())->getEditing('pemutihansupirheader', $id);
+            $useredit = $getEditing->editing_by ?? '';
+            (new MyModel())->createLockEditing($id, 'pemutihansupirheader',$useredit);  
 
             $data = [
                 'error' => false,

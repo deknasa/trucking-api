@@ -20,6 +20,7 @@ use App\Http\Requests\StoreNotaDebetDetailRequest;
 use App\Http\Requests\StoreNotaDebetHeaderRequest;
 use App\Http\Requests\UpdateNotaDebetHeaderRequest;
 use App\Http\Requests\DestroyNotaDebetHeaderRequest;
+use App\Models\Locking;
 
 class NotaDebetHeaderController extends Controller
 {
@@ -328,7 +329,8 @@ class NotaDebetHeaderController extends Controller
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
         $user = auth('api')->user()->name;
-        $useredit = $notaDebet->editing_by ?? '';
+        $getEditing = (new Locking())->getEditing('notadebetheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
         
         if ($statusdatacetak == $statusCetak->id) {
             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
@@ -367,11 +369,12 @@ class NotaDebetHeaderController extends Controller
             
             $waktu = (new Parameter())->cekBatasWaktuEdit('Nota Debet Header BUKTI');
 
-            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($notaDebet->editing_at)));
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
-            if ($diffNow->i > $waktu) {
+            $totalminutes =  ($diffNow->days * 24 * 60) + ($diffNow->h * 60) + $diffNow->i;
+            if ($totalminutes > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                    (new MyModel())->updateEditingBy('notadebetheader', $id, $aksi);
+                    (new MyModel())->createLockEditing($id, 'notadebetheader',$useredit);  
                 }
 
                 $data = [
@@ -398,7 +401,7 @@ class NotaDebetHeaderController extends Controller
         } else {
 
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                (new MyModel())->updateEditingBy('notadebetheader', $id, $aksi);
+                (new MyModel())->createLockEditing($id, 'notadebetheader',$useredit); 
             }
 
             $data = [
@@ -426,7 +429,9 @@ class NotaDebetHeaderController extends Controller
 
             return response($data);
         } else {
-            (new MyModel())->updateEditingBy('NotaDebetHeader', $id, 'EDIT');
+            $getEditing = (new Locking())->getEditing('notadebetheader', $id);
+            $useredit = $getEditing->editing_by ?? '';
+            (new MyModel())->createLockEditing($id, 'notadebetheader',$useredit); 
 
             $data = [
                 'error' => false,

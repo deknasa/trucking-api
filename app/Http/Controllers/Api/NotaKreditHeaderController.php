@@ -21,6 +21,7 @@ use App\Http\Requests\StoreNotaKreditDetailRequest;
 use App\Http\Requests\StoreNotaKreditHeaderRequest;
 use App\Http\Requests\UpdateNotaKreditHeaderRequest;
 use App\Http\Requests\DestroyNotaKreditHeaderRequest;
+use App\Models\Locking;
 
 class NotaKreditHeaderController extends Controller
 {
@@ -323,7 +324,8 @@ class NotaKreditHeaderController extends Controller
         $aksi = request()->aksi ?? '';
         $parameter = new Parameter();
         $user = auth('api')->user()->name;
-        $useredit = $notaKredit->editing_by ?? '';
+        $getEditing = (new Locking())->getEditing('notakreditheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
 
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
@@ -365,11 +367,12 @@ class NotaKreditHeaderController extends Controller
             
             $waktu = (new Parameter())->cekBatasWaktuEdit('Nota Kredit Header BUKTI');
 
-            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($notaKredit->editing_at)));
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
-            if ($diffNow->i > $waktu) {
+            $totalminutes =  ($diffNow->days * 24 * 60) + ($diffNow->h * 60) + $diffNow->i;
+            if ($totalminutes > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                    (new MyModel())->updateEditingBy('notakreditheader', $id, $aksi);
+                    (new MyModel())->createLockEditing($id, 'notakreditheader',$useredit);  
                 }
 
                 $data = [
@@ -396,7 +399,7 @@ class NotaKreditHeaderController extends Controller
         } else {
 
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                (new MyModel())->updateEditingBy('notakreditheader', $id, $aksi);
+                (new MyModel())->createLockEditing($id, 'notakreditheader',$useredit);  
             }
 
             $data = [
@@ -424,7 +427,9 @@ class NotaKreditHeaderController extends Controller
 
             return response($data);
         } else {
-            (new MyModel())->updateEditingBy('notakreditheader', $id, 'EDIT');
+            $getEditing = (new Locking())->getEditing('notakreditheader', $id);
+            $useredit = $getEditing->editing_by ?? '';
+            (new MyModel())->createLockEditing($id, 'notakreditheader',$useredit);  
 
             $data = [
                 'error' => false,
