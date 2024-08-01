@@ -476,7 +476,7 @@ class ExportPerhitunganBonus extends Model
             db::raw("'BIAYA - BIAYA :' as ketmain"),
             db::raw("max(a.ordermain) as ordermain"),
             db::raw("max(a.ftype) as ftype"),
-            db::raw("'07.01.01.27' as fcoa"),
+            db::raw("'07.02.01.02' as fcoa"),
             db::raw("'B. KENDARAAN' as fketcoa"),
             db::raw("sum(a.nominal1) as nominal1"),
             db::raw("sum(a.nominal2) as nominal2"),
