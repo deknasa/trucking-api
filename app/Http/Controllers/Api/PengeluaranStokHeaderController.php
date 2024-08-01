@@ -45,7 +45,7 @@ use App\Http\Requests\StorePengeluaranStokHeaderRequest;
 use App\Http\Requests\UpdatePengeluaranStokHeaderRequest;
 use App\Http\Requests\DestroyPengeluaranStokHeaderRequest;
 use App\Http\Requests\StorePengeluaranStokDetailFifoRequest;
-
+use App\Models\Locking;
 
 class PengeluaranStokHeaderController extends Controller
 {
@@ -371,7 +371,8 @@ class PengeluaranStokHeaderController extends Controller
         $pengeluaran  = $pengeluaran->findOrFail($id);
         $nobukti = $pengeluaran->nobukti ?? '';
         $user = auth('api')->user()->name;
-        $useredit = $pengeluaran->editing_by ?? '';
+        $getEditing = (new Locking())->getEditing('pengeluaranstokheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
 
         if (!isset($pengeluaran)) {
             $keteranganerror = $error->cekKeteranganError('DTA') ?? '';
@@ -387,12 +388,12 @@ class PengeluaranStokHeaderController extends Controller
             return response($data);
         }
 
-        $querypenerimaan=db::table("penerimaanstokheader")->from(db::raw("penerimaanstokheader a with (readuncommitted)"))
-        ->select(
-            'a.nobukti'
-        )
-        ->where('a.nobukti',$pengeluaran->penerimaanstokproses_nobukti)
-        ->first();
+        $querypenerimaan = db::table("penerimaanstokheader")->from(db::raw("penerimaanstokheader a with (readuncommitted)"))
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.nobukti', $pengeluaran->penerimaanstokproses_nobukti)
+            ->first();
 
 
         if (isset($querypenerimaan)) {
@@ -421,7 +422,7 @@ class PengeluaranStokHeaderController extends Controller
             ];
             return response($data);
         }
-  
+
 
 
         $penerimaan = $pengeluaran->penerimaan_nobukti ?? '';
@@ -719,23 +720,24 @@ class PengeluaranStokHeaderController extends Controller
             $nameUser = auth('api')->user()->name;
             if ($useredit != '' && $useredit != $nameUser) {
                 $waktu = (new Parameter())->cekBatasWaktuEdit('pengeluaran stok header BUKTI');
-                
-                $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($pengeluaran->editing_at)));
+
+                $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
                 $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
-                if ($diffNow->i > $waktu) {
+                $totalminutes =  ($diffNow->days * 24 * 60) + ($diffNow->h * 60) + $diffNow->i;
+                if ($totalminutes > $waktu) {
                     if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                        (new MyModel())->updateEditingBy('pengeluaranstokheader', $id, $aksi);
+                        (new MyModel())->createLockEditing($id, 'pengeluaranstokheader', $useredit);
                     }
-                    
+
                     $data = [
                         'message' => '',
                         'error' => false,
                         'statuspesan' => 'success',
                     ];
-                    
+
                     // return response($data);
                 } else {
-                    
+
                     $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
                     $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
                     $data = [
@@ -744,12 +746,12 @@ class PengeluaranStokHeaderController extends Controller
                         'kodeerror' => 'SDE',
                         'statuspesan' => 'warning',
                     ];
-                    
+
                     return response($data);
-                }    
+                }
             }
             if ($todayValidation || (($isEditAble || $isKeteranganEditAble) && !$printValidation)) {
-                (new MyModel())->updateEditingBy('pengeluaranstokheader', $id, $aksi);
+                (new MyModel())->createLockEditing($id, 'pengeluaranstokheader', $useredit);
 
                 $data = [
                     'message' => '',
@@ -1042,5 +1044,5 @@ class PengeluaranStokHeaderController extends Controller
      */
     public function approvalkirimberkas()
     {
-    }    
+    }
 }

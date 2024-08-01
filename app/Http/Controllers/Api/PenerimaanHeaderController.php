@@ -439,7 +439,8 @@ class PenerimaanHeaderController extends Controller
 
             $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
-            if ($diffNow->i > $waktu) {
+            $totalminutes =  ($diffNow->days * 24 * 60) + ($diffNow->h * 60) + $diffNow->i;
+            if ($totalminutes > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                     // (new MyModel())->updateEditingBy('penerimaanheader', $id, $aksi);
                     (new MyModel())->createLockEditing($id, 'penerimaanheader',$useredit);  
