@@ -1023,7 +1023,7 @@ class UpahSupirRincian extends MyModel
             if ($longtrip == 65) {
                 $getInfoZonaDari = DB::table("kota")->select(DB::raw("isnull(zona_id,0) as zona_id"))->from(DB::raw("kota with (readuncommitted)"))->where('id', $dari_id)->first();
                 $getInfoZonaSampai = DB::table("kota")->select(DB::raw("isnull(zona_id,0) as zona_id"))->from(DB::raw("kota with (readuncommitted)"))->where('id', $sampai_id)->first();
-                if($getInfoZonaDari == null || $getInfoZonaSampai == null){
+                if ($getInfoZonaDari == null || $getInfoZonaSampai == null) {
                     goto getupahkota;
                 }
                 if ($getInfoZonaDari->zona_id != '0' && $getInfoZonaSampai->zona_id != '0') {
@@ -1912,7 +1912,7 @@ class UpahSupirRincian extends MyModel
 
         return $query->get();
     }
-    public function listpivot($dari, $sampai)
+    public function listpivot()
     {
         $tempdatacs = '##tempdatacontainerstatus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdatacs, function ($table) {
@@ -1923,14 +1923,7 @@ class UpahSupirRincian extends MyModel
             $table->string('statuscontainer', 1000)->nullable();
         });
 
-        $queryupah = DB::table('upahsupir')->from(DB::raw("upahsupir as a with (readuncommitted)"))
-            ->select(
-                'a.id',
-            )
-            ->whereRaw("a.tglmulaiberlaku >= '$dari'")
-            ->whereRaw("a.tglmulaiberlaku <= '$sampai'")
-            ->orderBy('a.id', 'asc')
-            ->get();
+        $queryupah = (new UpahSupir())->get();
 
         $datadetailupah = json_decode($queryupah, true);
         foreach ($datadetailupah as $itema) {
@@ -2195,6 +2188,8 @@ class UpahSupirRincian extends MyModel
                         // } else 
                         if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi' || $filters['field'] == 'omset') {
                             $query = $query->whereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'check') {
+                            $query = $query->whereRaw('1 = 1');
                         } else {
                             $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -2218,6 +2213,8 @@ class UpahSupirRincian extends MyModel
                             // } else 
                             if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi' || $filters['field'] == 'omset') {
                                 $query = $query->orWhereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'check') {
+                                $query = $query->whereRaw('1 = 1');
                             } else {
                                 $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -2338,6 +2335,7 @@ class UpahSupirRincian extends MyModel
         Schema::create($temptgl, function ($table) {
             $table->string('kotadari', 1000)->nullable();
             $table->string('kotasampai', 1000)->nullable();
+            $table->string('penyesuaian', 1000)->nullable();
             $table->date('tglmulaiberlaku')->nullable();
         });
 
@@ -2346,12 +2344,13 @@ class UpahSupirRincian extends MyModel
             ->select(
                 'kotadari.keterangan as kotadari',
                 'kotasampai.keterangan as kotasampai',
+                db::raw("isnull(upahsupir.penyesuaian,'') as penyesuaian"),
                 'tglmulaiberlaku'
             )
             ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'upahsupir.kotadari_id', 'kotadari.id')
             ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'upahsupir.kotasampai_id', 'kotasampai.id');
 
-        DB::table($temptgl)->insertUsing(['kotadari', 'kotasampai', 'tglmulaiberlaku'], $querytgl);
+        DB::table($temptgl)->insertUsing(['kotadari', 'kotasampai', 'penyesuaian', 'tglmulaiberlaku'], $querytgl);
 
 
         $query = DB::table($tempdata)
@@ -2359,6 +2358,7 @@ class UpahSupirRincian extends MyModel
             ->join(DB::raw($temptgl . " as b"), 'a.tglmulaiberlaku', 'b.tglmulaiberlaku')
             ->whereRaw("trim(a.kotadari) = trim(b.kotadari)")
             ->whereRaw("trim(a.kotasampai) = trim(b.kotasampai)")
+            ->whereRaw("trim(a.penyesuaian) = trim(b.penyesuaian)")
             ->whereRaw("a.tglmulaiberlaku = b.tglmulaiberlaku")
             ->first();
 
@@ -2401,6 +2401,10 @@ class UpahSupirRincian extends MyModel
             $a = 0;
             $container_id = [];
             $nominal = [];
+            $nominalkenek = [];
+            $nominalkomisi = [];
+            $nominaltol = [];
+            $detail_tas_id = [];
             $liter = [];
             foreach ($datadetail as $key => $itemdetail) {
 
@@ -2410,6 +2414,10 @@ class UpahSupirRincian extends MyModel
                     $nominal[] = $item[$kolom];
                     $container_id[] = $itemdetail['id'];
                     $statuscontainer_id[] = $itemStatus['id'];
+                    $nominalkenek[] = 0;
+                    $nominalkomisi[] = 0;
+                    $nominaltol[] = 0;
+                    $detail_tas_id[] = 0;
                 }
             }
             $i = 0;
@@ -2432,6 +2440,9 @@ class UpahSupirRincian extends MyModel
             $getBukanPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'STATUS POSTING TNL')
                 ->where('text', 'TIDAK POSTING TNL')->first();
+            $getBukanLangsir = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUS LANGSIR')
+                ->where('text', 'BUKAN LANGSIR')->first();
             $upahRitasiRequest = [
                 'parent_id' => 0,
                 'tarif_id' => 0,
@@ -2447,13 +2458,21 @@ class UpahSupirRincian extends MyModel
                 'container_id' => $container_id,
                 'statuscontainer_id' => $statuscontainer_id,
                 'nominalsupir' => $nominal,
+                'nominalkenek' => $nominalkenek,
+                'nominalkomisi' => $nominalkomisi,
+                'nominaltol' => $nominaltol,
+                'detail_tas_id' => $detail_tas_id,
                 'liter' => $liter,
+                'statuslangsir' => $getBukanLangsir->id,
                 'statussimpankandang' => $statusSimpanKandang->id,
                 'statusupahzona' => $getBukanUpahZona->id,
-                'statuspostingtnl' => $getBukanPostingTnl->id
+                'statuspostingtnl' => $getBukanPostingTnl->id,
+                'tas_id' => 0,
+                'from' => '',
+                'keterangan' => ''
             ];
-
-            $upahRitasi = (new UpahSupir())->processStore($upahRitasiRequest);
+            $upahsupir = new UpahSupir();
+            $upahRitasi = (new UpahSupir())->processStore($upahRitasiRequest, $upahsupir);
         }
 
 
