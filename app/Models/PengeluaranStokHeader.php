@@ -277,6 +277,21 @@ class PengeluaranStokHeader extends MyModel
                     // 'bank_id',
                 ],  $querypenerimaanstokheader);
 
+                $querypenerimaanstokheader = db::table("kartustoklama")->from(db::raw("kartustoklama a with (readuncommitted)"))
+                    ->select(
+                        'a.nobukti',
+                        'a.tglbukti',
+                        // 'a.bank_id',
+                    )
+                    ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti');
+
+                DB::table($temppenerimaanstokheader)->insertUsing([
+                    'nobukti',
+                    'tglbukti',
+                    // 'bank_id',
+                ],  $querypenerimaanstokheader);
+                
+
                 DB::table($temppenerimaanstokheader)->insert([
                     'nobukti' => '',
                     'tglbukti' => '1900/1/1',
