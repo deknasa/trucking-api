@@ -12,8 +12,11 @@ use App\Models\PendapatanSupirHeader;
 use App\Http\Requests\StorePendapatanSupirHeaderRequest;
 use App\Http\Requests\UpdatePendapatanSupirHeaderRequest;
 use App\Models\Error;
+use App\Models\Locking;
+use App\Models\MyModel;
 use App\Models\Parameter;
 use App\Models\PendapatanSupirDetail;
+use DateTime;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -372,6 +375,9 @@ class PendapatanSupirHeaderController extends Controller
 
         $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
+        $user = auth('api')->user()->name;
+        $getEditing = (new Locking())->getEditing('pendapatansupirheader', $id);
+        $useredit = $getEditing->editing_by ?? '';
 
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
@@ -405,8 +411,48 @@ class PendapatanSupirHeaderController extends Controller
             ];
 
             return response($data);
-        }else {
+        } else if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('PENGELUARAN KAS/BANK BUKTI');
 
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            $totalminutes =  ($diffNow->days * 24 * 60) + ($diffNow->h * 60) + $diffNow->i;
+            if ($totalminutes > $waktu) {
+                if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                    // (new MyModel())->updateEditingBy('pengeluaranheader', $id, $aksi);
+                    (new MyModel())->createLockEditing($id, 'pendapatansupirheader',$useredit);  
+                }
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                return response($data);
+            } else {
+                // $cekEnableForceEdit = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
+                // ->where('grp','FORCE EDIT')->first()->text ?? 'TIDAK';
+                // $force = ($cekEnableForceEdit == 'YA') ? true : false;
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                    // 'force' => $force
+                ];
+
+                return response($data);
+            }
+        } else {
+
+            if ($aksi != 'DELETE' && $aksi != 'EDIT') {
+                // (new MyModel())->updateEditingBy('pengeluaranheader', $id, $aksi);
+                (new MyModel())->createLockEditing($id, 'pendapatansupirheader',$useredit);  
+            }
             $data = [
                 'error' => false,
                 'message' => '',
@@ -439,7 +485,10 @@ class PendapatanSupirHeaderController extends Controller
 
             return response($data);
         } else {
-
+            $getEditing = (new Locking())->getEditing('pendapatansupirheader', $id);
+            $useredit = $getEditing->editing_by ?? '';
+            (new MyModel())->createLockEditing($id, 'pendapatansupirheader',$useredit);      
+            
             $data = [
                 'error' => false,
                 'message' => '',
