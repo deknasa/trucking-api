@@ -49,6 +49,6 @@ class ExistSupirRitasi implements Rule
     public function message()
     {
         $controller = new ErrorController;
-        return ':attribute' . ' ' . $controller->geterror('TVD')->keterangan;
+        return ':attribute' . ' ' . $controller->geterror('TVD')->keterangan. '. supir tidak sama dengan supir di trip';
     }
 }

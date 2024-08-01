@@ -14,6 +14,7 @@ use App\Rules\ExistSupirRitasi;
 use App\Rules\ExistSuratPengantarRitasi;
 use App\Rules\ExistTrado;
 use App\Rules\ExistTradoRitasi;
+use App\Rules\validasiDestroyRitasi;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
@@ -108,6 +109,7 @@ class UpdateRitasiRequest extends FormRequest
         }
 
         $rules = [
+            'id' => [ new validasiDestroyRitasi()],
             'nobukti' => [Rule::in($getData->nobukti)],
             "tglbukti" => [
                 "required",'date_format:d-m-Y',

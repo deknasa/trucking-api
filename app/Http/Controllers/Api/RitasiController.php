@@ -18,7 +18,11 @@ use App\Models\UpahRitasiRincian;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DestroyRitasiRequest;
 use App\Http\Requests\GetIndexRangeRequest;
+use App\Models\Error;
+use App\Models\Locking;
+use App\Models\MyModel;
 use Carbon\Carbon;
+use DateTime;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -73,7 +77,7 @@ class RitasiController extends Controller
             $ritasi = (new Ritasi())->processStore($data);
             if ($request->button == 'btnSubmit') {
                 $ritasi->position = $this->getPosition($ritasi, $ritasi->getTable())->position;
-                if ($request->limit==0) {
+                if ($request->limit == 0) {
                     $ritasi->page = ceil($ritasi->position / (10));
                 } else {
                     $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
@@ -121,14 +125,14 @@ class RitasiController extends Controller
             ];
             $ritasi = (new Ritasi())->processUpdate($ritasi, $data);
             $ritasi->position = $this->getPosition($ritasi, $ritasi->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $ritasi->page = ceil($ritasi->position / (10));
             } else {
                 $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
             }
             $ritasi->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $ritasi->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -153,14 +157,14 @@ class RitasiController extends Controller
             $selected = $this->getPosition($ritasi, $ritasi->getTable(), true);
             $ritasi->position = $selected->position;
             $ritasi->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $ritasi->page = ceil($ritasi->position / (10));
             } else {
                 $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
             }
             $ritasi->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $ritasi->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -230,6 +234,16 @@ class RitasiController extends Controller
         $ritasi = new Ritasi();
         $nobukti = DB::table("ritasi")->from(DB::raw("ritasi"))->where('id', $id)->first();
         $cekdata = $ritasi->cekvalidasiaksi($nobukti->nobukti);
+        $parameter = new Parameter();
+
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
+        $user = auth('api')->user()->name;
+        $getEditing = (new Locking())->getEditing('ritasi', $id);
+        $useredit = $getEditing->editing_by ?? '';
+
+        $error = new Error();
+        $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
                 ->select(
@@ -245,7 +259,49 @@ class RitasiController extends Controller
             ];
 
             return response($data);
+        } else if ($tgltutup >= $nobukti->tglbukti) {
+            $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
+            $data = [
+                'error' => true,
+                'message' => $keterror,
+                'kodeerror' => 'TUTUPBUKU',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else if ($useredit != '' && $useredit != $user) {
+            $waktu = (new Parameter())->cekBatasWaktuEdit('suratpengantar');
+
+            $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
+            $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
+            $totalminutes =  ($diffNow->days * 24 * 60) + ($diffNow->h * 60) + $diffNow->i;
+            if ($totalminutes > $waktu) {
+                (new MyModel())->createLockEditing($id, 'ritasi', $useredit);
+
+                $data = [
+                    'message' => '',
+                    'error' => false,
+                    'statuspesan' => 'success',
+                ];
+
+                return response($data);
+            } else {
+
+                $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
+                $keterror = 'No Bukti <b>' . $nobukti->nobukti . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $data = [
+                    'error' => true,
+                    'message' => $keterror,
+                    'kodeerror' => 'SDE',
+                    'statuspesan' => 'warning',
+                    // 'force' => $force
+                ];
+
+                return response($data);
+            }
         } else {
+            (new MyModel())->createLockEditing($id, 'ritasi',$useredit);  
 
             $data = [
                 'error' => false,
@@ -256,5 +312,4 @@ class RitasiController extends Controller
             return response($data);
         }
     }
-
 }
