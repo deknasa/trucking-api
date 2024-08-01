@@ -441,7 +441,7 @@ class ExportPerhitunganBonus extends Model
                 'a.forder',
                 'a.fcoaws',
                 'a.fparent',
-                 db::raw("(case when c.parent in('07.04.01.00','07.04.02.00') then 'ADMINISTRASI & KANTOR' else isnull(b.keterangancoa,'') end) as fketparent"),
+                 db::raw("(case when c.parent in('07.04.01.00','07.04.02.00','07.05.00.00') then 'ADMINISTRASI & KANTOR' else isnull(b.keterangancoa,'') end) as fketparent"),
                 'a.pCabang'
             )
             ->leftjoin(db::raw("mainakunpusat b with (readuncommitted)"), 'a.fparent', 'b.coa')
@@ -477,7 +477,7 @@ class ExportPerhitunganBonus extends Model
             db::raw("max(a.ordermain) as ordermain"),
             db::raw("max(a.ftype) as ftype"),
             db::raw("'07.02.01.02' as fcoa"),
-            db::raw("'B. KENDARAAN' as fketcoa"),
+            db::raw("'B.KENDARAAN' as fketcoa"),
             db::raw("sum(a.nominal1) as nominal1"),
             db::raw("sum(a.nominal2) as nominal2"),
             db::raw("sum(a.nominal3) as nominal3"),
