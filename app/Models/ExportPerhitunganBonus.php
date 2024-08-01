@@ -489,7 +489,7 @@ class ExportPerhitunganBonus extends Model
             db::raw("max(a.fcoaws) as fcoaws"),
             db::raw("max(a.fparent) as fparent"),
             // db::raw("(case when a.fparent in('07.01.00.00','07.03.00.00') then 'Biaya Operasional' else 'Biaya Umum Dan Adm' end) as fketparent"),
-            db::raw("'OPERASIONAL/LAPANGAN' as fketparent"),
+            db::raw("'ADMINISTRASI & KANTOR' as fketparent"),
             db::raw("max(a.pCabang) as pCabang")
         )
         ->leftjoin(db::raw("mainakunpusat b with (readuncommitted)"), 'a.fparent', 'b.coa')
