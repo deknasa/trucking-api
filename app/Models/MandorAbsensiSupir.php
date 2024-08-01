@@ -467,6 +467,20 @@ class MandorAbsensiSupir extends MyModel
             $table->string('modifiedby', 30)->nullable();
         });
         
+        $tempTradoSemalam = '##tempTradoSemalam' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempTradoSemalam, function ($table) {
+            $table->integer('id');
+            $table->string('kodetrado', 30)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->integer('statusaktif')->length(11)->nullable();
+            $table->integer('statusabsensisupir')->length(11)->nullable();
+            $table->string('nama', 40)->nullable();
+            $table->unsignedBigInteger('mandor_id')->nullable();
+            $table->unsignedBigInteger('supir_id')->nullable();
+            $table->dateTime('tglberlakumiliksupir')->nullable();
+            $table->string('modifiedby', 30)->nullable();
+        });
+        
         //jika tanggal hari ini gak ada ambil 1 tanggal sebelum
         if ($this->canGetYesterday()) {
             if (!$queryabsensisupirheader->first()) {
@@ -496,7 +510,7 @@ class MandorAbsensiSupir extends MyModel
                     // ->get();
     
                     // dd($lastAbsensiDetail->get());
-                    DB::table($tempTrado)->insertUsing([
+                    DB::table($tempTradoSemalam)->insertUsing([
                         'id',
                         'kodetrado',
                         'keterangan',
@@ -508,7 +522,8 @@ class MandorAbsensiSupir extends MyModel
                         'tglberlakumiliksupir',
                         'modifiedby',
                     ],  $lastAbsensiDetail);
-                    goto tradosemalam;
+                    // dd(DB::table($tempTrado)->get());
+                    // goto tradosemalam;
                 }
             }
         }
@@ -523,14 +538,15 @@ class MandorAbsensiSupir extends MyModel
                 'a.statusabsensisupir',
                 'a.nama',
                 'a.mandor_id',
-                'a.supir_id',
+                db::raw("isnull(b.supir_id,a.supir_id)"),
                 'a.tglberlakumiliksupir',
                 'a.modifiedby'
             )
+            ->leftJoin(DB::raw($tempTradoSemalam . ' as b'), 'a.kodetrado', '=', 'b.kodetrado')
             ->whereRaw("isnull(a.tglberlakumilikmandor,'1900/1/1')<='" . $date . "'")
             ->where('a.statusaktif', $statusaktif->id);
 
-
+            // dd(DB::table($tempTradoSemalam)->get(),$queryTrado->get());            
 
         DB::table($tempTrado)->insertUsing([
             'id',
@@ -1400,7 +1416,7 @@ class MandorAbsensiSupir extends MyModel
         $cekSupirTrado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))->where('id', $id)->where('supir_id', $ceksupir_id)->first();
 
         if ($cekSupirTrado == '') {
-            dd($supir_id,$cekSupirTrado);
+            // dd($supir_id,$cekSupirTrado);
             $tgl = request()->tanggal ?? 'now';
             $absensisupirdetail = DB::table('trado')
                 ->select(
