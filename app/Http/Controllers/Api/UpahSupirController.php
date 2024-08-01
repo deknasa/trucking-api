@@ -60,18 +60,18 @@ class UpahSupirController extends Controller
      * @Keterangan EXPORT KE EXCEL
      */
 
-    public function export(GetUpahSupirRangeRequest $request)
+    public function export()
     {
-        $dari = date('Y-m-d', strtotime($request->dari));
-        $sampai = date('Y-m-d', strtotime($request->sampai));
+        // $dari = date('Y-m-d', strtotime($request->dari));
+        // $sampai = date('Y-m-d', strtotime($request->sampai));
 
         $upahsupirrincian = new UpahSupirRincian();
 
-        $cekData = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
-            ->whereBetween('tglmulaiberlaku', [$dari, $sampai])
-            ->first();
+        // $cekData = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
+        //     ->whereBetween('tglmulaiberlaku', [$dari, $sampai])
+        //     ->first();
 
-        if ($cekData != null) {
+        // if ($cekData != null) {
 
             $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->select(
@@ -85,17 +85,17 @@ class UpahSupirController extends Controller
 
             return response([
                 'status' => true,
-                'data' => $upahsupirrincian->listpivot($dari, $sampai),
+                'data' => $upahsupirrincian->listpivot(),
                 'judul' => $getJudul
             ]);
-        } else {
-            return response([
-                'errors' => [
-                    "export" => "tidak ada data"
-                ],
-                'message' => "The given data was invalid.",
-            ], 422);
-        }
+        // } else {
+        //     return response([
+        //         'errors' => [
+        //             "export" => "tidak ada data"
+        //         ],
+        //         'message' => "The given data was invalid.",
+        //     ], 422);
+        // }
     }
 
     /**
