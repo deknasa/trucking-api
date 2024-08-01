@@ -349,7 +349,7 @@ class PengeluaranStokHeader extends MyModel
                         'a.nobukti',
                         'a.tglbukti',
                     )
-                    ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti');
+                    ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.servicein_nobukti');
 
                 DB::table($tempserviceinheader)->insert([
                     'nobukti' => '',
@@ -360,6 +360,8 @@ class PengeluaranStokHeader extends MyModel
                     'nobukti',
                     'tglbukti',
                 ],  $queryserviceinheader);
+
+            
 
                 // pengeluaran trucking header
 
@@ -653,6 +655,7 @@ class PengeluaranStokHeader extends MyModel
             //                  
 
             // dd('test1');
+            // dd(db::table($tempserviceinheader)->get());
             $query = DB::table($this->table);
             $query = $this->selectColumns($query)
                 ->Join(db::raw($tempgudang . " gudang"), db::raw("isnull(pengeluaranstokheader.gudang_id,0)"), 'gudang.id')
