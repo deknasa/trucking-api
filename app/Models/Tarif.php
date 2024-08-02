@@ -158,13 +158,29 @@ class Tarif extends MyModel
                 $table->bigInteger('jenisorder_id')->nullable();
             });
 
+            $tempupah = '##tempupah' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempupah, function (Blueprint $table) {
+                $table->bigInteger('id')->nullable();
+                $table->longText('upahsupir')->nullable();
+            });
+            $queryUpah = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
+                ->select('tarif.id', db::raw(" STRING_AGG(cast(isnull(kotadari.kodekota,'')+(case when isnull(kotasampai.kodekota,'')='' then '' else ' - ' +isnull(kotasampai.kodekota,'') end)+ 
+                    (case when isnull(upahsupir.penyesuaian,'')='' then '' else ' ( ' +isnull(upahsupir.penyesuaian,'')+ ' ) ' end) as nvarchar(max)), ', ') as upahsupir
+                    "))
+                ->leftJoin(DB::raw("upahsupir as upahsupir with (readuncommitted)"), 'upahsupir.tarif_id', '=', 'tarif.id')
+                ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
+                ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
+                ->groupBy('tarif.id');
+
+            DB::table($tempupah)->insertUsing([
+                'id',
+                'upahsupir',
+            ], $queryUpah);
             $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
                 ->select(
                     'tarif.id',
                     'parent.tujuan as parent_id',
-                    db::raw("isnull(kotadari.kodekota,'')+(case when isnull(kotasampai.kodekota,'')='' then '' else ' - ' +isnull(kotasampai.kodekota,'') end)+ 
-             (case when isnull(upahsupir.penyesuaian,'')='' then '' else ' ( ' +isnull(upahsupir.penyesuaian,'')+ ' ) ' end) as upahsupir
-             "),
+                    db::raw(" upahsupir.upahsupir as upahsupir"),
                     'tarif.tujuan',
                     'tarif.penyesuaian',
                     'parameter.memo as statusaktif',
@@ -197,9 +213,7 @@ class Tarif extends MyModel
                 ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
                 ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id')
                 ->leftJoin(DB::raw("parameter AS posting with (readuncommitted)"), 'tarif.statuspostingtnl', '=', 'posting.id')
-                ->leftJoin(DB::raw("upahsupir as upahsupir with (readuncommitted)"), 'upahsupir.tarif_id', '=', 'tarif.id')
-                ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
-                ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id');
+                ->leftJoin(DB::raw("$tempupah as upahsupir with (readuncommitted)"), 'upahsupir.id', '=', 'tarif.id');
 
 
             DB::table($temtabel)->insertUsing([
@@ -298,7 +312,7 @@ class Tarif extends MyModel
         $query = DB::table(DB::raw($temtabel))->from(
             DB::raw(DB::raw($temtabel) . " tarif with (readuncommitted)")
         )
-        ->distinct()->select(
+            ->distinct()->select(
                 'tarif.id',
                 'tarif.parent_id',
                 'tarif.upahsupir',
@@ -392,6 +406,26 @@ class Tarif extends MyModel
     public function selectColumns($query)
     { //sesuaikan dengan createtemp
 
+
+        $tempupah = '##tempupah' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempupah, function (Blueprint $table) {
+            $table->bigInteger('id')->nullable();
+            $table->longText('upahsupir')->nullable();
+        });
+        $queryUpah = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
+            ->select('tarif.id', db::raw(" STRING_AGG(cast(isnull(kotadari.kodekota,'')+(case when isnull(kotasampai.kodekota,'')='' then '' else ' - ' +isnull(kotasampai.kodekota,'') end)+ 
+                (case when isnull(upahsupir.penyesuaian,'')='' then '' else ' ( ' +isnull(upahsupir.penyesuaian,'')+ ' ) ' end) as nvarchar(max)), ', ') as upahsupir
+                "))
+            ->leftJoin(DB::raw("upahsupir as upahsupir with (readuncommitted)"), 'upahsupir.tarif_id', '=', 'tarif.id')
+            ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
+            ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
+            ->groupBy('tarif.id');
+
+        DB::table($tempupah)->insertUsing([
+            'id',
+            'upahsupir',
+        ], $queryUpah);
+
         $query1 = $query->select(
             db::raw($this->table . ".id"),
             'parent.tujuan as parent_id',
@@ -411,9 +445,7 @@ class Tarif extends MyModel
             db::raw($this->table . ".created_at"),
             db::raw($this->table . ".updated_at"),
             //  db::raw("'' as upahsupir")
-            db::raw("isnull(kotadari.keterangan,'')+(case when isnull(kotasampai.keterangan,'')='' then '' else ' - ' +isnull(kotasampai.keterangan,'') end)+ 
-            (case when isnull(upahsupir.penyesuaian,'')='' then '' else ' ( ' +isnull(upahsupir.penyesuaian,'')+ ' ) ' end) as upahsupir
-            "),
+            db::raw(" upahsupir.upahsupir as upahsupir"),
 
         )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'tarif.statusaktif', '=', 'parameter.id')
@@ -425,9 +457,7 @@ class Tarif extends MyModel
             ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
             ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id')
             ->leftJoin(DB::raw("parameter AS posting with (readuncommitted)"), 'tarif.statuspostingtnl', '=', 'posting.id')
-            ->leftJoin(DB::raw("upahsupir as upahsupir with (readuncommitted)"), 'upahsupir.tarif_id', '=', 'tarif.id')
-            ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
-            ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id');
+            ->leftJoin(DB::raw("$tempupah as upahsupir with (readuncommitted)"), 'upahsupir.id', '=', 'tarif.id');
 
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
@@ -452,7 +482,7 @@ class Tarif extends MyModel
         });
 
         DB::table($temp)->insertUsing([
-            'id', 'parent_id', 'tujuan', 'penyesuaian',  'statusaktif','statusaktiftext',  'statussistemton', 'kota_id', 'zona_id', 'jenisorder', 'tglmulaiberlaku',
+            'id', 'parent_id', 'tujuan', 'penyesuaian',  'statusaktif', 'statusaktiftext',  'statussistemton', 'kota_id', 'zona_id', 'jenisorder', 'tglmulaiberlaku',
             'statuspenyesuaianharga', 'statuspostingtnl', 'keterangan', 'modifiedby', 'created_at', 'updated_at', 'upahsupir'
         ], $query1);
 
@@ -515,7 +545,7 @@ class Tarif extends MyModel
         // $models = $this->filter($query);
 
         DB::table($temp)->insertUsing([
-            'id', 'parent_id', 'tujuan', 'penyesuaian',  'statusaktif','statusaktiftext',  'statussistemton', 'kota_id', 'zona_id', 'jenisorder', 'tglmulaiberlaku',
+            'id', 'parent_id', 'tujuan', 'penyesuaian',  'statusaktif', 'statusaktiftext',  'statussistemton', 'kota_id', 'zona_id', 'jenisorder', 'tglmulaiberlaku',
             'statuspenyesuaianharga', 'statuspostingtnl', 'keterangan', 'modifiedby', 'created_at', 'updated_at', 'upahsupir'
         ], $models);
 
@@ -714,28 +744,28 @@ class Tarif extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('tarif.statusaktiftext', '=', "$filters[data]");
-                        // } elseif ($filters['field'] == 'container_id') {
-                        //     $query = $query->where('container.keterangan', 'LIKE', "%$filters[data]%");
-                        // } elseif ($filters['field'] == 'parent_id') {
-                        //     $query = $query->where('parent.tujuan', 'LIKE', "%$filters[data]%");
-                        // } elseif ($filters['field'] == 'upahsupir_id') {
-                        //     $query = $query->where('B.kotasampai_id', 'LIKE', "%$filters[data]%");
-                        // } elseif ($filters['field'] == 'kota_id') {
-                        //     $query = $query->where('kota.keterangan', 'LIKE', "%$filters[data]%");
-                        // } elseif ($filters['field'] == 'keterangan_id') {
-                        //     $query = $query->where('keterangan.keterangan', 'LIKE', "%$filters[data]%");
-                        // } elseif ($filters['field'] == 'zona_id') {
-                        //     $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
-                        // } elseif ($filters['field'] == 'tujuanpenyesuaian') {
-                        //     $query = $query->whereRaw("(trim(tarif.tujuan)+(case when trim(tarif.penyesuaian)='' then '' else ' - ' end)+trim(tarif.penyesuaian)) LIKE '%$filters[data]%'");
-                        // } elseif ($filters['field'] == 'jenisorder') {
-                        //     $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
-                        // } elseif ($filters['field'] == 'statuspenyesuaianharga') {
-                        //     $query = $query->where('p.text', '=', "$filters[data]");
-                        // } elseif ($filters['field'] == 'statuspostingtnl') {
-                        //     $query = $query->where('posting.text', '=', "$filters[data]");
-                        // } elseif ($filters['field'] == 'statussistemton') {
-                        //     $query = $query->where('sistemton.text', '=', "$filters[data]");
+                            // } elseif ($filters['field'] == 'container_id') {
+                            //     $query = $query->where('container.keterangan', 'LIKE', "%$filters[data]%");
+                            // } elseif ($filters['field'] == 'parent_id') {
+                            //     $query = $query->where('parent.tujuan', 'LIKE', "%$filters[data]%");
+                            // } elseif ($filters['field'] == 'upahsupir_id') {
+                            //     $query = $query->where('B.kotasampai_id', 'LIKE', "%$filters[data]%");
+                            // } elseif ($filters['field'] == 'kota_id') {
+                            //     $query = $query->where('kota.keterangan', 'LIKE', "%$filters[data]%");
+                            // } elseif ($filters['field'] == 'keterangan_id') {
+                            //     $query = $query->where('keterangan.keterangan', 'LIKE', "%$filters[data]%");
+                            // } elseif ($filters['field'] == 'zona_id') {
+                            //     $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
+                            // } elseif ($filters['field'] == 'tujuanpenyesuaian') {
+                            //     $query = $query->whereRaw("(trim(tarif.tujuan)+(case when trim(tarif.penyesuaian)='' then '' else ' - ' end)+trim(tarif.penyesuaian)) LIKE '%$filters[data]%'");
+                            // } elseif ($filters['field'] == 'jenisorder') {
+                            //     $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
+                            // } elseif ($filters['field'] == 'statuspenyesuaianharga') {
+                            //     $query = $query->where('p.text', '=', "$filters[data]");
+                            // } elseif ($filters['field'] == 'statuspostingtnl') {
+                            //     $query = $query->where('posting.text', '=', "$filters[data]");
+                            // } elseif ($filters['field'] == 'statussistemton') {
+                            //     $query = $query->where('sistemton.text', '=', "$filters[data]");
                         } else
                         if ($filters['field'] == 'tglmulaiberlaku') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
