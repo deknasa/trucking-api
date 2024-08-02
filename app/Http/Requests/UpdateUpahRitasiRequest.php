@@ -71,7 +71,7 @@ class UpdateUpahRitasiRequest extends FormRequest
         $rules =  [
             'kotadari' => ['required', ($check['kondisi']) ? Rule::in($dataRitasi->kotadari) : ''],
             'kotasampai' => ['required', new UniqueUpahRitasiSampaiEdit(), new ValidasiKotaSampaiUpahRitasi(), ($check['kondisi']) ? Rule::in($dataRitasi->kotasampai) : ''],
-            'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS NILAI JARAK', 'BATAS NILAI JARAK')->text],
+            // 'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS NILAI JARAK', 'BATAS NILAI JARAK')->text],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'tglmulaiberlaku' => [
                 'required', 'date_format:d-m-Y',
