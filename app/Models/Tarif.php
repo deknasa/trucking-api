@@ -138,6 +138,7 @@ class Tarif extends MyModel
                 $table->longText('tujuan')->nullable();
                 $table->longText('penyesuaian')->nullable();
                 $table->longText('statusaktif')->nullable();
+                $table->longText('statusaktiftext')->nullable();
                 $table->longText('statussistemton')->nullable();
                 $table->longText('kota_id')->nullable();
                 $table->bigInteger('kotaId')->nullable();
@@ -167,6 +168,7 @@ class Tarif extends MyModel
                     'tarif.tujuan',
                     'tarif.penyesuaian',
                     'parameter.memo as statusaktif',
+                    'parameter.text as statusaktiftext',
                     'sistemton.memo as statussistemton',
                     'kota.kodekota as kota_id',
                     'tarif.kota_id as kotaId',
@@ -207,6 +209,7 @@ class Tarif extends MyModel
                 'tujuan',
                 'penyesuaian',
                 'statusaktif',
+                'statusaktiftext',
                 'statussistemton',
                 'kota_id',
                 'kotaId',
@@ -394,7 +397,8 @@ class Tarif extends MyModel
             'parent.tujuan as parent_id',
             db::raw($this->table . ".tujuan"),
             db::raw($this->table . ".penyesuaian"),
-            'parameter.text as statusaktif',
+            'parameter.memo as statusaktif',
+            'parameter.text as statusaktiftext',
             'sistemton.text as statussistemton',
             'kota.kodekota as kota_id',
             'zona.zona as zona_id',
@@ -432,6 +436,7 @@ class Tarif extends MyModel
             $table->string('tujuan', 200)->nullable();
             $table->string('penyesuaian', 200)->nullable();
             $table->string('statusaktif')->nullable();
+            $table->string('statusaktiftext')->nullable();
             $table->string('statussistemton')->nullable();
             $table->string('kota_id')->nullable();
             $table->string('zona_id')->nullable();
@@ -447,7 +452,7 @@ class Tarif extends MyModel
         });
 
         DB::table($temp)->insertUsing([
-            'id', 'parent_id', 'tujuan', 'penyesuaian',  'statusaktif',  'statussistemton', 'kota_id', 'zona_id', 'jenisorder', 'tglmulaiberlaku',
+            'id', 'parent_id', 'tujuan', 'penyesuaian',  'statusaktif','statusaktiftext',  'statussistemton', 'kota_id', 'zona_id', 'jenisorder', 'tglmulaiberlaku',
             'statuspenyesuaianharga', 'statuspostingtnl', 'keterangan', 'modifiedby', 'created_at', 'updated_at', 'upahsupir'
         ], $query1);
 
@@ -458,6 +463,7 @@ class Tarif extends MyModel
                 'tarif.tujuan',
                 'tarif.penyesuaian',
                 'tarif.statusaktif',
+                'tarif.statusaktiftext',
                 'tarif.statussistemton',
                 'tarif.kota_id',
                 'tarif.zona_id',
@@ -483,6 +489,7 @@ class Tarif extends MyModel
             $table->string('tujuan', 200)->nullable();
             $table->string('penyesuaian', 200)->nullable();
             $table->string('statusaktif')->nullable();
+            $table->string('statusaktiftext')->nullable();
             $table->string('statussistemton')->nullable();
             $table->string('kota_id')->nullable();
             $table->string('zona_id')->nullable();
@@ -508,7 +515,7 @@ class Tarif extends MyModel
         // $models = $this->filter($query);
 
         DB::table($temp)->insertUsing([
-            'id', 'parent_id', 'tujuan', 'penyesuaian',  'statusaktif',  'statussistemton', 'kota_id', 'zona_id', 'jenisorder', 'tglmulaiberlaku',
+            'id', 'parent_id', 'tujuan', 'penyesuaian',  'statusaktif','statusaktiftext',  'statussistemton', 'kota_id', 'zona_id', 'jenisorder', 'tglmulaiberlaku',
             'statuspenyesuaianharga', 'statuspostingtnl', 'keterangan', 'modifiedby', 'created_at', 'updated_at', 'upahsupir'
         ], $models);
 
@@ -705,8 +712,8 @@ class Tarif extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        // if ($filters['field'] == 'statusaktif') {
-                        //     $query = $query->where('parameter.text', '=', "$filters[data]");
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('tarif.statusaktiftext', '=', "$filters[data]");
                         // } elseif ($filters['field'] == 'container_id') {
                         //     $query = $query->where('container.keterangan', 'LIKE', "%$filters[data]%");
                         // } elseif ($filters['field'] == 'parent_id') {
@@ -729,7 +736,7 @@ class Tarif extends MyModel
                         //     $query = $query->where('posting.text', '=', "$filters[data]");
                         // } elseif ($filters['field'] == 'statussistemton') {
                         //     $query = $query->where('sistemton.text', '=', "$filters[data]");
-                        // } else
+                        } else
                         if ($filters['field'] == 'tglmulaiberlaku') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
