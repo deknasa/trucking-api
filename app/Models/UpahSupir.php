@@ -1342,19 +1342,29 @@ class UpahSupir extends MyModel
                     ->where('upahsupir_id', $getBelawanKandang->id)
                     ->get();
                 $jarakKandang = $data['jarak'] - $getBelawanKandang->jarak;
+                $jarakKandangFullEmpty = $jarakKandang *2;
 
                 $upahsupirKandang = new UpahSupir();
                 $upahsupirKandang->kotadari_id = $kandang->id;
-                $upahsupirKandang->parent_id = $kandang->parent_id ?? 0;
-                $upahsupirKandang->tarif_id = $kandang->tarif_id ?? 0;
+                $upahsupirKandang->parent_id = $upahsupir->parent_id ?? 0;
+                $upahsupirKandang->tarif_id = $upahsupir->tarif_id ?? 0;
                 $upahsupirKandang->kotasampai_id = $data['kotasampai_id'];
                 $upahsupirKandang->penyesuaian = $data['penyesuaian'];
                 $upahsupirKandang->jarak = ($jarakKandang < 0) ? 0 : $jarakKandang;
                 $upahsupirKandang->zona_id = ($data['zona_id'] == null) ? 0 : $data['zona_id'] ?? 0;
+                $upahsupirKandang->zonadari_id =  ($data['zonadari_id'] == null) ? 0 : $data['zonadari_id'] ?? 0;
+                $upahsupirKandang->zonasampai_id =  ($data['zonadari_id'] == null) ? 0 : $data['zonasampai_id'] ?? 0;
                 $upahsupirKandang->statusaktif = $data['statusaktif'];
                 $upahsupirKandang->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
                 $upahsupirKandang->statussimpankandang = $data['statussimpankandang'];
                 $upahsupirKandang->statuslangsir = $data['statuslangsir'];
+                $upahsupirKandang->statusupahzona = $data['statusupahzona'];
+                $upahsupirKandang->statusluarkota = $data['statusluarkota'] ?? '';
+                $upahsupirKandang->jarakfullempty = $jarakKandangFullEmpty;
+                $upahsupirKandang->tarifmuatan_id = $data['tarifmuatan_id'] ?? 0;
+                $upahsupirKandang->tarifbongkaran_id = $data['tarifbongkaran_id'] ?? 0;
+                $upahsupirKandang->tarifimport_id = $data['tarifimport_id'] ?? 0;
+                $upahsupirKandang->tarifexport_id = $data['tarifexport_id'] ?? 0;
                 $upahsupirKandang->keterangan = $data['keterangan'];
                 $upahsupirKandang->modifiedby = auth('api')->user()->user;
                 $upahsupirKandang->info = html_entity_decode(request()->info);

@@ -16,10 +16,12 @@ class ValidasiKotaMilikZonaRule implements Rule
     {
         $this->kotadari = $kotadari;
         $this->kotasampai = $kotasampai;
+        $this->pesan = '';
     }
 
     public $kotadari;
     public $kotasampai;
+    public $pesan;
     /**
      * Determine if the validation rule passes.
      *
@@ -29,7 +31,10 @@ class ValidasiKotaMilikZonaRule implements Rule
      */
     public function passes($attribute, $value)
     {
-
+        if (!$this->kotadari || $this->kotasampai) {
+            $this->pesan = 'required';
+            return false;
+        }
         $kotadari = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))->where('id',$this->kotadari)->first();
         $kotasampai = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))->where('id',$this->kotasampai)->first();
 
@@ -46,6 +51,9 @@ class ValidasiKotaMilikZonaRule implements Rule
      */
     public function message()
     {
+        if ($this->pesan ="required") {
+            return "kota wajib diisi";
+        }
         return 'Kota Sudah memiliki zona';
     }
 }
