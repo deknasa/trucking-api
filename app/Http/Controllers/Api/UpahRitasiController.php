@@ -63,31 +63,25 @@ class UpahRitasiController extends Controller
      * @ClassName 
      * @Keterangan EXPORT KE EXCEL
      */
-    public function export(GetUpahSupirRangeRequest $request)
+    public function export()
     {
-        $dari = date('Y-m-d', strtotime($request->dari));
-        $sampai = date('Y-m-d', strtotime($request->sampai));
 
-        $cekData = DB::table("upahritasi")->from(DB::raw("upahritasi with (readuncommitted)"))
-            ->whereBetween('tglmulaiberlaku', [$dari, $sampai])
-            ->first();
+        $upahritasirincian = new UpahRitasiRincian();
 
-        if ($cekData != null) {
-
-            $upahritasirincian = new UpahRitasiRincian();
-
-            return response([
-                'status' => true,
-                'data' => $upahritasirincian->listpivot($dari, $sampai)
-            ]);
-        } else {
-            return response([
-                'errors' => [
-                    "export" => "tidak ada data"
-                ],
-                'message' => "The given data was invalid.",
-            ], 422);
-        }
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select(
+            'text',
+            DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+            DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+        )
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+        return response([
+            'status' => true,
+            'data' => $upahritasirincian->listpivot(),
+            'judul' => $getJudul
+        ]);
     }
 
     /**
@@ -348,11 +342,10 @@ class UpahRitasiController extends Controller
                     'kotadari' => $sheet->getCell($this->kolomexcel(1) . $row)->getValue(),
                     'kotasampai' => $sheet->getCell($this->kolomexcel(2) . $row)->getValue(),
                     'jarak' => $sheet->getCell($this->kolomexcel(3) . $row)->getValue(),
-                    'tglmulaiberlaku' => date('Y-m-d', strtotime($sheet->getCell($this->kolomexcel(4) . $row)->getFormattedValue())),
-                    'nominalsupir' => $sheet->getCell($this->kolomexcel(5)  . $row)->getValue(),
-                    'kolom1' => $sheet->getCell($this->kolomexcel(6)  . $row)->getValue(),
-                    'kolom2' => $sheet->getCell($this->kolomexcel(7)  . $row)->getValue(),
-                    'kolom3' => $sheet->getCell($this->kolomexcel(8)  . $row)->getValue(),
+                    'nominalsupir' => $sheet->getCell($this->kolomexcel(4)  . $row)->getValue(),
+                    'kolom1' => $sheet->getCell($this->kolomexcel(5)  . $row)->getValue(),
+                    'kolom2' => $sheet->getCell($this->kolomexcel(6)  . $row)->getValue(),
+                    'kolom3' => $sheet->getCell($this->kolomexcel(7)  . $row)->getValue(),
                     'modifiedby' => auth('api')->user()->name
                 ];
 
@@ -403,6 +396,7 @@ class UpahRitasiController extends Controller
 
     /**
      * @ClassName 
+     * @Keterangan CETAK DATA
      */
     public function report()
     {
@@ -412,13 +406,13 @@ class UpahRitasiController extends Controller
     public function cekValidasi($id)
     {
         $upahRitasi = new UpahRitasi();
-        $dataMaster = $upahRitasi->where('id',$id)->first();
+        $dataMaster = $upahRitasi->where('id', $id)->first();
         $error = new Error();
         $keterangantambahanerror = $error->cekKeteranganError('PTBL') ?? '';
         $user = auth('api')->user()->name;
         $useredit = $dataMaster->editing_by ?? '';
         $aksi = request()->aksi ?? '';
-        
+
         $cekdata = $upahRitasi->cekValidasi($id);
         if ($cekdata['kondisi'] == true && $aksi != 'EDIT') {
             $query = DB::table('error')
@@ -437,14 +431,14 @@ class UpahRitasiController extends Controller
             // return response($data);
         } else  if ($useredit != '' && $useredit != $user) {
             $waktu = (new Parameter())->cekBatasWaktuEdit('BATAS WAKTU EDIT MASTER');
-            
+
             $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($dataMaster->editing_at)));
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
             if ($diffNow->i > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                     (new MyModel())->updateEditingBy('upahritasi', $id, $aksi);
                 }
-                
+
                 $data = [
                     'status' => false,
                     'message' => '',
@@ -452,21 +446,21 @@ class UpahRitasiController extends Controller
                     'kondisi' => false,
                     'editblok' => false,
                 ];
-                
+
                 // return response($data);
             } else {
-                
+
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
                 $keterror = 'Data tujuan <b>' . $dataMaster->tujuan . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
-                
+
                 $data = [
                     'status' => true,
-                    'message' => ["keterangan"=>$keterror],
+                    'message' => ["keterangan" => $keterror],
                     'errors' => '',
                     'kondisi' => true,
                     'editblok' => true,
                 ];
-                
+
                 return response($data);
             }
         } else {

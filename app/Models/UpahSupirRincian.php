@@ -2114,7 +2114,7 @@ class UpahSupirRincian extends MyModel
             }
             // dd($columnid);
 
-            $statement = ' select b.dari,b.tujuan,b.penyesuaian,b.jarak,b.tglmulaiberlaku,A.* from (select id,' . $columnid . ' from 
+            $statement = ' select b.dari,b.tujuan,b.penyesuaian,b.jarak,A.* from (select id,' . $columnid . ' from 
                 (select A.id,A.containerstatuscontainer,A.nominal
                     from ' . $tempdata . ' A) as SourceTable
             
@@ -2320,13 +2320,14 @@ class UpahSupirRincian extends MyModel
             $table->date('tglmulaiberlaku')->nullable();
         });
 
+        $tglsaldo = (new Parameter())->cekText('SALDO', 'SALDO') ?? '1900-01-01';
         foreach ($data as $item) {
             $values = array(
                 'kotadari' => $item['kotadari'],
                 'kotasampai' => $item['kotasampai'],
                 'penyesuaian' => $item['penyesuaian'],
                 'jarak' => $item['jarak'],
-                'tglmulaiberlaku' => $item['tglmulaiberlaku'],
+                'tglmulaiberlaku' => $tglsaldo,
             );
             DB::table($tempdata)->insert($values);
         }
@@ -2359,7 +2360,6 @@ class UpahSupirRincian extends MyModel
             ->whereRaw("trim(a.kotadari) = trim(b.kotadari)")
             ->whereRaw("trim(a.kotasampai) = trim(b.kotasampai)")
             ->whereRaw("trim(a.penyesuaian) = trim(b.penyesuaian)")
-            ->whereRaw("a.tglmulaiberlaku = b.tglmulaiberlaku")
             ->first();
 
         if (isset($query)) {
@@ -2376,8 +2376,8 @@ class UpahSupirRincian extends MyModel
 
         foreach ($data as $item) {
 
-            $kotadari = Kota::from(DB::raw("kota with (readuncommitted)"))->where('keterangan', strtoupper(trim($item['kotadari'])))->first();
-            $kotasampai = Kota::from(DB::raw("kota with (readuncommitted)"))->where('keterangan', strtoupper(trim($item['kotasampai'])))->first();
+            $kotadari = Kota::from(DB::raw("kota with (readuncommitted)"))->where('kodekota', strtoupper(trim($item['kotadari'])))->first();
+            $kotasampai = Kota::from(DB::raw("kota with (readuncommitted)"))->where('kodekota', strtoupper(trim($item['kotasampai'])))->first();
 
             $querydetail = DB::table('container')
                 ->from(
@@ -2443,6 +2443,8 @@ class UpahSupirRincian extends MyModel
             $getBukanLangsir = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'STATUS LANGSIR')
                 ->where('text', 'BUKAN LANGSIR')->first();
+            $tglsaldo = (new Parameter())->cekText('SALDO', 'SALDO') ?? '1900-01-01';
+
             $upahRitasiRequest = [
                 'parent_id' => 0,
                 'tarif_id' => 0,
@@ -2452,8 +2454,10 @@ class UpahSupirRincian extends MyModel
                 'jarak' => $item['jarak'],
                 'jarakfullempty' => 0,
                 'zona_id' => 0,
+                'zonadari_id' => 0,
+                'zonasampai_id' => 0,
                 'statusaktif' =>  1,
-                'tglmulaiberlaku' => $item['tglmulaiberlaku'],
+                'tglmulaiberlaku' => date('Y-m-d', strtotime($tglsaldo)),
                 'modifiedby' => $item['modifiedby'],
                 'container_id' => $container_id,
                 'statuscontainer_id' => $statuscontainer_id,
