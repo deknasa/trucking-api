@@ -2452,7 +2452,7 @@ class UpahSupirRincian extends MyModel
                 'kotasampai_id' => $kotasampai->id,
                 'penyesuaian' => $item['penyesuaian'],
                 'jarak' => $item['jarak'],
-                'jarakfullempty' => 0,
+                'jarakfullempty' => $item['jarak']*2,
                 'zona_id' => 0,
                 'zonadari_id' => 0,
                 'zonasampai_id' => 0,
