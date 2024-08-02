@@ -97,6 +97,8 @@ class UpahRitasiController extends Controller
     public function store(StoreUpahRitasiRequest $request): JsonResponse
     {
         DB::beginTransaction();
+        $parameter = new Parameter();
+        $tglsaldo = $parameter->cekText('SALDO', 'SALDO') ?? '1900-01-01';
 
         // dd('test');
         try {
@@ -107,7 +109,8 @@ class UpahRitasiController extends Controller
                 'jarak' => $request->jarak ?? 0,
                 'nominalsupir' => $request->nominalsupir,
                 'statusaktif' => $request->statusaktif,
-                'tglmulaiberlaku' => date('Y-m-d', strtotime($request->tglmulaiberlaku)),
+                'tglmulaiberlaku' => date('Y-m-d', strtotime($tglsaldo)),
+                // 'tglmulaiberlaku' => date('Y-m-d', strtotime($request->tglmulaiberlaku)),
 
                 'container_id' => $request->container_id,
                 'liter' => $request->liter ?? 0,
@@ -163,7 +166,7 @@ class UpahRitasiController extends Controller
                 'jarak' => $request->jarak,
                 'nominalsupir' => $request->nominalsupir,
                 'statusaktif' => $request->statusaktif,
-                'tglmulaiberlaku' => date('Y-m-d', strtotime($request->tglmulaiberlaku)),
+                // 'tglmulaiberlaku' => date('Y-m-d', strtotime($request->tglmulaiberlaku)),
 
                 'container_id' => $request->container_id,
                 'liter' => $request->liter ?? 0,
