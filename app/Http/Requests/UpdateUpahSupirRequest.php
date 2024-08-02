@@ -196,9 +196,9 @@ class UpdateUpahSupirRequest extends FormRequest
             'statusupahzona' => ['required', Rule::in($statusUpahZona)],
             'zonadari' => ['required_if:statusupahzona,=,' . $getUpahZona->id, new ValidasiZonaUpahZona($getUpahZona->id)],
             'zonasampai' => ['required_if:statusupahzona,=,' . $getUpahZona->id, new ValidasiZonaUpahZona($getUpahZona->id)],
-            'tglmulaiberlaku' => [
-                'required', 'date_format:d-m-Y',
-            ],
+            // 'tglmulaiberlaku' => [
+            //     'required', 'date_format:d-m-Y',
+            // ],
             'gambar.*' => ['image', 'min:50']
         ];
         $relatedRequests = [

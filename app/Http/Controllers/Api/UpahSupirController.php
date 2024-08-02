@@ -105,6 +105,8 @@ class UpahSupirController extends Controller
     public function store(StoreUpahSupirRequest $request): JsonResponse
     {
         DB::beginTransaction();
+        $parameter = new Parameter();
+        $tglsaldo = $parameter->cekText('SALDO', 'SALDO') ?? '1900-01-01';
 
         try {
             $data = [
@@ -126,8 +128,9 @@ class UpahSupirController extends Controller
                 'zona' => $request->zona,
                 'zona_id' => ($request->zona_id == null) ? 0 : $request->zona_id ?? 0,
                 'statusaktif' => $request->statusaktif,
+                'tglmulaiberlaku' => date('Y-m-d', strtotime($tglsaldo)),
 
-                'tglmulaiberlaku' => $request->tglmulaiberlaku,
+                // 'tglmulaiberlaku' => $request->tglmulaiberlaku,
 
                 'statusupahzona' => $request->statusupahzona,
                 'statuspostingtnl' => $request->statuspostingtnl,
@@ -235,7 +238,7 @@ class UpahSupirController extends Controller
                 'zona_id' => ($request->zona_id == null) ? 0 : $request->zona_id ?? 0,
                 'statusaktif' => $request->statusaktif,
 
-                'tglmulaiberlaku' => date('Y-m-d', strtotime($request->tglmulaiberlaku)),
+                // 'tglmulaiberlaku' => date('Y-m-d', strtotime($request->tglmulaiberlaku)),
 
                 'statusupahzona' => $request->statusupahzona,
                 'zonadari_id' => $request->zonadari_id,

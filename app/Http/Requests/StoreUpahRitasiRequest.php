@@ -107,11 +107,11 @@ class StoreUpahRitasiRequest extends FormRequest
             'kotasampai' => ['required', new UniqueUpahRitasiSampai(), new ValidasiKotaSampaiUpahRitasi()],
             // 'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS NILAI JARAK', 'BATAS NILAI JARAK')->text],
             'statusaktifnama' => ['required'],
-            'tglmulaiberlaku' => [
-                'required', 'date_format:d-m-Y',
-                'before:' . $tglBatasAkhir,
-                'after_or_equal:' . date('d-m-Y')
-            ],
+            // 'tglmulaiberlaku' => [
+            //     'required', 'date_format:d-m-Y',
+            //     'before:' . $tglBatasAkhir,
+            //     'after_or_equal:' . date('d-m-Y')
+            // ],
             'nominalsupir' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS NILAI UPAH', 'BATAS NILAI UPAH')->text],
         ];
 
@@ -141,7 +141,7 @@ class StoreUpahRitasiRequest extends FormRequest
             'kotadari_id' => 'dari',
             'kotasampai_id' => 'tujuan',
             'statusaktif' => 'status aktif',
-            'tglmulaiberlaku' => 'tanggal mulai berlaku',
+            // 'tglmulaiberlaku' => 'tanggal mulai berlaku',
             'container.*' => 'container',
             'nominalsupir' => 'nominal supir',
         ];

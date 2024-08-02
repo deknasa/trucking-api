@@ -227,9 +227,9 @@ class StoreUpahSupirRequest extends FormRequest
                 'statuslangsirnama' => ['required'],
                 'statuslangsirnama' => ['required'],
                 'statusupahzona' => ['required', Rule::in($statusUpahZona)],
-                'tglmulaiberlaku' => [
-                    'required', 'date_format:d-m-Y',
-                ],
+                // 'tglmulaiberlaku' => [
+                //     'required', 'date_format:d-m-Y',
+                // ],
             ];
             $rulesGambar = [];
             if (request()->from == null) {
