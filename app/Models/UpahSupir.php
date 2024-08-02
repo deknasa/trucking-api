@@ -1474,7 +1474,7 @@ class UpahSupir extends MyModel
             $upahsupir->jarakfullempty = $data['jarakfullempty'];
             $upahsupir->zona_id = ($data['zona_id'] == null) ? 0 : $data['zona_id'] ?? 0;
             $upahsupir->statusaktif = $data['statusaktif'];
-            $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
+            // $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
             $upahsupir->keterangan = $data['keterangan'];
             $upahsupir->modifiedby = auth('api')->user()->user;
             $upahsupir->info = html_entity_decode(request()->info);
