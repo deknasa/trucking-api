@@ -31,7 +31,7 @@ class ValidasiKotaMilikZonaRule implements Rule
      */
     public function passes($attribute, $value)
     {
-        if (!$this->kotadari || $this->kotasampai) {
+        if (!$this->kotadari || !$this->kotasampai) {
             $this->pesan = 'required';
             return false;
         }
