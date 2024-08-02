@@ -30,6 +30,7 @@ class StoreUpahRitasiRequest extends FormRequest
      */
     public function rules()
     {
+    
         $kotadari_id = $this->kotadari_id;
         $rulesKotaDari_id = [];
         if ($kotadari_id != null) {
@@ -61,7 +62,7 @@ class StoreUpahRitasiRequest extends FormRequest
                 ]
             ];
         }
-
+ 
         $rulesKotaSampai_id = [
             'kotasampai_id' => [
                 'required',
@@ -104,7 +105,7 @@ class StoreUpahRitasiRequest extends FormRequest
         $rules =  [
             'kotadari' => 'required',
             'kotasampai' => ['required', new UniqueUpahRitasiSampai(), new ValidasiKotaSampaiUpahRitasi()],
-            'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS NILAI JARAK', 'BATAS NILAI JARAK')->text],
+            // 'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS NILAI JARAK', 'BATAS NILAI JARAK')->text],
             'statusaktifnama' => ['required'],
             'tglmulaiberlaku' => [
                 'required', 'date_format:d-m-Y',
@@ -117,7 +118,7 @@ class StoreUpahRitasiRequest extends FormRequest
         $relatedRequests = [
             StoreUpahRitasiRincianRequest::class
         ];
-
+    
         foreach ($relatedRequests as $relatedRequest) {
             $rules = array_merge(
                 $rules,
@@ -127,7 +128,8 @@ class StoreUpahRitasiRequest extends FormRequest
                 $rulesStatusAktif
             );
         }
-
+        // dd($rules);
+        // dd('test');
         return $rules;
     }
 

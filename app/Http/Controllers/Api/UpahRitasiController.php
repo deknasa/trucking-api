@@ -98,12 +98,13 @@ class UpahRitasiController extends Controller
     {
         DB::beginTransaction();
 
+        // dd('test');
         try {
             $data = [
                 'parent_id' => $request->parent_id ?? 0,
                 'kotadari_id' => $request->kotadari_id,
                 'kotasampai_id' => $request->kotasampai_id,
-                'jarak' => $request->jarak,
+                'jarak' => $request->jarak ?? 0,
                 'nominalsupir' => $request->nominalsupir,
                 'statusaktif' => $request->statusaktif,
                 'tglmulaiberlaku' => date('Y-m-d', strtotime($request->tglmulaiberlaku)),
