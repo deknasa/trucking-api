@@ -644,24 +644,24 @@ class ListTrip extends MyModel
         if ($data['statuslangsir'] == $statuslangsir->id) {
 
             $getJobtrucking = OrderanTrucking::from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
-            $orderan = [
-                'container_id' => $data['container_id'],
-                'agen_id' => $data['agen_id'],
-                'jenisorder_id' => $data['jenisorder_id'],
-                'jenisorderemkl_id' => $getJobtrucking['jenisorderemkl_id'],
-                'pelanggan_id' => $data['pelanggan_id'],
-                'nojobemkl' => $getJobtrucking['nojobemkl'],
-                'nocont' => $getJobtrucking['nocont'] ?? '',
-                'noseal' => $getJobtrucking['noseal'] ?? '',
-                'nojobemkl2' => $getJobtrucking['nojobemkl2'] ?? '',
-                'nocont2' => $getJobtrucking['nocont2'] ?? '',
-                'noseal2' => $getJobtrucking['noseal2'] ?? '',
-                'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
-                'gandengan_id' => $data['gandengan_id'],
-                'statusperalihan' => $statusperalihan->id,
-                'inputtripmandor' =>  'true',
-            ];
-            if($getJobtrucking != ''){
+            if ($getJobtrucking != '') {
+                $orderan = [
+                    'container_id' => $data['container_id'],
+                    'agen_id' => $data['agen_id'],
+                    'jenisorder_id' => $data['jenisorder_id'],
+                    'jenisorderemkl_id' => $getJobtrucking['jenisorderemkl_id'],
+                    'pelanggan_id' => $data['pelanggan_id'],
+                    'nojobemkl' => $getJobtrucking['nojobemkl'],
+                    'nocont' => $getJobtrucking['nocont'] ?? '',
+                    'noseal' => $getJobtrucking['noseal'] ?? '',
+                    'nojobemkl2' => $getJobtrucking['nojobemkl2'] ?? '',
+                    'nocont2' => $getJobtrucking['nocont2'] ?? '',
+                    'noseal2' => $getJobtrucking['noseal2'] ?? '',
+                    'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
+                    'gandengan_id' => $data['gandengan_id'],
+                    'statusperalihan' => $statusperalihan->id,
+                    'inputtripmandor' =>  'true',
+                ];
                 $orderanTrucking = (new OrderanTrucking())->processUpdate($getJobtrucking, $orderan);
             }
             goto trip;
@@ -685,7 +685,9 @@ class ListTrip extends MyModel
             if ($data['statuslongtrip'] == 65) {
 
                 $getId = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
-                (new OrderanTrucking())->processDestroy($getId->id);
+                if (isset($getId)) {
+                    (new OrderanTrucking())->processDestroy($getId->id);
+                }
             }
             if ($data['dari_id'] != $idkandang) {
 
@@ -840,24 +842,25 @@ class ListTrip extends MyModel
 
             if (!$isTripPulang) {
                 $getJobtrucking = OrderanTrucking::from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
-                $orderan = [
-                    'container_id' => $data['container_id'],
-                    'agen_id' => $data['agen_id'],
-                    'jenisorder_id' => $data['jenisorder_id'],
-                    'jenisorderemkl_id' => $getJobtrucking['jenisorderemkl_id'],
-                    'pelanggan_id' => $data['pelanggan_id'],
-                    'nojobemkl' => $getJobtrucking['nojobemkl'],
-                    'nocont' => $getJobtrucking['nocont'] ?? '',
-                    'noseal' => $getJobtrucking['noseal'] ?? '',
-                    'nojobemkl2' => $getJobtrucking['nojobemkl2'] ?? '',
-                    'nocont2' => $getJobtrucking['nocont2'] ?? '',
-                    'noseal2' => $getJobtrucking['noseal2'] ?? '',
-                    'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
-                    'gandengan_id' => $data['gandengan_id'],
-                    'statusperalihan' => $statusperalihan->id,
-                    'inputtripmandor' =>  'true',
-                ];
+
                 if ($getJobtrucking != '') {
+                    $orderan = [
+                        'container_id' => $data['container_id'],
+                        'agen_id' => $data['agen_id'],
+                        'jenisorder_id' => $data['jenisorder_id'],
+                        'jenisorderemkl_id' => $getJobtrucking['jenisorderemkl_id'],
+                        'pelanggan_id' => $data['pelanggan_id'],
+                        'nojobemkl' => $getJobtrucking['nojobemkl'],
+                        'nocont' => $getJobtrucking['nocont'] ?? '',
+                        'noseal' => $getJobtrucking['noseal'] ?? '',
+                        'nojobemkl2' => $getJobtrucking['nojobemkl2'] ?? '',
+                        'nocont2' => $getJobtrucking['nocont2'] ?? '',
+                        'noseal2' => $getJobtrucking['noseal2'] ?? '',
+                        'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
+                        'gandengan_id' => $data['gandengan_id'],
+                        'statusperalihan' => $statusperalihan->id,
+                        'inputtripmandor' =>  'true',
+                    ];
                     $orderanTrucking = (new OrderanTrucking())->processUpdate($getJobtrucking, $orderan);
                 }
             }
@@ -873,25 +876,25 @@ class ListTrip extends MyModel
             if (!$isTripPulang) {
 
                 $getJobtrucking = OrderanTrucking::from(DB::raw("orderantrucking with (readuncommitted)"))->where('nobukti', $trip->jobtrucking)->first();
-                $orderan = [
-                    'container_id' => $data['container_id'],
-                    'agen_id' => $data['agen_id'],
-                    'jenisorder_id' => $data['jenisorder_id'],
-                    'jenisorderemkl_id' => $getJobtrucking['jenisorderemkl_id'],
-                    'pelanggan_id' => $data['pelanggan_id'],
-                    'nojobemkl' => $getJobtrucking['nojobemkl'],
-                    'nocont' => $getJobtrucking['nocont'] ?? '',
-                    'noseal' => $getJobtrucking['noseal'] ?? '',
-                    'nojobemkl2' => $getJobtrucking['nojobemkl2'] ?? '',
-                    'nocont2' => $getJobtrucking['nocont2'] ?? '',
-                    'noseal2' => $getJobtrucking['noseal2'] ?? '',
-                    'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
-                    'gandengan_id' => $data['gandengan_id'],
-                    'statusperalihan' => $statusperalihan->id,
-                    'inputtripmandor' =>  'true',
-                ];
-
                 if ($getJobtrucking != '') {
+                    $orderan = [
+                        'container_id' => $data['container_id'],
+                        'agen_id' => $data['agen_id'],
+                        'jenisorder_id' => $data['jenisorder_id'],
+                        'jenisorderemkl_id' => $getJobtrucking['jenisorderemkl_id'],
+                        'pelanggan_id' => $data['pelanggan_id'],
+                        'nojobemkl' => $getJobtrucking['nojobemkl'],
+                        'nocont' => $getJobtrucking['nocont'] ?? '',
+                        'noseal' => $getJobtrucking['noseal'] ?? '',
+                        'nojobemkl2' => $getJobtrucking['nojobemkl2'] ?? '',
+                        'nocont2' => $getJobtrucking['nocont2'] ?? '',
+                        'noseal2' => $getJobtrucking['noseal2'] ?? '',
+                        'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
+                        'gandengan_id' => $data['gandengan_id'],
+                        'statusperalihan' => $statusperalihan->id,
+                        'inputtripmandor' =>  'true',
+                    ];
+
                     $orderanTrucking = (new OrderanTrucking())->processUpdate($getJobtrucking, $orderan);
                 }
             } else {
