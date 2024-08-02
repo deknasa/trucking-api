@@ -247,7 +247,7 @@ class JobTrucking extends MyModel
 
 
             $queryjob = DB::table('saldosuratpengantar')->from(
-                DB::raw("suratpengantar as a with(readuncommitted)")
+                DB::raw("saldosuratpengantar as a with(readuncommitted)")
             )
                 ->select(
                     'a.jobtrucking'
@@ -264,6 +264,7 @@ class JobTrucking extends MyModel
                 ->whereRaw("isnull(c.jobtrucking,'')=''")
                 ->where('a.statusgandengan', $statusgandenganid)
                 ->whereRaw("a.statuscontainer_id not in(" . $statusfullempty . ")");
+
             // ->where('a.sampai_id', '=', $pelabuhan->text);
 
             // dd($queryjob->get());
@@ -596,6 +597,8 @@ class JobTrucking extends MyModel
             if ($edit == 'true') {
                 // $querydata->where('a.dari_id', 1);
             }
+            
+            // dd(db::table($tempselesai)->get());
         } else {
             tidakgandengan:
             $queryjob = DB::table('suratpengantar')->from(
@@ -617,7 +620,6 @@ class JobTrucking extends MyModel
             DB::table($tempselesai)->insertUsing([
                 'jobtrucking',
             ], $queryjob);
-
 
 
             $queryjob = DB::table('saldosuratpengantar')->from(
