@@ -161,6 +161,9 @@ class TarifRincian extends MyModel
             $getBukanPostingTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'STATUS POSTING TNL')
                 ->where('text', 'TIDAK POSTING TNL')->first();
+            $getBukanLangsir = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUS LANGSIR')
+                ->where('text', 'BUKAN LANGSIR')->first();
 
 
             $tarifRequest = [
@@ -177,18 +180,22 @@ class TarifRincian extends MyModel
                 'zona_id' => 0,
                 'keterangan' => '',
                 'statuspenyesuaianharga' => $statuspenyesuaianharga,
+                'statuslangsir' => $getBukanLangsir->id,
                 'container_id' => $container_id,
                 'nominal' => $nominal,
+                'tas_id' => 0,
+                'from' => '',
             ];
-
-            (new Tarif())->processStore($tarifRequest);
+            $tarif = new Tarif();
+            (new Tarif())->processStore($tarifRequest, $tarif);
         }
 
         return $data;
     }
 
-    public function listpivot($dari, $sampai)
+    public function listpivot()
     {
+        $this->setRequestParameters();
         $tempdata = '##tempdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdata, function ($table) {
             $table->unsignedBigInteger('id')->nullable();
@@ -206,9 +213,22 @@ class TarifRincian extends MyModel
             )
             ->leftJoin(DB::raw("tarifrincian with (readuncommitted)"), 'container.id', '=', 'tarifrincian.container_id')
             ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'tarif.id', '=', 'tarifrincian.tarif_id')
-            ->whereRaw("tarif.tglmulaiberlaku >= '$dari'")
-            ->whereRaw("tarif.tglmulaiberlaku <= '$sampai'");
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'tarif.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
+            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
+            ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
+            ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id');
 
+
+        $this->filter($query);
+        $statusaktif = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('text', '=', 'AKTIF')
+            ->first();
+
+        $query->where('tarif.statusaktif', '=', $statusaktif->id);
 
         DB::table($tempdata)->insertUsing([
             'id',
@@ -414,7 +434,7 @@ class TarifRincian extends MyModel
             if ($getjenisorder == 'EKSPORT') {
                 $jenisorder = 'export';
             }
-            
+
             $query = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
                 ->select(
                     'tarif_id',
@@ -478,8 +498,8 @@ class TarifRincian extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
 
                         if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('tarif.statusaktif', '=', "$filters[data]");
-                            // $query = $query->where('parameter.text', '=', "$filters[data]");
+                            // $query = $query->where('tarif.statusaktif', '=', "$filters[data]");
+                            $query = $query->where('parameter.text', '=', "$filters[data]");
                         } elseif ($filters['field'] == 'container_id') {
                             $query = $query->where('container.keterangan', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'kota_id') {
@@ -498,6 +518,8 @@ class TarifRincian extends MyModel
                             $query = $query->WhereRaw("format(tarif.tglmulaiberlaku,'dd-MM-yyyy') like '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'check') {
+                            $query = $query->whereRaw('1 = 1');
                         } else {
                             $query = $query->where('tarifrincian.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -528,6 +550,8 @@ class TarifRincian extends MyModel
                                 $query = $query->orWhere('tarif.penyesuaian', 'LIKE', "%$filters[data]%");
                             } elseif ($filters['field'] == 'tglmulaiberlaku') {
                                 $query = $query->orWhereRaw("format(tarif.tglmulaiberlaku,'dd-MM-yyyy') like '%$filters[data]%'");
+                            } else if ($filters['field'] == 'check') {
+                                $query = $query->whereRaw('1 = 1');
                             } else {
                                 $query = $query->orWhere('tarifrincian.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -625,7 +649,7 @@ class TarifRincian extends MyModel
         return $tarifRincian;
     }
 
-    public function processUpdate(Tarif $tarif, array $data,TarifRincian $tarifRincian): TarifRincian
+    public function processUpdate(Tarif $tarif, array $data, TarifRincian $tarifRincian): TarifRincian
     {
         if ($data['detail_id'] !== "null") {
             $tarifRincian->find($data['detail_id']);
@@ -643,7 +667,7 @@ class TarifRincian extends MyModel
 
         return $tarifRincian;
     }
-    public function processDestroy(TarifRincian $tarifRincian,$idheader): TarifRincian
+    public function processDestroy(TarifRincian $tarifRincian, $idheader): TarifRincian
     {
 
         // dd($idheader);
@@ -664,5 +688,5 @@ class TarifRincian extends MyModel
         ]);
 
         return $tarifRincian;
-    }    
+    }
 }
