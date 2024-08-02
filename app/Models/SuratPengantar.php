@@ -3654,7 +3654,7 @@ class SuratPengantar extends MyModel
         return $suratPengantar;
     }
 
-    public function getExport($dari, $sampai)
+    public function getExport()
     {
         $this->setRequestParameters();
 
@@ -3694,12 +3694,10 @@ class SuratPengantar extends MyModel
             'tarif.tujuan as tarif_id',
             'mandortrado.namamandor as mandortrado_id',
             'mandorsupir.namamandor as mandorsupir_id',
-            DB::raw("'" . $dari . "' as tgldari"),
-            DB::raw("'" . $sampai . "' as tglsampai"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
             DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
         )
-            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime($dari)), date('Y-m-d', strtotime($sampai))])
+            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
             ->leftJoin('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
             ->leftJoin('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
@@ -3719,6 +3717,7 @@ class SuratPengantar extends MyModel
             ->leftJoin('mandor as mandorsupir', 'suratpengantar.mandorsupir_id', 'mandorsupir.id')
             ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id');
 
+        $this->filter($query);
         $data = $query->get();
         $allData = [
             'data' => $data,

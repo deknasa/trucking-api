@@ -704,13 +704,11 @@ class SuratPengantarController extends Controller
      * @ClassName 
      * @Keterangan EXPORT KE EXCEL
      */
-    public function export(GetUpahSupirRangeRequest $request)
+    public function export()
     {
-        $dari = date('Y-m-d', strtotime($request->dari));
-        $sampai = date('Y-m-d', strtotime($request->sampai));
         $suratPengantar = new SuratPengantar();
         return response([
-            'data' => $suratPengantar->getExport($dari, $sampai),
+            'data' => $suratPengantar->getExport(),
         ]);
     }
 
