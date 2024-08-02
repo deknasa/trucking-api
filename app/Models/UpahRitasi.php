@@ -559,8 +559,8 @@ class UpahRitasi extends MyModel
                                 $query = $query->where('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
                                 // } else if ($filters['field'] == 'zona_id') {
                                 //     $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'jarak') {
-                                $query = $query->whereRaw("format($this->table.jarak, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'nominalsupir') {
+                                $query = $query->whereRaw("format($this->table.nominalsupir, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglmulaiberlaku') {
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
@@ -587,8 +587,8 @@ class UpahRitasi extends MyModel
                                     $query = $query->orWhere('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
                                     // } else if ($filters['field'] == 'zona_id') {
                                     //     $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
-                                } else if ($filters['field'] == 'jarak') {
-                                    $query = $query->orWhereRaw("format($this->table.jarak, '#,#0.00') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'nominalsupir') {
+                                    $query = $query->orWhereRaw("format($this->table.nominalsupir, '#,#0.00') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'tglmulaiberlaku') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
