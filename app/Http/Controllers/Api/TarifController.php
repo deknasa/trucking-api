@@ -142,19 +142,19 @@ class TarifController extends Controller
         ]);
     }
 
-    public function listpivot(GetUpahSupirRangeRequest $request)
+    public function listpivot()
     {
 
-        $dari = date('Y-m-d', strtotime($request->dari));
-        $sampai = date('Y-m-d', strtotime($request->sampai));
+        // $dari = date('Y-m-d', strtotime($request->dari));
+        // $sampai = date('Y-m-d', strtotime($request->sampai));
 
         $tarifrincian = new TarifRincian();
 
-        $cekData = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
-            ->whereBetween('tglmulaiberlaku', [$dari, $sampai])
-            ->first();
+        // $cekData = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
+        //     ->whereBetween('tglmulaiberlaku', [$dari, $sampai])
+        //     ->first();
 
-        if ($cekData != null) {
+        // if ($cekData != null) {
 
             $tarifrincian = new TarifRincian();
 
@@ -170,17 +170,17 @@ class TarifController extends Controller
 
             return response([
                 'status' => true,
-                'data' => $tarifrincian->listpivot($dari, $sampai),
+                'data' => $tarifrincian->listpivot(),
                 'judul' => $getJudul
             ]);
-        } else {
-            return response([
-                'errors' => [
-                    "export" => "tidak ada data"
-                ],
-                'message' => "The given data was invalid.",
-            ], 422);
-        }
+        // } else {
+        //     return response([
+        //         'errors' => [
+        //             "export" => "tidak ada data"
+        //         ],
+        //         'message' => "The given data was invalid.",
+        //     ], 422);
+        // }
     }
 
 
