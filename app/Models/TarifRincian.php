@@ -221,14 +221,6 @@ class TarifRincian extends MyModel
 
 
         $this->filter($query);
-        $statusaktif = Parameter::from(
-            DB::raw("parameter with (readuncommitted)")
-        )
-            ->where('grp', '=', 'STATUS AKTIF')
-            ->where('text', '=', 'AKTIF')
-            ->first();
-
-        $query->where('tarif.statusaktif', '=', $statusaktif->id);
 
         DB::table($tempdata)->insertUsing([
             'id',
