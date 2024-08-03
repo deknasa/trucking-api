@@ -1829,32 +1829,27 @@ class Stok extends MyModel
     public function getvulkanisir($id)
     {
 
-        $queryvulkanawal =  Stok::from(db::raw("stok a with (readuncommitted)"))
-            ->select(db::raw("isnull(a.vulkanisirawal,0) as vulawal"))
-            ->where('a.id', $id)->first();
+        $tempvulkan = '##tempvulkan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempvulkan, function ($table) {
+            $table->integer('stok_id')->nullable();
+            $table->integer('vulkan')->nullable();
+        });
 
+        DB::table($tempvulkan)->insertUsing([
+            'stok_id',
+            'vulkan',
+        ], $this->getVulkan());
         $queryvulkan = Stok::from(db::raw("stok a with (readuncommitted)"))
             ->select(
                 'a.statusban',
-                db::raw("sum(isnull(b.vulkanisirke,0)) as vulkanplus"),
-                db::raw("sum(isnull(c.vulkanisirke,0)) as vulkanminus")
+                DB::raw("isnull(d1.vulkan,0) as vulkan"),
             )
-            ->leftjoin(db::raw("penerimaanstokdetail b with (readuncommitted)"), 'a.id', 'b.stok_id')
-            ->leftjoin(db::raw("pengeluaranstokdetail c with (readuncommitted)"), 'a.id', 'c.stok_id')
+            ->leftJoin(db::raw($tempvulkan . " d1"), "a.id", "d1.stok_id")
             ->where('a.id', $id)
-            ->groupby('a.id', 'a.statusban')
+            ->groupby('a.id', 'a.statusban','d1.vulkan')
             ->first();
 
-        $totalplus = $queryvulkan->vulkanplus ?? 0;
-        $totalminus = $queryvulkan->vulkanminus ?? 0;
-        $vulawal = $queryvulkanawal->vulawal ?? 0;
-        $total = ($totalplus + $vulawal) - $totalminus;
-        if (isset($queryvulkan)) {
-            $totalvulkan = $total ?? 0;
-        } else {
-            $totalvulkan = 0;
-        }
-
+            $totalvulkan = $queryvulkan->vulkan;
         return ['totalvulkan' => $totalvulkan, 'statusban' => $queryvulkan->statusban];
     }
 
