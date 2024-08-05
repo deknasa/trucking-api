@@ -14,6 +14,7 @@ class ValidasiHutangPelunasan implements Rule
      * @return void
      */
     public $trip;
+    public $keterangan;
     public function __construct()
     {
         //
@@ -28,9 +29,11 @@ class ValidasiHutangPelunasan implements Rule
      */
     public function passes($attribute, $value)
     {
-        
+
         $dataPiutang = request()->hutang_nobukti;
+        $supplier_id = request()->supplier_id;
         $empty = 0;
+        $different = 0;
         $listTrip = '';
         if ($dataPiutang != '') {
 
@@ -44,11 +47,20 @@ class ValidasiHutangPelunasan implements Rule
                     } else {
                         $listTrip = $listTrip . ', ' . $dataPiutang[$i];
                     }
+                } else {
+                    if ($cekPiutangExist->supplier_id != $supplier_id) {
+                        $different++;
+                    }
                 }
             }
         }
         $this->trip = $listTrip;
         if ($empty > 0) {
+            $this->keterangan = app(ErrorController::class)->geterror('DTA')->keterangan . ' (' . $this->trip . ')';
+            return false;
+        }
+        if ($different > 0) {
+            $this->keterangan = 'DATA SUPPLIER HUTANG ' . app(ErrorController::class)->geterror('TSD')->keterangan . ' SUPPLIER TERPILIH';
             return false;
         }
         return true;
@@ -61,6 +73,6 @@ class ValidasiHutangPelunasan implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('DTA')->keterangan . ' (' . $this->trip . ')';
+        return $this->keterangan;
     }
 }
