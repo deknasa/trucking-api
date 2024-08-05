@@ -2324,11 +2324,13 @@ class UpahSupirRincian extends MyModel
                 'a.kotadari as dari',
                 'a.kotasampai as tujuan',
                 'a.penyesuaian as penyesuaian',
+                'd.jarak as jarak',
                 db::raw("b.*"),
                 db::raw("c.*"),
                 )
             ->join(db::raw($temtabelrealsupir . " b"), 'a.id', 'b.upahsupir_id')
             ->join(db::raw($temtabelrealliter . " c"), 'a.id', 'c.upahsupir_id')
+            ->join(db::raw("upahsupir d with (readuncommitted)"), 'a.id', 'd.id')
             ->get();
 
         $querydata = DB::table('listtemporarytabel')->from(
