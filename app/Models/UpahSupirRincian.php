@@ -1912,7 +1912,462 @@ class UpahSupirRincian extends MyModel
 
         return $query->get();
     }
+
     public function listpivot()
+    {
+
+        $temphasilupah = '##temphasilupah' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        Schema::create($temphasilupah, function (Blueprint $table) {
+            $table->bigInteger('id')->nullable();
+            $table->longText('parent_id')->nullable();
+            $table->longText('tarif')->nullable();
+            $table->longText('kotadari_id')->nullable();
+            $table->longText('kotasampai_id')->nullable();
+            $table->longText('zonadari_id')->nullable();
+            $table->longText('zonasampai_id')->nullable();
+            $table->longText('penyesuaian')->nullable();
+            $table->longText('jarak')->nullable();
+            $table->longText('jarakfullempty')->nullable();
+            $table->longText('zona_id')->nullable()->nullable();
+            $table->longText('statusaktif')->nullable();
+            $table->longText('statusupahzona')->nullable();
+            $table->longText('statuspostingtnl')->nullable();
+            $table->date('tglmulaiberlaku')->nullable();
+            $table->longText('gambar')->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->longText('modifiedby')->nullable();
+            $table->dateTime('updated_at')->nullable();
+            $table->longText('judulLaporan')->nullable();
+            $table->longText('judul')->nullable();
+        });
+
+        DB::table($temphasilupah)->insertUsing([
+            'id',
+            'parent_id',
+            'tarif',
+            'kotadari_id',
+            'kotasampai_id',
+            'zonadari_id',
+            'zonasampai_id',
+            'penyesuaian',
+            'jarak',
+            'jarakfullempty',
+            'zona_id',
+            'statusaktif',
+            'statusupahzona',
+            'statuspostingtnl',
+            'tglmulaiberlaku',
+            'gambar',
+            'keterangan',
+            'created_at',
+            'modifiedby',
+            'updated_at',
+            'judulLaporan',
+            'judul',
+        ], (new UpahSupir())->get(1));
+
+        // dd(DB::table($temphasilupah)->get());
+
+        $tempupahsupir = '##tempupahsupir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempupahsupir, function ($table) {
+            $table->unsignedBigInteger('id')->nullable();
+            $table->longtext('kotadari')->nullable();
+            $table->longtext('kotasampai')->nullable();
+            $table->longtext('penyesuaian')->nullable();
+        });
+
+        $querytempupahsupir = db::table($temphasilupah)->from(db::raw($temphasilupah ." a with (readuncommitted)"))
+            ->select(
+                'a.id',
+                'a.kotadari_id as kotadari',
+                'a.kotasampai_id as kotasampai',
+                'a.penyesuaian'
+            );
+
+        DB::table($tempupahsupir)->insertUsing([
+            'id',
+            'kotadari',
+            'kotasampai',
+            'penyesuaian',
+        ], $querytempupahsupir);
+
+
+        $tempupahsupirrincian = '##tempupahsupirrincian' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempupahsupirrincian, function ($table) {
+            $table->unsignedBigInteger('id')->nullable();
+            $table->unsignedBigInteger('upahsupir_id')->nullable();
+            $table->longtext('container')->nullable();
+            $table->longtext('statuscontainer')->nullable();
+            $table->double('nominalsupir', 15, 2)->nullable();
+            $table->double('nominalkenek', 15, 2)->nullable();
+            $table->double('nominalkomisi', 15, 2)->nullable();
+            $table->double('nominaltol', 15, 2)->nullable();
+            $table->double('liter', 15, 2)->nullable();
+        });
+
+
+        $querytempupahsupirrincian = db::table("upahsupirrincian")->from(db::raw("upahsupirrincian a with (readuncommitted)"))
+            ->select(
+                'a.id',
+                'a.upahsupir_id',
+                db::raw("replace(c.kodecontainer,'" . '"' . "','') as kodecontainer"),
+                'd.kodestatuscontainer',
+                'a.nominalsupir',
+                'a.nominalkenek',
+                'a.nominalkomisi',
+                'a.nominaltol',
+                'a.liter',
+            )
+            ->join(db::raw($tempupahsupir . " b "), 'a.upahsupir_id', 'b.id')
+            ->join(db::raw("container c with (readuncommitted)"), 'a.container_id', 'c.id')
+            ->join(db::raw("statuscontainer d with (readuncommitted)"), 'a.statuscontainer_id', 'd.id');
+
+        // dd($querytempupahsupirrincian->get());
+        DB::table($tempupahsupirrincian)->insertUsing([
+            'id',
+            'upahsupir_id',
+            'container',
+            'statuscontainer',
+            'nominalsupir',
+            'nominalkenek',
+            'nominalkomisi',
+            'nominaltol',
+            'liter',
+        ], $querytempupahsupirrincian);
+
+        // dd('test');
+        $tempupahsupirrinciandetail = '##tempupahsupirrinciandetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempupahsupirrinciandetail, function ($table) {
+            $table->unsignedBigInteger('upahsupir_id')->nullable();
+            $table->longtext('keterangan')->nullable();
+            $table->double('nominalsupir', 15, 2)->nullable();
+            $table->double('nominalkenek', 15, 2)->nullable();
+            $table->double('nominalkomisi', 15, 2)->nullable();
+            $table->double('nominaltol', 15, 2)->nullable();
+            $table->double('liter', 15, 2)->nullable();
+        });
+
+        $querytempupahsupirrinciandetail = db::table($tempupahsupirrincian)->from(db::raw($tempupahsupirrincian . " a "))
+            ->select(
+                'a.upahsupir_id',
+                db::raw("trim(a.container)+'_'+trim(a.statuscontainer) as keterangan"),
+                'a.nominalsupir',
+                'a.nominalkenek',
+                'a.nominalkomisi',
+                'a.nominaltol',
+                'a.liter'
+            );
+
+        DB::table($tempupahsupirrinciandetail)->insertUsing([
+            'upahsupir_id',
+            'keterangan',
+            'nominalsupir',
+            'nominalkenek',
+            'nominalkomisi',
+            'nominaltol',
+            'liter',
+        ], $querytempupahsupirrinciandetail);
+        // 
+
+
+        $tempupahsupirrinciandetailsupir = '##tempupahsupirrinciandetailsupir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempupahsupirrinciandetailsupir, function ($table) {
+            $table->unsignedBigInteger('upahsupir_id')->nullable();
+            $table->longtext('keterangan')->nullable();
+            $table->double('nominalsupir', 15, 2)->nullable();
+        });
+
+        $tempupahsupirrinciandetailkenek = '##tempupahsupirrinciandetailkenek' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempupahsupirrinciandetailkenek, function ($table) {
+            $table->unsignedBigInteger('upahsupir_id')->nullable();
+            $table->longtext('keterangan')->nullable();
+            $table->double('nominalkenek', 15, 2)->nullable();
+        });
+
+        $tempupahsupirrinciandetailkomisi = '##tempupahsupirrinciandetailkomisi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempupahsupirrinciandetailkomisi, function ($table) {
+            $table->unsignedBigInteger('upahsupir_id')->nullable();
+            $table->longtext('keterangan')->nullable();
+            $table->double('nominalkomisi', 15, 2)->nullable();
+        });
+
+        $tempupahsupirrinciandetailtol = '##tempupahsupirrinciandetailtol' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempupahsupirrinciandetailtol, function ($table) {
+            $table->unsignedBigInteger('upahsupir_id')->nullable();
+            $table->longtext('keterangan')->nullable();
+            $table->double('nominaltol', 15, 2)->nullable();
+        });
+
+        $tempupahsupirrinciandetailliter = '##tempupahsupirrinciandetailliter' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempupahsupirrinciandetailliter, function ($table) {
+            $table->unsignedBigInteger('upahsupir_id')->nullable();
+            $table->longtext('keterangan')->nullable();
+            $table->double('liter', 15, 2)->nullable();
+        });
+
+        $querytempupahsupirrinciandetailsupir = db::table($tempupahsupirrinciandetail)->from(db::raw($tempupahsupirrinciandetail . " a"))
+            ->select(
+                'a.upahsupir_id',
+                'a.keterangan',
+                'a.nominalsupir',
+            );
+
+        DB::table($tempupahsupirrinciandetailsupir)->insertUsing([
+            'upahsupir_id',
+            'keterangan',
+            'nominalsupir',
+        ], $querytempupahsupirrinciandetailsupir);
+
+        $querytempupahsupirrinciandetailkenek = db::table($tempupahsupirrinciandetail)->from(db::raw($tempupahsupirrinciandetail . " a"))
+            ->select(
+                'a.upahsupir_id',
+                'a.keterangan',
+                'a.nominalkenek',
+            );
+
+        DB::table($tempupahsupirrinciandetailkenek)->insertUsing([
+            'upahsupir_id',
+            'keterangan',
+            'nominalkenek',
+        ], $querytempupahsupirrinciandetailkenek);
+
+
+        $querytempupahsupirrinciandetailkomisi = db::table($tempupahsupirrinciandetail)->from(db::raw($tempupahsupirrinciandetail . " a"))
+            ->select(
+                'a.upahsupir_id',
+                'a.keterangan',
+                'a.nominalkomisi',
+            );
+
+        DB::table($tempupahsupirrinciandetailkomisi)->insertUsing([
+            'upahsupir_id',
+            'keterangan',
+            'nominalkomisi',
+        ], $querytempupahsupirrinciandetailkomisi);
+
+
+        $querytempupahsupirrinciandetailtol = db::table($tempupahsupirrinciandetail)->from(db::raw($tempupahsupirrinciandetail . " a"))
+            ->select(
+                'a.upahsupir_id',
+                'a.keterangan',
+                'a.nominaltol',
+            );
+
+        DB::table($tempupahsupirrinciandetailtol)->insertUsing([
+            'upahsupir_id',
+            'keterangan',
+            'nominaltol',
+        ], $querytempupahsupirrinciandetailtol);
+
+        $querytempupahsupirrinciandetailliter = db::table($tempupahsupirrinciandetail)->from(db::raw($tempupahsupirrinciandetail . " a"))
+            ->select(
+                'a.upahsupir_id',
+                db::raw("'Liter_'+a.keterangan as keterangan"),
+                'a.liter',
+            );
+
+        DB::table($tempupahsupirrinciandetailliter)->insertUsing([
+            'upahsupir_id',
+            'keterangan',
+            'liter',
+        ], $querytempupahsupirrinciandetailliter);
+
+
+        $tempketerangan = '##tempketerangan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempketerangan, function ($table) {
+            $table->longtext('keterangan')->nullable();
+        });
+
+        $querytempketerangan = db::table($tempupahsupirrinciandetail)->from(db::raw($tempupahsupirrinciandetail . " a"))
+            ->select(
+                'a.keterangan',
+            )
+            ->groupBy('a.keterangan')
+            ->OrderBy('a.keterangan');
+
+        DB::table($tempketerangan)->insertUsing([
+            'keterangan',
+        ], $querytempketerangan);
+
+        $columnsketerangan = db::table($tempketerangan)->from(db::raw($tempketerangan . " a"))
+            ->select(
+                db::raw("string_agg('['+cast(a.keterangan as nvarchar(max))+']',',') WITHIN GROUP (ORDER BY a.keterangan ASC) as keterangan")
+            )->first()->keterangan ?? '';
+
+        $columnsketeranganliter = db::table($tempketerangan)->from(db::raw($tempketerangan . " a"))
+            ->select(
+                db::raw("string_agg('['+cast('Liter_'+a.keterangan as nvarchar(max))+']',',') WITHIN GROUP (ORDER BY a.keterangan ASC) as keterangan")
+            )->first()->keterangan ?? '';
+
+        $columnstabel = db::table($tempketerangan)->from(db::raw($tempketerangan . " a"))
+            ->select(
+                db::raw("string_agg('['+cast(a.keterangan as nvarchar(max))+'] money',',') WITHIN GROUP (ORDER BY a.keterangan ASC) as keterangan")
+            )->first()->keterangan ?? '';
+
+        $columnstabelliter = db::table($tempketerangan)->from(db::raw($tempketerangan . " a"))
+            ->select(
+                db::raw("string_agg('['+cast('Liter_'+a.keterangan as nvarchar(max))+'] money',',') WITHIN GROUP (ORDER BY a.keterangan ASC) as keterangan")
+            )->first()->keterangan ?? '';
+
+
+        $user = auth('api')->user()->name;
+        $class = 'UpahSupirrealsupirtController';
+
+
+        $temtabelrealsupir = 'temprealsupir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+
+        $querydata = DB::table('listtemporarytabel')->from(
+            DB::raw("listtemporarytabel a with (readuncommitted)")
+        )
+            ->select(
+                'id',
+                'class',
+                'namatabel',
+            )
+            ->where('class', '=', $class)
+            ->where('modifiedby', '=', $user)
+            ->first();
+
+        if (isset($querydata)) {
+            Schema::dropIfExists($querydata->namatabel);
+            DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+        }
+
+        DB::table('listtemporarytabel')->insert(
+            [
+                'class' => $class,
+                'namatabel' => $temtabelrealsupir,
+                'modifiedby' => $user,
+                'created_at' => date('Y/m/d H:i:s'),
+                'updated_at' => date('Y/m/d H:i:s'),
+            ]
+        );
+
+        $user = auth('api')->user()->name;
+        $classliter = 'UpahSupirreallitertController';
+
+
+        $temtabelrealliter = 'temprealliter' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+
+        $querydata = DB::table('listtemporarytabel')->from(
+            DB::raw("listtemporarytabel a with (readuncommitted)")
+        )
+            ->select(
+                'id',
+                'class',
+                'namatabel',
+            )
+            ->where('class', '=', $classliter)
+            ->where('modifiedby', '=', $user)
+            ->first();
+
+        if (isset($querydata)) {
+            Schema::dropIfExists($querydata->namatabel);
+            DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+        }
+
+        DB::table('listtemporarytabel')->insert(
+            [
+                'class' => $class,
+                'namatabel' => $temtabelrealsupir,
+                'modifiedby' => $user,
+                'created_at' => date('Y/m/d H:i:s'),
+                'updated_at' => date('Y/m/d H:i:s'),
+            ]
+        );
+
+        // dd($columnsketeranganliter);
+        // dd($temtabelrealsupir);
+
+        // dd(db::table($tempupahsupirrinciandetailliter)->first());
+        $createtable = 'create table ' . $temtabelrealsupir . '(upahsupir_id integer,' . $columnstabel . ')';
+        // dd($createtable);
+        DB::update($createtable);
+        $createtable = 'create table ' . $temtabelrealliter . '(upahsupir_id integer,' . $columnstabelliter . ') ';
+        DB::update($createtable);
+
+        $nominalsupir = 'Nominal Supir';
+        $query = "
+        insert into " . $temtabelrealsupir . "(upahsupir_id," . $columnsketerangan . ") 
+        SELECT  upahsupir_id," . $columnsketerangan . " FROM (SELECT a.upahsupir_id,a.keterangan,a.nominalsupir FROM ".$tempupahsupirrinciandetailsupir." a ) AS SourceTable PIVOT (Max(nominalsupir) FOR keterangan IN (". $columnsketerangan .")) AS PivotTable
+        ";
+
+        DB::update($query);
+
+        
+
+        $liter = 'Liter';
+        $query = "
+        insert into " . $temtabelrealliter . "(upahsupir_id," . $columnsketeranganliter . ")
+        SELECT  upahsupir_id,
+        " . $columnsketeranganliter . "
+        FROM
+        (SELECT a.upahsupir_id,a.keterangan,a.liter
+            FROM ".$tempupahsupirrinciandetailliter ." a 
+            ) AS SourceTable
+        PIVOT
+        (
+        Max(liter)
+        FOR keterangan IN (". $columnsketeranganliter .")
+        ) AS PivotTable
+        ";
+        // dd($query);
+        DB::update($query);
+
+
+        // dd(db::table($temtabelrealliter)->get());
+
+        $query = db::table($tempupahsupir)->from(db::raw($tempupahsupir . " a"))
+             ->select(
+                'a.kotadari as dari',
+                'a.kotasampai as tujuan',
+                'a.penyesuaian as penyesuaian',
+                db::raw("b.*"),
+                db::raw("c.*"),
+                )
+            ->join(db::raw($temtabelrealsupir . " b"), 'a.id', 'b.upahsupir_id')
+            ->join(db::raw($temtabelrealliter . " c"), 'a.id', 'c.upahsupir_id')
+            ->get();
+
+        $querydata = DB::table('listtemporarytabel')->from(
+            DB::raw("listtemporarytabel a with (readuncommitted)")
+        )
+            ->select(
+                'id',
+                'class',
+                'namatabel',
+            )
+            ->where('class', '=', $classliter)
+            ->where('modifiedby', '=', $user)
+            ->first();
+
+        if (isset($querydata)) {
+            Schema::dropIfExists($querydata->namatabel);
+            DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+        }
+
+        $querydata = DB::table('listtemporarytabel')->from(
+            DB::raw("listtemporarytabel a with (readuncommitted)")
+        )
+            ->select(
+                'id',
+                'class',
+                'namatabel',
+            )
+            ->where('class', '=', $class)
+            ->where('modifiedby', '=', $user)
+            ->first();
+
+        if (isset($querydata)) {
+            Schema::dropIfExists($querydata->namatabel);
+            DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+        }
+
+        return $query;
+    }
+    public function listpivotold()
     {
         $tempdatacs = '##tempdatacontainerstatus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdatacs, function ($table) {
@@ -1924,7 +2379,7 @@ class UpahSupirRincian extends MyModel
         });
 
         $queryupah = (new UpahSupir())->get();
-
+        // dd('test');
         $datadetailupah = json_decode($queryupah, true);
         foreach ($datadetailupah as $itema) {
 
@@ -2452,7 +2907,7 @@ class UpahSupirRincian extends MyModel
                 'kotasampai_id' => $kotasampai->id,
                 'penyesuaian' => $item['penyesuaian'],
                 'jarak' => $item['jarak'],
-                'jarakfullempty' => $item['jarak']*2,
+                'jarakfullempty' => $item['jarak'] * 2,
                 'zona_id' => 0,
                 'zonadari_id' => 0,
                 'zonasampai_id' => 0,
