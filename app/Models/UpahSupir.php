@@ -42,7 +42,7 @@ class UpahSupir extends MyModel
     }
 
 
-    public function get()
+    public function get($model=0)
     {
         $this->setRequestParameters();
 
@@ -294,7 +294,12 @@ class UpahSupir extends MyModel
 
         $this->sort($query);
         $this->paginate($query);
-        $data = $query->get();
+        if ($model==1) {
+            $data = $query;
+        } else {
+            $data = $query->get();
+
+        }
         return $data;
     }
     public function findAll($id)
