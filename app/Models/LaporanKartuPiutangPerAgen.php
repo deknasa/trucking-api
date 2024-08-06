@@ -112,7 +112,7 @@ class LaporanKartuPiutangPerAgen extends MyModel
         $querypelunasansaldo = db::table('pelunasanpiutangheader')->from(db::raw("pelunasanpiutangheader a with (readuncommitted)"))
             ->select(
                 'c.nobukti',
-                db::raw("sum(isnull(b.nominal,0)+isnull(b.potongan,0)) as nominal"),
+                db::raw("sum(isnull(b.nominal,0)+isnull(b.potongan,0)+isnull(b.potonganpph,0)) as nominal"),
             )
             ->join(db::raw("pelunasanpiutangdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(db::raw($temppiutangsaldo . " c "), 'b.piutang_nobukti', 'c.nobukti')
