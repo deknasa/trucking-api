@@ -62,7 +62,7 @@ class LaporanPinjamanSupir extends MyModel
                 ->join(DB::raw("pengeluarantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
                 ->leftjoin(DB::raw("supir as c with (readuncommitted) "), 'b.supir_id', 'c.id')
                 ->where('a.pengeluarantrucking_id', '=', $pengeluarantrucking_id)
-                ->whereRaw("a.tglbukti<'" . date('Y/m/d', strtotime($sampai)) . "'")
+                ->whereRaw("a.tglbukti<='" . date('Y/m/d', strtotime($sampai)) . "'")
                 // ->whereRaw("isnull(b.supir_id,0)<>0")
 
                 ->OrderBy('c.namasupir', 'asc')
@@ -84,7 +84,7 @@ class LaporanPinjamanSupir extends MyModel
                 ->join(DB::raw("pengeluarantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
                 ->leftjoin(DB::raw("supir as c with (readuncommitted) "), 'b.supir_id', 'c.id')
                 ->where('a.pengeluarantrucking_id', '=', $pengeluarantrucking_id)
-                ->whereRaw("a.tglbukti<'" . date('Y/m/d', strtotime($sampai)) . "'")
+                ->whereRaw("a.tglbukti<='" . date('Y/m/d', strtotime($sampai)) . "'")
                 // ->whereRaw("isnull(b.supir_id,0)<>0")
                 ->where('a.statusposting', '=', $jenis)
 
@@ -104,7 +104,7 @@ class LaporanPinjamanSupir extends MyModel
             'created_at',
         ], $queryhistory);
 
-
+        // dd($sampai);
         if ($jenis == 0) {
             $queryhistory = DB::table('penerimaantruckingheader')->from(
                 DB::raw("penerimaantruckingheader a with (readuncommitted) ")
@@ -185,6 +185,8 @@ class LaporanPinjamanSupir extends MyModel
             'namasupir',
             'created_at',
         ], $queryhistory);
+
+        // dd(db::table($temphistory)->get());
 
         // $queryhistory=db::table($temphistory)->from(db::raw($temphistory . " a with (readuncommitted)"))
         // ->select(
