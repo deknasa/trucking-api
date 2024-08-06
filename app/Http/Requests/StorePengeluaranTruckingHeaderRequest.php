@@ -123,16 +123,26 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                 //     $this->input('gandenganheader_id')
                 // );
                 if ($klaim->id ==  $this->pengeluarantrucking_id) {
-
+                    $salahSatuSupirKaryawan = Rule::requiredIf(function () {
+                        if (empty($this->input('supirheader_id')) && empty($this->input('karyawanheader_id'))) {
+                            return true;
+                        }
+                        return false;
+                    });
                     $salahSatuDari = Rule::requiredIf(function () {
+                        if(empty($this->input('supirheader_id'))){
+                            return false;
+                        }
                         if (empty($this->input('tradoheader_id')) && empty($this->input('gandenganheader_id'))) {
                             return true;
                         }
                         return false;
                     });
                     $rulseKlaim = [
-                        "supirheader_id" => "required",
-                        "supirheader" => "required",
+                        "karyawanheader_id" => $salahSatuSupirKaryawan,
+                        "karyawanheader" => $salahSatuSupirKaryawan,
+                        "supirheader_id" => $salahSatuSupirKaryawan,
+                        "supirheader" => $salahSatuSupirKaryawan,
                         "tradoheader_id" => $salahSatuDari,
                         "gandenganheader_id" => $salahSatuDari,
                         "trado" => $salahSatuDari,
@@ -381,6 +391,8 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
             'tglbukti' => 'Tgl Bukti',
             'keterangancoa' => 'nama perkiraan',
             'pengeluarantrucking' => 'Kode Pengeluaran',
+            'karyawanheader' => 'karyawan',
+            'statuscabang' => 'cabang',
             'supirheader' => 'supir',
             'supirhaeader_id' => 'supir',
             'trado' => 'trado',

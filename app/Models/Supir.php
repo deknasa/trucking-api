@@ -1686,6 +1686,7 @@ class Supir extends MyModel
     {
         $query = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))
             ->where("noktp", $noktp)
+            ->where("statusaktif", 1)
             ->whereRaw("isnull(tglberhentisupir,'1900-01-01') = '1900-01-01'");
         if ($id != 0) {
             $query->whereRaw("id != $id");
