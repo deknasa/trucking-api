@@ -26,6 +26,9 @@ class ValidasiKlaimPengeluaranStok implements Rule
      */
     public function passes($attribute, $value)
     {
+        if (request()->statustanpabukti == 3) {//jika approval tidak perlu validasi
+            return true;
+        }
         $attribute = substr($attribute,24);
         $penerimaanStok = request()->penerimaanstok_nobukti[$attribute]?? '';
         if($value == ''){

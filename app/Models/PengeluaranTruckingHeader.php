@@ -342,6 +342,8 @@ class PengeluaranTruckingHeader extends MyModel
                     db::raw("isnull(penerimaantruckingdetail.nobuktipenerimaan,'') as nobuktipenerimaan"),
                     'pengeluarantrucking.keterangan as pengeluarantrucking_id',
                     'bank.namabank as bank_id',
+                    'pengeluarantruckingheader.karyawan_id',
+                    'karyawan.namakaryawan as karyawan',
                     'pengeluarantruckingheader.trado_id',
                     'trado.keterangan as trado',
                     'pengeluarantruckingheader.trado_id as tradoheader_id',
@@ -374,6 +376,7 @@ class PengeluaranTruckingHeader extends MyModel
                 ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluarantruckingheader.bank_id', 'bank.id')
                 ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarantruckingheader.coa', 'akunpusat.coa')
                 ->leftJoin(DB::raw("trado with (readuncommitted)"), 'pengeluarantruckingheader.trado_id', 'trado.id')
+                ->leftJoin(DB::raw("karyawan with (readuncommitted)"), 'pengeluarantruckingheader.karyawan_id', 'karyawan.id')
                 ->leftJoin(DB::raw("gandengan with (readuncommitted)"), 'pengeluarantruckingheader.gandengan_id', 'gandengan.id')
                 ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluarantruckingheader.statuscetak', 'statuscetak.id')
                 ->leftJoin(DB::raw("$tempSupir as getsupir with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'getsupir.nobukti')
@@ -433,6 +436,9 @@ class PengeluaranTruckingHeader extends MyModel
                             $namakaryawan = $namakaryawan . ',' . $itemdetail['namakaryawan'];
                         }
                     }
+                }
+                if(request()->pengeluaranheader_id == 7){//klaim
+                    $namakaryawan = $item['karyawan'];
                 }
                 DB::table($temtabel)->insert([
                     'id' => $item['id'],
@@ -556,14 +562,16 @@ class PengeluaranTruckingHeader extends MyModel
                         'pengeluarantrucking.keterangan as pengeluarantrucking',
                         'pengeluarantrucking.kodepengeluaran as kodepengeluaran',
                         'pengeluarantruckingheader.bank_id',
-                        'bank.namabank as bank',
+                        'bank.namabank as bank',                        
+                        'pengeluarantruckingheader.karyawan_id as karyawanheader_id',
                         'pengeluarantruckingheader.supir_id',
                         'pengeluarantruckingheader.supir_id as supirheader_id',
                         'trado.keterangan as trado',
                         'pengeluarantruckingheader.tradotnl_id as tradoheader_id',
                         'gandengan.keterangan as gandengan',
                         'pengeluarantruckingheader.gandengantnl_id as gandenganheader_id',
-                        'supir.namasupir as supirheader',
+                        'supir.namasupir as supirheader',                        
+                        'karyawan.namakaryawan as karyawanheader',
                         'supir.namasupir as supir',
                         'pengeluarantruckingheader.pengeluarantrucking_nobukti',
                         'pengeluarantruckingheader.statusposting',
@@ -578,7 +586,8 @@ class PengeluaranTruckingHeader extends MyModel
                         'jenisorder.keterangan as jenisorderan'
                     )
                     ->leftJoin(DB::raw("pengeluarantrucking with (readuncommitted)"), 'pengeluarantruckingheader.pengeluarantrucking_id', 'pengeluarantrucking.id')
-                    ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluarantruckingheader.bank_id', 'bank.id')
+                    ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluarantruckingheader.bank_id', 'bank.id')                    
+                    ->leftJoin(DB::raw("karyawan with (readuncommitted)"), 'pengeluarantruckingheader.karyawan_id', 'karyawan.id')
                     ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingheader.supir_id', 'supir.id')
                     ->leftJoin(DB::raw("$tabelTrado as trado with (readuncommitted)"), 'pengeluarantruckingheader.tradotnl_id', 'trado.id')
                     ->leftJoin(DB::raw("$tabelGandengan as gandengan with (readuncommitted)"), 'pengeluarantruckingheader.gandengantnl_id', 'gandengan.id')
@@ -599,6 +608,8 @@ class PengeluaranTruckingHeader extends MyModel
                         'bank.namabank as bank',
                         'pengeluarantruckingheader.supir_id',
                         'pengeluarantruckingheader.supir_id as supirheader_id',
+                        'pengeluarantruckingheader.karyawan_id as karyawanheader_id',
+                        'pengeluarantruckingheader.karyawan_id',
                         'pengeluarantruckingheader.trado_id',
                         'trado.keterangan as trado',
                         'pengeluarantruckingheader.trado_id as tradoheader_id',
@@ -607,6 +618,8 @@ class PengeluaranTruckingHeader extends MyModel
                         'pengeluarantruckingheader.gandengan_id as gandenganheader_id',
                         'supir.namasupir as supirheader',
                         'supir.namasupir as supir',
+                        'karyawan.namakaryawan as karyawanheader',
+                        'karyawan.namakaryawan as karyawan',
                         'pengeluarantruckingheader.pengeluarantrucking_nobukti',
                         'pengeluarantruckingheader.statusposting',
                         'pengeluarantruckingheader.statuscabang',
@@ -617,11 +630,13 @@ class PengeluaranTruckingHeader extends MyModel
                         'akunpusat.keterangancoa',
                         'pengeluarantruckingheader.pengeluaran_nobukti',
                         'pengeluarantruckingheader.jenisorder_id as jenisorderan_id',
+                        db::raw("(case when pengeluarantruckingheader.karyawan_id =0 then 4 else 3 end) as statustanpabukti"),
                         'jenisorder.keterangan as jenisorderan'
                     )
                     ->leftJoin(DB::raw("pengeluarantrucking with (readuncommitted)"), 'pengeluarantruckingheader.pengeluarantrucking_id', 'pengeluarantrucking.id')
                     ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluarantruckingheader.bank_id', 'bank.id')
                     ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingheader.supir_id', 'supir.id')
+                    ->leftJoin(DB::raw("karyawan with (readuncommitted)"), 'pengeluarantruckingheader.karyawan_id', 'karyawan.id')
                     ->leftJoin(DB::raw("trado with (readuncommitted)"), 'pengeluarantruckingheader.trado_id', 'trado.id')
                     ->leftJoin(DB::raw("gandengan with (readuncommitted)"), 'pengeluarantruckingheader.gandengan_id', 'gandengan.id')
                     ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'pengeluarantruckingheader.jenisorder_id', 'jenisorder.id')
@@ -2036,23 +2051,39 @@ class PengeluaranTruckingHeader extends MyModel
 
 
             if ($klaim->id == $data['pengeluarantrucking_id']) {
+                $isKaryawan = false;
+                if ($data['karyawanheader_id']) {
+                    $isKaryawan = true;
+                }
                 if ($data['postingpinjaman'] != $statusPosting->id) {
                     $pinjaman = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))->where('kodepengeluaran', "PJT")->first();
+                    if ($isKaryawan) {
+                        $pinjaman = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))->where('kodepengeluaran', "PJK")->first();
+                    }
                 }
 
-                $getnamasupir = DB::table('supir')->select('namasupir')->where('id', $data['supirheader_id'])->first();
+                if ($isKaryawan) {
+                    $getnama = DB::table('karyawan')->select('namakaryawan')->where('id', $data['karyawanheader_id'])->first();
+                    $keteranganPosting = "PINJAMAN KARYAWAN $getnama->namakaryawan ATAS ";
+                }else{
+                    $getnama = DB::table('supir')->select('namasupir')->where('id', $data['supirheader_id'])->first();
+                    $keteranganPosting = "PINJAMAN SUPIR $getnama->namasupir ATAS ";
+
+                }
                 for ($i = 0; $i < count($data['nominal']); $i++) {
-                    $pjt_supir_id[] = $data['supirheader_id'];
-                    $pjt_nominal[] = $data['nominal'][$i];
-                    $pjt_keterangan[] = "PINJAMAN SUPIR $getnamasupir->namasupir ATAS " . $data['keterangan'][$i];
+                    $posting_supir_id[] = $data['supirheader_id'];
+                    $posting_karyawan_id[] = $data['karyawanheader_id'];
+                    $posting_nominal[] = $data['nominal'][$i];
+                    $posting_keterangan[] = $keteranganPosting . $data['keterangan'][$i];
                 }
                 $pjtRequest = [
                     "tglbukti" => $data['tglbukti'],
                     "pengeluarantrucking_id" => $pinjaman->id,
                     "statusposting" => $statusPosting->id,
-                    'supir_id' => $pjt_supir_id,
-                    'nominal' => $pjt_nominal,
-                    'keterangan' => $pjt_keterangan,
+                    'supir_id' => $posting_supir_id,
+                    'karyawan_id' => $posting_karyawan_id,
+                    'nominal' => $posting_nominal,
+                    'keterangan' => $posting_keterangan,
                 ];
 
                 $pinjaman = $this->storePinjamanPosting($pjtRequest);
@@ -2351,25 +2382,37 @@ class PengeluaranTruckingHeader extends MyModel
 
         if (($tanpaprosesnobukti != 2)) {
             if ($klaim->id == $data['pengeluarantrucking_id']) {
+                $isKaryawan = false;
+                if ($data['karyawanheader_id']) {
+                    $isKaryawan = true;
+                }
                 if ($pengeluaranTruckingDetail->statusPosting != $statusPosting->id) {
                     $pinjaman = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))->where('kodepengeluaran', "PJT")->first();
+                    if ($isKaryawan) {
+                        $pinjaman = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))->where('kodepengeluaran', "PJK")->first();
+                    }
                 }
-                $getnamasupir = DB::table('supir')->select('namasupir')->where('id', $data['supirheader_id'])->first();
-
+                if ($isKaryawan) {
+                    $getnama = DB::table('karyawan')->select('namakaryawan')->where('id', $data['karyawanheader_id'])->first();
+                    $keteranganPosting = "PINJAMAN KARYAWAN $getnama->namakaryawan ATAS ";
+                }else{
+                    $getnama = DB::table('supir')->select('namasupir')->where('id', $data['supirheader_id'])->first();
+                    $keteranganPosting = "PINJAMAN SUPIR $getnama->namasupir ATAS ";
+                }
                 for ($i = 0; $i < count($data['nominal']); $i++) {
-                    $pjt_supir_id[] = $data['supirheader_id'];
-                    $pjt_karyawan_id[] = $data['karyawan_id'];
-                    $pjt_nominal[] = $data['nominal'][$i];
-                    $pjt_keterangan[] = "PINJAMAN SUPIR $getnamasupir->namasupir ATAS " . $data['keterangan'][$i];
+                    $posting_supir_id[] = $data['supirheader_id'];
+                    $posting_karyawan_id[] = $data['karyawanheader_id'];
+                    $posting_nominal[] = $data['nominal'][$i];
+                    $posting_keterangan[] = $keteranganPosting . $data['keterangan'][$i];
                 }
                 $pjtRequest = [
                     "tglbukti" => $data['tglbukti'],
                     "pengeluarantrucking_id" => $pinjaman->id,
                     "statusposting" => $statusPosting->id,
-                    'supir_id' => $pjt_supir_id,
-                    'karyawan_id' => $data['karyawan_id'],
-                    'nominal' => $pjt_nominal,
-                    'keterangan' => $pjt_keterangan,
+                    'supir_id' => $posting_supir_id,
+                    'karyawan_id' => $posting_karyawan_id,
+                    'nominal' => $posting_nominal,
+                    'keterangan' => $posting_keterangan,
                 ];
 
                 if ($pengeluaranTruckingDetail->statusPosting != $statusPosting->id) {
