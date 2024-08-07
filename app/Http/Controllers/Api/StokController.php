@@ -63,7 +63,7 @@ class StokController extends Controller
         $useredit = $dataMaster->editing_by ?? '';
         $aksi = request()->aksi ?? '';
         $cekdata = $stok->cekvalidasihapus($id);
-
+        $cabangPusat = db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))->select('a.text')->where('a.grp', 'ID CABANG PUSAT')->first()->text;
 
         $aksi = $request->aksi ?? '';
         $acoid = db::table('acos')->from(db::raw("acos a with (readuncommitted)"))
@@ -84,7 +84,9 @@ class StokController extends Controller
         if ($aksi == 'edit') {
             if ($cekdata['kondisi'] == true) {
                 if ($hakutama == 1) {
-                    $cekdata['kondisi'] = false;
+                    if( auth('api')->user()->cabang_id == $cabangPusat){//jika user pusat bisa edit walau sudah terpakai
+                        $cekdata['kondisi'] = false;
+                    }
                 }
             }
         }
