@@ -104,6 +104,8 @@ class Stok extends MyModel
         $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
         $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
         $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
+        $nobukti = request()->nobukti ?? '';
+
         
         if ($isLookup==true) {
             $isLookupint=1;
@@ -204,6 +206,54 @@ class Stok extends MyModel
         $retur = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
 
         if ($proses == 'reload') {
+            $tempbukti = '##tempbukti' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempbukti, function (Blueprint $table) {
+                $table->bigInteger('id')->nullable();
+                $table->integer('stok_id')->nullable();
+            });
+
+            $querybukti=db::table("penerimaanstokdetail")->from(db::raw("penerimaanstokdetail a with (readuncommitted)"))
+            ->select(
+                'a.id',
+                'a.stok_id'
+            )
+            ->where('a.nobukti',$nobukti);
+            
+            DB::table($tempbukti)->insertUsing([
+                'id',
+                'stok_id',
+
+            ], $querybukti);
+
+            $querybukti=db::table("pengeluaranstokdetail")->from(db::raw("pengeluaranstokdetail a with (readuncommitted)"))
+            ->select(
+                'a.id',
+                'a.stok_id'
+            )
+            ->where('a.nobukti',$nobukti);
+            
+            DB::table($tempbukti)->insertUsing([
+                'id',
+                'stok_id',
+
+            ], $querybukti);            
+
+            $querybukti=db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+            ->select(
+                db::raw("0 as id"),
+                'a.id as stok_id'
+            )
+            ->leftjoin(db::raw($tempbukti . " b"),'a.id','b.stok_id')
+            ->whereraw("isnull(b.stok_id,0)=0");
+            
+            DB::table($tempbukti)->insertUsing([
+                'id',
+                'stok_id',
+
+            ], $querybukti);          
+
+
+
             $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
             $querydata = DB::table('listtemporarytabel')->from(
@@ -272,6 +322,7 @@ class Stok extends MyModel
                 $table->bigInteger('statusaktif_id')->nullable();
                 $table->bigInteger('statusreuse_id')->nullable();
                 $table->bigInteger('kelompok_id')->nullable();
+                $table->bigInteger('iddetail')->nullable();
 
             });
 
@@ -319,7 +370,7 @@ class Stok extends MyModel
                     'stok.statusaktif as statusaktif_id',
                     'stok.statusreuse as statusreuse_id',
                     'stok.kelompok_id as kelompok_id',
-
+                    'c12.id as iddetail',
         
                 )
                ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
@@ -334,8 +385,9 @@ class Stok extends MyModel
                 ->leftJoin(DB::raw("parameter as statusapprovaltanpaklaim with (readuncommitted)"), 'stok.statusapprovaltanpaklaim', 'statusapprovaltanpaklaim.id')                    
                 ->leftJoin('merk', 'stok.merk_id', 'merk.id')
                 ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
-                ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id");
-    
+                ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id")
+                ->Join(db::raw($tempbukti . " c12"), "stok.id", "c12.stok_id");
+                
             } else {
                 $query = DB::table($this->table)->select(
                     'stok.id',
@@ -379,6 +431,7 @@ class Stok extends MyModel
                         (case when isnull(subkelompok.kelompokpindahgudang_id,0)=0 then stok.kelompok_id else  isnull(subkelompok.kelompokpindahgudang_id,0) end)
                         else stok.kelompok_id  end) as kelompok_id
                         "),
+                        'c12.id as iddetail',
                     
                 )
                     ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
@@ -393,8 +446,8 @@ class Stok extends MyModel
                     ->leftJoin(DB::raw("parameter as statusapprovaltanpaklaim with (readuncommitted)"), 'stok.statusapprovaltanpaklaim', 'statusapprovaltanpaklaim.id')                    
                     ->leftJoin('merk', 'stok.merk_id', 'merk.id')
                     ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
-                    ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id");
-        
+                    ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id")
+                    ->Join(db::raw($tempbukti . " c12"), "stok.id", "c12.stok_id");
             }
             DB::table($temtabel)->insertUsing([
                 'id',
@@ -435,6 +488,7 @@ class Stok extends MyModel
                 'statusaktif_id',
                 'statusreuse_id',
                 'kelompok_id',
+                'iddetail',
             ], $query);
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
@@ -501,6 +555,7 @@ class Stok extends MyModel
                 'stok.penerimaanstokdetail_harga',
                 'stok.penerimaanstokdetail_total',
                 'stok.kelompok_id',
+                'stok.iddetail',
             );
 
 

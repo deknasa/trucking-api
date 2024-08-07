@@ -1565,7 +1565,7 @@ class PenerimaanStokHeader extends MyModel
             ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'penerimaanstokheader.nobukti', 'nominal.nobukti');
         // ->leftJoin(db::raw("supplier with (readuncommitted)"), 'penerimaanstokheader.supplier_id', 'supplier.id');
 
-  
+
         DB::table($temptable)->insertUsing([
             'id',
             'nominal',
@@ -2711,10 +2711,17 @@ class PenerimaanStokHeader extends MyModel
 
 
         /*DELETE EXISTING DETAIL*/
-        $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
+        // $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
+
         $kartuStok = kartuStok::where('nobukti', $penerimaanStokHeader->nobukti)->lockForUpdate()->delete();
         $PenambahanNilai = PenerimaanStokPenambahanNilai::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
         $penerimaanStokDetailFifo = PenerimaanStokDetailFifo::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
+
+        $tempbukti = '##tempbukti' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempbukti, function ($table) {
+            $table->bigInteger('id')->nullable();
+        });
+
 
         /*STORE DETAIL*/
         $penerimaanStokDetails = [];
@@ -2736,6 +2743,17 @@ class PenerimaanStokHeader extends MyModel
 
         $urutfifo = db::table("penerimaanstok")->from(db::raw("penerimaanstok as a with (readuncommitted)"))
             ->select('a.urutfifo')->where('a.id', $penerimaanstok_id)->first()->urutfifo ?? 0;
+
+        for ($j = 0; $j < count($data['detail_harga']); $j++) {
+            $iddetail = $data['id_detail'][$j] ?? 0;
+            if ($iddetail != 0) {
+                DB::table($tempbukti)->insert([
+                    'id' => $iddetail,
+                ]);
+            }
+        }
+        DB::delete(DB::raw("delete penerimaanstokdetail from penerimaanstokdetail as a  left outer join ".$tempbukti." b on a.id=b.id
+        WHERE isnull(a.nobukti,'') in('" . $penerimaanStokHeader->nobukti . "') and isnull(b.id,0)=0"));
 
 
 
@@ -2777,22 +2795,44 @@ class PenerimaanStokHeader extends MyModel
             $datakosong[] = 0;
             $ksqty = $data['detail_qty'][$i] ?? 0;
             $ksnilai = $data['totalItem'][$i] ?? 0;
+            $iddetail = $data['id_detail'][$i] ?? 0;
 
-            $penerimaanStokDetail = (new PenerimaanStokDetail())->processStore($penerimaanStokHeader, [
-                "penerimaanstokheader_id" => $penerimaanStokHeader->id,
-                "nobukti" => $penerimaanStokHeader->nobukti,
-                "stok_id" => $data['detail_stok_id'][$i],
-                "qty" => $data['detail_qty'][$i],
-                "qtyterpakai" => $data['detail_qtyterpakai'][$i],
-                "harga" => $data['detail_harga'][$i],
-                "totalItem" => $data['totalItem'][$i],
-                "totalsebelum" => $data['totalsebelum'][$i] ?? 0,
-                "persentasediscount" => $data['detail_persentasediscount'][$i],
-                "nominaldiscount" => $data['detail_nominaldiscount'][$i],
-                "vulkanisirke" => $data['detail_vulkanisirke'][$i],
-                "detail_keterangan" => $data['detail_keterangan'][$i],
-                "detail_penerimaanstoknobukti" => $data['detail_penerimaanstoknobukti'][$i],
-            ]);
+            if ($iddetail == 0) {
+                $penerimaanStokDetail = (new PenerimaanStokDetail())->processStore($penerimaanStokHeader, [
+                    "penerimaanstokheader_id" => $penerimaanStokHeader->id,
+                    "nobukti" => $penerimaanStokHeader->nobukti,
+                    "stok_id" => $data['detail_stok_id'][$i],
+                    "qty" => $data['detail_qty'][$i],
+                    "qtyterpakai" => $data['detail_qtyterpakai'][$i],
+                    "harga" => $data['detail_harga'][$i],
+                    "totalItem" => $data['totalItem'][$i],
+                    "totalsebelum" => $data['totalsebelum'][$i] ?? 0,
+                    "persentasediscount" => $data['detail_persentasediscount'][$i],
+                    "nominaldiscount" => $data['detail_nominaldiscount'][$i],
+                    "vulkanisirke" => $data['detail_vulkanisirke'][$i],
+                    "detail_keterangan" => $data['detail_keterangan'][$i],
+                    "detail_penerimaanstoknobukti" => $data['detail_penerimaanstoknobukti'][$i],
+                ]);
+            } else {
+                $penerimaanstokdetail = new PenerimaanStokDetail();
+                $penerimaanStokDetail = $penerimaanstokdetail->findOrFail($data['id_detail'][$i]);
+                $penerimaanStokDetail = (new PenerimaanStokDetail())->processUpdate($penerimaanStokDetail, $penerimaanStokHeader, [
+                    "penerimaanstokheader_id" => $penerimaanStokHeader->id,
+                    "nobukti" => $penerimaanStokHeader->nobukti,
+                    "stok_id" => $data['detail_stok_id'][$i],
+                    "qty" => $data['detail_qty'][$i],
+                    "qtyterpakai" => $data['detail_qtyterpakai'][$i],
+                    "harga" => $data['detail_harga'][$i],
+                    "totalItem" => $data['totalItem'][$i],
+                    "totalsebelum" => $data['totalsebelum'][$i] ?? 0,
+                    "persentasediscount" => $data['detail_persentasediscount'][$i],
+                    "nominaldiscount" => $data['detail_nominaldiscount'][$i],
+                    "vulkanisirke" => $data['detail_vulkanisirke'][$i],
+                    "detail_keterangan" => $data['detail_keterangan'][$i],
+                    "detail_penerimaanstoknobukti" => $data['detail_penerimaanstoknobukti'][$i],
+                ]);
+            }
+
 
             //update total vulkanisir
             $reuse = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
