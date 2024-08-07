@@ -257,6 +257,7 @@ class Controller extends BaseController
                     isset($column['index']) && $column['index'] == 'nominaldepositsa' ||
                     isset($column['index']) && $column['index'] == 'depositke' ||
                     isset($column['index']) && $column['index'] == 'nominalpinjamansaldoawal' ||
+                    isset($column['index']) && $column['index'] == 'jarak' ||
                     isset($column['index']) && $column['index'] == 'supirrold_id'
 
                 ) {
@@ -271,6 +272,24 @@ class Controller extends BaseController
                     $sheet->setCellValueExplicit($alphabets[$columnsIndex] . $startRow, isset($column['index']) ? $row[$column['index']] : $dataIndex + 1, DataType::TYPE_STRING);
                 } elseif (
                     isset($column['index']) && $column['index'] == 'nominalsumbangan' ||
+                    isset($column['index']) && $column['index'] == '20_EMPTY' ||
+                    isset($column['index']) && $column['index'] == '20_FULL' ||
+                    isset($column['index']) && $column['index'] == '20_FULL EMPTY' ||
+                    isset($column['index']) && $column['index'] == '2X20_EMPTY' ||
+                    isset($column['index']) && $column['index'] == '2X20_FULL' ||
+                    isset($column['index']) && $column['index'] == '2X20_FULL EMPTY' ||
+                    isset($column['index']) && $column['index'] == '40_EMPTY' ||
+                    isset($column['index']) && $column['index'] == '40_FULL' ||
+                    isset($column['index']) && $column['index'] == '40_FULL EMPTY' ||
+                    isset($column['index']) && $column['index'] == 'Liter_20_EMPTY' ||
+                    isset($column['index']) && $column['index'] == 'Liter_20_FULL' ||
+                    isset($column['index']) && $column['index'] == 'Liter_20_FULL EMPTY' ||
+                    isset($column['index']) && $column['index'] == 'Liter_2X20_EMPTY' ||
+                    isset($column['index']) && $column['index'] == 'Liter_2X20_FULL' ||
+                    isset($column['index']) && $column['index'] == 'Liter_2X20_FULL EMPTY' ||
+                    isset($column['index']) && $column['index'] == 'Liter_40_EMPTY' ||
+                    isset($column['index']) && $column['index'] == 'Liter_40_FULL' ||
+                    isset($column['index']) && $column['index'] == 'Liter_40_FULL EMPTY' ||
                     isset($column['index']) && $column['index'] == 'nominal'
                 ) {
                     $sheet->setCellValue($alphabets[$columnsIndex] . $startRow, isset($column['index']) ? $row[$column['index']] : $dataIndex + 1);

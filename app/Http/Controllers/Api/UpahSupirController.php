@@ -62,6 +62,124 @@ class UpahSupirController extends Controller
 
     public function export()
     {
+       
+        $upahsupirrincian = new UpahSupirRincian();
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select(
+                'text',
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            )
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
+            $decodedResponse = json_decode($upahsupirrincian->listpivot(), true);
+            $upahsupirArray = $decodedResponse;
+            $judulLaporan = "LAPORAN UPAH SUPIR";
+            $upahsupirArray[0]["judul"] = $getJudul->text;
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    "index"=>"dari",
+                    "label"=>"dari",
+                ],
+                [
+                    "index"=>"tujuan",
+                    "label"=>"tujuan",
+                ],
+                [
+                    "index"=>"penyesuaian",
+                    "label"=>"penyesuaian",
+                ],
+                [
+                    "index"=>"jarak",
+                    "label"=>"jarak",
+                ],
+                [
+                    "index"=>"upahsupir_id",
+                    "label"=>"upah supir",
+                ],
+                [
+                    "index"=>"20_EMPTY",
+                    "label"=>"20_EMPTY",
+                ],
+                [
+                    "index"=>"20_FULL",
+                    "label"=>"20_FULL",
+                ],
+                [
+                    "index"=>"20_FULL EMPTY",
+                    "label"=>"20_FULL EMPTY",
+                ],
+                [
+                    "index"=>"2X20_EMPTY",
+                    "label"=>"2X20_EMPTY",
+                ],
+                [
+                    "index"=>"2X20_FULL",
+                    "label"=>"2X20_FULL",
+                ],
+                [
+                    "index"=>"2X20_FULL EMPTY",
+                    "label"=>"2X20_FULL EMPTY",
+                ],
+                [
+                    "index"=>"40_EMPTY",
+                    "label"=>"40_EMPTY",
+                ],
+                [
+                    "index"=>"40_FULL",
+                    "label"=>"40_FULL",
+                ],
+                [
+                    "index"=>"40_FULL EMPTY",
+                    "label"=>"40_FULL EMPTY",
+                ],
+                [
+                    "index"=>"Liter_20_EMPTY",
+                    "label"=>"Liter_20_EMPTY",
+                ],
+                [
+                    "index"=>"Liter_20_FULL",
+                    "label"=>"Liter_20_FULL",
+                ],
+                [
+                    "index"=>"Liter_20_FULL EMPTY",
+                    "label"=>"Liter_20_FULL EMPTY",
+                ],
+                [
+                    "index"=>"Liter_2X20_EMPTY",
+                    "label"=>"Liter_2X20_EMPTY",
+                ],
+                [
+                    "index"=>"Liter_2X20_FULL",
+                    "label"=>"Liter_2X20_FULL",
+                ],
+                [
+                    "index"=>"Liter_2X20_FULL EMPTY",
+                    "label"=>"Liter_2X20_FULL EMPTY",
+                ],
+                [
+                    "index"=>"Liter_40_EMPTY",
+                    "label"=>"Liter_40_EMPTY",
+                ],
+                [
+                    "index"=>"Liter_40_FULL",
+                    "label"=>"Liter_40_FULL",
+                ],
+                [
+                    "index"=>"Liter_40_FULL EMPTY",
+                    "label"=>"Liter_40_FULL EMPTY",
+                ],
+            ];
+            $this->toExcel($judulLaporan, $upahsupirArray, $columns);
+      
+    }
+    public function export2()
+    {
         // $dari = date('Y-m-d', strtotime($request->dari));
         // $sampai = date('Y-m-d', strtotime($request->sampai));
 
