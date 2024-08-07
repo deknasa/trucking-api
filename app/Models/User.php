@@ -39,6 +39,72 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    private $exceptAuth = [
+        'class' => [
+            '',
+            'dashboard',
+            // 'toemail',
+            // 'ccemail',
+            // 'bccemail',
+            // 'laporansaldoinventory',
+            // 'tutupbuku',
+            // 'approvalbukacetak',
+            // 'approvalsupirgambar',
+            // 'historipenerimaanstok',
+            // 'historipengeluaranstok',
+            // 'reportall',
+            // 'reportneraca',
+            // 'invoicechargegandenganheader',
+            // 'pengembaliankasbankheader',
+            // 'laporanbukubesar',
+            // 'laporankasbank',
+            // 'penerimaanstokdetail',
+            // 'pengeluaranstokdetail',
+            // 'gudang',
+            // 'user',
+        ],
+        'method' => [
+            'gridtab',
+            'grid',
+            'operation',
+            'crud',
+            'carishippersama',
+            'listmarketingcabang',
+            'good',
+            'nonaktif',
+            'fieldlength',
+            'griddetail',
+            'detail',
+            'show',
+            'cetak',
+            'getdetail',
+            'create',
+            // 'add',
+            // 'delete',
+            // 'approval',
+            // 'export',
+            // 'report',
+            'aclgrid',
+            'detailgrid',
+            'historygrid',
+            'piutanggrid',
+            'jurnalgrid',
+            'penerimaangrid',
+            'pengeluarangrid',
+            'kasgantunggrid',
+            'hutanggrid',
+            'potsemuagrid',
+            'potpribadigrid',
+            'depositogrid',
+            'pelunasangrid',
+            'transfergrid',
+            'absensigrid',
+            'rolegrid',
+            'cekabsensi'
+        ],
+    ];
+
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -83,7 +149,7 @@ class User extends Authenticatable
     {
         $cabang = DB::table('cabang')->select('id')->where('namacabang', 'PUSAT')->first();
         $user = auth()->user();
-        $userPusat = $this->where('cabang_id',$cabang->id)->where('id',$user->id)->first();
+        $userPusat = $this->where('cabang_id', $cabang->id)->where('id', $user->id)->first();
 
         if ($userPusat)  return true;
         return false;
@@ -205,7 +271,7 @@ class User extends Authenticatable
             ->first();
 
         $iddefaultstatuskaryawan = $status->id ?? 0;
-        
+
         $status = Cabang::from(
             db::Raw("cabang with (readuncommitted)")
         )
@@ -252,7 +318,7 @@ class User extends Authenticatable
 
 
         DB::table($tempdefault)->insert(
-            ["karyawan_id" => $iddefaultstatuskaryawan, "cabang_id" => $iddefaultcabangid,"cabang" => $iddefaultcabang, "statusaktif" => $iddefaultstatusaktif, "statusaktifnama" => $defaultstatusaktif, "statusakses" => $iddefaultstatusakses, "statusaksesnama" => $defaultstatusakses]
+            ["karyawan_id" => $iddefaultstatuskaryawan, "cabang_id" => $iddefaultcabangid, "cabang" => $iddefaultcabang, "statusaktif" => $iddefaultstatusaktif, "statusaktifnama" => $defaultstatusaktif, "statusakses" => $iddefaultstatusakses, "statusaksesnama" => $defaultstatusakses]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -320,7 +386,7 @@ class User extends Authenticatable
         $query = $this->sort($query);
         $models = $this->filter($query);
 
-        DB::table($temp)->insertUsing(['id', 'user', 'name','email', 'cabang_id', 'karyawan_id', 'dashboard', 'statusaktif','statusakses', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'user', 'name', 'email', 'cabang_id', 'karyawan_id', 'dashboard', 'statusaktif', 'statusakses', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return  $temp;
     }
@@ -433,6 +499,7 @@ class User extends Authenticatable
 
     public function processStore(array $data): User
     {
+
         $user = new User();
         $user->user = strtoupper($data['user']);
         $user->name = strtoupper($data['name']);
@@ -464,6 +531,7 @@ class User extends Authenticatable
 
     public function processUpdate(User $user, array $data): User
     {
+
         $user->user = $data['user'];
         $user->name = $data['name'];
         $user->email = $data['email'];
@@ -531,7 +599,9 @@ class User extends Authenticatable
             'datajson' => $acos,
             'modifiedby' => $user->modifiedby
         ]);
-
+        $getmenu = $this->getMenu($user->id);
+        $listmenu = $this->printRecursiveMenu($getmenu, false);
+        db::update("update [user] set menu=cast('" . $listmenu . "' as nvarchar(max)) where id=" . $user->id);
         return $user;
     }
 
@@ -594,5 +664,151 @@ class User extends Authenticatable
         $query = DB::table("userrole")->from(DB::raw("userrole with (readuncommitted)"))
             ->where('user_id', $id);
         return $query->get();
+    }
+
+    public function printRecursiveMenu(array $menus, bool $hasParent = false, $currentMenu = null)
+    {
+        $string = $hasParent ? '<ul class="ml-4 nav nav-treeview">' : '';
+
+        foreach ($menus as $menu) {
+            if ((count($menu['child']) > 0 || $menu['link'] != '' || $menu['aco_id'] != 0) && $this->hasClickableChild($menu)) {
+                $string .= '
+            <li class="nav-item">
+              <a id="' . (strtolower($menu['menukode'])) . '" href="' . (count($menu['child']) > 0 ? 'javascript:void(0)' : ($menu['link'] != '' ? strtolower(url($menu['link'])) : strtolower(url($menu['menuexe'])))) . '" class="nav-link ' . (@$currentMenu->id == $menu['menuid'] ? 'active hover' : '') . '">
+                <i class="nav-icon ' . (strtolower($menu['menuicon']) ?? 'far fa-circle') . '"></i>
+                <p>
+                  ' . $menu['menuname'] . '
+                  ' . (count($menu['child']) > 0 ? '<i class="right fas fa-angle-left"></i>' : '') . '
+                </p>
+              </a>
+              ' . (count($menu['child']) > 0 ? $this->printRecursiveMenu($menu['child'], true, $currentMenu) : '') . '
+            </li>
+          ';
+            }
+        }
+
+        $string .= $hasParent ? '</ul>' : '';
+        // dd($string);
+        return $string;
+    }
+
+    public function getMenu($userid, $induk = 0)
+    {
+        $data = [];
+
+        $menu = Menu::leftJoin('acos', 'menu.aco_id', '=', 'acos.id')
+            ->where('menu.menuparent', $induk)
+            ->orderby(DB::raw('right(menukode,1)'), 'ASC')
+            ->get(['menu.id', 'menu.aco_id', 'menu.menuseq', 'menu.menuname', 'menu.menuicon', 'acos.class', 'acos.method', 'menu.link', 'menu.menukode', 'menu.menuparent']);
+
+        foreach ($menu as $index => $row) {
+            $hasPermission = $this->hasPermission($row->class, $row->method, $userid);
+
+            if ($hasPermission || $row->class == null) {
+                $data[] = [
+                    'menuid' => $row->id,
+                    'aco_id' => $row->aco_id,
+                    'menuname' => $row->menuname,
+                    'menuicon' => $row->menuicon,
+                    'link' => $row->link,
+                    'menuno' => substr($row->menukode, -1),
+                    'menukode' => $row->menukode,
+                    'menuexe' => $row->class . "/" . $row->method,
+                    'class' => $row->class,
+                    'child' => $this->getMenu($userid, $row->id),
+                    'menuparent' => $row->menuparent,
+                ];
+            }
+        }
+
+        return $data;
+    }
+
+    public function hasPermission($class, $method, $userid)
+    {
+        $class = strtolower($class);
+        $method = strtolower($method);
+
+        return $this->_validatePermission($class, $method, $userid);
+    }
+
+    private function _validatePermission($class = null, $method = null, $userid)
+    {
+        /* Check if $class is in exception */
+        if (in_array(strtolower($class), $this->exceptAuth['class'])) {
+            return true;
+        }
+        // dd($class);
+        $data_union = DB::table('acos')
+            ->select(['acos.id', 'acos.class', 'acos.method'])
+            ->join('acl', 'acos.id', '=', 'acl.aco_id')
+            ->join('userrole', 'acl.role_id', '=', 'userrole.role_id')
+            // ->where('acos.class', 'like', "%$class%")
+            ->where('acos.class', '=', $class)
+            ->whereRaw("isnull(acos.statusemkl,'')=''")
+            // ->whereIn('acl.role_id', auth('api')->user()->roles->pluck('id')->toArray() ?? null);
+            ->where('userrole.user_id', $userid);
+
+
+        $data = DB::table('acos')
+            ->select(['acos.id', 'acos.class', 'acos.method'])
+            ->join('useracl', 'acos.id', '=', 'useracl.aco_id')
+            ->where('acos.class', '=', $class)
+            ->whereRaw("isnull(acos.statusemkl,'')=''")
+            // ->where('acos.class', 'like', "%$class%")
+            ->where('useracl.user_id', $userid)
+            ->unionAll($data_union)
+            ->get();
+
+        // dd($data->tosql());
+        if ($this->in_array_custom($method, $data->toArray()) == false && in_array($method, $this->exceptAuth['method']) == false) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function in_array_custom($item, $array): bool
+    {
+        $found =  array_search(
+            $item,
+            array_map(
+                function ($v) {
+                    return strtolower($v->method);
+                },
+                $array
+            )
+        );
+
+        return empty($found) && $found !== 0 ? false : true;
+    }
+
+
+    public function hasClickableChild(array $menu): bool
+    {
+        $result = false;
+
+        if (count($menu['child']) > 0) {
+            foreach ($menu['child'] as $menuChild) {
+                $clickable = $this->hasClickableChild($menuChild);
+
+                if ($clickable) {
+                    return true;
+                }
+            }
+        } else {
+            return $this->isClickableChild($menu);
+        }
+
+        return $result;
+    }
+
+    public function isClickableChild(array $menu): bool
+    {
+        if ($menu['menuparent'] == 0) {
+            return true;
+        } else {
+            return $menu['aco_id'] != 0 && $menu['menuexe'] != '/';
+        }
     }
 }
