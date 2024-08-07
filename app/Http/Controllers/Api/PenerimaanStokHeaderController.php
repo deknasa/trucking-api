@@ -162,6 +162,7 @@ class PenerimaanStokHeaderController extends Controller
      */
     public function update(UpdatePenerimaanStokHeaderRequest $request, PenerimaanStokHeader $penerimaanStokHeader, $id): JsonResponse
     {
+        dd($request);
         DB::beginTransaction();
         try {
             /* Store header */

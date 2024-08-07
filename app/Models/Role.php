@@ -227,6 +227,27 @@ class Role extends MyModel
             'datajson' => $acos,
             'modifiedby' => $role->modifiedby
         ]);
+
+        $queryuser=db::table("userrole")->from(db::raw("userrole a with (readuncommitted)"))
+        ->select(
+            'a.user_id'
+        )
+        ->where('a.role_id',$role->id)
+        ->groupby('a.user_id')
+        ->get();
+
+        
+        $queryloop = json_encode($queryuser, JSON_INVALID_UTF8_SUBSTITUTE);
+        $loopuser = json_decode($queryloop, true);
+        // dd('test');
+
+        $user = new User();
+        foreach ($loopuser as $item) {
+            $getmenu = $user->getMenu($item['user_id']);
+            $listmenu = $user->printRecursiveMenu($getmenu, false);
+            db::update("update [user] set menu=cast('" . $listmenu . "' as nvarchar(max)) where id=" . $item['user_id']);
+        }
+
         return $role;
     }
 
