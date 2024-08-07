@@ -168,11 +168,12 @@ class PengeluaranStokHeaderController extends Controller
      */
     public function update(UpdatePengeluaranStokHeaderRequest $request, PengeluaranStokHeader $pengeluaranStokHeader, $id): JsonResponse
     {
-
+        // dd($request);
         DB::beginTransaction();
 
         try {
             $data = [
+                "id_detail" => $request->id_detail ?? 0,
                 "tglbukti" => $request->tglbukti,
                 "pengeluaranstok" => $request->pengeluaranstok,
                 "pengeluaranstok_id" => $request->pengeluaranstok_id,
