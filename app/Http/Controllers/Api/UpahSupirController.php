@@ -98,10 +98,10 @@ class UpahSupirController extends Controller
                     "index"=>"jarak",
                     "label"=>"jarak",
                 ],
-                [
-                    "index"=>"upahsupir_id",
-                    "label"=>"upah supir",
-                ],
+                // [
+                //     "index"=>"upahsupir_id",
+                //     "label"=>"upah supir",
+                // ],
                 [
                     "index"=>"20_EMPTY",
                     "label"=>"20_EMPTY",
