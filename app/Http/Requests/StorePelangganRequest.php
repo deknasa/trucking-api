@@ -47,10 +47,10 @@ class StorePelangganRequest extends FormRequest
         $rules = [
             'kodepelanggan' => ['required', 'unique:pelanggan'],
             'namapelanggan' => 'required',
-            'namakontak' => 'required',
-            'telp' => 'required|min:12|max:13',
-            'alamat' => 'required',
-            'kota' => 'required',
+            // 'namakontak' => 'required',
+            // 'telp' => 'required|min:12|max:13',
+            // 'alamat' => 'required',
+            // 'kota' => 'required',
             'statusaktifnama' => ['required'],
         ];
         $rules = array_merge(
@@ -82,10 +82,10 @@ class StorePelangganRequest extends FormRequest
         return [
             'kodepelanggan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'namapelanggan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'namakontak.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'telp.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'alamat.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'kota.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            // 'namakontak.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            // 'telp.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            // 'alamat.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            // 'kota.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'telp.min' => 'min. 12 karakter',
             'telp.max' => 'max. 13 karakter',
