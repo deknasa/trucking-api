@@ -127,6 +127,7 @@ class PengeluaranStokDetail extends MyModel
                 "$this->table.pengeluaranstokheader_id",
                 "$this->table.nobukti",
                 "$this->table.stok_id",
+                "$this->table.id",
                 "satuan.satuan as satuan",
                 db::raw("trim(stok.namastok)+
                 (case when isnull(stok.kelompok_id,0)=1 then ' ( VULKANISIR KE-'+format(isnull(d1.vulkan,0),'#,#0')+', STATUS BAN :'+isnull(statusban.text,'') +' )' 
@@ -254,6 +255,7 @@ class PengeluaranStokDetail extends MyModel
     {
         $query = DB::table('PengeluaranStokDetail');
         $query = $query->select(
+            'PengeluaranStokDetail.id',
             'PengeluaranStokDetail.Pengeluaranstokheader_id',
             'PengeluaranStokDetail.nobukti',
             'stok.namastok as stok',
@@ -487,6 +489,158 @@ class PengeluaranStokDetail extends MyModel
         return $pengeluaranStokDetail;
     }
 
+    public function processUpdate(PengeluaranStokDetail $pengeluaranStokDetail,PengeluaranStokHeader $pengeluaranStokHeader, array $data): PengeluaranStokDetail
+    {
+        $total = $data['qty'] * $data['harga'];
+        $nominaldiscount = $total * ($data['persentasediscount'] / 100);
+        $total -= $nominaldiscount;
+        $pengeluaranStokHeader = PengeluaranStokHeader::where('id', $data['pengeluaranstokheader_id'])->first();
+
+        $stok = Stok::where('id', $data['stok_id'])->first();
+        $stokreuse = Parameter::where('grp', 'STATUS REUSE')->where('subgrp', 'STATUS REUSE')->where('text', 'REUSE')->first();
+
+        $reuse = false;
+        if ($stok->statusreuse == $stokreuse->id) {
+            $reuse = true;
+        }
+
+        $datahitungstok = PengeluaranStok::select('statushitungstok as statushitungstok_id')->where('format', '=', $pengeluaranStokHeader->statusformat)->first();
+        $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
+
+        $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
+        $kor = Parameter::where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')->first();
+        $rtr = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
+        $pja = Parameter::where('grp', 'PENJUALAN STOK AFKIR')->where('subgrp', 'PENJUALAN STOK AFKIR')->first();
+        $gst = Parameter::where('grp', 'GST STOK')->where('subgrp', 'GST STOK')->first();
+        $korv = DB::table('pengeluaranstok')->where('kodepengeluaran', 'KORV')->first();
+        $afkir = DB::table('pengeluaranstok')->where('kodepengeluaran', 'AFKIR')->first();
+
+        $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
+        $gudangsementara = Parameter::where('grp', 'GUDANG SEMENTARA')->where('subgrp', 'GUDANG SEMENTARA')->first();
+        $gudangpihak3 = Parameter::where('grp', 'GUDANG PIHAK3')->where('subgrp', 'GUDANG PIHAK3')->first();
+
+        if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
+            if ($pengeluaranStokHeader->pengeluaranstok_id == $kor->text) {
+                $persediaan = $this->persediaan($pengeluaranStokHeader->gudang_id, $pengeluaranStokHeader->trado_id, $pengeluaranStokHeader->gandengan_id);
+                $dari = $this->persediaanDari($data['stok_id'], $persediaan['column'] . '_id', $persediaan['value'], $data['qty']);
+            } else if ($pengeluaranStokHeader->pengeluaranstok_id == $pja->text) {
+                $dari = $this->persediaanDari($data['stok_id'], 'gudang_id', $gudangsementara->text, $data['qty']);
+            } else if ($pengeluaranStokHeader->pengeluaranstok_id == $afkir->id) {
+                $dari = $this->persediaanDari($data['stok_id'], 'gudang_id', $gudangsementara->text, $data['qty']);
+            } else {
+                $dari = $this->persediaanDari($data['stok_id'], 'gudang_id', $gudangkantor->text, $data['qty']);
+            }
+            if (!$dari) {
+                throw ValidationException::withMessages(['qty' => $stok->namastok.' - qty tidak cukup ']);
+            }
+            // if (($pengeluaranStokHeader->pengeluaranstok_id != $spk->text) || ($pengeluaranStokHeader->pengeluaranstok_id != $gst->text)) {
+            //     if (!$reuse) {
+            //         throw new \Exception("bukan stok reuse");                
+
+            //     }
+            // }
+            if (($pengeluaranStokHeader->pengeluaranstok_id == $spk->text) || $pengeluaranStokHeader->pengeluaranstok_id == $gst->text) {
+                // if (!$reuse) {
+                //     throw new \Exception("bukan stok reuse");                
+                // }
+                $persediaan = $this->persediaan($pengeluaranStokHeader->gudang_id, $pengeluaranStokHeader->trado_id, $pengeluaranStokHeader->gandengan_id);
+                $ke = $this->persediaanKe($data['stok_id'], $persediaan['column'] . '_id', $persediaan['value'], $data['qty']);
+            }
+        }
+
+        if ($pengeluaranStokHeader->pengeluaranstok_id == $spk->text) {
+
+            $kelompok = DB::table('kelompok')->where('kodekelompok', "AKI")->first();
+            if($stok->kelompok_id == $kelompok->id){
+                if($pengeluaranStokHeader->trado_id){
+                    $trado = (new Trado)->updateTglGantiAki($pengeluaranStokHeader->trado_id,$pengeluaranStokHeader->tglbukti);
+                }
+            }
+
+            $tempstatusservice = '##tempstatusservice' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+            Schema::create($tempstatusservice, function ($table) {
+                $table->integer('idstatus',)->nullable();
+            });
+
+            $querystatusservice = DB::table('parameter')->from(
+                DB::raw("parameter a with (readuncommitted)")
+            )
+                ->select(
+                    'a.id as idstatus',
+                )
+                ->where('a.grp', '=', 'STATUS SERVICE RUTIN')
+                ->where('a.subgrp', '=', 'STATUS SERVICE RUTIN');
+
+
+            DB::table($tempstatusservice)->insertUsing([
+                'idstatus',
+            ], $querystatusservice);
+
+
+            $stokid = $data['stok_id'];
+            $querystokstatusservis = DB::table('stok')->from(
+                DB::raw("stok a with (readuncommitted)")
+            )
+                ->select(
+                    'a.statusservicerutin',
+                )
+                ->Join(DB::raw($tempstatusservice . " as b"), 'a.statusservicerutin', '=', 'b.idstatus')
+                ->where('a.id', '=', $stokid)
+                ->first();
+
+            if (isset($querystokstatusservis)) {
+                $idstatusservicerutin = $querystokstatusservis->statusservicerutin;
+            } else {
+                $idstatusservicerutin = 0;
+            }
+        } else {
+            $idstatusservicerutin = 0;
+        }
+
+        if ($korv->id == $pengeluaranStokHeader->pengeluaranstok_id) {
+            $vulkan = $this->vulkanStokMinus($data['stok_id'], $data['vulkanisirke']);
+            if (!$vulkan) {
+                throw ValidationException::withMessages(['vulkanisirke' => 'vulkannisir tidak cukup']);
+            }
+            $stok = (new Stok())->find($data['stok_id']);
+            $stok->statusban = $data['statusban'];
+            $stok->save();
+            
+            
+        }
+        // dd($data['statusban']);
+
+
+
+
+        // $pengeluaranStokDetail = new PengeluaranStokDetail();
+        $pengeluaranStokDetail->pengeluaranstokheader_id = $data['pengeluaranstokheader_id'];
+        $pengeluaranStokDetail->nobukti = $data['nobukti'];
+        $pengeluaranStokDetail->stok_id = $data['stok_id'];
+        $pengeluaranStokDetail->qty = $data['qty'];
+        $pengeluaranStokDetail->jumlahhariaki = $data['jlhhari'];
+        $pengeluaranStokDetail->harga = $data['harga'];
+        $pengeluaranStokDetail->nominaldiscount = $nominaldiscount;
+        $pengeluaranStokDetail->total = $total;
+        $pengeluaranStokDetail->persentasediscount = $data['persentasediscount'];
+        $pengeluaranStokDetail->statusban = $data['statusban'];
+        $pengeluaranStokDetail->vulkanisirke = $data['vulkanisirke'];
+        $pengeluaranStokDetail->statusoli = $data['statusoli'];
+        $pengeluaranStokDetail->statusban = $data['statusban'];
+        $pengeluaranStokDetail->keterangan = $data['detail_keterangan'];
+        $pengeluaranStokDetail->statusservicerutin = $idstatusservicerutin;
+
+        $pengeluaranStokDetail->modifiedby = auth('api')->user()->name;
+        $pengeluaranStokDetail->info = html_entity_decode(request()->info);
+
+        if (!$pengeluaranStokDetail->save()) {
+            throw new \Exception("Error storing pengeluaran Stok Detail.");
+        }
+        // dd($pengeluaranStokDetail);
+
+        return $pengeluaranStokDetail;
+    }
 
     public function persediaan($gudang, $trado, $gandengan)
     {

@@ -3154,9 +3154,27 @@ class PengeluaranStokHeader extends MyModel
 
         // dd('asdas');
         /*DELETE EXISTING DETAIL*/
-        $pengeluaranStokDetail = PengeluaranStokDetail::where('pengeluaranstokheader_id', $pengeluaranStokHeader->id)->lockForUpdate()->delete();
+        // $pengeluaranStokDetail = PengeluaranStokDetail::where('pengeluaranstokheader_id', $pengeluaranStokHeader->id)->lockForUpdate()->delete();
         $pengeluaranStokDetailFifo = PengeluaranStokDetailFifo::where('pengeluaranstokheader_id', $pengeluaranStokHeader->id)->lockForUpdate()->delete();
         $kartuStok = KartuStok::where('nobukti', $pengeluaranStokHeader->nobukti)->lockForUpdate()->delete();
+
+        $tempbukti = '##tempbukti' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempbukti, function ($table) {
+            $table->bigInteger('id')->nullable();
+        });
+
+        for ($j = 0; $j < count($data['detail_harga']); $j++) {
+            $iddetail = $data['id_detail'][$j] ?? 0;
+            if ($iddetail != 0) {
+                DB::table($tempbukti)->insert([
+                    'id' => $iddetail,
+                ]);
+            }
+        }
+        DB::delete(DB::raw("delete pengeluaranstokdetail from pengeluaranstokdetail as a  left outer join ".$tempbukti." b on a.id=b.id
+        WHERE isnull(a.nobukti,'') in('" . $pengeluaranStokHeader->nobukti . "') and isnull(b.id,0)=0"));
+
+
 
         $potongKas = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING KE KAS/BANK')->first();
         $potongHutang = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POTONG HUTANG')->first();
@@ -3200,6 +3218,7 @@ class PengeluaranStokHeader extends MyModel
 
         for ($i = 0; $i < count($data['detail_stok_id']); $i++) {
             // $total = $data['detail_harga'][$i] * $data['detail_qty'][$i];
+            $iddetail = $data['id_detail'][$i] ?? 0;
 
             $pengeluarantrucking_nobukti = $data['pengeluarantrucking_nobukti'] ?? '';
             if ($afkir->id == $data['pengeluaranstok_id']) {
@@ -3231,24 +3250,50 @@ class PengeluaranStokHeader extends MyModel
                 $data['detail_statusban'] = null;
             }
 
-            $pengeluaranStokDetail = (new PengeluaranStokDetail())->processStore($pengeluaranStokHeader, [
-                "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
-                "nobukti" => $pengeluaranStokHeader->nobukti,
-                "stok_id" => $data['detail_stok_id'][$i],
-                "jlhhari" => ($data['jlhhari']) ? $data['jlhhari'] : null,
-                "qty" => ($data['detail_qty']) ? $data['detail_qty'][$i] : null,
-                "harga" => ($data['detail_harga']) ? $data['detail_harga'][$i] : null,
-                "persentasediscount" => ($data['detail_persentasediscount']) ? $data['detail_persentasediscount'][$i] : null,
-                'statusoli' => ($fetchFormat->kodepengeluaran == 'SPK') ? $data['detail_statusoli'][$i] : "",
-                "vulkanisirke" => $vulkanisirke,
-                "statusban" => ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null,
-                "detail_keterangan" => ($data['detail_keterangan']) ? $data['detail_keterangan'][$i] : null,
-                "detail_statusban" => ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null,
-                "trado_id" => ($trado_id == null) ? "" : $trado_id,
-                "gandengan_id" => ($gandengan_id == null) ? "" : $gandengan_id,
-                "gudang_id" => ($gudang_id == null) ? "" : $gudang_id,
+            if ($iddetail == 0) {
+                $pengeluaranStokDetail = (new PengeluaranStokDetail())->processStore($pengeluaranStokHeader, [
+                    "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
+                    "nobukti" => $pengeluaranStokHeader->nobukti,
+                    "stok_id" => $data['detail_stok_id'][$i],
+                    "jlhhari" => ($data['jlhhari']) ? $data['jlhhari'] : null,
+                    "qty" => ($data['detail_qty']) ? $data['detail_qty'][$i] : null,
+                    "harga" => ($data['detail_harga']) ? $data['detail_harga'][$i] : null,
+                    "persentasediscount" => ($data['detail_persentasediscount']) ? $data['detail_persentasediscount'][$i] : null,
+                    'statusoli' => ($fetchFormat->kodepengeluaran == 'SPK') ? $data['detail_statusoli'][$i] : "",
+                    "vulkanisirke" => $vulkanisirke,
+                    "statusban" => ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null,
+                    "detail_keterangan" => ($data['detail_keterangan']) ? $data['detail_keterangan'][$i] : null,
+                    "detail_statusban" => ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null,
+                    "trado_id" => ($trado_id == null) ? "" : $trado_id,
+                    "gandengan_id" => ($gandengan_id == null) ? "" : $gandengan_id,
+                    "gudang_id" => ($gudang_id == null) ? "" : $gudang_id,
+    
+                ]);
+    
+            } else {
+                $pengeluaranstokdetail = new PengeluaranStokDetail();
+                $pengeluaranStokDetail = $pengeluaranstokdetail->findOrFail($data['id_detail'][$i]);
 
-            ]);
+                $pengeluaranStokDetail = (new PengeluaranStokDetail())->processUpdate($pengeluaranStokDetail,$pengeluaranStokHeader, [
+                    "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
+                    "nobukti" => $pengeluaranStokHeader->nobukti,
+                    "stok_id" => $data['detail_stok_id'][$i],
+                    "jlhhari" => ($data['jlhhari']) ? $data['jlhhari'] : null,
+                    "qty" => ($data['detail_qty']) ? $data['detail_qty'][$i] : null,
+                    "harga" => ($data['detail_harga']) ? $data['detail_harga'][$i] : null,
+                    "persentasediscount" => ($data['detail_persentasediscount']) ? $data['detail_persentasediscount'][$i] : null,
+                    'statusoli' => ($fetchFormat->kodepengeluaran == 'SPK') ? $data['detail_statusoli'][$i] : "",
+                    "vulkanisirke" => $vulkanisirke,
+                    "statusban" => ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null,
+                    "detail_keterangan" => ($data['detail_keterangan']) ? $data['detail_keterangan'][$i] : null,
+                    "detail_statusban" => ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null,
+                    "trado_id" => ($trado_id == null) ? "" : $trado_id,
+                    "gandengan_id" => ($gandengan_id == null) ? "" : $gandengan_id,
+                    "gudang_id" => ($gudang_id == null) ? "" : $gudang_id,
+    
+                ]);
+    
+            }
 
             //update total vulkanisir
             $reuse = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
