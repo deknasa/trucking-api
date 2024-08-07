@@ -144,22 +144,23 @@ class UpdateSupirRequest extends FormRequest
 
         ];
         $rulesGambar = [
+
+            'pdfsuratperjanjian' => [$ruleGambar, 'array'],
+            'pdfsuratperjanjian.*' => [$ruleGambar, 'mimes:pdf'],
+            'photovaksin' => ['array'],
+            'photovaksin.*' => ['image', 'min:100'],
+            'photodomisili' => ['array'],
+            'photodomisili.*' => ['image', 'min:100'],
+            'photoskck' => ['array'],
+            'photoskck.*' => ['image', 'min:100'],
+            'photokk' => [$ruleGambar, 'array'],
+            'photokk.*' => [$ruleGambar, 'image', 'min:100'],
+            'photosim' => [$ruleGambar, 'array'],
+            'photosim.*' => [$ruleGambar, 'image', 'min:100'],
+            'photoktp' => [$ruleGambar, 'array'],
+            'photoktp.*' => [$ruleGambar, 'image', 'min:100'],
             'photosupir' => [$ruleGambar, 'array'],
             'photosupir.*' => [$ruleGambar, 'image'],
-            'photoktp' => [$ruleGambar, 'array'],
-            'photoktp.*' => [$ruleGambar, 'image','min:100'],
-            'photosim' => [$ruleGambar, 'array'],
-            'photosim.*' => [$ruleGambar, 'image','min:100'],
-            'photokk' => [$ruleGambar, 'array'],
-            'photokk.*' => [$ruleGambar, 'image','min:100'],
-            'photoskck' => [$ruleGambar, 'array'],
-            'photoskck.*' => [$ruleGambar, 'image','min:100'],
-            'photodomisili' => [$ruleGambar, 'array'],
-            'photodomisili.*' => [$ruleGambar, 'image','min:100'],
-            'photovaksin' => [$ruleGambar, 'array'],
-            'photovaksin.*' => [$ruleGambar, 'image','min:100'],
-            'pdfsuratperjanjian' => [$ruleGambar, 'array'],
-            'pdfsuratperjanjian.*' => [$ruleGambar, 'mimes:pdf']
         ];
         if (request()->statusaktif == 2) {
             $rulesGambar = [];
