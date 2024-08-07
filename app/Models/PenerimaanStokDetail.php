@@ -796,6 +796,113 @@ class PenerimaanStokDetail extends MyModel
         return $penerimaanStokDetail;
     }
 
+    public function processUpdate(PenerimaanStokDetail $penerimaanStokDetail,PenerimaanStokHeader $penerimaanStokHeader, array $data): PenerimaanStokDetail
+    {
+        $stok = Stok::where('id', $data['stok_id'])->first();
+        $stokreuse = Parameter::where('grp', 'STATUS REUSE')->where('subgrp', 'STATUS REUSE')->where('text', 'REUSE')->first();
+
+        $reuse = false;
+        if ($stok->statusreuse == $stokreuse->id) {
+            $reuse = true;
+        }
+
+        $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')
+            ->where('format', '=', $penerimaanStokHeader->statusformat)
+            ->first();
+        $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
+
+        $do = Parameter::where('grp', 'DO STOK')->where('subgrp', 'DO STOK')->first();
+        $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
+        $kor = Parameter::where('grp', 'KOR STOK')->where('subgrp', 'KOR STOK')->first();
+        $spbs = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
+        $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
+        $pst = Parameter::where('grp', 'PST STOK')->where('subgrp', 'PST STOK')->first();
+        $pspk = Parameter::where('grp', 'PSPK STOK')->where('subgrp', 'PSPK STOK')->first();
+        $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
+        $spbp = DB::table('penerimaanstok')->where('kodepenerimaan', 'SPBP')->first();
+
+        if ($penerimaanStokHeader->penerimaanstok_id == $spbp->id) {
+            $penerimaanStokDetailNobukti = PenerimaanStokDetail::where('nobukti', $data['detail_penerimaanstoknobukti'])->where('stok_id', $data['stok_id'])->first();
+            if (!$penerimaanStokDetailNobukti) {
+                throw ValidationException::withMessages(["detail_penerimaanstoknobukti" => "penerimaan stok No Bukti tidak valid"]);
+            }
+        }
+        if ($penerimaanStokHeader->penerimaanstok_id == $spb->text) {
+            $this->updateStokBanMasak($stok);
+        }
+        if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
+            if (($penerimaanStokHeader->penerimaanstok_id == $spb->text) || ($penerimaanStokHeader->penerimaanstok_id == $kor->text) || ($penerimaanStokHeader->penerimaanstok_id == $pst->text) || ($penerimaanStokHeader->penerimaanstok_id == $pspk->text)) {
+                $persediaan = $this->persediaan($penerimaanStokHeader->gudang_id, $penerimaanStokHeader->trado_id, $penerimaanStokHeader->gandengan_id);
+                $this->persediaanKe($data['stok_id'], $persediaan['column'] . '_id', $persediaan['value'], $data['qty']);
+            }
+
+            if (($penerimaanStokHeader->penerimaanstok_id == $spbs->text) || ($penerimaanStokHeader->penerimaanstok_id == $do->text)) {
+                if (!$reuse) {
+                    throw ValidationException::withMessages(["qty" => "bukan stok reuse"]);
+                }
+                $persediaanDari = $this->persediaan($penerimaanStokHeader->gudangdari_id, $penerimaanStokHeader->tradodari_id, $penerimaanStokHeader->gandengandari_id);
+                $dari = $this->persediaanDari($data['stok_id'], $persediaanDari['column'] . '_id', $persediaanDari['value'], $data['qty']);
+                if (!$dari) {
+                    throw ValidationException::withMessages(['qty' => $stok->namastok . ' - qty tidak cukup ']);
+                }
+                $persediaanKe = $this->persediaan($penerimaanStokHeader->gudangke_id, $penerimaanStokHeader->tradoke_id, $penerimaanStokHeader->gandenganke_id);
+                $ke = $this->persediaanKe($data['stok_id'], $persediaanKe['column'] . '_id', $persediaanKe['value'], $data['qty']);
+                if ($penerimaanStokHeader->penerimaanstok_id == $spbs->text) {
+                    $this->vulkanStokPlus($data['stok_id'], 1);
+                    $data['vulkanisirke'] = 1;
+                }
+            }
+
+            if ($penerimaanStokHeader->penerimaanstok_id == $pg->text) {
+
+                $persediaanDari = $this->persediaan($penerimaanStokHeader->gudangdari_id, $penerimaanStokHeader->tradodari_id, $penerimaanStokHeader->gandengandari_id);
+                $dari = $this->persediaanDari($data['stok_id'], $persediaanDari['column'] . '_id', $persediaanDari['value'], $data['qty']);
+
+                if (!$dari) {
+                    // dd()
+                    throw ValidationException::withMessages(['qty' => $stok->namastok . ' - qty tidak cukup ']);
+                }
+                $persediaanKe = $this->persediaan($penerimaanStokHeader->gudangke_id, $penerimaanStokHeader->tradoke_id, $penerimaanStokHeader->gandenganke_id);
+                $ke = $this->persediaanKe($data['stok_id'], $persediaanKe['column'] . '_id', $persediaanKe['value'], $data['qty']);
+            }
+        }
+        if ($korv->id == $penerimaanStokHeader->penerimaanstok_id) {
+            $vulkan = $this->vulkanStokPlus($data['stok_id'], $data['vulkanisirke']);
+            if (!$vulkan) {
+                throw ValidationException::withMessages(['vulkanisirke' => 'vulkannisir tidak cukup']);
+            }
+        }
+
+        $total = ceil(($data['qty'] * $data['harga']));
+        $nominaldiscount = $data['totalsebelum'] * ($data['persentasediscount'] / 100);
+        // dd($data['totalItem'],$data['totalsebelum'],$nominaldiscount,$total);
+        // dd($data['nominaldiscount'],$nominaldiscount);
+        // $total -= $nominaldiscount;
+        // $penerimaanStokDetail = new PenerimaanStokDetail();
+        // $penerimaanStokDetail->id = $data['id'];
+        $penerimaanStokDetail->penerimaanstokheader_id = $data['penerimaanstokheader_id'];
+        $penerimaanStokDetail->nobukti = $data['nobukti'];
+        $penerimaanStokDetail->stok_id = $data['stok_id'];
+        $penerimaanStokDetail->qty = $data['qty'];
+        $penerimaanStokDetail->qtyterpakai = $data['qtyterpakai'];
+        $penerimaanStokDetail->harga = $data['harga'];
+        $penerimaanStokDetail->nominaldiscount = $nominaldiscount;
+        $penerimaanStokDetail->total = $data['totalItem'];
+        $penerimaanStokDetail->penerimaanstok_nobukti = $data['detail_penerimaanstoknobukti'];
+        $penerimaanStokDetail->persentasediscount = $data['persentasediscount'] ?? 0;
+        $penerimaanStokDetail->vulkanisirke = $data['vulkanisirke'] ?? '';
+        $penerimaanStokDetail->keterangan = $data['detail_keterangan'];
+
+        $penerimaanStokDetail->modifiedby = auth('api')->user()->name;
+        $penerimaanStokDetail->info = html_entity_decode(request()->info);
+
+        if (!$penerimaanStokDetail->save()) {
+            throw new \Exception("Error storing Penerimaan Stok Detail.");
+        }
+
+        return $penerimaanStokDetail;
+    }
+
     public function updateStokBanMasak(Stok $stok)
     {
         $kelompokBan = DB::table('kelompok')->select('id')->where('kelompok.kodekelompok', 'BAN')->first();
