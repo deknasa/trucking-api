@@ -669,12 +669,12 @@ class User extends Authenticatable
     public function printRecursiveMenu(array $menus, bool $hasParent = false, $currentMenu = null)
     {
         $string = $hasParent ? '<ul class="ml-4 nav nav-treeview">' : '';
-
+        $url = request()->getScheme().'://localhost'.env('APP_PATH').'/';
         foreach ($menus as $menu) {
             if ((count($menu['child']) > 0 || $menu['link'] != '' || $menu['aco_id'] != 0) && $this->hasClickableChild($menu)) {
                 $string .= '
             <li class="nav-item">
-              <a id="' . (strtolower($menu['menukode'])) . '" href="' . (count($menu['child']) > 0 ? 'javascript:void(0)' : ($menu['link'] != '' ? strtolower(url($menu['link'])) : strtolower(url($menu['menuexe'])))) . '" class="nav-link ' . (@$currentMenu->id == $menu['menuid'] ? 'active hover' : '') . '">
+              <a id="' . (strtolower($menu['menukode'])) . '" href="' . (count($menu['child']) > 0 ? 'javascript:void(0)' : ($menu['link'] != '' ? strtolower($url.$menu['link']) : strtolower($url.$menu['menuexe']))) . '" class="nav-link ' . (@$currentMenu->id == $menu['menuid'] ? 'active hover' : '') . '">
                 <i class="nav-icon ' . (strtolower($menu['menuicon']) ?? 'far fa-circle') . '"></i>
                 <p>
                   ' . $menu['menuname'] . '
