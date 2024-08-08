@@ -8,6 +8,7 @@ use App\Rules\DateTutupBuku;
 use App\Rules\ExistAbsensiSupirHeader;
 use App\Rules\ExistSupir;
 use App\Rules\ExistTrado;
+use App\Rules\ValidasiPengembalianPinjamanProsesUangjalan;
 
 class StoreProsesUangJalanSupirHeaderRequest extends FormRequest
 {
@@ -59,7 +60,7 @@ class StoreProsesUangJalanSupirHeaderRequest extends FormRequest
                 'before_or_equal:' . date('d-m-Y')
             ],
             'absensisupir' => ['required', new ExistAbsensiSupirHeader()],
-            'supir' => 'required',
+            'supir' => ['required', new ValidasiPengembalianPinjamanProsesUangjalan()],
             'trado'=> 'required',
         ];
         $relatedRequests = [

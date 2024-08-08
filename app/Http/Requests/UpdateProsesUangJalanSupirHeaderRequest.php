@@ -9,6 +9,7 @@ use App\Rules\ExistAbsensiSupirHeader;
 use App\Rules\ExistSupir;
 use App\Rules\ExistTrado;
 use App\Rules\validasiDestroyProsesUangJalanSupir;
+use App\Rules\ValidasiPengembalianPinjamanProsesUangjalan;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -66,7 +67,7 @@ class UpdateProsesUangJalanSupirHeaderRequest extends FormRequest
                 new DateTutupBuku()
             ],
             'absensisupir' => ['required', Rule::in($getDataProsesUang->absensisupir), new ExistAbsensiSupirHeader()],
-            'supir' => 'required',
+            'supir' => ['required', new ValidasiPengembalianPinjamanProsesUangjalan()],
             'trado'=> 'required',
         ];
         
