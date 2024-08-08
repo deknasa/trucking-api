@@ -14,6 +14,7 @@ class validasiTripInvoice implements Rule
      * @return void
      */
     public $trip;
+    public $keterangan;
     public function __construct()
     {
         //
@@ -30,6 +31,8 @@ class validasiTripInvoice implements Rule
     {
         $detail = json_decode(request()->detail, true);
         $empty = 0;
+        $different = 0;
+        $agen_id = request()->agen_id;
         $listTrip = '';
         for ($i = 0; $i < count($detail['jobtrucking']); $i++) 
         {
@@ -43,10 +46,19 @@ class validasiTripInvoice implements Rule
                 }else{
                     $listTrip = $listTrip . ', ' . $jobtrucking;
                 }
+            } else {
+                if ($cekRic->agen_id != $agen_id) {
+                    $different++;
+                }
             }
         }
         $this->trip = $listTrip;
         if ($empty > 0) {
+            $this->keterangan = app(ErrorController::class)->geterror('DTA')->keterangan . ' (' . $this->trip . ')';
+            return false;
+        }
+        if ($different > 0) {
+            $this->keterangan = 'DATA CUSTOMER JOB TRUCKING ' . app(ErrorController::class)->geterror('TSD')->keterangan . ' CUSTOMER TERPILIH';
             return false;
         }
         return true;
@@ -59,6 +71,6 @@ class validasiTripInvoice implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('DTA')->keterangan . ' (' . $this->trip.')';
+        return $this->keterangan;
     }
 }
