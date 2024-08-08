@@ -309,7 +309,7 @@ class PengeluaranStokHeader extends MyModel
                         'a.tglbukti',
                         'a.bank_id',
                     )
-                    ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti');
+                    ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.penerimaan_nobukti');
 
                 DB::table($temppenerimaanheader)->insert([
                     'nobukti' => '',
@@ -690,7 +690,7 @@ class PengeluaranStokHeader extends MyModel
                 ->Join(db::raw($tempparameter . " statuscetak "), db::raw("isnull(pengeluaranstokheader.statuscetak,0)"), 'statuscetak.id')
                 ->Join(db::raw($tempparameter . " statuskirimberkas "), db::raw("isnull(pengeluaranstokheader.statuskirimberkas,0)"), 'statuskirimberkas.id')
                 ->Join(db::raw($temppenerimaanstokheader . " as penerimaan"), db::raw("isnull(pengeluaranstokheader.penerimaanstok_nobukti,'')"), 'penerimaan.nobukti')
-                ->Join(db::raw($temppenerimaanstokheader . " as penerimaanheader"), db::raw("isnull(pengeluaranstokheader.penerimaan_nobukti,'')"), 'penerimaanheader.nobukti')
+                ->Join(db::raw($temppenerimaanheader . " as penerimaanheader"), db::raw("isnull(pengeluaranstokheader.penerimaan_nobukti,'')"), 'penerimaanheader.nobukti')
                 ->Join(db::raw($temppelunasanhutangheader . " as pelunasanhutangheader"), db::raw("isnull(pengeluaranstokheader.hutangbayar_nobukti,'')"), 'pelunasanhutangheader.nobukti')
                 ->Join(db::raw($temppengeluaranstokheader . " as pengeluaran"), db::raw("isnull(pengeluaranstokheader.pengeluaranstok_nobukti,'')"), 'pengeluaran.nobukti')
                 ->Join(db::raw($tempserviceinheader . " as serviceinheader"), db::raw("isnull(pengeluaranstokheader.servicein_nobukti,'')"), 'serviceinheader.nobukti')
