@@ -527,6 +527,7 @@ class JurnalUmumHeader extends MyModel
 
     public function processUpdate(JurnalUmumHeader $jurnalUmumHeader, array $data): JurnalUmumHeader
     {
+
         $tanpaprosesnobukti = $data['tanpaprosesnobukti'] ?? 0;
         $sumNominal = 0;
         for ($i = 0; $i < count($data['nominal_detail']); $i++) {
