@@ -291,6 +291,24 @@ class Kota extends MyModel
                         'kodekota',
                         'keterangan',
                     ],  $query);
+
+                    $query = db::table("kota")->from(db::raw("kota with (readuncommitted)"))
+                    ->select(
+                        'kota.id',
+                        'kota.kodekota',
+                        'kota.keterangan',
+                    )
+                    ->leftJoin(db::raw("$temtabel as a with (readuncommitted)"), 'kota.id', 'a.id')
+                    ->whereRaw("isnull(kota.zona_id,0) != 0")
+                    ->where('kota.id','!=', $dari_id)
+                    ->whereRaw("isnull(a.id,'')=''");
+                    
+                    DB::table($temtabel)->insertUsing([
+                        'id',
+                        'kodekota',
+                        'keterangan',
+                    ],  $query);
+
                 }
             }
         } else {

@@ -583,6 +583,7 @@ class PengeluaranTruckingHeader extends MyModel
                         'akunpusat.keterangancoa',
                         'pengeluarantruckingheader.pengeluaran_nobukti',
                         'pengeluarantruckingheader.jenisorder_id as jenisorderan_id',
+                        db::raw("(case when pengeluarantruckingheader.karyawan_id =0 then 4 else 3 end) as statustanpabukti"),
                         'jenisorder.keterangan as jenisorderan'
                     )
                     ->leftJoin(DB::raw("pengeluarantrucking with (readuncommitted)"), 'pengeluarantruckingheader.pengeluarantrucking_id', 'pengeluarantrucking.id')

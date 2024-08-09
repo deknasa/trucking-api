@@ -310,7 +310,7 @@ class PenerimaanTruckingDetail extends MyModel
         $penerimaantruckingDetail->supir_id = $data['supir_id'];
         $penerimaantruckingDetail->karyawan_id = $data['karyawan_id'];
         $penerimaantruckingDetail->pengeluarantruckingheader_nobukti = $data['pengeluarantruckingheader_nobukti'] ?? '';
-        $penerimaantruckingDetail->keterangan = $data['keterangan'];
+        $penerimaantruckingDetail->keterangan = mb_convert_encoding($data['keterangan'],  'ISO-8859-1', 'UTF-8');
         $penerimaantruckingDetail->nominal = $data['nominal'];
         $penerimaantruckingDetail->modifiedby = auth('api')->user()->name;
         $penerimaantruckingDetail->info = html_entity_decode(request()->info);

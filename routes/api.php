@@ -723,6 +723,8 @@ route::middleware(['auth:api'])->group(function () {
     
     Route::post('stok/approvalaktif', [StokController::class, 'approvalaktif']);
     Route::resource('dataritasi', DataRitasiController::class)->whereNumber('dataritasi');
+    Route::get('/orderanemkl', [OrderanEmklController::class, 'index']);
+    Route::get('/orderanemkl/getTglJob', [OrderanEmklController::class, 'getTglJob']);
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
@@ -1710,7 +1712,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('prosesuangjalansupirdetail/transfer', [ProsesUangJalanSupirDetailController::class, 'transfer']);
     Route::resource('prosesuangjalansupirdetail', ProsesUangJalanSupirDetailController::class)->whereNumber('prosesuangjalansupirdetail');
 
-    Route::get('/orderanemkl', [OrderanEmklController::class, 'index'])->middleware('handle-token');
+    // Route::get('/orderanemkl', [OrderanEmklController::class, 'index'])->middleware('handle-token');
 
     Route::get('laporandepositosupir/report', [LaporanDepositoSupirController::class, 'report'])->name('laporandepositosupir.report');
     Route::get('laporandepositosupir/export', [LaporanDepositoSupirController::class, 'export'])->name('laporandepositosupir.export');
@@ -1908,7 +1910,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('exportpemakaianbarang/export', [ExportPemakaianBarangController::class, 'export'])->name('exportpemakaianbarang.export');
     Route::resource('exportpemakaianbarang', ExportPemakaianBarangController::class)->whereNumber('exportpemakaianbarang');
 
-    Route::get('/orderanemkl/getTglJob', [OrderanEmklController::class, 'getTglJob'])->middleware('handle-token');
+    // Route::get('/orderanemkl/getTglJob', [OrderanEmklController::class, 'getTglJob'])->middleware('handle-token');
 
     Route::get('pemutihansupir/getPost', [PemutihanSupirController::class, 'getPost']);
     Route::get('pemutihansupir/getNonPost', [PemutihanSupirController::class, 'getNonPost']);
