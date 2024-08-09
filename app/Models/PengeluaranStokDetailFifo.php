@@ -138,6 +138,7 @@ class PengeluaranStokDetailFifo extends MyModel
         $a = 0;
         $atotalharga = 0;
         $totalterpakai2 = 0;
+        $totalterpakai3 = 0;
         $kondisi = true;
         while ($kondisi == true) {
 
@@ -309,12 +310,13 @@ class PengeluaranStokDetailFifo extends MyModel
                     // $totalterpakai = round(($hargatotalterpakai * $qty), 2);
 
                     $tharga=$querysisa->harga+$tambahanilai;
-                    $ttotal=$querysisa->total+($tambahanilai+$querysisa->qty );
+                    $ttotal=$querysisa->total+($tambahanilai*$querysisa->qty );
                     $ttambahannilai=$tambahanilai*$querysisa->qty;
                      $totalterpakai = round(($hargatotalterpakai * $qty), 2);
 
-                    $totalterpakai2 += $totalterpakai;
-                    $pengeluaranStokDetailFifo = new pengeluaranStokDetailFifo();
+                     $totalterpakai2 += $totalterpakai;
+                     $totalterpakai3 += ($totalterpakai+$ttambahannilai );
+                     $pengeluaranStokDetailFifo = new pengeluaranStokDetailFifo();
                     $pengeluaranStokDetailFifo->pengeluaranstokheader_id = $data['pengeluaranstokheader_id'] ?? 0;
                     $pengeluaranStokDetailFifo->nobukti = $data['nobukti'] ?? '';
                     $pengeluaranStokDetailFifo->stok_id = $data['stok_id'] ?? 0;
@@ -463,12 +465,14 @@ class PengeluaranStokDetailFifo extends MyModel
 
 
                     $tharga=$querysisa->harga+$tambahanilai;
-                    $ttotal=$querysisa->total+($tambahanilai+$querysisa->qty );
+                    $ttotal=$querysisa->total+($tambahanilai*$querysisa->qty );
                     $totalterpakai2 += $totalterpakai;
                     $ttambahannilai=$tambahanilai*$querysisa->qty;
+                    $totalterpakai3 += ($totalterpakai+$ttambahannilai );
 
 
                     $totalterpakai2 += $totalterpakai;
+                    $totalterpakai3 += ($totalterpakai+$ttambahannilai );
                     $pengeluaranStokDetailFifo = new pengeluaranStokDetailFifo();
                     $pengeluaranStokDetailFifo->pengeluaranstokheader_id = $data['pengeluaranstokheader_id'] ?? 0;
                     $pengeluaranStokDetailFifo->nobukti = $data['nobukti'] ?? '';
@@ -597,7 +601,8 @@ class PengeluaranStokDetailFifo extends MyModel
             ->firstorFail();
 
         // $totalharga = $atotalharga;
-        $totalharga = $totalterpakai2;
+        // $totalharga = $totalterpakai2;
+        $totalharga = $totalterpakai3;
 
         // dump($totalharga);
         // dd($data['qty']);
@@ -605,14 +610,18 @@ class PengeluaranStokDetailFifo extends MyModel
 
         if ($data['pengeluaranstok_id'] == 2) {
             $totdetailharga = $data['detail_harga'];
-            $selisih = $hrgsat - $totdetailharga;
+            // $selisih = $hrgsat - $totdetailharga;
+            $selisih = $tharga - $totdetailharga;
+            
 
             $hrgsat = $data['detail_harga'];
-            $totalharga = $hrgsat * $data['qty'];
+            // $totalharga = $hrgsat * $data['qty'];
+            $totalharga = $tharga * $data['qty'];
         } else {
             $selisih = 0;
         }
-        $pengeluaranstokdetail->harga =   $hrgsat;
+        // dd($totalharga);
+        $pengeluaranstokdetail->harga =   $tharga; //$hrgsat;
         $pengeluaranstokdetail->total =  $totalharga;
 
         $pengeluaranstokdetail->selisihhargafifo =  $selisih;
