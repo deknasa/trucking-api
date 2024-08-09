@@ -342,7 +342,7 @@ class UpahSupirRincian extends MyModel
                 )
                 ->whereRaw("cast('" . $tglbukti . "' as datetime)>=a.tglmulaiberlaku")
                 ->where('a.statusaktif', 1)
-                ->whereRaw("isnull(a.statuslangsir,'') != 79")
+                // ->whereRaw("isnull(a.statuslangsir,'') != 79")
                 ->orderby('a.id', 'asc');
 
             DB::table($temptarif)->insertUsing([
@@ -441,8 +441,8 @@ class UpahSupirRincian extends MyModel
                             DB::raw("'$getUpahPelabuhanKandang->editing_by' as editing_by"),
                             DB::raw("'$getUpahPelabuhanKandang->editing_at' as editing_at"),
                             DB::raw("'$getUpahPelabuhanKandang->tas_id' as tas_id")
-                        )
-                        ->whereRaw("isnull(a.statuslangsir,'') != 79");
+                        );
+                        // ->whereRaw("isnull(a.statuslangsir,'') != 79");
                     if ($statusPenyesuaian == 662) {
                         $queryGetTarifForPelabuhanKandang->whereRaw("isnull(a.penyesuaian,'') != ''");
                     } else {
@@ -521,7 +521,7 @@ class UpahSupirRincian extends MyModel
                 )
                 ->whereRaw("cast('" . $tglbukti . "' as datetime)>=a.tglmulaiberlaku")
                 ->orderby('a.id', 'asc')
-                ->whereRaw("isnull(a.statuslangsir,'') != 79")
+                // ->whereRaw("isnull(a.statuslangsir,'') != 79")
                 ->where('a.kotadari_id', 1);
 
             DB::table($tempupahsupir)->insertUsing([
@@ -593,7 +593,7 @@ class UpahSupirRincian extends MyModel
                 )
                 ->whereRaw("cast('" . $tglbukti . "' as datetime)>=a.tglmulaiberlaku")
                 ->orderby('a.id', 'asc')
-                ->whereRaw("isnull(a.statuslangsir,'') != 79")
+                // ->whereRaw("isnull(a.statuslangsir,'') != 79")
                 ->where('a.kotadari_id', $idkandang);
 
             DB::table($tempupahsupir)->insertUsing([
@@ -1046,7 +1046,7 @@ class UpahSupirRincian extends MyModel
                             DB::raw("$zonaDari_id as zonadari_id"),
                             DB::raw("$zonaSampai_id as zonasampai_id")
                         )
-                        ->whereRaw("isnull(a.statuslangsir,'') != 79")
+                        // ->whereRaw("isnull(a.statuslangsir,'') != 79")
                         ->whereRaw("((a.zonadari_id = $zonaDari_id and a.zonasampai_id=$zonaSampai_id) or (a.zonadari_id = $zonaSampai_id and a.zonasampai_id=$zonaDari_id))");
 
                     DB::table($tempKotaUpah)->insertUsing([
@@ -1128,7 +1128,7 @@ class UpahSupirRincian extends MyModel
                             DB::raw("$dari_id as dari_id"),
                             DB::raw("$sampai_id as sampai_id")
                         )
-                        ->whereRaw("isnull(a.statuslangsir,'') != 79")
+                        // ->whereRaw("isnull(a.statuslangsir,'') != 79")
                         ->whereRaw("((a.kotadari_id = $dari_id and a.kotasampai_id=$sampai_id) or (a.kotadari_id = $sampai_id and a.kotasampai_id=$dari_id))");
                     DB::table($tempKotaUpah)->insertUsing([
                         'id',
