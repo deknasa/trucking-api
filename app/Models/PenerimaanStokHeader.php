@@ -2705,11 +2705,10 @@ class PenerimaanStokHeader extends MyModel
             'modifiedby' => auth('api')->user()->user
         ]);
         /*RETURN STOK PENERIMAAN*/
-        // sementara dimatikan
-        // if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
-        //     $datadetail = PenerimaanStokDetail::select('stok_id', 'qty')->where('penerimaanstokheader_id', '=', $penerimaanStokHeader->id)->get();
-        //     (new PenerimaanStokDetail())->returnStokPenerimaan($penerimaanStokHeader->id);
-        // }
+        if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
+            $datadetail = PenerimaanStokDetail::select('stok_id', 'qty')->where('penerimaanstokheader_id', '=', $penerimaanStokHeader->id)->get();
+            (new PenerimaanStokDetail())->returnStokPenerimaan($penerimaanStokHeader->id);
+        }
         // dd('test');
         if (($data['penerimaanstok_id'] == $korv->id) || ($data['penerimaanstok_id'] === $spbs->text)) {
             (new PenerimaanStokDetail())->returnVulkanisir($penerimaanStokHeader->id);
