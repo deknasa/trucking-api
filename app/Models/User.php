@@ -674,7 +674,7 @@ class User extends Authenticatable
             if ((count($menu['child']) > 0 || $menu['link'] != '' || $menu['aco_id'] != 0) && $this->hasClickableChild($menu)) {
                 $string .= '
             <li class="nav-item">
-              <a id="' . (strtolower($menu['menukode'])) . '" href="' . (count($menu['child']) > 0 ? 'javascript:void(0)' : ($menu['link'] != '' ? strtolower($url.$menu['link']) : strtolower($url.$menu['menuexe']))) . '" class="nav-link ' . (@$currentMenu->id == $menu['menuid'] ? 'active hover' : '') . '">
+              <a id="' . (count($menu['child']) > 0 ? '' : 'link-'.$menu['class']) . '" href="' . (count($menu['child']) > 0 ? 'javascript:void(0)' : ($menu['link'] != '' ? strtolower($url.$menu['link']) : strtolower($url.$menu['menuexe']))) . '" class="nav-link ' . (@$currentMenu->id == $menu['menuid'] ? 'active hover' : '') . '">
                 <i class="nav-icon ' . (strtolower($menu['menuicon']) ?? 'far fa-circle') . '"></i>
                 <p>
                   ' . $menu['menuname'] . '
