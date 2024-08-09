@@ -30,6 +30,13 @@ class PenerimaanStokDetailFifo extends MyModel
     {
         $qty = $data['qty'] ?? 0;
 
+        $penerimaanstok_id = $data['penerimaanstok_id'] ?? 0;
+
+        if ($penerimaanstok_id == 5) {
+            $kondisipg = true;
+        } else {
+            $kondisipg = false;
+        }
         $totalharga = 0;
         $spk = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
@@ -101,7 +108,7 @@ class PenerimaanStokDetailFifo extends MyModel
             "penerimaanstokheader_totalterpakai",
         ], $queryfifo);
 
- 
+
 
         $queryfifo = db::table('penerimaanstokdetailfifo')->from(db::raw("penerimaanstokdetailfifo a with (readuncommitted)"))
             ->select(
@@ -140,7 +147,7 @@ class PenerimaanStokDetailFifo extends MyModel
         $a = 0;
         $atotalharga = 0;
         $kondisi = true;
-        $totalterpakai2=0;
+        $totalterpakai2 = 0;
         while ($kondisi == true) {
 
             DB::delete(DB::raw("delete " . $tempfifo));
@@ -205,8 +212,8 @@ class PenerimaanStokDetailFifo extends MyModel
                 $qtysisa = $querysisa->qtysisa ?? 0;
                 if ($qty <= $qtysisa) {
 
-                    $totalterpakai=round((($querysisa->total/$querysisa->qty)*$qty),2);
-                    $totalterpakai2+=$totalterpakai;
+                    $totalterpakai = round((($querysisa->total / $querysisa->qty) * $qty), 2);
+                    $totalterpakai2 += $totalterpakai;
                     $penerimaanStokDetailFifo = new penerimaanStokDetailFifo();
                     $penerimaanStokDetailFifo->penerimaanstokheader_id = $data['penerimaanstokheader_id'] ?? 0;
                     $penerimaanStokDetailFifo->nobukti = $data['nobukti'] ?? '';
@@ -216,8 +223,8 @@ class PenerimaanStokDetailFifo extends MyModel
                     $penerimaanStokDetailFifo->qty = $qty ?? 0;
                     $penerimaanStokDetailFifo->penerimaanstokheader_nobukti = $querysisa->nobukti ?? '';
                     $penerimaanStokDetailFifo->penerimaanstok_qty = $querysisa->qty ?? 0;
-                    $penerimaanStokDetailFifo->penerimaanstok_harga = $querysisa->harga ?? 0;
-                    $penerimaanStokDetailFifo->penerimaanstokheader_total = $querysisa->total ?? 0;
+                    $penerimaanStokDetailFifo->penerimaanstok_harga = $kondisipg ? 0 : $querysisa->harga;
+                    $penerimaanStokDetailFifo->penerimaanstokheader_total = $kondisipg ? 0 : $querysisa->total;
                     $penerimaanStokDetailFifo->penerimaanstokheader_totalterpakai = $totalterpakai ?? 0;
                     $penerimaanStokDetailFifo->modifiedby = $data['modifiedby'] ?? '';
 
@@ -230,8 +237,8 @@ class PenerimaanStokDetailFifo extends MyModel
                         'qty' =>  $qty ?? 0,
                         'penerimaanstokheader_nobukti' => $querysisa->nobukti ?? '',
                         'penerimaanstok_qty' => $querysisa->qty ?? 0,
-                        'penerimaanstok_harga' => $querysisa->harga ?? 0,
-                        'penerimaanstokheader_total' => $querysisa->total ?? 0,
+                        'penerimaanstok_harga' => $kondisipg ? 0 : $querysisa->harga,
+                        'penerimaanstokheader_total' => $kondisipg ? 0 : $querysisa->total,
                         'penerimaanstokheader_totalterpakai' => $totalterpakai ?? 0,
                     ]);
 
@@ -243,9 +250,9 @@ class PenerimaanStokDetailFifo extends MyModel
 
                     $zqty = $qty ?? 0;
                     // $zharga = $querysisa->harga ?? 0;
-                    $zharga = round(($belitotalsisa / $beliqtysisa),10) ?? 0;
+                    $zharga = round(($belitotalsisa / $beliqtysisa), 10) ?? 0;
 
-                    $atotalharga = $atotalharga + round(($zqty * (($belitotalsisa / $beliqtysisa))),2);
+                    $atotalharga = $atotalharga + round(($zqty * (($belitotalsisa / $beliqtysisa))), 2);
 
                     // $atotalharga = $atotalharga + ($zqty * ($belitotal / $beliqty));
 
@@ -254,8 +261,8 @@ class PenerimaanStokDetailFifo extends MyModel
                     $ksqty = $qty ?? 0;
                     // $ksharga = $querysisa->harga ?? 0;
                     // $kstotal = $ksqty * ($belitotal / $beliqty);
-                    $ksharga = round(($belitotalsisa / $beliqtysisa),10) ?? 0;
-                    $kstotal = round(($ksqty * ($belitotalsisa / $beliqtysisa)),2);
+                    $ksharga = round(($belitotalsisa / $beliqtysisa), 10) ?? 0;
+                    $kstotal = round(($ksqty * ($belitotalsisa / $beliqtysisa)), 2);
 
                     $ksnobukti = $data['nobukti'] ?? '';
 
@@ -282,7 +289,7 @@ class PenerimaanStokDetailFifo extends MyModel
                             "qtymasuk" => 0,
                             "nilaimasuk" =>  0,
                             "qtykeluar" => $qty ?? 0,
-                            "nilaikeluar" => $totalterpakai,
+                            "nilaikeluar" => $kondisipg ? 0 : $totalterpakai,
                             "urutfifo" => $urutfifo,
                         ]);
                     }
@@ -298,13 +305,13 @@ class PenerimaanStokDetailFifo extends MyModel
 
                     $aksqty = $querysisa->qty ?? 0;
                     // $aksharga = $querysisa->harga ?? 0;
-                    $aksharga = round(($belitotalsisa / $beliqtysisa),10) ?? 0;
+                    $aksharga = round(($belitotalsisa / $beliqtysisa), 10) ?? 0;
 
 
                     $aksnobukti = $querysisa->nobukti ?? '';
                     $aksstok_id = $data['stok_id'] ?? 0;
 
-                    $totalharga += round(($aksharga  * $aksqty),2);
+                    $totalharga += round(($aksharga  * $aksqty), 2);
 
 
 
@@ -318,8 +325,8 @@ class PenerimaanStokDetailFifo extends MyModel
                     // dd('test');
                     $qty = $qty - $qtysisa;
 
-                    $totalterpakai=round((($querysisa->total/$querysisa->qty)*$qtysisa),2);
-                    $totalterpakai2+=$totalterpakai;
+                    $totalterpakai = round((($querysisa->total / $querysisa->qty) * $qtysisa), 2);
+                    $totalterpakai2 += $totalterpakai;
 
                     $penerimaanStokDetailFifo = new penerimaanStokDetailFifo();
                     $penerimaanStokDetailFifo->penerimaanstokheader_id = $data['penerimaanstokheader_id'] ?? 0;
@@ -330,8 +337,8 @@ class PenerimaanStokDetailFifo extends MyModel
                     $penerimaanStokDetailFifo->qty = $qtysisa ?? 0;
                     $penerimaanStokDetailFifo->penerimaanstokheader_nobukti = $querysisa->nobukti ?? '';
                     $penerimaanStokDetailFifo->penerimaanstok_qty = $querysisa->qty ?? 0;
-                    $penerimaanStokDetailFifo->penerimaanstok_harga = $querysisa->harga ?? 0;
-                    $penerimaanStokDetailFifo->penerimaanstokheader_total = $querysisa->total ?? 0;
+                    $penerimaanStokDetailFifo->penerimaanstok_harga = $kondisipg ? 0 : $querysisa->harga ?? 0;
+                    $penerimaanStokDetailFifo->penerimaanstokheader_total = $kondisipg ? 0 : $querysisa->total ?? 0;
                     $penerimaanStokDetailFifo->penerimaanstokheader_totalterpakai = $totalterpakai ?? 0;
                     $penerimaanStokDetailFifo->modifiedby = $data['modifiedby'] ?? '';
 
@@ -344,8 +351,8 @@ class PenerimaanStokDetailFifo extends MyModel
                         'qty' => $qtysisa ?? 0,
                         'penerimaanstokheader_nobukti' => $querysisa->nobukti ?? '',
                         'penerimaanstok_qty' => $querysisa->qty ?? 0,
-                        'penerimaanstok_harga' => $querysisa->harga ?? 0,
-                        'penerimaanstokheader_total' => $querysisa->total ?? 0,
+                        'penerimaanstok_harga' => $kondisipg ? 0 : $querysisa->harga ?? 0,
+                        'penerimaanstokheader_total' => $kondisipg ? 0 : $querysisa->total ?? 0,
                         'penerimaanstokheader_totalterpakai' => $totalterpakai ?? 0,
 
                     ]);
@@ -362,8 +369,8 @@ class PenerimaanStokDetailFifo extends MyModel
                     // $zharga = $querysisa->harga ?? 0;
                     // $atotalharga = $atotalharga + ($zqty * ($belitotal / $beliqty));
 
-                    $zharga = round(($belitotalsisa/$beliqtysisa),10) ?? 0;
-                    $atotalharga = $atotalharga + round(($zqty * ($belitotalsisa / $beliqtysisa)),2);
+                    $zharga = round(($belitotalsisa / $beliqtysisa), 10) ?? 0;
+                    $atotalharga = $atotalharga + round(($zqty * ($belitotalsisa / $beliqtysisa)), 2);
 
 
 
@@ -373,8 +380,8 @@ class PenerimaanStokDetailFifo extends MyModel
                     // $ksharga = $querysisa->harga ?? 0;
                     // $kstotal = $ksqty * ($belitotal / $beliqty);
 
-                    $ksharga = round(($belitotalsisa / $beliqtysisa),10) ?? 0;
-                    $kstotal = round($ksqty * ($belitotalsisa / $beliqtysisa),2);
+                    $ksharga = round(($belitotalsisa / $beliqtysisa), 10) ?? 0;
+                    $kstotal = round($ksqty * ($belitotalsisa / $beliqtysisa), 2);
 
                     $ksnobukti = $data['nobukti'] ?? '';
 
@@ -400,7 +407,7 @@ class PenerimaanStokDetailFifo extends MyModel
                             "qtymasuk" => 0,
                             "nilaimasuk" =>  0,
                             "qtykeluar" => $qtysisa ?? 0,
-                            "nilaikeluar" => $totalterpakai,
+                            "nilaikeluar" => $kondisipg ? 0 : $totalterpakai,
                             "urutfifo" => $urutfifo,
                         ]);
                     }
@@ -416,12 +423,12 @@ class PenerimaanStokDetailFifo extends MyModel
 
                     $aksqty = $querysisa->qty ?? 0;
                     // $aksharga = $querysisa->harga ?? 0;
-                    $aksharga = round(($querysisa->totalsisa/$querysisa->qtysisa),10) ?? 0;
+                    $aksharga = round(($querysisa->totalsisa / $querysisa->qtysisa), 10) ?? 0;
 
                     $aksnobukti = $querysisa->nobukti ?? '';
                     $aksstok_id = $data['stok_id'] ?? 0;
 
-                    $totalharga += round(($aksharga *  $aksqty),2);
+                    $totalharga += round(($aksharga *  $aksqty), 2);
 
 
 
@@ -449,9 +456,9 @@ class PenerimaanStokDetailFifo extends MyModel
         // dd($data['qty']);
         $hrgsat = $totalharga / $data['qty'];
 
-            $selisih = 0;
-        $penerimaanstokdetail->harga =   $hrgsat;
-        $penerimaanstokdetail->total =  $totalharga;
+        $selisih = 0;
+        $penerimaanstokdetail->harga =  $kondisipg ? 0 : $hrgsat;
+        $penerimaanstokdetail->total =  $kondisipg ? 0 : $totalharga;
         // $pengeluaranstokdetail->save();
         if (!$penerimaanstokdetail->save()) {
             throw new \Exception("Error storing pengeluaran Stok Detail  update fifo. ");

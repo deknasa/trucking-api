@@ -1955,6 +1955,14 @@ class PenerimaanStokHeader extends MyModel
     public function processStore(array $data): PenerimaanStokHeader
     {
         $idpenerimaan = $data['penerimaanstok_id'];
+
+        if ($idpenerimaan == 5) {
+            $kondisipg = true;
+        } else {
+            $kondisipg = false;
+        }
+
+        $idpenerimaan = $data['penerimaanstok_id'];
         $fetchFormat =  PenerimaanStok::where('id', $idpenerimaan)->first();
         $statusformat = $fetchFormat->format;
         $fetchGrp = Parameter::where('id', $statusformat)->first();
@@ -2135,6 +2143,17 @@ class PenerimaanStokHeader extends MyModel
         $nominal_detail = [];
         $datakosong = [];
         for ($i = 0; $i < count($data['detail_harga']); $i++) {
+
+            if ($penerimaanstok_id == 5) {
+                $detail_harga = 0;
+                $totalItem = 0;
+                $totalsebelum = 0;
+            } else {
+                $detail_harga = $data['detail_harga'][$i] ?? 0;
+                $totalItem = $data['totalItem'][$i] ?? 0;
+                $totalsebelum = $data['totalsebelum'][$i] ?? 0;
+            }
+
             $datakosong[] = 0;
             $ksqty = $data['detail_qty'][$i] ?? 0;
             $ksnilai = $data['totalItem'][$i] ?? 0;
@@ -2144,9 +2163,9 @@ class PenerimaanStokHeader extends MyModel
                 "stok_id" => $data['detail_stok_id'][$i],
                 "qty" => $data['detail_qty'][$i],
                 "qtyterpakai" => $data['detail_qtyterpakai'][$i],
-                "harga" => $data['detail_harga'][$i],
-                "totalItem" => $data['totalItem'][$i],
-                "totalsebelum" => $data['totalsebelum'][$i] ?? 0,
+                "harga" => $detail_harga,
+                "totalItem" => $totalItem,
+                "totalsebelum" => $totalsebelum,
                 "persentasediscount" => $data['detail_persentasediscount'][$i],
                 "nominaldiscount" => $data['detail_nominaldiscount'][$i],
                 "vulkanisirke" => $data['detail_vulkanisirke'][$i],
@@ -2347,7 +2366,7 @@ class PenerimaanStokHeader extends MyModel
                 $keterangan_detail[] = $data['detail_keterangan'][$i];
                 $penerimaanStokDetail = penerimaanStokDetail::where('id', $penerimaanStokDetail->id)->first();
 
-                $nominal_detail[] = $penerimaanStokDetail->total;
+                $nominal_detail[] = $kondisipg ? 0 : $penerimaanStokDetail->total;
 
 
 
@@ -2427,7 +2446,9 @@ class PenerimaanStokHeader extends MyModel
                 $totalsat = $data['totalItem'][$i];
                 $coakredit_detail[] = $memokredit['JURNAL'];
                 $coadebet_detail[] = $memo['JURNAL'];
-                $nominal_detail[] = ceil($totalsat);
+                // $nominal_detail[] = ceil($totalsat);
+                $nominal_detail[] = $kondisipg ? 0 : ceil($totalsat);
+
                 $keterangan_detail[] = $data['detail_keterangan'][$i];
 
                 if ($totalsat) {
@@ -2569,6 +2590,12 @@ class PenerimaanStokHeader extends MyModel
         /*STORE HEADER*/
 
         $idpenerimaan = $data['penerimaanstok_id'];
+
+        if ($idpenerimaan == 5) {
+            $kondisipg = true;
+        } else {
+            $kondisipg = false;
+        }
         $fetchFormat =  PenerimaanStok::where('id', $idpenerimaan)->first();
         $statusformat = $fetchFormat->format;
 
@@ -2678,10 +2705,11 @@ class PenerimaanStokHeader extends MyModel
             'modifiedby' => auth('api')->user()->user
         ]);
         /*RETURN STOK PENERIMAAN*/
-        if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
-            $datadetail = PenerimaanStokDetail::select('stok_id', 'qty')->where('penerimaanstokheader_id', '=', $penerimaanStokHeader->id)->get();
-            (new PenerimaanStokDetail())->returnStokPenerimaan($penerimaanStokHeader->id);
-        }
+        // sementara dimatikan
+        // if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
+        //     $datadetail = PenerimaanStokDetail::select('stok_id', 'qty')->where('penerimaanstokheader_id', '=', $penerimaanStokHeader->id)->get();
+        //     (new PenerimaanStokDetail())->returnStokPenerimaan($penerimaanStokHeader->id);
+        // }
         // dd('test');
         if (($data['penerimaanstok_id'] == $korv->id) || ($data['penerimaanstok_id'] === $spbs->text)) {
             (new PenerimaanStokDetail())->returnVulkanisir($penerimaanStokHeader->id);
@@ -2708,7 +2736,7 @@ class PenerimaanStokHeader extends MyModel
                 );
             }
         }
-
+        // dd('text');
 
         /*DELETE EXISTING DETAIL*/
         // $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
@@ -2752,7 +2780,7 @@ class PenerimaanStokHeader extends MyModel
                 ]);
             }
         }
-        DB::delete(DB::raw("delete penerimaanstokdetail from penerimaanstokdetail as a  left outer join ".$tempbukti." b on a.id=b.id
+        DB::delete(DB::raw("delete penerimaanstokdetail from penerimaanstokdetail as a  left outer join " . $tempbukti . " b on a.id=b.id
         WHERE isnull(a.nobukti,'') in('" . $penerimaanStokHeader->nobukti . "') and isnull(b.id,0)=0"));
 
 
@@ -2791,11 +2819,33 @@ class PenerimaanStokHeader extends MyModel
         $nominal_detail = [];
         $keterangan_detail = [];
         $datakosong = [];
+
+
+        $penerimaanstok_id = $data['penerimaanstok_id'] ?? 0;
+        // if ($penerimaanstok_id==5) {
+        //     $kondisipg=true;
+        // } else {
+        //     $kondisipg=false;
+        // }
+
+        // dd($kondisipg);
+        // dd($penerimaanstok_id);
         for ($i = 0; $i < count($data['detail_harga']); $i++) {
             $datakosong[] = 0;
             $ksqty = $data['detail_qty'][$i] ?? 0;
             $ksnilai = $data['totalItem'][$i] ?? 0;
             $iddetail = $data['id_detail'][$i] ?? 0;
+
+            if ($penerimaanstok_id == 5) {
+                $detail_harga = 0;
+                $totalItem = 0;
+                $totalsebelum = 0;
+            } else {
+                $detail_harga = $data['detail_harga'][$i] ?? 0;
+                $totalItem = $data['totalItem'][$i] ?? 0;
+                $totalsebelum = $data['totalsebelum'][$i] ?? 0;
+            }
+
 
             if ($iddetail == 0) {
                 $penerimaanStokDetail = (new PenerimaanStokDetail())->processStore($penerimaanStokHeader, [
@@ -2804,9 +2854,9 @@ class PenerimaanStokHeader extends MyModel
                     "stok_id" => $data['detail_stok_id'][$i],
                     "qty" => $data['detail_qty'][$i],
                     "qtyterpakai" => $data['detail_qtyterpakai'][$i],
-                    "harga" => $data['detail_harga'][$i],
-                    "totalItem" => $data['totalItem'][$i],
-                    "totalsebelum" => $data['totalsebelum'][$i] ?? 0,
+                    "harga" => $detail_harga,
+                    "totalItem" => $totalItem,
+                    "totalsebelum" => $totalsebelum,
                     "persentasediscount" => $data['detail_persentasediscount'][$i],
                     "nominaldiscount" => $data['detail_nominaldiscount'][$i],
                     "vulkanisirke" => $data['detail_vulkanisirke'][$i],
@@ -2822,9 +2872,9 @@ class PenerimaanStokHeader extends MyModel
                     "stok_id" => $data['detail_stok_id'][$i],
                     "qty" => $data['detail_qty'][$i],
                     "qtyterpakai" => $data['detail_qtyterpakai'][$i],
-                    "harga" => $data['detail_harga'][$i],
-                    "totalItem" => $data['totalItem'][$i],
-                    "totalsebelum" => $data['totalsebelum'][$i] ?? 0,
+                    "harga" =>  $detail_harga,
+                    "totalItem" => $totalItem,
+                    "totalsebelum" => $totalsebelum,
                     "persentasediscount" => $data['detail_persentasediscount'][$i],
                     "nominaldiscount" => $data['detail_nominaldiscount'][$i],
                     "vulkanisirke" => $data['detail_vulkanisirke'][$i],
@@ -3028,7 +3078,7 @@ class PenerimaanStokHeader extends MyModel
                 // $nominal_detail[] = $penerimaanStokDetail->total;
                 $penerimaanStokDetail = penerimaanStokDetail::where('id', $penerimaanStokDetail->id)->first();
 
-                $nominal_detail[] = $penerimaanStokDetail->total;
+                $nominal_detail[] = $kondisipg ? 0 : $penerimaanStokDetail->total;
                 if ($data['penerimaanstok_id'] == $spb->text || $data['penerimaanstok_id'] == $spbs->text) {
                     // $totalsat = ($data['detail_qty'][$i] * $data['detail_harga'][$i]);
                     $totalsat = $data['totalItem'][$i];
@@ -3053,15 +3103,16 @@ class PenerimaanStokHeader extends MyModel
                     'statusformat' => "0",
                     'coakredit_detail' => $coakredit_detail,
                     'coadebet_detail' => $coadebet_detail,
-                    'nominal_detail' => $nominal_detail,
+                    'nominal_detail' =>  $nominal_detail,
                     'keterangan_detail' => $keterangan_detail
                 ];
+
+                // dd($jurnalRequest);
 
 
                 $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $penerimaanStokHeader->nobukti)->lockForUpdate()->first();
 
                 if ($jurnalUmumHeader != null) {
-
                     $jurnalUmumHeader = (new JurnalUmumHeader())->processUpdate($jurnalUmumHeader, $jurnalRequest);
                 } else {
                     if ($isPostJurnal) {
@@ -3131,7 +3182,7 @@ class PenerimaanStokHeader extends MyModel
                 $totalsat = $data['totalItem'][$i];
                 $coakredit_detail[] = $memokredit['JURNAL'];
                 $coadebet_detail[] = $memo['JURNAL'];
-                $nominal_detail[] = ceil($totalsat);
+                $nominal_detail[] = $kondisipg ? 0 : ceil($totalsat);
                 $keterangan_detail[] = $data['detail_keterangan'][$i];
             }
 
@@ -3141,7 +3192,7 @@ class PenerimaanStokHeader extends MyModel
                 'postingdari' => "EDIT PENERIMAAN STOK ($fetchFormat->kodepenerimaan)",
                 'coakredit_detail' => $coakredit_detail,
                 'coadebet_detail' => $coadebet_detail,
-                'nominal_detail' => $nominal_detail,
+                'nominal_detail' =>  $nominal_detail,
                 'keterangan_detail' => $keterangan_detail
             ];
             $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $penerimaanStokHeader->nobukti)->first();
