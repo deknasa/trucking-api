@@ -77,6 +77,27 @@ class SuratPengantar extends MyModel
             ->where('a.subgrp', '=', 'STATUS JENIS KENDARAAN')
             ->where('a.text', '=', 'TANGKI')
             ->first();
+
+        if ($aksi == 'EDIT') {
+            $batasJamAdmin = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATAS EDIT TRIP ADMIN')->where('subgrp', 'JAM')->first()->text;
+            $batasHariAdmin = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATAS EDIT TRIP ADMIN')->where('subgrp', 'HARI')->first()->text;
+
+            $tglbatasedit = date('Y-m-d', strtotime($trip->tglbukti . "+$batasHariAdmin days")) . ' ' . $batasJamAdmin;
+
+            if (date('Y-m-d H:i:s') > $tglbatasedit) {
+
+                if (date('Y-m-d H:i:s') > date('Y-m-d H:i:s', strtotime($trip->tglbataseditsuratpengantar))) {
+                    $keteranganerror = $error->cekKeteranganError('LB') ?? '';
+                    $data = [
+                        'kondisi' => true, 
+                        'keterangan' =>  $keteranganerror . "<br> BATAS $aksi TRIP <b>$nobukti</b> di <br> <b>" . date('d-m-Y', strtotime($trip->tglbukti . "+$batasHariAdmin days")) . ' ' . $batasJamAdmin . '</b> <br> ' . $keterangantambahanerror,
+                        'kodeerror' => 'LB',
+                    ];
+
+                    goto selesai;
+                }
+            }
+        }
         $gajiSupir = DB::table('gajisupirdetail')
             ->from(
                 DB::raw("gajisupirdetail as a with (readuncommitted)")
@@ -2608,7 +2629,60 @@ class SuratPengantar extends MyModel
 
         $models = $this->filter($query);
         DB::table($temp)->insertUsing([
-            'id', 'nobukti', 'jobtrucking', 'tglbukti', 'nosp', 'tglsp', 'nojob', 'pelanggan_id', 'keterangan', 'dari_id', 'sampai_id', 'penyesuaian', 'gajisupir', 'jarak', 'agen_id', 'jenisorder_id', 'container_id', 'nocont', 'noseal', 'omset', 'nominalperalihan', 'totalomset', 'statuscontainer_id', 'gudang', 'trado_id', 'supir_id', 'gandengan_id', 'statuslongtrip', 'statusperalihan', 'statusritasiomset', 'statusapprovaleditsuratpengantar', 'statusapprovalbiayatitipanemkl', 'tarif_id', 'mandortrado_id', 'mandorsupir_id', 'statustolakan', 'statusgudangsama', 'statusbatalmuat', 'userapprovaleditsuratpengantar', 'userapprovalbiayatitipanemkl', 'tglapprovaleditsuratpengantar', 'tglbataseditsuratpengantar', 'tglapprovalbiayatitipanemkl', 'gajisupir_nobukti', 'invoice_nobukti', 'modifiedby', 'created_at', 'updated_at', 'statusgajisupir', 'statusinvoice', 'statusapprovalbiayaextra', 'userapprovalbiayaextra', 'tglapprovalbiayaextra', 'tglbatasapprovalbiayaextra'
+            'id',
+            'nobukti',
+            'jobtrucking',
+            'tglbukti',
+            'nosp',
+            'tglsp',
+            'nojob',
+            'pelanggan_id',
+            'keterangan',
+            'dari_id',
+            'sampai_id',
+            'penyesuaian',
+            'gajisupir',
+            'jarak',
+            'agen_id',
+            'jenisorder_id',
+            'container_id',
+            'nocont',
+            'noseal',
+            'omset',
+            'nominalperalihan',
+            'totalomset',
+            'statuscontainer_id',
+            'gudang',
+            'trado_id',
+            'supir_id',
+            'gandengan_id',
+            'statuslongtrip',
+            'statusperalihan',
+            'statusritasiomset',
+            'statusapprovaleditsuratpengantar',
+            'statusapprovalbiayatitipanemkl',
+            'tarif_id',
+            'mandortrado_id',
+            'mandorsupir_id',
+            'statustolakan',
+            'statusgudangsama',
+            'statusbatalmuat',
+            'userapprovaleditsuratpengantar',
+            'userapprovalbiayatitipanemkl',
+            'tglapprovaleditsuratpengantar',
+            'tglbataseditsuratpengantar',
+            'tglapprovalbiayatitipanemkl',
+            'gajisupir_nobukti',
+            'invoice_nobukti',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+            'statusgajisupir',
+            'statusinvoice',
+            'statusapprovalbiayaextra',
+            'userapprovalbiayaextra',
+            'tglapprovalbiayaextra',
+            'tglbatasapprovalbiayaextra'
         ], $models);
         // dd('test');
 
