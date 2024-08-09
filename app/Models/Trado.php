@@ -171,6 +171,12 @@ class Trado extends MyModel
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
         $userid = auth('api')->user()->id;
+        // dd(request());
+        if ($cabang == 'TNL') {
+            $query = $this->getForTnl();
+             goto endTnl;
+         }
+
 
 
 
@@ -373,40 +379,190 @@ class Trado extends MyModel
 
         $this->sort($query);
         $this->paginate($query);
-
+        endTnl:
         $data = $query->get();
 
         return $data;
     }
+    public function getForTnl()
+    {
+
+        $absensiId = request()->absensiId ?? '';
+        $aktif = request()->aktif ?? '';
+        $trado_id = request()->trado_id ?? '';
+        $supirserap = request()->supirserap ?? false;
+        $tglabsensi = date('Y-m-d', strtotime(request()->tglabsensi)) ?? '';
+        $userid = auth('api')->user()->id;
+
+
+        $getJudul = DB::connection('srvtnl')->table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
+
+        $defaultmemononapproval = db::connection('srvtnl')->table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.memo'
+            )
+            ->where('a.grp', 'STATUS APPROVAL')
+            ->where('a.subgrp', 'STATUS APPROVAL')
+            ->where('a.text', 'NON APPROVAL')
+            ->first()->memo ?? '';
+        $query = DB::connection('srvtnl')->table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
+
+            ->select(
+                'trado.id',
+                'trado.keterangan',
+                'trado.kodetrado',
+                'trado.kmawal',
+                'trado.kmakhirgantioli',
+                DB::raw("(case when year(isnull(trado.tglasuransimati,'1900/1/1'))=1900 then null  else trado.tglasuransimati end) as tglasuransimati"),
+                DB::raw("(case when year(isnull(trado.tglspeksimati,'1900/1/1'))=1900 then null  else trado.tglspeksimati end) as tglspeksimati"),
+                DB::raw("(case when year(isnull(trado.tglstnkmati,'1900/1/1'))=1900 then null  else trado.tglstnkmati end) as tglstnkmati"),
+                'trado.merek',
+                'trado.norangka',
+                'trado.nomesin',
+                'trado.nama',
+                'trado.nostnk',
+                'trado.alamatstnk',
+                'trado.modifiedby',
+                'trado.created_at',
+                DB::raw("(case when year(isnull(trado.tglserviceopname,'1900/1/1'))=1900 then null else trado.tglserviceopname end) as tglserviceopname"),
+                'trado.keteranganprogressstandarisasi',
+                DB::raw("(case when year(isnull(trado.tglpajakstnk,'1900/1/1'))=1900 then null else trado.tglpajakstnk end) as tglpajakstnk"),
+                DB::raw("(case when year(isnull(trado.tglgantiakiterakhir,'1900/1/1'))=1900 then null else trado.tglgantiakiterakhir end) as tglgantiakiterakhir"),
+                'trado.tipe',
+                'trado.jenis',
+                'trado.isisilinder',
+                'trado.warna',
+                'trado.jenisbahanbakar',
+                'trado.jumlahsumbu',
+                'trado.jumlahroda',
+                'trado.model',
+                'trado.tahun',
+                DB::raw("(case when trado.nominalplusborongan IS NULL then 0 else trado.nominalplusborongan end) as nominalplusborongan"),
+                'trado.nobpkb',
+                'trado.jumlahbanserap',
+                'trado.photostnk',
+                'trado.photobpkb',
+                'trado.phototrado',
+                'parameter_statusaktif.memo as statusaktif',
+                'parameter_statusstandarisasi.memo as statusstandarisasi',
+                'parameter_statusjenisplat.memo as statusjenisplat',
+                'parameter_statusmutasi.memo as statusmutasi',
+                'parameter_statusvalidasikendaraan.memo as statusvalidasikendaraan',
+                'parameter_statusmobilstoring.memo as statusmobilstoring',
+                'parameter_statusappeditban.memo as statusappeditban',
+                'parameter_statuslewatvalidasi.memo as statuslewatvalidasi',
+                'parameter_statusabsensisupir.memo as statusabsensisupir',
+                'mandor.namamandor as mandor_id',
+                'supir.id as supirid',
+                'supir.namasupir as supir_id',
+                'trado.updated_at',
+                db::raw("isnull(parameter_statusapprovalhistorymilikmandor.memo,'" . $defaultmemononapproval . "')  as statusapprovalhistorytradomilikmandor"),
+                'trado.userapprovalhistorytradomilikmandor as userapprovalhistorytradomilikmandor',
+                'trado.tglapprovalhistorytradomilikmandor as tglapprovalhistorytradomilikmandor',
+                'trado.tglupdatehistorytradomilikmandor as tglupdatehistorytradomilikmandor',
+                db::raw("isnull(parameter_statusapprovalhistorymiliksupir.memo,'" . $defaultmemononapproval . "')  as statusapprovalhistorytradomiliksupir"),
+                'trado.userapprovalhistorytradomiliksupir as userapprovalhistorytradomiliksupir',
+                'trado.tglapprovalhistorytradomiliksupir as tglapprovalhistorytradomiliksupir',
+                'trado.tglupdatehistorytradomiliksupir as tglupdatehistorytradomiliksupir',
+                'trado.tglberlakumilikmandor as tglberlakumilikmandor',
+                'trado.tglberlakumiliksupir as tglberlakumiliksupir',
+
+                DB::raw("'Laporan Trado' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            )
+            ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'trado.statusaktif', 'parameter_statusaktif.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusjenisplat with (readuncommitted)"), 'trado.statusjenisplat', 'parameter_statusjenisplat.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusstandarisasi with (readuncommitted)"), 'trado.statusstandarisasi', 'parameter_statusstandarisasi.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusmutasi with (readuncommitted)"), 'trado.statusmutasi', 'parameter_statusmutasi.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusvalidasikendaraan with (readuncommitted)"), 'trado.statusvalidasikendaraan', 'parameter_statusvalidasikendaraan.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusmobilstoring with (readuncommitted)"), 'trado.statusmobilstoring', 'parameter_statusmobilstoring.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusappeditban with (readuncommitted)"), 'trado.statusappeditban', 'parameter_statusappeditban.id')
+            ->leftJoin(DB::raw("parameter as parameter_statuslewatvalidasi with (readuncommitted)"), 'trado.statuslewatvalidasi', 'parameter_statuslewatvalidasi.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusabsensisupir with (readuncommitted)"), 'trado.statusabsensisupir', 'parameter_statusabsensisupir.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusapprovalhistorymilikmandor with (readuncommitted)"), 'trado.statusapprovalhistorytradomilikmandor', 'parameter_statusapprovalhistorymilikmandor.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusapprovalhistorymiliksupir with (readuncommitted)"), 'trado.statusapprovalhistorytradomiliksupir', 'parameter_statusapprovalhistorymiliksupir.id')
+            ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'trado.mandor_id', 'mandor.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'trado.supir_id', 'supir.id');
+        // ->where("trado.id" ,"=","37");
+
+        if ($aktif == 'AKTIF') {
+            $statusaktif = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS AKTIF')
+                ->where('text', '=', 'AKTIF')
+                ->first();
+
+            $query->where('trado.statusaktif', '=', $statusaktif->id);
+        }
+
+
+        $penerimaanstok = request()->penerimaanstok_id ?? '';
+        $penerimaanStokPg = DB::connection('srvtnl')->table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
+
+        if ($penerimaanstok == $penerimaanStokPg->text) {
+            $tradodari_id = request()->tradodari_id ?? 0;
+            $tradoke_id = request()->tradoke_id ?? 0;
+            $tradodarike = request()->tradodarike ?? '';
+            if ($tradodarike == "ke") {
+                $query->whereraw("trado.id not in(" . $tradodari_id . ")");
+            }
+            if ($tradodarike == "dari") {
+                $query->whereraw("trado.id not in(" . $tradoke_id . ")");
+            }
+        }
+
+
+        $this->filter($query);
+
+        if ($trado_id != '') {
+            $query->where('trado.id', $trado_id);
+        }
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);
+        $this->paginate($query);
+
+        return $query;
+    }
+
 
     public function getTNLForKlaim()
     {
-        $server = config('app.url_tnl');
-        $getToken = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Accept' => 'application/json'
-        ])
-            ->post($server . 'token', [
-                'user' => 'ADMIN',
-                'password' => getenv('PASSWORD_TNL'),
-                'ipclient' => '',
-                'ipserver' => '',
-                'latitude' => '',
-                'longitude' => '',
-                'browser' => '',
-                'os' => '',
-            ]);
-        $access_token = json_decode($getToken, TRUE)['access_token'];
+        // $server = config('app.url_tnl');
+        // $getToken = Http::withHeaders([
+        //     'Content-Type' => 'application/json',
+        //     'Accept' => 'application/json'
+        // ])
+        //     ->post($server . 'token', [
+        //         'user' => 'ADMIN',
+        //         'password' => getenv('PASSWORD_TNL'),
+        //         'ipclient' => '',
+        //         'ipserver' => '',
+        //         'latitude' => '',
+        //         'longitude' => '',
+        //         'browser' => '',
+        //         'os' => '',
+        //     ]);
+        // $access_token = json_decode($getToken, TRUE)['access_token'];
 
-        $getTrado = Http::withHeaders([
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $access_token,
-            'Content-Type' => 'application/json',
-        ])
+        // $getTrado = Http::withHeaders([
+        //     'Accept' => 'application/json',
+        //     'Authorization' => 'Bearer ' . $access_token,
+        //     'Content-Type' => 'application/json',
+        // ])
 
-            ->get($server . "trado?limit=0&aktif=AKTIF");
+        //     ->get($server . "trado?limit=0&aktif=AKTIF");
 
-        $data = $getTrado->json()['data'];
+        // $data = $getTrado->json()['data'];
         $class = 'TradoLookupController';
         $user = auth('api')->user()->name;
 
@@ -443,70 +599,23 @@ class Trado extends MyModel
             $table->integer('id')->nullable();
             $table->longText('keterangan')->nullable();
             $table->string('kodetrado', 30)->nullable();
-            $table->double('kmawal', 15, 2)->nullable();
-            $table->double('kmakhirgantioli', 15, 2)->nullable();
-            $table->date('tglasuransimati')->nullable();
-            $table->date('tglspeksimati')->nullable();
-            $table->date('tglstnkmati')->nullable();
-            $table->string('merek', 40)->nullable();
-            $table->string('norangka', 40)->nullable();
-            $table->string('nomesin', 40)->nullable();
-            $table->string('nama', 40)->nullable();
-            $table->string('nostnk', 50)->nullable();
-            $table->longText('alamatstnk')->nullable();
-            $table->string('modifiedby', 30)->nullable();
-            $table->dateTime('created_at')->nullable();
-            $table->date('tglserviceopname')->nullable();
-            $table->string('keteranganprogressstandarisasi', 100)->nullable();
-            $table->date('tglpajakstnk')->nullable();
-            $table->date('tglgantiakiterakhir')->nullable();
-            $table->string('tipe', 30)->nullable();
-            $table->string('jenis', 30)->nullable();
-            $table->integer('isisilinder')->length(11)->nullable();
-            $table->string('warna', 30)->nullable();
-            $table->string('jenisbahanbakar', 30)->nullable();
-            $table->integer('jumlahsumbu')->length(11)->nullable();
-            $table->integer('jumlahroda')->length(11)->nullable();
-            $table->string('model', 50)->nullable();
-            $table->string('tahun', 40)->nullable();
-            $table->double('nominalplusborongan', 15, 2)->nullable();
-            $table->string('nobpkb', 50)->nullable();
-            $table->integer('jumlahbanserap')->length(11)->nullable();
-            $table->string('mandor_id', 1500)->nullable();
-            $table->string('supir_id', 1500)->nullable();
-            $table->string('supirid', 1500)->nullable();
-            $table->dateTime('updated_at')->nullable();
-            $table->longtext('statusapprovalhistorytradomilikmandor')->nullable();
-            $table->string('userapprovalhistorytradomilikmandor', 50)->nullable();
-            $table->datetime('tglapprovalhistorytradomilikmandor')->nullable();
-            $table->datetime('tglupdatehistorytradomilikmandor')->nullable();
-            $table->longtext('statusapprovalhistorytradomiliksupir')->nullable();
-            $table->string('userapprovalhistorytradomiliksupir', 50)->nullable();
-            $table->datetime('tglapprovalhistorytradomiliksupir')->nullable();
-            $table->datetime('tglupdatehistorytradomiliksupir')->nullable();
-            $table->datetime('tglberlakumilikmandor')->nullable();
-            $table->datetime('tglberlakumiliksupir')->nullable();
         });
 
-        foreach ($data as $row) {
-            unset($row['judulLaporan']);
-            unset($row['judul']);
-            unset($row['tglcetak']);
-            unset($row['usercetak']);
-            unset($row['photostnk']);
-            unset($row['photobpkb']);
-            unset($row['phototrado']);
-            unset($row['statusaktif']);
-            unset($row['statusstandarisasi']);
-            unset($row['statusjenisplat']);
-            unset($row['statusmutasi']);
-            unset($row['statusvalidasikendaraan']);
-            unset($row['statusmobilstoring']);
-            unset($row['statusappeditban']);
-            unset($row['statuslewatvalidasi']);
-            unset($row['statusabsensisupir']);
-            DB::table($temtabel)->insert($row);
+        $query = DB::connection('srvtnl')->table('trado')->from(DB::raw("trado with (Readuncommitted)"))->select(
+            'id',
+            'keterangan',
+            'kodetrado',
+        )->where('statusaktif', '=', 1)->get();
+
+        foreach ($query as $row) {
+            DB::table($temtabel)->insert([
+                'id' => $row->id,
+                'keterangan' => $row->keterangan,
+                'kodetrado' => $row->kodetrado,
+
+            ]);
         }
+        
 
         return $temtabel;
     }
