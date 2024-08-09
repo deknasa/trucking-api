@@ -269,6 +269,7 @@ class PengeluaranStokHeader extends MyModel
                         'a.tglbukti',
                         // 'a.bank_id',
                     )
+                    ->groupBy('a.nobukti','a.tglbukti')
                     ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti')
                     ->leftjoin(db::raw($temppenerimaanstokheader . " c"),'a.nobukti','c.nobukti')
                     ->whereRaw("isnull(c.nobukti,'')=''");                    
@@ -309,6 +310,7 @@ class PengeluaranStokHeader extends MyModel
                         'a.tglbukti',
                         'a.bank_id',
                     )
+                    ->groupBy('a.nobukti','a.tglbukti','a.bank_id')
                     ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.penerimaan_nobukti');
 
                 DB::table($temppenerimaanheader)->insert([
@@ -331,7 +333,8 @@ class PengeluaranStokHeader extends MyModel
                         'a.nobukti',
                         'a.tglbukti',
                     )
-                    ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti');
+                    ->groupBy('a.nobukti','a.tglbukti')
+                    ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.hutangbayar_nobukti');
 
                 DB::table($temppelunasanhutangheader)->insertUsing([
                     'nobukti',
@@ -350,7 +353,8 @@ class PengeluaranStokHeader extends MyModel
                         'a.nobukti',
                         'a.tglbukti',
                     )
-                    ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti');
+                    ->groupBy('a.nobukti','a.tglbukti')
+                    ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.pengeluaranstok_nobukti');
 
                 DB::table($temppengeluaranstokheader)->insert([
                     'nobukti' => '',
@@ -369,6 +373,7 @@ class PengeluaranStokHeader extends MyModel
                         'a.nobukti',
                         'a.tglbukti',
                     )
+                    ->groupBy('a.nobukti','a.tglbukti')
                     ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.servicein_nobukti');
 
                 DB::table($tempserviceinheader)->insert([
@@ -390,7 +395,8 @@ class PengeluaranStokHeader extends MyModel
                         'a.nobukti',
                         'a.tglbukti',
                     )
-                    ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti');
+                    ->groupBy('a.nobukti','a.tglbukti')
+                    ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.pengeluarantrucking_nobukti');
 
                 DB::table($temppengeluarantruckingheader)->insertUsing([
                     'nobukti',
