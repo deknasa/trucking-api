@@ -32,6 +32,12 @@ class PengeluaranStokDetail extends MyModel
         $this->setRequestParameters();
 
         $from = request()->from ?? '';
+        $cabang = request()->cabang ?? '';
+        // dd(request());
+        if ($cabang == 'TNL') {
+            $query = $this->getForTnl();
+             goto endTnl;
+         }
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
         if (isset(request()->id)) {
@@ -176,9 +182,160 @@ class PengeluaranStokDetail extends MyModel
             $this->paginate($query);
             // dd($query->toSql());
         }
+        endTnl:
         return $query->get();
     }
+    public function getForTnl()
+    {
+        $this->setRequestParameters();
 
+        $from = request()->from ?? '';
+
+        $query = DB::connection('srvtnl')->table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
+
+        if (isset(request()->id)) {
+            $query->where("$this->table.id", request()->id);
+        }
+
+        if (isset(request()->pengeluaranstokheader_id)) {
+            $query->where("$this->table.pengeluaranstokheader_id", request()->pengeluaranstokheader_id);
+        }
+
+        $tempumuraki = '##tempumuraki' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::connection('srvtnl')->create($tempumuraki, function ($table) {
+                $table->Integer('stok_id')->nullable();
+                $table->integer('jumlahhari')->nullable();
+                $table->date('tglawal')->nullable();
+            });
+    
+            DB::connection('srvtnl')->table($tempumuraki)->insertUsing([
+                'stok_id',
+                'jumlahhari',
+                'tglawal',
+            ], (new SaldoUmurAki())->getallstoktnl());
+    
+            $tempumuraki2 = '##tempumuraki2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::connection('srvtnl')->create($tempumuraki2, function ($table) {
+                $table->Integer('stok_id')->nullable();
+                $table->integer('jumlahhari')->nullable();
+                $table->date('tglawal')->nullable();
+            });
+    
+            $queryaki = db::connection('srvtnl')->table($tempumuraki)->from(db::raw($tempumuraki . " a "))
+                ->select(
+                    'a.stok_id',
+                    db::raw("max(a.jumlahhari) as jumlahhari"),
+                    db::raw("max(a.tglawal) as tglawal"),
+                )
+                ->groupby('a.stok_id');
+    
+            DB::connection('srvtnl')->table($tempumuraki2)->insertUsing([
+                'stok_id',
+                'jumlahhari',
+                'tglawal',
+            ],  $queryaki);
+    
+            //update total vulkanisir
+            $tempvulkan = '##tempvulkan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::connection('srvtnl')->create($tempvulkan, function ($table) {
+                $table->integer('stok_id')->nullable();
+                $table->integer('vulkan')->nullable();
+            });
+            
+            DB::connection('srvtnl')->table($tempvulkan)->insertUsing([
+                'stok_id',
+                'vulkan',
+            ],(new Stok())->getVulkanTnl());
+
+        if (isset(request()->forReport) && request()->forReport) {
+            $query->select(
+                "$this->table.pengeluaranstokheader_id",
+                "$this->table.nobukti",
+                db::raw("trim(stok.namastok)+
+                (case
+                      when isnull(stok.kelompok_id,0)=1 then ' ( VULKANISIR KE-'+format(isnull(d1.vulkan,0),'#,#0')+', STATUS BAN :'+isnull(parameter.text,'') +' )' 
+                else '' end)
+                as stok"),
+                "$this->table.stok_id",
+                db::raw("isnull(pengeluaranStokdetail.qty,0) as qty"),
+                // "$this->table.qty",
+                db::raw("isnull(pengeluaranStokdetail.harga,0) as harga"),
+                // "$this->table.harga",
+                "$this->table.persentasediscount",
+                "$this->table.nominaldiscount",
+                "$this->table.total",
+                "$this->table.keterangan",
+                "$this->table.vulkanisirke",
+                "$this->table.modifiedby",
+            )
+            ->leftJoin("stok", "$this->table.stok_id", "stok.id")
+            ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
+            ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id")
+            ->leftJoin("parameter", "stok.statusban", "parameter.id");
+
+            $this->totalRows = $query->count();
+        } else {
+
+            $getJudul = DB::connection('srvtnl')->table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->select('text')
+                ->where('grp', 'JUDULAN LAPORAN')
+                ->where('subgrp', 'JUDULAN LAPORAN')
+                ->first();
+
+            $query->select(
+                "$this->table.pengeluaranstokheader_id",
+                "$this->table.nobukti",
+                "$this->table.stok_id",
+                "satuan.satuan as satuan",
+                db::raw("trim(stok.namastok)+
+                (case when isnull(stok.kelompok_id,0)=1 then ' ( VULKANISIR KE-'+format(isnull(d1.vulkan,0),'#,#0')+', STATUS BAN :'+isnull(statusban.text,'') +' )' 
+                else '' end)
+                as stok"),
+                'statusreuse.memo as statusreuse',    
+                db::raw("isnull(pengeluaranStokdetail.qty,0) as qty"),
+                // "$this->table.qty",
+                db::raw("isnull(pengeluaranStokdetail.harga,0) as harga"),
+                // "$this->table.harga",
+                "$this->table.persentasediscount",
+                "$this->table.nominaldiscount",
+                "$this->table.total",
+                "$this->table.keterangan",
+                "$this->table.vulkanisirke",
+                "$this->table.statusban",
+                "parameter.text as statusoli",
+                "$this->table.modifiedby",
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            )
+                ->leftJoin("pengeluaranstokheader", "$this->table.pengeluaranstokheader_id", "pengeluaranstokheader.id")
+                ->leftJoin("stok", "$this->table.stok_id", "stok.id")
+                ->leftJoin("satuan", "stok.satuan_id", "satuan.id")
+                ->leftJoin(DB::raw("parameter as statusreuse with (readuncommitted)"), 'stok.statusreuse', 'statusreuse.id')
+                ->leftJoin("parameter", "$this->table.statusoli", "parameter.id")
+                ->leftJoin(db::raw($tempvulkan . " d1"), "stok.id", "d1.stok_id")
+                ->leftJoin(db::raw($tempumuraki2 . " c1"), "stok.id", "c1.stok_id")
+                ->leftJoin("parameter as statusban", "stok.statusban", "statusban.id");
+            if($from == 'klaim')
+            {
+                $nobuktiStok = DB::connection('srvtnl')->table("pengeluaranstokheader")->where('id', request()->pengeluaranstokheader_id)->first()->nobukti ?? '';
+                if($nobuktiStok != ''){
+                    $stok_id = request()->stok_id ?? 0;
+                    $query->whereRaw("pengeluaranstokdetail.stok_id not in (select stok_id from pengeluarantruckingdetail where pengeluaranstok_nobukti='$nobuktiStok' and stok_id != $stok_id)");
+                }
+            }
+
+            $this->totalNominal = $query->sum('total');
+            $this->filter($query);
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+            $this->sort($query);
+            $this->paginate($query);
+            // dd($query->toSql());
+        }
+        return $query;
+    }
     public function getTNLForKlaim()
     {
         $server = config('app.url_tnl');

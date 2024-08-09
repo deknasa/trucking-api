@@ -3,30 +3,39 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\OrderanEmkl;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
 class OrderanEmklController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-
-        $response = Http::accept('application/json')
-            ->withToken(session('access_token'))
-            ->get(config('emkl.api.url') . '/orderanemkl', $request->all());
-
-        return response()->json($response->json(), $response->status());
+    
+        $orderanemkl = new OrderanEmkl();
+        $orderanemkl->setConnection('sqlsrvemkl');
+        return response([
+            'data' => $orderanemkl->get(),
+            'attributes' => [
+                'totalRows' => $orderanemkl->totalRows,
+                'totalPages' => $orderanemkl->totalPages
+            ]
+        ]);
     }
 
     public function getTglJob()
     {
-        // dd(request()->job);
-        $response = Http::accept('application/json')
-            ->withToken(session('access_token'))
-            ->get(config('emkl.api.url') . '/orderanemkl/getTglJob', request()->all());
 
-            // dd($response->json());
-        return response()->json($response->json(), $response->status());
-    }    
+        // dd('test');
+        $orderanemkl = new OrderanEmkl();
+        $orderanemkl->setConnection('sqlsrvemkl');
+
+        $data=$orderanemkl->getJob(request()->job);
+        return response([
+            "tgl" => $data
+        ]);
+
+   
+    }
 }

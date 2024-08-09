@@ -102,6 +102,12 @@ class Gandengan extends MyModel
         $aktif = request()->aktif ?? '';
         $asal = request()->asal ?? '';
         $statusjeniskendaraan = request()->statusjeniskendaraan ?? '';
+        $cabang = request()->cabang ?? 'TAS';
+        if ($cabang == 'TNL') {
+            $query = $this->getForTnl();
+             goto endTnl;
+         }
+
 
         if ($asal == 'YA') {
             $statusGandengan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GANDENGAN')->where('text', 'TINGGAL CONTAINER')->first();
@@ -216,40 +222,169 @@ class Gandengan extends MyModel
 
         $this->sort($query);
         $this->paginate($query);
-
+        endTnl:
         $data = $query->get();
 
         return $data;
     }
+    public function getForTnl()
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::connection('srvtnl')->table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
+        $aktif = request()->aktif ?? '';
+        $asal = request()->asal ?? '';
+        $statusjeniskendaraan = request()->statusjeniskendaraan ?? '';
+
+        if ($asal == 'YA') {
+            $statusGandengan = DB::connection('srvtnl')->table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GANDENGAN')->where('text', 'TINGGAL CONTAINER')->first();
+            $belawan = DB::connection('srvtnl')->table("kota")->from(DB::raw("kota with (readuncommitted)"))->where('kodekota', 'BELAWAN')->first();
+
+            $tempStatus = '##tempstatus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::connection('srvtnl')->create($tempStatus, function ($table) {
+                $table->unsignedBigInteger('id');
+                $table->string('jobtrucking');
+            });
+
+            $getStatus = DB::connection('srvtnl')->table("gandengan")->from(DB::raw("gandengan with (readuncommitted)"))
+                ->select('gandengan.id', 'suratpengantar.jobtrucking')
+                ->join(DB::raw("suratpengantar with (readuncommitted)"), 'suratpengantar.gandengan_id', 'gandengan.id')
+                ->where('suratpengantar.statusgandengan', $statusGandengan->id);
+
+            DB::connection('srvtnl')->table($tempStatus)->insertUsing([
+                'id',
+                'jobtrucking'
+            ], $getStatus);
+
+            $tempJob = '##tempjob' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::connection('srvtnl')->create($tempJob, function ($table) {
+                $table->string('jobtrucking');
+            });
+
+            $getJob = DB::connection('srvtnl')->table("$tempStatus")->from(DB::raw("$tempStatus as a with (readuncommitted)"))
+                ->select('a.jobtrucking')
+                ->join(DB::raw("suratpengantar as b with (readuncommitted)"), 'a.jobtrucking', 'b.jobtrucking')
+                ->where('b.sampai_id', $belawan->id);
+
+            DB::connection('srvtnl')->table($tempJob)->insertUsing([
+                'jobtrucking'
+            ], $getJob);
+
+            $tempAll = '##tempall' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::connection('srvtnl')->create($tempAll, function ($table) {
+                $table->unsignedBigInteger('id');
+                $table->string('jobtrucking');
+            });
+
+            $getAll = DB::connection('srvtnl')->table("$tempStatus")->from(DB::raw("$tempStatus as a with (readuncommitted)"))
+                ->select('a.*')
+                ->leftJoin(DB::raw("$tempJob as b with (readuncommitted)"), 'a.jobtrucking', 'b.jobtrucking')
+                ->whereRaw("ISNULL(b.jobtrucking, '') = ''");
+
+            DB::connection('srvtnl')->table($tempAll)->insertUsing([
+                'id',
+                'jobtrucking'
+            ], $getAll);
+        }
+
+        $query = DB::connection('srvtnl')->table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                'gandengan.id',
+                'gandengan.kodegandengan',
+                'gandengan.keterangan',
+                'trado.kodetrado as trado',
+                'container.kodecontainer as container',
+                'gandengan.jumlahroda',
+                'gandengan.jumlahbanserap',
+                'parameter.memo as statusaktif',
+                'gandengan.modifiedby',
+                'gandengan.created_at',
+                'gandengan.updated_at',
+                DB::raw("'Laporan Gandengan' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gandengan.statusaktif', 'parameter.id')
+            ->leftJoin(DB::raw("container with (readuncommitted)"), 'gandengan.container_id', '=', 'container.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'gandengan.trado_id', '=', 'trado.id');
+        if ($aktif == 'AKTIF') {
+            $statusaktif = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS AKTIF')
+                ->where('text', '=', 'AKTIF')
+                ->first();
+
+            $query->where('gandengan.statusaktif', '=', $statusaktif->id);
+        }
+        if($statusjeniskendaraan != ''){
+            $query->where('statusjeniskendaraan', $statusjeniskendaraan);
+        }
+        $penerimaanstok = request()->penerimaanstok_id ?? '';
+        $penerimaanStokPg = DB::connection('srvtnl')->table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
+
+        if ($penerimaanstok == $penerimaanStokPg->text) {
+            $gandengandari_id = request()->gandengandari_id ?? 0;
+            $gandenganke_id = request()->gandenganke_id ?? 0;        
+            $gandengandarike= request()->gandengandarike ?? '';        
+            if ($gandengandarike == "ke") {
+                $query->whereraw("gandengan.id not in(" . $gandengandari_id . ")");
+            }
+            if ($gandengandarike == "dari") {
+                $query->whereraw("gandengan.id not in(" . $gandenganke_id . ")");
+            }
+        }
+
+        if ($asal == 'YA') {
+            $query->whereRaw("gandengan.id in (select id from $tempAll)");
+        }
+
+        $this->filter($query);
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);
+        $this->paginate($query);
+        return $query;
+    }
 
     public function getTNLForKlaim()
     {
-        $server = config('app.url_tnl');
-        $getToken = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Accept' => 'application/json'
-        ])
-            ->post($server . 'token', [
-                'user' => 'ADMIN',
-                'password' => getenv('PASSWORD_TNL'),
-                'ipclient' => '',
-                'ipserver' => '',
-                'latitude' => '',
-                'longitude' => '',
-                'browser' => '',
-                'os' => '',
-            ]);
-        $access_token = json_decode($getToken, TRUE)['access_token'];
+        // $server = config('app.url_tnl');
+        // $getToken = Http::withHeaders([
+        //     'Content-Type' => 'application/json',
+        //     'Accept' => 'application/json'
+        // ])
+        //     ->post($server . 'token', [
+        //         'user' => 'ADMIN',
+        //         'password' => getenv('PASSWORD_TNL'),
+        //         'ipclient' => '',
+        //         'ipserver' => '',
+        //         'latitude' => '',
+        //         'longitude' => '',
+        //         'browser' => '',
+        //         'os' => '',
+        //     ]);
+        // $access_token = json_decode($getToken, TRUE)['access_token'];
 
-        $getTrado = Http::withHeaders([
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $access_token,
-            'Content-Type' => 'application/json',
-        ])
+        // $getTrado = Http::withHeaders([
+        //     'Accept' => 'application/json',
+        //     'Authorization' => 'Bearer ' . $access_token,
+        //     'Content-Type' => 'application/json',
+        // ])
 
-            ->get($server . "gandengan?limit=0&aktif=AKTIF");
+        //     ->get($server . "gandengan?limit=0&aktif=AKTIF");
 
-        $data = $getTrado->json()['data'];
+        // $data = $getTrado->json()['data'];
 
         $class = 'GandenganLookupController';
         $user = auth('api')->user()->name;
@@ -286,23 +421,23 @@ class Gandengan extends MyModel
             $table->integer('id')->nullable();
             $table->string('kodegandengan', 300)->nullable();
             $table->string('keterangan', 300)->nullable();
-            $table->string('trado', 300)->nullable();
-            $table->string('container', 300)->nullable();
-            $table->integer('jumlahroda')->length(11)->nullable();
-            $table->integer('jumlahbanserap')->length(11)->nullable();
-            $table->string('statusaktif', 300)->nullable();
-            $table->string('modifiedby', 300)->nullable();
-            $table->dateTime('created_at')->nullable();
-            $table->dateTime('updated_at')->nullable();
-            $table->string('judulLaporan', 1500)->nullable();
-            $table->string('judul', 1500)->nullable();
-            $table->string('tglcetak', 1500)->nullable();
-            $table->string('usercetak', 1500)->nullable();
         });
 
-        foreach ($data as $row) {
-            DB::table($temtabel)->insert($row);
+        $query = DB::connection('srvtnl')->table('gandengan')->from(DB::raw("gandengan with (Readuncommitted)"))->select(
+            'id',
+            'kodegandengan',
+            'keterangan',
+        )->where('statusaktif', '=', 1)->get();
+
+        foreach ($query as $row) {
+            DB::table($temtabel)->insert([
+                'id' => $row->id,
+                'kodegandengan' => $row->kodegandengan,
+                'keterangan' => $row->keterangan,
+
+            ]);
         }
+        
 
         return $temtabel;
     }

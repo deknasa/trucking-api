@@ -32,6 +32,12 @@ class PenerimaanStokDetail extends MyModel
 
         $from = request()->from ?? '';
         $nobukti = request()->nobukti ?? '';
+        $cabang = request()->cabang ?? '';
+        // dd(request());
+        if ($cabang == 'TNL') {
+            $query = $this->getForTnl();
+             goto endTnl;
+         }
 
         if ($nobukti == '') {
             $nobukti = request()->penerimaanstokheader_nobukti ?? '';
@@ -493,7 +499,478 @@ class PenerimaanStokDetail extends MyModel
             $this->sort($query);
             $this->paginate($query);
         }
+        
+        endTnl:
         return $query->get();
+    }
+    public function getForTnl()
+    {
+        $this->setRequestParameters();
+
+        $from = request()->from ?? '';
+        $nobukti = request()->nobukti ?? '';
+
+        if ($nobukti == '') {
+            $nobukti = request()->penerimaanstokheader_nobukti ?? '';
+        }
+        $query = DB::connection('srvtnl')->table("PenerimaanStokHeader");
+        // $header = $query->where("id", request()->penerimaanstokheader_id)->first();
+        $header = $query->where("nobukti", $nobukti)->first();
+
+
+        $tempvulkan = '##tempvulkan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::connection('srvtnl')->create($tempvulkan, function ($table) {
+            $table->integer('stok_id')->nullable();
+            $table->integer('vulkan')->nullable();
+        });
+        if ($header) {
+            DB::connection('srvtnl')->table($tempvulkan)->insertUsing([
+                'stok_id',
+                'vulkan',
+            ], (new Stok())->getVulkanTnl($header->tglbukti));
+        }
+
+
+        $temtabelpenerimaandetail = 'temppenerimaandetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+        Schema::connection('srvtnl')->create($temtabelpenerimaandetail, function (Blueprint $table) {
+            $table->integer('id')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->unsignedBigInteger('penerimaanstokheader_id')->nullable();
+            $table->unsignedBigInteger('stok_id')->nullable();
+            $table->double('qty', 15, 2)->nullable();
+            $table->double('harga', 15, 2)->nullable();
+            $table->double('persentasediscount', 15, 2)->nullable();
+            $table->double('nominaldiscount', 15, 2)->nullable();
+            $table->double('total', 15, 2)->nullable();
+            $table->longtext('keterangan')->nullable();
+            $table->unsignedBigInteger('vulkanisirke')->nullable();
+            $table->string('penerimaanstok_nobukti', 50)->nullable();
+            $table->double('qtykeluar', 15, 2)->nullable();
+            $table->longtext('info')->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->datetime('created_at')->nullable();
+            $table->datetime('updated_at')->nullable();
+            $table->double('qtyterpakai', 15, 2)->nullable();
+            $table->string('pengeluaranstokproses_nobukti', 50)->nullable();
+        });
+
+        $querypenerimaandetail = db::connection('srvtnl')->table("penerimaanstokdetail")->from(db::raw("penerimaanstokdetail a  with (readuncommitted)"))
+            ->select(
+                'a.id',
+                'a.nobukti',
+                'a.penerimaanstokheader_id',
+                'a.stok_id',
+                'a.qty',
+                'a.harga',
+                'a.persentasediscount',
+                'a.nominaldiscount',
+                'a.total',
+                'a.keterangan',
+                'a.vulkanisirke',
+                'a.penerimaanstok_nobukti',
+                'a.qtykeluar',
+                'a.info',
+                'a.modifiedby',
+                'a.created_at',
+                'a.updated_at',
+                'a.qtyterpakai',
+                'a.pengeluaranstokproses_nobukti',
+            );
+            if ($nobukti != "") {
+                $querypenerimaandetail->where('a.nobukti', $nobukti);
+            }
+
+        DB::connection('srvtnl')->table($temtabelpenerimaandetail)->insertUsing([
+            'id',
+            'nobukti',
+            'penerimaanstokheader_id',
+            'stok_id',
+            'qty',
+            'harga',
+            'persentasediscount',
+            'nominaldiscount',
+            'total',
+            'keterangan',
+            'vulkanisirke',
+            'penerimaanstok_nobukti',
+            'qtykeluar',
+            'info',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+            'qtyterpakai',
+            'pengeluaranstokproses_nobukti',
+        ], $querypenerimaandetail);
+
+        $querypenerimaandetail = db::connection('srvtnl')->table("kartustoklama")->from(db::raw("kartustoklama a  with (readuncommitted)"))
+            ->select(
+                'a.id',
+                'a.nobukti',
+                db::raw("0 as penerimaanstokheader_id"),
+                'a.stok_id',
+                'a.qtymasuk as qty',
+                db::raw("round((a.nilaimasuk/a.qtymasuk),2) as harga"),
+                db::raw("0 as persentasediscount"),
+                db::raw("0 as nominaldiscount"),
+                'a.nilaimasuk as total',
+                db::raw("'' as keterangan"),
+                db::raw("'' as vulkanisirke"),
+                db::raw("'' as penerimaanstok_nobukti"),
+                db::raw("0 as qtykeluar"),
+                db::raw("'' as info"),
+                db::raw("a.modifiedby"),
+                db::raw("a.created_at"),
+                db::raw("a.updated_at"),
+                db::raw("0 as qtyterpakai"),
+                db::raw("'' as pengeluaranstokproses_nobukti"),
+            )
+            ->where('a.nobukti', $nobukti)
+            ->whereraw("isnull(a.qtymasuk,0)<>0");
+
+        DB::connection('srvtnl')->table($temtabelpenerimaandetail)->insertUsing([
+            'id',
+            'nobukti',
+            'penerimaanstokheader_id',
+            'stok_id',
+            'qty',
+            'harga',
+            'persentasediscount',
+            'nominaldiscount',
+            'total',
+            'keterangan',
+            'vulkanisirke',
+            'penerimaanstok_nobukti',
+            'qtykeluar',
+            'info',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+            'qtyterpakai',
+            'pengeluaranstokproses_nobukti',
+        ], $querypenerimaandetail);
+
+
+        // $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
+        $query = DB::connection('srvtnl')->table($temtabelpenerimaandetail)->from(DB::raw($temtabelpenerimaandetail . " penerimaanstokdetail "));
+        $spbp = DB::connection('srvtnl')->table('penerimaanstok')->where('kodepenerimaan', 'SPBP')->first();
+        $rtr = DB::connection('srvtnl')->table('pengeluaranstok')->where('kodepengeluaran', 'RTR')->first();
+        $spbs = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
+
+        if (isset(request()->id)) {
+            $query->where("$this->table.id", request()->id);
+        }
+  
+        // if (isset(request()->penerimaanstokheader_id)) {
+        //     $query->where("$this->table.penerimaanstokheader_id", request()->penerimaanstokheader_id);
+        // }
+        if (isset(request()->nobukti)) {
+            $query->where("$this->table.nobukti", request()->nobukti);
+        }
+
+        $temtabelpenerimaan = 'temppenerimaan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+
+        Schema::connection('srvtnl')->create($temtabelpenerimaan, function (Blueprint $table) {
+            $table->string('nobukti', 50)->nullable();
+            $table->date('tglbukti')->nullable();
+        });
+        if (isset(request()->forReport) && request()->forReport) {
+
+            $idheader = request()->penerimaanstokheader_id ?? 0;
+
+            $queryheader = db::table("penerimaanstokheader")->from(db::raw("penerimaanstokheader a with (readuncommitted)"))
+                ->select(
+                    'a.nobukti',
+                    'a.tglbukti'
+                )
+                ->where('a.nobukti', $nobukti);
+
+            DB::table($temtabelpenerimaan)->insertUsing([
+                'nobukti',
+                'tglbukti',
+            ], $queryheader);
+
+            $queryheader = db::table("kartustoklama")->from(db::raw("kartustoklama a with (readuncommitted)"))
+                ->select(
+                    'a.nobukti',
+                    db::raw("max(a.tglbukti) as tglbukti")
+                )
+                ->groupBy('a.nobukti')
+                ->where('a.nobukti', $nobukti);
+
+            DB::table($temtabelpenerimaan)->insertUsing([
+                'nobukti',
+                'tglbukti',
+            ], $queryheader);
+
+            $querytgl = db::table($temtabelpenerimaan)->from(db::raw($temtabelpenerimaan . " a "))
+                ->select(
+                    db::raw("format(a.tglbukti,'yyyy/MM/dd') as tglbukti"),
+                )
+                // ->where('a.id', $idheader)
+                ->first()->tglbukti ?? '1900/1/1';
+
+
+            $tempumuraki = '##tempumuraki' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempumuraki, function ($table) {
+                $table->Integer('stok_id')->nullable();
+                $table->integer('jumlahhari')->nullable();
+                $table->date('tglawal')->nullable();
+            });
+
+            DB::table($tempumuraki)->insertUsing([
+                'stok_id',
+                'jumlahhari',
+                'tglawal',
+            ], (new SaldoUmurAki())->getallstok());
+
+            $hariaki = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                ->select(
+                    'a.text as id'
+                )
+                ->where('a.grp', 'HARIAKI')
+                ->where('a.subgrp', 'HARIAKI')
+                ->where('a.text', 'TANGGAL')
+                ->first();
+            if (isset($hariaki)) {
+                $bytgl = 1;
+            } else {
+                $bytgl = 0;
+            }
+            //update total vulkanisir
+
+            /***
+             * 
+             $reuse = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                 ->select('a.id')
+                 ->where('grp', 'STATUS REUSE')
+                 ->where('subgrp', 'STATUS REUSE')
+                 ->where('text', 'REUSE')
+                 ->first()->id ?? 0;
+ 
+ 
+             $tempvulkan = '##tempvulkan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+             Schema::create($tempvulkan, function ($table) {
+                 $table->integer('stok_id')->nullable();
+                 $table->integer('vulkan')->nullable();
+             });
+ 
+             $tempvulkanplus = '##tempvulkanplus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+             Schema::create($tempvulkanplus, function ($table) {
+                 $table->integer('stok_id')->nullable();
+                 $table->integer('vulkan')->nullable();
+             });
+ 
+ 
+             $tempvulkanminus = '##tempvulkanminus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+             Schema::create($tempvulkanminus, function ($table) {
+                 $table->integer('stok_id')->nullable();
+                 $table->integer('vulkan')->nullable();
+             });
+ 
+ 
+             $queryvulkanplus = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+                 ->select(
+                     db::raw("a.id as stok_id"),
+                     db::raw("sum(b.vulkanisirke) as vulkan"),
+                 )
+                 ->join(db::raw($temtabelpenerimaandetail . " b "), 'a.id', 'b.stok_id')
+                 ->join(db::raw($temtabelpenerimaan . " c "), 'b.nobukti', 'c.nobukti')
+                 ->where('a.statusreuse', $reuse)
+                 ->whereraw("c.tglbukti<='" . $querytgl . "'")
+                 ->groupby('a.id');
+ 
+             DB::table($tempvulkanplus)->insertUsing([
+                 'stok_id',
+                 'vulkan',
+             ],  $queryvulkanplus);
+ 
+             $queryvulkanminus = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+                 ->select(
+                     db::raw("a.id as stok_id"),
+                     db::raw("sum(b.vulkanisirke) as vulkan"),
+                 )
+                 ->join(db::raw("pengeluaranstokdetail b with (readuncommitted)"), 'a.id', 'b.stok_id')
+                 ->join(db::raw("pengeluaranstokheader c with (readuncommitted)"), 'b.nobukti', 'c.nobukti')
+                 ->where('a.statusreuse', $reuse)
+                 ->whereraw("c.tglbukti<='" . $querytgl . "'")
+                 ->groupby('a.id');
+ 
+             DB::table($tempvulkanminus)->insertUsing([
+                 'stok_id',
+                 'vulkan',
+             ],  $queryvulkanminus);
+ 
+ 
+             $queryvulkan = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+                 ->select(
+                     db::raw("a.id  as stok_id"),
+                     // db::raw("((isnull(a.totalvulkanisir,0)+isnull(b.vulkan,0))-isnull(c.vulkan,0)) as vulkan"),
+                     db::raw("isnull(a.totalvulkanisir,0) as vulkan"),
+                 )
+                 // ->leftjoin(db::raw($tempvulkanplus . " b "), 'a.id', 'b.stok_id')
+                 // ->leftjoin(db::raw($tempvulkanminus . " c "), 'a.id', 'c.stok_id')
+                 ->where('a.statusreuse', $reuse);
+ 
+             DB::table($tempvulkan)->insertUsing([
+                 'stok_id',
+                 'vulkan',
+             ],  $queryvulkan);
+             // dd(
+             //     $queryvulkanplus->where('a.id',3233)->first(),
+             //     $queryvulkanminus->where('a.id',3233)->first(),
+             //     $queryvulkan->where('a.id',3233)->first()
+             // );
+ 
+ 
+ 
+ 
+             // end update vulkanisir
+             * 
+             */
+
+
+            $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->select('text')
+                ->where('grp', 'JUDULAN LAPORAN')
+                ->where('subgrp', 'JUDULAN LAPORAN')
+                ->first();
+            $query->select(
+                "$this->table.penerimaanstokheader_id",
+                "$this->table.nobukti",
+                "$this->table.stok_id",
+                db::raw("trim(stok.namastok)+
+                (case when isnull(c.stok_id,0)<>0 then ' ( '+
+                    (case when " . $bytgl . "=1 then 'TGL PAKAI '+format(c.tglawal,'dd-MM-yyyy')+',' else '' end)+
+                    'UMUR AKI : '+format(isnull(c.jumlahhari,0),'#,#0')+' HARI )' 
+                      when isnull(stok.kelompok_id,0)=1 then ' ( VULKANISIR KE-'+format(isnull(d.vulkan,0),'#,#0')+', STATUS BAN :'+isnull(parameter.text,'') +' )' 
+                else '' end)
+                as stok"),
+                "$this->table.qty",
+                "$this->table.harga",
+                "$this->table.persentasediscount",
+                "$this->table.penerimaanstok_nobukti",
+                "$this->table.nominaldiscount",
+                "$this->table.total",
+                "$this->table.keterangan",
+                "$this->table.vulkanisirke",
+                "$this->table.modifiedby",
+                DB::raw("'Laporan Purchase Order (PO)' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            )
+                ->leftJoin(db::raw($temtabelpenerimaan . " penerimaanstokheader"), "$this->table.nobukti", "penerimaanstokheader.nobukti")
+                ->leftJoin("stok", "$this->table.stok_id", "stok.id")
+                ->leftJoin("parameter", "stok.statusban", "parameter.id")
+                ->leftJoin(db::raw($tempumuraki . " c"), "$this->table.stok_id", "c.stok_id")
+                ->leftJoin(db::raw($tempvulkan . " d"), "$this->table.stok_id", "d.stok_id");
+
+            $totalRows =  $query->count();
+            $penerimaanStokDetail = $query->get();
+        } else {
+            // dd('test');
+            $getJudul = DB::connection('srvtnl')->table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->select('text')
+                ->where('grp', 'JUDULAN LAPORAN')
+                ->where('subgrp', 'JUDULAN LAPORAN')
+                ->first();
+            $temtabelpenerimaan = "penerimaanstokheader";
+            $query->select(
+                "$this->table.penerimaanstokheader_id",
+                "$this->table.nobukti",
+                "$this->table.stok_id",
+                "stok.namastok as stok",
+                "satuan.satuan as satuan",
+                "$this->table.qty",
+                "$this->table.harga",
+                "$this->table.persentasediscount",
+                "$this->table.penerimaanstok_nobukti",
+                "$this->table.nominaldiscount",
+                "$this->table.total",
+                "$this->table.keterangan",
+                "statusban.text as statusban",
+                DB::raw("isnull(d1.vulkan,0) as vulkanisirke"),
+                "$this->table.modifiedby",
+                DB::raw("'Laporan Purchase Order (PO)' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            )
+
+                ->leftJoin(db::raw($tempvulkan . " d1"), "$this->table.stok_id", "d1.stok_id")
+                ->leftJoin(db::raw($temtabelpenerimaan . " penerimaanstokheader"), "$this->table.nobukti", "penerimaanstokheader.nobukti")
+                ->leftJoin("stok", "$this->table.stok_id", "stok.id")
+                ->leftJoin("satuan", "stok.satuan_id", "satuan.id")
+                ->leftJoin('parameter as statusban', 'stok.statusban', 'statusban.id');
+
+            if (request()->penerimaanstok_id == $spbp->id) {
+                if (request()->stok_id) {
+                    $nobukti = request()->nobukti;
+                    $query->where("penerimaanstokheader.penerimaanstok_id", $spbs->text)
+                        ->where("$this->table.stok_id", request()->stok_id)
+                        ->whereNotIn("$this->table.stok_id", function ($query) use ($nobukti) {
+                            $query->select(
+                                DB::raw('DISTINCT penerimaanstokdetail.stok_id'),
+                            )
+                                ->from('penerimaanstokdetail')
+                                ->whereNotNull('penerimaanstokdetail.penerimaanstok_nobukti')
+                                ->where('penerimaanstokdetail.penerimaanstok_nobukti', '!=', '')
+                                ->where('penerimaanstokdetail.penerimaanstok_nobukti', '!=', $nobukti)
+                                ->where('penerimaanstokdetail.penerimaanstok_nobukti', 'like', 'SPBS%');
+                            // dd($query->get());
+                        });
+                }
+            }
+            if ($from == 'klaim') {
+                $nobuktiStok = DB::table("penerimaanstokheader")->where('id', request()->penerimaanstokheader_id)->first()->nobukti ?? '';
+                if ($nobuktiStok != '') {
+                    $stok_id = request()->stok_id ?? 0;
+                    $query->whereRaw("penerimaanstokdetail.stok_id not in (select stok_id from pengeluarantruckingdetail where penerimaanstok_nobukti='$nobuktiStok' and stok_id != $stok_id)");
+                }
+            }
+            // if (request()->pengeluaranstok_id == $rtr->id) {
+
+            //     $query->select(
+            //         DB::raw('SUM(pengeluaranstokdetail.qty) as qty'),
+            //         "$this->table.nobukti",
+            //         "$this->table.stok_id",
+            //         'stok.namastok as stok',
+            //         // "$this->table.qty"', 
+            //         DB::raw("$this->table.qty - COALESCE(SUM(pengeluaranstokdetail.qty), 0) as qty"),
+
+            //         "$this->table.harga",
+            //         "$this->table.persentasediscount",
+            //         "$this->table.penerimaanstok_nobukti",
+            //         "$this->table.nominaldiscount",
+            //         "$this->table.total",
+            //         "$this->table.keterangan"
+            //     )
+            //         ->leftJoin('pengeluaranstokdetail', 'PenerimaanStokDetail.stok_id', '=', 'pengeluaranstokdetail.stok_id')
+            //         ->groupBy(
+            //             "$this->table.nobukti",
+            //             "$this->table.stok_id",
+            //             'stok.namastok',
+            //             "$this->table.qty",
+            //             "$this->table.harga",
+            //             "$this->table.persentasediscount",
+            //             "$this->table.penerimaanstok_nobukti",
+            //             "$this->table.nominaldiscount",
+            //             "$this->table.total",
+            //             "$this->table.keterangan"
+            //         )
+            //         ->havingRaw("$this->table.qty > COALESCE(SUM(pengeluaranstokdetail.qty), 0)");
+            //     return $query->get();
+            // }
+
+            $this->totalNominal = $query->sum($this->table . '.total');
+            $this->filter($query);
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+            $this->sort($query);
+            $this->paginate($query);
+        }
+        return $query;
     }
 
     public function getTNLForKlaim()

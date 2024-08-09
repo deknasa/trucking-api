@@ -762,32 +762,32 @@ class Stok extends MyModel
     
     public function getTNLForKlaim()
     {
-        $server = config('app.url_tnl');
-        $getToken = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Accept' => 'application/json'
-        ])
-            ->post($server . 'token', [
-                'user' => 'ADMIN',
-                'password' => getenv('PASSWORD_TNL'),
-                'ipclient' => '',
-                'ipserver' => '',
-                'latitude' => '',
-                'longitude' => '',
-                'browser' => '',
-                'os' => '',
-            ]);
-        $access_token = json_decode($getToken, TRUE)['access_token'];
+        // $server = config('app.url_tnl');
+        // $getToken = Http::withHeaders([
+        //     'Content-Type' => 'application/json',
+        //     'Accept' => 'application/json'
+        // ])
+        //     ->post($server . 'token', [
+        //         'user' => 'ADMIN',
+        //         'password' => getenv('PASSWORD_TNL'),
+        //         'ipclient' => '',
+        //         'ipserver' => '',
+        //         'latitude' => '',
+        //         'longitude' => '',
+        //         'browser' => '',
+        //         'os' => '',
+        //     ]);
+        // $access_token = json_decode($getToken, TRUE)['access_token'];
 
-        $getStok = Http::withHeaders([
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $access_token,
-            'Content-Type' => 'application/json',
-        ])
+        // $getStok = Http::withHeaders([
+        //     'Accept' => 'application/json',
+        //     'Authorization' => 'Bearer ' . $access_token,
+        //     'Content-Type' => 'application/json',
+        // ])
 
-            ->get($server . "stok?limit=0&aktif=AKTIF&isLookup=true");
+        //     ->get($server . "stok?limit=0&aktif=AKTIF&isLookup=true");
 
-        $data = $getStok->json()['data'];
+        // $data = $getStok->json()['data'];
 
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
@@ -823,56 +823,21 @@ class Stok extends MyModel
         Schema::create($temtabel, function (Blueprint $table) {
             $table->integer('id')->nullable();
             $table->string('namastok', 300)->nullable();
-            $table->string('statusaktif', 300)->nullable();
-            $table->string('statusservicerutin', 300)->nullable();
-            $table->string('servicerutin_text', 300)->nullable();
-            $table->double('qtymin', 15, 2)->nullable();
-            $table->double('qtymax', 15, 2)->nullable();
-            $table->longText('keterangan')->nullable();
-            $table->longText('gambar')->nullable();
-            $table->longText('namaterpusat')->nullable();
-            $table->integer('statusapprovaltanpaklaim')->nullable();
-            $table->string('statusban', 300)->nullable();
-            $table->integer('statusban_id')->nullable();
-            $table->string('statusreuse', 300)->nullable();
-            $table->string('modifiedby', 300)->nullable();
-            $table->double('totalvulkanisir', 15, 2)->nullable();
-            $table->double('vulkanisirawal', 15, 2)->nullable();
-            $table->string('jenistrado', 300)->nullable();
-            $table->string('satuan', 300)->nullable();
-            $table->string('kelompok', 300)->nullable();
-            $table->string('subkelompok', 300)->nullable();
-            $table->string('kategori', 300)->nullable();
-            $table->string('merk', 300)->nullable();
-            $table->dateTime('created_at')->nullable();
-            $table->dateTime('updated_at')->nullable();
-            $table->integer('umuraki')->nullable();
-            $table->integer('vulkan')->nullable();
-            $table->integer('kelompok_id')->nullable();
         });
+        $query = DB::connection('srvtnl')->table('stok')->from(DB::raw("stok with (Readuncommitted)"))->select(
+            'stok.id',
+            'stok.namastok',
+        )->where('stok.statusaktif', '=', 1)->get();
 
-        foreach ($data as $row) {
-            unset($row['judulLaporan']);
-            unset($row['judul']);
-            unset($row['tglcetak']);
-            unset($row['usercetak']);
-            unset($row['statusreuse']);
-            unset($row['penerimaanstokdetail_keterangan']);
-            unset($row['penerimaanstokdetail_qty']);
-            unset($row['penerimaanstokdetail_harga']);
-            unset($row['penerimaanstokdetail_total']);
-            $row['qtymin'] = floatval($row['qtymin']);
-            $row['qtymax'] = floatval($row['qtymax']);
-            $row['totalvulkanisir'] = floatval($row['totalvulkanisir']);
-            $row['vulkanisirawal'] = floatval($row['vulkanisirawal']);
-            $row['statusapprovaltanpaklaim'] = intval($row['statusapprovaltanpaklaim']);
-            $row['statusban_id'] = intval($row['statusban_id']);
-            $row['umuraki'] = intval($row['umuraki']);
-            $row['vulkan'] = intval($row['vulkan']);
-            $row['kelompok_id'] = intval($row['kelompok_id']);
-            DB::table($temtabel)->insert($row);
+        foreach ($query as $row) {
+            DB::table($temtabel)->insert([
+                'id' => $row->id,
+                'namastok' => $row->namastok,
+
+            ]);
+            // DB::table($temtabel)->insert($row);
         }
-
+        
         return $temtabel;
     }
 
@@ -2194,6 +2159,75 @@ class Stok extends MyModel
 
 
         $queryvulkan = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+            ->select(
+                db::raw("a.id  as stok_id"),
+                db::raw("((isnull(a.vulkanisirawal,0)+isnull(b.vulkan,0))-isnull(c.vulkan,0)) as vulkan"),
+            )
+            ->leftjoin(db::raw($tempvulkanplus . " b "), 'a.id', 'b.stok_id')
+            ->leftjoin(db::raw($tempvulkanminus . " c "), 'a.id', 'c.stok_id')
+            ->where('a.statusreuse', $reuse);
+        
+        return $queryvulkan;
+       
+    }
+    function getVulkanTnl($tanggal = null ){
+        $querytgl = ($tanggal)??date('Y/m/d');
+
+        $reuse = db::connection('srvtnl')->table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select('a.id')
+            ->where('grp', 'STATUS REUSE')
+            ->where('subgrp', 'STATUS REUSE')
+            ->where('text', 'REUSE')
+            ->first()->id ?? 0;
+
+        $tempvulkanplus = '##tempvulkanplus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::connection('srvtnl')->create($tempvulkanplus, function ($table) {
+            $table->integer('stok_id')->nullable();
+            $table->integer('vulkan')->nullable();
+        });
+
+
+        $tempvulkanminus = '##tempvulkanminus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::connection('srvtnl')->create($tempvulkanminus, function ($table) {
+            $table->integer('stok_id')->nullable();
+            $table->integer('vulkan')->nullable();
+        });
+
+
+        $queryvulkanplus = db::connection('srvtnl')->table("stok")->from(db::raw("stok a with (readuncommitted)"))
+            ->select(
+                db::raw("a.id as stok_id"),
+                db::raw("sum(b.vulkanisirke) as vulkan"),
+            )
+            ->join(db::raw("penerimaanstokdetail b with (readuncommitted)"), 'a.id', 'b.stok_id')
+            ->join(db::raw("penerimaanstokheader c with (readuncommitted)"), 'b.nobukti', 'c.nobukti')
+            ->where('a.statusreuse', $reuse)
+            ->whereraw("c.tglbukti<='" . $querytgl . "'")
+            ->groupby('a.id');
+
+        DB::connection('srvtnl')->table($tempvulkanplus)->insertUsing([
+            'stok_id',
+            'vulkan',
+        ],  $queryvulkanplus);
+
+        $queryvulkanminus = db::connection('srvtnl')->table("stok")->from(db::raw("stok a with (readuncommitted)"))
+            ->select(
+                db::raw("a.id as stok_id"),
+                db::raw("sum(b.vulkanisirke) as vulkan"),
+            )
+            ->join(db::raw("pengeluaranstokdetail b with (readuncommitted)"), 'a.id', 'b.stok_id')
+            ->join(db::raw("pengeluaranstokheader c with (readuncommitted)"), 'b.nobukti', 'c.nobukti')
+            ->where('a.statusreuse', $reuse)
+            ->whereraw("c.tglbukti<='" . $querytgl . "'")
+            ->groupby('a.id');
+
+        DB::connection('srvtnl')->table($tempvulkanminus)->insertUsing([
+            'stok_id',
+            'vulkan',
+        ],  $queryvulkanminus);
+
+
+        $queryvulkan = db::connection('srvtnl')->table("stok")->from(db::raw("stok a with (readuncommitted)"))
             ->select(
                 db::raw("a.id  as stok_id"),
                 db::raw("((isnull(a.vulkanisirawal,0)+isnull(b.vulkan,0))-isnull(c.vulkan,0)) as vulkan"),
