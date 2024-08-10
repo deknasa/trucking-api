@@ -67,12 +67,16 @@ class BiayaExtraSupirHeader extends MyModel
                 $table->string('nobukti', 50)->nullable();
                 $table->date('tglbukti')->nullable();
                 $table->string('suratpengantar_nobukti', 50)->nullable();
+                $table->string('prosesgajisupir_nobukti', 50)->nullable();
+                $table->integer('statusprosesgajisupir')->nullable();
                 $table->string('gajisupir_nobukti', 50)->nullable();
                 $table->integer('statusgajisupir')->nullable();
                 $table->date('tgldariheaderric')->nullable();
                 $table->date('tglsampaiheaderric')->nullable();
                 $table->date('tgldariheadertrip')->nullable();
                 $table->date('tglsampaiheadertrip')->nullable();
+                $table->date('tgldariheaderebs')->nullable();
+                $table->date('tglsampaiheaderebs')->nullable();
                 $table->double('nominal', 15, 2)->nullable();
                 $table->double('nominaltagih', 15, 2)->nullable();
                 $table->string('modifiedby', 200)->nullable();
@@ -103,14 +107,18 @@ class BiayaExtraSupirHeader extends MyModel
                     'a.id',
                     'a.nobukti',
                     'a.tglbukti',
+                    'd.nobukti as prosesgajisupir_nobukti',
                     'b.nobukti as gajisupir_nobukti',
                     'a.suratpengantar_nobukti',
                     db::raw("(case when isnull(b.nobukti,'')='' then " . $getBelumbuka->id . " else " . $getSudahbuka->id . " end) as statusgajisupir"),
+                    db::raw("(case when isnull(d.nobukti,'')='' then " . $getBelumbuka->id . " else " . $getSudahbuka->id . " end) as statusprosesgajisupir"),
 
                     db::raw("cast((format(c.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderric"),
                     db::raw("cast(cast(format((cast((format(c.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderric"),
                     db::raw("cast((format(sp.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheadertrip"),
                     db::raw("cast(cast(format((cast((format(sp.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheadertrip"),
+                    db::raw("cast((format(e.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderebs"),
+                    db::raw("cast(cast(format((cast((format(e.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderebs"),
                     'nominal.nominal',
                     'nominal.nominaltagih',
                     'a.modifiedby',
@@ -120,6 +128,8 @@ class BiayaExtraSupirHeader extends MyModel
                 ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'a.nobukti', 'nominal.nobukti')
                 ->leftJoin(DB::raw("gajisupirdetail as b with (readuncommitted)"), 'a.nobukti', 'b.biayaextrasupir_nobukti')
                 ->leftJoin(DB::raw("gajisupirheader as c with (readuncommitted)"), 'b.nobukti', 'c.nobukti')
+                ->leftJoin(DB::raw("prosesgajisupirdetail as d with (readuncommitted)"), 'd.gajisupir_nobukti', 'c.nobukti')
+                ->leftJoin(DB::raw("prosesgajisupirheader as e with (readuncommitted)"), 'e.nobukti', 'd.nobukti')
                 ->leftJoin(DB::raw("suratpengantar as sp with (readuncommitted)"), 'a.suratpengantar_nobukti', 'sp.nobukti');
 
             if (request()->tgldari && request()->tglsampai) {
@@ -129,13 +139,17 @@ class BiayaExtraSupirHeader extends MyModel
                 'id',
                 'nobukti',
                 'tglbukti',
+                'prosesgajisupir_nobukti',
                 'gajisupir_nobukti',
                 'suratpengantar_nobukti',
                 'statusgajisupir',
+                'statusprosesgajisupir',
                 'tgldariheaderric',
                 'tglsampaiheaderric',
                 'tgldariheadertrip',
                 'tglsampaiheadertrip',
+                'tgldariheaderebs',
+                'tglsampaiheaderebs',
                 'nominal',
                 'nominaltagih',
                 'modifiedby',
@@ -162,18 +176,23 @@ class BiayaExtraSupirHeader extends MyModel
                 'a.nobukti',
                 'a.tglbukti',
                 'a.suratpengantar_nobukti',
+                'a.prosesgajisupir_nobukti',
                 'a.gajisupir_nobukti',
                 'statusgajisupir.memo as statusgajisupir',
+                'statusprosesgajisupir.memo as statusprosesgajisupir',
                 'a.tgldariheaderric',
                 'a.tglsampaiheaderric',
                 'a.tgldariheadertrip',
                 'a.tglsampaiheadertrip',
+                'a.tgldariheaderebs',
+                'a.tglsampaiheaderebs',
                 'a.nominal',
                 'a.nominaltagih',
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at',
-            )->leftJoin('parameter as statusgajisupir', 'a.statusgajisupir', 'statusgajisupir.id');
+            )->leftJoin('parameter as statusgajisupir', 'a.statusgajisupir', 'statusgajisupir.id')
+            ->leftJoin('parameter as statusprosesgajisupir', 'a.statusprosesgajisupir', 'statusprosesgajisupir.id');
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -195,6 +214,8 @@ class BiayaExtraSupirHeader extends MyModel
             $table->string('nobukti', 50)->nullable();
             $table->date('tglbukti')->nullable();
             $table->string('suratpengantar_nobukti', 50)->nullable();
+            $table->string('prosesgajisupir_nobukti', 50)->nullable();
+            $table->integer('statusprosesgajisupir')->nullable();
             $table->string('gajisupir_nobukti', 50)->nullable();
             $table->integer('statusgajisupir')->nullable();
             $table->double('nominal', 15, 2)->nullable();
@@ -228,8 +249,10 @@ class BiayaExtraSupirHeader extends MyModel
                 'a.nobukti',
                 'a.tglbukti',
                 'b.nobukti as gajisupir_nobukti',
+                'd.nobukti as prosesgajisupir_nobukti',
                 'a.suratpengantar_nobukti',
                 db::raw("(case when isnull(b.nobukti,'')='' then " . $getBelumbuka->id . " else " . $getSudahbuka->id . " end) as statusgajisupir"),
+                db::raw("(case when isnull(d.nobukti,'')='' then " . $getBelumbuka->id . " else " . $getSudahbuka->id . " end) as statusprosesgajisupir"),
                 'nominal.nominal',
                 'nominal.nominaltagih',
                 'a.modifiedby',
@@ -237,7 +260,8 @@ class BiayaExtraSupirHeader extends MyModel
                 'a.updated_at'
             )
             ->leftJoin(DB::raw("$tempNominal as nominal with (readuncommitted)"), 'a.nobukti', 'nominal.nobukti')
-            ->leftJoin(DB::raw("gajisupirdetail as b with (readuncommitted)"), 'a.nobukti', 'b.biayaextrasupir_nobukti');
+            ->leftJoin(DB::raw("gajisupirdetail as b with (readuncommitted)"), 'a.nobukti', 'b.biayaextrasupir_nobukti')            
+            ->leftJoin(DB::raw("prosesgajisupirdetail as d with (readuncommitted)"), 'd.gajisupir_nobukti', 'b.nobukti');
         if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
@@ -245,9 +269,11 @@ class BiayaExtraSupirHeader extends MyModel
             'id',
             'nobukti',
             'tglbukti',
+            'prosesgajisupir_nobukti',
             'gajisupir_nobukti',
             'suratpengantar_nobukti',
             'statusgajisupir',
+            'statusprosesgajisupir',
             'nominal',
             'nominaltagih',
             'modifiedby',
@@ -260,14 +286,17 @@ class BiayaExtraSupirHeader extends MyModel
                 'a.nobukti',
                 'a.tglbukti',
                 'a.suratpengantar_nobukti',
+                'a.prosesgajisupir_nobukti',
                 'a.gajisupir_nobukti',
                 'statusgajisupir.memo as statusgajisupir',
+                'statusprosesgajisupir.memo as statusprosesgajisupir',
                 'a.nominal',
                 'a.nominaltagih',
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at',
-            )->leftJoin('parameter as statusgajisupir', 'a.statusgajisupir', 'statusgajisupir.id');
+            )->leftJoin('parameter as statusgajisupir', 'a.statusgajisupir', 'statusgajisupir.id')
+            ->leftJoin('parameter as statusprosesgajisupir', 'a.statusprosesgajisupir', 'statusprosesgajisupir.id');
 
         return $query;
     }
@@ -280,8 +309,10 @@ class BiayaExtraSupirHeader extends MyModel
             $table->string('nobukti', 50)->nullable();
             $table->date('tglbukti')->nullable();
             $table->string('suratpengantar_nobukti', 50)->nullable();
+            $table->string('prosesgajisupir_nobukti', 50)->nullable();
             $table->string('gajisupir_nobukti', 50)->nullable();
             $table->longText('statusgajisupir', 50)->nullable();
+            $table->longText('statusprosesgajisupir', 50)->nullable();
             $table->double('nominal', 15, 2)->nullable();
             $table->double('nominaltagih', 15, 2)->nullable();
             $table->string('modifiedby', 200)->nullable();
@@ -304,8 +335,10 @@ class BiayaExtraSupirHeader extends MyModel
             'nobukti',
             'tglbukti',
             'suratpengantar_nobukti',
+            'prosesgajisupir_nobukti',
             'gajisupir_nobukti',
             'statusgajisupir',
+            'statusprosesgajisupir',
             'nominal',
             'nominaltagih',
             'modifiedby',
@@ -335,6 +368,8 @@ class BiayaExtraSupirHeader extends MyModel
                                 $query = $query->whereRaw("format(a.nominaltagih, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'statusgajisupir') {
                                 $query = $query->where('statusgajisupir.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusprosesgajisupir') {
+                                $query = $query->where('statusprosesgajisupir.text', '=', "$filters[data]");
                             } else {
                                 $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -354,6 +389,8 @@ class BiayaExtraSupirHeader extends MyModel
                                     $query = $query->orWhereRaw("format(a.nominaltagih, '#,#0.00') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'statusgajisupir') {
                                     $query = $query->Orwhere('statusgajisupir.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusprosesgajisupir') {
+                                    $query = $query->Orwhere('statusprosesgajisupir.text', '=', "$filters[data]");
                                 } else {
                                     $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 }
