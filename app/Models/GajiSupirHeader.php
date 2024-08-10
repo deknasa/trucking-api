@@ -2573,18 +2573,22 @@ class GajiSupirHeader extends MyModel
         $temptrip = '##temptrip' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temptrip, function ($table) {
             $table->string('suratpengantar_nobukti', 50)->nullable();
+            $table->datetime('tglbukti')->nullable();
         });
         $querytemptrip = DB::table("gajisupirdetail")->from(
             DB::raw("gajisupirdetail as a with (readuncommitted)")
         )
             ->select(
                 'a.suratpengantar_nobukti',
+                db::raw("max(b.tglbukti) as tglbukti"),
             )
+            ->join(db::raw("suratpengantar b with (readuncommitted)"),'a.suratpengantar_nobukti','b.nobukti')
             ->where('a.nobukti', $gajiSupirHeader->nobukti)
             ->groupBy('a.suratpengantar_nobukti');
 
         DB::table($temptrip)->insertUsing([
             'suratpengantar_nobukti',
+            'tglbukti',
         ], $querytemptrip);
 
         $jumlahTrip = DB::table($temptrip)->get();
@@ -2597,9 +2601,8 @@ class GajiSupirHeader extends MyModel
                 $table->string('suratpengantar_nobukti', 50)->nullable();
                 $table->bigInteger('furut')->nullable();
             });
-
             $queryGetUrut = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
-                ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,ROW_NUMBER() OVER(PARTITION BY a.suratpengantar_nobukti ORDER BY a.suratpengantar_nobukti, c.tglbukti, c.nobukti, a.id) as furut"))
+                ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,ROW_NUMBER() OVER(PARTITION BY c.tglbukti,c.nobukti ORDER BY c.tglbukti,c.nobukti,b.tglbukti,a.suratpengantar_nobukti,a.id) as furut"))
                 ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
                 ->join(db::raw("$temptrip as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.suratpengantar_nobukti')
                 ->where('a.suratpengantar_nobukti', $row->suratpengantar_nobukti);
@@ -2974,18 +2977,22 @@ class GajiSupirHeader extends MyModel
         $temptrip = '##temptrip' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temptrip, function ($table) {
             $table->string('suratpengantar_nobukti', 50)->nullable();
+            $table->datetime('tglbukti')->nullable();
         });
         $querytemptrip = DB::table("gajisupirdetail")->from(
             DB::raw("gajisupirdetail as a with (readuncommitted)")
         )
             ->select(
                 'a.suratpengantar_nobukti',
+                db::raw("max(b.tglbukti) as tglbukti"),
             )
+            ->join(db::raw("suratpengantar b with (readuncommitted)"),'a.suratpengantar_nobukti','b.nobukti')
             ->where('a.nobukti', $gajiSupirHeader->nobukti)
             ->groupBy('a.suratpengantar_nobukti');
 
         DB::table($temptrip)->insertUsing([
             'suratpengantar_nobukti',
+            'tglbukti',
         ], $querytemptrip);
 
         $jumlahTrip = DB::table($temptrip)->get();
@@ -3000,7 +3007,7 @@ class GajiSupirHeader extends MyModel
             });
 
             $queryGetUrut = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
-                ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,ROW_NUMBER() OVER(PARTITION BY a.suratpengantar_nobukti ORDER BY a.suratpengantar_nobukti, c.tglbukti, c.nobukti, a.id) as furut"))
+                ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,ROW_NUMBER() OVER(PARTITION BY c.tglbukti,c.nobukti ORDER BY c.tglbukti,c.nobukti,b.tglbukti,a.suratpengantar_nobukti,a.id) as furut"))
                 ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
                 ->join(db::raw("$temptrip as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.suratpengantar_nobukti')
                 ->where('a.suratpengantar_nobukti', $row->suratpengantar_nobukti);
