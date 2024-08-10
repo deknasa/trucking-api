@@ -2560,7 +2560,7 @@ class GajiSupirHeader extends MyModel
         $cekIfExistTrip = DB::table("gajisupirheader")->from(db::raw("gajisupirheader with (readuncommitted)"))
             ->where('suratpengantar_nobukti', $result->suratpengantar_nobukti)->first();
         $trip = '';
-        if (!isset($cekIfExistTrip)) {
+        if ($cekIfExistTrip == '') {
             $trip = $result->suratpengantar_nobukti;
         }
 
@@ -2959,12 +2959,12 @@ class GajiSupirHeader extends MyModel
 
         $cekIfExistTrip = DB::table("gajisupirheader")->from(db::raw("gajisupirheader with (readuncommitted)"))
             ->where('suratpengantar_nobukti', $result->suratpengantar_nobukti)->first();
-        $trip = '';
-        if (!isset($cekIfExistTrip)) {
-            $trip = $result->suratpengantar_nobukti;
-        }
 
-        $gajiSupirHeader->suratpengantar_nobukti = $trip;
+        if ($cekIfExistTrip == '') {
+            $trip = $result->suratpengantar_nobukti;
+            $gajiSupirHeader->suratpengantar_nobukti = $trip;
+        }
+        
         $gajiSupirHeader->nominal = $nominal;
         $gajiSupirHeader->total = $total;
 
