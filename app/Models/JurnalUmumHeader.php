@@ -793,11 +793,13 @@ class JurnalUmumHeader extends MyModel
                 $coa_detail = [];
                 $nominal_detail = [];
                 $keterangan_detail = [];
+                $tglbuktidetail = [];
                 $baris = [];
 
                 foreach ($jurnalDetail as $index => $value) {
                     $coa_detail[] = $value->coa;
                     $nominal_detail[] = $value->nominal;
+                    $tglbuktidetail[] = $value->tglbukti;
                     $keterangan_detail[] = $value->keterangan;
                     $baris[] = $value->baris;
                 }
@@ -810,6 +812,7 @@ class JurnalUmumHeader extends MyModel
                     'statusformat' => $jurnalumum->statusformat,
                     'coa_detail' => $coa_detail,
                     'nominal_detail' => $nominal_detail,
+                    'tglbuktidetail' => $tglbuktidetail,
                     'keterangan_detail' => $keterangan_detail,
                     'baris' => $baris,
                 ];

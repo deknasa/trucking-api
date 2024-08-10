@@ -164,7 +164,7 @@ class JurnalUmumPusatDetail extends MyModel
         $jurnalUmumDetail = new JurnalUmumPusatDetail();
         $jurnalUmumDetail->jurnalumumpusat_id = $jurnalUmumPusatHeader->id;
         $jurnalUmumDetail->nobukti = $jurnalUmumPusatHeader->nobukti; 
-        $jurnalUmumDetail->tglbukti = $jurnalUmumPusatHeader->tglbukti;
+        $jurnalUmumDetail->tglbukti =$data['tglbukti'];
         $jurnalUmumDetail->coa = $data['coa'];
         $jurnalUmumDetail->coamain = $data['coamain'];
         $jurnalUmumDetail->nominal = $data['nominal'];
