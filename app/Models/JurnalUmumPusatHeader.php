@@ -336,6 +336,7 @@ class JurnalUmumPusatHeader extends MyModel
                 'nominal' => $data['nominal_detail'][$i],
                 'coamain' => $akunPusat->coamain,
                 'keterangan' => $data['keterangan_detail'][$i],
+                'tglbukti' => $data['tglbuktidetail'][$i],
                 'baris' => $data['baris'][$i],
             ]);
 
