@@ -1052,6 +1052,22 @@ class LaporanNeraca extends MyModel
                 $table->string('usercetak', 500)->nullable();
             });
 
+            $tempkasgantungtnl = '##tempkasgantungtnl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempkasgantungtnl, function ($table) {
+                $table->datetime('tanggal')->nullable();
+                $table->string('nobukti', 500)->nullable();
+                $table->string('keterangan', 500)->nullable();
+                $table->double('debet')->nullable();
+                $table->double('kredit')->nullable();
+                $table->double('saldo')->nullable();
+                $table->string('disetujui', 500)->nullable();
+                $table->string('diperiksa', 500)->nullable();
+                $table->string('judul', 500)->nullable();
+                $table->string('judullaporan', 500)->nullable();
+                $table->longtext('tglcetak')->nullable();
+                $table->string('usercetak', 500)->nullable();
+            });
+
 
 
 
@@ -1081,7 +1097,7 @@ class LaporanNeraca extends MyModel
 
             $getcabang = $parameter->cekText('CABANG', 'CABANG') ?? '';
             if ($getcabang == 'MAKASSAR') {
-                DB::table($tempkasgantung)->insertUsing([
+                DB::table($tempkasgantungtnl)->insertUsing([
                     'tanggal',
                     'nobukti',
                     'keterangan',
@@ -1562,6 +1578,32 @@ class LaporanNeraca extends MyModel
                 ]
             );
 
+            if ($getcabang == 'MAKASSAR') {
+                $coakasgantungtnl = DB::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                    ->select(
+                        'a.memo'
+                    )
+                    ->where('grp', 'PERKIRAAN PEMBANDING NERACA')
+                    ->where('subgrp', 'KAS GANTUNG TNL')
+                    ->where('text', 'KAS GANTUNG TNL')
+                    ->first();
+                $memo = json_decode($coakasgantungtnl->memo, true);
+
+
+                // dd(db::table($tempkasgantung)->get());
+                $kasgantung = db::table($tempkasgantungtnl)->from(db::raw($tempkasgantungtnl . " a"))
+                    ->select(
+                        db::raw("sum(debet-kredit) as nominal")
+                    )->first()->nominal ?? 0;
+
+                DB::table($tempperkiraanbanding)->insert(
+                    [
+                        'coa' =>  $memo['JURNAL'],
+                        'nominal' => $kasgantung,
+                    ]
+                );
+            }
+
             // Kas harian
 
             $coakas = DB::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
@@ -1677,24 +1719,24 @@ class LaporanNeraca extends MyModel
                 ->whereRaw("coa='" . $coalabarugiberjalan . "'")
                 ->First();
 
-                if (isset($querytahunsaldo)) {
-                    $subquery1 = DB::table('jurnalumumpusatheader as J')
+            if (isset($querytahunsaldo)) {
+                $subquery1 = DB::table('jurnalumumpusatheader as J')
                     ->select('D.coamain as FCOA', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('round(SUM(D.nominal),2) as FNominal'))
                     ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
                     ->join('mainakunpusat as C', 'C.coa', '=', 'D.coamain')
                     ->where('D.tglbukti', '>=', $ptgl)
                     ->whereraw("D.coamain<>'" . $coalabarugiberjalan . "'")
                     ->groupBy('D.coamain', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
-                } else {
-                    $subquery1 = DB::table('jurnalumumpusatheader as J')
+            } else {
+                $subquery1 = DB::table('jurnalumumpusatheader as J')
                     ->select('D.coamain as FCOA', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('round(SUM(D.nominal),2) as FNominal'))
                     ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
                     ->join('mainakunpusat as C', 'C.coa', '=', 'D.coamain')
                     ->where('D.tglbukti', '>=', $ptgl)
                     // ->whereraw("D.coamain<>'" . $coalabarugiberjalan . "'")
                     ->groupBy('D.coamain', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
-                }
-        
+            }
+
 
             if ($cabang == 'SEMUA') {
                 $subquery2 = DB::table('jurnalumumpusatheader as J')
