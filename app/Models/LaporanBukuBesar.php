@@ -102,7 +102,7 @@ class LaporanBukuBesar extends MyModel
             DB::raw("jurnalumumpusatheader as a with (readuncommitted)")
         )
             ->select(
-                db::raw("format(a.tglbukti,'MM-yyyy') as bulan"),
+                db::raw("format(b.tglbukti,'MM-yyyy') as bulan"),
                 'b.coa',
                 DB::raw("sum(b.nominal) as nominal"),
             )
@@ -111,7 +111,7 @@ class LaporanBukuBesar extends MyModel
             ->whereRaw("a.tglbukti>='" . $tglawalcek . "' and a.tglbukti<='" . $tglakhircek . "'")
             // ->whereRaw("b.coa='01.01.01.03'")
             ->groupby('b.coa')
-            ->groupby(db::raw("format(a.tglbukti,'MM-yyyy')"));
+            ->groupby(db::raw("format(b.tglbukti,'MM-yyyy')"));
 
         // dd($querydetailsaldo->get());
 
@@ -251,8 +251,8 @@ class LaporanBukuBesar extends MyModel
             ->join(DB::raw("akunpusat as c with(readuncommitted)"), 'b.coa', 'c.coa')
             ->join(db::raw("typeakuntansi d with (readuncommitted)"), 'c.type_id', 'd.id')
             ->whereRaw("(d.[Order] BETWEEN 1110 AND 3310)")
-            ->whereRaw("a.tglbukti>=cast(ltrim(rtrim(str(year('" . $dariformat . "'))))+'/'+ltrim(rtrim(str(month('" . $dariformat . "'))))+'/1' as datetime) ")
-            ->where('a.tglbukti', '<', $dari)
+            ->whereRaw("b.tglbukti>=cast(ltrim(rtrim(str(year('" . $dariformat . "'))))+'/'+ltrim(rtrim(str(month('" . $dariformat . "'))))+'/1' as datetime) ")
+            ->where('b.tglbukti', '<', $dari)
             ->whereRaw("(c.id >=" . $coadari_id)
             ->whereRaw(DB::raw("c.id <=" . $coasampai_id . ")"))
             ->whereraw("(a.cabang_id=" . $cabang_id . " or " . $cabang_id . "=0)")
@@ -395,8 +395,8 @@ class LaporanBukuBesar extends MyModel
             )
             ->join(DB::raw("jurnalumumpusatdetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw("akunpusat as c with(readuncommitted)"), 'b.coa', 'c.coa')
-            ->where('a.tglbukti', '>=', $dari)
-            ->where('a.tglbukti', '<=', $sampai)
+            ->where('b.tglbukti', '>=', $dari)
+            ->where('b.tglbukti', '<=', $sampai)
             ->where('c.id', '>=', $coadari_id)
             ->where('c.id', '<=', $coasampai_id)
             ->whereraw("(a.cabang_id=" . $cabang_id . " or " . $cabang_id . "=0)")
