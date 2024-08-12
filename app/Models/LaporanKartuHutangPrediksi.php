@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 
 class LaporanKartuHutangPrediksi extends MyModel
 {
@@ -48,6 +49,7 @@ class LaporanKartuHutangPrediksi extends MyModel
 
         Schema::create($templistbukti, function ($table) {
             $table->string('nobukti', 1000)->nullable();
+            $table->string('nobuktipengeluaran', 1000)->nullable();
         });
 
 
@@ -56,10 +58,12 @@ class LaporanKartuHutangPrediksi extends MyModel
         )
             ->select(
                 'a.nobukti',
+                'a.pengeluaran_nobukti as nobuktipengeluaran',
             );
 
         DB::table($templistbukti)->insertUsing([
             'nobukti',
+            'nobuktipengeluaran',
         ], $querylistbukti);
 
         $querylistbukti = DB::table('prosesgajisupirheader')->from(
@@ -67,11 +71,13 @@ class LaporanKartuHutangPrediksi extends MyModel
         )
             ->select(
                 'a.pengeluaran_nobukti as nobukti',
+                db::raw("'' as nobuktipengeluaran")
             )
             ->WhereRaw("isnull(a.pengeluaran_nobukti,'')<>''");
 
         DB::table($templistbukti)->insertUsing([
             'nobukti',
+            'nobuktipengeluaran',
         ], $querylistbukti);
 
         $querylistbukti = DB::table('hutangheader')->from(
@@ -79,10 +85,12 @@ class LaporanKartuHutangPrediksi extends MyModel
         )
             ->select(
                 'a.nobukti',
+                db::raw("'' as nobuktipengeluaran")
             );
 
         DB::table($templistbukti)->insertUsing([
             'nobukti',
+            'nobuktipengeluaran',
         ], $querylistbukti);
 
         $querylistbukti = DB::table('pelunasanhutangheader')->from(
@@ -90,11 +98,13 @@ class LaporanKartuHutangPrediksi extends MyModel
         )
             ->select(
                 'a.pengeluaran_nobukti as nobukti',
-            )
+                db::raw("'' as nobuktipengeluaran")
+                )
             ->WhereRaw("isnull(a.pengeluaran_nobukti,'')<>''");
 
         DB::table($templistbukti)->insertUsing([
             'nobukti',
+            'nobuktipengeluaran',
         ], $querylistbukti);
 
         // 1
@@ -474,7 +484,7 @@ class LaporanKartuHutangPrediksi extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
-            $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
             ->select('text')
             ->where('grp', 'DISETUJUI')
             ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
@@ -483,6 +493,44 @@ class LaporanKartuHutangPrediksi extends MyModel
             ->select('text')
             ->where('grp', 'DIPERIKSA')
             ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
+
+
+        $temtabel = 'temptes1222';
+        Schema::dropIfExists($temtabel);
+        Schema::create($temtabel, function (Blueprint $table) {
+            $table->string('noebs', 1000)->nullable();
+            $table->datetime('tanggal')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->longtext('keterangan')->nullable();
+            $table->double('nominal')->nullable();
+            $table->double('bayar')->nullable();
+        });
+
+        // dd(db::table($templistbukti)->get());
+        $querycek = DB::table($templist)
+            ->from(DB::raw($templist . " as a with (readuncommitted)"))
+            ->select(
+                DB::raw("(case when isnull(b.nobukti,'')='' then a.nobukti else b.nobukti end) as noebs"),
+                'a.tglbukti as tanggal',
+                'a.nobuktitrans as nobukti',
+                'a.keterangan',
+                'a.debet as nominal',
+                'a.kredit as bayar',
+            )
+            ->leftjoin(db::raw($templistbukti. " b "),'a.nobukti','b.nobuktipengeluaran');
+
+
+        DB::table($temtabel)->insertUsing([
+            'noebs',
+            'tanggal',
+            'nobukti',
+            'keterangan',
+            'nominal',
+            'bayar',
+        ], $querycek);
+
+
 
         $query = DB::table($templist)
             ->from(DB::raw($templist . " as a with (readuncommitted)"))

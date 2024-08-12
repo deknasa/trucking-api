@@ -1840,7 +1840,7 @@ class ProsesGajiSupirHeader extends MyModel
             ->join(DB::raw("gajisupirdetail as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
             ->join(DB::raw("suratpengantar as C with (readuncommitted)"), 'B.suratpengantar_nobukti', 'C.nobukti')
             ->leftjoin(DB::raw("suratpengantarbiayatambahan as D with (readuncommitted)"), 'c.id', 'd.suratpengantar_id')
-            ->where('b.urutextra',1)
+            ->where('b.urutextra', 1)
             ->groupBy('C.nobukti');
 
         DB::table($tempsuratpengantartambahan)->insertUsing(['nobukti', 'nominal'], $fetchsuratpengantartambahan);
@@ -1987,15 +1987,26 @@ class ProsesGajiSupirHeader extends MyModel
         // uang makan
 
         $tgl = DB::table($tempRincianJurnal)->select(DB::raw("min(tglbukti) as tglbukti"))->first();
-
+        $param1 = 1;
         $fetchTempRincianJurnal3 = DB::table($tempGaji)->from(DB::raw("$tempGaji as A with (readuncommitted)"))
             ->select(
-                DB::raw("'$tgl->tglbukti', isnull(sum(B.uangmakanharian),0) as nominal, 'Uang Makan' as keterangan")
+                DB::raw("isnull(d.tglbukti,'1900/1/1') as tglbukti"),
+                DB::raw("isnull(sum(B.uangmakanharian),0) as nominal"),
+                DB::raw("'Uang Makan' as keterangan"),
             )
             ->join(DB::raw("gajisupirheader as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
-            ->whereRaw("isnull(B.uangmakanharian ,0)<>0");
-        DB::table($tempRincianJurnal)->insertUsing(['tglbukti', 'nominal', 'keterangan'], $fetchTempRincianJurnal3);
+            ->join(DB::raw("gajisupirdetail as c with(readuncommitted)"), function ($join) use ($param1) {
+                $join->on('a.nobukti', '=', 'c.nobukti');
+                $join->on('c.nourut', '=', DB::raw("'" . $param1 . "'"));
+            })
+            ->join(DB::raw("suratpengantar as d with (readuncommitted)"), 'c.suratpengantar_nobukti', 'd.nobukti')
 
+            ->whereRaw("isnull(B.uangmakanharian ,0)<>0")
+        ->groupby('d.tglbukti');
+
+        // dd($fetchTempRincianJurnal3->get());
+        DB::table($tempRincianJurnal)->insertUsing(['tglbukti', 'nominal', 'keterangan'], $fetchTempRincianJurnal3);
+        // dd($fetchTempRincianJurnal3);
         $fetchTempRincianJurnal3 = DB::table($tempGaji)->from(DB::raw("$tempGaji as A with (readuncommitted)"))
             ->select(
                 DB::raw("'$tgl->tglbukti', isnull(sum(B.uangmakanharian),0) as nominal, 'Uang Makan' as keterangan")
@@ -2007,15 +2018,24 @@ class ProsesGajiSupirHeader extends MyModel
 
         $fetchTempRincianJurnal4 = DB::table($tempGaji)->from(DB::raw("$tempGaji as A with (readuncommitted)"))
             ->select(
-                DB::raw("'$tgl->tglbukti', isnull(sum(B.uangmakanberjenjang),0) as nominal, 'Uang Makan Berjenjang' as keterangan")
+                DB::raw("isnull(d.tglbukti,'1900/1/1') as tglbukti, isnull(sum(B.uangmakanberjenjang),0) as nominal, 'Uang Makan Berjenjang' as keterangan")
             )
             ->join(DB::raw("gajisupirheader as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
-            ->whereRaw("isnull(B.uangmakanberjenjang ,0)<>0");
-        $cekUangMakanBerjenjang = $fetchTempRincianJurnal4->first();
-        if ($cekUangMakanBerjenjang->nominal > 0) {
+            ->join(DB::raw("gajisupirdetail as c with(readuncommitted)"), function ($join) use ($param1) {
+                $join->on('a.nobukti', '=', 'c.nobukti');
+                $join->on('c.nourut', '=', DB::raw("'" . $param1 . "'"));
+            })
+            ->join(DB::raw("suratpengantar as d with (readuncommitted)"), 'c.suratpengantar_nobukti', 'd.nobukti')
+            ->whereRaw("isnull(B.uangmakanberjenjang ,0)<>0")
+            ->groupby('d.tglbukti');
 
-            DB::table($tempRincianJurnal)->insertUsing(['tglbukti', 'nominal', 'keterangan'], $fetchTempRincianJurnal4);
-        }
+        // $cekUangMakanBerjenjang = $fetchTempRincianJurnal4->first();
+        // if ($cekUangMakanBerjenjang->nominal > 0) {
+
+        DB::table($tempRincianJurnal)->insertUsing(['tglbukti', 'nominal', 'keterangan'], $fetchTempRincianJurnal4);
+        // dd('test1');
+        // }
+
 
         $fetchTempRincianJurnal4 = DB::table($tempGaji)->from(DB::raw("$tempGaji as A with (readuncommitted)"))
             ->select(
@@ -2032,15 +2052,23 @@ class ProsesGajiSupirHeader extends MyModel
         // biaya extra header
         $fetchTempRincianJurnal4 = DB::table($tempGaji)->from(DB::raw("$tempGaji as A with (readuncommitted)"))
             ->select(
-                DB::raw("'$tgl->tglbukti', isnull(sum(B.biayaextra),0) as nominal, 'Biaya Extra' as keterangan")
+                DB::raw("isnull(d.tglbukti,'1900/1/1') as tglbukti, isnull(sum(B.biayaextra),0) as nominal, 'Biaya Extra' as keterangan")
             )
             ->join(DB::raw("gajisupirheader as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
-            ->whereRaw("isnull(B.biayaextra ,0)<>0");
-        $cekBiayaExtraHeader = $fetchTempRincianJurnal4->first();
-        if ($cekBiayaExtraHeader->nominal > 0) {
+            ->join(DB::raw("gajisupirdetail as c with(readuncommitted)"), function ($join) use ($param1) {
+                $join->on('a.nobukti', '=', 'c.nobukti');
+                $join->on('c.nourut', '=', DB::raw("'" . $param1 . "'"));
+            })
+            ->join(DB::raw("suratpengantar as d with (readuncommitted)"), 'c.suratpengantar_nobukti', 'd.nobukti')
+            ->whereRaw("isnull(B.biayaextra ,0)<>0")
+        ->groupby('d.tglbukti');
+        // dd('test');
+        // $cekBiayaExtraHeader = $fetchTempRincianJurnal4->first();
+        // dd($fetchTempRincianJurnal4->get());
+        // if ($cekBiayaExtraHeader->nominal > 0) {
 
-            DB::table($tempRincianJurnal)->insertUsing(['tglbukti', 'nominal', 'keterangan'], $fetchTempRincianJurnal4);
-        }
+        DB::table($tempRincianJurnal)->insertUsing(['tglbukti', 'nominal', 'keterangan'], $fetchTempRincianJurnal4);
+        // }
         // end of table utama
 
         // AMBIL GAJI DARI SALDO
