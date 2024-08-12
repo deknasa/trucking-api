@@ -78,26 +78,26 @@ class SuratPengantar extends MyModel
             ->where('a.text', '=', 'TANGKI')
             ->first();
 
-        if ($aksi == 'EDIT') {
-            $batasJamAdmin = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATAS EDIT TRIP ADMIN')->where('subgrp', 'JAM')->first()->text;
-            $batasHariAdmin = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATAS EDIT TRIP ADMIN')->where('subgrp', 'HARI')->first()->text;
+        // if ($aksi == 'EDIT') {
+        //     $batasJamAdmin = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATAS EDIT TRIP ADMIN')->where('subgrp', 'JAM')->first()->text;
+        //     $batasHariAdmin = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BATAS EDIT TRIP ADMIN')->where('subgrp', 'HARI')->first()->text;
 
-            $tglbatasedit = date('Y-m-d', strtotime($trip->tglbukti . "+$batasHariAdmin days")) . ' ' . $batasJamAdmin;
+        //     $tglbatasedit = date('Y-m-d', strtotime($trip->tglbukti . "+$batasHariAdmin days")) . ' ' . $batasJamAdmin;
 
-            if (date('Y-m-d H:i:s') > $tglbatasedit) {
+        //     if (date('Y-m-d H:i:s') > $tglbatasedit) {
 
-                if (date('Y-m-d H:i:s') > date('Y-m-d H:i:s', strtotime($trip->tglbataseditsuratpengantar))) {
-                    $keteranganerror = $error->cekKeteranganError('LB') ?? '';
-                    $data = [
-                        'kondisi' => true, 
-                        'keterangan' =>  $keteranganerror . "<br> BATAS $aksi TRIP <b>$nobukti</b> di <br> <b>" . date('d-m-Y', strtotime($trip->tglbukti . "+$batasHariAdmin days")) . ' ' . $batasJamAdmin . '</b> <br> ' . $keterangantambahanerror,
-                        'kodeerror' => 'LB',
-                    ];
+        //         if (date('Y-m-d H:i:s') > date('Y-m-d H:i:s', strtotime($trip->tglbataseditsuratpengantar))) {
+        //             $keteranganerror = $error->cekKeteranganError('LB') ?? '';
+        //             $data = [
+        //                 'kondisi' => true, 
+        //                 'keterangan' =>  $keteranganerror . "<br> BATAS $aksi TRIP <b>$nobukti</b> di <br> <b>" . date('d-m-Y', strtotime($trip->tglbukti . "+$batasHariAdmin days")) . ' ' . $batasJamAdmin . '</b> <br> ' . $keterangantambahanerror,
+        //                 'kodeerror' => 'LB',
+        //             ];
 
-                    goto selesai;
-                }
-            }
-        }
+        //             goto selesai;
+        //         }
+        //     }
+        // }
         $gajiSupir = DB::table('gajisupirdetail')
             ->from(
                 DB::raw("gajisupirdetail as a with (readuncommitted)")
