@@ -496,39 +496,39 @@ class LaporanKartuHutangPrediksi extends MyModel
 
 
 
-        $temtabel = 'temptes1222';
-        Schema::dropIfExists($temtabel);
-        Schema::create($temtabel, function (Blueprint $table) {
-            $table->string('noebs', 1000)->nullable();
-            $table->datetime('tanggal')->nullable();
-            $table->string('nobukti', 50)->nullable();
-            $table->longtext('keterangan')->nullable();
-            $table->double('nominal')->nullable();
-            $table->double('bayar')->nullable();
-        });
+        // $temtabel = 'temptes1222';
+        // Schema::dropIfExists($temtabel);
+        // Schema::create($temtabel, function (Blueprint $table) {
+        //     $table->string('noebs', 1000)->nullable();
+        //     $table->datetime('tanggal')->nullable();
+        //     $table->string('nobukti', 50)->nullable();
+        //     $table->longtext('keterangan')->nullable();
+        //     $table->double('nominal')->nullable();
+        //     $table->double('bayar')->nullable();
+        // });
 
-        // dd(db::table($templistbukti)->get());
-        $querycek = DB::table($templist)
-            ->from(DB::raw($templist . " as a with (readuncommitted)"))
-            ->select(
-                DB::raw("(case when isnull(b.nobukti,'')='' then a.nobukti else b.nobukti end) as noebs"),
-                'a.tglbukti as tanggal',
-                'a.nobuktitrans as nobukti',
-                'a.keterangan',
-                'a.debet as nominal',
-                'a.kredit as bayar',
-            )
-            ->leftjoin(db::raw($templistbukti. " b "),'a.nobukti','b.nobuktipengeluaran');
+        // // dd(db::table($templistbukti)->get());
+        // $querycek = DB::table($templist)
+        //     ->from(DB::raw($templist . " as a with (readuncommitted)"))
+        //     ->select(
+        //         DB::raw("(case when isnull(b.nobukti,'')='' then a.nobukti else b.nobukti end) as noebs"),
+        //         'a.tglbukti as tanggal',
+        //         'a.nobuktitrans as nobukti',
+        //         'a.keterangan',
+        //         'a.debet as nominal',
+        //         'a.kredit as bayar',
+        //     )
+        //     ->leftjoin(db::raw($templistbukti. " b "),'a.nobukti','b.nobuktipengeluaran');
 
 
-        DB::table($temtabel)->insertUsing([
-            'noebs',
-            'tanggal',
-            'nobukti',
-            'keterangan',
-            'nominal',
-            'bayar',
-        ], $querycek);
+        // DB::table($temtabel)->insertUsing([
+        //     'noebs',
+        //     'tanggal',
+        //     'nobukti',
+        //     'keterangan',
+        //     'nominal',
+        //     'bayar',
+        // ], $querycek);
 
 
 
