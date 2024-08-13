@@ -3752,6 +3752,7 @@ class SuratPengantar extends MyModel
             'kotasampai.kodekota as sampai_id',
             'suratpengantar.penyesuaian',
             'suratpengantar.gajisupir',
+            'suratpengantar.totalomset',
             'suratpengantar.jarak',
             'agen.namaagen as agen_id',
             'jenisorder.keterangan as jenisorder_id',
