@@ -307,6 +307,7 @@ class PengeluaranStokDetailFifo extends MyModel
                     ->where('b.penerimaanstok_id',$penambahannilai_id)
                     ->first()->nominal ?? 0;
 
+                    // dd($tambahanilai);
                     // $totalterpakai = round(($hargatotalterpakai * $qty), 2);
 
                     $tharga=$querysisa->harga+$tambahanilai;
@@ -314,7 +315,9 @@ class PengeluaranStokDetailFifo extends MyModel
                     $ttambahannilai=$tambahanilai*$querysisa->qty;
                      $totalterpakai = round(($hargatotalterpakai * $qty), 2);
 
+
                      $totalterpakai2 += $totalterpakai;
+                    //  dump($totalterpakai2,1);
                      $totalterpakai3 += ($totalterpakai+$ttambahannilai );
                      $pengeluaranStokDetailFifo = new pengeluaranStokDetailFifo();
                     $pengeluaranStokDetailFifo->pengeluaranstokheader_id = $data['pengeluaranstokheader_id'] ?? 0;
@@ -447,6 +450,7 @@ class PengeluaranStokDetailFifo extends MyModel
                     // $num = (($querysisa->total / $querysisa->qty) * $qtysisa);
                     // $totalterpakai = floor($num * 100) / 100;
 
+                    // dd($hargatotalterpakai,$qtysisa);
                     $penambahannilai_id=11;
                     $nobuktiambil=$data['nobukti'] ?? '';
                     $tambahanilai=db::table("penerimaanstokdetail")->from(db::raw("penerimaanstokdetail a with (readuncommitted)")) 
@@ -466,11 +470,11 @@ class PengeluaranStokDetailFifo extends MyModel
 
                     $tharga=$querysisa->harga+$tambahanilai;
                     $ttotal=$querysisa->total+($tambahanilai*$querysisa->qty );
-                    $totalterpakai2 += $totalterpakai;
+                    // $totalterpakai2 += $totalterpakai;
                     $ttambahannilai=$tambahanilai*$querysisa->qty;
-                    $totalterpakai3 += ($totalterpakai+$ttambahannilai );
+                    // $totalterpakai3 += ($totalterpakai+$ttambahannilai );
 
-
+                    // dump($totalterpakai2,1);
                     $totalterpakai2 += $totalterpakai;
                     $totalterpakai3 += ($totalterpakai+$ttambahannilai );
                     $pengeluaranStokDetailFifo = new pengeluaranStokDetailFifo();
@@ -593,7 +597,7 @@ class PengeluaranStokDetailFifo extends MyModel
         // if ($data['stok_id'] == 4735) {
         //     dd('test');
         // }
-
+    //    dd($totalterpakai3);
         $nobuktipengeluaran = $data['nobukti'] ?? '';
         $stokidpengeluaran = $data['stok_id'] ?? 0;
         $pengeluaranstokdetail  = PengeluaranStokDetail::lockForUpdate()->where("stok_id", $stokidpengeluaran)
