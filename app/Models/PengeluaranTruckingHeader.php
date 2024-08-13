@@ -559,7 +559,7 @@ class PengeluaranTruckingHeader extends MyModel
             ->where('pengeluarantruckingheader_id', $id)->limit(1);
             $tempcekdetailnobukti = '##tempcekdetailnobukti' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempcekdetailnobukti, function ($table) {
-                $table->integer('id')->nullable();
+                $table->string('id')->nullable();
                 $table->string('nobukti')->nullable();
             });
             DB::table($tempcekdetailnobukti)->insertUsing(['id','nobukti'], $detail);
