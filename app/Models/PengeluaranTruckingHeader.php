@@ -598,7 +598,7 @@ class PengeluaranTruckingHeader extends MyModel
                         'pengeluarantruckingheader.pengeluaran_nobukti',
                         'pengeluarantruckingheader.jenisorder_id as jenisorderan_id',
                         db::raw("(case when pengeluarantruckingheader.karyawan_id =0 then 4 else 3 end) as ddd"),
-                        db::raw("(case when isnull(buktidetail.nobukti,0)=0 then 3 else 4 end) as statustanpabukti"),
+                        db::raw("(case when isnull(buktidetail.nobukti,'')='' then 3 else 4 end) as statustanpabukti"),
                         'jenisorder.keterangan as jenisorderan'
                     )
                     ->leftJoin(DB::raw("pengeluarantrucking with (readuncommitted)"), 'pengeluarantruckingheader.pengeluarantrucking_id', 'pengeluarantrucking.id')
@@ -648,7 +648,7 @@ class PengeluaranTruckingHeader extends MyModel
                         'pengeluarantruckingheader.pengeluaran_nobukti',
                         'pengeluarantruckingheader.jenisorder_id as jenisorderan_id',
                         db::raw("(case when pengeluarantruckingheader.karyawan_id =0 then 4 else 3 end) as ddd"),
-                        db::raw("(case when isnull(buktidetail.nobukti,0)=0 then 3 else 4 end) as statustanpabukti"),
+                        db::raw("(case when isnull(buktidetail.nobukti,'')='' then 3 else 4 end) as statustanpabukti"),
                         'jenisorder.keterangan as jenisorderan'
                     )
                     ->leftJoin(DB::raw("pengeluarantrucking with (readuncommitted)"), 'pengeluarantruckingheader.pengeluarantrucking_id', 'pengeluarantrucking.id')
