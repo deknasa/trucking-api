@@ -192,8 +192,6 @@ class LaporanRitasiTrado extends MyModel
         'f.kodetrado AS nopol',
         'A.tgl',
         DB::raw("CASE 
-            WHEN ISNULL(E.keterangan, '') <> '' THEN 'L'
-            WHEN DATEPART(dw, A.tglbukti) = 1 THEN 'L'
             WHEN ISNULL(C.trado_id, 0) = 0 THEN FORMAT(ISNULL(B.jumlah, 0), '#')
             ELSE d.kodeabsen 
         END jumlah"),
