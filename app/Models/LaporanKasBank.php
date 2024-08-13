@@ -952,23 +952,7 @@ class LaporanKasBank extends MyModel
                         'a.urutdetail',
                         DB::raw("isnull(b.keterangancoa,'') as keterangancoa"),
                         DB::raw("'" . $querykasbank->namabank . "' as namabank"),
-                        DB::raw("(case when year(isnull(a.tglbukti,'1900/1/1')) < '2000' then '" . $dari . "' else 
-                    format(a.tglbukti,'dd-')+
-                    (case when month(a.tglbukti)=1 then 'JAN'
-                          when month(a.tglbukti)=2 then 'FEB'
-                          when month(a.tglbukti)=3 then 'MAR'
-                          when month(a.tglbukti)=4 then 'APR'
-                          when month(a.tglbukti)=5 then 'MAY'
-                          when month(a.tglbukti)=6 then 'JUN'
-                          when month(a.tglbukti)=7 then 'JUL'
-                          when month(a.tglbukti)=8 then 'AGU'
-                          when month(a.tglbukti)=9 then 'SEP'
-                          when month(a.tglbukti)=10 then 'OKT'
-                          when month(a.tglbukti)=11 then 'NOV'
-                          when month(a.tglbukti)=12 then 'DES' ELSE '' END)
-
-                    +format(a.tglbukti,'-yy') 
-                     end) as tglbukti"),
+                        DB::raw("(case when year(isnull(a.tglbukti,'1900/01/01')) < '2000' then CAST('" . $dari . "' AS DATE) else CAST(a.tglbukti AS DATE) end) as tglbukti"),
                         'a.nobukti',
                         'a.keterangan',
                         'a.debet',
