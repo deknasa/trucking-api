@@ -550,6 +550,20 @@ class PengeluaranTruckingHeader extends MyModel
             ->select('pengeluarantrucking_id', 'statuscabang')
             ->where('id', $id)->first();
         if ($cek->pengeluarantrucking_id == 7) {
+
+            $detail = PengeluaranTruckingdetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
+            ->select(
+                'pengeluarantruckingheader_id',
+                db::raw("COALESCE(NULLIF(pengeluaranstok_nobukti, ''), NULLIF(penerimaanstok_nobukti, '')) AS hasil")
+            )
+            ->where('pengeluarantruckingheader_id', $id)->limit(1);
+            $tempcekdetailnobukti = '##tempcekdetailnobukti' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempcekdetailnobukti, function ($table) {
+                $table->integer('id')->nullable();
+                $table->string('nobukti')->nullable();
+            });
+            DB::table($tempcekdetailnobukti)->insertUsing(['id','nobukti'], $detail);
+
             if ($cek->statuscabang == 516) {
                 $tabelTrado = (new Trado())->getTNLForKlaim();
                 $tabelGandengan = (new Gandengan())->getTNLForKlaim();
@@ -583,7 +597,8 @@ class PengeluaranTruckingHeader extends MyModel
                         'akunpusat.keterangancoa',
                         'pengeluarantruckingheader.pengeluaran_nobukti',
                         'pengeluarantruckingheader.jenisorder_id as jenisorderan_id',
-                        db::raw("(case when pengeluarantruckingheader.karyawan_id =0 then 4 else 3 end) as statustanpabukti"),
+                        db::raw("(case when pengeluarantruckingheader.karyawan_id =0 then 4 else 3 end) as ddd"),
+                        db::raw("(case when isnull(buktidetail.nobukti,0)=0 then 3 else 4 end) as statustanpabukti"),
                         'jenisorder.keterangan as jenisorderan'
                     )
                     ->leftJoin(DB::raw("pengeluarantrucking with (readuncommitted)"), 'pengeluarantruckingheader.pengeluarantrucking_id', 'pengeluarantrucking.id')
@@ -594,6 +609,7 @@ class PengeluaranTruckingHeader extends MyModel
                     ->leftJoin(DB::raw("$tabelGandengan as gandengan with (readuncommitted)"), 'pengeluarantruckingheader.gandengantnl_id', 'gandengan.id')
                     ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'pengeluarantruckingheader.jenisorder_id', 'jenisorder.id')
                     ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarantruckingheader.coa', 'akunpusat.coa')
+                    ->leftJoin(DB::raw("$tempcekdetailnobukti as buktidetail with (readuncommitted)"), 'pengeluarantruckingheader.id', 'buktidetail.id')
                     ->where('pengeluarantruckingheader.id', '=', $id);
             } else {
 
@@ -631,7 +647,8 @@ class PengeluaranTruckingHeader extends MyModel
                         'akunpusat.keterangancoa',
                         'pengeluarantruckingheader.pengeluaran_nobukti',
                         'pengeluarantruckingheader.jenisorder_id as jenisorderan_id',
-                        db::raw("(case when pengeluarantruckingheader.karyawan_id =0 then 4 else 3 end) as statustanpabukti"),
+                        db::raw("(case when pengeluarantruckingheader.karyawan_id =0 then 4 else 3 end) as ddd"),
+                        db::raw("(case when isnull(buktidetail.nobukti,0)=0 then 3 else 4 end) as statustanpabukti"),
                         'jenisorder.keterangan as jenisorderan'
                     )
                     ->leftJoin(DB::raw("pengeluarantrucking with (readuncommitted)"), 'pengeluarantruckingheader.pengeluarantrucking_id', 'pengeluarantrucking.id')
@@ -642,6 +659,7 @@ class PengeluaranTruckingHeader extends MyModel
                     ->leftJoin(DB::raw("gandengan with (readuncommitted)"), 'pengeluarantruckingheader.gandengan_id', 'gandengan.id')
                     ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'pengeluarantruckingheader.jenisorder_id', 'jenisorder.id')
                     ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarantruckingheader.coa', 'akunpusat.coa')
+                    ->leftJoin(DB::raw("$tempcekdetailnobukti as buktidetail with (readuncommitted)"), 'pengeluarantruckingheader.id', 'buktidetail.id')
                     ->where('pengeluarantruckingheader.id', '=', $id);
             }
 
