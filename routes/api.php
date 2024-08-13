@@ -33,6 +33,7 @@ use App\Http\Controllers\Api\MandorController;
 use App\Http\Controllers\Api\OtobonController;
 use App\Http\Controllers\Api\RitasiController;
 use App\Http\Controllers\Api\SatuanController;
+use App\Http\Controllers\Api\TujuanController;
 use App\Http\Controllers\Api\CcEmailController;
 use App\Http\Controllers\Api\ExpStnkController;
 use App\Http\Controllers\Api\MekanikController;
@@ -86,26 +87,26 @@ use App\Http\Controllers\Api\JobTruckingController;
 use App\Http\Controllers\Api\LaporanStokController;
 use App\Http\Controllers\Api\OrderanEmklController;
 use App\Http\Controllers\Api\ReminderOliController;
+
 use App\Http\Controllers\Api\ReminderSpkController;
-
 use App\Http\Controllers\Api\SubKelompokController;
+
 use App\Http\Controllers\Api\TarifTangkiController;
-
 use App\Http\Controllers\Api\HutangDetailController;
+
 use App\Http\Controllers\Api\HutangHeaderController;
-
 use App\Http\Controllers\Api\OpnameDetailController;
+
 use App\Http\Controllers\Api\OpnameHeaderController;
-
 use App\Http\Controllers\Api\ReminderStokController;
+
 use App\Http\Controllers\Api\ReportNeracaController;
-
 use App\Http\Controllers\Api\SaldoUmurAkiController;
+
 use App\Http\Controllers\Api\TarifRincianController;
-
 use App\Http\Controllers\Api\UbahPasswordController;
-use App\Http\Controllers\CustomValidationController;
 
+use App\Http\Controllers\CustomValidationController;
 use App\Http\Controllers\LaporanKasHarianController;
 use App\Http\Controllers\Api\BankPelangganController;
 use App\Http\Controllers\Api\InvoiceDetailController;
@@ -552,6 +553,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('kota/approvalaktif', [KotaController::class, 'approvalaktif']);
     Route::post('zona/approvalnonaktif', [ZonaController::class, 'approvalnonaktif']);
     Route::post('zona/approvalaktif', [ZonaController::class, 'approvalaktif']);
+    Route::post('tujuan/approvalnonaktif', [TujuanController::class, 'approvalnonaktif']);
+    Route::post('tujuan/approvalaktif', [TujuanController::class, 'approvalaktif']);
     Route::post('ccemail/approvalnonaktif', [CcEmailController::class, 'approvalnonaktif']);
     Route::post('bccemail/approvalnonaktif', [BccEmailController::class, 'approvalnonaktif']);
     Route::post('upahritasi/approvalnonaktif', [UpahRitasiController::class, 'approvalnonaktif']);
@@ -725,6 +728,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('dataritasi', DataRitasiController::class)->whereNumber('dataritasi');
     Route::get('/orderanemkl', [OrderanEmklController::class, 'index']);
     Route::get('/orderanemkl/getTglJob', [OrderanEmklController::class, 'getTglJob']);
+
+
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
@@ -806,6 +811,15 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('zona/{id}/cekValidasi', [ZonaController::class, 'cekValidasi'])->name('zona.cekValidasi')->whereNumber('id');
     Route::get('zona/export', [ZonaController::class, 'export']);
     Route::get('zona/report', [ZonaController::class, 'report']);
+    
+    Route::get('tujuan/field_length', [TujuanController::class, 'fieldLength']);
+    Route::get('tujuan/default', [TujuanController::class, 'default']);
+    Route::post('tujuan/{id}/cekValidasi', [TujuanController::class, 'cekValidasi'])->name('tujuan.cekValidasi')->whereNumber('id');
+    Route::get('tujuan/combo', [TujuanController::class, 'combo']);
+    
+    Route::get('tujuan/export', [TujuanController::class, 'export']);
+    Route::get('tujuan/report', [TujuanController::class, 'report']);
+    Route::resource('tujuan', TujuanController::class)->whereNumber('tujuan');
 
 
     Route::get('tarif/combo', [TarifController::class, 'combo']);

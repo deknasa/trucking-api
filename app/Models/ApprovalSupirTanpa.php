@@ -48,11 +48,12 @@ class ApprovalSupirTanpa extends Model
             $approvalsupirgambar->tglbatas ?? $default_date,
             $approvalsupirketerangan->tglbatas ?? $default_date
         ]);
-        
+        $tglTigBulan = (date("Y-m-d",strtotime($supir->tglmasuk. " + 3 month")) < date("Y-m-d",strtotime("today"))) ? date("Y-m-d",strtotime("today")) : date("Y-m-d",strtotime($supir->tglmasuk. " + 3 month"));
+
         // Mendapatkan nilai terkecil
         // Mengecek apakah nilai_terkecil bukan default, dan mencetaknya jika bukan
         $nilai_terkecil = (min($dates) == $default_date)? max($dates) : min($dates);
-        $tglbatas = ($nilai_terkecil == $default_date) ? null : $nilai_terkecil;
+        $tglbatas = ($nilai_terkecil == $default_date) ? $tglTigBulan : $nilai_terkecil;
         // dd($tglbatas,$default_date); // Output nilai terkecil dalam format tanggal
         
         
@@ -152,7 +153,7 @@ class ApprovalSupirTanpa extends Model
         ) {
             $keterangan = true;
         }
-
+        
         return ["gambar"=>$gambar, "keterangan"=>$keterangan];
         
     }
