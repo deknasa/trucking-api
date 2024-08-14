@@ -36,6 +36,7 @@ use App\Http\Controllers\Api\SatuanController;
 use App\Http\Controllers\Api\TujuanController;
 use App\Http\Controllers\Api\CcEmailController;
 use App\Http\Controllers\Api\ExpStnkController;
+use App\Http\Controllers\Api\JobEmklController;
 use App\Http\Controllers\Api\MekanikController;
 use App\Http\Controllers\Api\ShipperController;
 use App\Http\Controllers\Api\ToEmailController;
@@ -86,26 +87,26 @@ use App\Http\Controllers\Api\HistoryTripController;
 use App\Http\Controllers\Api\JobTruckingController;
 use App\Http\Controllers\Api\LaporanStokController;
 use App\Http\Controllers\Api\OrderanEmklController;
+
 use App\Http\Controllers\Api\ReminderOliController;
-
 use App\Http\Controllers\Api\ReminderSpkController;
+
 use App\Http\Controllers\Api\SubKelompokController;
-
 use App\Http\Controllers\Api\TarifTangkiController;
+
 use App\Http\Controllers\Api\HutangDetailController;
-
 use App\Http\Controllers\Api\HutangHeaderController;
+
 use App\Http\Controllers\Api\OpnameDetailController;
-
 use App\Http\Controllers\Api\OpnameHeaderController;
+
 use App\Http\Controllers\Api\ReminderStokController;
-
 use App\Http\Controllers\Api\ReportNeracaController;
+
 use App\Http\Controllers\Api\SaldoUmurAkiController;
-
 use App\Http\Controllers\Api\TarifRincianController;
-use App\Http\Controllers\Api\UbahPasswordController;
 
+use App\Http\Controllers\Api\UbahPasswordController;
 use App\Http\Controllers\CustomValidationController;
 use App\Http\Controllers\LaporanKasHarianController;
 use App\Http\Controllers\Api\BankPelangganController;
@@ -442,6 +443,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('bankpelanggan', BankPelangganController::class)->whereNumber('bankpelanggan');
     Route::resource('jenisemkl', JenisEmklController::class)->whereNumber('jenisemkl');
     Route::resource('jenistrado', JenisTradoController::class)->whereNumber('jenistrado');
+    Route::resource('jobemkl', JobEmklController::class)->whereNumber('jobemkl');
     Route::resource('akunpusat', AkunPusatController::class)->parameters(['akunpusat' => 'akunPusat'])->whereNumber('akunPusat');
     Route::resource('mainakunpusat', MainAkunPusatController::class)->whereNumber('mainakunpusat');
     Route::resource('error', ErrorController::class)->whereNumber('error');
@@ -538,6 +540,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('toemail/approvalnonaktif', [ToEmailController::class, 'approvalnonaktif']);
     Route::post('jenistrado/approvalnonaktif', [JenisTradoController::class, 'approvalnonaktif']);
     Route::post('jenistrado/approvalaktif', [JenisTradoController::class, 'approvalaktif']);
+    Route::post('jobemkl/approvalnonaktif', [JobEmklController::class, 'approvalnonaktif']);
+    Route::post('jobemkl/approvalaktif', [JobEmklController::class, 'approvalaktif']);
     Route::post('kerusakan/approvalnonaktif', [KerusakanController::class, 'approvalnonaktif']);
     Route::post('kerusakan/approvalaktif', [KerusakanController::class, 'approvalaktif']);
     Route::post('mandor/approvalnonaktif', [MandorController::class, 'approvalnonaktif']);
@@ -1089,6 +1093,13 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('jenistrado/{id}/cekValidasi', [JenisTradoController::class, 'cekValidasi'])->name('jenistrado.cekValidasi')->whereNumber('id');
     Route::get('jenistrado/export', [JenisTradoController::class, 'export']);
     Route::get('jenistrado/report', [JenisTradoController::class, 'report']);
+    
+    Route::get('jobemkl/combo', [JobEmklController::class, 'combo']);
+    Route::get('jobemkl/field_length', [JobEmklController::class, 'fieldLength']);
+    Route::get('jobemkl/default', [JobEmklController::class, 'default']);
+    Route::post('jobemkl/{id}/cekValidasi', [JobEmklController::class, 'cekValidasi'])->name('jenistrado.cekValidasi')->whereNumber('id');
+    Route::get('jobemkl/export', [JobEmklController::class, 'export']);
+    Route::get('jobemkl/report', [JobEmklController::class, 'report']);
 
     Route::get('akunpusat/field_length', [AkunPusatController::class, 'fieldLength']);
     Route::get('akunpusat/default', [AkunPusatController::class, 'default']);
