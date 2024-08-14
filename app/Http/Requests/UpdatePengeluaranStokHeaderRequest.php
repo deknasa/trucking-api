@@ -37,6 +37,8 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
         $reuse = DB::table('parameter')->where('grp', 'STATUS REUSE')->where('text', 'REUSE')->first();
         $korv = DB::table('pengeluaranstok')->where('kodepengeluaran', 'KORV')->first();
         $afkir = DB::table('pengeluaranstok')->where('kodepengeluaran', 'AFKIR')->first();
+        $gst = DB::table('parameter')->where('grp', 'GST STOK')->where('subgrp', 'GST STOK')->first();
+
         
         $rules = [
             'id' => [new ValidasiDestroyPengeluaranStokHeader ()],
@@ -93,6 +95,20 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
                 'trado' => $salahSatuDari,
                 'gandengan' => $salahSatuDari,
                 'gudang' => $salahSatuDari,
+            ];
+        }
+
+        if ($gst->text == request()->pengeluaranstok_id) {
+            $salahSatuDari = Rule::requiredIf(function () use ($gst) {
+                if ((empty($this->input('trado')) && empty($this->input('gandengan')) && $this->input('pengeluaranstok_id')) == $gst->text) {
+                    return true;
+                }
+                return false;
+            });
+            $gudangTradoGandengan = [
+                'trado' => $salahSatuDari,
+                'gandengan' => $salahSatuDari,
+                'gudang' => "",
             ];
         }
         $returRules =[];
