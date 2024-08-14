@@ -82,6 +82,7 @@ class Gudang extends MyModel
         $aktif = request()->aktif ?? '';
         $penerimaanStokPg = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
         $pengeluaranStokSpk = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
+        $pengeluaranStokGst = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'GST STOK')->where('subgrp', 'GST STOK')->first();
         $penerimaanstok = request()->penerimaanstok_id ?? '';
         $pengeluaranstok = request()->pengeluaranstok_id ?? '';
 
@@ -142,6 +143,10 @@ class Gudang extends MyModel
 
         if ($pengeluaranstok == $pengeluaranStokSpk->text) {
             $namaGudang = ['GUDANG KANTOR', 'GUDANG PIHAK III', 'GUDANG SEMENTARA'];
+            $query->whereNotIn('gudang.gudang', $namaGudang);
+        }
+        if ($pengeluaranstok == $pengeluaranStokGst->text) {
+            $namaGudang = ['GUDANG KANTOR', 'GUDANG PIHAK III'];
             $query->whereNotIn('gudang.gudang', $namaGudang);
         }
 
