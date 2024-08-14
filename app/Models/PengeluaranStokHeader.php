@@ -4080,6 +4080,7 @@ class PengeluaranStokHeader extends MyModel
             $pengeluaranStokHeader->penerimaan_nobukti = $penerimaanHeader->nobukti;
             $pengeluaranStokHeader->save();
         } else if ($korv->id == $data['pengeluaranstok_id']) {
+        } else if ($gst->id == $data['pengeluaranstok_id']) {
         } else {
             $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
         }
