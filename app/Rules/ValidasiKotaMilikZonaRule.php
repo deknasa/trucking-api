@@ -12,7 +12,7 @@ class ValidasiKotaMilikZonaRule implements Rule
      *
      * @return void
      */
-    public function __construct($kotadari,$kotasampai)
+    public function __construct($kotadari, $kotasampai)
     {
         $this->kotadari = $kotadari;
         $this->kotasampai = $kotasampai;
@@ -32,14 +32,18 @@ class ValidasiKotaMilikZonaRule implements Rule
     public function passes($attribute, $value)
     {
         if (!$this->kotadari || !$this->kotasampai) {
-            $this->pesan = 'required';
-            return false;
+            if (request()->zonadari == '' && request()->zonasampai == '') {
+                $this->pesan = 'required';
+                return false;
+            }
         }
-        $kotadari = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))->where('id',$this->kotadari)->first();
-        $kotasampai = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))->where('id',$this->kotasampai)->first();
+        $kotadari = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))->where('id', $this->kotadari)->first();
+        $kotasampai = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))->where('id', $this->kotasampai)->first();
+        if ($kotadari != '' && $kotasampai != '') {
 
-        if (($kotadari->zona_id) && ($kotasampai->zona_id)) {
-           return false;
+            if (($kotadari->zona_id) && ($kotasampai->zona_id)) {
+                return false;
+            }
         }
         return true;
     }
@@ -51,7 +55,7 @@ class ValidasiKotaMilikZonaRule implements Rule
      */
     public function message()
     {
-        if ($this->pesan ="required") {
+        if ($this->pesan = "required") {
             return "kota wajib diisi";
         }
         return 'Kota Sudah memiliki zona';

@@ -12,9 +12,9 @@ class ValidasiZonaUpahZona implements Rule
      *
      * @return void
      */
-    public function __construct($statusZonaId)
+    public function __construct()
     {
-        $this->statusZonaId = $statusZonaId;
+        // $this->statusZonaId = $statusZonaId;
     }
 
     /**
@@ -26,11 +26,10 @@ class ValidasiZonaUpahZona implements Rule
      */
     public function passes($attribute, $value)
     {
-        if(request()->statusupahzona != $this->statusZonaId && $value!=''){
+        if (request()->kotadari != '' && request()->kotasampai != '' && $value != '') {
             return false;
-        }else{
-            return true;
         }
+        return true;
     }
 
     /**
@@ -40,6 +39,6 @@ class ValidasiZonaUpahZona implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('TSF')->keterangan;
+        return app(ErrorController::class)->geterror('WPKZ')->keterangan;
     }
 }

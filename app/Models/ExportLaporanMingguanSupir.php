@@ -52,6 +52,7 @@ class ExportLaporanMingguanSupir extends Model
             $table->string('nobukti', 50)->nullable();
             $table->dateTime('tglbukti')->nullable();
             $table->string('nopol', 1000)->nullable();
+            $table->string('gandengan', 1000)->nullable();
             $table->string('namasupir', 1000)->nullable();
             $table->string('rute', 1000)->nullable();
             $table->string('qty', 1000)->nullable();
@@ -96,6 +97,7 @@ class ExportLaporanMingguanSupir extends Model
                 'c.nobukti',
                 'c.tglbukti',
                 'd.kodetrado as nopol',
+                'gandengan.keterangan as gandengan',
                 'e.namasupir',
                 DB::raw("ltrim(rtrim(isnull(f.kodekota ,'')))+'-'+ltrim(rtrim(isnull(g.kodekota,''))) +
                 (case when isnull(c.penyesuaian,'')<>'' then ' ( '+isnull(c.penyesuaian,'')+' )' else '' end)
@@ -132,6 +134,7 @@ class ExportLaporanMingguanSupir extends Model
             )
             ->join(DB::raw("gajisupirdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw("suratpengantar as c with (readuncommitted) "), 'b.suratpengantar_nobukti', 'c.nobukti')
+            ->leftjoin(DB::raw("gandengan with (readuncommitted) "), 'c.gandengan_id', 'gandengan.id')
             ->leftjoin(DB::raw("trado as d with (readuncommitted) "), 'c.trado_id', 'd.id')
             ->leftjoin(DB::raw("supir as e with (readuncommitted) "), 'c.supir_id', 'e.id')
             ->leftjoin(DB::raw("kota as f with (readuncommitted) "), 'c.dari_id', 'f.id')
@@ -156,6 +159,7 @@ class ExportLaporanMingguanSupir extends Model
             'nobukti',
             'tglbukti',
             'nopol',
+            'gandengan',
             'namasupir',
             'rute',
             'qty',
@@ -205,19 +209,19 @@ class ExportLaporanMingguanSupir extends Model
             $table->string('suratpengantar_nobukti', 50)->nullable();
         });
 
-        $querylisttrip=db::table("gajisupirheader a")->from(db::raw('gajisupirheader a with (readuncommitted)'))
-        ->select(
-            'a.nobukti',
-            'b.suratpengantar_nobukti',
-        )
-        ->join(db::raw("gajisupirdetail b with (readuncommitted)"),'a.nobukti','b.nobukti')
-        ->join(db::raw("suratpengantar c with (readuncommitted)"),'b.suratpengantar_nobukti','c.nobukti')
-        ->whereRaw("(c.tglbukti >= '$dari' and c.tglbukti <= '$sampai')")
-        ->whereraw("(c.trado_id>=$tradodari")
-        ->whereraw("c.trado_id<=$tradosampai)")
-        ->whereraw("b.nourut=1")
-        ->groupby('a.nobukti')
-        ->groupby('b.suratpengantar_nobukti');
+        $querylisttrip = db::table("gajisupirheader a")->from(db::raw('gajisupirheader a with (readuncommitted)'))
+            ->select(
+                'a.nobukti',
+                'b.suratpengantar_nobukti',
+            )
+            ->join(db::raw("gajisupirdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(db::raw("suratpengantar c with (readuncommitted)"), 'b.suratpengantar_nobukti', 'c.nobukti')
+            ->whereRaw("(c.tglbukti >= '$dari' and c.tglbukti <= '$sampai')")
+            ->whereraw("(c.trado_id>=$tradodari")
+            ->whereraw("c.trado_id<=$tradosampai)")
+            ->whereraw("b.nourut=1")
+            ->groupby('a.nobukti')
+            ->groupby('b.suratpengantar_nobukti');
 
         // dd($querylisttrip->tosql());
 
@@ -241,7 +245,7 @@ class ExportLaporanMingguanSupir extends Model
                 db::raw("(trim(b.suratpengantar_nobukti)+trim(a.nobukti)) as suratpengantarric"),
 
             )
-            ->join(db::raw($templisttrip ." b"),'a.nobukti','b.nobukti');
+            ->join(db::raw($templisttrip . " b"), 'a.nobukti', 'b.nobukti');
 
 
         // dd($querytempuangjalan->get());
@@ -278,7 +282,7 @@ class ExportLaporanMingguanSupir extends Model
             })
             ->join(DB::raw($tempData . " as c "), 'a.nobukti', 'c.nobukti')
             ->leftjoin(DB::raw("suratpengantarbiayatambahan as e with (readuncommitted) "), 'a.id', 'e.suratpengantar_id')
-            
+
             ->GroupBy('a.nobukti');
 
         DB::table($temptrip)->insertUsing([
@@ -561,7 +565,7 @@ class ExportLaporanMingguanSupir extends Model
         Schema::create($tempOrderanTrucking, function ($table) {
             $table->string('nobukti', 50)->nullable();
             $table->integer('id')->nullable();
-            $table->string('notrip', 50)->nullable();
+            $table->longText('notrip')->nullable();
         });
 
         $queryOrderanTrucking = DB::table($tempRekapListTrip)->from(
@@ -706,7 +710,8 @@ class ExportLaporanMingguanSupir extends Model
         //     'biayaextrasupir_nominal',
         // ], $data222);
 
-
+        // dd(db::table($tempInvoice)->where('jobtrucking','JT 0008/VIII/2024')->get(), db::table($tempInvoice)->whereRaw("notripawal = 'TRP 0018/VIII/2024'")->get(),
+        // db::table($tempInvoice)->whereRaw("notripawal = 'TRP 0020/VIII/2024'")->get());
         $data =  DB::table($tempData)->from(
             DB::raw($tempData . " as a")
         )
@@ -714,6 +719,7 @@ class ExportLaporanMingguanSupir extends Model
                 'a.nobukti',
                 'a.tglbukti',
                 'a.nopol',
+                'a.gandengan',
                 'a.namasupir',
                 'a.rute',
                 'a.qty',
@@ -732,6 +738,12 @@ class ExportLaporanMingguanSupir extends Model
                     (case when a.urutextra=1 then isnull(b.extralain,0) else 0 end)
                       end) 
                     end) as omsettambahan"),
+                    
+                DB::raw("( case when isnull(c.invoice,'')='' then 0 else
+                        (case when isnull(b.notripawal,'')='' then (isnull(e.omsettambahan,0) + isnull(b.omset,0)) else 
+                        (case when a.urutextra=1 then (isnull(e.omsettambahan,0) + isnull(b.omset,0))  end)
+                            end) 
+                        end) as omsetmedan"),
                 DB::raw("0 as omsetextrabbm"),
                 DB::raw("isnull(c.invoice,'') as invoice"),
                 DB::raw("isnull(A.gajisupir,0) as borongan"),

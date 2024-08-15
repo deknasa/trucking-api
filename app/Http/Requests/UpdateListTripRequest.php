@@ -939,7 +939,7 @@ class UpdateListTripRequest extends FormRequest
                         "statuslangsir" => "required",
                         // "lokasibongkarmuat" => "required",
                         "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
-                        "upah" => ["required", new cekUpahSupirEditTrip($idUpahSupir), new ExistNominalUpahSupir(), new validasiTripDipakaiKeKandang(), new ValidasiTripGudangSama($dataTripAsal)],
+                        "upah" => ["required", new ExistNominalUpahSupir(), new validasiTripDipakaiKeKandang(), new ValidasiTripGudangSama($dataTripAsal)],
 
                         'statuspenyesuaian' => ['required', Rule::in($statusPenyesuaian)],
                     ];
@@ -977,7 +977,7 @@ class UpdateListTripRequest extends FormRequest
                         "statuslangsir" => "required",
                         // "lokasibongkarmuat" => "required",
                         "trado" => ["required", new ValidasiTradoTripGudangSama($dataTripAsal)],
-                        "upah" => ["required", new cekUpahSupirEditTrip($idUpahSupir), new ExistNominalUpahSupir(), new validasiTripDipakaiKeKandang(), new ValidasiTripGudangSama($dataTripAsal)],
+                        "upah" => ["required", new ExistNominalUpahSupir(), new validasiTripDipakaiKeKandang(), new ValidasiTripGudangSama($dataTripAsal)],
 
                         'statuspenyesuaian' => ['required', Rule::in($statusPenyesuaian)],
                     ];

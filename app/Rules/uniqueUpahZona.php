@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
-class UniqueUpahSupirSampai implements Rule
+class uniqueUpahZona implements Rule
 {
     /**
      * Create a new rule instance.
@@ -27,8 +27,9 @@ class UniqueUpahSupirSampai implements Rule
      */
     public function passes($attribute, $value)
     {
-        $nilai = true;
-        if (request()->kotasampai_id != '' && request()->kotadari_id != '' && request()->penyesuaian != '') {
+        $zonadari_id = request()->zonadari_id ?? 0;
+        $zonasampai_id = request()->zonasampai_id ?? 0;
+        if ($zonadari_id != 0 && $zonasampai_id != 0) {
 
             $query = DB::table('upahsupir')
                 ->from(
@@ -37,18 +38,14 @@ class UniqueUpahSupirSampai implements Rule
                 ->select(
                     'a.id'
                 )
-                ->where('a.kotasampai_id', '=', (request()->kotasampai_id))
-                ->where('a.kotadari_id', '=', request()->kotadari_id)
-                ->where('a.penyesuaian', '=', request()->penyesuaian)
+                ->whereRaw("(a.zonadari_id = $zonadari_id and a.zonasampai_id = $zonasampai_id) or ((a.zonadari_id = $zonasampai_id and a.zonasampai_id = $zonadari_id))")
                 ->first();
-            if (isset($query)) {
-                $nilai = false;
-            } else {
-                $nilai = true;
+
+            if ($query != '') {
+                return false;
             }
         }
-
-        return $nilai;
+        return true;
     }
 
     /**
@@ -59,6 +56,6 @@ class UniqueUpahSupirSampai implements Rule
     public function message()
     {
         $controller = new ErrorController;
-        return 'KOTA SAMPAI ' . $controller->geterror('SPI')->keterangan;
+        return  $controller->geterror('SPI')->keterangan;
     }
 }

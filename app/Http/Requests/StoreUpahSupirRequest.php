@@ -20,6 +20,7 @@ use App\Rules\ValidasiPenyesuaianUpahSupir;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
 use App\Http\Controllers\Api\ParameterController;
+use App\Rules\uniqueUpahZona;
 use App\Rules\ValidasiDariSimpanKandangUpahSupir;
 
 class StoreUpahSupirRequest extends FormRequest
@@ -159,12 +160,12 @@ class StoreUpahSupirRequest extends FormRequest
             if ($kotadari_id != null) {
                 if ($kotadari_id == 0) {
                     $rulesKotaDari_id = [
-                        'kotadari_id' => ['required_if:statusupahzona,=' . $getBukanUpahZona->id, 'numeric', 'min:1', new ExistKota(), new ValidasiKotaUpahZona($getBukanUpahZona->id)]
+                        'kotadari_id' => ['required_if:zonadari_id,=' . request()->zonadari_id ?? 0, 'numeric', 'min:1']
                     ];
                 }
             } else if ($kotadari_id == null && $this->kotadari != '') {
                 $rulesKotaDari_id = [
-                    'kotadari_id' => ['required_if:statusupahzona,=' . $getBukanUpahZona->id, 'numeric', 'min:1', new ExistKota(), new ValidasiKotaUpahZona($getBukanUpahZona->id)]
+                    'kotadari_id' => ['required_if:zonadari_id,=' . request()->zonadari_id ?? 0, 'numeric', 'min:1']
                 ];
             }
 
@@ -173,12 +174,12 @@ class StoreUpahSupirRequest extends FormRequest
             if ($kotasampai_id != null) {
                 if ($kotasampai_id == 0) {
                     $rulesKotaSampai_id = [
-                        'kotasampai_id' => ['required_if:statusupahzona,=' . $getBukanUpahZona->id, 'numeric', 'min:1', new UniqueUpahSupirSampai(), new ExistKota(), new ValidasiKotaUpahZona($getBukanUpahZona->id)]
+                        'kotasampai_id' => ['required_if:zonasampai_id,=' . request()->zonasampai_id ?? 0, 'numeric', 'min:1', new UniqueUpahSupirSampai()]
                     ];
                 }
             } else if ($kotasampai_id == null && $this->kotasampai != '') {
                 $rulesKotaSampai_id = [
-                    'kotasampai_id' => ['required_if:statusupahzona,=' . $getBukanUpahZona->id, 'numeric', 'min:1', new UniqueUpahSupirSampai(), new ExistKota(), new ValidasiKotaUpahZona($getBukanUpahZona->id)]
+                    'kotasampai_id' => ['required_if:zonasampai_id,=' . request()->zonasampai_id ?? 0, 'numeric', 'min:1', new UniqueUpahSupirSampai()]
                 ];
             }
 
@@ -187,12 +188,12 @@ class StoreUpahSupirRequest extends FormRequest
             if ($zonadari_id != null) {
                 if ($zonadari_id == 0) {
                     $rulesZonaDari_id = [
-                        'zonadari_id' => ['required_if:statusupahzona,=' . $getUpahZona->id, 'numeric', 'min:1', new ExistZona(), new ValidasiZonaUpahZona($getUpahZona->id)]
+                        'zonadari_id' => ['required_if:statusupahzona,=' . $getUpahZona->id, 'numeric', 'min:1', new ExistZona()]
                     ];
                 }
             } else if ($zonadari_id == null && $this->zonadari != '') {
                 $rulesZonaDari_id = [
-                    'zonadari_id' => ['required_if:statusupahzona,=' . $getUpahZona->id, 'numeric', 'min:1', new ExistZona(), new ValidasiZonaUpahZona($getUpahZona->id)]
+                    'zonadari_id' => ['required_if:statusupahzona,=' . $getUpahZona->id, 'numeric', 'min:1', new ExistZona()]
                 ];
             }
 
@@ -201,12 +202,12 @@ class StoreUpahSupirRequest extends FormRequest
             if ($zonasampai_id != null) {
                 if ($zonasampai_id == 0) {
                     $rulesZonaSampai_id = [
-                        'zonasampai_id' => ['required_if:statusupahzona,=' . $getUpahZona->id, 'numeric', 'min:1', new ExistZona(), new ValidasiZonaUpahZona($getUpahZona->id)]
+                        'zonasampai_id' => ['required_if:statusupahzona,=' . $getUpahZona->id, 'numeric', 'min:1', new ExistZona()]
                     ];
                 }
             } else if ($zonasampai_id == null && $this->zonasampai != '') {
                 $rulesZonaSampai_id = [
-                    'zonasampai_id' => ['required_if:statusupahzona,=' . $getUpahZona->id, 'numeric', 'min:1', new ExistZona(), new ValidasiZonaUpahZona($getUpahZona->id)]
+                    'zonasampai_id' => ['required_if:statusupahzona,=' . $getUpahZona->id, 'numeric', 'min:1', new ExistZona()]
                 ];
             }
             $parameter = new Parameter();
@@ -214,19 +215,19 @@ class StoreUpahSupirRequest extends FormRequest
             $tglbatasawal = (date('Y-m-d', strtotime('-7 days')));
             $tglbatasakhir = (date('Y-m-d', strtotime('+7 days')));
             $rules =  [
-                'kotadari' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiDariSimpanKandangUpahSupir(), new ValidasiKotaUpahZona($getBukanUpahZona->id), new ValidasiKotaMilikZonaRule($this->kotadari_id, $this->kotasampai_id)],
-                'kotasampai' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id), new UniqueUpahSupirKotaSampai(), new ValidasiKotaMilikZonaRule($this->kotadari_id, $this->kotasampai_id)],
-                'zonadari' => ['required_if:statusupahzona,=,' . $getUpahZona->id, new ValidasiZonaUpahZona($getUpahZona->id)],
-                'zonasampai' => ['required_if:statusupahzona,=,' . $getUpahZona->id, new ValidasiZonaUpahZona($getUpahZona->id)],
+                'kotadari' => ["required_if:zonadari,=,null", new ValidasiDariSimpanKandangUpahSupir(), new ValidasiKotaMilikZonaRule($this->kotadari_id, $this->kotasampai_id)],
+                'kotasampai' => ['required_if:zonasampai,=,null', new UniqueUpahSupirKotaSampai(), new ValidasiKotaMilikZonaRule($this->kotadari_id, $this->kotasampai_id)],
+                'zonadari' => [new ValidasiZonaUpahZona()],
+                'zonasampai' => [new ValidasiZonaUpahZona(), new uniqueUpahZona()],
                 // 'tarif' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id)],
                 'tarif' => [new ValidasiKotaUpahZona($getBukanUpahZona->id)],
                 'penyesuaian' => [new UniqueUpahSupirSampai(), new ValidasiPenyesuaianUpahSupir(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
-                'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
-                'jarakfullempty' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
+                'jarak' => ["required_if:kotadari,!=,null", 'numeric', (request()->kotadari != '') ? 'gt:0' : '', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
+                'jarakfullempty' => ["required_if:kotadari,!=,null", 'numeric', (request()->kotadari != '') ? 'gt:0' : '', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
                 'statusaktifnama' => ['required'],
                 'statuslangsirnama' => ['required'],
                 'statuslangsirnama' => ['required'],
-                'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+                // 'statusupahzona' => ['required', Rule::in($statusUpahZona)],
                 // 'tglmulaiberlaku' => [
                 //     'required', 'date_format:d-m-Y',
                 // ],
