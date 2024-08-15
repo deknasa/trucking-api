@@ -131,10 +131,16 @@ class InvoiceDetail extends MyModel
             ], $querysprekap);
 
             $tempomsettambahan = '##tempomsettambahan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            $tempomsettambahanrinci = '##tempomsettambahanrinci' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
             $cekStatus = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS CETAKAN')->where('subgrp', 'INVOICE')->first();
             if ($cekStatus->text == 'FORMAT 2') {
 
+                Schema::create($tempomsettambahanrinci, function ($table) {
+                    $table->string('jobtrucking');
+                    $table->LongText('keterangan')->nullable();
+                    $table->double('nominal')->nullable();
+                });
 
                 $fetch = DB::table("suratpengantar")->from(DB::raw("suratpengantar"))
                     ->select(
@@ -145,11 +151,35 @@ class InvoiceDetail extends MyModel
                     ->join(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"), 'suratpengantar.id', 'suratpengantarbiayatambahan.suratpengantar_id')
                     ->join(DB::raw($tempsprekap . " c"), 'suratpengantar.jobtrucking', 'c.jobtrucking')
                     ->groupby('c.jobtrucking');
+
+                DB::table($tempomsettambahanrinci)->insertUsing(['jobtrucking', 'keterangan', 'nominal'], $fetch);
+                
+                $fetch = DB::table("suratpengantar")->from(DB::raw("suratpengantar"))
+                ->select(
+                    'c.jobtrucking',
+                    DB::raw("STRING_AGG(b.keteranganbiaya, ', ') AS keterangan"),
+                    DB::raw("sum(b.nominaltagih) as nominal")
+                )
+                ->join(DB::raw("biayaextrasupirheader as a with (readuncommitted)"), 'suratpengantar.nobukti', 'a.suratpengantar_nobukti')
+                ->join(DB::raw("biayaextrasupirdetail as b with (readuncommitted)"), 'b.nobukti', 'a.nobukti')
+                ->join(DB::raw($tempsprekap . " c"), 'suratpengantar.jobtrucking', 'c.jobtrucking')
+                ->whereRaw("isnull(b.nominaltagih,0)!=0")
+                ->groupby('c.jobtrucking');
+                DB::table($tempomsettambahanrinci)->insertUsing(['jobtrucking', 'keterangan', 'nominal'], $fetch);
+
+                $fetch = DB::table($tempomsettambahanrinci)->from(DB::raw("$tempomsettambahanrinci as a"))
+                ->select(
+                    'a.jobtrucking',
+                    DB::raw("STRING_AGG(a.keterangan, ', ') AS keterangan"),
+                    DB::raw("sum(a.nominal) as nominal")
+                )
+                ->groupby('a.jobtrucking');
                 Schema::create($tempomsettambahan, function ($table) {
                     $table->string('jobtrucking');
                     $table->LongText('keterangan')->nullable();
                     $table->double('nominal')->nullable();
                 });
+
 
                 DB::table($tempomsettambahan)->insertUsing(['jobtrucking', 'keterangan', 'nominal'], $fetch);
             }
