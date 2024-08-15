@@ -475,6 +475,7 @@ class JurnalUmumHeader extends MyModel
                         $coa_detail[] = $data['coakredit_detail'][$i];
                         $nominal_detail[] = '-' . $data['nominal_detail'][$i];
                         $keterangan_detail[] = $data['keterangan_detail'][$i];
+                        $tglbuktidetail[] = $jurnalUmumHeader->tglbukti;
                         $baris[] = $i;
                     }
                 } else {
@@ -490,6 +491,7 @@ class JurnalUmumHeader extends MyModel
                         $coa_detail[] = $data['coadebet_detail'][$i];
                         $nominal_detail[] = $data['nominal_detail'][$i];
                         $keterangan_detail[] = $data['keterangan_detail'][$i];
+                        $tglbuktidetail[] = $jurnalUmumHeader->tglbukti;
                         $baris[] = $i;
                     }
                 }
@@ -517,6 +519,7 @@ class JurnalUmumHeader extends MyModel
                 'coa_detail' => $coa_detail,
                 'nominal_detail' => $nominal_detail,
                 'keterangan_detail' => $keterangan_detail,
+                'tglbuktidetail' => $tglbuktidetail,
                 'baris' => $baris,
             ];
             (new JurnalUmumPusatHeader())->processStore($jurnalRequest);
@@ -602,6 +605,7 @@ class JurnalUmumHeader extends MyModel
                         $coa_detail[] = $data['coakredit_detail'][$i];
                         $nominal_detail[] = '-' . $data['nominal_detail'][$i];
                         $keterangan_detail[] = $data['keterangan_detail'][$i];
+                        $tglbuktidetail[] = $jurnalUmumHeader->tglbukti;
                         $baris[] = $i;
                     }
                 } else {
@@ -616,6 +620,7 @@ class JurnalUmumHeader extends MyModel
                         $coa_detail[] = $data['coadebet_detail'][$i];
                         $nominal_detail[] = $data['nominal_detail'][$i];
                         $keterangan_detail[] = $data['keterangan_detail'][$i];
+                        $tglbuktidetail[] = $jurnalUmumHeader->tglbukti;
                         $baris[] = $i;
                     }
                 }
@@ -635,22 +640,25 @@ class JurnalUmumHeader extends MyModel
 
         if ($tanpaprosesnobukti == 0) {
             $getJurnal = JurnalUmumPusatHeader::from(DB::raw("jurnalumumpusatheader with (readuncommitted)"))->where('nobukti', $jurnalUmumHeader->nobukti)->first();
+            if ($getJurnal != '') {
 
-            $jurnalUmumPusatHeader = new JurnalUmumPusatHeader();
-            $jurnalUmumPusatHeader = $jurnalUmumPusatHeader->lockAndDestroy($getJurnal->id);
+                $jurnalUmumPusatHeader = new JurnalUmumPusatHeader();
+                $jurnalUmumPusatHeader = $jurnalUmumPusatHeader->lockAndDestroy($getJurnal->id);
 
-            $jurnalRequest = [
-                'nobukti' => $jurnalUmumHeader->nobukti,
-                'tglbukti' => $jurnalUmumHeader->tglbukti,
-                'postingdari' => $jurnalUmumHeader->postingdari,
-                'statusapproval' => $jurnalUmumHeader->statusapproval,
-                'statusformat' => $jurnalUmumHeader->statusformat,
-                'coa_detail' => $coa_detail,
-                'nominal_detail' => $nominal_detail,
-                'keterangan_detail' => $keterangan_detail,
-                'baris' => $baris,
-            ];
-            (new JurnalUmumPusatHeader())->processStore($jurnalRequest);
+                $jurnalRequest = [
+                    'nobukti' => $jurnalUmumHeader->nobukti,
+                    'tglbukti' => $jurnalUmumHeader->tglbukti,
+                    'postingdari' => $jurnalUmumHeader->postingdari,
+                    'statusapproval' => $jurnalUmumHeader->statusapproval,
+                    'statusformat' => $jurnalUmumHeader->statusformat,
+                    'coa_detail' => $coa_detail,
+                    'nominal_detail' => $nominal_detail,
+                    'keterangan_detail' => $keterangan_detail,
+                    'tglbuktidetail' => $tglbuktidetail,
+                    'baris' => $baris,
+                ];
+                (new JurnalUmumPusatHeader())->processStore($jurnalRequest);
+            }
         }
         return $jurnalUmumHeader;
     }
@@ -793,11 +801,13 @@ class JurnalUmumHeader extends MyModel
                 $coa_detail = [];
                 $nominal_detail = [];
                 $keterangan_detail = [];
+                $tglbuktidetail = [];
                 $baris = [];
 
                 foreach ($jurnalDetail as $index => $value) {
                     $coa_detail[] = $value->coa;
                     $nominal_detail[] = $value->nominal;
+                    $tglbuktidetail[] = $value->tglbukti;
                     $keterangan_detail[] = $value->keterangan;
                     $baris[] = $value->baris;
                 }
@@ -810,6 +820,7 @@ class JurnalUmumHeader extends MyModel
                     'statusformat' => $jurnalumum->statusformat,
                     'coa_detail' => $coa_detail,
                     'nominal_detail' => $nominal_detail,
+                    'tglbuktidetail' => $tglbuktidetail,
                     'keterangan_detail' => $keterangan_detail,
                     'baris' => $baris,
                 ];

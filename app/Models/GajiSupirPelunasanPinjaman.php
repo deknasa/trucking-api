@@ -30,7 +30,6 @@ class GajiSupirPelunasanPinjaman extends MyModel
 
         $tempPinjaman = $this->createTempPinjamanPribadi($nobukti, $supir_id);
         $tempPengeluaran = $this->createTempPengeluaranPribadi($supir_id);
-
         $temp = '##tempGet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $fetch = DB::table($tempPinjaman)->from(DB::raw("$tempPinjaman with (readuncommitted)"))
             ->select(DB::raw("tglbukti,pengeluarantrucking_nobukti as nobukti,sisaawal,keterangan,gajisupir_id,nominal,sisa"));
@@ -75,8 +74,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
                 DB::raw("pengeluarantruckingdetail with (readuncommitted)")
             )->select(DB::raw("pengeluarantruckingheader.tglbukti,pengeluarantruckingdetail.nobukti, (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
                 FROM gajisupirpelunasanpinjaman WHERE pengeluarantruckingdetail.nobukti= gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti) AS sisaawal,pengeluarantruckingdetail.keterangan,
-            (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
-                FROM gajisupirpelunasanpinjaman WHERE pengeluarantruckingdetail.nobukti= gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti) AS sisa"))
+            (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa"))
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
             ->where("pengeluarantruckingheader.pengeluarantrucking_id", 1)
             ->whereRaw("pengeluarantruckingdetail.supir_id = $supir_id")
@@ -107,8 +105,8 @@ class GajiSupirPelunasanPinjaman extends MyModel
         $fetch = DB::table('gajisupirpelunasanpinjaman')->from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
             ->select(DB::raw("pengeluarantruckingheader.tglbukti,gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti, (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
             FROM gajisupirpelunasanpinjaman WHERE gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti=pengeluarantruckingdetail.nobukti 
-            and gajisupirpelunasanpinjaman.gajisupir_nobukti! = '$nobukti') as sisaawal, pengeluarantruckingdetail.keterangan,gajisupirpelunasanpinjaman.gajisupir_id, gajisupirpelunasanpinjaman.nominal, (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
-        FROM gajisupirpelunasanpinjaman WHERE gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti=pengeluarantruckingdetail.nobukti) AS sisa"))
+            and gajisupirpelunasanpinjaman.gajisupir_nobukti! = '$nobukti') as sisaawal, pengeluarantruckingdetail.keterangan,gajisupirpelunasanpinjaman.gajisupir_id, gajisupirpelunasanpinjaman.nominal, (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail
+            WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti=pengeluarantruckingdetail.nobukti) AS sisa"))
             ->join(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti', 'pengeluarantruckingdetail.nobukti')
             ->join(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
             ->whereRaw("gajisupirpelunasanpinjaman.gajisupir_nobukti = '$nobukti'")
@@ -181,8 +179,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
                 DB::raw("pengeluarantruckingdetail with (readuncommitted)")
             )->select(DB::raw("pengeluarantruckingheader.tglbukti,pengeluarantruckingdetail.nobukti, (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
             FROM gajisupirpelunasanpinjaman WHERE pengeluarantruckingdetail.nobukti= gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti) AS sisaawal,pengeluarantruckingdetail.keterangan,
-            (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
-                FROM gajisupirpelunasanpinjaman WHERE pengeluarantruckingdetail.nobukti= gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti) AS sisa"))
+            (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa"))
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
             ->whereRaw("(pengeluarantruckingdetail.supir_id = 0 OR pengeluarantruckingdetail.supir_id IS NULL)")
             ->where("pengeluarantruckingheader.pengeluarantrucking_id", 1)
@@ -213,8 +210,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
         $fetch = DB::table('gajisupirpelunasanpinjaman')->from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
             ->select(DB::raw("pengeluarantruckingheader.tglbukti,gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti, (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
             FROM gajisupirpelunasanpinjaman WHERE gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti=pengeluarantruckingdetail.nobukti 
-            and gajisupirpelunasanpinjaman.gajisupir_nobukti! = '$nobukti') as sisaawal, pengeluarantruckingdetail.keterangan,gajisupirpelunasanpinjaman.gajisupir_id, gajisupirpelunasanpinjaman.nominal, (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
-            FROM gajisupirpelunasanpinjaman WHERE gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti=pengeluarantruckingdetail.nobukti) AS sisa"))
+            and gajisupirpelunasanpinjaman.gajisupir_nobukti! = '$nobukti') as sisaawal, pengeluarantruckingdetail.keterangan,gajisupirpelunasanpinjaman.gajisupir_id, gajisupirpelunasanpinjaman.nominal, (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa"))
             ->join(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti', 'pengeluarantruckingdetail.nobukti')
             ->join(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
             ->whereRaw("gajisupirpelunasanpinjaman.gajisupir_nobukti = '$nobukti'")
