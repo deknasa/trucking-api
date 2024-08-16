@@ -232,6 +232,41 @@ class GajiSupirHeader extends MyModel
                 'biayaextra',
             ], $querytempdetail);
 
+            $tempgajiheader = '##tempgajiheader' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempgajiheader, function ($table) {
+                $table->string('nobukti', 1000)->nullable();
+                $table->double('gajisupir', 15, 2)->nullable();
+            });
+
+            $queryheader=db::table("gajisupirdetail")->from(db::raw("gajisupirdetail a with (readuncommitted)"))
+            ->select(
+                'a.nobukti',
+                db::raw("sum(a.gajisupir) as gajisupir")
+            )
+            ->join(db::raw("gajisupirheader b with (readuncommitted)"),'a.nobukti','b.nobukti')
+            ->groupby('a.nobukti');
+
+
+
+            if (request()->tgldari && request()->tglsampai) {
+                $queryheader->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+            }
+            if ($periode != '') {
+                $periode = explode("-", $periode);
+                $queryheader->whereRaw("MONTH(b.tglbukti) ='" . $periode[0] . "'")
+                    ->whereRaw("year(b.tglbukti) ='" . $periode[1] . "'");
+            }
+            if ($statusCetak != '') {
+                $queryheader->where("b.statuscetak", $statusCetak);
+            }
+
+            DB::table($tempgajiheader)->insertUsing([
+                'nobukti',
+                'gajisupir',
+            ], $queryheader);
+
+
+
             $querytemp = DB::table($this->table)->from(DB::raw("gajisupirheader with (readuncommitted)"))
                 ->select(
                     'gajisupirheader.id',
@@ -239,7 +274,8 @@ class GajiSupirHeader extends MyModel
                     'gajisupirheader.tglbukti',
                     'supir.namaalias as supir_id',
                     // 'gajisupirheader.keterangan',
-                    DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then c.gajisupir else (gajisupirheader.nominal-isnull(C.biayaextra,0)) end) as gajisupir"),
+                    // DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then c.gajisupir else (gajisupirheader.nominal-isnull(C.biayaextra,0)) end) as gajisupir"),
+                    DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then c.gajisupir else isnull(d.gajisupir,0) end) as gajisupir"),
                     // db::raw("(gajisupirheader.nominal-isnull(C.biayaextra,0)) as nominal"),
                     'gajisupirheader.tgldari',
                     'gajisupirheader.tglsampai',
@@ -266,13 +302,15 @@ class GajiSupirHeader extends MyModel
                     'gajisupirheader.modifiedby',
                     'gajisupirheader.created_at',
                     'gajisupirheader.updated_at',
-                    DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then gajisupirheader.nominal else (gajisupirheader.total + isnull(gajisupirheader.uangmakanharian,0) + isnull(gajisupirheader.biayaextra,0) + isnull(gajisupirheader.uangmakanberjenjang,0)+isnull(C.komisisupir,0)+isnull(C.gajikenek,0)) end) as nominal"),
+                    // DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then gajisupirheader.nominal else (gajisupirheader.total + isnull(gajisupirheader.uangmakanharian,0) + isnull(gajisupirheader.biayaextra,0) + isnull(gajisupirheader.uangmakanberjenjang,0)+isnull(C.komisisupir,0)+isnull(C.gajikenek,0)) end) as nominal"),
+                    DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then gajisupirheader.nominal else gajisupirheader.nominal end) as nominal"),
                     DB::raw('(total + uangmakanharian + isnull(uangmakanberjenjang,0) - uangjalan - potonganpinjaman - potonganpinjamansemua - deposito - bbm) as sisa')
                 )
 
                 ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gajisupirheader.statuscetak', 'parameter.id')
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
-                ->leftJoin(DB::raw($tempgajidetail . " c"), 'gajisupirheader.nobukti', 'c.nobukti');
+                ->leftJoin(DB::raw($tempgajidetail . " c"), 'gajisupirheader.nobukti', 'c.nobukti')
+                ->join(db::raw($tempgajiheader . " d"),'gajisupirheader.nobukti','d.nobukti');
 
             if (request()->tgldari && request()->tglsampai) {
                 $querytemp->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
