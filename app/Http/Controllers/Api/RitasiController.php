@@ -219,13 +219,11 @@ class RitasiController extends Controller
      * @ClassName 
      * @Keterangan EXPORT KE EXCEL
      */
-    public function export(GetUpahSupirRangeRequest $request)
+    public function export()
     {
-        $dari = date('Y-m-d', strtotime($request->dari));
-        $sampai = date('Y-m-d', strtotime($request->sampai));
         $ritasi = new Ritasi();
         return response([
-            'data' => $ritasi->getExport($dari, $sampai)
+            'data' => $ritasi->getExport()
         ]);
     }
 

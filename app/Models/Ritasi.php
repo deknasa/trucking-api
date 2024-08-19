@@ -524,7 +524,7 @@ class Ritasi extends MyModel
         return $ritasi;
     }
 
-    public function getExport($dari, $sampai)
+    public function getExport()
     {
         $this->setRequestParameters();
         $getParameter = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
@@ -540,24 +540,32 @@ class Ritasi extends MyModel
                 'ritasi.tglbukti',
                 'parameter.text as statusritasi',
                 'suratpengantar.nobukti as suratpengantar_nobukti',
+                'd.nobukti as prosesgajisupir_nobukti',
+                'b.nobukti as gajisupir_nobukti',
                 'supir.namasupir as supir_id',
                 'trado.kodetrado as trado_id',
                 'ritasi.jarak',
                 'ritasi.gaji',
                 'dari.keterangan as dari_id',
                 'sampai.keterangan as sampai_id',
-                DB::raw("'" . $dari . "' as tgldari"),
-                DB::raw("'" . $sampai . "' as tglsampai"),
+                DB::raw("'" . request()->tgldari . "' as tgldari"),
+                DB::raw("'" . request()->tglsampai . "' as tglsampai"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
-            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime($dari)), date('Y-m-d', strtotime($sampai))])
+            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin('parameter', 'ritasi.statusritasi', '=', 'parameter.id')
             ->leftJoin('suratpengantar', 'ritasi.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
             ->leftJoin('supir', 'ritasi.supir_id', '=', 'supir.id')
             ->leftJoin('trado', 'ritasi.trado_id', '=', 'trado.id')
+            ->leftJoin(DB::raw("gajisupirdetail as b with (readuncommitted)"), 'ritasi.nobukti', 'b.ritasi_nobukti')
+            ->leftJoin(DB::raw("prosesgajisupirdetail as d with (readuncommitted)"), 'd.gajisupir_nobukti', 'b.nobukti')
             ->leftJoin('kota as dari', 'ritasi.dari_id', '=', 'dari.id')
             ->leftJoin('kota as sampai', 'ritasi.sampai_id', '=', 'sampai.id');
+
+        $this->sort($query);
+        $this->filter($query);
+        $this->paginate($query);
 
         $data = $query->get();
         $allData = [
