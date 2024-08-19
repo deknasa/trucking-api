@@ -42,10 +42,10 @@ class GajiSupirDetail extends MyModel
                         db::raw(" a.nobukti,b.nobukti as ritasi_nobukti,parameter.text + ' (' +dari.kodekota+' - '+sampai.kodekota+')' as statusritasi, isnull(a.gajiritasi,0) as gajiritasi")
 
                     )
-                    ->join(db::raw("ritasi as b with (readuncommitted)"),'a.ritasi_nobukti','b.nobukti')
-                    ->join(db::raw("kota as dari with (readuncommitted)"),'b.dari_id','dari.id')
-                    ->join(db::raw("kota as sampai with (readuncommitted)"),'b.sampai_id','sampai.id')
-                    ->join(db::raw("parameter with (readuncommitted)"),'b.statusritasi','parameter.id')
+                    ->join(db::raw("ritasi as b with (readuncommitted)"), 'a.ritasi_nobukti', 'b.nobukti')
+                    ->join(db::raw("kota as dari with (readuncommitted)"), 'b.dari_id', 'dari.id')
+                    ->join(db::raw("kota as sampai with (readuncommitted)"), 'b.sampai_id', 'sampai.id')
+                    ->join(db::raw("parameter with (readuncommitted)"), 'b.statusritasi', 'parameter.id')
                     ->where('a.gajisupir_id', request()->gajisupir_id);
 
                 Schema::create($tempritasi, function ($table) {
@@ -86,21 +86,28 @@ class GajiSupirDetail extends MyModel
                     ->where('gajisupirdetail.suratpengantar_nobukti', '!=', '-');
 
                 $query->where($this->table . '.gajisupir_id', '=', request()->gajisupir_id)
-                ->orderBy('gajisupirdetail.id');
+                    ->orderBy('gajisupirdetail.id');
             } else {
                 $tempbiaya = '##tempbiaya' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
-                $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
+                $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
                     ->select(
-                        db::raw("max(nobukti) as nobukti"),
+                        db::raw("max(a.nobukti) as nobukti"),
                         'suratpengantar_nobukti',
-                        DB::raw("STRING_AGG(cast(keteranganbiayaextrasupir  as nvarchar(max)), ', ') as keteranganbiayaextrasupir"),
-                        DB::raw("sum(isnull(nominalbiayaextrasupir,0)) as nominalbiayaextrasupir"),
-                        DB::raw("sum(gajisupir + gajikenek) as borongan"),
+                        db::raw(" STRING_AGG(
+                            CASE 
+                                WHEN a.biayatambahan > 0 THEN a.keteranganbiayatambahan 
+                                ELSE a.keteranganbiayaextrasupir  
+                            END, 
+                            ', '
+                        ) AS keteranganbiayaextrasupir"),
+                        // DB::raw("STRING_AGG(cast(a.keteranganbiayaextrasupir  as nvarchar(max)), ', ') as keteranganbiayaextrasupir"),
+                        DB::raw("sum(isnull(a.biayatambahan,0)+isnull(nominalbiayaextrasupir,0)) as nominalbiayaextrasupir"),
+                        DB::raw("sum(a.gajisupir + a.gajikenek) as borongan"),
 
                     )
-                    ->where('gajisupir_id', request()->gajisupir_id)
-                    ->groupBy('suratpengantar_nobukti');
+                    ->where('a.gajisupir_id', request()->gajisupir_id)
+                    ->groupBy('a.suratpengantar_nobukti');
 
                 Schema::create($tempbiaya, function ($table) {
                     $table->string('nobukti')->nullable();
