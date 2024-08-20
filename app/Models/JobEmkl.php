@@ -25,16 +25,26 @@ class JobEmkl extends MyModel
     {
         $this->setRequestParameters();
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " as jobemkl")
         )
             ->select(
+                "jobemkl.id",
                 "jobemkl.nobukti",
                 "jobemkl.tglbukti",
                 "jobemkl.shipper_id",
+                "pelanggan.namapelanggan as shipper",
                 "jobemkl.tujuan_id",
+                "tujuan.keterangan as tujuan",
                 "jobemkl.container_id",
+                "container.keterangan as container",
                 "jobemkl.jenisorder_id",
+                "jenisorder.keterangan as jenisorder",
                 "jobemkl.kapal",
                 "jobemkl.destination",
                 "jobemkl.nocont",
@@ -47,12 +57,17 @@ class JobEmkl extends MyModel
                 "jobemkl.modifiedby",
                 "jobemkl.editing_by",
                 "jobemkl.created_at",
-                "jobemkl.updated_at",
+                "jobemkl.updated_at", 
+                DB::raw("'Laporan Job EMKL' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             // ->whereBetween('jobemkl.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'jobemkl.container_id', '=', 'container.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'jobemkl.jenisorder_id', '=', 'jenisorder.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'jobemkl.shipper_id', '=', 'pelanggan.id')
+            ->leftJoin(DB::raw("tujuan with (readuncommitted)"), 'jobemkl.tujuan_id', '=', 'tujuan.id')
             // ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jobemkl.statuslangsir', '=', 'parameter.id')
             // ->leftJoin(DB::raw("parameter AS param2 with (readuncommitted)"), 'jobemkl.statusperalihan', '=', 'param2.id')
             ->leftJoin(DB::raw("parameter AS param3 with (readuncommitted)"), 'jobemkl.statusapprovaledit', '=', 'param3.id');
@@ -68,6 +83,51 @@ class JobEmkl extends MyModel
 
         return $data;
     }
+
+    public function findAll($id) 
+    {
+        $this->setRequestParameters();
+
+        $data = JobEmkl::from(DB::raw("jobemkl with (readuncommitted)"))
+            ->select(
+                "jobemkl.id",
+                "jobemkl.nobukti",
+                "jobemkl.tglbukti",
+                "jobemkl.shipper_id",
+                "pelanggan.namapelanggan as shipper",
+                "jobemkl.tujuan_id",
+                "tujuan.keterangan as tujuan",
+                "jobemkl.container_id",
+                "container.keterangan as container",
+                "jobemkl.jenisorder_id",
+                "jenisorder.keterangan as jenisorder",
+                "jobemkl.kapal",
+                "jobemkl.destination",
+                "jobemkl.nocont",
+                "jobemkl.noseal",
+                "jobemkl.statusapprovaledit",
+                "jobemkl.tglapprovaledit",
+                "jobemkl.userapprovaledit",
+                "jobemkl.tglbataseditjobemkl",
+                "jobemkl.statusformat",
+                "jobemkl.modifiedby",
+                "jobemkl.editing_by",
+                "jobemkl.created_at",
+                "jobemkl.updated_at",
+            ) 
+            // ->whereBetween('jobemkl.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->leftJoin(DB::raw("container with (readuncommitted)"), 'jobemkl.container_id', '=', 'container.id')
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'jobemkl.jenisorder_id', '=', 'jenisorder.id')
+            ->leftJoin(DB::raw("tujuan with (readuncommitted)"), 'jobemkl.tujuan_id', '=', 'tujuan.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'jobemkl.shipper_id', '=', 'pelanggan.id')
+            // ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jobemkl.statuslangsir', '=', 'parameter.id')
+            // ->leftJoin(DB::raw("parameter AS param2 with (readuncommitted)"), 'jobemkl.statusperalihan', '=', 'param2.id')
+            ->leftJoin(DB::raw("parameter AS param3 with (readuncommitted)"), 'jobemkl.statusapprovaledit', '=', 'param3.id')
+            ->where('jobemkl.id', $id)->first();
+
+        return $data;
+    }
+
     
     public function selectColumns($query)
     {
@@ -75,12 +135,17 @@ class JobEmkl extends MyModel
             DB::raw($this->table . " with (readuncommitted)")
         )
             ->select(
+                    "jobemkl.id",
                     "jobemkl.nobukti",
                     "jobemkl.tglbukti",
                     "jobemkl.shipper_id",
+                    "pelanggan.namapelanggan as shipper",
                     "jobemkl.tujuan_id",
+                    "tujuan.keterangan as tujuan",
                     "jobemkl.container_id",
+                    "container.keterangan as container",
                     "jobemkl.jenisorder_id",
+                    "jenisorder.keterangan as jenisorder",
                     "jobemkl.kapal",
                     "jobemkl.destination",
                     "jobemkl.nocont",
@@ -100,6 +165,7 @@ class JobEmkl extends MyModel
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'jobemkl.container_id', '=', 'container.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'jobemkl.jenisorder_id', '=', 'jenisorder.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'jobemkl.shipper_id', '=', 'pelanggan.id')
+            ->leftJoin(DB::raw("tujuan with (readuncommitted)"), 'jobemkl.tujuan_id', '=', 'tujuan.id')
             // ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jobemkl.statuslangsir', '=', 'parameter.id')
             // ->leftJoin(DB::raw("parameter AS param2 with (readuncommitted)"), 'jobemkl.statusperalihan', '=', 'param2.id')
             ->leftJoin(DB::raw("parameter AS param3 with (readuncommitted)"), 'jobemkl.statusapprovaledit', '=', 'param3.id');
@@ -113,9 +179,13 @@ class JobEmkl extends MyModel
             $table->string('nobukti', 50)->nullable();
             $table->string('tglbukti', 50)->nullable();
             $table->string('shipper_id', 50)->nullable();
+            $table->string('shipper', 50)->nullable();
             $table->string('tujuan_id', 50)->nullable();
+            $table->string('tujuan', 50)->nullable();
             $table->string('container_id', 50)->nullable();
+            $table->string('container', 50)->nullable();
             $table->string('jenisorder_id', 50)->nullable();
+            $table->string('jenisorder', 50)->nullable();
             $table->string('kapal', 50)->nullable();
             $table->string('destination', 50)->nullable();
             $table->string('nocont', 50)->nullable();
@@ -138,12 +208,17 @@ class JobEmkl extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         DB::table($temp)->insertUsing([
+            'id',
             'nobukti',
             'tglbukti',
             'shipper_id',
+            'shipper',
             'tujuan_id',
+            'tujuan',
             'container_id',
+            'container',
             'jenisorder_id',
+            'jenisorder',
             'kapal',
             'destination',
             'nocont',
@@ -256,6 +331,53 @@ class JobEmkl extends MyModel
             'aksi' => 'ENTRY',
             'datajson' => $jobEmkl->toArray(),
             'modifiedby' => $jobEmkl->modifiedby
+        ]);
+
+        return $jobEmkl;
+    }
+
+    public function processUpdate(JobEmkl $jobEmkl, array $data) {
+        $jobEmkl->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $jobEmkl->shipper_id = $data['shipper_id'];
+        $jobEmkl->tujuan_id = $data['tujuan_id'];
+        $jobEmkl->container_id = $data['container_id'];
+        $jobEmkl->jenisorder_id = $data['jenisorder_id'];
+        $jobEmkl->kapal = $data['kapal'];
+        $jobEmkl->destination = $data['destination'];
+        $jobEmkl->nocont = $data['nocont'];
+        $jobEmkl->noseal = $data['noseal'];
+        $jobEmkl->modifiedby = auth('api')->user()->name;
+        $jobEmkl->info = html_entity_decode(request()->info);
+        if (!$jobEmkl->save()) {
+            throw new \Exception('Error updating Job Emkl.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($jobEmkl->getTable()),
+            'postingdari' => 'EDIT job Emkl',
+            'idtrans' => $jobEmkl->id,
+            'nobuktitrans' => $jobEmkl->id,
+            'aksi' => 'EDIT',
+            'datajson' => $jobEmkl->toArray(),
+            'modifiedby' => $jobEmkl->modifiedby
+        ]);
+
+        return $jobEmkl;
+    }
+
+    public function processDestroy(JobEmkl $jobEmkl): JobEmkl
+    {
+        // $jobEmkl = new JenisOrder();
+        $jobEmkl = $jobEmkl->lockAndDestroy($jobEmkl->id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($jobEmkl->getTable()),
+            'postingdari' => 'DELETE Job Emkl',
+            'idtrans' => $jobEmkl->id,
+            'nobuktitrans' => $jobEmkl->id,
+            'aksi' => 'DELETE',
+            'datajson' => $jobEmkl->toArray(),
+            'modifiedby' => auth('api')->user()->name
         ]);
 
         return $jobEmkl;

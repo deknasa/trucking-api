@@ -1097,7 +1097,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('jobemkl/combo', [JobEmklController::class, 'combo']);
     Route::get('jobemkl/field_length', [JobEmklController::class, 'fieldLength']);
     Route::get('jobemkl/default', [JobEmklController::class, 'default']);
-    Route::post('jobemkl/{id}/cekValidasi', [JobEmklController::class, 'cekValidasi'])->name('jenistrado.cekValidasi')->whereNumber('id');
+    Route::post('jobemkl/{id}/cekValidasi', [JobEmklController::class, 'cekValidasi'])->name('jobemkl.cekValidasi')->whereNumber('id');
     Route::get('jobemkl/export', [JobEmklController::class, 'export']);
     Route::get('jobemkl/report', [JobEmklController::class, 'report']);
 

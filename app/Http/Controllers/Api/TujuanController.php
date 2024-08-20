@@ -45,6 +45,7 @@ class TujuanController extends Controller
         $useredit = $dataMaster->editing_by ?? '';
         $aksi = request()->aksi ?? '';
 
+        // $cekdata = $zona->cekvalidasihapus($id);
         $cekdata = ["kondisi"=>false];
         if ($cekdata['kondisi'] == true && $aksi != 'EDIT') {
             $query = DB::table('error')
@@ -69,7 +70,7 @@ class TujuanController extends Controller
             $diffNow = $editingat->diff(new DateTime(date('Y-m-d H:i:s')));
             if ($diffNow->i > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                    (new MyModel())->updateEditingBy('zona', $id, $aksi);
+                    (new MyModel())->updateEditingBy('tujuan', $id, $aksi);
                 }
 
                 $data = [
@@ -84,7 +85,7 @@ class TujuanController extends Controller
             } else {
 
                 $keteranganerror = $error->cekKeteranganError('SDE') ?? '';
-                $keterror = 'Data <b>' . $dataMaster->kodezona . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
+                $keterror = 'Data <b>' . $dataMaster->kodetujuan . '</b><br>' . $keteranganerror . ' <b>' . $useredit . '</b> <br> ' . $keterangantambahanerror;
 
                 $data = [
                     'status' => true,
@@ -97,7 +98,7 @@ class TujuanController extends Controller
                 return response($data);
             }
         } else {
-            (new MyModel())->updateEditingBy('zona', $id, $aksi);
+            (new MyModel())->updateEditingBy('tujuan', $id, $aksi);
 
             $data = [
                 'status' => false,
@@ -231,7 +232,7 @@ class TujuanController extends Controller
         DB::beginTransaction();
         try {
 
-            // $zona = (new Tujuan())->processDestroy($id);
+            // $tujuan = (new Tujuan())->processDestroy($id);
             $tujuan = new Tujuan();
             $tujuans = $tujuan->findOrFail($id);
             $tujuan = $tujuan->processDestroy($tujuans);            
@@ -293,12 +294,12 @@ class TujuanController extends Controller
 
             $response = $this->index();
             $decodedResponse = json_decode($response->content(), true);
-            $zonas = $decodedResponse['data'];
+            $tujuans = $decodedResponse['data'];
 
-            $judulLaporan = $zonas[0]['judulLaporan'];
+            $judulLaporan = $tujuans[0]['judulLaporan'];
 
             $i = 0;
-            foreach ($zonas as $index => $params) {
+            foreach ($tujuans as $index => $params) {
 
                 $statusaktif = $params['statusaktif'];
 
@@ -307,7 +308,7 @@ class TujuanController extends Controller
                 $statusaktif = $result['MEMO'];
 
 
-                $zonas[$i]['statusaktif'] = $statusaktif;
+                $tujuans[$i]['statusaktif'] = $statusaktif;
 
 
                 $i++;
@@ -330,7 +331,7 @@ class TujuanController extends Controller
                 ],
             ];
 
-            $this->toExcel($judulLaporan, $zonas, $columns);
+            $this->toExcel($judulLaporan, $tujuans, $columns);
         }
     }
   /**
