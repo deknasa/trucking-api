@@ -8,6 +8,7 @@ use App\Models\MyModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreJobEmklRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use Symfony\Component\HttpKernel\Controller\ErrorController;
 
@@ -34,7 +35,7 @@ class JobEmklController extends Controller
      * @ClassName 
      * @Keterangan TAMBAH DATA
      */
-    public function store(Request $request)
+    public function store(StoreJobEmklRequest $request)
     {
         DB::beginTransaction();
 
@@ -101,7 +102,7 @@ class JobEmklController extends Controller
      * @ClassName 
      * @Keterangan EDIT DATA
      */
-    public function update(Request $request, $id)
+    public function update(StoreJobEmklRequest $request, $id)
     {
         DB::beginTransaction();
 
