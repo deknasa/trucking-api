@@ -541,7 +541,7 @@ class JobTrucking extends MyModel
                 'jumlah',
             ], $querybelumkomplit2);
 
-            
+
 
             $querybelumkomplit = db::table($tempbelumkomplit2)->from(db::raw($tempbelumkomplit2 . " a "))
                 ->select(
@@ -552,7 +552,7 @@ class JobTrucking extends MyModel
             DB::table($tempbelumkomplit)->insertUsing([
                 'jobtrucking',
             ], $querybelumkomplit);
-     
+
 
             // dd(db::table($tempselesai)->where('jobtrucking','JT 0030/VII/2024')->get());
 
@@ -576,6 +576,8 @@ class JobTrucking extends MyModel
                     'a.nobukti',
                     'a.pelanggan_id',
                     'a.gandengan_id'
+                    // DB::raw("(trim(kotadr.keterangan)+' - '+trim(kotasd.keterangan)) as kotadarisampai"),
+                    // DB::raw("(trim(a.jobtrucking)+' - '+trim(a.nobukti)) as jobtrip"),
 
                 )
                 ->leftjoin(DB::raw("supir as b with(readuncommitted)"), 'a.supir_id', 'b.id')
@@ -597,7 +599,7 @@ class JobTrucking extends MyModel
             if ($edit == 'true') {
                 // $querydata->where('a.dari_id', 1);
             }
-            
+
             // dd(db::table($tempselesai)->get());
         } else {
             tidakgandengan:
@@ -960,6 +962,8 @@ class JobTrucking extends MyModel
                     'kotasd.keterangan as kotasampai',
                     'a.nobukti',
                     'a.pelanggan_id'
+                    // DB::raw("(trim(kotadr.keterangan)+' - '+trim(kotasd.keterangan)) as kotadarisampai"),
+                    // DB::raw("(trim(a.jobtrucking)+' - '+trim(a.nobukti)) as jobtrip"),
 
                 )
                 ->leftjoin(DB::raw("supir as b with(readuncommitted)"), 'a.supir_id', 'b.id')
@@ -1095,9 +1099,9 @@ class JobTrucking extends MyModel
             }
         }
 
-                    // dd(db::table($tempselesai)->get());
+        // dd(db::table($tempselesai)->get());
 
-                    // DB::delete(DB::raw("delete  " . $tempselesai . " from " . $tempselesai . " as a inner join " . $tempbelumkomplit . " b on a.jobtrucking=b.jobtrucking "));
+        // DB::delete(DB::raw("delete  " . $tempselesai . " from " . $tempselesai . " as a inner join " . $tempbelumkomplit . " b on a.jobtrucking=b.jobtrucking "));
 
         // dd($querydata->get());
         pulanglongtrip:
@@ -1124,10 +1128,10 @@ class JobTrucking extends MyModel
                 ->where('a.nobukti', '=', request()->tripasal);
             $this->filter($querydata);
         } else {
-        //   dd(db::table($tempbelumkomplit1)->where('jobtrucking','JT 0030/VII/2024')->get());
-        //   dd(db::table($tempselesai)->get());
+            //   dd(db::table($tempbelumkomplit1)->where('jobtrucking','JT 0030/VII/2024')->get());
+            //   dd(db::table($tempselesai)->get());
 
-                    DB::delete(DB::raw("delete  " . $tempselesai . " from " . $tempselesai . " as a inner join " . $tempbelumkomplit . " b on a.jobtrucking=b.jobtrucking "));
+            DB::delete(DB::raw("delete  " . $tempselesai . " from " . $tempselesai . " as a inner join " . $tempbelumkomplit . " b on a.jobtrucking=b.jobtrucking "));
 
             // dd($querydata->tosql(),$tempselesai);
 
@@ -1226,26 +1230,28 @@ class JobTrucking extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'jobtrucking') {
-                            $query = $query->OrwhereRaw("(a.jobtrucking like '%$filters[data]%'");
-                        } elseif ($filters['field'] == 'tglbukti') {
-                            $query = $query->OrwhereRaw("format(a.tglbukti,'dd-MM-yyyy') like '%$filters[data]%'");
-                        } elseif ($filters['field'] == 'supir') {
-                            $query = $query->Orwhere('b.namasupir', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'trado') {
-                            $query = $query->Orwhere('c.kodetrado', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'kotadari') {
-                            $query = $query->Orwhere('kotadr.keterangan', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'kotasampai') {
-                            $query = $query->Orwhere('kotasd.keterangan', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'nobukti') {
-                            $query = $query->OrwhereRaw("a.nobukti LIKE '%$filters[data]%')");
-                        } else {
-                            // $query = $query->Orwhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'jobtrucking') {
+                                $query = $query->OrwhereRaw("a.jobtrucking like '%$filters[data]%'");
+                            } elseif ($filters['field'] == 'tglbukti') {
+                                $query = $query->OrwhereRaw("format(a.tglbukti,'dd-MM-yyyy') like '%$filters[data]%'");
+                            } elseif ($filters['field'] == 'supir') {
+                                $query = $query->Orwhere('b.namasupir', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'trado') {
+                                $query = $query->Orwhere('c.kodetrado', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'kotadari') {
+                                $query = $query->Orwhere('kotadr.keterangan', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'kotasampai') {
+                                $query = $query->Orwhere('kotasd.keterangan', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'nobukti') {
+                                $query = $query->OrwhereRaw("a.nobukti LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->Orwhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:

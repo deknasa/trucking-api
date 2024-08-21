@@ -936,7 +936,8 @@ class UpahSupirRincian extends MyModel
                     'B.modifiedby',
                     'B.created_at',
                     'B.updated_at',
-                    DB::raw("(trim(b.kotadari)+' - '+trim(b.kotasampai)) as kotadarisampai"),
+                    DB::raw("(b.tarif + ' (' + trim(b.kotadari)+' - '+trim(b.kotasampai) + 
+                        (case when isnull(b.penyesuaian,'') != '' then ') ' + b.penyesuaian else + ')' end)) as kotadarisampai"),
 
                 );
             // ->Join(DB::raw($tempupahsupir . " as B1 "), 'B1.id', 'upahsupirrincian.upahsupir_id');
@@ -1716,7 +1717,8 @@ class UpahSupirRincian extends MyModel
                     'B.modifiedby',
                     'B.created_at',
                     'B.updated_at',
-                    DB::raw("(trim(b.kotadari)+' - '+trim(b.kotasampai)) as kotadarisampai"),
+                    DB::raw("(b.tarif + ' (' + trim(b.kotadari)+' - '+trim(b.kotasampai) + 
+                        (case when isnull(b.penyesuaian,'') != '' then ') ' + b.penyesuaian else + ')' end)) as kotadarisampai"),
 
                 )
                 ->Join(DB::raw($tempupahsupir . " as B1 "), 'B1.id', 'upahsupirrincian.upahsupir_id')
