@@ -31,10 +31,10 @@ class validationTarifOrderemkl implements Rule
     {
 
         $idkandang = (new Parameter())->cekText('KANDANG', 'KANDANG') ?? 0;
-        $suratPengantar = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('jobtrucking', request()->nobukti)->first();
+        $suratPengantar = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
 
-        if ($suratPengantar->dari_id == 1 && $suratPengantar->sampai_id == $idkandang) {
-            $tarifId = $suratPengantar->tarif_id;
+        if (request()->dari_id == 1 && request()->sampai_id == $idkandang) {
+            $tarifId = request()->tarifrincian_id;
             goto cek;
         }
 
@@ -70,7 +70,7 @@ class validationTarifOrderemkl implements Rule
             ->leftJoin(DB::raw("tarif as tarifbongkaran with (readuncommitted)"), 'upahsupir.tarifbongkaran_id', 'tarifbongkaran.id')
             ->leftJoin(DB::raw("tarif as tarifimport with (readuncommitted)"), 'upahsupir.tarifimport_id', 'tarifimport.id')
             ->leftJoin(DB::raw("tarif as tarifexport with (readuncommitted)"), 'upahsupir.tarifexport_id', 'tarifexport.id')
-            ->where('upahsupir.id', $suratPengantar->upah_id)
+            ->where('upahsupir.id', request()->upah_id)
             ->first();
         $tarifId = $getTarif->tarif_id ?? 0;
 

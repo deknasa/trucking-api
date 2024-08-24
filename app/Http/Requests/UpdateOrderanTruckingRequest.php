@@ -295,7 +295,7 @@ class UpdateOrderanTruckingRequest extends FormRequest
                 $rulescontainer_id = [
                     'container' => [
                         new ExistContainer(),
-                        new validationTarifOrderemkl()
+                        // new validationTarifOrderemkl()
                     ]
                 ];
             } else if ($container_id == '' && $this->container == '') {
@@ -303,7 +303,7 @@ class UpdateOrderanTruckingRequest extends FormRequest
                     'container' => [
                         'required',
                         new ExistContainer(),
-                        new validationTarifOrderemkl()
+                        // new validationTarifOrderemkl()
                     ]
                 ];
             } else if ($container_id != null) {
@@ -326,7 +326,7 @@ class UpdateOrderanTruckingRequest extends FormRequest
                             'container' => [
                                 'required',
                                 new ExistContainer(),
-                                new validationTarifOrderemkl()
+                                // new validationTarifOrderemkl()
                             ]
                         ];
                     }
@@ -338,7 +338,7 @@ class UpdateOrderanTruckingRequest extends FormRequest
                         'numeric',
                         'min:1',
                         new ExistContainer(),
-                        new validationTarifOrderemkl()
+                        // new validationTarifOrderemkl()
                     ]
                 ];
             } else {
@@ -348,7 +348,7 @@ class UpdateOrderanTruckingRequest extends FormRequest
                         'numeric',
                         'min:1',
                         new ExistContainer(),
-                        new validationTarifOrderemkl()
+                        // new validationTarifOrderemkl()
                     ]
                 ];
             }
