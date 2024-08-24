@@ -44,6 +44,7 @@ use App\Rules\validasiStatusJenisKendaraan;
 use App\Rules\ValidasiTradoTripGudangSama;
 use App\Rules\ValidasiTripGudangSama;
 use App\Rules\validasiTripTangkiEditTrip;
+use App\Rules\validationTarifOrderemkl;
 use Illuminate\Support\Facades\Schema;
 
 class UpdateSuratPengantarRequest extends FormRequest
@@ -1629,10 +1630,19 @@ class UpdateSuratPengantarRequest extends FormRequest
                     'tarifrincian' => [
                         'nullable',
                         new ExistTarifRincian(),
+                        new validationTarifOrderemkl()
                     ]
                 ];
             }
 
+            if(request()->statuslongtrip == 66){
+                $rulestarifrincian_id = [
+                    'tarifrincian' => [
+                        new ExistTarifRincian(),
+                        new validationTarifOrderemkl()
+                    ]
+                ];
+            }
             $upah_id = $this->upah_id;
             $rulesUpah_id = [];
             if ($upah_id != null) {
