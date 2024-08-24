@@ -541,14 +541,13 @@ class SuratPengantar extends MyModel
             $nojob2trip = $queryutama->nojob2;
             $jobtruckingtrip = $queryutama->jobtrucking;
 
-            $querysuratpengantar->where('suratpengantar.pelanggan_id',$pelanggan_idtrip);
-            $querysuratpengantar->where('suratpengantar.penyesuaian',$penyesuaiantrip);
-            $querysuratpengantar->where('suratpengantar.container_id',$container_idtrip);
-            $querysuratpengantar->where('suratpengantar.gandengan_id',$gandengan_idtrip);
-            $querysuratpengantar->where('suratpengantar.agen_id',$agen_idtrip);
-            $querysuratpengantar->where('suratpengantar.jenisorder_id',$jenisorder_idtrip);
-            $querysuratpengantar->where('suratpengantar.tarif_id',$tarif_idtrip);
-
+            $querysuratpengantar->where('suratpengantar.pelanggan_id', $pelanggan_idtrip);
+            $querysuratpengantar->where('suratpengantar.penyesuaian', $penyesuaiantrip);
+            $querysuratpengantar->where('suratpengantar.container_id', $container_idtrip);
+            $querysuratpengantar->where('suratpengantar.gandengan_id', $gandengan_idtrip);
+            $querysuratpengantar->where('suratpengantar.agen_id', $agen_idtrip);
+            $querysuratpengantar->where('suratpengantar.jenisorder_id', $jenisorder_idtrip);
+            $querysuratpengantar->where('suratpengantar.tarif_id', $tarif_idtrip);
         }
 
         if ($from == 'tripinap') {
@@ -3235,7 +3234,7 @@ class SuratPengantar extends MyModel
     }
     public function processUpdate(SuratPengantar $suratPengantar, array $data): SuratPengantar
     {
-      
+
         $prosesLain = $data['proseslain'] ?? 0;
         $orderanTrucking = OrderanTrucking::where('nobukti', $data['jobtrucking'])->first();
         if (!isset($orderanTrucking)) {
@@ -3361,7 +3360,7 @@ class SuratPengantar extends MyModel
                 // }
 
             }
-  
+
             $suratPengantar->jobtrucking = $data['jobtrucking'];
             $suratPengantar->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
             $suratPengantar->pelanggan_id = $pelanggan;
@@ -3532,9 +3531,13 @@ class SuratPengantar extends MyModel
 
                 $suratPengantar->noseal = $data['noseal'] ?? '';
                 $suratPengantar->noseal2 = $data['noseal2'] ?? '';
-                DB::update(DB::raw("UPDATE SURATPENGANTAR SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2' where jobtrucking='$suratPengantar->jobtrucking'"));
+                $suratPengantar->save();
+                if ($suratPengantar->jobtrucking != '') {
 
-                DB::update(DB::raw("UPDATE orderantrucking SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2' where nobukti='$suratPengantar->jobtrucking'"));
+                    DB::update(DB::raw("UPDATE SURATPENGANTAR SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2' where jobtrucking='$suratPengantar->jobtrucking'"));
+
+                    DB::update(DB::raw("UPDATE orderantrucking SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2' where nobukti='$suratPengantar->jobtrucking'"));
+                }
             }
         } else {
             if ($suratPengantar->statusjeniskendaraan == $jenisTangki->id) {
@@ -4021,11 +4024,11 @@ class SuratPengantar extends MyModel
                 $nobuktipelabuhan = $querypelabuhan->nobukti ?? '';
             }
         }
-    
+
         if ($bjumlah == 1) {
 
 
-    
+
 
             $queryutama = db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
                 ->select(
@@ -4080,8 +4083,8 @@ class SuratPengantar extends MyModel
                         ->where('a.nobukti', $nobukti)
                         ->first();
 
-                        $buktijob=$querysp->jobtrucking ?? '';
-                    if ( $buktijob != '') {
+                    $buktijob = $querysp->jobtrucking ?? '';
+                    if ($buktijob != '') {
                         $jobtrucking = '';
                         $nocont = '';
                         $noseal = '';
