@@ -37,11 +37,13 @@ use App\Models\SuratPengantarBiayaTambahan;
 use App\Http\Requests\ApprovalKaryawanRequest;
 use App\Http\Requests\ApprovalBatalMuatRequest;
 use App\Http\Requests\GetUpahSupirRangeRequest;
+use App\Http\Requests\ApprovalGabungJobTruckingRequest;
 use App\Http\Requests\ApprovalEditTujuanRequest;
 use App\Http\Requests\ApprovalTolakanRequest;
 use App\Http\Requests\StoreSuratPengantarRequest;
 use App\Http\Requests\UpdateSuratPengantarRequest;
 use App\Http\Requests\DestroySuratPengantarRequest;
+
 use App\Models\Locking;
 
 class SuratPengantarController extends Controller
@@ -639,6 +641,31 @@ class SuratPengantarController extends Controller
             throw $th;
         }
     }
+
+        /**
+     * @ClassName 
+     * @Keterangan APPROVAL GABUNG JOB TRUCKING
+     */
+    public function approvalGabungJobTrucking(ApprovalGabungJobTruckingRequest $request)
+    {
+        // dd('test');
+        DB::beginTransaction();
+        try {
+            $data = [
+                'nobukti' => $request->Id,
+            ];
+            (new SuratPengantar())->approvalGabungJobTrucking($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
 
     /**
      * @ClassName 

@@ -277,6 +277,7 @@ class SuratPengantar extends MyModel
         $sampai_id = request()->sampai_id ?? 0;
         $gandengan_id = request()->gandengan_id ?? 0;
         $from = request()->from ?? '';
+        $nobuktitrip = request()->nobukti ?? '';
 
         $getSudahbuka = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS SUDAH BUKA')->where('subgrp', 'STATUS SUDAH BUKA')->where('text', 'SUDAH BUKA')->first() ?? 0;
         $getBelumbuka = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS SUDAH BUKA')->where('subgrp', 'STATUS SUDAH BUKA')->where('text', 'BELUM BUKA')->first() ?? 0;
@@ -497,6 +498,57 @@ class SuratPengantar extends MyModel
 
         if (request()->tgldari) {
             $querysuratpengantar->whereBetween('suratpengantar.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        // dd(request()->nobukti);
+        if (request()->nobukti) {
+            $queryutama = db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+                ->select(
+                    'a.jobtrucking',
+                    'a.nocont',
+                    'a.nocont2',
+                    'a.noseal',
+                    'a.noseal2',
+                    'a.nojob',
+                    'a.nojob2',
+                    'a.pelanggan_id',
+                    'a.penyesuaian',
+                    'a.container_id',
+                    'a.trado_id',
+                    'a.gandengan_id',
+                    'a.agen_id',
+                    'a.jenisorder_id',
+                    'a.tarif_id',
+                    'b.statusgerobak'
+                )
+                ->join(db::raw("trado b with (readuncommitted)"), 'a.trado_id', 'b.id')
+                ->where('a.nobukti', $nobuktitrip)
+                ->first();
+
+            $pelanggan_idtrip = $queryutama->pelanggan_id;
+            $penyesuaiantrip = $queryutama->penyesuaian;
+            $container_idtrip = $queryutama->container_id;
+            $trado_idtrip = $queryutama->trado_id;
+            $gandengan_idtrip = $queryutama->gandengan_id;
+            $agen_idtrip = $queryutama->agen_id;
+            $jenisorder_idtrip = $queryutama->jenisorder_id;
+            $tarif_idtrip = $queryutama->tarif_id;
+            $statusgerobaktrip = $queryutama->statusgerobak;
+            $noconttrip = $queryutama->nocont;
+            $nocont2trip = $queryutama->nocont2;
+            $nosealtrip = $queryutama->noseal;
+            $noseal2trip = $queryutama->noseal2;
+            $nojobtrip = $queryutama->nojob;
+            $nojob2trip = $queryutama->nojob2;
+            $jobtruckingtrip = $queryutama->jobtrucking;
+
+            $querysuratpengantar->where('suratpengantar.pelanggan_id',$pelanggan_idtrip);
+            $querysuratpengantar->where('suratpengantar.penyesuaian',$penyesuaiantrip);
+            $querysuratpengantar->where('suratpengantar.container_id',$container_idtrip);
+            $querysuratpengantar->where('suratpengantar.gandengan_id',$gandengan_idtrip);
+            $querysuratpengantar->where('suratpengantar.agen_id',$agen_idtrip);
+            $querysuratpengantar->where('suratpengantar.jenisorder_id',$jenisorder_idtrip);
+            $querysuratpengantar->where('suratpengantar.tarif_id',$tarif_idtrip);
+
         }
 
         if ($from == 'tripinap') {
@@ -3183,6 +3235,7 @@ class SuratPengantar extends MyModel
     }
     public function processUpdate(SuratPengantar $suratPengantar, array $data): SuratPengantar
     {
+      
         $prosesLain = $data['proseslain'] ?? 0;
         $orderanTrucking = OrderanTrucking::where('nobukti', $data['jobtrucking'])->first();
         if (!isset($orderanTrucking)) {
@@ -3213,6 +3266,36 @@ class SuratPengantar extends MyModel
             ->where('a.text', '=', 'TANGKI')
             ->first();
         // dd($mandor_id->tosql());
+        if ($prosesLain == 2) {
+            $suratPengantar->jobtrucking = $data['jobtrucking'];
+            $suratPengantar->nocont = $data['nocont'] ?? '';
+            $suratPengantar->nocont2 =  $data['nocont2'] ?? '';
+            $suratPengantar->nojob =  $data['nojob'] ?? '';
+            $suratPengantar->nojob2 = $data['nojob2'] ?? '';
+            $suratPengantar->noseal = $data['noseal'] ?? '';
+            $suratPengantar->noseal2 = $data['noseal2'] ?? '';
+            $suratPengantar->gandengan_id = $data['gandengan_id']  ?? '';
+            $suratPengantar->container_id = $data['container_id']  ?? '';
+            $suratPengantar->agen_id = $data['agen_id']  ?? '';
+            $suratPengantar->jenisorder_id = $data['jenisorder_id']  ?? '';
+            $suratPengantar->pelanggan_id = $data['pelanggan_id']  ?? '';
+
+            if (!$suratPengantar->save()) {
+                throw new \Exception('Error edit surat pengantar.');
+            }
+
+            $suratPengantarLogTrail = (new LogTrail())->processStore([
+                'namatabel' => strtoupper($suratPengantar->getTable()),
+                'postingdari' => 'EDIT SURAT PENGANTAR',
+                'idtrans' => $suratPengantar->id,
+                'nobuktitrans' => $suratPengantar->nobukti,
+                'aksi' => 'EDIT',
+                'datajson' => $suratPengantar->toArray(),
+                'modifiedby' => auth('api')->user()->user
+            ]);
+
+            goto lanjut;
+        }
         if ($prosesLain == 0) {
             $trado = Trado::find($data['trado_id']);
             $supir = Supir::find($data['supir_id']);
@@ -3278,6 +3361,7 @@ class SuratPengantar extends MyModel
                 // }
 
             }
+  
             $suratPengantar->jobtrucking = $data['jobtrucking'];
             $suratPengantar->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
             $suratPengantar->pelanggan_id = $pelanggan;
@@ -3674,7 +3758,7 @@ class SuratPengantar extends MyModel
                 ]);
             }
         }
-
+        lanjut:
 
         return $suratPengantar;
     }
@@ -3900,6 +3984,125 @@ class SuratPengantar extends MyModel
         return $data;
     }
 
+    public function approvalGabungJobtrucking(array $data)
+    {
+        $parameter = new Parameter();
+
+        $pelabuhancabang = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? '0';
+
+        $bjumlah = 0;
+        $orderanTruckingId = [];
+        for ($i = 0; $i < count($data['nobukti']); $i++) {
+            $nobukti = $data['nobukti'][$i] ?? '';
+            $querypelabuhan = db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+                ->select(
+                    'a.jobtrucking',
+                    'a.nobukti'
+                )
+                ->where('a.nobukti', $nobukti)
+                ->where('a.dari_id', $pelabuhancabang)
+                ->first();
+
+            if (isset($querypelabuhan)) {
+                $bjumlah = $bjumlah + 1;
+                $nobuktipelabuhan = $querypelabuhan->nobukti ?? '';
+            }
+        }
+    
+        if ($bjumlah == 1) {
+
+
+    
+
+            $queryutama = db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+                ->select(
+                    'a.jobtrucking',
+                    'a.nocont',
+                    'a.nocont2',
+                    'a.noseal',
+                    'a.noseal2',
+                    'a.nojob',
+                    'a.nojob2',
+                    'a.pelanggan_id',
+                    'a.penyesuaian',
+                    'a.container_id',
+                    'a.trado_id',
+                    'a.gandengan_id',
+                    'a.agen_id',
+                    'a.jenisorder_id',
+                    'a.tarif_id',
+                    'b.statusgerobak'
+                )
+                ->join(db::raw("trado b with (readuncommitted)"), 'a.trado_id', 'b.id')
+                ->where('a.nobukti', $nobuktipelabuhan)
+                ->first();
+
+
+            $pelanggan_id = $queryutama->pelanggan_id;
+            $penyesuaian = $queryutama->penyesuaian;
+            $container_id = $queryutama->container_id;
+            $trado_id = $queryutama->trado_id;
+            $gandengan_id = $queryutama->gandengan_id;
+            $agen_id = $queryutama->agen_id;
+            $jenisorder_id = $queryutama->jenisorder_id;
+            $tarif_id = $queryutama->tarif_id;
+            $statusgerobak = $queryutama->statusgerobak;
+            $nocont = $queryutama->nocont;
+            $nocont2 = $queryutama->nocont2;
+            $noseal = $queryutama->noseal;
+            $noseal2 = $queryutama->noseal2;
+            $nojob = $queryutama->nojob;
+            $nojob2 = $queryutama->nojob2;
+            $jobtrucking = $queryutama->jobtrucking;
+
+            for ($i = 0; $i < count($data['nobukti']); $i++) {
+                $nobukti = $data['nobukti'][$i] ?? '';
+                if ($nobukti != $nobuktipelabuhan) {
+                    $querysp = db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+                        ->select(
+                            'a.id',
+                            'a.tglbukti',
+                            'a.jobtrucking',
+                        )
+                        ->where('a.nobukti', $nobukti)
+                        ->first();
+
+                        $buktijob=$querysp->jobtrucking ?? '';
+                    if ( $buktijob != '') {
+                        $jobtrucking = '';
+                        $nocont = '';
+                        $noseal = '';
+                        $nojob = '';
+                        $nojob2 = '';
+                        $nocont2 = '';
+                        $noseal2 = '';
+                    }
+
+                    $suratPengantar = [
+                        'proseslain' => '2',
+                        'jobtrucking' => $jobtrucking,
+                        'tglbukti' =>  $querysp->tglbukti,
+                        'nojob' =>  $nojob ?? '',
+                        'gandengan_id' =>  $gandengan_id ?? '',
+                        'nocont' =>  $nocont ?? '',
+                        'noseal' =>  $noseal ?? '',
+                        'nojob2' =>  $nojob2 ?? '',
+                        'nocont2' =>  $nocont2 ?? '',
+                        'noseal2' =>  $noseal2 ?? '',
+                        'container_id' => $container_id,
+                        'agen_id' => $agen_id,
+                        'jenisorder_id' => $jenisorder_id,
+                        'pelanggan_id' => $pelanggan_id,
+                        // 'tarif_id' => $data['tarifrincian_id'],
+                        'postingdari' => 'APPROVAL GABUNG JOB TRUCKING'
+                    ];
+                    $newSuratPengantar = new SuratPengantar();
+                    $newSuratPengantar = $newSuratPengantar->findAll($querysp->id);
+                    (new SuratPengantar())->processUpdate($newSuratPengantar, $suratPengantar);
+                }
+            }
+        }
+    }
     public function approvalEditTujuan(array $data)
     {
 
