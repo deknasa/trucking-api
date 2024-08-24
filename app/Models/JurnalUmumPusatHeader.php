@@ -152,8 +152,8 @@ class JurnalUmumPusatHeader extends MyModel
                 'b.updated_at as detail_updated_at',
             )
             ->join(db::raw("jurnalumumpusatdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-            ->whereRaw("MONTH(a.tglbukti) = " . $month)
-            ->whereRaw("YEAR(a.tglbukti) = " . $year)
+            ->whereRaw("MONTH(b.tglbukti) = " . $month)
+            ->whereRaw("YEAR(b.tglbukti) = " . $year)
             ->orderby('a.id', 'asc')
             ->orderby('b.id', 'asc');
 
