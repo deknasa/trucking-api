@@ -1002,12 +1002,15 @@ class UpdateListTripRequest extends FormRequest
             }
 
             $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
+            $jobmanual = $parameter->cekText('JOB TRUCKING MANUAL', 'JOB TRUCKING MANUAL') ?? 'TIDAK';
             $rulesJobTrucking = [];
-            if ((request()->statuslongtrip == 66) && (request()->statuslangsir == 80) && (request()->statusgudangsama == 205)) {
-                if (request()->dari_id != $idkandang && request()->nobukti_tripasal == '') {
-                    $rulesJobTrucking = [
-                        'jobtrucking' => ['required_unless:dari_id,1']
-                    ];
+            if($jobmanual =='TIDAK'){
+                if ((request()->statuslongtrip == 66) && (request()->statuslangsir == 80) && (request()->statusgudangsama == 205)) {
+                    if (request()->dari_id != $idkandang && request()->nobukti_tripasal == '') {
+                        $rulesJobTrucking = [
+                            'jobtrucking' => ['required_unless:dari_id,1']
+                        ];
+                    }
                 }
             }
             $rulesId = [

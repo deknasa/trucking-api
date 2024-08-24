@@ -931,9 +931,10 @@ class StoreMandorTripRequest extends FormRequest
             }
 
             $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
+            $jobmanual = $parameter->cekText('JOB TRUCKING MANUAL', 'JOB TRUCKING MANUAL') ?? 'TIDAK';
             // dd(request()->statuskandang,$idstatuskandang);
             $rulesJobTrucking = [];
-            if (request()->dari_id != '') {
+            if (request()->dari_id != '' &&  $jobmanual =='TIDAK') {
                 if ((request()->statuslongtrip == 66) && (request()->statuslangsir == 80) && (request()->statusgudangsama == 205)) {
                     // dd('disini');
                     if (request()->dari_id != $idkandang && request()->nobukti_tripasal == '') {

@@ -3523,6 +3523,19 @@ class SuratPengantar extends MyModel
                     }
                 }
             }
+
+            $jobmanual = $parameter->cekText('JOB TRUCKING MANUAL', 'JOB TRUCKING MANUAL') ?? 'TIDAK';
+            if ($jobmanual == 'YA') {
+
+                $suratPengantar->nocont = $data['nocont'] ?? '';
+                $suratPengantar->nocont2 = $data['nocont2'] ?? '';
+
+                $suratPengantar->noseal = $data['noseal'] ?? '';
+                $suratPengantar->noseal2 = $data['noseal2'] ?? '';
+                DB::update(DB::raw("UPDATE SURATPENGANTAR SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2' where jobtrucking='$suratPengantar->jobtrucking'"));
+
+                DB::update(DB::raw("UPDATE orderantrucking SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2' where nobukti='$suratPengantar->jobtrucking'"));
+            }
         } else {
             if ($suratPengantar->statusjeniskendaraan == $jenisTangki->id) {
 

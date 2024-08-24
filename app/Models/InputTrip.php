@@ -107,7 +107,19 @@ class InputTrip extends MyModel
         end:
 
         $tglBatasEdit = date('Y-m-d', strtotime($tanggal)) . ' ' . '12:00:00';
+        $jobmanual = $parameter->cekText('JOB TRUCKING MANUAL', 'JOB TRUCKING MANUAL') ?? 'TIDAK';
+        if($data['statuslongtrip'] == 65){
+            goto denganjobmanual;
+        } 
+        if($data['statuslangsir'] == 79){
+            goto denganjobmanual;
+        }
+        if($data['dari_id'] != 1 && $jobmanual == 'YA'){
+            $nobuktiorderantrucking = '';
+            goto tanpajobmanual;
+        }
 
+        denganjobmanual:
         if ($jobtrucking == '') {
             $orderan = [
                 'tglbukti' => $tglbukti,
@@ -187,6 +199,7 @@ class InputTrip extends MyModel
         }
 
 
+        tanpajobmanual:
         $date = date('Y-m-d', strtotime($data['tglbukti']));
         $user_id = auth('api')->user()->id;
 
