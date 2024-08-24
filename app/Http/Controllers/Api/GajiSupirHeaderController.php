@@ -81,6 +81,7 @@ class GajiSupirHeaderController extends Controller
                 'totalMakan' => $gajiSupirHeader->totalMakan,
                 'totalNominal' => $gajiSupirHeader->totalNominal,
                 'totalGajiSupir' => $gajiSupirHeader->totalGajiSupir,
+                'totalRitasiSupir' => $gajiSupirHeader->totalRitasiSupir,
             ]
         ]);
     }

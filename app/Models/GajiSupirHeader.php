@@ -165,6 +165,7 @@ class GajiSupirHeader extends MyModel
                 $table->dateTime('tglbukti')->nullable();
                 $table->longText('supir_id')->nullable();
                 $table->double('gajisupir', 15, 2)->nullable();
+                $table->double('ritasisupir', 15, 2)->nullable();
                 $table->date('tgldari')->nullable();
                 $table->date('tglsampai')->nullable();
                 $table->double('komisisupir', 15, 2)->nullable();
@@ -236,6 +237,7 @@ class GajiSupirHeader extends MyModel
             Schema::create($tempgajiheader, function ($table) {
                 $table->string('nobukti', 1000)->nullable();
                 $table->double('gajisupir', 15, 2)->nullable();
+                $table->double('ritasisupir', 15, 2)->nullable();
                 $table->double('biayaextra', 15, 2)->nullable();
             });
 
@@ -243,6 +245,7 @@ class GajiSupirHeader extends MyModel
             ->select(
                 'a.nobukti',
                 db::raw("sum(a.gajisupir) as gajisupir"),
+                db::raw("sum(a.gajiritasi) as ritasisupir"),
                 db::raw("sum(a.biayatambahan+a.nominalbiayaextrasupir) as biayaextra")
             )
             ->join(db::raw("gajisupirheader b with (readuncommitted)"),'a.nobukti','b.nobukti')
@@ -265,6 +268,7 @@ class GajiSupirHeader extends MyModel
             DB::table($tempgajiheader)->insertUsing([
                 'nobukti',
                 'gajisupir',
+                'ritasisupir',
                 'biayaextra',
             ], $queryheader);
 
@@ -279,6 +283,7 @@ class GajiSupirHeader extends MyModel
                     // 'gajisupirheader.keterangan',
                     // DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then c.gajisupir else (gajisupirheader.nominal-isnull(C.biayaextra,0)) end) as gajisupir"),
                     DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then c.gajisupir else isnull(d.gajisupir,0) end) as gajisupir"),
+                    DB::raw("isnull(d.ritasisupir,0) as ritasisupir"),
                     // db::raw("(gajisupirheader.nominal-isnull(C.biayaextra,0)) as nominal"),
                     'gajisupirheader.tgldari',
                     'gajisupirheader.tglsampai',
@@ -333,6 +338,7 @@ class GajiSupirHeader extends MyModel
                 'tglbukti',
                 'supir_id',
                 'gajisupir',
+                'ritasisupir',
                 'tgldari',
                 'tglsampai',
                 'komisisupir',
@@ -383,6 +389,7 @@ class GajiSupirHeader extends MyModel
                 'a.tglbukti',
                 'a.supir_id',
                 'a.gajisupir',
+                'a.ritasisupir',
                 'a.tgldari',
                 'a.tglsampai',
                 'a.komisisupir',
@@ -451,6 +458,7 @@ class GajiSupirHeader extends MyModel
                 db::raw("sum(a.uangmakanharian) as uangmakanharian"),
                 db::raw("sum(a.sisa) as sisa"),
                 db::raw("sum(a.gajisupir) as gajisupir"),
+                db::raw("sum(a.ritasisupir) as ritasisupir"),
             )
             ->join(db::raw($tempbuktisum . " b "), 'a.nobukti', 'b.nobukti')
             ->first();
@@ -469,6 +477,7 @@ class GajiSupirHeader extends MyModel
         $this->totalMakan = $querytotal->uangmakanharian ?? 0;
         $this->totalNominal = $querytotal->nominal ?? 0;
         $this->totalGajiSupir = $querytotal->gajisupir ?? 0;
+        $this->totalRitasiSupir = $querytotal->ritasisupir ?? 0;
 
         return $data;
     }
