@@ -1559,6 +1559,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('suratpengantar/{id}/getTarifOmset', [SuratPengantarController::class, 'getTarifOmset'])->whereNumber('id');
     Route::post('suratpengantar/batalmuat', [SuratPengantarController::class, 'approvalBatalMuat'])->whereNumber('id');
     Route::post('suratpengantar/edittujuan', [SuratPengantarController::class, 'approvalEditTujuan'])->whereNumber('id');
+    Route::post('suratpengantar/approvalgabungjobtrucking', [SuratPengantarController::class, 'approvalGabungJobTrucking'])->whereNumber('id');
     Route::post('suratpengantar/titipanemkl', [SuratPengantarController::class, 'approvalTitipanEmkl']);
     Route::post('suratpengantar/biayaextra', [SuratPengantarController::class, 'approvalBiayaExtra']);
     Route::get('suratpengantar/getOrderanTrucking', [SuratPengantarController::class, 'getOrderanTrucking']);
