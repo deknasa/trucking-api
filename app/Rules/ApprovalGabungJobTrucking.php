@@ -34,8 +34,14 @@ class ApprovalGabungJobTrucking implements Rule
     {
         $parameter = new Parameter();
 
-        $pelabuhancabang = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? '0';
-
+        // $pelabuhancabang = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? '0';
+        $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
+        $pelabuhancabang=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+        ->select(
+            db::raw("STRING_AGG(id,',') as id"),
+        )
+        ->where('a.statuspelabuhan',$statuspelabuhan)
+        ->first()->id ?? 1;  
 
         $bjumlah=0;
         for ($i = 0; $i < count(request()->Id); $i++) {
@@ -46,7 +52,7 @@ class ApprovalGabungJobTrucking implements Rule
                 'a.jobtrucking'
             )
             ->where('a.nobukti', $nobukti)
-            ->whereraw("(a.dari_id=" . $pelabuhancabang . " or isnull(a.statuslongtrip,0)=65)")
+            ->whereraw("(a.dari_id in(" . $pelabuhancabang . ") or isnull(a.statuslongtrip,0)=65)")
             ->first();
 
             if (isset($querypelabuhan)) {

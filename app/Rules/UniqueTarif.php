@@ -37,8 +37,9 @@ class UniqueTarif implements Rule
             ->select(
                 'a.id'
             )
-             ->where('a.tujuan', '=', (request()->tujuan))
-             ->where('a.penyesuaian', '=', $penyesuaian)
+            ->where('a.pelabuhan_id', '=', (request()->pelabuhan_id))
+            ->where('a.tujuan', '=', (request()->tujuan))
+            ->where('a.penyesuaian', '=', $penyesuaian)
              ->where('a.jenisorder_id', '=', $jenisorder)
             ->first();
 

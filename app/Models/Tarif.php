@@ -217,7 +217,7 @@ class Tarif extends MyModel
                 ->leftJoin(DB::raw("parameter AS posting with (readuncommitted)"), 'tarif.statuspostingtnl', '=', 'posting.id')
                 ->leftJoin(DB::raw("$tempupah as upahsupir with (readuncommitted)"), 'upahsupir.id', '=', 'tarif.id')
                 ->leftJoin(DB::raw("kota as pelabuhan with (readuncommitted)"), 'tarif.pelabuhan_id', '=', 'pelabuhan.id');
-
+                
 
             DB::table($temtabel)->insertUsing([
                 'id',
@@ -340,6 +340,7 @@ class Tarif extends MyModel
                 'tarif.usercetak',
                 'tarif.tujuanpenyesuaian',
             );
+            // dd($query->where('tarif.pelabuhan_id','PELABUHAN PARE-PARE')->get());
 
 
         // dd('test');

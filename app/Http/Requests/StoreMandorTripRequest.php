@@ -73,6 +73,7 @@ class StoreMandorTripRequest extends FormRequest
      */
     public function rules()
     {
+      
         $jenisTangki = DB::table('parameter')->from(
             DB::raw("parameter as a with (readuncommitted)")
         )
@@ -83,6 +84,7 @@ class StoreMandorTripRequest extends FormRequest
             ->where('a.subgrp', '=', 'STATUS JENIS KENDARAAN')
             ->where('a.text', '=', 'TANGKI')
             ->first();
+       
         if (request()->statusjeniskendaraan == $jenisTangki->id) {
             $agen_id = $this->agen_id;
             $rulesAgen_id = [];
@@ -95,7 +97,7 @@ class StoreMandorTripRequest extends FormRequest
                     'agen_id' => ['required', 'numeric', 'min:1', new ExistAgen()]
                 ];
             }
-
+         
             $pelanggan_id = $this->pelanggan_id;
             $rulesPelanggan_id = [];
             if ($pelanggan_id != null) {
@@ -107,7 +109,7 @@ class StoreMandorTripRequest extends FormRequest
                     'pelanggan_id' => ['required', 'numeric', 'min:1', new ExistPelanggan()]
                 ];
             }
-
+   
             if (request()->trado_id != '') {
 
                 // 
@@ -377,7 +379,7 @@ class StoreMandorTripRequest extends FormRequest
             }
 
             $idstatuskandang = $parameter->cekId('STATUS KANDANG', 'STATUS KANDANG', 'KANDANG') ?? 0;
-
+          
             $getGudangSama = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GUDANG SAMA')->where('text', 'GUDANG SAMA')->first();
             $getBukanUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'NON UPAH ZONA')->first();
             $getUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
@@ -437,6 +439,7 @@ class StoreMandorTripRequest extends FormRequest
                     ];
                 }
             }
+
             // END VALIDASI RITASI
 
             $agen_id = $this->agen_id;
@@ -463,6 +466,7 @@ class StoreMandorTripRequest extends FormRequest
                 ];
             }
 
+         
 
             $upah_id = $this->upah_id;
             $rulesUpah_id = [];
@@ -475,7 +479,7 @@ class StoreMandorTripRequest extends FormRequest
                     'upah_id' => ['required', 'numeric', 'min:1', new ExistUpahSupirRincianSuratPengantar()]
                 ];
             }
-
+            
             $rulesDari_id = [];
             $rulesSampai_id = [];
             // $idpelabuhan = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? 0;
@@ -648,6 +652,7 @@ class StoreMandorTripRequest extends FormRequest
                     $validasireminderolimesin = false;
                     $keteranganvalidasireminderolimesin = "";
                 }
+               
 
                 // pergantian oli persneling
                 $query = db::table($tempreminderoli)->from(db::raw($tempreminderoli . " a"))
@@ -774,7 +779,7 @@ class StoreMandorTripRequest extends FormRequest
                 return false;
             });
 
-
+          
             $rulesGandengan_id = [];
             if ((request()->dari_id == 1 && request()->sampai_id == 103) || (request()->dari_id == 103 && request()->sampai_id == 1) || (request()->statuslongtrip == 65)) {
 
@@ -926,7 +931,7 @@ class StoreMandorTripRequest extends FormRequest
                 }
             }
 
-
+       
             $getListTampilan = json_decode($getListTampilan->memo);
             if ($getListTampilan->INPUT != '') {
                 $getListTampilan = (explode(",", $getListTampilan->INPUT));
@@ -940,17 +945,26 @@ class StoreMandorTripRequest extends FormRequest
             $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
             $jobmanual = $parameter->cekText('JOB TRUCKING MANUAL', 'JOB TRUCKING MANUAL') ?? 'TIDAK';
             // dd(request()->statuskandang,$idstatuskandang);
+            $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
+            $idpelabuhan=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+            ->select(
+                db::raw("STRING_AGG('required_unless:dari_id,'+trim(str(id)),'|') as id"),
+            )
+            ->where('a.statuspelabuhan',$statuspelabuhan)
+            ->first()->id ?? '';   
+
             $rulesJobTrucking = [];
             if (request()->dari_id != '' &&  $jobmanual =='TIDAK') {
                 if ((request()->statuslongtrip == 66) && (request()->statuslangsir == 80) && (request()->statusgudangsama == 205)) {
                     // dd('disini');
                     if (request()->dari_id != $idkandang && request()->nobukti_tripasal == '') {
                         $rulesJobTrucking = [
-                            'jobtrucking' => ['required_unless:dari_id,1']
+                            'jobtrucking' => [$idpelabuhan]
                         ];
                     }
                 }
             }
+      
             $rules = array_merge(
                 $rules,
                 $ritasiRule,
@@ -967,13 +981,16 @@ class StoreMandorTripRequest extends FormRequest
                 $ruleCekUpahRitasi,
                 $rulesJobTrucking
             );
+          
             if (request()->statuslongtrip == 66 && request()->nobukti_tripasal == '') {
                 $rules = array_merge(
                     $rules,
                     $rulesTarif_id,
                 );
             }
+          
         }
+        //   dd($rules);
         return $rules;
     }
     public function attributes()
@@ -1009,7 +1026,7 @@ class StoreMandorTripRequest extends FormRequest
     public function messages()
     {
         $controller = new ErrorController;
-
+        // dd('test2');
         return [
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
             'tarifrincian.required_if' => 'TARIF ' . app(ErrorController::class)->geterror('WI')->keterangan,

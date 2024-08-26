@@ -34,7 +34,7 @@ class InputTripController extends Controller
      */
     public function store(StoreMandorTripRequest $request)
     {
-
+// dd('test1');
         DB::beginTransaction();
         try {
             $data = [

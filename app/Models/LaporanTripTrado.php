@@ -51,13 +51,23 @@ class LaporanTripTrado extends MyModel
 
         $statusContainer3 = StatusContainer::where('kodestatuscontainer', '=', 'FULL EMPTY')->first();
 
-        $getPelabuhan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PELABUHAN CABANG')->where('subgrp', 'PELABUHAN CABANG')->first();
-        $kotaPort = Kota::where('id', $getPelabuhan->text)->first();
+        // $getPelabuhan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PELABUHAN CABANG')->where('subgrp', 'PELABUHAN CABANG')->first();
+        // $kotaPort = Kota::where('id', $getPelabuhan->text)->first();
+
+        $parameter = new Parameter();
+        $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
+        $kotaPort=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+        ->select(
+            db::raw("STRING_AGG(id,',') as id"),
+        )
+        ->where('a.statuspelabuhan',$statuspelabuhan)
+        ->first()->id ?? 1; 
 
         $full_id = $statusContainer1->id;
         $empty_id = $statusContainer2->id;
         $fullEmpty_id = $statusContainer3->id;
-        $kotaport_id = $kotaPort->id;
+        // $kotaport_id = $kotaPort->id;
+        $kotaport_id = $kotaPort;
 
 
         $tempData = '##tempData' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -137,7 +147,7 @@ class LaporanTripTrado extends MyModel
                 DB::raw("(case when A.statuscontainer_id in($empty_id) then 1 else 0 end) as [empty]"),
 
             )
-            ->where('a.dari_id', '=', $kotaport_id);
+            ->whereraw("a.dari_id in(". $kotaport_id.")");
 
         DB::table($tempDariPort)->insertUsing([
             'trado_id',
