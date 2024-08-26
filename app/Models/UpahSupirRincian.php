@@ -418,6 +418,7 @@ class UpahSupirRincian extends MyModel
         $temp = '##tempUpah' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
+            $table->integer('pelabuhan_id')->length(11)->nullable();
             $table->integer('kotadari_id')->length(11)->nullable();
             $table->integer('kotasampai_id')->length(11)->nullable();
             $table->string('kotadari')->nullable();
@@ -473,6 +474,7 @@ class UpahSupirRincian extends MyModel
 
             Schema::create($temtabel, function (Blueprint $table) {
                 $table->bigInteger('id')->nullable();
+                $table->longtext('pelabuhan_id')->nullable();
                 $table->longtext('kotadari_id')->nullable();
                 $table->longtext('kotasampai_id')->nullable();
                 $table->longtext('zonadari_id')->nullable();
@@ -507,6 +509,7 @@ class UpahSupirRincian extends MyModel
             $temptarif = '##temptarif' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($temptarif, function ($table) {
                 $table->unsignedBigInteger('id')->nullable();
+                $table->unsignedBigInteger('pelabuhan_id')->nullable();
                 $table->unsignedBigInteger('parent_id')->nullable();
                 $table->unsignedBigInteger('upahsupir_id')->nullable();
                 $table->string('tujuan', 200)->nullable();
@@ -532,6 +535,7 @@ class UpahSupirRincian extends MyModel
             $querytarif = db::table('tarif')->from(db::raw("tarif a with (readuncommitted)"))
                 ->select(
                     'a.id',
+                    'a.pelabuhan_id',
                     'a.parent_id',
                     'a.upahsupir_id',
                     'a.tujuan',
@@ -558,6 +562,7 @@ class UpahSupirRincian extends MyModel
 
             DB::table($temptarif)->insertUsing([
                 'id',
+                'pelabuhan_id',
                 'parent_id',
                 'upahsupir_id',
                 'tujuan',
@@ -698,6 +703,13 @@ class UpahSupirRincian extends MyModel
 
 
             // GET UPAH SUPIR PELABUHAN
+            $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
+            $idpelabuhan=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+            ->select(
+                db::raw("STRING_AGG(id,',') as id"),
+            )
+            ->where('a.statuspelabuhan',$statuspelabuhan)
+            ->first()->id ?? 1;               
             $queryupahsupir = db::table('upahsupir')->from(db::raw("upahsupir a with (readuncommitted)"))
                 ->select(
                     'a.id',
@@ -734,7 +746,7 @@ class UpahSupirRincian extends MyModel
                 ->whereRaw("cast('" . $tglbukti . "' as datetime)>=a.tglmulaiberlaku")
                 ->orderby('a.id', 'asc')
                 // ->whereRaw("isnull(a.statuslangsir,'') != 79")
-                ->where('a.kotadari_id', 1);
+                ->whereRaw("a.kotadari_id in (".$idpelabuhan . ")");
 
             DB::table($tempupahsupir)->insertUsing([
                 'id',

@@ -2538,15 +2538,29 @@ class SuratPengantar extends MyModel
 
     public function getpelabuhan($id)
     {
-        $data = DB::table('parameter')
-            ->from(DB::raw("parameter with (readuncommitted)"))
+        // $data = DB::table('parameter')
+        //     ->from(DB::raw("parameter with (readuncommitted)"))
+        //     ->select(
+        //         'text as id'
+        //     )
+        //     ->where('grp', '=', 'PELABUHAN CABANG')
+        //     ->where('subgrp', '=', 'PELABUHAN CABANG')
+        //     ->where('text', '=', $id)
+        //     ->first();
+
+            $parameter = new Parameter();
+            $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
+
+
+            $data = DB::table('kota')
+            ->from(DB::raw("kota with (readuncommitted)"))
             ->select(
-                'text as id'
+                'id'
             )
-            ->where('grp', '=', 'PELABUHAN CABANG')
-            ->where('subgrp', '=', 'PELABUHAN CABANG')
-            ->where('text', '=', $id)
-            ->first();
+            ->where('statuspelabuhan', $statuspelabuhan)
+            ->where('id', '=', $id)
+            ->first();            
+            
 
         // $datakandang = DB::table('parameter')
         //     ->from(DB::raw("parameter with (readuncommitted)"))
@@ -3764,7 +3778,15 @@ class SuratPengantar extends MyModel
                     $parameter = new Parameter();
                     $idstatuskandang = $parameter->cekId('STATUS KANDANG', 'STATUS KANDANG', 'KANDANG') ?? 0;
                     $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
-                    $idpelabuhan = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? 0;
+                    // $idpelabuhan = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? 0;
+                    $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
+                    $idpelabuhan=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+                    ->select(
+                        db::raw("STRING_AGG(id,',') as id"),
+                    )
+                    ->where('a.statuspelabuhan',$statuspelabuhan)
+                    ->first()->id ?? 1;            
+    
 
                     $upahsupirkandnag = db::table("upahsupir")->from(db::raw("upahsupir a with (readuncommitted)"))
                         ->select(
@@ -3784,7 +3806,7 @@ class SuratPengantar extends MyModel
                             'b.modifiedby',
                         )
                         ->join(db::raw("upahsupirrincian b with (readuncommitted)"), 'a.id', 'b.upahsupir_id')
-                        ->where('a.kotadari_id', $idpelabuhan)
+                        ->whereraw("a.kotadari_id in(". $idpelabuhan .")")
                         ->where('a.kotasampai_id', $idkandang)
                         ->where('b.container_id', $data['container_id'])
                         ->where('b.statuscontainer_id', $suratPengantar->statuscontainer_id)
@@ -4141,7 +4163,14 @@ class SuratPengantar extends MyModel
     {
         $parameter = new Parameter();
 
-        $pelabuhancabang = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? '0';
+        // $pelabuhancabang = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? '0';
+        $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
+        $pelabuhancabang=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+        ->select(
+            db::raw("STRING_AGG(id,',') as id"),
+        )
+        ->where('a.statuspelabuhan',$statuspelabuhan)
+        ->first()->id ?? 1;         
 
         $bjumlah = 0;
         $orderanTruckingId = [];
@@ -4153,7 +4182,7 @@ class SuratPengantar extends MyModel
                     'a.nobukti'
                 )
                 ->where('a.nobukti', $nobukti)
-                ->whereraw("(a.dari_id=" . $pelabuhancabang . " or isnull(a.statuslongtrip,0)=65)")
+                ->whereraw("(a.dari_id in(" . $pelabuhancabang . ") or isnull(a.statuslongtrip,0)=65)")
                 ->first();
 
             if (isset($querypelabuhan)) {

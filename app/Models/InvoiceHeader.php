@@ -258,15 +258,25 @@ class InvoiceHeader extends MyModel
             ->first()->id ?? 0;
 
 
-        $kotapelabuhan = DB::table('parameter')->from(
-            db::raw("parameter a with (readuncommitted)")
-        )
+        // $kotapelabuhan = DB::table('parameter')->from(
+        //     db::raw("parameter a with (readuncommitted)")
+        // )
+        //     ->select(
+        //         'a.text'
+        //     )
+        //     ->where('grp', '=', 'PELABUHAN CABANG')
+        //     ->where('subgrp', '=', 'PELABUHAN CABANG')
+        //     ->first();
+
+            $parameter = new Parameter();
+            $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
+            $kotapelabuhan=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
             ->select(
-                'a.text'
+                db::raw("STRING_AGG(id,',') as id"),
             )
-            ->where('grp', '=', 'PELABUHAN CABANG')
-            ->where('subgrp', '=', 'PELABUHAN CABANG')
-            ->first();
+            ->where('a.statuspelabuhan',$statuspelabuhan)
+            ->first()->id ?? 1;  
+
 
         $pilihanperiodeotobon = DB::table('parameter')->from(
             db::raw("parameter a with (readuncommitted)")
@@ -358,8 +368,9 @@ class InvoiceHeader extends MyModel
             ->where('subgrp', '=', 'STATUS CONTAINER FULL EMPTY')
             ->first();
 
-        $kotapelabuhanid = $kotapelabuhan->text ?? 0;
-        $pilihanperiode = $request->pilihanperiode ?? 0;
+            // $kotapelabuhanid = $kotapelabuhan->text ?? 0;
+            $kotapelabuhanid = $kotapelabuhan;
+            $pilihanperiode = $request->pilihanperiode ?? 0;
 
         $idkandang = (new Parameter())->cekText('KANDANG', 'KANDANG') ?? 0;
         $tempdaripelabuhan = '##tempdaripelabuhan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -373,7 +384,7 @@ class InvoiceHeader extends MyModel
             ->select(
                 'a.jobtrucking'
             )
-            ->whereRaw("(a.dari_id=" . $kotapelabuhanid . " or a.statuslangsir=" . $statuslangsir->id . ")")
+            ->whereRaw("(a.dari_id in (" . $kotapelabuhanid . ") or a.statuslangsir=" . $statuslangsir->id . ")")
             ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
             ->where('a.agen_id', $request->agen_id)
             ->where('a.jenisorder_id', $request->jenisorder_id)
@@ -446,7 +457,7 @@ class InvoiceHeader extends MyModel
                         db::raw("max(a.totalomset) as nominal"),
                         db::raw("max(a.nobukti) as suratpengantar_nobukti")
                     )
-                    ->whereRaw("(a.sampai_id=" . $kotapelabuhanid . " or a.statuslangsir=" . $statuslangsir->id . ")")
+                    ->whereRaw("(a.sampai_id in(" . $kotapelabuhanid . ") or a.statuslangsir=" . $statuslangsir->id . ")")
                     ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
                     ->where('a.agen_id', $request->agen_id)
                     ->where('a.jenisorder_id', $request->jenisorder_id)

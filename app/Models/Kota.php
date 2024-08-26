@@ -116,9 +116,20 @@ class Kota extends MyModel
             ->where('grp', 'JUDULAN LAPORAN')
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
-        $kotaPelabuhan = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'PELABUHAN CABANG')->where('subgrp', 'PELABUHAN CABANG')->first();
+        // $kotaPelabuhan = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'PELABUHAN CABANG')->where('subgrp', 'PELABUHAN CABANG')->first();
         $kotaKandang = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'KANDANG')->where('subgrp', 'KANDANG')->first();
+        $idkandang =$kotaKandang->text ;
 
+        $parameter = new Parameter();
+        $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
+        $kotaPelabuhan=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+        ->select(
+            db::raw("STRING_AGG(id,',') as id"),
+        )
+        ->where('a.statuspelabuhan',$statuspelabuhan)
+        ->first()->id ?? 1;             
+
+        
 
         $aktif = request()->aktif ?? '';
         $kotaDariId = request()->kotadari_id ?? '';
@@ -129,7 +140,7 @@ class Kota extends MyModel
         $upahSupirDariKe = request()->upahSupirDariKe ?? '';
         $upahSupirKotaDari = request()->upahSupirKotaDari ?? '';
         $kotaZona = request()->kotaZona ?? '';
-        $statusPelabuhan = request()->StatusPelabuhan ?? '';
+        $statusPelabuhan = request()->statuspelabuhan ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -160,9 +171,10 @@ class Kota extends MyModel
 
             $query->where('kota.statusaktif', '=', $statusaktif->id);
         }
-        if (($statusPelabuhan != '')&& ($statusPelabuhan=='PELABUHAN')) {
+        
+        if ($statusPelabuhan=='PELABUHAN') {
             $idStatusPelabuhan = (new Parameter())->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
-            $query->whereRaw("kota.statuspelabuhan in ($idStatusPelabuhan)");
+            $query->whereRaw("kota.id in (".$kotaPelabuhan.")");
         }
         if ($kotaDariId > 0 && $kotaSampaiId > 0) {
             $query->whereRaw("kota.id in ($kotaDariId,$kotaSampaiId)");
@@ -197,7 +209,16 @@ class Kota extends MyModel
             $query->whereRaw("kota.id != $kotaKandang->text");
         }
         if ($upahSupirDariKe == 'ke') {
-            if ($upahSupirKotaDari == $kotaPelabuhan->text) {
+            $kotaPelabuhanke=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+            ->select(
+                'a.id',
+            )
+            ->where('a.statuspelabuhan',$statuspelabuhan)
+            ->where('a.id',$upahSupirKotaDari)
+            ->first();   
+
+            // if ($upahSupirKotaDari == $kotaPelabuhan->text) {
+                if (isset($kotaPelabuhanke))    {
                 $query->whereRaw("kota.id != $kotaKandang->text");
             }
         }

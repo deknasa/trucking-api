@@ -15,6 +15,8 @@ class InputTrip extends MyModel
 
     public function processStore(array $data)
     {
+        
+
         $jobtrucking = $data['jobtrucking'] ?? '';
 
         $jenisTangki = DB::table('parameter')->from(
@@ -312,7 +314,9 @@ class InputTrip extends MyModel
                     db::raw("STRING_AGG(id,',') as id"),
                 )
                 ->where('a.statuspelabuhan',$statuspelabuhan)
-                ->first()->id ?? 1;            
+                ->first()->id ?? 1;  
+                
+                // dd($idpelabuhan);
 
             $upahsupirkandnag = db::table("upahsupir")->from(db::raw("upahsupir a with (readuncommitted)"))
                 ->select(

@@ -142,18 +142,31 @@ class JobTrucking extends MyModel
             ->where('a.text', '=', 'LONGTRIP')
             ->first();
 
-        $pelabuhan = DB::table('parameter')->from(
-            DB::raw("parameter as a with (readuncommitted)")
-        )
+        // $pelabuhan = DB::table('parameter')->from(
+        //     DB::raw("parameter as a with (readuncommitted)")
+        // )
+        //     ->select(
+        //         'a.text'
+        //     )
+        //     ->where('a.grp', '=', 'PELABUHAN CABANG')
+        //     ->where('a.subgrp', '=', 'PELABUHAN CABANG')
+        //     ->first();
+
+            $parameter = new Parameter();
+            $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
+            $pelabuhan=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
             ->select(
-                'a.text'
+                db::raw("STRING_AGG(id,',') as id"),
             )
-            ->where('a.grp', '=', 'PELABUHAN CABANG')
-            ->where('a.subgrp', '=', 'PELABUHAN CABANG')
-            ->first();
-        $pelabuhanAwal = $pelabuhan->text;
-        $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
-        $pelabuhan = $pelabuhan->text . ',' . $idkandang;
+            ->where('a.statuspelabuhan',$statuspelabuhan)
+            ->first()->id ?? 1;  
+
+
+            // $pelabuhanAwal = $pelabuhan->text;
+            $pelabuhanAwal = $pelabuhan;
+            $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
+            // $pelabuhan = $pelabuhan->text . ',' . $idkandang;
+            $pelabuhan = $pelabuhan . ',' . $idkandang;
 
         $isPulangLongtrip = request()->isPulangLongtrip ?? '';
         if ($isPulangLongtrip == true) {
@@ -405,7 +418,7 @@ class JobTrucking extends MyModel
                 ->whereRaw("isnull(c1.jobtrucking,'')=''")
                 ->where('a.statusgandengan', $statusgandenganid)
                 ->whereRaw("a.statuscontainer_id not in(" . $statusfullempty . ")");
-            $querydata1->whereRaw("a.dari_id=$pelabuhanAwal");
+            $querydata1->whereRaw("a.dari_id in (".$pelabuhanAwal.")");
 
             // dd(db::table($tempNonTampilJobTrucking)->get(),$querydata1->get());
 
@@ -474,8 +487,17 @@ class JobTrucking extends MyModel
             $aptglbatas = date('Y-m-d', strtotime($aptgl . ' +20 days'));
 
             $parameter = new Parameter();
-            $pelabuhanid = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? '0';
+            // $pelabuhanid = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? '0';
             $kandangid = $parameter->cekText('KANDANG', 'KANDANG') ?? '0';
+
+            $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
+            $pelabuhanid=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+            ->select(
+                db::raw("STRING_AGG(id,',') as id"),
+            )
+            ->where('a.statuspelabuhan',$statuspelabuhan)
+            ->first()->id ?? 1;  
+
 
             $tempbelumkomplit = '##tempbelumkomplit' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempbelumkomplit, function ($table) {
@@ -504,14 +526,14 @@ class JobTrucking extends MyModel
                     'a.jobtrucking',
                     'a.dari_id',
                     'a.sampai_id',
-                    db::raw("(case when a.dari_id=" . $pelabuhanid . " and A.sampai_id=" . $kandangid . " THEN 1 ELSE 0 END) as nilai1"),
-                    db::raw("(case when a.dari_id=" . $pelabuhanid . " and a.sampai_id<>" . $kandangid . " THEN 2 
+                    db::raw("(case when a.dari_id in(" . $pelabuhanid . ") and A.sampai_id=" . $kandangid . " THEN 1 ELSE 0 END) as nilai1"),
+                    db::raw("(case when a.dari_id in(" . $pelabuhanid . ") and a.sampai_id<>" . $kandangid . " THEN 2 
         when a.dari_id=" . $kandangid . " and A.sampai_id NOT IN(" . $kandangid . "," . $pelabuhanid . ") THEN 1
           ELSE 0 END) as nilai2"),
                     db::raw(" (case when a.dari_id NOT IN(" . $pelabuhanid . "," . $kandangid . ") and a.sampai_id=" . $kandangid . "  THEN 1 
-        when A.dari_id NOT IN(" . $pelabuhanid . "," . $kandangid . ") and a.sampai_id=" . $pelabuhanid . "  THEN 2
+        when A.dari_id NOT IN(" . $pelabuhanid . "," . $kandangid . ") and a.sampai_id in(" . $pelabuhanid . ")  THEN 2
           ELSE 0 END) as nilai3"),
-                    db::raw("(case when A.dari_id =" . $kandangid . " and A.sampai_id=" . $pelabuhanid . "  THEN 1 ELSE 0 END) as nilai4")
+                    db::raw("(case when A.dari_id =" . $kandangid . " and A.sampai_id in(" . $pelabuhanid . ")  THEN 1 ELSE 0 END) as nilai4")
                 )
                 ->join(db::raw("orderantrucking b with (readuncommitted)"), 'a.jobtrucking', 'b.nobukti')
                 ->whereraw("a.tglbukti>='" . $aptgl . "'")
@@ -617,7 +639,7 @@ class JobTrucking extends MyModel
                 ->whereRaw("isnull(a.jobtrucking,'')<>''")
                 ->whereRaw("a.statuscontainer_id not in(" . $statusfullempty . ")")
                 ->whereRaw("isnull(c1.jobtrucking,'')=''")
-                ->whereRaw("a.sampai_id in ($pelabuhanAwal)");
+                ->whereRaw("a.sampai_id in (".$pelabuhanAwal.")");
 
             DB::table($tempselesai)->insertUsing([
                 'jobtrucking',
@@ -638,7 +660,7 @@ class JobTrucking extends MyModel
                 ->whereRaw("isnull(a.jobtrucking,'')<>''")
                 ->whereRaw("a.statuscontainer_id not in(" . $statusfullempty . ")")
                 ->whereRaw("isnull(c1.jobtrucking,'')=''")
-                ->whereRaw("a.sampai_id in ($pelabuhanAwal)");
+                ->whereRaw("a.sampai_id in (".$pelabuhanAwal.")");
 
             // dd(( $queryjob)->tosql());
 
@@ -654,8 +676,16 @@ class JobTrucking extends MyModel
             $aptglbatas = date('Y-m-d', strtotime($aptgl . ' +20 days'));
 
             $parameter = new Parameter();
-            $pelabuhanid = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? '0';
+            // $pelabuhanid = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? '0';
             $kandangid = $parameter->cekText('KANDANG', 'KANDANG') ?? '0';
+
+            $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
+                $pelabuhanid=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+                ->select(
+                    db::raw("STRING_AGG(id,',') as id"),
+                )
+                ->where('a.statuspelabuhan',$statuspelabuhan)
+                ->first()->id ?? 1;               
 
             $tempbelumkomplit = '##tempbelumkomplit' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempbelumkomplit, function ($table) {
@@ -684,14 +714,14 @@ class JobTrucking extends MyModel
                     'a.jobtrucking',
                     'a.dari_id',
                     'a.sampai_id',
-                    db::raw("(case when a.dari_id=" . $pelabuhanid . " and A.sampai_id=" . $kandangid . " THEN 1 ELSE 0 END) as nilai1"),
-                    db::raw("(case when a.dari_id=" . $pelabuhanid . " and a.sampai_id<>" . $kandangid . " THEN 2 
+                    db::raw("(case when a.dari_id in(" . $pelabuhanid . ") and A.sampai_id=" . $kandangid . " THEN 1 ELSE 0 END) as nilai1"),
+                    db::raw("(case when a.dari_id in(" . $pelabuhanid . ") and a.sampai_id<>" . $kandangid . " THEN 2 
         when a.dari_id=" . $kandangid . " and A.sampai_id NOT IN(" . $kandangid . "," . $pelabuhanid . ") THEN 1
           ELSE 0 END) as nilai2"),
                     db::raw(" (case when a.dari_id NOT IN(" . $pelabuhanid . "," . $kandangid . ") and a.sampai_id=" . $kandangid . "  THEN 1 
-        when A.dari_id NOT IN(" . $pelabuhanid . "," . $kandangid . ") and a.sampai_id=" . $pelabuhanid . "  THEN 2
+        when A.dari_id NOT IN(" . $pelabuhanid . "," . $kandangid . ") and a.sampai_id in(" . $pelabuhanid . ")  THEN 2
           ELSE 0 END) as nilai3"),
-                    db::raw("(case when A.dari_id =" . $kandangid . " and A.sampai_id=" . $pelabuhanid . "  THEN 1 ELSE 0 END) as nilai4")
+                    db::raw("(case when A.dari_id =" . $kandangid . " and A.sampai_id in(" . $pelabuhanid . ")  THEN 1 ELSE 0 END) as nilai4")
 
                 )
                 ->join(db::raw("orderantrucking b with (readuncommitted)"), 'a.jobtrucking', 'b.nobukti')
@@ -863,7 +893,7 @@ class JobTrucking extends MyModel
                 ->leftjoin(DB::raw($tempselesai . " as d"), 'a.jobtrucking', 'd.jobtrucking')
                 ->leftjoin(db::raw($tempNonTampilJobTrucking . " c1"), 'a.jobtrucking', 'c1.jobtrucking')
                 ->whereRaw("isnull(c1.jobtrucking,'')=''")
-                ->whereRaw("a.dari_id=$pelabuhanAwal")
+                ->whereRaw("a.dari_id in(".$pelabuhanAwal.")")
                 ->whereRaw("a.statuscontainer_id not in(" . $statusfullempty . ")");
             // dd($querydata1->get());
 

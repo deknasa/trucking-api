@@ -34,14 +34,36 @@ class ExistTarifRincianSuratPengantar implements Rule
         
         $parameter = new Parameter();
         $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
-        $idpelabuhan = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? 0;
+        // $idpelabuhan = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? 0;
+        $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
         $dari = request()->dari_id;
         $sampai = request()->sampai_id;
-        if(($dari == $idpelabuhan && $sampai == $idkandang) || ($dari == $idkandang && $sampai == $idpelabuhan)){
+        $idpelabuhandari=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+        ->select(
+           'a.id',
+        )
+        ->where('a.statuspelabuhan',$statuspelabuhan)
+        ->where('a.id',$dari)
+        ->first();    
+
+        $idpelabuhansampai=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+        ->select(
+           'a.id',
+        )
+        ->where('a.statuspelabuhan',$statuspelabuhan)
+        ->where('a.id',$sampai)
+        ->first();    
+
+
+        if(( (isset($idpelabuhandari))   && $sampai == $idkandang) || ($dari == $idkandang &&  (isset($idpelabuhansampai)) )){
+            // dd('test');
             return true;
         }
+     
         $dataTarif = $tarifRincian->getValidasiTarif(request()->container_id, request()->upah_id);
+        // dd( $dataTarif,$value);
         if($dataTarif == null){
+         
             return false;
         }else{
             $statusjenis = Parameter::from(
@@ -50,17 +72,21 @@ class ExistTarifRincianSuratPengantar implements Rule
                 ->where('grp', '=', 'UPAH SUPIR')
                 ->where('subgrp', '=', 'TARIF JENIS ORDER')
                 ->first();
-            
+              
                 if ($statusjenis->text == 'YA') {
                     $jenisorder = 'tarif'.strtolower(request()->jenisorder).'_id';
                     if($value != $dataTarif->tarif_id) {
+                
+
                         if($value != $dataTarif->$jenisorder){
                             return false;
                         }  
                     } else{
+                        // dd('test');
                         return true;
                     }
                 }else{
+                
                     if($value != $dataTarif->tarif_id) {
                         return false;
                     }else{
