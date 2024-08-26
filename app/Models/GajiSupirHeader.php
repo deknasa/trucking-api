@@ -272,7 +272,8 @@ class GajiSupirHeader extends MyModel
                 'biayaextra',
             ], $queryheader);
 
-
+            $parameter = new Parameter();
+            $nonhitungkomisi = $parameter->cekText('GAJI SUPIR', 'HITUNG KOMISI') ?? 'TIDAK';
 
             $querytemp = DB::table($this->table)->from(DB::raw("gajisupirheader with (readuncommitted)"))
                 ->select(
@@ -291,7 +292,9 @@ class GajiSupirHeader extends MyModel
                     db::raw("isnull(C.gajikenek,0) as gajikenek"),
                     db::raw("isnull(d.biayaextra,0) as biayaextra"),
                     // db::raw("(gajisupirheader.total) as total"),
-                    DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then gajisupirheader.total else (gajisupirheader.total+isnull(C.komisisupir,0)+isnull(C.gajikenek,0)) end) as total"),
+                    DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then gajisupirheader.total else (gajisupirheader.total+
+                    (case when '".$nonhitungkomisi."'='TIDAK' then 0 else isnull(C.komisisupir,0) end)  
+                    +isnull(C.gajikenek,0)) end) as total"),
                     // db::raw("(gajisupirheader.total+isnull(C.komisisupir,0)+isnull(C.gajikenek,0)) as total"),
                     'gajisupirheader.uangjalan',
                     'gajisupirheader.bbm',
@@ -311,7 +314,9 @@ class GajiSupirHeader extends MyModel
                     'gajisupirheader.created_at',
                     'gajisupirheader.updated_at',
                     // DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then gajisupirheader.nominal else (gajisupirheader.total + isnull(gajisupirheader.uangmakanharian,0) + isnull(gajisupirheader.biayaextra,0) + isnull(gajisupirheader.uangmakanberjenjang,0)+isnull(C.komisisupir,0)+isnull(C.gajikenek,0)) end) as nominal"),
-                    DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then gajisupirheader.nominal else gajisupirheader.nominal end) as nominal"),
+                    DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then gajisupirheader.nominal else 
+                    gajisupirheader.nominal end) 
+                    as nominal"),
                     DB::raw('(total + uangmakanharian + isnull(uangmakanberjenjang,0) - uangjalan - potonganpinjaman - potonganpinjamansemua - deposito - bbm) as sisa')
                 )
 

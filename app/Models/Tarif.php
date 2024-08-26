@@ -134,6 +134,7 @@ class Tarif extends MyModel
             Schema::create($temtabel, function (Blueprint $table) {
                 $table->bigInteger('id')->nullable();
                 $table->longText('parent_id')->nullable();
+                $table->longText('pelabuhan_id')->nullable();
                 $table->longText('upahsupir')->nullable();
                 $table->longText('tujuan')->nullable();
                 $table->longText('penyesuaian')->nullable();
@@ -180,6 +181,7 @@ class Tarif extends MyModel
                 ->select(
                     'tarif.id',
                     'parent.tujuan as parent_id',
+                    'pelabuhan.kodekota as pelabuhan_id',
                     db::raw(" upahsupir.upahsupir as upahsupir"),
                     'tarif.tujuan',
                     'tarif.penyesuaian',
@@ -213,12 +215,14 @@ class Tarif extends MyModel
                 ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
                 ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id')
                 ->leftJoin(DB::raw("parameter AS posting with (readuncommitted)"), 'tarif.statuspostingtnl', '=', 'posting.id')
-                ->leftJoin(DB::raw("$tempupah as upahsupir with (readuncommitted)"), 'upahsupir.id', '=', 'tarif.id');
+                ->leftJoin(DB::raw("$tempupah as upahsupir with (readuncommitted)"), 'upahsupir.id', '=', 'tarif.id')
+                ->leftJoin(DB::raw("kota as pelabuhan with (readuncommitted)"), 'tarif.pelabuhan_id', '=', 'pelabuhan.id');
 
 
             DB::table($temtabel)->insertUsing([
                 'id',
                 'parent_id',
+                'pelabuhan_id',
                 'upahsupir',
                 'tujuan',
                 'penyesuaian',
@@ -315,6 +319,7 @@ class Tarif extends MyModel
             ->distinct()->select(
                 'tarif.id',
                 'tarif.parent_id',
+                'tarif.pelabuhan_id',
                 'tarif.upahsupir',
                 'tarif.tujuan',
                 'tarif.penyesuaian',
@@ -429,6 +434,7 @@ class Tarif extends MyModel
         $query1 = $query->select(
             db::raw($this->table . ".id"),
             'parent.tujuan as parent_id',
+            'pelabuhan.kodekota as pelabuhan_id',
             db::raw($this->table . ".tujuan"),
             db::raw($this->table . ".penyesuaian"),
             'parameter.memo as statusaktif',
@@ -457,12 +463,15 @@ class Tarif extends MyModel
             ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
             ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id')
             ->leftJoin(DB::raw("parameter AS posting with (readuncommitted)"), 'tarif.statuspostingtnl', '=', 'posting.id')
-            ->leftJoin(DB::raw("$tempupah as upahsupir with (readuncommitted)"), 'upahsupir.id', '=', 'tarif.id');
+            ->leftJoin(DB::raw("$tempupah as upahsupir with (readuncommitted)"), 'upahsupir.id', '=', 'tarif.id')
+            ->leftJoin(DB::raw("kota as pelabuhan with (readuncommitted)"), 'tarif.pelabuhan_id', '=', 'pelabuhan.id');
+
 
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
             $table->string('parent_id', 200)->nullable();
+            $table->string('pelabuhan_id', 200)->nullable();
             $table->string('tujuan', 200)->nullable();
             $table->string('penyesuaian', 200)->nullable();
             $table->string('statusaktif')->nullable();
@@ -482,7 +491,7 @@ class Tarif extends MyModel
         });
 
         DB::table($temp)->insertUsing([
-            'id', 'parent_id', 'tujuan', 'penyesuaian',  'statusaktif', 'statusaktiftext',  'statussistemton', 'kota_id', 'zona_id', 'jenisorder', 'tglmulaiberlaku',
+            'id', 'parent_id','pelabuhan_id', 'tujuan', 'penyesuaian',  'statusaktif', 'statusaktiftext',  'statussistemton', 'kota_id', 'zona_id', 'jenisorder', 'tglmulaiberlaku',
             'statuspenyesuaianharga', 'statuspostingtnl', 'keterangan', 'modifiedby', 'created_at', 'updated_at', 'upahsupir'
         ], $query1);
 
@@ -490,6 +499,7 @@ class Tarif extends MyModel
             ->select(
                 'tarif.id',
                 'tarif.parent_id',
+                'tarif.pelabuhan_id',
                 'tarif.tujuan',
                 'tarif.penyesuaian',
                 'tarif.statusaktif',
@@ -516,6 +526,7 @@ class Tarif extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
             $table->string('parent_id', 200)->nullable();
+            $table->string('pelabuhan_id', 200)->nullable();
             $table->string('tujuan', 200)->nullable();
             $table->string('penyesuaian', 200)->nullable();
             $table->string('statusaktif')->nullable();
@@ -545,7 +556,7 @@ class Tarif extends MyModel
         // $models = $this->filter($query);
 
         DB::table($temp)->insertUsing([
-            'id', 'parent_id', 'tujuan', 'penyesuaian',  'statusaktif', 'statusaktiftext',  'statussistemton', 'kota_id', 'zona_id', 'jenisorder', 'tglmulaiberlaku',
+            'id', 'parent_id','pelabuhan_id', 'tujuan', 'penyesuaian',  'statusaktif', 'statusaktiftext',  'statussistemton', 'kota_id', 'zona_id', 'jenisorder', 'tglmulaiberlaku',
             'statuspenyesuaianharga', 'statuspostingtnl', 'keterangan', 'modifiedby', 'created_at', 'updated_at', 'upahsupir'
         ], $models);
 
@@ -670,6 +681,8 @@ class Tarif extends MyModel
                 'tarif.id',
                 DB::raw("(case when tarif.parent_id=0 then null else tarif.parent_id end) as parent_id"),
                 'parent.tujuan as parent',
+                DB::raw("(case when tarif.pelabuhan_id=0 then null else tarif.pelabuhan_id end) as pelabuhan_id"),
+                'pelabuhan.kodekota as pelabuhan',
                 // DB::raw("(case when tarif.upahsupir_id=0 then null else tarif.upahsupir_id end) as upahsupir_id"),
                 // "$tempUpahsupir.kotasampai_id as upah",     
 
@@ -710,6 +723,7 @@ class Tarif extends MyModel
             ->leftJoin(DB::raw("upahsupir as upahsupir with (readuncommitted)"), 'upahsupir.tarif_id', '=', 'tarif.id')
             ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
             ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
+            ->leftJoin(DB::raw("kota as pelabuhan with (readuncommitted)"), 'tarif.pelabuhan_id', '=', 'pelabuhan.id')
             // ->leftJoin(DB::raw("$tempUpahsupir with (readuncommitted)"), 'tarif.upahsupir_id', '=', "$tempUpahsupir.id")
 
             ->where('tarif.id', $id);
@@ -873,6 +887,7 @@ class Tarif extends MyModel
     {
         // $tarif = new Tarif();
         $tarif->parent_id = $data['parent_id'] ?? '';
+        $tarif->pelabuhan_id = $data['pelabuhan_id'] ?? '';
         // $tarif->upahsupir_id = $data['upahsupir_id'] ?? '';
         $tarif->tujuan = $data['tujuan'];
         $tarif->penyesuaian = $data['penyesuaian'] ?? '';
@@ -971,6 +986,7 @@ class Tarif extends MyModel
     {
 
         $tarif->parent_id = $data['parent_id'] ?? '';
+        $tarif->pelabuhan_id = $data['pelabuhan_id'] ?? '';
         // $tarif->upahsupir_id = $data['upahsupir_id'] ?? '';
         $tarif->tujuan = $data['tujuan'];
         $tarif->penyesuaian = $data['penyesuaian'] ?? '';
