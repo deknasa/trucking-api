@@ -1035,9 +1035,11 @@ class Trado extends MyModel
             return $query->orderBy('mandor.namamandor', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'supir_id') {
             return $query->orderBy('supir.namasupir', $this->params['sortOrder']);
-        } else {
+        } else if ($this->params['sortIndex'] != 'kodetrado') {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder'])
                 ->orderBy($this->table . '.kodetrado', $this->params['sortOrder']);
+        }else{
+            return $query->orderBy($this->table . '.kodetrado', $this->params['sortOrder']);
         }
     }
 

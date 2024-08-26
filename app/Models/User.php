@@ -440,24 +440,26 @@ class User extends Authenticatable
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statusakses') {
-                            $query = $query->orWhere('statusakses.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'menuparent') {
-                            $query = $query->orWhere('menu2.menuname', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'cabang.namacabang') {
-                            $query = $query->orWhere('cabang_id', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'aco_id') {
-                            $query = $query->orWhere('acos.nama', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format([user]." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->OrwhereRaw('[' . $this->table . "].[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statusakses') {
+                                $query = $query->orWhere('statusakses.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'menuparent') {
+                                $query = $query->orWhere('menu2.menuname', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'cabang.namacabang') {
+                                $query = $query->orWhere('cabang_id', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'aco_id') {
+                                $query = $query->orWhere('acos.nama', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format([user]." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->OrwhereRaw('[' . $this->table . "].[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:
