@@ -519,6 +519,8 @@ class SuratPengantar extends MyModel
                     'a.agen_id',
                     'a.jenisorder_id',
                     'a.tarif_id',
+                    'a.sampai_id',
+                    'a.statuslongtrip',
                     'b.statusgerobak'
                 )
                 ->join(db::raw("trado b with (readuncommitted)"), 'a.trado_id', 'b.id')
@@ -541,26 +543,27 @@ class SuratPengantar extends MyModel
             $nojobtrip = $queryutama->nojob;
             $nojob2trip = $queryutama->nojob2;
             $jobtruckingtrip = $queryutama->jobtrucking;
+            $statuslongtrip = $queryutama->statuslongtrip;
+            $sampai_id = $queryutama->sampai_id;
 
             // dd($pelanggan_idtrip, $penyesuaiantrip, $container_idtrip, $gandengan_idtrip, $agen_idtrip, $jenisorder_idtrip, $tarif_idtrip);
 
-            $querysuratpengantar->whereRaw("isnull(suratpengantar.pelanggan_id,0)=" . $pelanggan_idtrip);
-            $querysuratpengantar->whereRaw("isnull(suratpengantar.penyesuaian,'')='" . $penyesuaiantrip. "'");
-            $querysuratpengantar->whereRaw("isnull(suratpengantar.container_id,0)=" . $container_idtrip);
-            $querysuratpengantar->whereRaw("isnull(suratpengantar.gandengan_id,0)=" . $gandengan_idtrip);
-            $querysuratpengantar->whereRaw("isnull(suratpengantar.agen_id,0)=" . $agen_idtrip);
-            $querysuratpengantar->whereRaw("isnull(suratpengantar.jenisorder_id,0)=" . $jenisorder_idtrip);
-            $querysuratpengantar->whereRaw("isnull(suratpengantar.tarif_id,0)=" . $tarif_idtrip);
-            // $querysuratpengantar->orderBY('suratpengantar.tglbukti','asc');
-
-            // $querysuratpengantar->where('suratpengantar.penyesuaian', $penyesuaiantrip);
-            // $querysuratpengantar->where('suratpengantar.container_id', $container_idtrip);
-            // $querysuratpengantar->where('suratpengantar.gandengan_id', $gandengan_idtrip);
-            // $querysuratpengantar->where('suratpengantar.agen_id', $agen_idtrip);
-            // $querysuratpengantar->where('suratpengantar.jenisorder_id', $jenisorder_idtrip);
-            // $querysuratpengantar->where('suratpengantar.tarif_id', $tarif_idtrip);
-
-            // dd($querysuratpengantar->toSql());
+            if ($statuslongtrip == 65) {
+                $querysuratpengantar->whereRaw("(isnull(suratpengantar.pelanggan_id,0)=" . $pelanggan_idtrip);
+                $querysuratpengantar->whereRaw("isnull(suratpengantar.container_id,0)=" . $container_idtrip);
+                $querysuratpengantar->whereRaw("isnull(suratpengantar.gandengan_id,0)=" . $gandengan_idtrip);
+                $querysuratpengantar->whereRaw("isnull(suratpengantar.agen_id,0)=" . $agen_idtrip);
+                $querysuratpengantar->whereRaw("isnull(suratpengantar.jenisorder_id,0)=" . $jenisorder_idtrip);
+                $querysuratpengantar->whereRaw("isnull(suratpengantar.dari_id,0)=" . $sampai_id . ")  or ( suratpengantar.nobukti='" . $nobuktitrip . "')");
+            } else {
+                $querysuratpengantar->whereRaw("isnull(suratpengantar.pelanggan_id,0)=" . $pelanggan_idtrip);
+                $querysuratpengantar->whereRaw("isnull(suratpengantar.penyesuaian,'')='" . $penyesuaiantrip . "'");
+                $querysuratpengantar->whereRaw("isnull(suratpengantar.container_id,0)=" . $container_idtrip);
+                $querysuratpengantar->whereRaw("isnull(suratpengantar.gandengan_id,0)=" . $gandengan_idtrip);
+                $querysuratpengantar->whereRaw("isnull(suratpengantar.agen_id,0)=" . $agen_idtrip);
+                $querysuratpengantar->whereRaw("isnull(suratpengantar.jenisorder_id,0)=" . $jenisorder_idtrip);
+                $querysuratpengantar->whereRaw("isnull(suratpengantar.tarif_id,0)=" . $tarif_idtrip);
+            }
         }
 
         if ($from == 'tripinap') {

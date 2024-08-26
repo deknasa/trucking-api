@@ -46,7 +46,7 @@ class ApprovalGabungJobTrucking implements Rule
                 'a.jobtrucking'
             )
             ->where('a.nobukti', $nobukti)
-            ->where('a.dari_id', $pelabuhancabang)
+            ->whereraw("(a.dari_id=" . $pelabuhancabang . " or isnull(a.statuslongtrip,0)=65)")
             ->first();
 
             if (isset($querypelabuhan)) {
