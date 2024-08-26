@@ -86,8 +86,35 @@ class ExportLaporanMingguanSupir extends Model
 
 
 
+ $tempDataextra = '##tempDataextra' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempDataextra, function ($table) {
+            $table->string('nobukti', 50)->nullable();
+            $table->longtext('biayaextrasupir_nobukti')->nullable();
+            $table->double('biayaextrasupir_nominal', 15, 2)->nullable();
+            $table->longtext('biayaextrasupir_keterangan')->nullable();
+        });
 
+        $queryextra=db::table("gajisupirheader")->from(db::raw("gajisupirheader a with (readuncommitted)"))
+        ->select(
+            'c.nobukti',
+            db::raw("STRING_AGG(cast(b.biayaextrasupir_nobukti as nvarchar(max)), ', ') as biayaextrasupir_nobukti"),            
+            db::raw("sum(b.nominalbiayaextrasupir) as biayaextrasupir_nominal"),
+            db::raw("STRING_AGG(cast(trim(b.keteranganbiayaextrasupir)+'('+format(b.nominalbiayaextrasupir,'#,#0')+')' as nvarchar(max)), ', ') as biayaextrasupir_keterangan"),            
+        )
+        ->join(db::raw("gajisupirdetail b with (readuncommitted)"),'a.nobukti','b.nobukti')
+        ->join(DB::raw("suratpengantar as c with (readuncommitted) "), 'b.suratpengantar_nobukti', 'c.nobukti')
+        ->whereraw("isnull(b.biayaextrasupir_nobukti,'')<>''")
+        ->whereRaw("(c.tglbukti >= '$dari' and c.tglbukti <= '$sampai')")
+        ->whereraw("(c.trado_id>=$tradodari")
+        ->whereraw("c.trado_id<=$tradosampai)")
+        ->groupBy('c.nobukti');
 
+        DB::table($tempDataextra)->insertUsing([
+            'nobukti',
+            'biayaextrasupir_nobukti',
+            'biayaextrasupir_nominal',
+            'biayaextrasupir_keterangan',
+        ], $queryextra);        
 
         $queryTempdata = DB::table("gajisupirheader")->from(
             DB::raw("gajisupirheader as a with (readuncommitted)")
@@ -125,9 +152,12 @@ class ExportLaporanMingguanSupir extends Model
                 DB::raw("isnull(c.omset,0) as omset"),
                 DB::raw("isnull(b.biayatambahan,0) as biayatambahan"),
                 DB::raw("isnull(b.keteranganbiayatambahan,'') as keteranganbiayatambahan"),
-                'b.biayaextrasupir_nobukti',
-                DB::raw("isnull(b.nominalbiayaextrasupir,0) as biayaextrasupir_nominal"),
-                'b.keteranganbiayaextrasupir as biayaextrasupir_keterangan',
+                db::raw("isnull(p.biayaextrasupir_nobukti,'') as biayaextrasupir_nobukti"),
+                db::raw("isnull(p.biayaextrasupir_nominal,0) as biayaextrasupir_nominal"),
+                db::raw("isnull(p.biayaextrasupir_keterangan,'') as biayaextrasupir_keterangan"),
+                // 'b.biayaextrasupir_nobukti',
+                // DB::raw("isnull(b.nominalbiayaextrasupir,0) as biayaextrasupir_nominal"),
+                // 'b.keteranganbiayaextrasupir as biayaextrasupir_keterangan',
                 'b.urutextra',
                 db::raw("(trim(c.nobukti)+trim(a.nobukti)) as suratpengantarric")
 
@@ -147,9 +177,11 @@ class ExportLaporanMingguanSupir extends Model
             ->leftjoin(DB::raw("ritasi as m with (readuncommitted) "), 'b.ritasi_nobukti', 'm.nobukti')
             ->leftjoin(DB::raw("dataritasi as n with (readuncommitted) "), 'm.dataritasi_id', 'n.id')
             ->leftjoin(DB::raw("parameter as o with (readuncommitted) "), 'n.statusritasi', 'o.id')
+            ->leftjoin(DB::raw($tempDataextra ." as p with (readuncommitted) "), 'c.nobukti', 'p.nobukti')
             ->whereRaw("(c.tglbukti >= '$dari' and c.tglbukti <= '$sampai')")
             ->whereraw("(c.trado_id>=$tradodari")
             ->whereraw("c.trado_id<=$tradosampai)")
+            ->where('b.urutextra',1)
             ->orderBy("d.kodetrado", "asc")
             ->orderBy("e.namasupir", "asc")
             ->orderBy("c.tglbukti", "asc")
