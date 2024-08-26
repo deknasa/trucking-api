@@ -129,8 +129,7 @@ class Kota extends MyModel
         $upahSupirDariKe = request()->upahSupirDariKe ?? '';
         $upahSupirKotaDari = request()->upahSupirKotaDari ?? '';
         $kotaZona = request()->kotaZona ?? '';
-
-        $idkandang = (new Parameter())->cekText('KANDANG', 'KANDANG') ?? 0;
+        $statusPelabuhan = request()->StatusPelabuhan ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -160,6 +159,10 @@ class Kota extends MyModel
                 ->first();
 
             $query->where('kota.statusaktif', '=', $statusaktif->id);
+        }
+        if (($statusPelabuhan != '')&& ($statusPelabuhan=='PELABUHAN')) {
+            $idStatusPelabuhan = (new Parameter())->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
+            $query->whereRaw("kota.statuspelabuhan in ($idStatusPelabuhan)");
         }
         if ($kotaDariId > 0 && $kotaSampaiId > 0) {
             $query->whereRaw("kota.id in ($kotaDariId,$kotaSampaiId)");
