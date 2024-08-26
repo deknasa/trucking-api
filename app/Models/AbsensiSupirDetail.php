@@ -265,7 +265,7 @@ class AbsensiSupirDetail extends MyModel
                     "$this->table.id",
                     "$this->table.trado_id",
                     "$this->table.supir_id",
-                    "$this->table.uangjalan",
+                    DB::raw("isnull($this->table.uangjalan,0) as uangjalan"),
                     "$this->table.absensi_id",
                     "jeniskendaraan.text as statusjeniskendaraan",
                     "trado.statusgerobak",
