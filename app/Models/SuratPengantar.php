@@ -1090,6 +1090,7 @@ class SuratPengantar extends MyModel
             $query->whereBetween('suratpengantar.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
 
+        // dd(request()->nobukti);
         if (request()->nobukti) {
             $queryutama = db::table($tempsuratpengantar)->from(db::raw($tempsuratpengantar ." a with (readuncommitted)"))
                 ->select(
@@ -1115,6 +1116,7 @@ class SuratPengantar extends MyModel
                 ->join(db::raw("trado b with (readuncommitted)"), 'a.trado_id', 'b.id')
                 ->where('a.nobukti', $nobuktitrip)
                 ->first();
+                // dd($queryutama);
 
             $pelanggan_idtrip = $queryutama->pelanggan_id;
             $penyesuaiantrip = $queryutama->penyesuaian;
