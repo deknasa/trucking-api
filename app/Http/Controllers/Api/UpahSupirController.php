@@ -232,8 +232,6 @@ class UpahSupirController extends Controller
                 'kotadari_id' => $request->kotadari_id,
                 'parent_id' => $request->parent_id ?? 0,
                 'parent' => $request->parent,
-                'pelabuhan_id' => $request->pelabuhan_id ?? 1,
-                'pelabuhan' => $request->pelabuhan,
                 'tarif_id' => $request->tarif_id ?? 0,
                 'tarifmuatan_id' => $request->tarifmuatan_id ?? 0,
                 'tarifbongkaran_id' => $request->tarifbongkaran_id ?? 0,
@@ -346,7 +344,6 @@ class UpahSupirController extends Controller
             $data = [
                 'kotadari_id' => $request->kotadari_id,
                 'parent_id' => $request->parent_id ?? 0,
-                'pelabuhan_id' => $request->pelabuhan_id ?? 1,
                 'tarif_id' => $request->tarif_id ?? 0,
                 'tarifmuatan_id' => $request->tarifmuatan_id ?? 0,
                 'tarifbongkaran_id' => $request->tarifbongkaran_id ?? 0,
