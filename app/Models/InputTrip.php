@@ -305,7 +305,14 @@ class InputTrip extends MyModel
             $parameter = new Parameter();
             $idstatuskandang = $parameter->cekId('STATUS KANDANG', 'STATUS KANDANG', 'KANDANG') ?? 0;
             $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
-            $idpelabuhan = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? 0;
+            // $idpelabuhan = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? 0;
+            $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
+                $idpelabuhan=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+                ->select(
+                    db::raw("STRING_AGG(id,',') as id"),
+                )
+                ->where('a.statuspelabuhan',$statuspelabuhan)
+                ->first()->id ?? 1;            
 
             $upahsupirkandnag = db::table("upahsupir")->from(db::raw("upahsupir a with (readuncommitted)"))
                 ->select(
@@ -324,8 +331,9 @@ class InputTrip extends MyModel
                     'b.info',
                     'b.modifiedby',
                 )
+                
                 ->join(db::raw("upahsupirrincian b with (readuncommitted)"), 'a.id', 'b.upahsupir_id')
-                ->where('a.kotadari_id', $idpelabuhan)
+                ->whereraw("a.kotadari_id in (". $idpelabuhan. ")")
                 ->where('a.kotasampai_id', $idkandang)
                 ->where('b.container_id', $data['container_id'])
                 ->where('b.statuscontainer_id', $data['statuscontainer_id'])
