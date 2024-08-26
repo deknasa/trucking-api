@@ -732,6 +732,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('dataritasi', DataRitasiController::class)->whereNumber('dataritasi');
     Route::get('/orderanemkl', [OrderanEmklController::class, 'index']);
     Route::get('/orderanemkl/getTglJob', [OrderanEmklController::class, 'getTglJob']);
+    Route::get('kelompok/default', [KelompokController::class, 'default']);
 
 
 });
@@ -775,7 +776,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('kelompok/combo', [KelompokController::class, 'combo']);
     Route::get('kelompok/field_length', [KelompokController::class, 'fieldLength']);
-    Route::get('kelompok/default', [KelompokController::class, 'default']);
+    // Route::get('kelompok/default', [KelompokController::class, 'default']);
     Route::post('kelompok/{id}/cekValidasi', [KelompokController::class, 'cekValidasi'])->name('kelompok.cekValidasi')->whereNumber('id');
     Route::get('kelompok/export', [KelompokController::class, 'export']);
     Route::get('kelompok/report', [KelompokController::class, 'report']);

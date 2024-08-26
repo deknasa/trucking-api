@@ -33,7 +33,7 @@ class validationTarifOrderemkl implements Rule
         $idkandang = (new Parameter())->cekText('KANDANG', 'KANDANG') ?? 0;
         $suratPengantar = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
 
-        if (request()->dari_id == 1 && request()->sampai_id == $idkandang) {
+        if ((request()->dari_id == 1 && request()->sampai_id == $idkandang) || request()->dari_id == $idkandang && request()->sampai_id == 1) {
             $tarifId = request()->tarifrincian_id;
             goto cek;
         }

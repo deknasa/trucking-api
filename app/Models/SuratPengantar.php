@@ -2013,7 +2013,7 @@ class SuratPengantar extends MyModel
                     'suratpengantar.nobukti_tripasal',
                     'suratpengantar.statusapprovaleditsuratpengantar',
                     'suratpengantar.statusapprovalbiayatitipanemkl',
-                    'kotaupah.kodekota as upah'
+                    db::raw("(case when upahsupir.kotasampai_id=0 then kotasampai.kodekota else kotaupah.kodekota end) as upah")
                 )
                 ->leftJoin('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
                 ->leftJoin('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
