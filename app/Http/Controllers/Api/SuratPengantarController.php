@@ -731,16 +731,8 @@ class SuratPengantarController extends Controller
                     $querysuratpengantar->whereRaw("isnull(suratpengantar.tarif_id,0)=" . $tarif_idtrip2);
                 }
                 $querysuratpengantar->whereraw("isnull(suratpengantar.jobtrucking,'')=''");
-                // dd( $querysuratpengantar->first());
-                // $querysuratpengantar->first();
-                // dd($querysuratpengantar->get());
-                // if ($querysuratpengantar!=0) {
-                //     // dd('test');
-                //     $nobukti=$nobuktitrip;
-                // } else {
-                    $nobukti=$querysuratpengantar->first() ?? '';
-                // }
-            // 
+
+                $nobukti=$querysuratpengantar->first() ?? '';
             return response([
                 'message' => 'Berhasil',
                 'nobukti' => $nobukti
