@@ -470,8 +470,6 @@ class Ritasi extends MyModel
 
     public function processDestroy($id): Ritasi
     {
-        $ritasi = new Ritasi();
-        $ritasi = $ritasi->lockAndDestroy($id);
 
         $notripquery = db::table("ritasi")->from(
             db::raw("ritasi a with (readuncommitted)")
@@ -487,7 +485,9 @@ class Ritasi extends MyModel
         } else {
             $notrip = '';
         }
-
+        
+        $ritasi = new Ritasi();
+        $ritasi = $ritasi->lockAndDestroy($id);
         if ($notrip != '') {
 
             $queryritasi = DB::table("ritasi")->from(
@@ -504,7 +504,7 @@ class Ritasi extends MyModel
             foreach ($datadetail as $item) {
                 $urutke = $urutke + 1;
                 $ritasiUpdate  = Ritasi::lockForUpdate()->where("nobukti", $item['nobukti'])
-                    ->firstorFail();
+                ->firstorFail();
                 $ritasiUpdate->suratpengantar_urutke = $urutke;
                 $ritasiUpdate->save();
             }
