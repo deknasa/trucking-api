@@ -241,15 +241,15 @@ class GajiSupirHeader extends MyModel
                 $table->double('biayaextra', 15, 2)->nullable();
             });
 
-            $queryheader=db::table("gajisupirdetail")->from(db::raw("gajisupirdetail a with (readuncommitted)"))
-            ->select(
-                'a.nobukti',
-                db::raw("sum(a.gajisupir) as gajisupir"),
-                db::raw("sum(a.gajiritasi) as ritasisupir"),
-                db::raw("sum(a.biayatambahan+a.nominalbiayaextrasupir) as biayaextra")
-            )
-            ->join(db::raw("gajisupirheader b with (readuncommitted)"),'a.nobukti','b.nobukti')
-            ->groupby('a.nobukti');
+            $queryheader = db::table("gajisupirdetail")->from(db::raw("gajisupirdetail a with (readuncommitted)"))
+                ->select(
+                    'a.nobukti',
+                    db::raw("sum(a.gajisupir) as gajisupir"),
+                    db::raw("sum(a.gajiritasi) as ritasisupir"),
+                    db::raw("sum(a.biayatambahan+a.nominalbiayaextrasupir) as biayaextra")
+                )
+                ->join(db::raw("gajisupirheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                ->groupby('a.nobukti');
 
 
 
@@ -323,7 +323,7 @@ class GajiSupirHeader extends MyModel
                 ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gajisupirheader.statuscetak', 'parameter.id')
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
                 ->leftJoin(DB::raw($tempgajidetail . " c"), 'gajisupirheader.nobukti', 'c.nobukti')
-                ->join(db::raw($tempgajiheader . " d"),'gajisupirheader.nobukti','d.nobukti');
+                ->join(db::raw($tempgajiheader . " d"), 'gajisupirheader.nobukti', 'd.nobukti');
 
             if (request()->tgldari && request()->tglsampai) {
                 $querytemp->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
@@ -2535,19 +2535,19 @@ class GajiSupirHeader extends MyModel
             $table->double('biayaextra', 15, 2)->nullable();
         });
 
-        $queryheader=db::table("gajisupirdetail")->from(db::raw("gajisupirdetail a with (readuncommitted)"))
-        ->select(
-            'a.nobukti',
-            db::raw("sum(a.gajisupir) as gajisupir"),
-            db::raw("sum(a.biayatambahan+a.nominalbiayaextrasupir) as biayaextra")
-        )
-        ->join(db::raw("gajisupirheader b with (readuncommitted)"),'a.nobukti','b.nobukti')
-        ->where('b.id', $id)
-        ->groupby('a.nobukti');
+        $queryheader = db::table("gajisupirdetail")->from(db::raw("gajisupirdetail a with (readuncommitted)"))
+            ->select(
+                'a.nobukti',
+                db::raw("sum(a.gajisupir) as gajisupir"),
+                db::raw("sum(a.biayatambahan+a.nominalbiayaextrasupir) as biayaextra")
+            )
+            ->join(db::raw("gajisupirheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->where('b.id', $id)
+            ->groupby('a.nobukti');
 
 
 
-       
+
 
         DB::table($tempgajiheader)->insertUsing([
             'nobukti',
@@ -2567,7 +2567,39 @@ class GajiSupirHeader extends MyModel
             ->where('grp', 'FORMAT CETAK')
             ->where('subgrp', 'GAJI SUPIR')
             ->first();
+        $sisaPinjaman = 0;
+        $sisaDeposito = 0;
 
+        if ($formatCetak->text == 'FORMAT 3') {
+            $data = db::table("gajisupirheader")->from(DB::raw("gajisupirheader with (readuncommitted)"))->where("id", $id)->first();
+            $pinjaman = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail as ptd with (readuncommitted)"))
+                ->select(DB::raw("
+                  ptd.supir_id, (SUM(ptd.nominal) - isnull(SUM(pt.nominal), 0)) AS sisa_pinjaman
+                "))
+                ->leftJoin(DB::raw("penerimaantruckingdetail as pt with (readuncommitted)"), 'ptd.nobukti', 'pt.pengeluarantruckingheader_nobukti')
+                ->leftJoin(DB::raw("pengeluarantruckingheader as pth with (readuncommitted)"), 'ptd.nobukti', 'pth.nobukti')
+                ->where('ptd.supir_id', $data->supir_id)
+                ->where("ptd.nobukti",  'LIKE', "%PJT%")
+                ->where("pth.tglbukti",  '<=', $data->tglbukti)
+                ->groupBy('ptd.supir_id')
+                ->first();
+            if ($pinjaman != '') {
+                $sisaPinjaman = $pinjaman->sisa_pinjaman;
+            }
+
+            $deposito = DB::table("penerimaantruckingdetail")->from(DB::raw("penerimaantruckingdetail as ptd with (readuncommitted)"))
+                ->select(DB::raw("ptd.supir_id, (SUM(ptd.nominal) - isnull(SUM(pt.nominal), 0)) AS deposito"))
+                ->leftJoin(DB::raw("pengeluarantruckingdetail as pt with (readuncommitted)"), 'ptd.nobukti', 'pt.penerimaantruckingheader_nobukti')
+                ->leftJoin(DB::raw("penerimaantruckingheader as pth with (readuncommitted)"), 'ptd.nobukti', 'pth.nobukti')
+                ->where('ptd.supir_id', $data->supir_id)
+                ->where("ptd.nobukti",  'LIKE', "%DPO%")
+                ->where("pth.tglbukti",  '<=', $data->tglbukti)
+                ->groupBy('ptd.supir_id')
+                ->first();
+            if ($deposito != '') {
+                $sisaDeposito = $deposito->deposito;
+            }
+        }
         $query = DB::table($this->table)->from(DB::raw("gajisupirheader with (readuncommitted)"))
             ->select(
                 'gajisupirheader.id',
@@ -2587,9 +2619,12 @@ class GajiSupirHeader extends MyModel
                 // db::raw("isnull(c.biayaextra,0) as biayaextra"),
                 'gajisupirheader.biayaextra',
                 'gajisupirheader.keteranganextra',
+                DB::raw('(total - uangjalan - potonganpinjaman - potonganpinjamansemua - deposito - bbm) as sebelumuangmakan'),
                 DB::raw('(total + uangmakanharian + uangmakanberjenjang + gajisupirheader.biayaextra - uangjalan - potonganpinjaman - potonganpinjamansemua - deposito - bbm) as sisa'),
                 DB::raw('(case when (year(gajisupirheader.tglbukacetak) <= 2000) then null else gajisupirheader.tglbukacetak end ) as tglbukacetak'),
                 DB::raw("'Bukti Rincian Gaji Supir' as judulLaporan"),
+                DB::raw("'" . $sisaDeposito . "' as sisadeposito"),
+                DB::raw("'" . $sisaPinjaman . "' as sisapinjaman"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'" . $formatCetak->text . "' as formatcetak"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
@@ -2597,7 +2632,7 @@ class GajiSupirHeader extends MyModel
             )
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'gajisupirheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
-            ->join(db::raw($tempgajiheader . " c"),'gajisupirheader.nobukti','c.nobukti')
+            ->join(db::raw($tempgajiheader . " c"), 'gajisupirheader.nobukti', 'c.nobukti')
             ->where("$this->table.id", $id);
 
         $data = $query->first();
@@ -2725,7 +2760,7 @@ class GajiSupirHeader extends MyModel
                 'a.suratpengantar_nobukti',
                 db::raw("max(b.tglbukti) as tglbukti"),
             )
-            ->join(db::raw("suratpengantar b with (readuncommitted)"),'a.suratpengantar_nobukti','b.nobukti')
+            ->join(db::raw("suratpengantar b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.nobukti')
             ->where('a.nobukti', $gajiSupirHeader->nobukti)
             ->groupBy('a.suratpengantar_nobukti');
 
@@ -3189,29 +3224,29 @@ class GajiSupirHeader extends MyModel
 
             DB::update(DB::raw("UPDATE gajisupirdetail SET gajisupirdetail.urutextra=a.furut from gajisupirdetail join " . $tempurutan . " as a  on gajisupirdetail.id = a.id"));
 
-             // NO URUT
-             $tempnourut = '##tempnourut' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-             Schema::create($tempnourut, function ($table) {
-                 $table->bigInteger('id')->nullable();
-                 $table->string('nobukti', 50)->nullable();
-                 $table->string('suratpengantar_nobukti', 50)->nullable();
-                 $table->bigInteger('furut')->nullable();
-             });
-             $queryGetUrut = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
-                 ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,ROW_NUMBER() OVER(PARTITION BY c.tglbukti,c.nobukti ORDER BY c.tglbukti,c.nobukti,b.tglbukti,a.suratpengantar_nobukti,a.id) as furut"))
- 
-                 ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
-                 ->join(db::raw("$temptrip as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.suratpengantar_nobukti')
-                 ->where('a.suratpengantar_nobukti', $row->suratpengantar_nobukti);
- 
-             DB::table($tempnourut)->insertUsing([
-                 'id',
-                 'nobukti',
-                 'suratpengantar_nobukti',
-                 'furut'
-             ], $queryGetUrut);
- 
-             DB::update(DB::raw("UPDATE gajisupirdetail SET gajisupirdetail.nourut=a.furut from gajisupirdetail join " . $tempnourut . " as a  on gajisupirdetail.id = a.id"));
+            // NO URUT
+            $tempnourut = '##tempnourut' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempnourut, function ($table) {
+                $table->bigInteger('id')->nullable();
+                $table->string('nobukti', 50)->nullable();
+                $table->string('suratpengantar_nobukti', 50)->nullable();
+                $table->bigInteger('furut')->nullable();
+            });
+            $queryGetUrut = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
+                ->select(DB::raw("a.id,a.nobukti,a.suratpengantar_nobukti,ROW_NUMBER() OVER(PARTITION BY c.tglbukti,c.nobukti ORDER BY c.tglbukti,c.nobukti,b.tglbukti,a.suratpengantar_nobukti,a.id) as furut"))
+
+                ->join(db::raw("gajisupirheader as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+                ->join(db::raw("$temptrip as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.suratpengantar_nobukti')
+                ->where('a.suratpengantar_nobukti', $row->suratpengantar_nobukti);
+
+            DB::table($tempnourut)->insertUsing([
+                'id',
+                'nobukti',
+                'suratpengantar_nobukti',
+                'furut'
+            ], $queryGetUrut);
+
+            DB::update(DB::raw("UPDATE gajisupirdetail SET gajisupirdetail.nourut=a.furut from gajisupirdetail join " . $tempnourut . " as a  on gajisupirdetail.id = a.id"));
         }
 
         $gajiSupirHeaderLogTrail = (new LogTrail())->processStore([
