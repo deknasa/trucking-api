@@ -2273,7 +2273,9 @@ class SuratPengantar extends MyModel
             $table->unsignedBigInteger('jenisorder_id')->nullable();
             $table->unsignedBigInteger('container_id')->nullable();
             $table->string('nocont', 50)->nullable();
+            $table->string('nocont2', 50)->nullable();
             $table->string('noseal', 50)->nullable();
+            $table->string('noseal2', 50)->nullable();
             $table->decimal('omset', 15, 2)->nullable();
             $table->decimal('nominalperalihan', 15, 2)->nullable();
             $table->decimal('totalomset', 15, 2)->nullable();
@@ -2348,7 +2350,9 @@ class SuratPengantar extends MyModel
                 'suratpengantar.jenisorder_id',
                 'suratpengantar.container_id',
                 'suratpengantar.nocont',
+                'suratpengantar.nocont2',
                 'suratpengantar.noseal',
+                'suratpengantar.noseal2',
                 'suratpengantar.omset',
                 'suratpengantar.nominalperalihan',
                 'suratpengantar.totalomset',
@@ -2407,7 +2411,9 @@ class SuratPengantar extends MyModel
             'jenisorder_id',
             'container_id',
             'nocont',
+            'nocont2',
             'noseal',
+            'noseal2',
             'omset',
             'nominalperalihan',
             'totalomset',
@@ -2469,7 +2475,9 @@ class SuratPengantar extends MyModel
                 jenisorder.keterangan as jenisorder_id,
                 container.keterangan as container_id,
                 suratpengantar.nocont,
+                suratpengantar.nocont2,
                 suratpengantar.noseal,
+                suratpengantar.noseal2,
                 suratpengantar.omset,
                 suratpengantar.nominalperalihan,
                 suratpengantar.totalomset,
@@ -2779,7 +2787,9 @@ class SuratPengantar extends MyModel
             $table->string('jenisorder_id')->nullable();
             $table->string('container_id')->nullable();
             $table->string('nocont', 50)->nullable();
+            $table->string('nocont2', 50)->nullable();
             $table->string('noseal', 50)->nullable();
+            $table->string('noseal2', 50)->nullable();
             $table->float('omset')->nullable();
             $table->float('nominalperalihan')->nullable();
             $table->float('totalomset')->nullable();
@@ -2851,7 +2861,9 @@ class SuratPengantar extends MyModel
             'jenisorder_id',
             'container_id',
             'nocont',
+            'nocont2',
             'noseal',
+            'noseal2',
             'omset',
             'nominalperalihan',
             'totalomset',
