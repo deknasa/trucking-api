@@ -744,6 +744,78 @@ class ExportLaporanMingguanSupir extends Model
 
         // dd(db::table($tempInvoice)->where('jobtrucking','JT 0008/VIII/2024')->get(), db::table($tempInvoice)->whereRaw("notripawal = 'TRP 0018/VIII/2024'")->get(),
         // db::table($tempInvoice)->whereRaw("notripawal = 'TRP 0020/VIII/2024'")->get());
+
+        $tempInvoicetambahan = '##tempInvoicetambahan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempInvoicetambahan, function ($table) {
+            $table->string('jobtrucking', 100)->nullable();
+            $table->string('suratpengantar', 100)->nullable();
+            $table->double('omsettambahan', 15, 2)->nullable();
+            $table->longtext('keterangan')->nullable();
+        });
+
+        $querytambahan=db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+        ->select(
+                'a.jobtrucking',
+                'a.nobukti as suratpengantar',
+                'b.nominaltagih as omsettambahan',
+                'b.keteranganbiaya as keterangan',
+        )
+        ->join(db::raw("suratpengantarbiayatambahan b with (readuncommitted)"),'a.id','b.suratpengantar_id')
+        ->join(db::raw($tempInvoice. " c"),'a.jobtrucking','c.jobtrucking')
+        ->whereraw("isnull(b.nominaltagih,0)<>0");
+
+        DB::table($tempInvoicetambahan)->insertUsing([
+            'jobtrucking',
+            'suratpengantar',
+            'omsettambahan',
+            'keterangan',
+        ], $querytambahan);        
+
+        $querytambahan=db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+        ->select(
+                'a.jobtrucking',
+                'a.nobukti as suratpengantar',
+                'b1.nominaltagih as omsettambahan',
+                'b1.keteranganbiaya as keterangan',
+        )
+        ->join(db::raw("biayaextrasupirheader b with (readuncommitted)"),'a.nobukti','b.suratpengantar_nobukti')
+        ->join(db::raw("biayaextrasupirdetail b1 with (readuncommitted)"),'b.nobukti','b1.nobukti')
+        ->join(db::raw($tempInvoice. " c"),'a.jobtrucking','c.jobtrucking')
+        ->whereraw("isnull(b1.nominaltagih,0)<>0");
+
+
+        DB::table($tempInvoicetambahan)->insertUsing([
+            'jobtrucking',
+            'suratpengantar',
+            'omsettambahan',
+            'keterangan',
+        ], $querytambahan); 
+        
+        $tempInvoicetambahanrekap = '##tempInvoicetambahanrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempInvoicetambahanrekap, function ($table) {
+            $table->string('jobtrucking', 100)->nullable();
+            $table->string('suratpengantar', 100)->nullable();
+            $table->double('omsettambahan', 15, 2)->nullable();
+            $table->longtext('keterangan')->nullable();
+        });       
+        
+        $querylist=db::table($tempInvoicetambahan)->from(db::raw($tempInvoicetambahan . " a"))
+        ->select(
+            'a.jobtrucking',
+            db::raw("max(c.notripawal) as suratpengantar"),
+            db::raw("sum(a.omsettambahan) as omsettambahan"),
+            db::raw("STRING_AGG(cast(trim(a.keterangan)+'('+format(a.omsettambahan,'#,#0')+')' as nvarchar(max)), ', ') as keterangan"),            
+        )
+        ->join(db::raw($tempInvoice. " c"),'a.jobtrucking','c.jobtrucking')
+        ->groupBY('a.jobtrucking');
+
+        DB::table($tempInvoicetambahanrekap)->insertUsing([
+            'jobtrucking',
+            'suratpengantar',
+            'omsettambahan',
+            'keterangan',
+        ], $querylist); 
+
         $data =  DB::table($tempData)->from(
             DB::raw($tempData . " as a")
         )
@@ -765,11 +837,12 @@ class ExportLaporanMingguanSupir extends Model
                 DB::raw("(case when isnull(c.invoice,'')='' then 0 else 
                             (case when a.urutextra=1 then isnull(b.omset,0) else 0 end)
                          end) as omset"),
-                DB::raw("( case when isnull(c.invoice,'')='' then 0 else
-                    (case when isnull(b.notrip,'')='' then isnull(e.omsettambahan,0) else 
-                    (case when a.urutextra=1 then isnull(b.extralain,0) else 0 end)
-                      end) 
-                    end) as omsettambahan"),
+                // DB::raw("( case when isnull(c.invoice,'')='' then 0 else
+                //     (case when isnull(b.notrip,'')='' then isnull(e.omsettambahan,0) else 
+                //     (case when a.urutextra=1 then isnull(b.extralain,0) else 0 end)
+                //       end) 
+                //     end) as omsettambahan"),
+                db::raw("isnull(i.omsettambahan,0) as omsettambahan"),
                     
                 DB::raw("( case when isnull(c.invoice,'')='' then 0 else
                         (case when isnull(b.notripawal,'')='' then (isnull(e.omsettambahan,0) + isnull(b.omset,0)) else 
@@ -792,7 +865,8 @@ class ExportLaporanMingguanSupir extends Model
                 DB::raw("isnull(g.nobuktikbtkomisi,'') as nobuktikbtkomisi"),
                 DB::raw("(case when a.urutextra=1 then isnull(f.nominal,0) else 0 end) as uanglain"),
                 DB::raw("(case when a.urutextra=1 then isnull(h.keterangan,'') else '' end) as ketuanglain"),
-                DB::raw("(case when a.urutextra=1 then isnull(h.keteranganomset,'') else '' end) as kettagihomset"),
+                // DB::raw("(case when a.urutextra=1 then isnull(h.keteranganomset,'') else '' end) as kettagihomset"),
+                db::raw("isnull(i.keterangan,'') as kettagihomset"),
                 DB::raw("isnull(f.tolsupir,0) as tolsupir"),
                 DB::raw("0 as uangbon"),
                 DB::raw("isnull(A.pengeluarannobuktiebs,'') as nobuktikbtebs2"),
@@ -841,6 +915,7 @@ class ExportLaporanMingguanSupir extends Model
             ->leftjoin(DB::raw($tempuanglain . " as f "), 'a.nobukti', 'f.nobukti')
             ->leftjoin(DB::raw($tempbuktikomisi . " as g "), 'a.nobukti', 'g.nobukti')
             ->leftjoin(DB::raw($temprekapketeranganlain . " as h "), 'a.nobukti', 'h.nobukti')
+            ->leftjoin(DB::raw($tempInvoicetambahanrekap . " as i "), 'a.nobukti', 'i.suratpengantar')
             ->orderBy('a.nopol')
             ->orderBy('a.tglbukti')
             ->orderBy('a.namasupir')
