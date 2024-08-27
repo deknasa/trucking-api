@@ -2089,12 +2089,17 @@ class PengeluaranTruckingHeader extends MyModel
                     $keteranganPosting = "PINJAMAN SUPIR $getnama->namasupir ATAS ";
 
                 }
+                $totalPjtNominal = 0;
+                $aggPjtKeterangan = "";
                 for ($i = 0; $i < count($data['nominal']); $i++) {
-                    $posting_supir_id[] = $data['supirheader_id'];
-                    $posting_karyawan_id[] = $data['karyawanheader_id'];
-                    $posting_nominal[] = $data['nominal'][$i];
-                    $posting_keterangan[] = $keteranganPosting . $data['keterangan'][$i];
+                    $aggPjtKeterangan .= $keteranganPosting . $data['keterangan'][$i];
+                    $aggPjtKeterangan .=" ";
+                    $totalPjtNominal += $data['nominal'][$i];
                 }
+                $posting_keterangan[] = $aggPjtKeterangan;
+                $posting_nominal[] = $totalPjtNominal;
+                $posting_karyawan_id[] = $data['karyawanheader_id'];
+                $posting_supir_id[] = $data['supirheader_id'];
                 $pjtRequest = [
                     "tglbukti" => $data['tglbukti'],
                     "pengeluarantrucking_id" => $pinjaman->id,
@@ -2424,6 +2429,18 @@ class PengeluaranTruckingHeader extends MyModel
                     $posting_nominal[] = $data['nominal'][$i];
                     $posting_keterangan[] = $keteranganPosting . $data['keterangan'][$i];
                 }
+                $totalPjtNominal = 0;
+                $aggPjtKeterangan = "";
+                for ($i = 0; $i < count($data['nominal']); $i++) {
+                    $aggPjtKeterangan .= $keteranganPosting . $data['keterangan'][$i];
+                    $aggPjtKeterangan .=" ";
+                    $totalPjtNominal += $data['nominal'][$i];
+                }
+                $posting_keterangan = [$aggPjtKeterangan];
+                $posting_nominal = [$totalPjtNominal];
+                $posting_karyawan_id = [$data['karyawanheader_id']];
+                $posting_supir_id = [$data['supirheader_id']];
+                
                 $pjtRequest = [
                     "tglbukti" => $data['tglbukti'],
                     "pengeluarantrucking_id" => $pinjaman->id,
