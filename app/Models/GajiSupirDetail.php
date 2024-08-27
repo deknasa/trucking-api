@@ -66,6 +66,9 @@ class GajiSupirDetail extends MyModel
                     'container.kodecontainer',
                     'suratpengantar.liter',
                     'suratpengantar.nocont',
+                    'suratpengantar.nocont2',
+                    'suratpengantar.noseal',
+                    'suratpengantar.noseal2',
                     'suratpengantar.tglsp',
                     'agen.namaagen as agen',
                     'ritasi.statusritasi',
@@ -87,6 +90,57 @@ class GajiSupirDetail extends MyModel
 
                 $query->where($this->table . '.gajisupir_id', '=', request()->gajisupir_id)
                     ->orderBy('gajisupirdetail.id');
+            } else if($formatCetak == 'FORMAT 3') {
+                $temptrip = '##temptrip' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+                $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail as a with (readuncommitted)"))
+                    ->select(
+                        db::raw(" a.nobukti,sp.nobukti as suratpengantar_nobukti,b.nobukti as ritasi_nobukti, b.tglbukti,parameter.text + ' (' +dari.kodekota+' - '+sampai.kodekota+')' as tujuan, sp.liter, isnull(a.gajiritasi,0) as gajiritasi")
+
+                    )
+                    ->join(db::raw("ritasi as b with (readuncommitted)"), 'a.ritasi_nobukti', 'b.nobukti')
+                    ->join(db::raw("kota as dari with (readuncommitted)"), 'b.dari_id', 'dari.id')
+                    ->join(db::raw("kota as sampai with (readuncommitted)"), 'b.sampai_id', 'sampai.id')
+                    ->join(db::raw("parameter with (readuncommitted)"), 'b.statusritasi', 'parameter.id')
+                    ->join(db::raw("suratpengantar as sp with (readuncommitted)"), 'b.suratpengantar_nobukti', 'sp.nobukti')
+                    ->where('a.gajisupir_id', request()->gajisupir_id);
+
+                Schema::create($temptrip, function ($table) {
+                    $table->string('nobukti')->nullable();
+                    $table->string('suratpengantar_nobukti')->nullable();
+                    $table->string('ritasi_nobukti')->nullable();
+                    $table->date('tglbukti')->nullable();
+                    $table->longText('tujuan')->nullable();
+                    $table->string('qty')->nullable();
+                    $table->longText('nocontseal')->nullable();
+                    $table->longText('emkl')->nullable();
+                    $table->string('spfull',255)->nullable();
+                    $table->string('spempty',255)->nullable();
+                    $table->double('liter', 15, 2)->nullable();
+                    $table->double('borongan', 15, 2)->nullable();
+                    $table->double('gajiritasi', 15, 2)->nullable();
+                    $table->double('biayaextra', 15, 2)->nullable();
+                });
+                DB::table($temptrip)->insertUsing(['nobukti','suratpengantar_nobukti', 'ritasi_nobukti','tglbukti', 'tujuan','liter', 'gajiritasi'], $fetch);
+
+
+                $fetch = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail with (readuncommitted)"))
+                ->select(
+                    db::raw("gajisupirdetail.nobukti, sp.nobukti as suratpengantar_nobukti, sp.tglbukti,dari.kodekota+' - '+sampai.kodekota + (case when isnull(sp.penyesuaian,'') != '' then ' ('+sp.penyesuaian+')' else '' end) as tujuan, container.kodecontainer as qty, sp.nocont + (case when isnull(sp.nocont2,'')!='' then ','+sp.nocont2 else '' end) as nocontseal, agen.kodeagen as emkl, (case when sp.statuscontainer_id = 1 then sp.nosp else '' end) as spfull,(case when sp.statuscontainer_id = 2 then sp.nosp else '' end) as spempty, sp.liter, (gajisupirdetail.gajisupir + gajisupirdetail.gajikenek) as borongan, 0 as gajiritasi, gajisupirdetail.biayatambahan as biayaextra")
+                )
+                ->leftJoin(DB::raw("suratpengantar as sp with (readuncommitted)"), $this->table . '.suratpengantar_nobukti', 'sp.nobukti')
+                ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
+                ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'sp.dari_id', 'dari.id')
+                ->leftJoin(DB::raw("kota as sampai with (readuncommitted)"), 'sp.sampai_id', 'sampai.id')
+                ->leftJoin(DB::raw("container with (readuncommitted)"), 'sp.container_id', 'container.id')
+                ->leftJoin(DB::raw("agen with (readuncommitted)"), 'sp.agen_id', 'agen.id')
+                ->where('gajisupirdetail.suratpengantar_nobukti', '!=', '-')
+                ->where('gajisupirdetail.gajisupir_id', '=', request()->gajisupir_id)
+                ->orderBy('gajisupirdetail.id');
+                
+                DB::table($temptrip)->insertUsing(['nobukti','suratpengantar_nobukti', 'tglbukti', 'tujuan','qty','nocontseal','emkl','spfull','spempty','liter','borongan', 'gajiritasi','biayaextra'], $fetch);
+                $query = DB::table($temptrip)->orderBy($temptrip.'.suratpengantar_nobukti');
+                // dd(DB::table($temptrip)->orderBy($temptrip.'.suratpengantar_nobukti')->get());
             } else {
                 $tempbiaya = '##tempbiaya' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
