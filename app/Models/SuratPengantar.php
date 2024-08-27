@@ -3688,7 +3688,7 @@ class SuratPengantar extends MyModel
                 }
             }
 
-            $jobmanual = $parameter->cekText('JOB TRUCKING MANUAL', 'JOB TRUCKING MANUAL') ?? 'TIDAK';
+            $jobmanual = (new Parameter())->cekText('JOB TRUCKING MANUAL', 'JOB TRUCKING MANUAL') ?? 'TIDAK';
             if ($jobmanual == 'YA') {
 
                 $suratPengantar->nocont = $data['nocont'] ?? '';
@@ -4586,5 +4586,27 @@ class SuratPengantar extends MyModel
         }
 
         return $data;
+    }
+
+    public function getEditSp($id)
+    {
+        $dari = date('Y-m-d', strtotime(request()->tgldari));
+        $sampai = date('Y-m-d', strtotime(request()->tglsampai));
+
+        $query = DB::table("suratpengantar")->from(db::raw("suratpengantar as sp with (readuncommitted)"))
+        ->select(
+            db::raw("sp.id, sp.nobukti as nobuktiedit,sp.jobtrucking as jobtruckingedit,sp.tglbukti as tglbuktiedit, sp.nosp as nospedit, sp.nocont as nocontedit, sp.nocont2 as nocont2edit, sp.noseal as nosealedit, sp.noseal2 as noseal2edit, container.kodecontainer as containeredit, statuscontainer.keterangan as statuscontaineredit,jenisorder.keterangan as jenisorderedit, dari.kodekota as dariedit, sampai.kodekota as sampaiedit, sp.penyesuaian as penyesuaianedit")
+        )
+        ->leftJoin(DB::raw("container with (readuncommitted)"), 'sp.container_id', 'container.id')
+        ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
+        ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'sp.jenisorder_id', 'jenisorder.id')
+        ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'sp.dari_id', 'dari.id')
+        ->leftJoin(DB::raw("kota as sampai with (readuncommitted)"), 'sp.sampai_id', 'sampai.id')
+        ->where('sp.supir_id', $id)
+        ->whereBetween('sp.tglbukti', [$dari, $sampai])
+        ->get();
+
+        return $query;
+
     }
 }
