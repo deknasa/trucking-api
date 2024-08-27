@@ -51,7 +51,7 @@ class AbsensiSupirDetail extends MyModel
                 )
                 ->where('a.id', '=', request()->absensi_id)
                 ->first();
-
+            $header = $query;
             $statustrip = DB::table("parameter")->from(
                 DB::raw("parameter with (readuncommitted)")
             )
@@ -253,6 +253,21 @@ class AbsensiSupirDetail extends MyModel
                     ->where('trado.statusabsensisupir', $statusabsensi);
             } else {
                 
+                $ricsupirtemp = '##ricsupirtemp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($ricsupirtemp, function ($table) {
+                    $table->string('nobukti')->nullable();
+                    $table->integer('supir_id')->nullable();
+                    $table->date('tgltrip')->nullable();
+                });
+                $ricSupirQuery = DB::table('gajisupirheader')
+                    ->leftJoin('gajisupirdetail', 'gajisupirheader.id', '=', 'gajisupirdetail.gajisupir_id')
+                    ->leftJoin('suratpengantar', 'gajisupirdetail.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
+                    ->select('gajisupirheader.nobukti','gajisupirheader.supir_id', 'suratpengantar.tglbukti')
+                    ->where('suratpengantar.tglbukti', $header->tglbukti)
+                    ->groupBy('gajisupirheader.nobukti','gajisupirheader.supir_id', 'suratpengantar.tglbukti');
+                DB::table($ricsupirtemp)->insertUsing(["nobukti","supir_id", "tgltrip"], $ricSupirQuery);               
+                
+
                 $query->select(
                     "trado.kodetrado as trado",
                     "supir.namasupir as supir",
@@ -267,6 +282,7 @@ class AbsensiSupirDetail extends MyModel
                     "$this->table.supir_id",
                     DB::raw("isnull($this->table.uangjalan,0) as uangjalan"),
                     "$this->table.absensi_id",
+                    'supirric.nobukti as nobukti_ric',
                     "jeniskendaraan.text as statusjeniskendaraan",
                     "trado.statusgerobak",
                     "e.nobukti as pengembaliankasgantung_nobukti",
@@ -289,6 +305,7 @@ class AbsensiSupirDetail extends MyModel
                     ->leftjoin(DB::raw("supir with (readuncommitted)"), "supir.id", "$this->table.supir_id")
                     ->leftjoin(DB::raw("absentrado with (readuncommitted)"), "absentrado.id", "$this->table.absen_id")
                     ->leftJoin("parameter as serap", "$this->table.statussupirserap", 'serap.id')
+                    ->leftJoin(DB::raw("$ricsupirtemp as supirric with (readuncommitted)"), "$this->table.supir_id", 'supirric.supir_id')
                     ->leftJoin(DB::raw("parameter as tradotambahan with (readuncommitted)"), "$this->table.statustambahantrado", 'tradotambahan.id')
                     ->leftjoin(DB::raw($tempspgroup . " as c"), function ($join) {
                         $join->on("$this->table.supir_id", "=", "c.supir_id");

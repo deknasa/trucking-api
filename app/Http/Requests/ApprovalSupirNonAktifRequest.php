@@ -29,11 +29,16 @@ class ApprovalSupirNonAktifRequest extends FormRequest
             'Id' => 'required',
             'Id.*' => [
                 function ($attribute, $value, $fail){
-                    $supir = DB::table('supir')->where('id', $value)->first();
-                    $statusapproval = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->first();
-                    if ($statusapproval->id == $supir->statusapproval) {
-                        $fail('<b>'.$supir->namasupir .'</b> '. app(ErrorController::class)->geterror('SAP')->keterangan .'<br> Porses Tidak Dilanjutkan');
+                    $idCabang = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'ID CABANG')->where('subgrp', 'ID CABANG')->first();
+                    $cabangSurabaya = 4;
+                    if ($idCabang->text == $cabangSurabaya) {
+                        $supir = DB::table('supir')->where('id', $value)->first();
+                        $statusapproval = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->first();
+                        if ($statusapproval->id == $supir->statusapproval) {
+                            $fail('<b>'.$supir->namasupir .'</b> '. app(ErrorController::class)->geterror('SAP')->keterangan .'<br> Porses Tidak Dilanjutkan');
+                        }
                     }
+                    
                 },
             ],
         ];
