@@ -372,6 +372,7 @@ class LaporanKasBank extends MyModel
             $table->double('urutdetail', 15, 2)->nullable();
             $table->string('coa', 1000)->nullable();
             $table->dateTime('tglbukti')->nullable();
+            $table->dateTime('tglbukti2')->nullable();
             $table->string('nobukti', 100)->nullable();
             $table->longText('keterangan')->nullable();
             $table->double('debet', 15, 2)->nullable();
@@ -537,6 +538,7 @@ class LaporanKasBank extends MyModel
                 'urutdetail' => '1',
                 "coa" => "",
                 "tglbukti" => $dari,
+                "tglbukti2" => $dari,
                 "nobukti" => "SALDO AWAL",
                 "keterangan" => "SALDO AWAL",
                 "debet" => "0",
@@ -554,6 +556,7 @@ class LaporanKasBank extends MyModel
                 DB::raw('ROW_NUMBER() OVER (PARTITION BY A.nobukti ORDER BY b.id) as urutdetail'),
                 'b.coakredit as coa',
                 'a.tglbukti',
+                'a.tglbukti as tglbukti2',
                 'a.nobukti',
                 'b.keterangan',
                 // DB::raw("(case when b.nominal>0 then b.nominal else 0 end) as debet "),
@@ -574,6 +577,7 @@ class LaporanKasBank extends MyModel
             'urutdetail',
             'coa',
             'tglbukti',
+            'tglbukti2',
             'nobukti',
             'keterangan',
             'debet',
@@ -589,6 +593,7 @@ class LaporanKasBank extends MyModel
                 DB::raw("1 as urutdetail"),
                 'a.coakredit as coa',
                 'a.tglbukti',
+                'a.tglbukti as tglbukti2',
                 'a.nobukti',
                 'a.keterangan',
                 // DB::raw("(case when a.nominal>0 then a.nominal else 0 end) as debet "),
@@ -608,6 +613,7 @@ class LaporanKasBank extends MyModel
             'urutdetail',
             'coa',
             'tglbukti',
+            'tglbukti2',
             'nobukti',
             'keterangan',
             'debet',
@@ -622,7 +628,8 @@ class LaporanKasBank extends MyModel
                 DB::raw("4 as urut"),
                 DB::raw('ROW_NUMBER() OVER (PARTITION BY A.nobukti ORDER BY b.id) as urutdetail'),
                 'b.coadebet as coa',
-                'a.tglbukti',
+                'b.tgljatuhtempo',
+                'b.tgljatuhtempo as tglbukti2',
                 'a.nobukti',
                 'b.keterangan',
                 // DB::raw("(case when b.nominal<0 then abs(b.nominal) else 0 end) as debet "),
@@ -633,8 +640,8 @@ class LaporanKasBank extends MyModel
             )
             ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->whereraw("isnull(a.alatbayar_id,0) not in(3,4)")
-            ->where('a.tglbukti', '>=', $dari)
-            ->where('a.tglbukti', '<=', $sampai)
+            ->where('b.tgljatuhtempo', '>=', $dari)
+            ->where('b.tgljatuhtempo', '<=', $sampai)
             ->where('a.bank_id', '=', $bank_id)
             ->orderBy('a.tglbukti', 'Asc')
             ->orderBy('a.nobukti', 'Asc');
@@ -644,6 +651,7 @@ class LaporanKasBank extends MyModel
             'urutdetail',
             'coa',
             'tglbukti',
+            'tglbukti2',
             'nobukti',
             'keterangan',
             'debet',
@@ -658,7 +666,8 @@ class LaporanKasBank extends MyModel
                 DB::raw("4 as urut"),
                 DB::raw('ROW_NUMBER() OVER (PARTITION BY A.nobukti ORDER BY b.id) as urutdetail'),
                 'b.coadebet as coa',
-                'a.tglbukti',
+                'c.tglbukti',
+                'c.tglbukti as tglbukti2',
                 'a.nobukti',
                 'b.keterangan',
                 // DB::raw("(case when b.nominal<0 then abs(b.nominal) else 0 end) as debet "),
@@ -681,6 +690,7 @@ class LaporanKasBank extends MyModel
             'urutdetail',
             'coa',
             'tglbukti',
+            'tglbukti2',
             'nobukti',
             'keterangan',
             'debet',
@@ -695,7 +705,8 @@ class LaporanKasBank extends MyModel
                     DB::raw("5 as urut"),
                     DB::raw('ROW_NUMBER() OVER (PARTITION BY A.nobukti ORDER BY b.id) as urutdetail'),
                     'b.coadebet as coa',
-                    'a.tglbukti',
+                    'b.tgljatuhtempo as tglbukti',
+                    'b.tgljatuhtempo as  tglbukti2',
                     'a.nobukti',
                     'b.keterangan',
                     // DB::raw("(case when b.nominal<0 then abs(b.nominal) else 0 end) as debet "),
@@ -705,10 +716,10 @@ class LaporanKasBank extends MyModel
                     DB::raw("0 as saldo"),
                 )
                 ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-                ->where('a.tglbukti', '>=', $dari)
-                ->where('a.tglbukti', '<=', $sampai)
+                ->where('b.tgljatuhtempo', '>=', $dari)
+                ->where('b.tgljatuhtempo', '<=', $sampai)
                 ->where('a.bank_id', '=', $bankpengembaliankepusat->id)
-                ->orderBy('a.tglbukti', 'Asc')
+                ->orderBy('b.tgljatuhtempo', 'Asc')
                 ->orderBy('a.nobukti', 'Asc');
 
             // dd($bankpengembaliankepusat->id);
@@ -717,6 +728,7 @@ class LaporanKasBank extends MyModel
                 'urutdetail',
                 'coa',
                 'tglbukti',
+                'tglbukti2',
                 'nobukti',
                 'keterangan',
                 'debet',
@@ -733,6 +745,7 @@ class LaporanKasBank extends MyModel
                 DB::raw("1 as urutdetail"),
                 'a.coadebet as coa',
                 'a.tglbukti',
+                'a.tglbukti as tglbukti2',
                 'a.nobukti',
                 'a.keterangan',
                 // DB::raw("(case when a.nominal<0 then abs(a.nominal) else 0 end) as debet "),
@@ -752,6 +765,7 @@ class LaporanKasBank extends MyModel
             'urutdetail',
             'coa',
             'tglbukti',
+            'tglbukti2',
             'nobukti',
             'keterangan',
             'debet',
@@ -767,6 +781,7 @@ class LaporanKasBank extends MyModel
             $table->double('urutdetail', 15, 2)->nullable();
             $table->string('coa', 1000)->nullable();
             $table->dateTime('tglbukti')->nullable();
+            $table->dateTime('tglbukti2')->nullable();
             $table->string('nobukti', 100)->nullable();
             $table->longText('keterangan')->nullable();
             $table->double('debet', 15, 2)->nullable();
@@ -783,6 +798,7 @@ class LaporanKasBank extends MyModel
                 'a.urutdetail',
                 'a.coa',
                 'a.tglbukti',
+                'a.tglbukti as tglbukti2',
                 'a.nobukti',
                 'a.keterangan',
                 'a.debet',
@@ -801,6 +817,7 @@ class LaporanKasBank extends MyModel
             'urutdetail',
             'coa',
             'tglbukti',
+            'tglbukti2',
             'nobukti',
             'keterangan',
             'debet',
@@ -867,6 +884,7 @@ class LaporanKasBank extends MyModel
                     DB::raw("isnull(b.keterangancoa,'') as keterangancoa"),
                     DB::raw("'" . $querykasbank->namabank . "' as namabank"),
                     DB::raw("(case when year(isnull(a.tglbukti,'1900/1/1')) < '2000' then '" . $dari . "' else a.tglbukti end) as tglbukti"),
+                    'a.tglbukti2',
                     'a.nobukti',
                     'a.keterangan',
                     'a.debet',
@@ -881,7 +899,7 @@ class LaporanKasBank extends MyModel
                 )
                 ->leftjoin(DB::raw("akunpusat as b with (readuncommitted)"), 'a.coa', 'b.coa')
                 ->leftjoin(DB::raw("$tempnominal as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
-                ->orderBy('a.tglbukti', 'Asc')
+                ->orderBy('a.tglbukti2', 'Asc')
                 ->orderBy('a.id', 'Asc');
             $data = $queryhasil;
             // dd($data->get());
@@ -919,6 +937,7 @@ class LaporanKasBank extends MyModel
 
                     +format(a.tglbukti,'-yy') 
                      end) as tglbukti"),
+                     DB::raw("a.tglbukti as tglbukti2"),
                         'a.nobukti',
                         'a.keterangan',
                         'a.debet',
@@ -937,7 +956,7 @@ class LaporanKasBank extends MyModel
                     )
                     ->leftjoin(DB::raw("akunpusat as b with (readuncommitted)"), 'a.coa', 'b.coa')
                     ->leftjoin(DB::raw("$tempnominal as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
-                    ->orderBy('a.tglbukti', 'Asc')
+                    ->orderBy('a.tglbukti2', 'Asc')
                     ->orderBy('a.urut', 'Asc')
                     ->orderBy('a.nobukti', 'Asc')
                     ->orderBy('a.id', 'Asc');
@@ -953,6 +972,7 @@ class LaporanKasBank extends MyModel
                         DB::raw("isnull(b.keterangancoa,'') as keterangancoa"),
                         DB::raw("'" . $querykasbank->namabank . "' as namabank"),
                         DB::raw("(case when year(isnull(a.tglbukti,'1900/01/01')) < '2000' then CAST('" . $dari . "' AS DATE) else CAST(a.tglbukti AS DATE) end) as tglbukti"),
+                        DB::raw("a.tglbukti2"),
                         'a.nobukti',
                         'a.keterangan',
                         'a.debet',
@@ -967,7 +987,7 @@ class LaporanKasBank extends MyModel
                     )
                     ->leftjoin(DB::raw("akunpusat as b with (readuncommitted)"), 'a.coa', 'b.coa')
                     ->leftjoin(DB::raw("$tempnominal as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
-                    ->orderBy('a.tglbukti', 'Asc')
+                    ->orderBy('a.tglbukti2', 'Asc')
                     ->orderBy('a.urut', 'Asc')
                     ->orderBy('a.nobukti', 'Asc')
                     ->orderBy('a.id', 'Asc');
