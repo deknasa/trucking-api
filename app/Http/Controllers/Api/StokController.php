@@ -352,6 +352,12 @@ class StokController extends Controller
             // $stok = (new Stok())->processDestroy($id);
             $stok = new Stok();
             $stoks = $stok->findOrFail($id);
+            $data['subkelompok_id'] = $stoks['subkelompok_id'];
+            $data['kelompok_id'] = $stoks['kelompok_id'];
+            $data['kategori_id'] = $stoks['kategori_id'];
+            $data['merk_id'] = $stoks['merk_id'];
+            $data['jenistrado_id'] = $stoks['jenistrado_id'];
+            $data['satuan_id'] = $stoks['satuan_id'];
             $stok = $stok->processDestroy($stoks);            
             if ($request->from == '') {
                 $selected = $this->getPosition($stok, $stok->getTable(), true);
