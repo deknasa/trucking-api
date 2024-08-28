@@ -90,6 +90,7 @@ class LaporanPemakaianStok extends MyModel
 
         // dd($filter);
         $kartustok = new KartuStok();
+        $stokgantung=true;
         DB::table($temprekapall)->insertUsing([
             'stok_id',
             'gudang_id',
@@ -111,7 +112,7 @@ class LaporanPemakaianStok extends MyModel
             'urutfifo',
             'iddata',
             'tglinput',
-        ], (new KartuStok())->getlaporan($tgldari, $tglsampai, $stokdari_id, $stoksampai_id, $idgudangkantor, $trado_id, $gandengan_id, $filtergudang));
+        ], (new KartuStok())->getlaporan($tgldari, $tglsampai, $stokdari_id, $stoksampai_id, $idgudangkantor, $trado_id, $gandengan_id, $filtergudang,$stokgantung));
 
         DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a where isnull(a.nilaikeluar,0)=0 and  isnull(a.qtykeluar,0)=0
         "));

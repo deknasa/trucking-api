@@ -36,7 +36,7 @@ class PengeluaranStokHeader extends MyModel
         $cabang = request()->cabang ?? '';
         $aksi = request()->aksi ?? '';
         if ($cabang == 'TNL') {
-           $query = $this->getForTnl();
+            $query = $this->getForTnl();
             goto endTnl;
         }
 
@@ -273,7 +273,7 @@ class PengeluaranStokHeader extends MyModel
                         'a.tglbukti',
                         // 'a.bank_id',
                     )
-                    ->groupBy('a.nobukti','a.tglbukti')
+                    ->groupBy('a.nobukti', 'a.tglbukti')
                     ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti')
                     ->leftjoin(db::raw($temppenerimaanstokheader . " c"), 'a.nobukti', 'c.nobukti')
                     ->whereRaw("isnull(c.nobukti,'')=''");
@@ -314,7 +314,7 @@ class PengeluaranStokHeader extends MyModel
                         'a.tglbukti',
                         'a.bank_id',
                     )
-                    ->groupBy('a.nobukti','a.tglbukti','a.bank_id')
+                    ->groupBy('a.nobukti', 'a.tglbukti', 'a.bank_id')
                     ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.penerimaan_nobukti');
 
                 DB::table($temppenerimaanheader)->insert([
@@ -337,7 +337,7 @@ class PengeluaranStokHeader extends MyModel
                         'a.nobukti',
                         'a.tglbukti',
                     )
-                    ->groupBy('a.nobukti','a.tglbukti')
+                    ->groupBy('a.nobukti', 'a.tglbukti')
                     ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.hutangbayar_nobukti');
 
                 DB::table($temppelunasanhutangheader)->insertUsing([
@@ -357,7 +357,7 @@ class PengeluaranStokHeader extends MyModel
                         'a.nobukti',
                         'a.tglbukti',
                     )
-                    ->groupBy('a.nobukti','a.tglbukti')
+                    ->groupBy('a.nobukti', 'a.tglbukti')
                     ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.pengeluaranstok_nobukti');
 
                 DB::table($temppengeluaranstokheader)->insert([
@@ -377,7 +377,7 @@ class PengeluaranStokHeader extends MyModel
                         'a.nobukti',
                         'a.tglbukti',
                     )
-                    ->groupBy('a.nobukti','a.tglbukti')
+                    ->groupBy('a.nobukti', 'a.tglbukti')
                     ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.servicein_nobukti');
 
                 DB::table($tempserviceinheader)->insert([
@@ -399,7 +399,7 @@ class PengeluaranStokHeader extends MyModel
                         'a.nobukti',
                         'a.tglbukti',
                     )
-                    ->groupBy('a.nobukti','a.tglbukti')
+                    ->groupBy('a.nobukti', 'a.tglbukti')
                     ->join(db::raw($tempbukti . " b "), 'a.nobukti', 'b.pengeluarantrucking_nobukti');
 
                 DB::table($temppengeluarantruckingheader)->insertUsing([
@@ -2212,7 +2212,7 @@ class PengeluaranStokHeader extends MyModel
         $this->filter($query);
         $this->paginate($query);
 
-        
+
 
         return $query;
     }
@@ -2278,7 +2278,7 @@ class PengeluaranStokHeader extends MyModel
             $table->integer('id')->nullable();
             $table->string('nobukti', 30)->nullable();
         });
-        
+
         $query = DB::connection('srvtnl')->table('pengeluaranstokheader')->from(DB::raw("pengeluaranstokheader with (Readuncommitted)"))->select(
             'id',
             'nobukti',
@@ -3728,19 +3728,35 @@ class PengeluaranStokHeader extends MyModel
                         $kstotal = $ksqty * $ksharga;
                         $ksnobukti = $pengeluaranStokHeader->nobukti ?? '';
 
-                        $kartuStok = (new KartuStok())->processStore([
-                            "gudang_id" =>  $ksgudang_id,
-                            "trado_id" =>  $kstrado_id,
-                            "gandengan_id" => $ksgandengan_id,
-                            "stok_id" => $data['detail_stok_id'][$i] ?? 0,
-                            "nobukti" => $ksnobukti ?? '',
-                            "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
-                            "qtymasuk" => $ksqty ?? 0,
-                            "nilaimasuk" =>  0,
-                            "qtykeluar" =>  0,
-                            "nilaikeluar" => 0,
-                            "urutfifo" => $urutfifo,
-                        ]);
+                        if ($pengeluaranstok_id == $gst->text) {
+                            $kartuStok = (new KartuStok())->processStore([
+                                "gudang_id" =>  $ksgudang_id,
+                                "trado_id" =>  $kstrado_id,
+                                "gandengan_id" => $ksgandengan_id,
+                                "stok_id" => $data['detail_stok_id'][$i] ?? 0,
+                                "nobukti" => $ksnobukti ?? '',
+                                "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
+                                "qtymasuk" => $ksqty ?? 0,
+                                "nilaimasuk" =>  $kstotal,
+                                "qtykeluar" =>  0,
+                                "nilaikeluar" => 0,
+                                "urutfifo" => $urutfifo,
+                            ]);
+                        } else {
+                            $kartuStok = (new KartuStok())->processStore([
+                                "gudang_id" =>  $ksgudang_id,
+                                "trado_id" =>  $kstrado_id,
+                                "gandengan_id" => $ksgandengan_id,
+                                "stok_id" => $data['detail_stok_id'][$i] ?? 0,
+                                "nobukti" => $ksnobukti ?? '',
+                                "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
+                                "qtymasuk" => $ksqty ?? 0,
+                                "nilaimasuk" =>  0,
+                                "qtykeluar" =>  0,
+                                "nilaikeluar" => 0,
+                                "urutfifo" => $urutfifo,
+                            ]);
+                        }
                     }
                 }
 
@@ -4128,6 +4144,7 @@ class PengeluaranStokHeader extends MyModel
         $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
         $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
+        $gst = Parameter::where('grp', 'GST STOK')->where('subgrp', 'GST STOK')->first();
         $kor = Parameter::where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')->first();
         $rtr = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
         $pja = Parameter::where('grp', 'PENJUALAN STOK AFKIR')->where('subgrp', 'PENJUALAN STOK AFKIR')->first();
@@ -4226,7 +4243,7 @@ class PengeluaranStokHeader extends MyModel
                 ]);
             }
         }
-        DB::delete(DB::raw("delete pengeluaranstokdetail from pengeluaranstokdetail as a  left outer join ".$tempbukti." b on a.id=b.id
+        DB::delete(DB::raw("delete pengeluaranstokdetail from pengeluaranstokdetail as a  left outer join " . $tempbukti . " b on a.id=b.id
         WHERE isnull(a.nobukti,'') in('" . $pengeluaranStokHeader->nobukti . "') and isnull(b.id,0)=0"));
 
 
@@ -4322,14 +4339,13 @@ class PengeluaranStokHeader extends MyModel
                     "trado_id" => ($trado_id == null) ? "" : $trado_id,
                     "gandengan_id" => ($gandengan_id == null) ? "" : $gandengan_id,
                     "gudang_id" => ($gudang_id == null) ? "" : $gudang_id,
-    
+
                 ]);
-    
             } else {
                 $pengeluaranstokdetail = new PengeluaranStokDetail();
                 $pengeluaranStokDetail = $pengeluaranstokdetail->findOrFail($data['id_detail'][$i]);
 
-                $pengeluaranStokDetail = (new PengeluaranStokDetail())->processUpdate($pengeluaranStokDetail,$pengeluaranStokHeader, [
+                $pengeluaranStokDetail = (new PengeluaranStokDetail())->processUpdate($pengeluaranStokDetail, $pengeluaranStokHeader, [
                     "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
                     "nobukti" => $pengeluaranStokHeader->nobukti,
                     "stok_id" => $data['detail_stok_id'][$i],
@@ -4345,9 +4361,8 @@ class PengeluaranStokHeader extends MyModel
                     "trado_id" => ($trado_id == null) ? "" : $trado_id,
                     "gandengan_id" => ($gandengan_id == null) ? "" : $gandengan_id,
                     "gudang_id" => ($gudang_id == null) ? "" : $gudang_id,
-    
+
                 ]);
-    
             }
 
             //update total vulkanisir
@@ -4492,20 +4507,38 @@ class PengeluaranStokHeader extends MyModel
                     $ksharga = $data['detail_harga'][$i] ?? 0;
                     $kstotal = $ksqty * $ksharga;
                     $ksnobukti = $pengeluaranStokHeader->nobukti ?? '';
+                    // disini
+                    // dd($pengeluaranstok_id,$gst->text);
+                    if ($pengeluaranstok_id == $gst->text) {
 
-                    $kartuStok = (new KartuStok())->processStore([
-                        "gudang_id" =>  $ksgudang_id,
-                        "trado_id" =>  $kstrado_id,
-                        "gandengan_id" => $ksgandengan_id,
-                        "stok_id" => $data['detail_stok_id'][$i] ?? 0,
-                        "nobukti" => $ksnobukti ?? '',
-                        "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
-                        "qtymasuk" => $ksqty ?? 0,
-                        "nilaimasuk" =>  0,
-                        "qtykeluar" =>  0,
-                        "nilaikeluar" => 0,
-                        "urutfifo" => $urutfifo,
-                    ]);
+                        $kartuStok = (new KartuStok())->processStore([
+                            "gudang_id" =>  $ksgudang_id,
+                            "trado_id" =>  $kstrado_id,
+                            "gandengan_id" => $ksgandengan_id,
+                            "stok_id" => $data['detail_stok_id'][$i] ?? 0,
+                            "nobukti" => $ksnobukti ?? '',
+                            "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
+                            "qtymasuk" => $ksqty ?? 0,
+                            "nilaimasuk" =>  $kstotal,
+                            "qtykeluar" =>  0,
+                            "nilaikeluar" => 0,
+                            "urutfifo" => $urutfifo,
+                        ]);
+                    } else {
+                        $kartuStok = (new KartuStok())->processStore([
+                            "gudang_id" =>  $ksgudang_id,
+                            "trado_id" =>  $kstrado_id,
+                            "gandengan_id" => $ksgandengan_id,
+                            "stok_id" => $data['detail_stok_id'][$i] ?? 0,
+                            "nobukti" => $ksnobukti ?? '',
+                            "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
+                            "qtymasuk" => $ksqty ?? 0,
+                            "nilaimasuk" =>  0,
+                            "qtykeluar" =>  0,
+                            "nilaikeluar" => 0,
+                            "urutfifo" => $urutfifo,
+                        ]);
+                    }
                 }
             }
 

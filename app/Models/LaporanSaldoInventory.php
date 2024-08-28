@@ -97,6 +97,7 @@ class LaporanSaldoInventory extends MyModel
 
         // dd($filter);
         $kartustok = new KartuStok();
+        $stokgantung=true;
         DB::table($temprekapall)->insertUsing([
             'stok_id',
             'gudang_id',
@@ -118,11 +119,11 @@ class LaporanSaldoInventory extends MyModel
             'urutfifo',
             'iddata',
             'tglinput',
-        ], (new KartuStok())->getlaporan($priode, $priode, $stokdari_id, $stoksampai_id, $gudang_id, $trado_id, $gandengan_id, $filterdata));
+        ], (new KartuStok())->getlaporan($priode, $priode, $stokdari_id, $stoksampai_id, $gudang_id, $trado_id, $gandengan_id, $filterdata,$stokgantung));
 
         // dd($priode);
         // dd(db::table($temprekapall)->get());
-
+        // dd(db::table($temprekapall)->whereraw("namabarang='KAMPAS KOPLING 6D22 17 IN'")->get());
       
         $querytgl = $priode1;
         $tempmaxin = '##tempmaxin' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -164,6 +165,7 @@ class LaporanSaldoInventory extends MyModel
             'gandengan_id',
             'tglbukti',
         ],  $querymaxin);
+
 
         DB::delete(DB::raw("delete " . $temprekapall . "  WHERE upper(nobukti)<>'SALDO AWAL'"));
 
@@ -428,6 +430,7 @@ class LaporanSaldoInventory extends MyModel
                 db::raw("(case when isnull(a.gudang_id,0)<>0 then 'GUDANG'
                 when isnull(a.trado_id,0)<>0 then 'TRADO'
                 when isnull(a.gandengan_id,0)<>0 then 'GANDENGAN'
+                when isnull(a.lokasi,'')='SPAREPART GANTUNG' then 'SPAREPART GANTUNG'
                 else 'GUDANG' END) AS lokasi
                 "),
                 'a.lokasi as namalokasi',

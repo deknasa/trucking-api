@@ -100,7 +100,7 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
 
         if ($gst->text == request()->pengeluaranstok_id) {
             $salahSatuDari = Rule::requiredIf(function () use ($gst) {
-                if ((empty($this->input('trado')) && empty($this->input('gandengan')) && $this->input('pengeluaranstok_id')) == $gst->text) {
+                if ((empty($this->input('trado')) && empty($this->input('gandengan'))&& empty($this->input('gudang')) && $this->input('pengeluaranstok_id')) == $gst->text) {
                     return true;
                 }
                 return false;

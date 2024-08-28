@@ -92,6 +92,7 @@ class LaporanStok extends MyModel
 
         // dd($filter);
         $kartustok = new KartuStok();
+        $stokgantung=true;
         DB::table($temprekapall)->insertUsing([
             'stok_id',
             'gudang_id',
@@ -113,7 +114,7 @@ class LaporanStok extends MyModel
             'urutfifo',
             'iddata',     
             'tglinput',       
-        ], (new KartuStok())->getlaporan($tgldari, $tglsampai, $stokdari_id, $stoksampai_id, $idgudangkantor, $trado_id, $gandengan_id, $filtergudang));
+        ], (new KartuStok())->getlaporan($tgldari, $tglsampai, $stokdari_id, $stoksampai_id, $idgudangkantor, $trado_id, $gandengan_id, $filtergudang,$stokgantung));
 
         $temphistory = '##temphistory' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temphistory, function ($table) {
