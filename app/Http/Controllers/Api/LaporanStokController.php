@@ -37,10 +37,10 @@ class LaporanStokController extends Controller
     {
         $bulan = substr($request->sampai, 0, 2);
         $tahun = substr($request->sampai, 3, 4);
-
+        $jenislaporan = $request->jenislaporan ?? 0;
         $laporanstok = new LaporanStok();
 
-        $laporan_stok = $laporanstok->getReport($bulan, $tahun);
+        $laporan_stok = $laporanstok->getReport($bulan, $tahun,$jenislaporan);
 
         if (count($laporan_stok) == 0) {
             return response([
@@ -64,11 +64,12 @@ class LaporanStokController extends Controller
     {
         $bulan = substr($request->sampai,0,2);
         $tahun = substr($request->sampai,-4);
+        $jenislaporan = $request->jenislaporan ?? 0;
 
         $laporanstok = new Laporanstok();
 
 
-        $laporan_stok = $laporanstok->getReport($bulan, $tahun);
+        $laporan_stok = $laporanstok->getReport($bulan, $tahun,$jenislaporan);
         // foreach($laporan_stok as $item){
         //     $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
         //     $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
