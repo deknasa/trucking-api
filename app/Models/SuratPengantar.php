@@ -1092,7 +1092,7 @@ class SuratPengantar extends MyModel
 
         // dd(request()->nobukti);
         if (request()->nobukti) {
-            $queryutama = db::table($tempsuratpengantar)->from(db::raw($tempsuratpengantar ." a with (readuncommitted)"))
+            $queryutama = db::table($tempsuratpengantar)->from(db::raw($tempsuratpengantar . " a with (readuncommitted)"))
                 ->select(
                     'a.jobtrucking',
                     'a.nocont',
@@ -1116,7 +1116,7 @@ class SuratPengantar extends MyModel
                 ->join(db::raw("trado b with (readuncommitted)"), 'a.trado_id', 'b.id')
                 ->where('a.nobukti', $nobuktitrip)
                 ->first();
-                // dd($queryutama);
+            // dd($queryutama);
 
             $pelanggan_idtrip = $queryutama->pelanggan_id;
             $penyesuaiantrip = $queryutama->penyesuaian;
@@ -2558,19 +2558,19 @@ class SuratPengantar extends MyModel
         //     ->where('text', '=', $id)
         //     ->first();
 
-            $parameter = new Parameter();
-            $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
+        $parameter = new Parameter();
+        $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN', 'PELABUHAN') ?? 0;
 
 
-            $data = DB::table('kota')
+        $data = DB::table('kota')
             ->from(DB::raw("kota with (readuncommitted)"))
             ->select(
                 'id'
             )
             ->where('statuspelabuhan', $statuspelabuhan)
             ->where('id', '=', $id)
-            ->first();            
-            
+            ->first();
+
 
         // $datakandang = DB::table('parameter')
         //     ->from(DB::raw("parameter with (readuncommitted)"))
@@ -3793,14 +3793,14 @@ class SuratPengantar extends MyModel
                     $idstatuskandang = $parameter->cekId('STATUS KANDANG', 'STATUS KANDANG', 'KANDANG') ?? 0;
                     $idkandang = $parameter->cekText('KANDANG', 'KANDANG') ?? 0;
                     // $idpelabuhan = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? 0;
-                    $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
-                    $idpelabuhan=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
-                    ->select(
-                        db::raw("STRING_AGG(id,',') as id"),
-                    )
-                    ->where('a.statuspelabuhan',$statuspelabuhan)
-                    ->first()->id ?? 1;            
-    
+                    $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN', 'PELABUHAN') ?? 0;
+                    $idpelabuhan = db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+                        ->select(
+                            db::raw("STRING_AGG(id,',') as id"),
+                        )
+                        ->where('a.statuspelabuhan', $statuspelabuhan)
+                        ->first()->id ?? 1;
+
 
                     $upahsupirkandnag = db::table("upahsupir")->from(db::raw("upahsupir a with (readuncommitted)"))
                         ->select(
@@ -3820,7 +3820,7 @@ class SuratPengantar extends MyModel
                             'b.modifiedby',
                         )
                         ->join(db::raw("upahsupirrincian b with (readuncommitted)"), 'a.id', 'b.upahsupir_id')
-                        ->whereraw("a.kotadari_id in(". $idpelabuhan .")")
+                        ->whereraw("a.kotadari_id in(" . $idpelabuhan . ")")
                         ->where('a.kotasampai_id', $idkandang)
                         ->where('b.container_id', $data['container_id'])
                         ->where('b.statuscontainer_id', $suratPengantar->statuscontainer_id)
@@ -4178,13 +4178,13 @@ class SuratPengantar extends MyModel
         $parameter = new Parameter();
 
         // $pelabuhancabang = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? '0';
-        $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
-        $pelabuhancabang=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
-        ->select(
-            db::raw("STRING_AGG(id,',') as id"),
-        )
-        ->where('a.statuspelabuhan',$statuspelabuhan)
-        ->first()->id ?? 1;         
+        $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN', 'PELABUHAN') ?? 0;
+        $pelabuhancabang = db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+            ->select(
+                db::raw("STRING_AGG(id,',') as id"),
+            )
+            ->where('a.statuspelabuhan', $statuspelabuhan)
+            ->first()->id ?? 1;
 
         $bjumlah = 0;
         $orderanTruckingId = [];
@@ -4592,22 +4592,39 @@ class SuratPengantar extends MyModel
     {
         $dari = date('Y-m-d', strtotime(request()->tgldari));
         $sampai = date('Y-m-d', strtotime(request()->tglsampai));
+        $temptambahan = '##temptambahan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        Schema::create($temptambahan, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->double('extra', 15, 2)->nullable();
+        });
+
+        $queryTambahan = DB::table("suratpengantar")->from(db::raw("suratpengantar as sp with (readuncommitted)"))
+            ->select(DB::raw("sp.nobukti, sum(st.nominal) as extra"))
+            ->join(DB::raw("suratpengantarbiayatambahan as st with (readuncommitted)"), 'sp.id', 'st.suratpengantar_id')
+            ->where('sp.supir_id', $id)
+            ->whereBetween('sp.tglbukti', [$dari, $sampai])
+            ->groupBy('sp.nobukti');
+        DB::table($temptambahan)->insertUsing(['nobukti', 'extra'], $queryTambahan);
 
         $query = DB::table("suratpengantar")->from(db::raw("suratpengantar as sp with (readuncommitted)"))
-        ->select(
-            db::raw("sp.id, sp.nobukti as nobuktiedit,sp.jobtrucking as jobtruckingedit,sp.tglbukti as tglbuktiedit, sp.nosp as nospedit, sp.nocont as nocontedit, sp.nocont2 as nocont2edit, sp.noseal as nosealedit, sp.noseal2 as noseal2edit, container.kodecontainer as containeredit, statuscontainer.keterangan as statuscontaineredit,jenisorder.keterangan as jenisorderedit, dari.kodekota as dariedit, sampai.kodekota as sampaiedit, sp.penyesuaian as penyesuaianedit")
-        )
-        ->leftJoin(DB::raw("container with (readuncommitted)"), 'sp.container_id', 'container.id')
-        ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
-        ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'sp.jenisorder_id', 'jenisorder.id')
-        ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'sp.dari_id', 'dari.id')
-        ->leftJoin(DB::raw("kota as sampai with (readuncommitted)"), 'sp.sampai_id', 'sampai.id')
-        ->where('sp.supir_id', $id)
-        ->whereBetween('sp.tglbukti', [$dari, $sampai])
-        ->get();
+            ->select(
+                db::raw("sp.id, sp.nobukti as nobuktiedit,sp.jobtrucking as jobtruckingedit,format(sp.tglbukti,'dd') as tglbuktiedit, sp.nosp as nospedit, sp.nocont as nocontedit, sp.nocont2 as nocont2edit, sp.noseal as nosealedit, sp.noseal2 as noseal2edit, container.kodecontainer as containeredit, statuscontainer.keterangan as statuscontaineredit,jenisorder.keterangan as jenisorderedit, dari.kodekota as dariedit, sampai.kodekota as sampaiedit, sp.penyesuaian as penyesuaianedit, (dari.kodekota + '-' + sampai.kodekota + (case when isnull(sp.penyesuaian,'')!='' then ' ('+sp.penyesuaian+')' else '' end)) as tujuanedit, sp.gajisupir as boronganedit, isnull(tambahan.extra,0) as extraedit,agen.kodeagen as agenedit")
+            )
+            ->leftJoin(DB::raw("container with (readuncommitted)"), 'sp.container_id', 'container.id')
+            ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'sp.jenisorder_id', 'jenisorder.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'sp.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'sp.dari_id', 'dari.id')
+            ->leftJoin(DB::raw("kota as sampai with (readuncommitted)"), 'sp.sampai_id', 'sampai.id')
+            ->leftJoin(DB::raw("$temptambahan as tambahan with (readuncommitted)"), 'sp.nobukti', 'tambahan.nobukti')
+            ->where('sp.supir_id', $id)
+            ->whereBetween('sp.tglbukti', [$dari, $sampai])
+            ->orderBy('sp.tglbukti')
+            ->orderBy('sp.nobukti')
+            ->get();
 
         return $query;
-
     }
 
     public function editSp(array $data)
@@ -4620,6 +4637,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->nocont2 = $data['nocont2'][$i];
             $suratPengantar->noseal = $data['noseal'][$i];
             $suratPengantar->noseal2 = $data['noseal2'][$i];
+            $suratPengantar->modifiedby = auth('api')->user()->name;
 
             if ($suratPengantar->save()) {
                 (new LogTrail())->processStore([
@@ -4637,7 +4655,7 @@ class SuratPengantar extends MyModel
                 DB::update(DB::raw("UPDATE orderantrucking SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2' where nobukti='$suratPengantar->jobtrucking'"));
             }
         }
-        
+
         return $data;
     }
 }
