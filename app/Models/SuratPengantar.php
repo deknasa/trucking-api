@@ -4609,4 +4609,35 @@ class SuratPengantar extends MyModel
         return $query;
 
     }
+
+    public function editSp(array $data)
+    {
+        for ($i = 0; $i < count($data['id']); $i++) {
+            $id = $data['id'][$i] ?? 0;
+            $suratPengantar = SuratPengantar::lockForUpdate()->findOrFail($id);
+            $suratPengantar->nosp = $data['nosp'][$i];
+            $suratPengantar->nocont = $data['nocont'][$i];
+            $suratPengantar->nocont2 = $data['nocont2'][$i];
+            $suratPengantar->noseal = $data['noseal'][$i];
+            $suratPengantar->noseal2 = $data['noseal2'][$i];
+
+            if ($suratPengantar->save()) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($suratPengantar->getTable()),
+                    'postingdari' =>  "EDIT SP SURAT PENGANTAR",
+                    'idtrans' => $suratPengantar->id,
+                    'nobuktitrans' => $suratPengantar->nobukti,
+                    'aksi' => 'EDIT',
+                    'datajson' => $suratPengantar->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+            }
+            if ($suratPengantar->jobtrucking != '') {
+
+                DB::update(DB::raw("UPDATE orderantrucking SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2' where nobukti='$suratPengantar->jobtrucking'"));
+            }
+        }
+        
+        return $data;
+    }
 }

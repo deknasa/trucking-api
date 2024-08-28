@@ -1553,6 +1553,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
 
     Route::get('suratpengantar/rekapcustomer', [SuratPengantarController::class, 'rekapcustomer']);
+    Route::get('suratpengantar/{id}/geteditsp', [SuratPengantarController::class, 'getEditSp']);
+    Route::post('suratpengantar/editsp', [SuratPengantarController::class, 'editSp']);
     Route::get('absentrado/rekapabsentrado', [AbsenTradoController::class, 'rekapabsentrado']);
     Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
     Route::post('suratpengantar/cekUpahSupir', [SuratPengantarController::class, 'cekUpahSupir']);
