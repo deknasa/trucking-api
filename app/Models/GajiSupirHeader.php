@@ -293,7 +293,7 @@ class GajiSupirHeader extends MyModel
                     db::raw("isnull(d.biayaextra,0) as biayaextra"),
                     // db::raw("(gajisupirheader.total) as total"),
                     DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then gajisupirheader.total else (gajisupirheader.total+
-                    (case when '".$nonhitungkomisi."'='TIDAK' then 0 else isnull(C.komisisupir,0) end)  
+                    (case when '" . $nonhitungkomisi . "'='TIDAK' then 0 else isnull(C.komisisupir,0) end)  
                     +isnull(C.gajikenek,0)) end) as total"),
                     // db::raw("(gajisupirheader.total+isnull(C.komisisupir,0)+isnull(C.gajikenek,0)) as total"),
                     'gajisupirheader.uangjalan',
@@ -2569,6 +2569,7 @@ class GajiSupirHeader extends MyModel
             ->first();
         $sisaPinjaman = 0;
         $sisaDeposito = 0;
+        $trado = '';
 
         if ($formatCetak->text == 'FORMAT 3') {
             $data = db::table("gajisupirheader")->from(DB::raw("gajisupirheader with (readuncommitted)"))->where("id", $id)->first();
@@ -2599,6 +2600,15 @@ class GajiSupirHeader extends MyModel
             if ($deposito != '') {
                 $sisaDeposito = $deposito->deposito;
             }
+            $gettrado = db::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as gs with (readuncommitted)"))
+                ->select('trado.kodetrado')
+                ->join(db::raw("suratpengantar as sp with (readuncommitted)"), 'gs.suratpengantar_nobukti', 'sp.nobukti')
+                ->leftJoin(db::raw("trado with (readuncommitted)"), 'sp.trado_id', 'trado.id')
+                ->where('gs.nobukti', $data->nobukti)
+                ->first();
+            if ($gettrado != '') {
+                $trado = $gettrado->kodetrado;
+            }
         }
         $query = DB::table($this->table)->from(DB::raw("gajisupirheader with (readuncommitted)"))
             ->select(
@@ -2625,6 +2635,7 @@ class GajiSupirHeader extends MyModel
                 DB::raw("'Bukti Rincian Gaji Supir' as judulLaporan"),
                 DB::raw("'" . $sisaDeposito . "' as sisadeposito"),
                 DB::raw("'" . $sisaPinjaman . "' as sisapinjaman"),
+                DB::raw("'" . $trado . "' as trado"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'" . $formatCetak->text . "' as formatcetak"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
