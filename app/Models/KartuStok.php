@@ -2528,7 +2528,7 @@ class KartuStok extends MyModel
                     'b.namastok as kodebarang',
                     'b.namastok as namabarang',
                     db::raw("'" . $tglsampai . "' as tglbukti"),
-                    db::raw("'SALDO AWAL' as nobukti"),
+                    db::raw("'SPAREPART GANTUNG' as nobukti"),
                     db::raw("b.kelompok_id as kategori_id"),
                     'a.qty as qtymasuk',
                     'a.nominal as nilaimasuk',

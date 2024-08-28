@@ -25,11 +25,14 @@ class LaporanSaldoInventory extends MyModel
         'updated_at',
     ];
 
-    public function getReport($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter, $prosesneraca)
+    public function getReport($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter, $prosesneraca, $jenislaporan)
     {
 
         // dd('test');
         // dd($priode);
+
+
+
 
         $prosesneraca = $prosesneraca ?? 0;
         $priode1 = date('Y-m-d', strtotime($priode));
@@ -62,7 +65,6 @@ class LaporanSaldoInventory extends MyModel
             $table->integer('urutfifo')->nullable();
             $table->integer('iddata')->nullable();
             $table->datetime('tglinput')->nullable();
-
         });
 
         $filtergudang = Parameter::where('grp', 'STOK PERSEDIAAN')->where('subgrp', 'STOK PERSEDIAAN')->where('text', 'GUDANG')->first();
@@ -97,7 +99,17 @@ class LaporanSaldoInventory extends MyModel
 
         // dd($filter);
         $kartustok = new KartuStok();
-        $stokgantung=true;
+        $parameter = new Parameter();
+        $stokgantung = false;
+        $idincludestokgantung = $parameter->cekId('JENIS LAPORAN', 'JENIS LAPORAN', 'INCLUDE SPAREPART GANTUNG') ?? 0;
+        // dd($jenislaporan,$idincludestokgantung);
+        if ($jenislaporan == $idincludestokgantung) {
+            $stokgantung = true;
+        } else {
+            $stokgantung = false;
+        }
+        // dd($stokgantung);
+        // $stokgantung = true;
         DB::table($temprekapall)->insertUsing([
             'stok_id',
             'gudang_id',
@@ -119,12 +131,12 @@ class LaporanSaldoInventory extends MyModel
             'urutfifo',
             'iddata',
             'tglinput',
-        ], (new KartuStok())->getlaporan($priode, $priode, $stokdari_id, $stoksampai_id, $gudang_id, $trado_id, $gandengan_id, $filterdata,$stokgantung));
+        ], (new KartuStok())->getlaporan($priode, $priode, $stokdari_id, $stoksampai_id, $gudang_id, $trado_id, $gandengan_id, $filterdata, $stokgantung));
 
         // dd($priode);
         // dd(db::table($temprekapall)->get());
         // dd(db::table($temprekapall)->whereraw("namabarang='KAMPAS KOPLING 6D22 17 IN'")->get());
-      
+
         $querytgl = $priode1;
         $tempmaxin = '##tempmaxin' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempmaxin, function ($table) {
@@ -150,13 +162,13 @@ class LaporanSaldoInventory extends MyModel
                 $join->on('a.gandengan_id', '=', db::raw("isnull(e.gandengan_id,0)"));
             })
             ->whereRaw("isnull(e.qtymasuk,0)<>0")
-             ->whereRaw("e.tglbukti<='" . $querytgl . "'")
+            ->whereRaw("e.tglbukti<='" . $querytgl . "'")
             ->groupby(db::raw("isnull(a.stok_id,0)"))
             ->groupby(db::raw("isnull(a.gudang_id,0)"))
             ->groupby(db::raw("isnull(a.trado_id,0)"))
             ->groupby(db::raw("isnull(a.gandengan_id,0)"));
 
-            // dd($querymaxin->get());
+        // dd($querymaxin->get());
 
         DB::table($tempmaxin)->insertUsing([
             'stok_id',
@@ -167,7 +179,7 @@ class LaporanSaldoInventory extends MyModel
         ],  $querymaxin);
 
 
-        DB::delete(DB::raw("delete " . $temprekapall . "  WHERE upper(nobukti)<>'SALDO AWAL'"));
+        DB::delete(DB::raw("delete " . $temprekapall . "  WHERE upper(nobukti) not in('SALDO AWAL','SPAREPART GANTUNG')"));
 
         // dd(db::table($tempmaxin)->get());
         $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
@@ -233,7 +245,7 @@ class LaporanSaldoInventory extends MyModel
         }
 
 
-      
+
 
 
         $tempumuraki = '##tempumuraki' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -242,7 +254,7 @@ class LaporanSaldoInventory extends MyModel
             $table->integer('jumlahhari')->nullable();
             $table->date('tglawal')->nullable();
         });
-        
+
         $tempumuraki1 = '##tempumuraki1' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempumuraki1, function ($table) {
             $table->Integer('stok_id')->nullable();
@@ -370,11 +382,11 @@ class LaporanSaldoInventory extends MyModel
         Schema::create($tempurutfilter, function ($table) {
             $table->Integer('stok_id')->nullable();
             $table->integer('kelompok_id')->nullable();
-            $table->string('lokasi',1000)->nullable();
-            $table->string('kodebarang',1000)->nullable();
+            $table->string('lokasi', 1000)->nullable();
+            $table->string('kodebarang', 1000)->nullable();
         });
 
-        $queryurutfilter=DB::table($temprekapall)->from(
+        $queryurutfilter = DB::table($temprekapall)->from(
             DB::raw($temprekapall . " a")
         )->select(
             'a.stok_id',
@@ -382,10 +394,10 @@ class LaporanSaldoInventory extends MyModel
             'a.lokasi',
             'a.kodebarang',
         )
-        ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
-        ->leftjoin(db::raw("kelompok c with (readuncommitted)"), 'b.kelompok_id', 'c.id')
-        ->whereraw("(a.qtysaldo<>0 or a.nilaisaldo<>0)");
-   
+            ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
+            ->leftjoin(db::raw("kelompok c with (readuncommitted)"), 'b.kelompok_id', 'c.id')
+            ->whereraw("(a.qtysaldo<>0 or a.nilaisaldo<>0)");
+
         DB::table($tempurutfilter)->insertUsing([
             'stok_id',
             'kelompok_id',
@@ -394,18 +406,18 @@ class LaporanSaldoInventory extends MyModel
         ],  $queryurutfilter);
 
 
-        $queryurut=DB::table($tempurutfilter)->from(
+        $queryurut = DB::table($tempurutfilter)->from(
             DB::raw($tempurutfilter . " a")
         )->select(
             'a.stok_id',
             'c.id as kelompok_id',
             DB::raw('ROW_NUMBER() OVER (PARTITION BY a.lokasi,c.kodekelompok ORDER BY a.lokasi,c.kodekelompok,a.kodebarang) as urut')
         )
-        ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
-        ->leftjoin(db::raw("kelompok c with (readuncommitted)"), 'b.kelompok_id', 'c.id')
-        ->OrderBY('a.lokasi', 'asc')
-        ->OrderBY('c.kodekelompok', 'asc')
-        ->OrderBY('a.kodebarang', 'asc');
+            ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
+            ->leftjoin(db::raw("kelompok c with (readuncommitted)"), 'b.kelompok_id', 'c.id')
+            ->OrderBY('a.lokasi', 'asc')
+            ->OrderBY('c.kodekelompok', 'asc')
+            ->OrderBY('a.kodebarang', 'asc');
 
         DB::table($tempurut)->insertUsing([
             'stok_id',
@@ -417,9 +429,9 @@ class LaporanSaldoInventory extends MyModel
         // dd(db::table($tempurut)->where('kelompok_id',2)->get());
 
         // end update vulkanisir
-        $stokdari = db::table('stok')->from(db::raw('stok with (readuncommitted)'))->select('namastok')->where('id',$stokdari_id)->first();
+        $stokdari = db::table('stok')->from(db::raw('stok with (readuncommitted)'))->select('namastok')->where('id', $stokdari_id)->first();
         $dariStok = ($stokdari != '') ? $stokdari->namastok : '';
-        $stoksampai = db::table('stok')->from(db::raw('stok with (readuncommitted)'))->select('namastok')->where('id',$stoksampai_id)->first();
+        $stoksampai = db::table('stok')->from(db::raw('stok with (readuncommitted)'))->select('namastok')->where('id', $stoksampai_id)->first();
         $sampaiStok = ($stoksampai != '') ? $stoksampai->namastok : '';
         $query = DB::table($temprekapall)->from(
             DB::raw($temprekapall . " a")
@@ -437,8 +449,8 @@ class LaporanSaldoInventory extends MyModel
                 db::raw("isnull(c.kodekelompok,'') as kategori"),
                 DB::raw("'" . $priode1 . "' as tgldari"),
                 DB::raw("'" . $priode1 . "' as tglsampai"),
-                DB::raw("'".$dariStok."' as stokdari"),
-                DB::raw("'".$sampaiStok."' as stoksampai"),
+                DB::raw("'" . $dariStok . "' as stokdari"),
+                DB::raw("'" . $sampaiStok . "' as stoksampai"),
                 db::raw("
                 (case when isnull(c1.stok_id,0)<>0 then ' ( '+
                     (case when " . $bytgl . "=1 then 'TGL PAKAI '+format(c1.tglawal,'dd-MM-yyyy')+',' else '' end)+

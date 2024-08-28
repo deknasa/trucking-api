@@ -24,7 +24,7 @@ class LaporanStok extends MyModel
         'updated_at',
     ];
 
-    public function getReport($bulan, $tahun)
+    public function getReport($bulan, $tahun,$jenislaporan)
     {
 
 
@@ -92,7 +92,15 @@ class LaporanStok extends MyModel
 
         // dd($filter);
         $kartustok = new KartuStok();
-        $stokgantung=true;
+        $parameter = new Parameter();
+        $stokgantung = false;
+        $idincludestokgantung = $parameter->cekId('JENIS LAPORAN', 'JENIS LAPORAN', 'INCLUDE SPAREPART GANTUNG') ?? 0;
+        // dd($jenislaporan,$idincludestokgantung);
+        if ($jenislaporan == $idincludestokgantung) {
+            $stokgantung = true;
+        } else {
+            $stokgantung = false;
+        }
         DB::table($temprekapall)->insertUsing([
             'stok_id',
             'gudang_id',

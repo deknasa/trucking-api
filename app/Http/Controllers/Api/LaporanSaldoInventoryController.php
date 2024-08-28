@@ -38,6 +38,7 @@ class LaporanSaldoInventoryController extends Controller
         $kelompok_id = $request->kelompok_id ?? 0;
         $statusreuse = $request->statusreuse ?? 0;
         $statusban = $request->statusban ?? 0;
+        $jenislaporan = $request->jenislaporan ?? 0;
         $filter = $request->filter;
         $jenistgltampil = $request->jenistgltampil ?? '';
         $priode = $request->priode;
@@ -56,7 +57,8 @@ class LaporanSaldoInventoryController extends Controller
         // dd($dataFilter);
         // dd($request->all());
         $laporanSaldoInventory = new LaporanSaldoInventory();
-        $report = LaporanSaldoInventory::getReport($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter, $prosesneraca);
+        // dd( $request->jenislaporan);
+        $report = LaporanSaldoInventory::getReport($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter, $prosesneraca,$jenislaporan);
         // $report = [
         //     [
         //         'header' => 'Laporan Saldo Inventory',
