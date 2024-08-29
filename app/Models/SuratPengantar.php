@@ -4607,9 +4607,23 @@ class SuratPengantar extends MyModel
             ->groupBy('sp.nobukti');
         DB::table($temptambahan)->insertUsing(['nobukti', 'extra'], $queryTambahan);
 
+        $tempric = '##tempric' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        Schema::create($tempric, function ($table) {
+            $table->string('suratpengantar_nobukti')->nullable();
+        });
+        $queryRic = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as gd with (readuncommitted)"))
+        ->select('gd.suratpengantar_nobukti')
+        ->join(DB::raw("suratpengantar as sp with (readuncommitted)"), 'gd.suratpengantar_nobukti','sp.nobukti')
+        ->where('sp.supir_id', $id)
+        ->whereBetween('sp.tglbukti', [$dari, $sampai]);
+        DB::table($tempric)->insertUsing(['suratpengantar_nobukti'], $queryRic);
+        
+        $statusPelabuhan = (new Parameter())->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN', 'PELABUHAN');
+
         $query = DB::table("suratpengantar")->from(db::raw("suratpengantar as sp with (readuncommitted)"))
             ->select(
-                db::raw("sp.id, sp.nobukti as nobuktiedit,sp.jobtrucking as jobtruckingedit,format(sp.tglbukti,'dd') as tglbuktiedit, sp.nosp as nospedit, sp.nocont as nocontedit, sp.nocont2 as nocont2edit, sp.noseal as nosealedit, sp.noseal2 as noseal2edit, container.kodecontainer as containeredit, statuscontainer.keterangan as statuscontaineredit,jenisorder.keterangan as jenisorderedit, dari.kodekota as dariedit, sampai.kodekota as sampaiedit, sp.penyesuaian as penyesuaianedit, (dari.kodekota + '-' + sampai.kodekota + (case when isnull(sp.penyesuaian,'')!='' then ' ('+sp.penyesuaian+')' else '' end)) as tujuanedit, sp.gajisupir as boronganedit, isnull(tambahan.extra,0) as extraedit,agen.kodeagen as agenedit")
+                db::raw("sp.id, sp.nobukti as nobuktiedit,sp.jobtrucking as jobtruckingedit,format(sp.tglbukti,'dd') as tglbuktiedit, sp.nosp as nospedit, sp.nocont as nocontedit, sp.nocont2 as nocont2edit, sp.noseal as nosealedit, sp.noseal2 as noseal2edit, container.kodecontainer as containeredit, statuscontainer.keterangan as statuscontaineredit,jenisorder.keterangan as jenisorderedit, dari.kodekota as dariedit, sampai.kodekota as sampaiedit, sp.penyesuaian as penyesuaianedit, (dari.kodekota + '-' + sampai.kodekota + (case when isnull(sp.penyesuaian,'')!='' then ' ('+sp.penyesuaian+')' else '' end)) as tujuanedit, sp.gajisupir as boronganedit, isnull(tambahan.extra,0) as extraedit,agen.kodeagen as agenedit,(case when dari.statuspelabuhan = $statusPelabuhan then 1 else 0 end) as ispelabuhan")
             )
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'sp.container_id', 'container.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
@@ -4618,8 +4632,10 @@ class SuratPengantar extends MyModel
             ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'sp.dari_id', 'dari.id')
             ->leftJoin(DB::raw("kota as sampai with (readuncommitted)"), 'sp.sampai_id', 'sampai.id')
             ->leftJoin(DB::raw("$temptambahan as tambahan with (readuncommitted)"), 'sp.nobukti', 'tambahan.nobukti')
+            ->leftJoin(DB::raw("$tempric as ric with (readuncommitted)"), 'sp.nobukti', 'ric.suratpengantar_nobukti')
             ->where('sp.supir_id', $id)
             ->whereBetween('sp.tglbukti', [$dari, $sampai])
+            ->whereRaw("isnull(ric.suratpengantar_nobukti,'')=''")
             ->orderBy('sp.tglbukti')
             ->orderBy('sp.nobukti')
             ->get();
@@ -4632,11 +4648,19 @@ class SuratPengantar extends MyModel
         for ($i = 0; $i < count($data['id']); $i++) {
             $id = $data['id'][$i] ?? 0;
             $suratPengantar = SuratPengantar::lockForUpdate()->findOrFail($id);
+            if ($suratPengantar->dari_id == 1) {
+                $suratPengantar->nocont = $data['nocont'][$i];
+                $suratPengantar->nocont2 = $data['nocont2'][$i];
+                $suratPengantar->noseal = $data['noseal'][$i];
+                $suratPengantar->noseal2 = $data['noseal2'][$i];
+                $usermodif = auth('api')->user()->name;
+                if ($suratPengantar->jobtrucking != '') {
+                    DB::update(DB::raw("UPDATE SURATPENGANTAR SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2',modifiedby='$usermodif' where jobtrucking='$suratPengantar->jobtrucking'"));
+
+                    DB::update(DB::raw("UPDATE orderantrucking SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2',modifiedby='$usermodif' where nobukti='$suratPengantar->jobtrucking'"));
+                }
+            }
             $suratPengantar->nosp = $data['nosp'][$i];
-            $suratPengantar->nocont = $data['nocont'][$i];
-            $suratPengantar->nocont2 = $data['nocont2'][$i];
-            $suratPengantar->noseal = $data['noseal'][$i];
-            $suratPengantar->noseal2 = $data['noseal2'][$i];
             $suratPengantar->modifiedby = auth('api')->user()->name;
 
             if ($suratPengantar->save()) {
@@ -4649,10 +4673,6 @@ class SuratPengantar extends MyModel
                     'datajson' => $suratPengantar->toArray(),
                     'modifiedby' => auth('api')->user()->user
                 ]);
-            }
-            if ($suratPengantar->jobtrucking != '') {
-
-                DB::update(DB::raw("UPDATE orderantrucking SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2' where nobukti='$suratPengantar->jobtrucking'"));
             }
         }
 
