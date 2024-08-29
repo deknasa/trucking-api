@@ -1243,6 +1243,7 @@ class GajiSupirHeader extends MyModel
             $table->dateTime('tglbukti')->nullable();
             $table->longText('supir_id')->nullable();
             $table->double('gajisupir', 15, 2)->nullable();
+            $table->double('ritasisupir', 15, 2)->nullable();
             $table->date('tgldari')->nullable();
             $table->date('tglsampai')->nullable();
             $table->double('komisisupir', 15, 2)->nullable();
@@ -1301,6 +1302,38 @@ class GajiSupirHeader extends MyModel
             'biayaextra',
         ], $querytempdetail);
 
+
+        $tempgajiheader = '##tempgajiheader' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempgajiheader, function ($table) {
+            $table->string('nobukti', 1000)->nullable();
+            $table->double('gajisupir', 15, 2)->nullable();
+            $table->double('ritasisupir', 15, 2)->nullable();
+            $table->double('biayaextra', 15, 2)->nullable();
+        });
+
+        $queryheader = db::table("gajisupirdetail")->from(db::raw("gajisupirdetail a with (readuncommitted)"))
+            ->select(
+                'a.nobukti',
+                db::raw("sum(a.gajisupir) as gajisupir"),
+                db::raw("sum(a.gajiritasi) as ritasisupir"),
+                db::raw("sum(a.biayatambahan+a.nominalbiayaextrasupir) as biayaextra")
+            )
+            ->join(db::raw("gajisupirheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->groupby('a.nobukti');
+
+
+
+        if (request()->tgldari && request()->tglsampai) {
+            $queryheader->whereBetween('b.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+
+        DB::table($tempgajiheader)->insertUsing([
+            'nobukti',
+            'gajisupir',
+            'ritasisupir',
+            'biayaextra',
+        ], $queryheader);
+
         $querytemp = DB::table($this->table)->from(DB::raw("gajisupirheader with (readuncommitted)"))
             ->select(
                 'gajisupirheader.id',
@@ -1309,6 +1342,7 @@ class GajiSupirHeader extends MyModel
                 'supir.namasupir as supir_id',
                 // 'gajisupirheader.keterangan',
                 DB::raw("(case when (select text from parameter where grp='GAJI SUPIR' and subgrp='HITUNG KENEK')= 'YA' then c.gajisupir else (gajisupirheader.nominal-isnull(C.biayaextra,0)) end) as gajisupir"),
+                DB::raw("isnull(d.ritasisupir,0) as ritasisupir"),
                 'gajisupirheader.tgldari',
                 'gajisupirheader.tglsampai',
                 db::raw("isnull(C.komisisupir,0) as komisisupir"),
@@ -1337,7 +1371,8 @@ class GajiSupirHeader extends MyModel
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gajisupirheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
-            ->leftJoin(DB::raw($tempgajidetail . " c"), 'gajisupirheader.nobukti', 'c.nobukti');
+            ->leftJoin(DB::raw($tempgajidetail . " c"), 'gajisupirheader.nobukti', 'c.nobukti')
+            ->join(db::raw($tempgajiheader . " d"), 'gajisupirheader.nobukti', 'd.nobukti');
 
         DB::table($temtabel)->insertUsing([
             'id',
@@ -1345,6 +1380,7 @@ class GajiSupirHeader extends MyModel
             'tglbukti',
             'supir_id',
             'gajisupir',
+            'ritasisupir',
             'tgldari',
             'tglsampai',
             'komisisupir',
@@ -1379,6 +1415,7 @@ class GajiSupirHeader extends MyModel
                 'a.tglbukti',
                 'a.supir_id',
                 'a.gajisupir',
+                'a.ritasisupir',
                 'a.tgldari',
                 'a.tglsampai',
                 'a.komisisupir',
@@ -1417,6 +1454,7 @@ class GajiSupirHeader extends MyModel
             $table->dateTime('tglbukti')->nullable();
             $table->longText('supir_id')->nullable();
             $table->double('gajisupir', 15, 2)->nullable();
+            $table->double('ritasisupir', 15, 2)->nullable();
             $table->date('tgldari')->nullable();
             $table->date('tglsampai')->nullable();
             $table->double('komisisupir', 15, 2)->nullable();
@@ -1462,6 +1500,7 @@ class GajiSupirHeader extends MyModel
             'tglbukti',
             'supir_id',
             'gajisupir',
+            'ritasisupir',
             'tgldari',
             'tglsampai',
             'komisisupir',
