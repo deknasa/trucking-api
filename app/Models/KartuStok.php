@@ -163,7 +163,7 @@ class KartuStok extends MyModel
                     'urutfifo',
                     'iddata',
                     'tglinput',
-                ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, $datafilter, 0, 0, 0));
+                ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, $datafilter, 0, 0, 0,false));
             } else {
                 $filtergudang->text;
                 if (request()->filter == $filtergudang->id) {
@@ -189,7 +189,7 @@ class KartuStok extends MyModel
                         'iddata',
                         'tglinput',
 
-                    ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, request()->datafilter, 0, 0, $filtergudang->text));
+                    ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, request()->datafilter, 0, 0, $filtergudang->text,false));
                 } else if (request()->filter == $filtertrado->id) {
                     DB::table($temprekapall)->insertUsing([
                         'stok_id',
@@ -213,7 +213,7 @@ class KartuStok extends MyModel
                         'iddata',
                         'tglinput',
 
-                    ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, request()->datafilter, 0, $filtertrado->text));
+                    ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, request()->datafilter, 0, $filtertrado->text,false));
                 } else if (request()->filter == $filtergandengan->id) {
                     DB::table($temprekapall)->insertUsing([
                         'stok_id',
@@ -237,7 +237,7 @@ class KartuStok extends MyModel
                         'iddata',
                         'tglinput',
 
-                    ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, 0, request()->datafilter, $filtergandengan->text));
+                    ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, 0, request()->datafilter, $filtergandengan->text,false));
                 } else {
 
                     DB::table($temprekapall)->insertUsing([
@@ -262,7 +262,7 @@ class KartuStok extends MyModel
                         'iddata',
                         'tglinput',
 
-                    ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, 0, 0, $filtergudang->text));
+                    ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, 0, 0, $filtergudang->text,false));
                 }
             }
 
