@@ -325,6 +325,7 @@ class Kota extends MyModel
                     ->leftJoin(db::raw("$temtabel as a with (readuncommitted)"), 'kota.id', 'a.id')
                     ->whereRaw("isnull(kota.zona_id,0) != 0")
                     ->where('kota.id','!=', $dari_id)
+                    ->where('kota.statusaktif',1)
                     ->whereRaw("isnull(a.id,'')=''");
                     
                     DB::table($temtabel)->insertUsing([
