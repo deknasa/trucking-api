@@ -37,18 +37,11 @@ class PengeluaranTruckingDetail extends MyModel
         $kolomStok = 'stok_id';
 
         //klaim
-        if ($pengeluaranId == 7) {
-            $stokKlaim = $query->select($this->table . '.stoktnl_id')
-                ->where($this->table . '.pengeluarantruckingheader_id', '=',  request()->pengeluarantruckingheader_id)->first();
-            if ($getPengeluaranId->statuscabang == 516) {
-                $tableStok = (new Stok())->showTNLForKlaim($stokKlaim->stoktnl_id);
-                $kolomStok = 'stoktnl_id';
-            }
-        }
+
 
 
         if (isset(request()->forReport) && request()->forReport) {
-
+            // dd($query->tosql());
             if ($pengeluaranId == 9) {
                 $query->select(
                     $this->table . '.suratpengantar_nobukti',
@@ -60,23 +53,42 @@ class PengeluaranTruckingDetail extends MyModel
                     'parameter.text as statustitipanemkl'
                 );
             } else {
+                // dd('test');
 
-                $query->select(
-                    'supir.namasupir as supir_id',
-                    'karyawan.namakaryawan as karyawan_id',
-                    'stok.namastok as stok_id',
-                    $this->table . '.pengeluaranstok_nobukti',
-                    $this->table . '.qty',
-                    $this->table . '.harga',
-                    $this->table . '.penerimaantruckingheader_nobukti',
-                    $this->table . '.nominal',
-                    $this->table . '.orderantrucking_nobukti',
-                    $this->table . '.suratpengantar_nobukti',
-                    $this->table . '.keterangan',
-                    $this->table . '.invoice_nobukti',
-                    db::raw("(case when (row_number() Over( Order By " . $this->table . ".id )) %2 =0 then '' else (row_number() Over( Order By " . $this->table . ".id )) end) as urutganjil "),
-                    db::raw("(case when (row_number() Over( Order By " . $this->table . ".id )) %2 =0 then (row_number() Over( Order By " . $this->table . ".id )) else  '' end) as urutgenap "),
-                );
+
+                if ($pengeluaranId == 7) {
+                    $query->select(
+                        'supir.namasupir as supir_id',
+                        'karyawan.namakaryawan as karyawan_id',
+                        db::raw("trim(isnull(kelompok.kodekelompok,''))+' - '+trim(stok.namastok) as stok_id"),
+                        $this->table . '.pengeluaranstok_nobukti',
+                        $this->table . '.qty',
+                        $this->table . '.harga',
+                        $this->table . '.penerimaantruckingheader_nobukti',
+                        $this->table . '.nominal',
+                        $this->table . '.orderantrucking_nobukti',
+                        $this->table . '.suratpengantar_nobukti',
+                        $this->table . '.keterangan',
+                        $this->table . '.invoice_nobukti',
+                    );
+                } else {
+                    $query->select(
+                        'supir.namasupir as supir_id',
+                        'karyawan.namakaryawan as karyawan_id',
+                        'stok.namastok as stok_id',
+                        $this->table . '.pengeluaranstok_nobukti',
+                        $this->table . '.qty',
+                        $this->table . '.harga',
+                        $this->table . '.penerimaantruckingheader_nobukti',
+                        $this->table . '.nominal',
+                        $this->table . '.orderantrucking_nobukti',
+                        $this->table . '.suratpengantar_nobukti',
+                        $this->table . '.keterangan',
+                        $this->table . '.invoice_nobukti',
+                        db::raw("(case when (row_number() Over( Order By " . $this->table . ".id )) %2 =0 then '' else (row_number() Over( Order By " . $this->table . ".id )) end) as urutganjil "),
+                        db::raw("(case when (row_number() Over( Order By " . $this->table . ".id )) %2 =0 then (row_number() Over( Order By " . $this->table . ".id )) else  '' end) as urutgenap "),
+                    );
+                }
             }
             if ($pengeluaranId == 10 || $pengeluaranId == 11 || $pengeluaranId == 12 || $pengeluaranId == 13 || $pengeluaranId == 14 || $pengeluaranId == 15) {
                 $query->where('nominal', '!=', 0);
@@ -88,12 +100,32 @@ class PengeluaranTruckingDetail extends MyModel
                     ->leftJoin(DB::raw("trado with (readuncommitted)"), $this->table . '.trado_id', 'trado.id')
                     ->leftJoin(DB::raw("parameter with (readuncommitted)"), $this->table . '.statustitipanemkl', 'parameter.id');
             } else {
-                $query->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id')
+                // dd('test1');
+                if ($pengeluaranId == 7) {
+                    $query->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id')
+                    ->leftJoin(DB::raw("$tableStok as stok with (readuncommitted)"), $this->table . '.' . $kolomStok, 'stok.id')
+                    ->leftJoin(DB::raw("karyawan with (readuncommitted)"), $this->table . '.karyawan_id', 'karyawan.id')
+                    ->leftJoin(DB::raw("kelompok with (readuncommitted)"), 'stok.kelompok_id', 'kelompok.id');
+
+                } else {
+                    $query->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id')
                     ->leftJoin(DB::raw("$tableStok as stok with (readuncommitted)"), $this->table . '.' . $kolomStok, 'stok.id')
                     ->leftJoin(DB::raw("karyawan with (readuncommitted)"), $this->table . '.karyawan_id', 'karyawan.id');
+
+                }
             }
             $query->where($this->table . '.pengeluarantruckingheader_id', '=', request()->pengeluarantruckingheader_id);
+            // dd($query->get());
         } else {
+            if ($pengeluaranId == 7) {
+                $stokKlaim = $query->select($this->table . '.stoktnl_id')
+                    ->where($this->table . '.pengeluarantruckingheader_id', '=',  request()->pengeluarantruckingheader_id)->first();
+                if ($getPengeluaranId->statuscabang == 516) {
+                    $tableStok = (new Stok())->showTNLForKlaim($stokKlaim->stoktnl_id);
+                    $kolomStok = 'stoktnl_id';
+                }
+            }
+
             $query->select(
                 $this->table . '.nobukti',
                 $this->table . '.nominal',
