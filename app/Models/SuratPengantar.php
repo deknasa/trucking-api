@@ -4620,15 +4620,17 @@ class SuratPengantar extends MyModel
         DB::table($tempric)->insertUsing(['suratpengantar_nobukti'], $queryRic);
         
         $statusPelabuhan = (new Parameter())->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN', 'PELABUHAN');
+        $statusLangsir = (new Parameter())->cekId('STATUS LANGSIR', 'STATUS LANGSIR', 'LANGSIR');
 
         $query = DB::table("suratpengantar")->from(db::raw("suratpengantar as sp with (readuncommitted)"))
             ->select(
-                db::raw("sp.id, sp.nobukti as nobuktiedit,sp.jobtrucking as jobtruckingedit,format(sp.tglbukti,'dd') as tglbuktiedit, sp.nosp as nospedit, sp.nocont as nocontedit, sp.nocont2 as nocont2edit, sp.noseal as nosealedit, sp.noseal2 as noseal2edit, container.kodecontainer as containeredit, statuscontainer.keterangan as statuscontaineredit,jenisorder.keterangan as jenisorderedit, dari.kodekota as dariedit, sampai.kodekota as sampaiedit, sp.penyesuaian as penyesuaianedit, (dari.kodekota + '-' + sampai.kodekota + (case when isnull(sp.penyesuaian,'')!='' then ' ('+sp.penyesuaian+')' else '' end)) as tujuanedit, sp.gajisupir as boronganedit, isnull(tambahan.extra,0) as extraedit,agen.kodeagen as agenedit,(case when dari.statuspelabuhan = $statusPelabuhan then 1 else 0 end) as ispelabuhan")
+                db::raw("sp.id, sp.nobukti as nobuktiedit,sp.jobtrucking as jobtruckingedit,format(sp.tglbukti,'dd') as tglbuktiedit, sp.nosp as nospedit, sp.nocont as nocontedit, sp.nocont2 as nocont2edit, sp.noseal as nosealedit, sp.noseal2 as noseal2edit, container.kodecontainer as containeredit, statuscontainer.keterangan as statuscontaineredit,jenisorder.keterangan as jenisorderedit, dari.kodekota as dariedit, sampai.kodekota as sampaiedit, sp.penyesuaian as penyesuaianedit, (dari.kodekota + '-' + sampai.kodekota + (case when isnull(sp.penyesuaian,'')!='' then ' ('+sp.penyesuaian+')' else '' end)) as tujuanedit, sp.gajisupir as boronganedit, isnull(tambahan.extra,0) as extraedit,agen.kodeagen as agenedit,(case when dari.statuspelabuhan = $statusPelabuhan then 1 else 0 end) as ispelabuhan,(case when orderantrucking.statuslangsir = $statusLangsir then 1 else 0 end) as islangsir")
             )
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'sp.container_id', 'container.id')
             ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'sp.statuscontainer_id', 'statuscontainer.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'sp.jenisorder_id', 'jenisorder.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'sp.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'sp.jobtrucking', 'orderantrucking.nobukti')
             ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'sp.dari_id', 'dari.id')
             ->leftJoin(DB::raw("kota as sampai with (readuncommitted)"), 'sp.sampai_id', 'sampai.id')
             ->leftJoin(DB::raw("$temptambahan as tambahan with (readuncommitted)"), 'sp.nobukti', 'tambahan.nobukti')
