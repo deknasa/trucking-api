@@ -4678,6 +4678,12 @@ class SuratPengantar extends MyModel
                     DB::update(DB::raw("UPDATE orderantrucking SET nocont='$suratPengantar->nocont',nocont2='$suratPengantar->nocont2',noseal='$suratPengantar->noseal',noseal2='$suratPengantar->noseal2',modifiedby='$usermodif' where nobukti='$suratPengantar->jobtrucking'"));
                 }
             }
+            if ($suratPengantar->jobtrucking == '') {
+                $suratPengantar->nocont = $data['nocont'][$i];
+                $suratPengantar->nocont2 = $data['nocont2'][$i];
+                $suratPengantar->noseal = $data['noseal'][$i];
+                $suratPengantar->noseal2 = $data['noseal2'][$i];
+            }
             $suratPengantar->nosp = $data['nosp'][$i];
             $suratPengantar->modifiedby = auth('api')->user()->name;
 
