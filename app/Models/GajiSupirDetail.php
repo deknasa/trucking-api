@@ -291,6 +291,22 @@ class GajiSupirDetail extends MyModel
         $temp = '##tempRIC' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
 
+
+        $tempritasi = '##tempritasi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempritasi, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->string('statusritasi')->nullable();
+        });
+        $queryRitasi = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail as gsd with (readuncommitted)"))
+            ->select(db::raw("ritasi.nobukti,(parameter.text + ' ' + dari.kodekota + ' - '+sampai.kodekota) as statusritasi"))
+            ->join(db::raw("ritasi with (readuncommitted)"), 'ritasi.nobukti', 'gsd.ritasi_nobukti')
+            ->leftJoin(db::raw("parameter with (readuncommitted)"), 'ritasi.statusritasi', 'parameter.id')
+            ->leftJoin(db::raw("kota as dari with (readuncommitted)"), 'ritasi.dari_id', 'dari.id')
+            ->leftJoin(db::raw("kota as sampai with (readuncommitted)"), 'ritasi.sampai_id', 'sampai.id')
+            ->where('gsd.gajisupir_id', request()->gajisupir_id);
+
+        DB::table($tempritasi)->insertUsing(['nobukti', 'statusritasi'], $queryRitasi);
+
         $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
             ->select(
                 'gajisupirdetail.nobukti as nobukti',
@@ -308,7 +324,7 @@ class GajiSupirDetail extends MyModel
                 'gajisupirdetail.tolsupir',
                 'gajisupirdetail.gajiritasi as upahritasi',
                 'ritasi.nobukti as ritasi_nobukti',
-                'parameter.text as statusritasi',
+                'ritasi.statusritasi',
                 'gajisupirdetail.biayatambahan as biayaextra',
                 'gajisupirdetail.keteranganbiayatambahan',
                 db::raw("(gajisupirdetail.gajisupir+gajisupirdetail.gajikenek+gajisupirdetail.komisisupir+gajisupirdetail.biayatambahan+ isnull(gajisupirdetail.nominalbiayaextrasupir,0)) as total"),
@@ -321,8 +337,7 @@ class GajiSupirDetail extends MyModel
             ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'suratpengantar.dari_id', 'dari.id')
             ->leftJoin(DB::raw("kota as sampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'sampai.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
-            ->leftJoin(DB::raw("ritasi with (readuncommitted)"), 'gajisupirdetail.ritasi_nobukti', 'ritasi.nobukti')
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'ritasi.statusritasi', 'parameter.id')
+            ->leftJoin(DB::raw("$tempritasi as ritasi with (readuncommitted)"), 'gajisupirdetail.ritasi_nobukti', 'ritasi.nobukti')
 
             ->where('gajisupirdetail.suratpengantar_nobukti', '!=', '-')
             ->where('gajisupirdetail.gajisupir_id', request()->gajisupir_id);
@@ -401,7 +416,7 @@ class GajiSupirDetail extends MyModel
                 'gajisupirdetail.tolsupir',
                 'gajisupirdetail.gajiritasi as upahritasi',
                 'ritasi.nobukti as ritasi_nobukti',
-                'parameter.text as statusritasi',
+                db::raw("(parameter.text + ' ' + dari.kodekota + ' - '+sampai.kodekota) as statusritasi"),
                 'gajisupirdetail.biayatambahan as biayaextra',
                 'gajisupirdetail.keteranganbiayatambahan',
                 db::raw("(gajisupirdetail.gajisupir+gajisupirdetail.gajikenek+gajisupirdetail.komisisupir+gajisupirdetail.biayatambahan) as total"),
