@@ -516,21 +516,44 @@ class InvoiceHeader extends MyModel
                         db::raw("max(a.nobukti) as suratpengantar_nobukti")
                     )
                     ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
+                    ->whereRaw("(a.dari_id in(" . $kotapelabuhanid . "))")
+
                     ->where('a.agen_id', $request->agen_id)
                     ->where('a.jenisorder_id', $request->jenisorder_id)
-                    ->whereRaw("(a.statuscontainer_id in(" . $fullempty . ") or a.statusbatalmuat=" . $statusbatalmuat . ")")
-                    ->leftjoin(DB::raw($tempkepelabuhan . " g"), 'a.jobtrucking', 'g.jobtrucking')
-                    ->whereRaw("isnull(g.jobtrucking,'')=''")
+                    ->whereRaw("(a.statuscontainer_id not in(" . $fullempty . ") or a.statusbatalmuat=" . $statusbatalmuat . ")")
                     ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
                     ->groupBy('a.jobtrucking');
 
-                // dd($querykepelabuhan->get());
+                // dd($querykepelabuhan->tosql());
 
                 DB::table($tempkepelabuhan)->insertUsing([
                     'jobtrucking',
                     'nominal',
                     'suratpengantar_nobukti',
                 ], $querykepelabuhan);
+
+                $querykepelabuhan = DB::table('suratpengantar')->from(
+                    db::raw("suratpengantar a with (readuncommitted)")
+                )
+                    ->select(
+                        'a.jobtrucking',
+                        db::raw("max(a.totalomset) as nominal"),
+                        db::raw("max(a.nobukti) as suratpengantar_nobukti")
+                    )
+                    ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
+                    ->where('a.agen_id', $request->agen_id)
+                    ->where('a.jenisorder_id', $request->jenisorder_id)
+                    ->whereRaw("(a.statuscontainer_id  in(" . $fullempty . ") or a.statusbatalmuat=" . $statusbatalmuat . ")")
+                    ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
+                    ->groupBy('a.jobtrucking');
+
+                // dd($querykepelabuhan->tosql());
+
+                DB::table($tempkepelabuhan)->insertUsing([
+                    'jobtrucking',
+                    'nominal',
+                    'suratpengantar_nobukti',
+                ], $querykepelabuhan);                
 
                 // pelabuhan beda
                 $tempdarikepelabuhanbeda = '##tempdarikepelabuhanbeda' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
