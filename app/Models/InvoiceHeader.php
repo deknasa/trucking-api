@@ -515,6 +515,8 @@ class InvoiceHeader extends MyModel
                         db::raw("max(a.totalomset) as nominal"),
                         db::raw("max(a.nobukti) as suratpengantar_nobukti")
                     )
+                    ->leftJoin(DB::raw("$tempkepelabuhan as c with (readuncommitted)"), 'a.jobtrucking', 'c.jobtrucking')
+
                     ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
                     ->whereRaw("(a.dari_id in(" . $kotapelabuhanid . "))")
 
@@ -522,6 +524,7 @@ class InvoiceHeader extends MyModel
                     ->where('a.jenisorder_id', $request->jenisorder_id)
                     ->whereRaw("(a.statuscontainer_id not in(" . $fullempty . ") or a.statusbatalmuat=" . $statusbatalmuat . ")")
                     ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
+                    ->whereraw("isnull(c.jobtrucking,'')=''")
                     ->groupBy('a.jobtrucking');
 
                 // dd($querykepelabuhan->tosql());
@@ -540,11 +543,14 @@ class InvoiceHeader extends MyModel
                         db::raw("max(a.totalomset) as nominal"),
                         db::raw("max(a.nobukti) as suratpengantar_nobukti")
                     )
+                    ->leftJoin(DB::raw("$tempkepelabuhan as c with (readuncommitted)"), 'a.jobtrucking', 'c.jobtrucking')
+
                     ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
                     ->where('a.agen_id', $request->agen_id)
                     ->where('a.jenisorder_id', $request->jenisorder_id)
                     ->whereRaw("(a.statuscontainer_id  in(" . $fullempty . ") or a.statusbatalmuat=" . $statusbatalmuat . ")")
                     ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
+                    ->whereraw("isnull(c.jobtrucking,'')=''")
                     ->groupBy('a.jobtrucking');
 
                 // dd($querykepelabuhan->tosql());
@@ -604,11 +610,14 @@ class InvoiceHeader extends MyModel
                         db::raw("max(a.nobukti) as suratpengantar_nobukti")
                     )
                     ->join(db::raw($tempdarikepelabuhanbeda . " b with (readuncommitted)"), 'a.jobtrucking', 'b.jobtrucking')
+                    ->leftJoin(DB::raw("$tempkepelabuhan as c with (readuncommitted)"), 'a.jobtrucking', 'c.jobtrucking')
+
                     // ->whereRaw("(a.sampai_id=" . $kotapelabuhanid . " or a.statuslangsir=" . $statuslangsir->id . "  or a.statusbatalmuat=" . $statusbatalmuat . ")")
                     ->whereRaw("(a.tglbukti>'" . date('Y-m-d', strtotime($request->tglsampai)) . "' and a.tglbukti<='" . date('Y-m-d', strtotime($tglbatas2)) . "')")
                     ->where('a.agen_id', $request->agen_id)
                     ->where('a.jenisorder_id', $request->jenisorder_id)
                     ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
+                    ->whereraw("isnull(c.jobtrucking,'')=''")
                     ->groupBy('a.jobtrucking');
 
                 // dd($querykepelabuhanbeda->toSql(),DB::table($tempdaripelabuhan));
@@ -643,12 +652,15 @@ class InvoiceHeader extends MyModel
                         db::raw("max(a.totalomset) as nominal"),
                         db::raw("max(a.nobukti) as suratpengantar_nobukti")
                     )
+                    ->leftJoin(DB::raw("$tempkepelabuhan as c with (readuncommitted)"), 'a.jobtrucking', 'c.jobtrucking')
                     ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
                     ->where('a.agen_id', $request->agen_id)
                     ->where('a.jenisorder_id', $request->jenisorder_id)
                     ->whereRaw("a.statuscontainer_id not in(" . $fullempty . ")")
                     ->join(DB::raw($tempTripasalKandang . " g"), 'a.nobukti', 'g.nobukti_tripasal')
                     ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
+                    ->whereRaw("isnull(c.jobtrucking,'')=''")                  
+
                     ->groupBy('a.jobtrucking');
 
 
