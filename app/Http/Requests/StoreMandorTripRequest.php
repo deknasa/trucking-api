@@ -42,6 +42,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Schema;
 use App\Models\ReminderOli;
+use App\Rules\JobTruckingRequired;
 use App\Rules\ValidasiAgenTripGudangSama;
 use App\Rules\validasiBatasLuarKota;
 use App\Rules\ValidasiContainerTripGudangSama;
@@ -959,7 +960,7 @@ class StoreMandorTripRequest extends FormRequest
                     // dd('disini');
                     if (request()->dari_id != $idkandang && request()->nobukti_tripasal == '') {
                         $rulesJobTrucking = [
-                            'jobtrucking' => [$idpelabuhan]
+                            'jobtrucking' => [new JobTruckingRequired()]
                         ];
                     }
                 }
