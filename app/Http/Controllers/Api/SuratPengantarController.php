@@ -650,11 +650,17 @@ class SuratPengantarController extends Controller
     public function approvalGabungJobTrucking(ApprovalGabungJobTruckingRequest $request)
     {
         // dd('test');
+
+
+      
         DB::beginTransaction();
         try {
+
             $data = [
                 'nobukti' => $request->Id,
-            ];
+            ];   
+
+    
             (new SuratPengantar())->approvalGabungJobTrucking($data);
 
             DB::commit();

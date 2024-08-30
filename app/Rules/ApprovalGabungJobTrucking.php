@@ -18,6 +18,8 @@ class ApprovalGabungJobTrucking implements Rule
      */
     public $trip;
     public $bjumlah;
+    public $nocont;
+    public $noinvoice;
     public function __construct()
     {
         //
@@ -35,39 +37,54 @@ class ApprovalGabungJobTrucking implements Rule
         $parameter = new Parameter();
 
         // $pelabuhancabang = $parameter->cekText('PELABUHAN CABANG', 'PELABUHAN CABANG') ?? '0';
-        $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
-        $pelabuhancabang=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
-        ->select(
-            db::raw("STRING_AGG(id,',') as id"),
-        )
-        ->where('a.statuspelabuhan',$statuspelabuhan)
-        ->first()->id ?? 1;  
+        $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN', 'PELABUHAN') ?? 0;
+        $pelabuhancabang = db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+            ->select(
+                db::raw("STRING_AGG(id,',') as id"),
+            )
+            ->where('a.statuspelabuhan', $statuspelabuhan)
+            ->first()->id ?? 1;
 
-        $bjumlah=0;
+        $bjumlah = 0;
         for ($i = 0; $i < count(request()->Id); $i++) {
             $nobukti = request()->Id[$i];
             // dd($nobukti);
-            $querypelabuhan=db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
-            ->select(
-                'a.jobtrucking'
-            )
-            ->where('a.nobukti', $nobukti)
-            ->whereraw("(a.dari_id in(" . $pelabuhancabang . ") or isnull(a.statuslongtrip,0)=65)")
-            ->first();
+            $querypelabuhan = db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+                ->select(
+                    'a.jobtrucking',
+                    'a.nocont',
+                    db::raw("isnull(b.nobukti,'') as noinvoice")
+                )
+                ->leftjoin(db::raw("invoicedetail b with (readuncommitted)"),'a.jobtrucking','b.orderantrucking_nobukti')
+                ->where('a.nobukti', $nobukti)
+                ->whereraw("(a.dari_id in(" . $pelabuhancabang . ") or isnull(a.statuslongtrip,0)=65)")
+                ->first();
 
             if (isset($querypelabuhan)) {
-                $bjumlah=$bjumlah+1; 
+                $nocont = $querypelabuhan->nocont ?? '';
+                $noinvoice = $querypelabuhan->noinvoice ?? '';
+
+                
+                $bjumlah = $bjumlah + 1;
             }
-
         }
-        $this->bjumlah=$bjumlah;
+        $this->bjumlah = $bjumlah;
+        $this->nocont = $nocont;
+        $this->noinvoice = $noinvoice;
+        // dd($nocont);
 
-        if ($bjumlah==0 ) {
+        if ($bjumlah == 0) {
             return false;
         }
 
-        if ($bjumlah>1) {
-            
+        if ($bjumlah > 1) {
+            return false;
+        }
+
+        if ($nocont == '') {
+            return false;
+        }
+        if ($noinvoice != '') {
             return false;
         }
 
@@ -83,12 +100,21 @@ class ApprovalGabungJobTrucking implements Rule
     public function message()
     {
         // dd($this->bjumlah);
-        if ($this->bjumlah==0)  {
-            return app(ErrorController::class)->geterror('TTAP')->keterangan ;
+        if ($this->bjumlah == 0) {
+            return app(ErrorController::class)->geterror('TTAP')->keterangan;
         }
-        if ($this->bjumlah>1)  {
-            return app(ErrorController::class)->geterror('TTPL')->keterangan ;
+        if ($this->bjumlah > 1) {
+            return app(ErrorController::class)->geterror('TTPL')->keterangan;
         }
-        
+        // dd($this->nocont);
+        if ($this->nocont == '') {
+            $keterangan = 'No Container Dari Pelabuhan ' . app(ErrorController::class)->geterror('WI')->keterangan;
+            return $keterangan;
+        }
+        if ($this->noinvoice != '') {
+            $keterangan = 'Job Trucking Sudah di Pakai di Bukti  <b>'. $this->noinvoice .'</b><br>'. app(ErrorController::class)->geterror('SATL')->keterangan;
+            return $keterangan;
+        }
+
     }
 }
