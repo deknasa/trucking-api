@@ -268,14 +268,14 @@ class InvoiceHeader extends MyModel
         //     ->where('subgrp', '=', 'PELABUHAN CABANG')
         //     ->first();
 
-            $parameter = new Parameter();
-            $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN','PELABUHAN') ?? 0;
-            $kotapelabuhan=db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
+        $parameter = new Parameter();
+        $statuspelabuhan = $parameter->cekId('STATUS PELABUHAN', 'STATUS PELABUHAN', 'PELABUHAN') ?? 0;
+        $kotapelabuhan = db::table("kota")->from(db::raw("kota a with (readuncommitted)"))
             ->select(
                 db::raw("STRING_AGG(id,',') as id"),
             )
-            ->where('a.statuspelabuhan',$statuspelabuhan)
-            ->first()->id ?? 1;  
+            ->where('a.statuspelabuhan', $statuspelabuhan)
+            ->first()->id ?? 1;
 
 
         $pilihanperiodeotobon = DB::table('parameter')->from(
@@ -368,9 +368,9 @@ class InvoiceHeader extends MyModel
             ->where('subgrp', '=', 'STATUS CONTAINER FULL EMPTY')
             ->first();
 
-            // $kotapelabuhanid = $kotapelabuhan->text ?? 0;
-            $kotapelabuhanid = $kotapelabuhan;
-            $pilihanperiode = $request->pilihanperiode ?? 0;
+        // $kotapelabuhanid = $kotapelabuhan->text ?? 0;
+        $kotapelabuhanid = $kotapelabuhan;
+        $pilihanperiode = $request->pilihanperiode ?? 0;
 
         $idkandang = (new Parameter())->cekText('KANDANG', 'KANDANG') ?? 0;
         $tempdaripelabuhan = '##tempdaripelabuhan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -417,6 +417,26 @@ class InvoiceHeader extends MyModel
 
         // dump($pilihanperiodeotobon);
         // dd($pilihanperiode);
+        $bulansampai = date('m', strtotime($request->tglsampai));
+        if ($bulansampai == 12) {
+            $bulan = 1;
+            $tahun = date('Y', strtotime($request->tglsampai)) + 1;
+        } else {
+            $bulan = date('m', strtotime($request->tglsampai)) + 1;
+            $tahun = date('Y', strtotime($request->tglsampai));
+        }
+        $tglsampai3 = $tahun . '/' . $bulan . '/1';
+        // dd($tglsampai3);
+        $tglbatas2 = date('Y-m-d', strtotime($tglsampai3 . ' -1 day'));
+        // dd( $tglbatas2);
+        // $tglsampai2=
+        $temphasil = '##temphasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temphasil, function ($table) {
+            $table->string('jobtrucking', 1000)->nullable();
+            $table->double('nominal')->nullable();
+            $table->string('suratpengantar_nobukti', 1000)->nullable();
+        });
+
         if ($statusjeniskendaraan == $jenisTangki->id) {
             $queryhasil = DB::table('suratpengantar')->from(
                 db::raw("suratpengantar a with (readuncommitted)")
@@ -429,7 +449,15 @@ class InvoiceHeader extends MyModel
                 ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
                 ->where('a.agen_id', $request->agen_id)
                 ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
+                ->leftJoin(DB::raw("$temphasil as c with (readuncommitted)"), 'a.jobtrucking', 'c.jobtrucking')
+                ->whereRaw("isnull(c.jobtrucking,'')=''")
                 ->groupBy('a.jobtrucking');
+
+            DB::table($temphasil)->insertUsing([
+                'jobtrucking',
+                'nominal',
+                'suratpengantar_nobukti',
+            ], $queryhasil);
         } else {
 
             if ($pilihanperiodeotobon == $pilihanperiode) {
@@ -441,6 +469,12 @@ class InvoiceHeader extends MyModel
                     $table->string('suratpengantar_nobukti', 1000)->nullable();
                 });
 
+                $tempdarikepelabuhan = '##tempdarikepelabuhan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempdarikepelabuhan, function ($table) {
+                    $table->string('jobtrucking', 1000)->nullable();
+                    $table->double('nominal')->nullable();
+                    $table->string('suratpengantar_nobukti', 1000)->nullable();
+                });
 
                 $fullempty = db::table('parameter')->from(db::raw("parameter with (readuncommitted)"))
                     ->select('text as id')
@@ -449,7 +483,7 @@ class InvoiceHeader extends MyModel
                     ->first()->id ?? 0;
 
 
-                $querykepelabuhan = DB::table('suratpengantar')->from(
+                $querydarikepelabuhan = DB::table('suratpengantar')->from(
                     db::raw("suratpengantar a with (readuncommitted)")
                 )
                     ->select(
@@ -457,7 +491,7 @@ class InvoiceHeader extends MyModel
                         db::raw("max(a.totalomset) as nominal"),
                         db::raw("max(a.nobukti) as suratpengantar_nobukti")
                     )
-                    ->whereRaw("(a.sampai_id in(" . $kotapelabuhanid . ") or a.statuslangsir=" . $statuslangsir->id . ")")
+                    ->whereRaw("(a.dari_id in(" . $kotapelabuhanid . ") or a.statuslangsir=" . $statuslangsir->id . ")")
                     ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
                     ->where('a.agen_id', $request->agen_id)
                     ->where('a.jenisorder_id', $request->jenisorder_id)
@@ -466,11 +500,11 @@ class InvoiceHeader extends MyModel
                     ->groupBy('a.jobtrucking');
 
 
-                DB::table($tempkepelabuhan)->insertUsing([
+                DB::table($tempdarikepelabuhan)->insertUsing([
                     'jobtrucking',
                     'nominal',
                     'suratpengantar_nobukti',
-                ], $querykepelabuhan);
+                ], $querydarikepelabuhan);
 
 
                 $querykepelabuhan = DB::table('suratpengantar')->from(
@@ -497,6 +531,70 @@ class InvoiceHeader extends MyModel
                     'nominal',
                     'suratpengantar_nobukti',
                 ], $querykepelabuhan);
+
+                // pelabuhan beda
+                $tempdarikepelabuhanbeda = '##tempdarikepelabuhanbeda' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempdarikepelabuhanbeda, function ($table) {
+                    $table->string('jobtrucking', 1000)->nullable();
+                    $table->double('nominal')->nullable();
+                    $table->string('suratpengantar_nobukti', 1000)->nullable();
+                });
+
+
+                $querydarikepelabuhanbeda = DB::table('suratpengantar')->from(
+                    db::raw("suratpengantar a with (readuncommitted)")
+                )
+                    ->select(
+                        'a.jobtrucking',
+                        db::raw("max(a.totalomset) as nominal"),
+                        db::raw("max(a.nobukti) as suratpengantar_nobukti")
+                    )
+                    // ->whereRaw("(a.sampai_id=" . $kotapelabuhanid . " or a.statuslangsir=" . $statuslangsir->id . "  or a.statusbatalmuat=" . $statusbatalmuat . ")")
+                    ->whereRaw("(a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "')")
+                    ->where('a.agen_id', $request->agen_id)
+                    ->where('a.jenisorder_id', $request->jenisorder_id)
+                    ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
+                    ->groupBy('a.jobtrucking');
+
+                DB::table($tempdarikepelabuhanbeda)->insertUsing([
+                    'jobtrucking',
+                    'nominal',
+                    'suratpengantar_nobukti',
+                ], $querydarikepelabuhanbeda);
+
+
+
+                $tempkepelabuhanbeda = '##tempkepelabuhanbeda' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempkepelabuhanbeda, function ($table) {
+                    $table->string('jobtrucking', 1000)->nullable();
+                    $table->double('nominal')->nullable();
+                    $table->string('suratpengantar_nobukti', 1000)->nullable();
+                });
+
+
+                $querykepelabuhanbeda = DB::table('suratpengantar')->from(
+                    db::raw("suratpengantar a with (readuncommitted)")
+                )
+                    ->select(
+                        'a.jobtrucking',
+                        db::raw("max(a.totalomset) as nominal"),
+                        db::raw("max(a.nobukti) as suratpengantar_nobukti")
+                    )
+                    ->join(db::raw($tempdarikepelabuhanbeda . " b with (readuncommitted)"), 'a.jobtrucking', 'b.jobtrucking')
+                    // ->whereRaw("(a.sampai_id=" . $kotapelabuhanid . " or a.statuslangsir=" . $statuslangsir->id . "  or a.statusbatalmuat=" . $statusbatalmuat . ")")
+                    ->whereRaw("(a.tglbukti>'" . date('Y-m-d', strtotime($request->tglsampai)) . "' and a.tglbukti<='" . date('Y-m-d', strtotime($tglbatas2)) . "')")
+                    ->where('a.agen_id', $request->agen_id)
+                    ->where('a.jenisorder_id', $request->jenisorder_id)
+                    ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
+                    ->groupBy('a.jobtrucking');
+
+                // dd($querykepelabuhanbeda->toSql(),DB::table($tempdaripelabuhan));
+
+                DB::table($tempkepelabuhan)->insertUsing([
+                    'jobtrucking',
+                    'nominal',
+                    'suratpengantar_nobukti',
+                ], $querykepelabuhanbeda);
 
                 //  QUERY PULANG KE KANDANG DAN SUDAH DIPAKAI UNTUK TRIP DARI KANDANG
                 $tempTripasalKandang = '##tempTripasalKandang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -549,9 +647,163 @@ class InvoiceHeader extends MyModel
                         'b.nominal',
                         'b.suratpengantar_nobukti'
                     )
-                    ->join(DB::raw($tempkepelabuhan) . " as b", 'a.jobtrucking', 'b.jobtrucking');
+                    ->join(DB::raw($tempkepelabuhan) . " as b", 'a.jobtrucking', 'b.jobtrucking')
+                    ->leftJoin(DB::raw("$temphasil as c with (readuncommitted)"), 'a.jobtrucking', 'c.jobtrucking')
+                    ->whereRaw("isnull(c.jobtrucking,'')=''");
+
+
+                DB::table($temphasil)->insertUsing([
+                    'jobtrucking',
+                    'nominal',
+                    'suratpengantar_nobukti',
+                ], $queryhasil);
+
+                // awal
+                // GET NOBUKTI TRIP ASAL LONGTRIP
+                $temptripasal = '##temptripasal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($temptripasal, function ($table) {
+                    $table->string('nobukti_tripasal', 1000)->nullable();
+                    $table->string('nobukti', 1000)->nullable();
+                    $table->decimal('totalomset', 15, 2)->nullable();
+                });
+                $querygetTripasal = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+                    ->select(DB::raw("nobukti_tripasal"), 'nobukti', 'totalomset')
+                    ->whereRaw("isnull(nobukti_tripasal,'') != ''")
+                    ->where('agen_id', $request->agen_id)
+                    // ->where('jenisorder_id', $request->jenisorder_id)
+                    ->where('statusjeniskendaraan', $statusjeniskendaraan)
+                    ->whereRaw("tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'");
+                DB::table($temptripasal)->insertUsing([
+                    'nobukti_tripasal',
+                    'nobukti',
+                    'totalomset',
+                ], $querygetTripasal);
+
+                $queryTripAwalLongtrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar as a with (readuncommitted)"))
+                    ->select(
+                        'a.jobtrucking',
+                        db::raw("(isnull(a.totalomset,0) + isnull(b.totalomset,0)) as nominal"),
+                        db::raw("a.nobukti as suratpengantar_nobukti")
+                    )
+                    ->where('a.agen_id', $request->agen_id)
+                    ->where('a.jenisorder_id', $request->jenisorder_id)
+                    ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
+                    ->join(DB::raw("$temptripasal as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti_tripasal')
+                    ->leftJoin(DB::raw("$temphasil as c with (readuncommitted)"), 'a.jobtrucking', 'c.jobtrucking')
+                    ->whereRaw("isnull(c.jobtrucking,'')=''");
+
+                DB::table($temphasil)->insertUsing([
+                    'jobtrucking',
+                    'nominal',
+                    'suratpengantar_nobukti',
+                ], $queryTripAwalLongtrip);
+
+                // GET JOB LANGSIR
+                $queryTripLangsir = DB::table("suratpengantar")->from(DB::raw("suratpengantar as a with (readuncommitted)"))
+                    ->select(
+                        'a.jobtrucking',
+                        db::raw("a.totalomset as nominal"),
+                        db::raw("a.nobukti as suratpengantar_nobukti")
+                    )
+                    ->where('a.agen_id', $request->agen_id)
+                    ->where('a.jenisorder_id', $request->jenisorder_id)
+                    ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
+                    ->where('b.statuslangsir', $statuslangsir->id)
+                    ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
+                    ->join(DB::raw("orderantrucking as b with (readuncommitted)"), 'a.jobtrucking', 'b.nobukti')
+                    ->leftJoin(DB::raw("$temphasil as c with (readuncommitted)"), 'a.jobtrucking', 'c.jobtrucking')
+                    ->whereRaw("isnull(c.jobtrucking,'')=''");                    
+
+                DB::table($temphasil)->insertUsing([
+                    'jobtrucking',
+                    'nominal',
+                    'suratpengantar_nobukti',
+                ], $queryTripLangsir);
+                // END JOB LANGSIR
+                // GET LONGTRIP
+                // $getLongTrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar as a with (readuncommitted)"))
+                //     ->select(
+                //         'a.jobtrucking',
+                //         db::raw("a.totalomset as nominal"),
+                //         db::raw("a.nobukti as suratpengantar_nobukti")
+                //     )
+                //     ->where('a.statuslongtrip', $statuslongtrip->id)
+                //     ->where('a.agen_id', $request->agen_id)
+                //     ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
+                //     ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'");
+                // DB::table($temphasil)->insertUsing([
+                //     'jobtrucking',
+                //     'nominal',
+                //     'suratpengantar_nobukti',
+                // ], $getLongTrip);
+
+                // GET TRIP TOLAKAN
+
+                $queryTolakan = DB::table('suratpengantar')->from(
+                    db::raw("suratpengantar a with (readuncommitted)")
+                )
+                    ->select(
+                        'a.jobtrucking',
+                        db::raw("a.totalomset as nominal"),
+                        db::raw("a.nobukti as suratpengantar_nobukti")
+                    )
+                    ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
+                    ->where('a.agen_id', $request->agen_id)
+                    ->where('a.jenisorder_id', $request->jenisorder_id)
+                    ->leftJoin(DB::raw("$temphasil as c with (readuncommitted)"), 'a.jobtrucking', 'c.jobtrucking')
+                    ->whereRaw("isnull(c.jobtrucking,'')=''")
+                    ->where('a.statustolakan', 3);
+                    
+                DB::table($temphasil)->insertUsing([
+                    'jobtrucking',
+                    'nominal',
+                    'suratpengantar_nobukti',
+                ], $queryTolakan);
+
+                // akhir
+
             } else {
 
+                // 
+                $tempkedaripelabuhan = '##tempkedaripelabuhan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                Schema::create($tempkedaripelabuhan, function ($table) {
+                    $table->string('jobtrucking', 1000)->nullable();
+                    $table->double('nominal')->nullable();
+                    $table->string('suratpengantar_nobukti', 1000)->nullable();
+                });
+
+
+                $fullempty = db::table('parameter')->from(db::raw("parameter with (readuncommitted)"))
+                    ->select('text as id')
+                    ->where('grp', 'STATUS CONTAINER')
+                    ->where('subgrp', 'STATUS CONTAINER FULL EMPTY')
+                    ->first()->id ?? 0;
+
+
+                $querykedaripelabuhan = DB::table('suratpengantar')->from(
+                    db::raw("suratpengantar a with (readuncommitted)")
+                )
+                    ->select(
+                        'a.jobtrucking',
+                        db::raw("max(a.totalomset) as nominal"),
+                        db::raw("max(a.nobukti) as suratpengantar_nobukti")
+                    )
+                    ->whereRaw("(a.dari_id in(" . $kotapelabuhanid . ") or a.statuslangsir=" . $statuslangsir->id . ")")
+                    ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
+                    ->where('a.agen_id', $request->agen_id)
+                    ->where('a.jenisorder_id', $request->jenisorder_id)
+                    ->whereRaw("a.statuscontainer_id not in(" . $fullempty . ")")
+                    ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
+                    ->groupBy('a.jobtrucking');
+
+
+                DB::table($tempkedaripelabuhan)->insertUsing([
+                    'jobtrucking',
+                    'nominal',
+                    'suratpengantar_nobukti',
+                ], $querykedaripelabuhan);
+
+                // 
 
                 $tempkepelabuhanbeda = '##tempkepelabuhanbeda' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                 Schema::create($tempkepelabuhanbeda, function ($table) {
@@ -569,8 +821,11 @@ class InvoiceHeader extends MyModel
                         db::raw("max(a.totalomset) as nominal"),
                         db::raw("max(a.nobukti) as suratpengantar_nobukti")
                     )
+                    ->join(db::raw($tempdaripelabuhan . " b with (readuncommitted)"), 'a.jobtrucking', 'b.jobtrucking')
+                    ->whereRaw("(a.sampai_id in(" . $kotapelabuhanid . "))")
+
                     // ->whereRaw("(a.sampai_id=" . $kotapelabuhanid . " or a.statuslangsir=" . $statuslangsir->id . "  or a.statusbatalmuat=" . $statusbatalmuat . ")")
-                    ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "'")
+                    ->whereRaw("a.tglbukti>'" . date('Y-m-d', strtotime($tglbatas2)) . "'")
                     ->where('a.agen_id', $request->agen_id)
                     ->where('a.jenisorder_id', $request->jenisorder_id)
                     ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
@@ -584,8 +839,10 @@ class InvoiceHeader extends MyModel
                     'suratpengantar_nobukti',
                 ], $querykepelabuhanbeda);
 
-                $queryhasil = DB::table($tempdaripelabuhan)->from(
-                    db::raw($tempdaripelabuhan . " a ")
+
+
+                $queryhasil = DB::table($tempkedaripelabuhan)->from(
+                    db::raw($tempkedaripelabuhan . " a ")
                 )
                     ->select(
                         'a.jobtrucking',
@@ -594,121 +851,20 @@ class InvoiceHeader extends MyModel
                     )
                     ->join(DB::raw($tempkepelabuhanbeda) . " as b", 'a.jobtrucking', 'b.jobtrucking')
                     ->groupBy('a.jobtrucking');
+
+                DB::table($temphasil)->insertUsing([
+                    'jobtrucking',
+                    'nominal',
+                    'suratpengantar_nobukti',
+                ], $queryhasil);
             }
         }
-        $temphasil = '##temphasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($temphasil, function ($table) {
-            $table->string('jobtrucking', 1000)->nullable();
-            $table->double('nominal')->nullable();
-            $table->string('suratpengantar_nobukti', 1000)->nullable();
-        });
 
-        DB::table($temphasil)->insertUsing([
-            'jobtrucking',
-            'nominal',
-            'suratpengantar_nobukti',
-        ], $queryhasil);
 
-        // dd('test');
-        // dd(db::table($temphasil)->get());
 
-        // GET NOBUKTI TRIP ASAL LONGTRIP
-        $temptripasal = '##temptripasal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($temptripasal, function ($table) {
-            $table->string('nobukti_tripasal', 1000)->nullable();
-            $table->string('nobukti', 1000)->nullable();
-            $table->decimal('totalomset', 15, 2)->nullable();
-        });
-        $querygetTripasal = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-            ->select(DB::raw("nobukti_tripasal"), 'nobukti', 'totalomset')
-            ->whereRaw("isnull(nobukti_tripasal,'') != ''")
-            ->where('agen_id', $request->agen_id)
-            // ->where('jenisorder_id', $request->jenisorder_id)
-            ->where('statusjeniskendaraan', $statusjeniskendaraan)
-            ->whereRaw("tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'");
-        DB::table($temptripasal)->insertUsing([
-            'nobukti_tripasal',
-            'nobukti',
-            'totalomset',
-        ], $querygetTripasal);
 
-        $queryTripAwalLongtrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar as a with (readuncommitted)"))
-            ->select(
-                'a.jobtrucking',
-                db::raw("(isnull(a.totalomset,0) + isnull(b.totalomset,0)) as nominal"),
-                db::raw("a.nobukti as suratpengantar_nobukti")
-            )
-            ->where('a.agen_id', $request->agen_id)
-            ->where('a.jenisorder_id', $request->jenisorder_id)
-            ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
-            ->join(DB::raw("$temptripasal as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti_tripasal')
-            ->leftJoin(DB::raw("$temphasil as c with (readuncommitted)"), 'a.jobtrucking', 'c.jobtrucking')
-            ->whereRaw("isnull(c.jobtrucking,'')=''");
 
-        DB::table($temphasil)->insertUsing([
-            'jobtrucking',
-            'nominal',
-            'suratpengantar_nobukti',
-        ], $queryTripAwalLongtrip);
 
-        // GET JOB LANGSIR
-        $queryTripLangsir = DB::table("suratpengantar")->from(DB::raw("suratpengantar as a with (readuncommitted)"))
-            ->select(
-                'a.jobtrucking',
-                db::raw("a.totalomset as nominal"),
-                db::raw("a.nobukti as suratpengantar_nobukti")
-            )
-            ->where('a.agen_id', $request->agen_id)
-            ->where('a.jenisorder_id', $request->jenisorder_id)
-            ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
-            ->where('b.statuslangsir', $statuslangsir->id)
-            ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
-            ->join(DB::raw("orderantrucking as b with (readuncommitted)"), 'a.jobtrucking', 'b.nobukti');
-
-        DB::table($temphasil)->insertUsing([
-            'jobtrucking',
-            'nominal',
-            'suratpengantar_nobukti',
-        ], $queryTripLangsir);
-        // END JOB LANGSIR
-        // GET LONGTRIP
-        // $getLongTrip = DB::table("suratpengantar")->from(DB::raw("suratpengantar as a with (readuncommitted)"))
-        //     ->select(
-        //         'a.jobtrucking',
-        //         db::raw("a.totalomset as nominal"),
-        //         db::raw("a.nobukti as suratpengantar_nobukti")
-        //     )
-        //     ->where('a.statuslongtrip', $statuslongtrip->id)
-        //     ->where('a.agen_id', $request->agen_id)
-        //     ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
-        //     ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'");
-        // DB::table($temphasil)->insertUsing([
-        //     'jobtrucking',
-        //     'nominal',
-        //     'suratpengantar_nobukti',
-        // ], $getLongTrip);
-
-        // GET TRIP TOLAKAN
-
-        $queryTolakan = DB::table('suratpengantar')->from(
-            db::raw("suratpengantar a with (readuncommitted)")
-        )
-            ->select(
-                'a.jobtrucking',
-                db::raw("a.totalomset as nominal"),
-                db::raw("a.nobukti as suratpengantar_nobukti")
-            )
-            ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
-            ->where('a.agen_id', $request->agen_id)
-            ->where('a.jenisorder_id', $request->jenisorder_id)
-            ->leftJoin(DB::raw("$temphasil as c with (readuncommitted)"), 'a.jobtrucking', 'c.jobtrucking')
-            ->whereRaw("isnull(c.jobtrucking,'')=''")
-            ->where('a.statustolakan', 3);
-        DB::table($temphasil)->insertUsing([
-            'jobtrucking',
-            'nominal',
-            'suratpengantar_nobukti',
-        ], $queryTolakan);
 
         $tempomsettambahan = '##tempomsettambahan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $tempomsettambahanrinci = '##tempomsettambahanrinci' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -752,18 +908,18 @@ class InvoiceHeader extends MyModel
         DB::table($tempomsettambahanrinci)->insertUsing(['jobtrucking', 'keterangan', 'nominal'], $fetch);
 
         $fetch = DB::table($tempomsettambahanrinci)->from(DB::raw("$tempomsettambahanrinci as a"))
-        ->select(
-            'a.jobtrucking',
-            DB::raw("STRING_AGG(a.keterangan, ', ') AS keterangan"),
-            DB::raw("sum(a.nominal) as nominal")
-        )
-        ->groupby('a.jobtrucking');
+            ->select(
+                'a.jobtrucking',
+                DB::raw("STRING_AGG(a.keterangan, ', ') AS keterangan"),
+                DB::raw("sum(a.nominal) as nominal")
+            )
+            ->groupby('a.jobtrucking');
         Schema::create($tempomsettambahan, function ($table) {
             $table->string('jobtrucking');
             $table->LongText('keterangan')->nullable();
             $table->double('nominal')->nullable();
         });
-        
+
         DB::table($tempomsettambahan)->insertUsing(['jobtrucking', 'keterangan', 'nominal'], $fetch);
 
         $tempsp = '##tempsp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
