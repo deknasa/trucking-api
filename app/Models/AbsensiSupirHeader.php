@@ -211,8 +211,17 @@ class AbsensiSupirHeader extends MyModel
             DB::table($absensisupir)->insertUsing([
                 'nobukti',
             ],  $queryabsensisupir);
-            $query->join(db::raw($absensisupir . " as tempAbsensi"), 'absensisupirheader.nobukti', 'tempAbsensi.nobukti');
-            
+            $query
+                ->addSelect(db::raw("CASE 
+            WHEN EXISTS (SELECT 1 FROM harilibur WHERE tgl = CONVERT(DATE, absensisupirheader.tglbukti, 105)) THEN 1
+            ELSE 
+                CASE 
+                    WHEN DATEPART(WEEKDAY, CONVERT(DATE, absensisupirheader.tglbukti, 105)) = 1 THEN 1
+                    ELSE 0
+                END
+        END AS is_holiday_or_sunday"))
+                ->join(db::raw($absensisupir . " as tempAbsensi"), 'absensisupirheader.nobukti', 'tempAbsensi.nobukti');
+
             // ->whereraw("isnull(tempAbsensi.nobukti,'')=''");
             // dd(DB::table($absensisupir)->get());
         }
@@ -736,52 +745,54 @@ class AbsensiSupirHeader extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function getTomorrowDate( $tglbukti = 'today',$hari =1) {
+    public function getTomorrowDate($tglbukti = 'today', $hari = 1)
+    {
         $cont = true;
-        
+
         while ($cont) {
-            $tglbesok = date('Y-m-d',strtotime(" $tglbukti + $hari  days"));
-            if (date("l",strtotime($tglbesok)) =="Sunday") {
+            $tglbesok = date('Y-m-d', strtotime(" $tglbukti + $hari  days"));
+            if (date("l", strtotime($tglbesok)) == "Sunday") {
                 $hariLibur = true;
-            }else {
-                $hariLibur = HariLibur::where('tgl',$tglbesok)->first();
+            } else {
+                $hariLibur = HariLibur::where('tgl', $tglbesok)->first();
             }
             if (!$hariLibur) {
                 $cont = false;
             }
-            $hari ++;
+            $hari++;
         }
 
         return $tglbesok;
     }
 
-    public function getYesterdayAbsensi( $tglbukti = 'today') : ?AbsensiSupirHeader {
-        $hari =0;
+    public function getYesterdayAbsensi($tglbukti = 'today'): ?AbsensiSupirHeader
+    {
+        $hari = 0;
         $cont = true;
         while ($cont) {
-            $tglsemalam = date('Y-m-d',strtotime(" $tglbukti - $hari  days"));
+            $tglsemalam = date('Y-m-d', strtotime(" $tglbukti - $hari  days"));
             $lastAbsensi = AbsensiSupirHeader::from(db::raw("absensisupirheader a with (readuncommitted)"))
-            ->where('a.tglbukti','<',$tglsemalam)
-            ->orderBy('a.tglbukti','desc')->first();
+                ->where('a.tglbukti', '<', $tglsemalam)
+                ->orderBy('a.tglbukti', 'desc')->first();
             if (!$lastAbsensi) {
                 return $lastAbsensi;
             }
-            if (date("l",strtotime($lastAbsensi->tglbukti)) =="Sunday") {
+            if (date("l", strtotime($lastAbsensi->tglbukti)) == "Sunday") {
                 $hariLibur = true;
-            }else {
-                $hariLibur = HariLibur::where('tgl',$lastAbsensi->tglbukti)->first();
+            } else {
+                $hariLibur = HariLibur::where('tgl', $lastAbsensi->tglbukti)->first();
             }
             if (!$hariLibur) {
                 $lastDetail = AbsensiSupirDetail::from(db::raw("absensisupirdetail a with (readuncommitted)"))
-                ->where('a.absensi_id',$lastAbsensi->id)->count();
-                if ($lastDetail){
+                    ->where('a.absensi_id', $lastAbsensi->id)->count();
+                if ($lastDetail) {
                     $cont = false;
                 }
             }
             if ($lastAbsensi) {
                 $tglbukti = $lastAbsensi->tglbukti;
             }
-            $hari ++;
+            $hari++;
         }
 
         return $lastAbsensi;
@@ -792,12 +803,12 @@ class AbsensiSupirHeader extends MyModel
     {
         $tglbuktistr = strtotime($tglbukti);
         $jam_batas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'BATAS JAM EDIT ABSENSI')->where('subgrp', 'BATAS JAM EDIT ABSENSI')->first();
-        $hari = 0;//hari ini
+        $hari = 0; //hari ini
         if (!auth()->user()->isMandor()) {
             $jam_batas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'JAMBATASAPPROVAL')->where('subgrp', 'JAMBATASAPPROVAL')->first();
-            $hari = 1;//+ 1 hari untuk admin
+            $hari = 1; //+ 1 hari untuk admin
         }
-        $tglbukti = $this->getTomorrowDate($tglbukti,$hari);
+        $tglbukti = $this->getTomorrowDate($tglbukti, $hari);
         $jam = substr($jam_batas->text, 0, 2);
         $menit = substr($jam_batas->text, 3, 2);
 
@@ -1054,7 +1065,7 @@ class AbsensiSupirHeader extends MyModel
         // }
         $jam_batasadmin = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'JAMBATASAPPROVAL')->where('subgrp', 'JAMBATASAPPROVAL')->first()->text ?? '23:59:59';
         $tglbtasadmin = (new AbsensiSupirHeader())->getTomorrowDate();
-        $tglbtasadmin = date("Y-m-d H:i:s", strtotime($tglbtasadmin .' '. $jam_batasadmin));
+        $tglbtasadmin = date("Y-m-d H:i:s", strtotime($tglbtasadmin . ' ' . $jam_batasadmin));
         $tglbataseditabsensiadmin = $tglbtasadmin;
 
         if ($data['tglbataseditabsensi']) {
@@ -1090,9 +1101,9 @@ class AbsensiSupirHeader extends MyModel
         $uangJalan = 0;
         $uangJalanGandengan = 0;
         $uangJalanTangki = 0;
-        $rowTotalTangki =0;
-        $rowTotalGandengan =0;
-        $jenisKendaraanTangki = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('id','text')->where('grp', 'STATUS JENIS KENDARAAN')->where('subgrp', 'STATUS JENIS KENDARAAN')->where('text', 'TANGKI')->first();
+        $rowTotalTangki = 0;
+        $rowTotalGandengan = 0;
+        $jenisKendaraanTangki = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('id', 'text')->where('grp', 'STATUS JENIS KENDARAAN')->where('subgrp', 'STATUS JENIS KENDARAAN')->where('text', 'TANGKI')->first();
         for ($i = 0; $i < count($data['trado_id']); $i++) {
             $absensiSupirDetail = AbsensiSupirDetail::processStore($absensiSupir, [
                 'absensi_id' => $absensiSupir->id,
@@ -1112,7 +1123,7 @@ class AbsensiSupirHeader extends MyModel
             if ($jenisKendaraanTangki->id == $data['statusjeniskendaraan'][$i]) {
                 $uangJalanTangki += $data['uangjalan'][$i];
                 $rowTotalTangki++;
-            }else{
+            } else {
                 $uangJalanGandengan += $data['uangjalan'][$i];
                 $rowTotalGandengan++;
             }
@@ -1144,16 +1155,16 @@ class AbsensiSupirHeader extends MyModel
                     "uangJalanTangki" => $uangJalanTangki,
                     "rowTotalTangki" => $rowTotalTangki,
                     "storenominalTangki" => true,
-                    "keteranganTangki" => "Absensi Supir tgl " . date('Y-m-d', strtotime($data['tglbukti'])) . " " . $absensiSupir->nobukti. " Tangki",
+                    "keteranganTangki" => "Absensi Supir tgl " . date('Y-m-d', strtotime($data['tglbukti'])) . " " . $absensiSupir->nobukti . " Tangki",
                     "uangJalanGandengan" => $uangJalanGandengan,
                     "rowTotalGandengan" => $rowTotalGandengan,
                     "storenominalGandengan" => true,
-                    "keteranganGandengan" => "Absensi Supir tgl " . date('Y-m-d', strtotime($data['tglbukti'])) . " " . $absensiSupir->nobukti. " Gandengan",
+                    "keteranganGandengan" => "Absensi Supir tgl " . date('Y-m-d', strtotime($data['tglbukti'])) . " " . $absensiSupir->nobukti . " Gandengan",
                 ];
-                $absensiSupirProses = (new AbsensiSupirProses())->processStore($absensiSupir,$absensiPorsess);
-            }else{
+                $absensiSupirProses = (new AbsensiSupirProses())->processStore($absensiSupir, $absensiPorsess);
+            } else {
                 $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('tipe', '=', 'KAS')->first();
-    
+
                 $kasGantungRequest = [
                     "tglbukti" => $data['tglbukti'],
                     "penerima" => '',
@@ -1165,14 +1176,12 @@ class AbsensiSupirHeader extends MyModel
                     "nominal" => [$uangJalan],
                     "keterangan_detail" => ["Absensi Supir tgl " . date('Y-m-d', strtotime($data['tglbukti'])) . " " . $absensiSupir->nobukti],
                 ];
-    
+
                 $kasgantungHeader = (new KasGantungHeader())->processStore($kasGantungRequest);
-                
+
                 $absensiSupir->kasgantung_nobukti = $kasgantungHeader->nobukti;
                 $absensiSupir->save();
             }
-
-           
         }
 
         $absensiSupirLogTrail = (new LogTrail())->processStore([
@@ -1273,9 +1282,9 @@ class AbsensiSupirHeader extends MyModel
         $uangJalan = 0;
         $uangJalanGandengan = 0;
         $uangJalanTangki = 0;
-        $rowTotalTangki =0;
-        $rowTotalGandengan =0;
-        $jenisKendaraanTangki = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('id','text')->where('grp', 'STATUS JENIS KENDARAAN')->where('subgrp', 'STATUS JENIS KENDARAAN')->where('text', 'TANGKI')->first();
+        $rowTotalTangki = 0;
+        $rowTotalGandengan = 0;
+        $jenisKendaraanTangki = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('id', 'text')->where('grp', 'STATUS JENIS KENDARAAN')->where('subgrp', 'STATUS JENIS KENDARAAN')->where('text', 'TANGKI')->first();
 
         for ($i = 0; $i < count($data['trado_id']); $i++) {
             $absensiSupirDetail = AbsensiSupirDetail::processStore($absensiSupir, [
@@ -1296,7 +1305,7 @@ class AbsensiSupirHeader extends MyModel
             if ($jenisKendaraanTangki->id == $data['statusjeniskendaraan'][$i]) {
                 $uangJalanTangki += $data['uangjalan'][$i];
                 $rowTotalTangki++;
-            }else{
+            } else {
                 $uangJalanGandengan += $data['uangjalan'][$i];
                 $rowTotalGandengan++;
             }
@@ -1328,14 +1337,14 @@ class AbsensiSupirHeader extends MyModel
                     "uangJalanTangki" => $uangJalanTangki,
                     "rowTotalTangki" => $rowTotalTangki,
                     "storenominalTangki" => true,
-                    "keteranganTangki" => "Absensi Supir tgl " . date('Y-m-d', strtotime($data['tglbukti'])) . " " . $absensiSupir->nobukti. " Tangki",
+                    "keteranganTangki" => "Absensi Supir tgl " . date('Y-m-d', strtotime($data['tglbukti'])) . " " . $absensiSupir->nobukti . " Tangki",
                     "uangJalanGandengan" => $uangJalanGandengan,
                     "rowTotalGandengan" => $rowTotalGandengan,
                     "storenominalGandengan" => true,
-                    "keteranganGandengan" => "Absensi Supir tgl " . date('Y-m-d', strtotime($data['tglbukti'])) . " " . $absensiSupir->nobukti. " Gandengan",
+                    "keteranganGandengan" => "Absensi Supir tgl " . date('Y-m-d', strtotime($data['tglbukti'])) . " " . $absensiSupir->nobukti . " Gandengan",
                 ];
-                $absensiSupirProses = (new AbsensiSupirProses())->processStore($absensiSupir,$absensiPorsess);
-            }else{
+                $absensiSupirProses = (new AbsensiSupirProses())->processStore($absensiSupir, $absensiPorsess);
+            } else {
                 $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('tipe', '=', 'KAS')->first();
                 $kasGantungRequest = [
                     "tglbukti" => $data['tglbukti'],
@@ -1347,11 +1356,10 @@ class AbsensiSupirHeader extends MyModel
                     "nominal" => [$uangJalan],
                     "keterangan_detail" => ["Absensi Supir tgl " . date('Y-m-d', strtotime($data['tglbukti'])) . " " . $absensiSupir->nobukti],
                 ];
-    
+
                 $kasGantungHeader = KasGantungHeader::from(DB::raw("kasgantungheader with (readuncommitted)"))->where('nobukti', $absensiSupir->kasgantung_nobukti)->first();
                 $kasGantungHeader = (new KasGantungHeader())->processUpdate($kasGantungHeader, $kasGantungRequest);
             }
-
         }
 
         $date = date('Y-m-d', strtotime($absensiSupir->tglbukti));
@@ -1406,7 +1414,7 @@ class AbsensiSupirHeader extends MyModel
         if ($kasGantungHeader) {
             (new KasGantungHeader())->processDestroy($kasGantungHeader->id, ($postingdari == "") ? $postingdari : strtoupper('DELETE ABSENSI SUPIR detail'));
         }
-        
+
         $absensiTangki = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'ABSENSI TANGKI')->where('subgrp', 'ABSENSI TANGKI')->first();
         if ($absensiTangki->text == 'YA') {
             (new AbsensiSupirProses())->processDestroy($absensiSupir, ($postingdari == "") ? $postingdari : strtoupper('DELETE ABSENSI SUPIR detail'));
@@ -1482,13 +1490,14 @@ class AbsensiSupirHeader extends MyModel
         return $result;
     }
 
-    function processApprovalEditAbsensi(array $data) {
+    function processApprovalEditAbsensi(array $data)
+    {
         $statusBolehEdit = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT ABSENSI')->where('text', '=', 'BOLEH EDIT ABSENSI')->first();
         $statusTidakBolehEdit = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT ABSENSI')->where('text', '=', 'TIDAK BOLEH EDIT ABSENSI')->first();
-       
+
         $jam_batas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'JAMBATASAPPROVAL')->where('subgrp', 'JAMBATASAPPROVAL')->first()->text ?? '23:59:59';
         $tglbtas = (new AbsensiSupirHeader())->getTomorrowDate();
-        $tglbtas = date("Y-m-d H:i:s", strtotime($tglbtas .' '. $jam_batas));
+        $tglbtas = date("Y-m-d H:i:s", strtotime($tglbtas . ' ' . $jam_batas));
 
         for ($i = 0; $i < count($data['Id']); $i++) {
             $id = $data['Id'][$i];
@@ -1521,10 +1530,9 @@ class AbsensiSupirHeader extends MyModel
                     'datajson' => $absensiSupirHeader->toArray(),
                     'modifiedby' => auth('api')->user()->name
                 ]);
-            }else{
+            } else {
                 throw new \Exception("Error storing Absensi Supir Header.");
             }
-
         }
     }
     public function returnUnApprovalEdit()
@@ -1534,7 +1542,7 @@ class AbsensiSupirHeader extends MyModel
             $absensiSupirHeader = new AbsensiSupirHeader();
             $statusBolehEdit = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT ABSENSI')->where('text', '=', 'BOLEH EDIT ABSENSI')->first();
             $statusTidakBolehEdit = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT ABSENSI')->where('text', '=', 'TIDAK BOLEH EDIT ABSENSI')->first();
-       
+
             $now = date('Y-m-d', strtotime('now'));
             $data = DB::table("AbsensiSupirHeader")->where('statusapprovaleditabsensi', $statusBolehEdit->id)
                 ->where('tglapprovaleditabsensi', '<', $now)

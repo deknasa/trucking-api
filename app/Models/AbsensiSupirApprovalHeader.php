@@ -522,7 +522,7 @@ class AbsensiSupirApprovalHeader extends MyModel
     
             $absensiSupirApprovalHeader->pengeluaran_nobukti = $kasGantung->pengeluaran_nobukti;
     
-            $absensiSupirApprovalHeader->tglkaskeluar = $kasGantung->tglkaskeluar;
+            $absensiSupirApprovalHeader->tglkaskeluar = date('Y-m-d', strtotime($data['tglbukti']));
             $absensiSupirApprovalHeader->save();
         }
         $absensiSupirApprovalHeaderLogTrail = (new LogTrail())->processStore([
