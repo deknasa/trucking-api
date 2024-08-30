@@ -241,7 +241,7 @@ class InvoiceHeader extends MyModel
         return $temp;
     }
 
-    public function getSpSearch($request)
+    public function getSpSearch($request, $id, $edit)
     {
 
         $statusjeniskendaraan = request()->statusjeniskendaraan;
@@ -559,7 +559,7 @@ class InvoiceHeader extends MyModel
                     'jobtrucking',
                     'nominal',
                     'suratpengantar_nobukti',
-                ], $querykepelabuhan);                
+                ], $querykepelabuhan);
 
                 // pelabuhan beda
                 $tempdarikepelabuhanbeda = '##tempdarikepelabuhanbeda' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -659,7 +659,7 @@ class InvoiceHeader extends MyModel
                     ->whereRaw("a.statuscontainer_id not in(" . $fullempty . ")")
                     ->join(DB::raw($tempTripasalKandang . " g"), 'a.nobukti', 'g.nobukti_tripasal')
                     ->where('a.statusjeniskendaraan', $statusjeniskendaraan)
-                    ->whereRaw("isnull(c.jobtrucking,'')=''")                  
+                    ->whereRaw("isnull(c.jobtrucking,'')=''")
 
                     ->groupBy('a.jobtrucking');
 
@@ -747,7 +747,7 @@ class InvoiceHeader extends MyModel
                     ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
                     ->join(DB::raw("orderantrucking as b with (readuncommitted)"), 'a.jobtrucking', 'b.nobukti')
                     ->leftJoin(DB::raw("$temphasil as c with (readuncommitted)"), 'a.jobtrucking', 'c.jobtrucking')
-                    ->whereRaw("isnull(c.jobtrucking,'')=''");                    
+                    ->whereRaw("isnull(c.jobtrucking,'')=''");
 
                 DB::table($temphasil)->insertUsing([
                     'jobtrucking',
@@ -788,7 +788,7 @@ class InvoiceHeader extends MyModel
                     ->leftJoin(DB::raw("$temphasil as c with (readuncommitted)"), 'a.jobtrucking', 'c.jobtrucking')
                     ->whereRaw("isnull(c.jobtrucking,'')=''")
                     ->where('a.statustolakan', 3);
-                    
+
                 DB::table($temphasil)->insertUsing([
                     'jobtrucking',
                     'nominal',
@@ -1254,35 +1254,82 @@ class InvoiceHeader extends MyModel
 
         // dd(db::table($tempdatahasil)->get());
 
+        if ($edit == true) {
+            $tempdatainvoice = '##tempdatainvoice' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempdatainvoice, function ($table) {
+                $table->longText('jobtrucking')->nullable();
+            });
 
-        $query = DB::table($tempdatahasil)->from(
-            DB::raw($tempdatahasil . " as a")
-        )
+            $queryinvoice=db::table("invoiceheader")->from(db::raw("invoiceheader a with (readuncommitted)"))
             ->select(
-                DB::raw("row_number() Over(Order By tglsp) as id"),
-                'a.id as sp_id',
-                'a.idinvoice',
-                'a.jobtrucking',
-                'a.tglsp',
-                'a.keterangan',
-                'a.jenisorder_id as jenisorder_idgrid',
-                'a.agen_id as agen_idgrid',
-                'a.statuslongtrip',
-                'a.statusperalihan',
-                'a.nocont',
-                'a.tarif_id',
-                'a.omset',
-                'a.nominalextra',
-                'a.nominalretribusi',
-                'a.total',
-                'a.nospfull',
-                'a.nospempty',
-                'a.nospfullempty',
-                'a.keteranganbiaya',
-
+                'b.orderantrucking_nobukti as jobtrucking'
             )
-            // ->where('a.nocont', '!=', '')
-            ->orderBy("a.tglsp");
+            ->join(db::raw("invoicedetail b with (readuncommitted)"),'a.nobukti','b.nobukti')
+            ->where('a.id',$id);
+
+            DB::table($tempdatainvoice)->insertUsing([
+                'jobtrucking',
+            ], $queryinvoice);
+
+            $query = DB::table($tempdatahasil)->from(
+                DB::raw($tempdatahasil . " as a")
+            )
+                ->select(
+                    DB::raw("row_number() Over(Order By tglsp) as id"),
+                    'a.id as sp_id',
+                    'a.idinvoice',
+                    'a.jobtrucking',
+                    'a.tglsp',
+                    'a.keterangan',
+                    'a.jenisorder_id as jenisorder_idgrid',
+                    'a.agen_id as agen_idgrid',
+                    'a.statuslongtrip',
+                    'a.statusperalihan',
+                    'a.nocont',
+                    'a.tarif_id',
+                    'a.omset',
+                    'a.nominalextra',
+                    'a.nominalretribusi',
+                    'a.total',
+                    'a.nospfull',
+                    'a.nospempty',
+                    'a.nospfullempty',
+                    'a.keteranganbiaya',
+
+                )
+                ->join(db::raw($tempdatainvoice . " b "),'a.jobtrucking','b.jobtrucking')
+                // ->where('a.nocont', '!=', '')
+                ->orderBy("a.tglsp");
+        } else {
+            $query = DB::table($tempdatahasil)->from(
+                DB::raw($tempdatahasil . " as a")
+            )
+                ->select(
+                    DB::raw("row_number() Over(Order By tglsp) as id"),
+                    'a.id as sp_id',
+                    'a.idinvoice',
+                    'a.jobtrucking',
+                    'a.tglsp',
+                    'a.keterangan',
+                    'a.jenisorder_id as jenisorder_idgrid',
+                    'a.agen_id as agen_idgrid',
+                    'a.statuslongtrip',
+                    'a.statusperalihan',
+                    'a.nocont',
+                    'a.tarif_id',
+                    'a.omset',
+                    'a.nominalextra',
+                    'a.nominalretribusi',
+                    'a.total',
+                    'a.nospfull',
+                    'a.nospempty',
+                    'a.nospfullempty',
+                    'a.keteranganbiaya',
+
+                )
+                // ->where('a.nocont', '!=', '')
+                ->orderBy("a.tglsp");
+        }
 
 
         $data = $query->get();

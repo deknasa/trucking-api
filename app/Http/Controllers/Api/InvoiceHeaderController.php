@@ -228,7 +228,7 @@ class InvoiceHeaderController extends Controller
     public function getSP(Request $request)
     {
         $invoice = new InvoiceHeader();
-        $datahasil = $invoice->getSPSearch($request);
+        $datahasil = $invoice->getSPSearch($request,0,false);
         // $dari = date('Y-m-d', strtotime($request->tgldari));
         // $sampai = date('Y-m-d', strtotime($request->tglsampai));
 
@@ -273,8 +273,8 @@ class InvoiceHeaderController extends Controller
         $sampai = date('Y-m-d', strtotime($request->tglsampai));
 
         return response([
-            // "data" => $invoice->getEdit($id, $request)
-            "data" => $invoice->getSPSearch($request)
+            //  "data" => $invoice->getEdit($id, $request)
+             "data" => $invoice->getSPSearch($request,$id,true)
 
         ]);
     }
@@ -287,7 +287,7 @@ class InvoiceHeaderController extends Controller
 
         return response([
             // "data" => $invoice->getAllEdit($id, $request)
-            "data" => $invoice->getSPSearch($request)
+            "data" => $invoice->getSPSearch($request,0,false)
         ]);
     }
 
