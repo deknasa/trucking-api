@@ -114,7 +114,25 @@ class ExportLaporanMingguanSupir extends Model
             'biayaextrasupir_nobukti',
             'biayaextrasupir_nominal',
             'biayaextrasupir_keterangan',
-        ], $queryextra);        
+        ], $queryextra);    
+        $tempritasi = '##tempritasi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        Schema::create($tempritasi, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->string('statusritasi')->nullable();
+        });
+        $queryRitasi = DB::table("suratpengantar")->from(DB::raw("suratpengantar as sp with (readuncommitted)"))
+            ->select(db::raw("ritasi.nobukti, (parameter.text + ' ' + dari.kodekota + ' - '+sampai.kodekota) as statusritasi"))
+            ->join(db::raw("ritasi with (readuncommitted)"), 'ritasi.suratpengantar_nobukti', 'sp.nobukti')
+            ->leftJoin(db::raw("parameter with (readuncommitted)"), 'ritasi.statusritasi', 'parameter.id')
+            ->leftJoin(db::raw("kota as dari with (readuncommitted)"), 'ritasi.dari_id', 'dari.id')
+            ->leftJoin(db::raw("kota as sampai with (readuncommitted)"), 'ritasi.sampai_id', 'sampai.id')
+            ->whereRaw("(sp.tglbukti >= '$dari' and sp.tglbukti <= '$sampai')")
+            ->whereraw("(sp.trado_id>=$tradodari")
+            ->whereraw("sp.trado_id<=$tradosampai)");
+
+        DB::table($tempritasi)->insertUsing(['nobukti', 'statusritasi'], $queryRitasi);
+
 
         $queryTempdata = DB::table("gajisupirheader")->from(
             DB::raw("gajisupirheader as a with (readuncommitted)")
@@ -146,7 +164,7 @@ class ExportLaporanMingguanSupir extends Model
                 DB::raw("isnull(b.voucher,0) as voucher"),
                 DB::raw("isnull(b.novoucher,'') as novoucher"),
                 DB::raw("isnull(b.gajiritasi,0) as gajiritasi"),
-                DB::raw("isnull(o.[text],'') as ketritasi"),
+                DB::raw("isnull(m.statusritasi,'') as ketritasi"),
                 // db::raw("row_number() Over( partition by a.nobukti Order By c.nobukti,c.tglbukti) as urutric"),
                 db::raw("b.nourut as urutric"),
                 DB::raw("isnull(c.omset,0) as omset"),
@@ -174,9 +192,9 @@ class ExportLaporanMingguanSupir extends Model
             ->leftjoin(DB::raw("agen as j with (readuncommitted) "), 'c.agen_id', 'j.id')
             ->leftjoin(DB::raw("prosesgajisupirdetail as k with (readuncommitted) "), 'a.nobukti', 'k.gajisupir_nobukti')
             ->leftjoin(DB::raw("prosesgajisupirheader as l with (readuncommitted) "), 'k.nobukti', 'l.nobukti')
-            ->leftjoin(DB::raw("ritasi as m with (readuncommitted) "), 'b.ritasi_nobukti', 'm.nobukti')
-            ->leftjoin(DB::raw("dataritasi as n with (readuncommitted) "), 'm.dataritasi_id', 'n.id')
-            ->leftjoin(DB::raw("parameter as o with (readuncommitted) "), 'n.statusritasi', 'o.id')
+            ->leftjoin(DB::raw("$tempritasi as m with (readuncommitted) "), 'b.ritasi_nobukti', 'm.nobukti')
+            // ->leftjoin(DB::raw("dataritasi as n with (readuncommitted) "), 'm.dataritasi_id', 'n.id')
+            // ->leftjoin(DB::raw("parameter as o with (readuncommitted) "), 'n.statusritasi', 'o.id')
             ->leftjoin(DB::raw($tempDataextra ." as p with (readuncommitted) "), 'c.nobukti', 'p.nobukti')
             ->whereRaw("(c.tglbukti >= '$dari' and c.tglbukti <= '$sampai')")
             ->whereraw("(c.trado_id>=$tradodari")
