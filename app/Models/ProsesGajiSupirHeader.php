@@ -1790,18 +1790,27 @@ class ProsesGajiSupirHeader extends MyModel
             }
         }
         if ($allSP != '') {
-            $getKasgantung = PengembalianKasGantungHeader::from(DB::raw("pengembaliankasgantungheader with (readuncommitted)"))
-                ->select("pengembaliankasgantungheader.penerimaan_nobukti", 'pengembaliankasgantungheader.bank_id', 'bank.namabank')
-                ->join(DB::raw("pengembaliankasgantungdetail with (readuncommitted)"), 'pengembaliankasgantungheader.nobukti', 'pengembaliankasgantungdetail.nobukti')
-                ->join(DB::raw("bank with (readuncommitted)"), 'pengembaliankasgantungheader.bank_id', 'bank.id')
-                ->whereRaw("pengembaliankasgantungdetail.kasgantung_nobukti in ($allSP)")
-                ->first();
+            // $getKasgantung = PengembalianKasGantungHeader::from(DB::raw("pengembaliankasgantungheader with (readuncommitted)"))
+            //     ->select("pengembaliankasgantungheader.penerimaan_nobukti", 'pengembaliankasgantungheader.bank_id', 'bank.namabank')
+            //     ->join(DB::raw("pengembaliankasgantungdetail with (readuncommitted)"), 'pengembaliankasgantungheader.nobukti', 'pengembaliankasgantungdetail.nobukti')
+            //     ->join(DB::raw("bank with (readuncommitted)"), 'pengembaliankasgantungheader.bank_id', 'bank.id')
+            //     ->whereRaw("pengembaliankasgantungdetail.kasgantung_nobukti in ($allSP)")
+            //     ->first();
+            $penerimaan = db::table("prosesgajisupirheader")->from(db::raw("prosesgajisupirheader with (readuncommitted)"))
+            ->select('pengembaliankasgantungheader.penerimaan_nobukti','pengembaliankasgantungheader.bank_id', 'bank.namabank')
+            ->join(db::raw("pengembaliankasgantungheader with (readuncommitted)"), 'prosesgajisupirheader.pengembaliankasgantung_nobukti', 'pengembaliankasgantungheader.nobukti')
+            ->join(db::raw("bank with (readuncommitted)"), 'pengembaliankasgantungheader.bank_id', 'bank.id')
+            ->where('prosesgajisupirheader.id', $id)
+            ->first();
 
-            $data = [
-                'bank_id' => $getKasgantung->bank_id,
-                'bankUangjalan' => $getKasgantung->namabank,
-                'nobuktiUangjalan' => $getKasgantung->penerimaan_nobukti
-            ];
+            $data = [];
+            if($penerimaan != ''){
+                $data = [
+                    'bank_id' => $penerimaan->bank_id,
+                    'bankUangjalan' => $penerimaan->namabank,
+                    'nobuktiUangjalan' => $penerimaan->penerimaan_nobukti
+                ];
+            }
             return $data;
         }
     }
