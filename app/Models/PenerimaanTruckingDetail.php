@@ -36,6 +36,7 @@ class PenerimaanTruckingDetail extends MyModel
         }
 
         if (isset(request()->penerimaantruckingheader_id)) {
+            $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
             $query->where("$this->table.penerimaantruckingheader_id", request()->penerimaantruckingheader_id);
         }
 

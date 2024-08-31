@@ -36,6 +36,8 @@ use App\Models\MyModel;
 use DateTime;
 use App\Http\Requests\ApprovalValidasiApprovalRequest;
 use App\Models\Locking;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class PenerimaanHeaderController extends Controller
 {
@@ -394,8 +396,8 @@ class PenerimaanHeaderController extends Controller
 
         $parameter = new Parameter();
 
-        $tgltutup=$parameter->cekText('TUTUP BUKU','TUTUP BUKU') ?? '1900-01-01';
-        $tgltutup=date('Y-m-d', strtotime($tgltutup));
+        $tgltutup = $parameter->cekText('TUTUP BUKU', 'TUTUP BUKU') ?? '1900-01-01';
+        $tgltutup = date('Y-m-d', strtotime($tgltutup));
         $user = auth('api')->user()->name;
         $getEditing = (new Locking())->getEditing('penerimaanheader', $id);
         $useredit = $getEditing->editing_by ?? '';
@@ -425,7 +427,7 @@ class PenerimaanHeaderController extends Controller
             return response($data);
         } else if ($tgltutup >= $pengeluaran->tglbukti) {
             $keteranganerror = $error->cekKeteranganError('TUTUPBUKU') ?? '';
-            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( '.date('d-m-Y', strtotime($tgltutup)).' ) <br> '.$keterangantambahanerror;
+            $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . '<br> ( ' . date('d-m-Y', strtotime($tgltutup)) . ' ) <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
                 'message' => $keterror,
@@ -433,7 +435,7 @@ class PenerimaanHeaderController extends Controller
                 'statuspesan' => 'warning',
             ];
 
-            return response($data);            
+            return response($data);
         } else if ($useredit != '' && $useredit != $user) {
             $waktu = (new Parameter())->cekBatasWaktuEdit('PENERIMAAN KAS/BANK BUKTI');
 
@@ -443,7 +445,7 @@ class PenerimaanHeaderController extends Controller
             if ($totalminutes > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                     // (new MyModel())->updateEditingBy('penerimaanheader', $id, $aksi);
-                    (new MyModel())->createLockEditing($id, 'penerimaanheader',$useredit);  
+                    (new MyModel())->createLockEditing($id, 'penerimaanheader', $useredit);
                 }
 
                 $data = [
@@ -465,12 +467,11 @@ class PenerimaanHeaderController extends Controller
                 ];
 
                 return response($data);
-            }            
-            
+            }
         } else {
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                 // (new MyModel())->updateEditingBy('penerimaanheader', $id, $aksi);
-                (new MyModel())->createLockEditing($id, 'penerimaanheader',$useredit);  
+                (new MyModel())->createLockEditing($id, 'penerimaanheader', $useredit);
             }
 
             $data = [
@@ -502,7 +503,7 @@ class PenerimaanHeaderController extends Controller
 
             $getEditing = (new Locking())->getEditing('penerimaanheader', $id);
             $useredit = $getEditing->editing_by ?? '';
-            (new MyModel())->createLockEditing($id, 'penerimaanheader',$useredit);   
+            (new MyModel())->createLockEditing($id, 'penerimaanheader', $useredit);
             // (new MyModel())->updateEditingBy('penerimaanheader', $id, 'EDIT');
 
             $data = [
@@ -557,35 +558,339 @@ class PenerimaanHeaderController extends Controller
      * @ClassName 
      * @Keterangan CETAK DATA
      */
-    public function report()
-    {
-    }
+    public function report() {}
 
     /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */
-    public function approvalbukacetak()
-    {
-    }
+    public function approvalbukacetak() {}
 
     /**
      * @ClassName 
      * @Keterangan EXPORT KE EXCEL
      */
-    public function export($id)
+    public function export($id, Request $request)
     {
         $penerimaanHeader = new PenerimaanHeader();
-        return response([
-            'data' => $penerimaanHeader->getExport($id)
-        ]);
+        $penerimaan_Header = $penerimaanHeader->getExport($id);
+
+        if ($request->export == true) {
+            $penerimaanDetail = new PenerimaanDetail();
+            $penerimaan_Detail = $penerimaanDetail->get();
+
+            $tglBukti = $penerimaan_Header->tglbukti;
+            $timeStamp = strtotime($tglBukti);
+            $dateTglBukti = date('d-m-Y', $timeStamp);
+            $penerimaan_Header->tglbukti = $dateTglBukti;
+
+            $tglLunas = $penerimaan_Header->tgllunas;
+            $timeStamp = strtotime($tglLunas);
+            $datetglLunas = date('d-m-Y', $timeStamp);
+            $penerimaan_Header->tgllunas = $datetglLunas;
+
+            if ($penerimaan_Header->tipe_bank === 'KAS') {
+                $spreadsheet = new Spreadsheet();
+                $sheet = $spreadsheet->getActiveSheet();
+                $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
+                $sheet->setCellValue('A1', $penerimaan_Header->judul);
+                $sheet->setCellValue('A2', 'Laporan Penerimaan' . $penerimaan_Header->bank_id);
+                $sheet->getStyle("A1")->getFont()->setSize(11);
+                $sheet->getStyle("A2")->getFont()->setSize(11);
+                $sheet->getStyle("A1")->getFont()->setBold(true);
+                $sheet->getStyle("A2")->getFont()->setBold(true);
+                $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+                $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+                $sheet->mergeCells('A1:D1');
+                $sheet->mergeCells('A2:D2');
+
+                $header_start_row = 4;
+                $header_start_row_right = 4;
+                $detail_table_header_row = 9;
+                $detail_start_row = $detail_table_header_row + 1;
+
+                $alphabets = range('A', 'Z');
+
+                $header_columns = [
+                    [
+                        'label' => 'No Bukti',
+                        'index' => 'nobukti',
+                    ],
+                    [
+                        'label' => 'Kas',
+                        'index' => 'bank_id',
+                    ]
+                ];
+                $header_right_columns = [
+                    [
+                        'label' => 'Diterima Dari',
+                        'index' => 'diterimadari',
+                    ],
+                    [
+                        'label' => 'Tanggal',
+                        'index' => 'tglbukti',
+                    ],
+                ];
+
+                $detail_columns = [
+                    [
+                        'label' => 'NO',
+                    ],
+                    [
+                        'label' => 'NAMA PERKIRAAN',
+                        'index' => 'coadebet'
+                    ],
+                    [
+                        'label' => 'KETERANGAN',
+                        'index' => 'keterangan_detail'
+                    ],
+                    [
+                        'label' => 'NOMINAL',
+                        'index' => 'nominal',
+                        'format' => 'currency'
+                    ]
+                ];
+
+                //LOOPING HEADER        
+                foreach ($header_columns as $header_column) {
+                    $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                    $sheet->setCellValue('C' . $header_start_row++, ': ' . $penerimaan_Header->{$header_column['index']});
+                }
+                foreach ($header_right_columns as $header_right_column) {
+                    $sheet->setCellValue('D' . $header_start_row_right, $header_right_column['label']);
+                    $sheet->setCellValue('E' . $header_start_row_right++, ': ' . $penerimaan_Header->{$header_right_column['index']});
+                }
+                foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                    $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                }
+                $styleArray = array(
+                    'borders' => array(
+                        'allBorders' => array(
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        ),
+                    ),
+                );
+
+                $style_number = [
+                    'alignment' => [
+                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                    ],
+
+                    'borders' => [
+                        'top' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'right' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'bottom' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'left' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+                    ]
+                ];
+
+                // $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FF1F456E');
+                $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->applyFromArray($styleArray);
+
+                // LOOPING DETAIL
+                $nominal = 0;
+                foreach ($penerimaan_Detail as $response_index => $response_detail) {
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : 0);
+                        $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getFont()->setBold(true);
+                        $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                    }
+
+                    $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                    $sheet->setCellValue("B$detail_start_row", $response_detail->coadebet);
+                    $sheet->setCellValue("C$detail_start_row", $response_detail->keterangan_detail);
+                    $sheet->setCellValue("D$detail_start_row", $response_detail->nominal);
+
+                    // $sheet->getStyle("C$detail_start_row")->getAlignment()->setWrapText(true);
+                    $sheet->getColumnDimension('C')->setWidth(50);
+
+                    $sheet->getStyle("A$detail_start_row:D$detail_start_row")->applyFromArray($styleArray);
+                    $sheet->getStyle("D$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+
+                    $detail_start_row++;
+                }
+
+                $total_start_row = $detail_start_row;
+                $sheet->mergeCells('A' . $total_start_row . ':C' . $total_start_row);
+                $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':C' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                $sheet->setCellValue("D$total_start_row", "=SUM(D10:D" . ($detail_start_row - 1) . ")")->getStyle("D$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+
+                $sheet->getStyle("D$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                $sheet->getColumnDimension('A')->setAutoSize(true);
+                $sheet->getColumnDimension('B')->setAutoSize(true);
+                $sheet->getColumnDimension('D')->setAutoSize(true);
+                $sheet->getColumnDimension('E')->setAutoSize(true);
+
+                $writer = new Xlsx($spreadsheet);
+                $filename = 'LAPORAN PENERIMAAN ' . $penerimaan_Header->bank_id . date('dmYHis');
+                header('Content-Type: application/vnd.ms-excel');
+                header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                header('Cache-Control: max-age=0');
+                header('Filename: ' . $filename);
+                $writer->save('php://output');
+            } else {
+                $spreadsheet = new Spreadsheet();
+                $sheet = $spreadsheet->getActiveSheet();
+                $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
+                $sheet->setCellValue('A1', $penerimaan_Header->judul);
+                $sheet->setCellValue('A2', 'Laporan Penerimaan ' . $penerimaan_Header->bank_id);
+                $sheet->getStyle("A1")->getFont()->setSize(11);
+                $sheet->getStyle("A2")->getFont()->setSize(11);
+                $sheet->getStyle("A1")->getFont()->setBold(true);
+                $sheet->getStyle("A2")->getFont()->setBold(true);
+                $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+                $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+                $sheet->mergeCells('A1:F1');
+                $sheet->mergeCells('A2:F2');
+
+                $header_start_row = 4;
+                $header_start_row_right = 4;
+                $detail_table_header_row = 8;
+                $detail_start_row = $detail_table_header_row + 1;
+
+                $alphabets = range('A', 'Z');
+
+                $header_columns = [
+                    [
+                        'label' => 'No Bukti',
+                        'index' => 'nobukti',
+                    ],
+                    [
+                        'label' => 'Tanggal',
+                        'index' => 'tglbukti',
+                    ],
+                    [
+                        'label' => 'Bank',
+                        'index' => 'bank_id',
+                    ]
+                ];
+                $header_columns_right = [
+                    [
+                        'label' => 'Diterima Dari',
+                        'index' => 'diterimadari',
+                    ],
+                ];
+
+                $detail_columns = [
+                    [
+                        'label' => 'NO',
+                    ],
+                    [
+                        'label' => 'NAMA PERKIRAAN',
+                        'index' => 'coadebet'
+                    ],
+                    [
+                        'label' => 'BANK',
+                        'index' => 'bank_detail'
+                    ],
+                    [
+                        'label' => 'INVOICE',
+                        'index' => 'invoice_nobukti'
+                    ],
+                    [
+                        'label' => 'KETERANGAN',
+                        'index' => 'keterangan_detail'
+                    ],
+                    [
+                        'label' => 'NOMINAL',
+                        'index' => 'nominal',
+                        'format' => 'currency'
+                    ]
+                ];
+
+                //LOOPING HEADER        
+                foreach ($header_columns as $header_column) {
+                    $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                    $sheet->setCellValue('C' . $header_start_row++, ': ' . $penerimaan_Header->{$header_column['index']});
+                }
+                foreach ($header_columns_right as $header_column_right) {
+                    $sheet->setCellValue('D' . $header_start_row_right, $header_column_right['label']);
+                    $sheet->setCellValue('E' . $header_start_row_right++, ': ' . $penerimaan_Header->{$header_column_right['index']});
+                }
+                foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                    $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                }
+                $styleArray = array(
+                    'borders' => array(
+                        'allBorders' => array(
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        ),
+                    ),
+                );
+
+                $style_number = [
+                    'alignment' => [
+                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                    ],
+
+                    'borders' => [
+                        'top' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'right' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'bottom' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'left' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+                    ]
+                ];
+
+                // $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FF1F456E');
+                $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->applyFromArray($styleArray);
+
+                // LOOPING DETAIL
+                $nominal = 0;
+                foreach ($penerimaan_Detail as $response_index => $response_detail) {
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : 0);
+                        $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getFont()->setBold(true);
+                        $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                    }
+
+                    $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                    $sheet->setCellValue("B$detail_start_row", $response_detail->coadebet);
+                    $sheet->setCellValue("C$detail_start_row", $response_detail->bank_detail);
+                    $sheet->setCellValue("D$detail_start_row", $response_detail->invoice_nobukti);
+                    $sheet->setCellValue("E$detail_start_row", $response_detail->keterangan_detail);
+                    $sheet->setCellValue("F$detail_start_row", $response_detail->nominal);
+
+                    // $sheet->getStyle("E$detail_start_row")->getAlignment()->setWrapText(true);
+                    $sheet->getColumnDimension('E')->setWidth(50);
+
+                    $sheet->getStyle("A$detail_start_row:F$detail_start_row")->applyFromArray($styleArray);
+                    $sheet->getStyle("F$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $detail_start_row++;
+                }
+                $total_start_row = $detail_start_row;
+                $sheet->mergeCells('A' . $total_start_row . ':E' . $total_start_row);
+                $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':E' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                $sheet->setCellValue("F$total_start_row", "=SUM(F9:F" . ($detail_start_row - 1) . ")")->getStyle("F$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+                $sheet->getStyle("F$total_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                $sheet->getColumnDimension('A')->setAutoSize(true);
+                $sheet->getColumnDimension('B')->setAutoSize(true);
+                $sheet->getColumnDimension('C')->setAutoSize(true);
+                $sheet->getColumnDimension('D')->setAutoSize(true);
+                $sheet->getColumnDimension('F')->setAutoSize(true);
+
+                $writer = new Xlsx($spreadsheet);
+                $filename = 'LAPORAN PENERIMAAN BANK ' . $penerimaan_Header->bank_id . date('dmYHis');
+                header('Content-Type: application/vnd.ms-excel');
+                header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                header('Cache-Control: max-age=0');
+                header('Filename: ' . $filename);
+                $writer->save('php://output');
+            }
+        } else {
+            return response([
+                'data' => $penerimaan_Header
+            ]);
+        }
+        // return response([
+        //     'data' => $penerimaanHeader->getExport($id)
+        // ]);
     }
 
     /**
      * @ClassName 
      * @Keterangan APPROVAL KIRIM BERKAS
      */
-    public function approvalkirimberkas()
-    {
-    }    
+    public function approvalkirimberkas() {}
 }

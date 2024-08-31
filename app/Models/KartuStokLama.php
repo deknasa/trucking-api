@@ -50,7 +50,7 @@ class KartuStokLama extends MyModel
         $class = 'KartuStokLamaController';
 
 
-     
+
         if ($proses == 'reload') {
             $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
 
@@ -535,6 +535,11 @@ class KartuStokLama extends MyModel
             $temtabel = $querydata->namatabel;
         }
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         // dd(db::table($temtabel)->get());
         $query = DB::table(DB::raw($temtabel))->from(
@@ -569,6 +574,8 @@ class KartuStokLama extends MyModel
                 'a.urutfifo',
 
                 db::raw("isnull(C.satuan,'') as satuan"),
+                DB::raw("'Laporan Kartu Stok' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
             )
             ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
             ->leftjoin(db::raw("satuan c with (readuncommitted)"), 'b.satuan_id', 'c.id');
@@ -602,7 +609,7 @@ class KartuStokLama extends MyModel
 
         $data = $query->get();
 
-// dd($data);
+        // dd($data);
         // } else {
         //     $data = [];
         // }
@@ -1182,7 +1189,7 @@ class KartuStokLama extends MyModel
                     ->groupBy(db::raw("isnull(a.gandengan_id,0)"));
             }
         } else if ($filter == 'TRADO') {
-      
+
             if ($trado_id == 0) {
                 $queryrekap = db::table('stok')->from(
                     DB::raw("stok as a1 with (readuncommitted)")
@@ -1463,14 +1470,14 @@ class KartuStokLama extends MyModel
         // dd('test');
 
         // dd(db::table($temprekap)->get());
-        
+
         $temprekapinput = '##temprekapinput' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         Schema::create($temprekapinput, function ($table) {
             $table->id();
             $table->string('nobukti', 100)->nullable();
-            $table->double('qtymasuk', 15,2)->nullable();
-            $table->double('qtykeluar', 15,2)->nullable();
+            $table->double('qtymasuk', 15, 2)->nullable();
+            $table->double('qtykeluar', 15, 2)->nullable();
             $table->dateTime('tglinput')->nullable();
         });
 
@@ -1484,7 +1491,7 @@ class KartuStokLama extends MyModel
                     db::raw("'1900/1/1' as tglinput"),
                     db::raw("sum(A.qtymasuk) as qtymasuk"),
                     db::raw("sum(A.qtykeluar) as qtykeluar"),
-                                    )
+                )
                 ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
                 ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("(a.stok_id>=" . $stokdari . " and a.stok_id<=" . $stoksampai . ")")
@@ -1493,14 +1500,14 @@ class KartuStokLama extends MyModel
                 ->whereRaw("(a.trado_id=" . $trado_id . " or " . $trado_id . "=0)")
                 ->Groupby('a.nobukti');
 
-                DB::table($temprekapinput)->insertUsing([
-                    'nobukti',
-                    'tglinput',
-                    'qtymasuk',
-                    'qtykeluar',
-                    
-                ], $queryinput);
-    
+            DB::table($temprekapinput)->insertUsing([
+                'nobukti',
+                'tglinput',
+                'qtymasuk',
+                'qtykeluar',
+
+            ], $queryinput);
+
 
             $queryrekap = db::table('kartustoklama')->from(
                 DB::raw("kartustoklama as a with (readuncommitted)")
@@ -1573,7 +1580,7 @@ class KartuStokLama extends MyModel
                         db::raw("a.nobukti as nobukti"),
                         db::raw("'1900/1/1' as tglinput"),
                         db::raw("sum(A.qtymasuk) as qtymasuk"),
-                        db::raw("sum(A.qtykeluar) as qtykeluar"),                        
+                        db::raw("sum(A.qtykeluar) as qtykeluar"),
                     )
                     ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
                     ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
@@ -1581,14 +1588,14 @@ class KartuStokLama extends MyModel
                     ->whereRaw("(isnull(a.gudang_id,0)<>0)")
                     ->Groupby('a.nobukti');
 
-                    DB::table($temprekapinput)->insertUsing([
-                        'nobukti',
-                        'tglinput',
-                        'qtymasuk',
-                        'qtykeluar',
-                        
-                    ], $queryinput);
-        
+                DB::table($temprekapinput)->insertUsing([
+                    'nobukti',
+                    'tglinput',
+                    'qtymasuk',
+                    'qtykeluar',
+
+                ], $queryinput);
+
 
 
                 $queryrekap = db::table('kartustoklama')->from(
@@ -1638,7 +1645,7 @@ class KartuStokLama extends MyModel
                         db::raw("a.modifiedby"),
                         db::raw("a.urutfifo as urutfifo"),
                         db::raw("c.tglinput as tglinput"),
-                        
+
                     )
                     ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
                     ->leftjoin(db::raw($temprekapinput . " c "), 'a.nobukti', 'c.nobukti')
@@ -1652,7 +1659,7 @@ class KartuStokLama extends MyModel
                     ->orderby('a.id', 'asc');
             } else {
 
-               
+
                 $queryinput = db::table('kartustoklama')->from(
                     DB::raw("kartustoklama as a with (readuncommitted)")
                 )
@@ -1673,7 +1680,7 @@ class KartuStokLama extends MyModel
                     'tglinput',
                     'qtymasuk',
                     'qtykeluar',
-                    
+
                 ], $queryinput);
 
                 // disini
@@ -1758,14 +1765,14 @@ class KartuStokLama extends MyModel
                     ->whereRaw("(isnull(a.trado_id,0)<>0)")
                     ->Groupby('a.nobukti');
 
-                    DB::table($temprekapinput)->insertUsing([
-                        'nobukti',
-                        'tglinput',
-                        'qtymasuk',
-                        'qtykeluar',
-                        
-                    ], $queryinput);
-        
+                DB::table($temprekapinput)->insertUsing([
+                    'nobukti',
+                    'tglinput',
+                    'qtymasuk',
+                    'qtykeluar',
+
+                ], $queryinput);
+
 
                 $queryrekap = db::table('kartustoklama')->from(
                     DB::raw("kartustoklama as a with (readuncommitted)")
@@ -1837,7 +1844,7 @@ class KartuStokLama extends MyModel
                         db::raw("a.nobukti as nobukti"),
                         db::raw("'1900/1/1' as tglinput"),
                         db::raw("sum(A.qtymasuk) as qtymasuk"),
-                        db::raw("sum(A.qtykeluar) as qtykeluar"),                        
+                        db::raw("sum(A.qtykeluar) as qtykeluar"),
                     )
                     ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
                     ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
@@ -1845,14 +1852,14 @@ class KartuStokLama extends MyModel
                     ->whereRaw("(a.trado_id=" . $trado_id . ")")
                     ->Groupby('a.nobukti');
 
-                    DB::table($temprekapinput)->insertUsing([
-                        'nobukti',
-                        'tglinput',
-                        'qtymasuk',
-                        'qtykeluar',
-                        
-                    ], $queryinput);
-        
+                DB::table($temprekapinput)->insertUsing([
+                    'nobukti',
+                    'tglinput',
+                    'qtymasuk',
+                    'qtykeluar',
+
+                ], $queryinput);
+
 
 
                 $queryrekap = db::table('kartustoklama')->from(
@@ -1935,14 +1942,14 @@ class KartuStokLama extends MyModel
                     ->whereRaw("(isnull(a.gandengan_id,0)<>0)")
                     ->Groupby('a.nobukti');
 
-                    DB::table($temprekapinput)->insertUsing([
-                        'nobukti',
-                        'tglinput',
-                        'qtymasuk',
-                        'qtykeluar',
-                        
-                    ], $queryinput);
-        
+                DB::table($temprekapinput)->insertUsing([
+                    'nobukti',
+                    'tglinput',
+                    'qtymasuk',
+                    'qtykeluar',
+
+                ], $queryinput);
+
 
 
                 $queryrekap = db::table('kartustoklama')->from(
@@ -2023,14 +2030,14 @@ class KartuStokLama extends MyModel
                     ->whereRaw("(a.gandengan_id=" . $gandengan_id . ")")
                     ->Groupby('a.nobukti');
 
-                    DB::table($temprekapinput)->insertUsing([
-                        'nobukti',
-                        'tglinput',
-                        'qtymasuk',
-                        'qtykeluar',
-                        
-                    ], $queryinput);
-        
+                DB::table($temprekapinput)->insertUsing([
+                    'nobukti',
+                    'tglinput',
+                    'qtymasuk',
+                    'qtykeluar',
+
+                ], $queryinput);
+
 
                 $queryrekap = db::table('kartustoklama')->from(
                     DB::raw("kartustoklama as a with (readuncommitted)")
@@ -2117,7 +2124,7 @@ class KartuStokLama extends MyModel
                 'tglinput',
                 'qtymasuk',
                 'qtykeluar',
-                
+
             ], $queryinput);
 
 
@@ -2286,7 +2293,7 @@ class KartuStokLama extends MyModel
                 db::raw("a.modifiedby"),
                 db::raw("a.urutfifo as urutfifo"),
                 db::raw("a.tglinput as tglinput"),
-                )
+            )
             // ->where('kodebarang','3021/04831105 SWL')
             //    ->whereraw("isnull(a.gudang_id,0)=0")
             // ->orderby('a.gudang_id', 'asc')
@@ -3536,7 +3543,7 @@ class KartuStokLama extends MyModel
     }
 
 
-    
+
 
     public function filter($query, $relationFields = [])
     {
@@ -3545,9 +3552,8 @@ class KartuStokLama extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                       
+
                         $query = $query->whereRaw('a' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-                       
                     }
 
                     break;
@@ -3555,9 +3561,8 @@ class KartuStokLama extends MyModel
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
 
-                          
+
                             $query = $query->OrwhereRaw('a' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-                   
                         }
                     });
 
@@ -3577,10 +3582,4 @@ class KartuStokLama extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
-
-   
-
-  
-  
-
 }

@@ -22,6 +22,8 @@ use App\Http\Requests\StoreNotaKreditHeaderRequest;
 use App\Http\Requests\UpdateNotaKreditHeaderRequest;
 use App\Http\Requests\DestroyNotaKreditHeaderRequest;
 use App\Models\Locking;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class NotaKreditHeaderController extends Controller
 {
@@ -161,7 +163,7 @@ class NotaKreditHeaderController extends Controller
             $selected = $this->getPosition($notaKredit, $notaKredit->getTable(), true);
             $notaKredit->position = $selected->position;
             $notaKredit->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $notaKredit->page = ceil($notaKredit->position / (10));
             } else {
                 $notaKredit->page = ceil($notaKredit->position / ($request->limit ?? 10));
@@ -331,7 +333,7 @@ class NotaKreditHeaderController extends Controller
         $tgltutup = date('Y-m-d', strtotime($tgltutup));
 
         if ($statusdatacetak == $statusCetak->id) {
-             $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
+            $keteranganerror = $error->cekKeteranganError('SDC') ?? '';
             $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
             $data = [
                 'error' => true,
@@ -364,7 +366,7 @@ class NotaKreditHeaderController extends Controller
 
             return response($data);
         } else if ($useredit != '' && $useredit != $user) {
-            
+
             $waktu = (new Parameter())->cekBatasWaktuEdit('Nota Kredit Header BUKTI');
 
             $editingat = new DateTime(date('Y-m-d H:i:s', strtotime($getEditing->editing_at)));
@@ -372,7 +374,7 @@ class NotaKreditHeaderController extends Controller
             $totalminutes =  ($diffNow->days * 24 * 60) + ($diffNow->h * 60) + $diffNow->i;
             if ($totalminutes > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                    (new MyModel())->createLockEditing($id, 'notakreditheader',$useredit);  
+                    (new MyModel())->createLockEditing($id, 'notakreditheader', $useredit);
                 }
 
                 $data = [
@@ -394,12 +396,11 @@ class NotaKreditHeaderController extends Controller
                 ];
 
                 return response($data);
-            }            
-            
+            }
         } else {
 
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                (new MyModel())->createLockEditing($id, 'notakreditheader',$useredit);  
+                (new MyModel())->createLockEditing($id, 'notakreditheader', $useredit);
             }
 
             $data = [
@@ -429,7 +430,7 @@ class NotaKreditHeaderController extends Controller
         } else {
             $getEditing = (new Locking())->getEditing('notakreditheader', $id);
             $useredit = $getEditing->editing_by ?? '';
-            (new MyModel())->createLockEditing($id, 'notakreditheader',$useredit);  
+            (new MyModel())->createLockEditing($id, 'notakreditheader', $useredit);
 
             $data = [
                 'error' => false,
@@ -482,34 +483,193 @@ class NotaKreditHeaderController extends Controller
      * @ClassName 
      * @Keterangan CETAK DATA
      */
-    public function report()
-    {
-    }
+    public function report() {}
 
-        /**
+    /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */
-    public function approvalbukacetak()
-    {
-    }
+    public function approvalbukacetak() {}
     /**
      * @ClassName 
      * @Keterangan APPROVAL KIRIM BERKAS
      */
-    public function approvalkirimberkas()
-    {
-    }    
+    public function approvalkirimberkas() {}
 
     /**
      * @ClassName 
      * @Keterangan EXPORT KE EXCEL
      */
-    public function export($id)
+    public function export($id, Request $request)
     {
-        $notakredit = new NotaKreditHeader();
-        return response([
-            'data' => $notakredit->getExport($id)
-        ]);
+        $notaKreditHeader = new NotaKreditHeader();
+        $nota_KreditHeader = $notaKreditHeader->getExport($id);
+
+        $notaKreditDetail = new NotaKreditDetail();
+        $nota_KreditDetail = $notaKreditDetail->get();
+
+        if ($request->export == true) {
+            $tglBukti = $nota_KreditHeader->tglbukti;
+            $timeStamp = strtotime($tglBukti);
+            $dateTglBukti = date('d-m-Y', $timeStamp);
+            $nota_KreditHeader->tglbukti = $dateTglBukti;
+
+            $tgllunas = $nota_KreditHeader->tgllunas;
+            $timeStamp = strtotime($tgllunas);
+            $datetgllunas = date('d-m-Y', $timeStamp);
+            $nota_KreditHeader->tgllunas = $datetgllunas;
+
+            //PRINT TO EXCEL
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
+            $sheet->setCellValue('A1', $nota_KreditHeader->judul);
+            $sheet->setCellValue('A2', $nota_KreditHeader->judulLaporan);
+            $sheet->getStyle("A1")->getFont()->setSize(11);
+            $sheet->getStyle("A2")->getFont()->setSize(11);
+            $sheet->getStyle("A1")->getFont()->setBold(true);
+            $sheet->getStyle("A2")->getFont()->setBold(true);
+            $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+            $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+            $sheet->mergeCells('A1:H1');
+            $sheet->mergeCells('A2:H2');
+
+            $header_start_row = 4;
+            $detail_table_header_row = 9;
+            $detail_start_row = $detail_table_header_row + 1;
+
+            $alphabets = range('A', 'Z');
+            $header_columns = [
+                [
+                    'label' => 'No Bukti',
+                    'index' => 'nobukti'
+                ],
+                [
+                    'label' => 'Tanggal',
+                    'index' => 'tglbukti'
+                ],
+                [
+                    'label' => 'No Bukti Pelunasan Piutang',
+                    'index' => 'pelunasanpiutang_nobukti'
+                ],
+                [
+                    'label' => 'Tanggal lunas',
+                    'index' => 'tgllunas'
+                ]
+            ];
+            $detail_columns = [
+                [
+                    'label' => 'NO',
+                ],
+                [
+                    'label' => 'NO BUKTI INVOICE',
+                    'index' => 'invoice_nobukti'
+                ],
+                [
+                    'label' => 'TANGGAL TERIMA',
+                    'index' => 'tglterima'
+                ],
+                [
+                    'label' => 'KODE PERKIRAAN ADJUST',
+                    'index' => 'coaadjust'
+                ],
+                [
+                    'label' => 'KETERANGAN',
+                    'index' => 'keterangan'
+                ],
+                [
+                    'label' => 'POTONGAN',
+                    'index' => 'penyesuaian'
+                ]
+            ];
+
+            //LOOPING HEADER        
+            foreach ($header_columns as $header_column) {
+                $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                $sheet->setCellValue('C' . $header_start_row++, ': ' . $nota_KreditHeader->{$header_column['index']});
+            }
+            foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+            }
+
+            $styleArray = array(
+                'borders' => array(
+                    'allBorders' => array(
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    ),
+                ),
+            );
+
+            $style_number = [
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                ],
+
+                'borders' => [
+                    'top' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                    'right' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                    'bottom' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                    'left' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+                ]
+            ];
+
+            $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->applyFromArray($styleArray);
+
+            // LOOPING DETAIL
+            $penyesuaian = 0;
+            foreach ($nota_KreditDetail as $response_index => $response_detail) {
+
+                foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                    $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : $response_index + 1);
+                    $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->getFont()->setBold(true);
+                    $sheet->getStyle("A$detail_table_header_row:F$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                }
+
+                $tglterima = $response_detail->tglterima;
+                $timeStamp = strtotime($tglterima);
+                $datetglterima = date('d-m-Y', $timeStamp);
+                $response_detail->tglterima = $datetglterima;
+
+                $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                $sheet->setCellValue("B$detail_start_row", $response_detail->invoice_nobukti);
+                $sheet->setCellValue("C$detail_start_row", $response_detail->tglterima);
+                $sheet->setCellValue("D$detail_start_row", $response_detail->coaadjust);
+                $sheet->setCellValue("E$detail_start_row", $response_detail->keterangan);
+                $sheet->setCellValue("F$detail_start_row", $response_detail->penyesuaian);
+
+                $sheet->getStyle("E$detail_start_row")->getAlignment()->setWrapText(true);
+                $sheet->getColumnDimension('E')->setWidth(40);
+
+                $sheet->getStyle("A$detail_start_row:E$detail_start_row")->applyFromArray($styleArray);
+                $sheet->getStyle("F$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+
+                $detail_start_row++;
+            }
+
+            $total_start_row = $detail_start_row;
+            $sheet->mergeCells('A' . $total_start_row . ':E' . $total_start_row);
+            $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':E' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+
+            $sheet->setCellValue("F$detail_start_row", "=SUM(F10:F" . ($detail_start_row - 1) . ")")->getStyle("F$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+
+            $sheet->getStyle("F$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            $sheet->getColumnDimension('A')->setAutoSize(true);
+            $sheet->getColumnDimension('B')->setAutoSize(true);
+            $sheet->getColumnDimension('C')->setAutoSize(true);
+            $sheet->getColumnDimension('D')->setAutoSize(true);
+            $sheet->getColumnDimension('F')->setAutoSize(true);
+
+            $writer = new Xlsx($spreadsheet);
+            $filename = 'Laporan Nota Kredit' . date('dmYHis');
+            header('Content-Type: application/vnd.ms-excel');
+            header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+            header('Cache-Control: max-age=0');
+
+            $writer->save('php://output');
+        } else {
+            return response([
+                'data' => $nota_KreditHeader
+            ]);
+        }
     }
 }

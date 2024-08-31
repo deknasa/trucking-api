@@ -26,13 +26,12 @@ class PengembalianKasGantungDetail extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
-
         if (isset(request()->id)) {
             $query->where("$this->table.id", request()->id);
         }
         if (isset(request()->pengembaliankasgantung_id)) {
+            $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
             $query->where("$this->table.pengembaliankasgantung_id", request()->pengembaliankasgantung_id);
         }
         if (isset(request()->forReport) && request()->forReport) {
@@ -67,10 +66,10 @@ class PengembalianKasGantungDetail extends MyModel
                 "$this->table.keterangan",
                 "akunpusat.keterangancoa as coa",
                 db::raw("cast((format(kasgantungheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderkasgantungheader"),
-                db::raw("cast(cast(format((cast((format(kasgantungheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderkasgantungheader"), 
+                db::raw("cast(cast(format((cast((format(kasgantungheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderkasgantungheader"),
             )
-            ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'pengembaliankasgantungdetail.kasgantung_nobukti', '=', 'kasgantungheader.nobukti')
-            ->leftJoin("akunpusat", "$this->table.coa", "akunpusat.coa");
+                ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'pengembaliankasgantungdetail.kasgantung_nobukti', '=', 'kasgantungheader.nobukti')
+                ->leftJoin("akunpusat", "$this->table.coa", "akunpusat.coa");
             // $query->where($this->table . '.pengembaliankasgantung_id', '=', request()->pengembaliankasgantung_id);
             // dd($query->toSql());
 
@@ -94,9 +93,11 @@ class PengembalianKasGantungDetail extends MyModel
             'pengembaliankasgantungdetail.nominal',
             'pengembaliankasgantungdetail.coa',
         )
-        ->leftJoin('pengembaliankasgantungheader', 'pengembaliankasgantungdetail.pengembaliankasgantung_id', 'pengembaliankasgantungheader.id');
+            ->leftJoin('pengembaliankasgantungheader', 'pengembaliankasgantungdetail.pengembaliankasgantung_id', 'pengembaliankasgantungheader.id');
 
-        $data = $query->where("pengembaliankasgantung_id",$id)->get();
+        $data = $query->where("pengembaliankasgantung_id", $id)->get();
+
+        
 
         return $data;
     }
@@ -143,7 +144,7 @@ class PengembalianKasGantungDetail extends MyModel
     {
         if ($this->params['sortIndex'] == 'coa') {
             return $query->orderBy('akunpusat.keterangancoa', $this->params['sortOrder']);
-        }else{
+        } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
@@ -156,7 +157,7 @@ class PengembalianKasGantungDetail extends MyModel
 
     public function processStore(PengembalianKasGantungHeader $pengembalianKasGantungHeader, array $data): PengembalianKasGantungDetail
     {
-        
+
         $pengembalianKasGantungDetail = new PengembalianKasGantungDetail();
         $pengembalianKasGantungDetail->pengembaliankasgantung_id = $data['pengembaliankasgantung_id'];
         $pengembalianKasGantungDetail->nobukti = $data['nobukti'];
@@ -166,12 +167,11 @@ class PengembalianKasGantungDetail extends MyModel
         $pengembalianKasGantungDetail->kasgantung_nobukti = $data['kasgantung_nobukti'];
         $pengembalianKasGantungDetail->modifiedby = auth('api')->user()->name;
         $pengembalianKasGantungDetail->info = html_entity_decode(request()->info);
-        
+
         if (!$pengembalianKasGantungDetail->save()) {
             throw new \Exception("Error storing pengembalian Kas Gantung Detail");
         }
 
         return $pengembalianKasGantungDetail;
     }
-
 }

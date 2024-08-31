@@ -45,6 +45,7 @@ class PengeluaranStokDetail extends MyModel
         }
 
         if (isset(request()->pengeluaranstokheader_id)) {
+            $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
             $query->where("$this->table.pengeluaranstokheader_id", request()->pengeluaranstokheader_id);
         }
 

@@ -38,6 +38,8 @@ use App\Models\PengeluaranPenerima;
 use DateTime;
 use Exception;
 use Illuminate\Database\QueryException;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class PengeluaranHeaderController extends Controller
 {
@@ -443,7 +445,7 @@ class PengeluaranHeaderController extends Controller
         $user = auth('api')->user()->name;
         $getEditing = (new Locking())->getEditing('pengeluaranheader', $id);
         $useredit = $getEditing->editing_by ?? '';
-        
+
         if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $keteranganerror = $error->cekKeteranganError('SAP') ?? '';
             $keterror = 'No Bukti <b>' . $nobukti . '</b><br>' . $keteranganerror . ' <br> ' . $keterangantambahanerror;
@@ -487,7 +489,7 @@ class PengeluaranHeaderController extends Controller
             if ($totalminutes > $waktu) {
                 if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                     // (new MyModel())->updateEditingBy('pengeluaranheader', $id, $aksi);
-                    (new MyModel())->createLockEditing($id, 'pengeluaranheader',$useredit);  
+                    (new MyModel())->createLockEditing($id, 'pengeluaranheader', $useredit);
                 }
 
                 $data = [
@@ -518,7 +520,7 @@ class PengeluaranHeaderController extends Controller
 
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
                 // (new MyModel())->updateEditingBy('pengeluaranheader', $id, $aksi);
-                (new MyModel())->createLockEditing($id, 'pengeluaranheader',$useredit);  
+                (new MyModel())->createLockEditing($id, 'pengeluaranheader', $useredit);
             }
 
             $data = [
@@ -550,7 +552,7 @@ class PengeluaranHeaderController extends Controller
 
             $getEditing = (new Locking())->getEditing('pengeluaranheader', $id);
             $useredit = $getEditing->editing_by ?? '';
-            (new MyModel())->createLockEditing($id, 'pengeluaranheader',$useredit);      
+            (new MyModel())->createLockEditing($id, 'pengeluaranheader', $useredit);
             // (new MyModel())->updateEditingBy('pengeluaranheader', $id, 'EDIT');
             $data = [
                 'error' => false,
@@ -568,39 +570,328 @@ class PengeluaranHeaderController extends Controller
      * @ClassName
      * @Keterangan CETAK DATA
      */
-    public function report()
-    {
-    }
+    public function report() {}
 
     /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */
-    public function approvalbukacetak()
-    {
-    }
+    public function approvalbukacetak() {}
     /**
      * @ClassName 
      * @Keterangan APPROVAL KIRIM BERKAS
      */
-    public function approvalkirimberkas()
-    {
-    }
+    public function approvalkirimberkas() {}
 
 
     /**
      * @ClassName
      * @Keterangan EXPORT KE EXCEL
      */
-    public function export($id)
+    public function export($id, Request $request)
     {
         $pengeluaranHeader = new PengeluaranHeader();
+        $pengeluaran_Header = $pengeluaranHeader->getExport($id);
+
+        if ($request->export == true) {
+
+            $pengeluaranDetail = new PengeluaranDetail();
+            $pengeluaran_Detail = $pengeluaranDetail->get();
+
+            $tglBukti = $pengeluaran_Header->tglbukti;
+            $timeStamp = strtotime($tglBukti);
+            $dateTglBukti = date('d-m-Y', $timeStamp);
+            $pengeluaran_Header->tglbukti = $dateTglBukti;
+
+            if ($pengeluaran_Header->tipe_bank === 'KAS') {
+                $spreadsheet = new Spreadsheet();
+                $sheet = $spreadsheet->getActiveSheet();
+                $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
+                $sheet->setCellValue('A1', $pengeluaran_Header->judul);
+                $sheet->setCellValue('A2', 'Laporan Pengeluaran ' . $pengeluaran_Header->bank_id);
+                $sheet->getStyle("A1")->getFont()->setSize(11);
+                $sheet->getStyle("A2")->getFont()->setSize(11);
+                $sheet->getStyle("A1")->getFont()->setBold(true);
+                $sheet->getStyle("A2")->getFont()->setBold(true);
+                $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+                $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+                $sheet->mergeCells('A1:D1');
+                $sheet->mergeCells('A2:D2');
+
+                $header_start_row = 4;
+                $detail_table_header_row = 8;
+                $detail_start_row = $detail_table_header_row + 1;
+
+                $alphabets = range('A', 'Z');
+
+                $header_columns = [
+                    [
+                        'label' => 'No Bukti',
+                        'index' => 'nobukti',
+                    ],
+                    [
+                        'label' => 'Tanggal',
+                        'index' => 'tglbukti',
+                    ],
+                    [
+                        'label' => 'Kas',
+                        'index' => 'bank_id',
+                    ],
+                ];
+
+                $detail_columns = [
+                    [
+                        'label' => 'NO',
+                    ],
+                    [
+                        'label' => 'NAMA PERKIRAAN',
+                        'index' => 'coadebet'
+                    ],
+                    [
+                        'label' => 'KETERANGAN',
+                        'index' => 'keterangan'
+                    ],
+                    [
+                        'label' => 'NOMINAL',
+                        'index' => 'nominal',
+                        'format' => 'currency'
+                    ]
+                ];
+
+                //LOOPING HEADER        
+                foreach ($header_columns as $header_column) {
+                    $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                    $sheet->setCellValue('C' . $header_start_row++, ': ' . $pengeluaran_Header->{$header_column['index']});
+                }
+                foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                    $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                }
+                $styleArray = array(
+                    'borders' => array(
+                        'allBorders' => array(
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        ),
+                    ),
+                );
+
+                $style_number = [
+                    'alignment' => [
+                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                    ],
+
+                    'borders' => [
+                        'top' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'right' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'bottom' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'left' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+                    ]
+                ];
+
+                // $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FF1F456E');
+                $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->applyFromArray($styleArray);
+
+                // LOOPING DETAIL
+                $nominal = 0;
+                foreach ($pengeluaran_Detail as $response_index => $response_detail) {
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : 0);
+                        $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getFont()->setBold(true);
+                        $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                    }
+
+                    $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                    $sheet->setCellValue("B$detail_start_row", $response_detail->coadebet);
+                    $sheet->setCellValue("C$detail_start_row", $response_detail->keterangan);
+                    $sheet->setCellValue("D$detail_start_row", $response_detail->nominal);
+
+                    $sheet->getStyle("C$detail_start_row")->getAlignment()->setWrapText(true);
+                    $sheet->getColumnDimension('C')->setWidth(50);
+
+                    $sheet->getStyle("A$detail_start_row:C$detail_start_row")->applyFromArray($styleArray);
+                    $sheet->getStyle("D$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+
+                    $detail_start_row++;
+                }
+
+                $total_start_row = $detail_start_row;
+                $sheet->mergeCells('A' . $total_start_row . ':C' . $total_start_row);
+                $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':C' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                $sheet->setCellValue("D$total_start_row", "=SUM(D9:D" . ($detail_start_row - 1) . ")")->getStyle("D$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+
+                $sheet->getStyle("D$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                $sheet->getColumnDimension('A')->setAutoSize(true);
+                $sheet->getColumnDimension('B')->setAutoSize(true);
+                $sheet->getColumnDimension('D')->setAutoSize(true);
+
+                $writer = new Xlsx($spreadsheet);
+                $filename = 'LAPORAN PENGELUARAN ' . $pengeluaran_Header->bank_id . date('dmYHis');
+                header('Content-Type: application/vnd.ms-excel');
+                header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                header('Cache-Control: max-age=0');
+                header('Filename: ' . $filename);
+                $writer->save('php://output');
+            } else {
+                $spreadsheet = new Spreadsheet();
+                $sheet = $spreadsheet->getActiveSheet();
+                $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
+                $sheet->setCellValue('A1', $pengeluaran_Header->judul);
+                $sheet->setCellValue('A2', 'Laporan pengeluaran ' . $pengeluaran_Header->bank_id);
+                $sheet->getStyle("A1")->getFont()->setSize(11);
+                $sheet->getStyle("A2")->getFont()->setSize(11);
+                $sheet->getStyle("A1")->getFont()->setBold(true);
+                $sheet->getStyle("A2")->getFont()->setBold(true);
+                $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+                $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+                $sheet->mergeCells('A1:G1');
+                $sheet->mergeCells('A2:G2');
+
+                $header_start_row = 4;
+                $header_start_row_right = 4;
+                $detail_table_header_row = 8;
+                $detail_start_row = $detail_table_header_row + 1;
+
+                $alphabets = range('A', 'Z');
+
+                $header_columns = [
+                    [
+                        'label' => 'No Bukti',
+                        'index' => 'nobukti',
+                    ],
+                    [
+                        'label' => 'Tanggal',
+                        'index' => 'tglbukti',
+                    ],
+                    [
+                        'label' => 'Bank',
+                        'index' => 'bank_id',
+                    ],
+                ];
+
+                $detail_columns = [
+                    [
+                        'label' => 'NO',
+                    ],
+                    [
+                        'label' => 'NAMA PERKIRAAN',
+                        'index' => 'coadebet'
+                    ],
+                    [
+                        'label' => 'BANK',
+                        'index' => 'bank'
+                    ],
+                    [
+                        'label' => 'JATUH TEMPO',
+                        'index' => 'tgljatuhtempo'
+                    ],
+                    [
+                        'label' => 'NO INVOICE',
+                        'index' => 'invoice_nobukti'
+                    ],
+                    [
+                        'label' => 'KETERANGAN',
+                        'index' => 'keterangan'
+                    ],
+                    [
+                        'label' => 'NOMINAL',
+                        'index' => 'nominal',
+                        'format' => 'currency'
+                    ]
+                ];
+
+                //LOOPING HEADER        
+                foreach ($header_columns as $header_column) {
+                    $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                    $sheet->setCellValue('C' . $header_start_row++, ': ' . $pengeluaran_Header->{$header_column['index']});
+                }
+                foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                    $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                }
+                $styleArray = array(
+                    'borders' => array(
+                        'allBorders' => array(
+                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        ),
+                    ),
+                );
+
+                $style_number = [
+                    'alignment' => [
+                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                    ],
+
+                    'borders' => [
+                        'top' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'right' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'bottom' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                        'left' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+                    ]
+                ];
+
+                // $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FF1F456E');
+                $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->applyFromArray($styleArray);
+
+                // LOOPING DETAIL
+                $nominal = 0;
+                foreach ($pengeluaran_Detail as $response_index => $response_detail) {
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : 0);
+                        $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getFont()->setBold(true);
+                        $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                    }
+
+                    $tgljatuhtempo = $response_detail->tgljatuhtempo;
+                    $timeStamp = strtotime($tgljatuhtempo);
+                    $datetgljatuhtempo = date('d-m-Y', $timeStamp);
+                    $response_detail->tgljatuhtempo = $datetgljatuhtempo;
+
+                    $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                    $sheet->setCellValue("B$detail_start_row", $response_detail->coadebet);
+                    $sheet->setCellValue("C$detail_start_row", $response_detail->bank);
+                    $sheet->setCellValue("D$detail_start_row", $response_detail->tgljatuhtempo);
+                    $sheet->setCellValue("E$detail_start_row", $response_detail->invoice_nobukti);
+                    $sheet->setCellValue("F$detail_start_row", $response_detail->keterangan);
+                    $sheet->setCellValue("G$detail_start_row", $response_detail->nominal);
+
+                    $sheet->getStyle("F$detail_start_row")->getAlignment()->setWrapText(true);
+                    $sheet->getColumnDimension('F')->setWidth(50);
+
+                    $sheet->getStyle("A$detail_start_row:G$detail_start_row")->applyFromArray($styleArray);
+                    $sheet->getStyle("G$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+
+                    $detail_start_row++;
+                }
+                $total_start_row = $detail_start_row;
+                $sheet->mergeCells('A' . $total_start_row . ':F' . $total_start_row);
+                $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':F' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                $sheet->setCellValue("G$total_start_row", "=SUM(G9:G" . ($detail_start_row - 1) . ")")->getStyle("G$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+                $sheet->getStyle("G$total_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+
+                $sheet->getColumnDimension('A')->setAutoSize(true);
+                $sheet->getColumnDimension('B')->setAutoSize(true);
+                $sheet->getColumnDimension('C')->setAutoSize(true);
+                $sheet->getColumnDimension('D')->setAutoSize(true);
+                $sheet->getColumnDimension('E')->setAutoSize(true);
+                $sheet->getColumnDimension('G')->setAutoSize(true);
+
+                $writer = new Xlsx($spreadsheet);
+                $filename = 'LAPORAN PENGELUARAN ' . $pengeluaran_Header->bank_id . date('dmYHis');
+                header('Content-Type: application/vnd.ms-excel');
+                header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                header('Cache-Control: max-age=0');
+                header('Filename: ' . $filename);
+                $writer->save('php://output');
+            }
+        } else {
+            return response([
+                'data' => $pengeluaran_Header
+            ]);
+        }
         return response([
             'data' => $pengeluaranHeader->getExport($id)
         ]);
     }
 
-    public function editingat(EditingByRequest $request)
-    {
-    }
+    public function editingat(EditingByRequest $request) {}
 }

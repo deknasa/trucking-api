@@ -30,15 +30,15 @@ class LaporanTripGandenganDetail extends MyModel
         // dd($dari, $sampai, $gandengandari_id, $gandengansampai_id);
         $Tempsuratpengantar = '##Tempsuratpengantar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($Tempsuratpengantar, function ($table) {
-            $table->date('tglbukti');
-            $table->string('nosp', 1000);
-            $table->integer('supir_id');
-            $table->integer('gandengan_id');
-            $table->integer('container_id');
-            $table->integer('trado_id');
-            $table->integer('upah_id');
-            $table->longText('keterangan');
-            $table->string('nocont', 1000);
+            $table->date('tglbukti')->nullable(); 
+            $table->string('nosp', 1000)->nullable();
+            $table->integer('supir_id')->nullable();
+            $table->integer('gandengan_id')->nullable();
+            $table->integer('container_id')->nullable();
+            $table->integer('trado_id')->nullable();
+            $table->integer('upah_id')->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('nocont', 1000)->nullable();
         });
 
         $select_suratpengantar = DB::table('suratpengantar AS A')

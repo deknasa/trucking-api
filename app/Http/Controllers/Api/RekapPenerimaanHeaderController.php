@@ -13,7 +13,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\RekapPenerimaanDetail;
-
 use App\Models\RekapPenerimaanHeader;
 use Illuminate\Support\Facades\Schema;
 use App\Http\Requests\GetIndexRangeRequest;
@@ -25,6 +24,8 @@ use App\Http\Requests\StoreRekapPenerimaanHeaderRequest;
 use App\Http\Requests\UpdateRekapPenerimaanHeaderRequest;
 use App\Http\Requests\DestroyRekapPenerimaanHeaderRequest;
 use App\Models\Locking;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class RekapPenerimaanHeaderController extends Controller
 {
@@ -374,35 +375,176 @@ class RekapPenerimaanHeaderController extends Controller
      * @ClassName 
      * @Keterangan CETAK DATA
      */
-    public function report()
-    {
-    }
+    public function report() {}
 
     /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */
-    public function approvalbukacetak()
-    {
-    }
+    public function approvalbukacetak() {}
 
     /**
      * @ClassName 
      * @Keterangan EXPORT KE EXCEL
      */
-    public function export($id)
+    public function export($id, Request $request)
     {
-        $rekapPenerimaan = new RekapPenerimaanHeader();
-        return response([
-            'data' => $rekapPenerimaan->getExport($id)
-        ]);
+        $rekapPenerimaanHeader = new RekapPenerimaanHeader();
+        $rekap_PenerimaanHeader = $rekapPenerimaanHeader->getExport($id);
+
+        $rekapPenerimaanDetail = new RekapPenerimaanDetail();
+        $rekap_PenerimaanDetail = $rekapPenerimaanDetail->get();
+
+        if ($request->export == true) {
+            $tglBukti = $rekap_PenerimaanHeader->tglbukti;
+            $timeStamp = strtotime($tglBukti);
+            $dateTglBukti = date('d-m-Y', $timeStamp);
+            $rekap_PenerimaanHeader->tglbukti = $dateTglBukti;
+
+            $tgltransaksi = $rekap_PenerimaanHeader->tgltransaksi;
+            $timeStamp = strtotime($tgltransaksi);
+            $datetgltransaksi = date('d-m-Y', $timeStamp);
+            $rekap_PenerimaanHeader->tgltransaksi = $datetgltransaksi;
+
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
+            $sheet->setCellValue('A1', $rekap_PenerimaanHeader->judul);
+            $sheet->setCellValue('A2', $rekap_PenerimaanHeader->judulLaporan . $rekap_PenerimaanHeader->bank);
+            $sheet->getStyle("A1")->getFont()->setSize(11);
+            $sheet->getStyle("A2")->getFont()->setSize(11);
+            $sheet->getStyle("A1")->getFont()->setBold(true);
+            $sheet->getStyle("A2")->getFont()->setBold(true);
+            $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+            $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+            $sheet->mergeCells('A1:D1');
+            $sheet->mergeCells('A2:D2');
+
+            $header_start_row = 4;
+            $detail_table_header_row = 9;
+            $detail_start_row = $detail_table_header_row + 1;
+
+            $alphabets = range('A', 'Z');
+            $header_columns = [
+                [
+                    'label' => 'No Bukti',
+                    'index' => 'nobukti'
+                ],
+                [
+                    'label' => 'Tanggal',
+                    'index' => 'tglbukti'
+                ],
+                [
+                    'label' => 'Bank',
+                    'index' => 'bank'
+                ],
+                [
+                    'label' => 'Tanggal Transaksi',
+                    'index' => 'tgltransaksi'
+                ]
+            ];
+            $detail_columns = [
+                [
+                    'label' => 'NO',
+                ],
+                [
+                    'label' => 'NAMA PERKIRAAN',
+                    'index' => 'keterangancoa'
+                ],
+                [
+                    'label' => 'KETERANGAN',
+                    'index' => 'keterangan'
+                ],
+                [
+                    'label' => 'NOMINAL',
+                    'index' => 'nominal',
+                    'format' => 'currency'
+                ]
+            ];
+
+            //LOOPING HEADER        
+            foreach ($header_columns as $header_column) {
+                $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                $sheet->setCellValue('C' . $header_start_row++, ': ' . $rekap_PenerimaanHeader->{$header_column['index']});
+            }
+            foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+            }
+            $styleArray = array(
+                'borders' => array(
+                    'allBorders' => array(
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    ),
+                ),
+            );
+
+            $style_number = [
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                ],
+
+                'borders' => [
+                    'top' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                    'right' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                    'bottom' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN],
+                    'left' => ['borderStyle'  => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+                ]
+            ];
+
+            // $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FF1F456E');
+            $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->applyFromArray($styleArray);
+
+            // LOOPING DETAIL
+            $nominal = 0;
+            foreach ($rekap_PenerimaanDetail as $response_index => $response_detail) {
+
+                foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                    $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : $response_index + 1);
+                    $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getFont()->setBold(true);
+                    $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                }
+
+                $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                $sheet->setCellValue("B$detail_start_row", $response_detail->keterangancoa);
+                $sheet->setCellValue("C$detail_start_row", $response_detail->keterangan);
+                $sheet->setCellValue("D$detail_start_row", $response_detail->nominal);
+
+                // $sheet->getStyle("D$detail_start_row")->getAlignment()->setWrapText(true);
+                $sheet->getColumnDimension('D')->setWidth(50);
+
+                $sheet->getStyle("A$detail_start_row:C$detail_start_row")->applyFromArray($styleArray);
+                $sheet->getStyle("D$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                $detail_start_row++;
+            }
+
+            $total_start_row = $detail_start_row;
+            $sheet->mergeCells('A' . $total_start_row . ':C' . $total_start_row);
+            $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':C' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+            $sheet->setCellValue("D$total_start_row", "=SUM(D10:D" . ($detail_start_row - 1) . ")")->getStyle("D$detail_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+            $sheet->getStyle("D$total_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+            //set autosize
+            $sheet->getColumnDimension('A')->setAutoSize(true);
+            $sheet->getColumnDimension('B')->setAutoSize(true);
+            $sheet->getColumnDimension('C')->setAutoSize(true);
+            $sheet->getColumnDimension('D')->setAutoSize(true);
+
+            $writer = new Xlsx($spreadsheet);
+            $filename = 'LAPORAN REKAP PENERIMAAN ' . $rekap_PenerimaanHeader->bank . date('dmYHis');
+            header('Content-Type: application/vnd.ms-excel');
+            header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+            header('Cache-Control: max-age=0');
+            header('Filename: ' . $filename);
+            $writer->save('php://output');
+        } else {
+            return response([
+                'data' => $rekap_PenerimaanHeader
+            ]);
+        }
     }
 
     /**
      * @ClassName 
      * @Keterangan APPROVAL KIRIM BERKAS
      */
-    public function approvalkirimberkas()
-    {
-    }
+    public function approvalkirimberkas() {}
 }

@@ -2923,6 +2923,8 @@ class PenerimaanStokHeader extends MyModel
             ->get();
 
         $data = $penerimaanstokdetail;
+
+        dd($data);
         return $data;
     }
 

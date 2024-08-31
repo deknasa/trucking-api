@@ -784,8 +784,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
                 DB::raw("upper('Laporan Keterangan Pinjaman Supir')+'" . $judul1 . "' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
-
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
             )
             ->orderBy('a.id');
 

@@ -39,6 +39,8 @@ use App\Models\Supir;
 use DateTime;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpParser\Node\Stmt\Else_;
 
 class PengeluaranTruckingHeaderController extends Controller
@@ -619,7 +621,7 @@ class PengeluaranTruckingHeaderController extends Controller
         } else {
 
             if ($aksi != 'DELETE' && $aksi != 'EDIT') {
-                (new MyModel())->createLockEditing($id, 'pengeluarantruckingheader',$useredit);  
+                (new MyModel())->createLockEditing($id, 'pengeluarantruckingheader', $useredit);
             }
 
             $data = [
@@ -689,7 +691,7 @@ class PengeluaranTruckingHeaderController extends Controller
 
             $getEditing = (new Locking())->getEditing('pengeluarantruckingheader', $id);
             $useredit = $getEditing->editing_by ?? '';
-            (new MyModel())->createLockEditing($id, 'pengeluarantruckingheader',$useredit); 
+            (new MyModel())->createLockEditing($id, 'pengeluarantruckingheader', $useredit);
             $data = [
                 'error' => false,
                 'message' => '',
@@ -924,217 +926,1751 @@ class PengeluaranTruckingHeaderController extends Controller
      * @ClassName 
      * @Keterangan CETAK DATA
      */
-    public function report()
-    {
-    }
+    public function report() {}
 
     /**
      * @ClassName 
      * @Keterangan EXPORT KE EXCEL
      */
-    public function export($id)
+    public function export($id, Request $request)
     {
-        $pengeluarantruckingheader = new PengeluaranTruckingHeader();
-        return response([
-            'data' => $pengeluarantruckingheader->getExport($id)
-        ]);
+        $pengeluaranTruckingHeader = new PengeluaranTruckingHeader();
+        $pengeluaran_TruckingHeader = $pengeluaranTruckingHeader->getExport($id);
+
+        if ($request->export == true) {
+            $pengeluaranTruckingDetail = new PengeluaranTruckingDetail();
+            $pengeluaran_TruckingDetail = $pengeluaranTruckingDetail->get();
+
+            $styleArray = array(
+                'borders' => array(
+                    'allBorders' => array(
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    ),
+                ),
+            );
+
+            $style_number = [
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                ],
+
+                'borders' => array(
+                    'allBorders' => array(
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    ),
+                ),
+            ];
+
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
+            $sheet->setCellValue('A1', $pengeluaran_TruckingHeader->judul);
+            $sheet->setCellValue('A2', $pengeluaran_TruckingHeader->judulLaporan);
+            $sheet->getStyle("A1")->getFont()->setSize(11);
+            $sheet->getStyle("A2")->getFont()->setSize(11);
+            $sheet->getStyle("A1")->getFont()->setBold(true);
+            $sheet->getStyle("A2")->getFont()->setBold(true);
+            $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+            $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+            $sheet->mergeCells('A1:G1');
+            $sheet->mergeCells('A2:G2');
+
+            $alphabets = range('A', 'Z');
+
+            switch ($pengeluaran_TruckingHeader->statusformat) {
+                case '122':
+                    //PJT
+                    $header_start_row = 4;
+                    $header_right_start_row = 4;
+                    $detail_table_header_row = 8;
+                    $detail_start_row = $detail_table_header_row + 1;
+
+                    $header_columns = [
+                        [
+                            'label' => 'No Bukti',
+                            'index' => 'nobukti',
+                        ],
+                        [
+                            'label' => 'Tanggal',
+                            'index' => 'tglbukti',
+                        ],
+                        [
+                            'label' => 'No Bukti Pengeluaran',
+                            'index' => 'pengeluaran_nobukti',
+                        ],
+                    ];
+
+                    $header_right_columns = [
+                        [
+                            'label' => 'Pengeluaran Trucking',
+                            'index' => 'pengeluarantrucking_id',
+                        ],
+                        [
+                            'label' => 'Nama Perkiraan',
+                            'index' => 'coa',
+                        ],
+                        [
+                            'label' => 'Bank',
+                            'index' => 'bank_id',
+                        ],
+
+                    ];
+
+                    //LOOPING HEADER        
+                    foreach ($header_columns as $header_column) {
+                        $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                        if ($header_column['index'] == 'tglbukti') {
+                            $pengeluaran_TruckingHeader->{$header_column['index']} = date('d-m-Y', strtotime($pengeluaran_TruckingHeader->{$header_column['index']}));
+                        }
+                        $sheet->setCellValue('C' . $header_start_row++, ': ' . $pengeluaran_TruckingHeader->{$header_column['index']});
+                    }
+                    foreach ($header_right_columns as $header_right_column) {
+                        $sheet->setCellValue('D' . $header_right_start_row, $header_right_column['label']);
+                        $sheet->setCellValue('E' . $header_right_start_row++, ': ' . $pengeluaran_TruckingHeader->{$header_right_column['index']});
+                    }
+
+                    $detail_columns = [
+                        [
+                            'label' => 'NO',
+                        ],
+                        [
+                            'label' => 'SUPIR',
+                            'index' => 'supir_id',
+                        ],
+                        [
+                            'label' => 'KETERANGAN',
+                            'index' => 'keterangan',
+                        ],
+                        [
+                            'label' => 'NOMINAL',
+                            'index' => 'nominal',
+                            'format' => 'currency'
+                        ]
+                    ];
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                    }
+
+                    $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->applyFromArray($styleArray);
+
+                    // LOOPING DETAIL
+                    $nominal = 0;
+                    foreach ($pengeluaran_TruckingDetail as $response_index => $response_detail) {
+
+                        foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                            $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : $response_index + 1);
+                            $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getFont()->setBold(true);
+                            $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                        }
+
+                        $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                        $sheet->setCellValue("B$detail_start_row", $response_detail->supir_id);
+                        $sheet->setCellValue("C$detail_start_row", $response_detail->keterangan);
+                        $sheet->setCellValue("D$detail_start_row", $response_detail->nominal);
+
+                        // $sheet->getStyle("C$detail_start_row")->getAlignment()->setWrapText(true);
+                        $sheet->getColumnDimension('C')->setWidth(50);
+
+                        $sheet->getStyle("A$detail_start_row:C$detail_start_row")->applyFromArray($styleArray);
+                        $sheet->getStyle("D$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                        $detail_start_row++;
+                    }
+
+                    $total_start_row = $detail_start_row;
+                    $sheet->mergeCells('A' . $total_start_row . ':C' . $total_start_row);
+                    $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':C' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                    $totalKredit = "=SUM(D" . ($detail_table_header_row + 1) . ":D" . ($detail_start_row - 1) . ")";
+                    $sheet->setCellValue("D$total_start_row", $totalKredit)->getStyle("D$total_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->getStyle("D$total_start_row")->getFont()->setBold(true);
+
+                    $sheet->getColumnDimension('A')->setAutoSize(true);
+                    $sheet->getColumnDimension('B')->setAutoSize(true);
+                    $sheet->getColumnDimension('D')->setAutoSize(true);
+                    $writer = new Xlsx($spreadsheet);
+                    $filename = 'LAPORAN PENGELUARAN TRUCKING (PJT)' . date('dmYHis');
+                    header('Content-Type: application/vnd.ms-excel');
+                    header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                    header('Cache-Control: max-age=0');
+                    header('Filename: ' . $filename);
+                    $writer->save('php://output');
+                    break;
+                case '251':
+                    //TDE
+                    $header_start_row = 4;
+                    $header_right_start_row = 4;
+                    $detail_table_header_row = 9;
+                    $detail_start_row = $detail_table_header_row + 1;
+
+                    $header_columns = [
+                        [
+                            'label' => 'No Bukti',
+                            'index' => 'nobukti',
+                        ],
+                        [
+                            'label' => 'Tanggal',
+                            'index' => 'tglbukti',
+                        ],
+                        [
+                            'label' => 'No Bukti Pengeluaran',
+                            'index' => 'pengeluaran_nobukti',
+                        ],
+
+                        [
+                            'label' => 'Bank',
+                            'index' => 'bank_id',
+                        ]
+                    ];
+
+                    $header_right_columns = [
+                        [
+                            'label' => 'Pengeluaran Trucking',
+                            'index' => 'pengeluarantrucking_id',
+                        ],
+                        [
+                            'label' => 'Supir',
+                            'index' => 'supir',
+                        ],
+                        [
+                            'label' => 'Trado',
+                            'index' => 'trado',
+                        ],
+                        [
+                            'label' => 'Nama Perkiraan',
+                            'index' => 'coa',
+                        ],
+
+                    ];
+
+                    //LOOPING HEADER        
+                    foreach ($header_columns as $header_column) {
+                        $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                        if ($header_column['index'] == 'tglbukti') {
+                            $pengeluaran_TruckingHeader->{$header_column['index']} = date('d-m-Y', strtotime($pengeluaran_TruckingHeader->{$header_column['index']}));
+                        }
+                        $sheet->setCellValue('C' . $header_start_row++, ': ' . $pengeluaran_TruckingHeader->{$header_column['index']});
+                    }
+                    foreach ($header_right_columns as $header_right_column) {
+                        $sheet->setCellValue('D' . $header_right_start_row, $header_right_column['label']);
+                        $sheet->setCellValue('E' . $header_right_start_row++, ': ' . $pengeluaran_TruckingHeader->{$header_right_column['index']});
+                    }
+
+                    $detail_columns = [
+                        [
+                            'label' => 'NO',
+                        ],
+                        [
+                            'label' => 'NO BUKTI PENERIMAAN TRUCKING',
+                            'index' => 'penerimaantruckingheader_nobukti',
+                        ],
+                        [
+                            'label' => 'SUPIR',
+                            'index' => 'supir_id',
+                        ],
+                        [
+                            'label' => 'KETERANGAN',
+                            'index' => 'keterangan',
+                        ],
+                        [
+                            'label' => 'NOMINAL',
+                            'index' => 'nominal',
+                            'format' => 'currency'
+                        ]
+                    ];
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                    }
+
+                    $sheet->getStyle("A$detail_table_header_row:E$detail_table_header_row")->applyFromArray($styleArray);
+
+                    // LOOPING DETAIL
+                    $nominal = 0;
+                    foreach ($pengeluaran_TruckingDetail as $response_index => $response_detail) {
+
+                        foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                            $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : $response_index + 1);
+                            $sheet->getStyle("A$detail_table_header_row:E$detail_table_header_row")->getFont()->setBold(true);
+                            $sheet->getStyle("A$detail_table_header_row:E$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                        }
+
+                        $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                        $sheet->setCellValue("B$detail_start_row", $response_detail->penerimaantruckingheader_nobukti);
+                        $sheet->setCellValue("C$detail_start_row", $response_detail->supir_id);
+                        $sheet->setCellValue("D$detail_start_row", $response_detail->keterangan);
+                        $sheet->setCellValue("E$detail_start_row", $response_detail->nominal);
+
+                        // $sheet->getStyle("D$detail_start_row")->getAlignment()->setWrapText(true);
+                        $sheet->getColumnDimension('D')->setWidth(50);
+
+                        $sheet->getStyle("A$detail_start_row:D$detail_start_row")->applyFromArray($styleArray);
+                        $sheet->getStyle("E$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                        $detail_start_row++;
+                    }
+
+                    $total_start_row = $detail_start_row;
+                    $sheet->mergeCells('A' . $total_start_row . ':D' . $total_start_row);
+                    $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':D' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                    $totalKredit = "=SUM(E" . ($detail_table_header_row + 1) . ":E" . ($detail_start_row - 1) . ")";
+                    $sheet->setCellValue("E$total_start_row", $totalKredit)->getStyle("E$total_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->getStyle("E$total_start_row")->getFont()->setBold(true);
+
+                    $sheet->getColumnDimension('A')->setAutoSize(true);
+                    $sheet->getColumnDimension('B')->setAutoSize(true);
+                    $sheet->getColumnDimension('C')->setAutoSize(true);
+                    $sheet->getColumnDimension('E')->setAutoSize(true);
+                    $writer = new Xlsx($spreadsheet);
+                    $filename = 'LAPORAN PENGELURAN TRUCKING (TDE)' . date('dmYHis');
+                    header('Content-Type: application/vnd.ms-excel');
+                    header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                    header('Cache-Control: max-age=0');
+                    header('Filename: ' . $filename);
+                    $writer->save('php://output');
+                    break;
+                case '289':
+                    //BST
+                    $header_start_row = 4;
+                    $header_right_start_row = 4;
+                    $detail_table_header_row = 9;
+                    $detail_start_row = $detail_table_header_row + 1;
+
+                    $header_columns = [
+                        [
+                            'label' => 'No Bukti',
+                            'index' => 'nobukti',
+                        ],
+                        [
+                            'label' => 'Tanggal',
+                            'index' => 'tglbukti',
+                        ],
+                        [
+                            'label' => 'No Bukti Pengeluaran',
+                            'index' => 'pengeluaran_nobukti',
+                        ],
+
+                        [
+                            'label' => 'Bank',
+                            'index' => 'bank_id',
+                        ]
+                    ];
+
+                    $header_right_columns = [
+                        [
+                            'label' => 'Pengeluaran Trucking',
+                            'index' => 'pengeluarantrucking_id',
+                        ],
+                        [
+                            'label' => 'Periode Dari',
+                            'index' => 'periodedari',
+                        ],
+                        [
+                            'label' => 'Periode Sampai',
+                            'index' => 'periodesampai',
+                        ],
+                        [
+                            'label' => 'Nama Perkiraan',
+                            'index' => 'coa',
+                        ],
+
+                    ];
+
+                    //LOOPING HEADER        
+                    foreach ($header_columns as $header_column) {
+                        $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                        if ($header_column['index'] == 'tglbukti') {
+                            $pengeluaran_TruckingHeader->{$header_column['index']} = date('d-m-Y', strtotime($pengeluaran_TruckingHeader->{$header_column['index']}));
+                        }
+                        $sheet->setCellValue('C' . $header_start_row++, ': ' . $pengeluaran_TruckingHeader->{$header_column['index']});
+                    }
+                    foreach ($header_right_columns as $header_right_column) {
+                        $sheet->setCellValue('D' . $header_right_start_row, $header_right_column['label']);
+                        if ($header_right_column['index'] == 'periodedari' || $header_right_column['index'] == 'periodesampai') {
+                            $pengeluaran_TruckingHeader->{$header_right_column['index']} = date('d-m-Y', strtotime($pengeluaran_TruckingHeader->{$header_right_column['index']}));
+                        }
+                        $sheet->setCellValue('E' . $header_right_start_row++, ': ' . $pengeluaran_TruckingHeader->{$header_right_column['index']});
+                    }
+
+                    $detail_columns = [
+                        [
+                            'label' => 'NO',
+                        ],
+                        [
+                            'label' => 'NO BUKTI INVOICE',
+                            'index' => 'invoice_nobukti',
+                        ],
+                        [
+                            'label' => 'NO ORDERAN TRUCKING',
+                            'index' => 'orderantrucking_nobukti',
+                        ],
+                        [
+                            'label' => 'KETERANGAN',
+                            'index' => 'keterangan',
+                        ],
+                        [
+                            'label' => 'NOMINAL',
+                            'index' => 'nominal',
+                            'format' => 'currency'
+                        ]
+                    ];
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                    }
+                    // $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FF1F456E');
+                    $sheet->getStyle("A$detail_table_header_row:E$detail_table_header_row")->applyFromArray($styleArray);
+
+                    // LOOPING DETAIL
+                    $nominal = 0;
+                    foreach ($pengeluaran_TruckingDetail as $response_index => $response_detail) {
+
+                        foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                            $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : $response_index + 1);
+                            $sheet->getStyle("A$detail_table_header_row:E$detail_table_header_row")->getFont()->setBold(true);
+                            $sheet->getStyle("A$detail_table_header_row:E$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                        }
+
+                        $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                        $sheet->setCellValue("B$detail_start_row", $response_detail->invoice_nobukti);
+                        $sheet->setCellValue("C$detail_start_row", $response_detail->orderantrucking_nobukti);
+                        $sheet->setCellValue("D$detail_start_row", $response_detail->keterangan);
+                        $sheet->setCellValue("E$detail_start_row", $response_detail->nominal);
+
+                        $sheet->getColumnDimension('D')->setWidth(50);
+
+                        $sheet->getStyle("A$detail_start_row:D$detail_start_row")->applyFromArray($styleArray);
+                        $sheet->getStyle("E$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                        $detail_start_row++;
+                    }
+
+                    $total_start_row = $detail_start_row;
+                    $sheet->mergeCells('A' . $total_start_row . ':D' . $total_start_row);
+                    $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':D' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                    $totalKredit = "=SUM(E" . ($detail_table_header_row + 1) . ":E" . ($detail_start_row - 1) . ")";
+                    $sheet->setCellValue("E$total_start_row", $totalKredit)->getStyle("E$total_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->getStyle("E$total_start_row")->getFont()->setBold(true);
+
+                    $sheet->getColumnDimension('A')->setAutoSize(true);
+                    $sheet->getColumnDimension('B')->setAutoSize(true);
+                    $sheet->getColumnDimension('C')->setAutoSize(true);
+                    $sheet->getColumnDimension('E')->setAutoSize(true);
+                    $writer = new Xlsx($spreadsheet);
+                    $filename = 'LAPORAN PENGELUARAN TRUCKING (BST)' . date('dmYHis');
+                    header('Content-Type: application/vnd.ms-excel');
+                    header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                    header('Cache-Control: max-age=0');
+                    header('Filename: ' . $filename);
+                    $writer->save('php://output');
+                    break;
+
+                case '297':
+                    //BSB
+                    $header_start_row = 4;
+                    $header_right_start_row = 4;
+                    $detail_table_header_row = 8;
+                    $detail_start_row = $detail_table_header_row + 1;
+
+                    $header_columns = [
+                        [
+                            'label' => 'No Bukti',
+                            'index' => 'nobukti',
+                        ],
+                        [
+                            'label' => 'Tanggal',
+                            'index' => 'tglbukti',
+                        ],
+                        [
+                            'label' => 'No Bukti Pengeluaran',
+                            'index' => 'pengeluaran_nobukti',
+                        ],
+                    ];
+
+                    $header_right_columns = [
+                        [
+                            'label' => 'Pengeluaran Trucking',
+                            'index' => 'pengeluarantrucking_id',
+                        ],
+                        [
+                            'label' => 'Bank',
+                            'index' => 'bank_id',
+                        ],
+                        [
+                            'label' => 'Nama Perkiraan',
+                            'index' => 'coa',
+                        ],
+
+                    ];
+
+                    //LOOPING HEADER        
+                    foreach ($header_columns as $header_column) {
+                        $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                        if ($header_column['index'] == 'tglbukti') {
+                            $pengeluaran_TruckingHeader->{$header_column['index']} = date('d-m-Y', strtotime($pengeluaran_TruckingHeader->{$header_column['index']}));
+                        }
+                        $sheet->setCellValue('C' . $header_start_row++, ': ' . $pengeluaran_TruckingHeader->{$header_column['index']});
+                    }
+                    foreach ($header_right_columns as $header_right_column) {
+                        $sheet->setCellValue('D' . $header_right_start_row, $header_right_column['label']);
+                        $sheet->setCellValue('E' . $header_right_start_row++, ': ' . $pengeluaran_TruckingHeader->{$header_right_column['index']});
+                    }
+
+                    $detail_columns = [
+                        [
+                            'label' => 'NO',
+                        ],
+                        [
+                            'label' => 'SUPIR',
+                            'index' => 'supir_id',
+                        ],
+                        [
+                            'label' => 'KETERANGAN',
+                            'index' => 'keterangan',
+                        ],
+                        [
+                            'label' => 'NOMINAL',
+                            'index' => 'nominal',
+                            'format' => 'currency'
+                        ]
+                    ];
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                    }
+                    // $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FF1F456E');
+                    $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->applyFromArray($styleArray);
+
+                    // LOOPING DETAIL
+                    $nominal = 0;
+                    foreach ($pengeluaran_TruckingDetail as $response_index => $response_detail) {
+
+                        foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                            $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : $response_index + 1);
+                            $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getFont()->setBold(true);
+                            $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                        }
+
+                        $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                        $sheet->setCellValue("B$detail_start_row", $response_detail->supir_id);
+                        $sheet->setCellValue("C$detail_start_row", $response_detail->keterangan);
+                        $sheet->setCellValue("D$detail_start_row", $response_detail->nominal);
+
+                        // $sheet->getStyle("C$detail_start_row")->getAlignment()->setWrapText(true);
+                        $sheet->getColumnDimension('C')->setWidth(50);
+
+                        $sheet->getStyle("A$detail_start_row:C$detail_start_row")->applyFromArray($styleArray);
+                        $sheet->getStyle("D$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                        $detail_start_row++;
+                    }
+
+                    $total_start_row = $detail_start_row;
+                    $sheet->mergeCells('A' . $total_start_row . ':C' . $total_start_row);
+                    $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':C' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                    $totalKredit = "=SUM(D" . ($detail_table_header_row + 1) . ":D" . ($detail_start_row - 1) . ")";
+                    $sheet->setCellValue("D$total_start_row", $totalKredit)->getStyle("D$total_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->getStyle("D$total_start_row")->getFont()->setBold(true);
+
+                    $sheet->getColumnDimension('A')->setAutoSize(true);
+                    $sheet->getColumnDimension('B')->setAutoSize(true);
+                    $sheet->getColumnDimension('D')->setAutoSize(true);
+                    $writer = new Xlsx($spreadsheet);
+                    $filename = 'LAPORAN PENGELUARAN TRUCKING (BSB)' . date('dmYHis');
+                    header('Content-Type: application/vnd.ms-excel');
+                    header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                    header('Cache-Control: max-age=0');
+                    header('Filename: ' . $filename);
+                    $writer->save('php://output');
+                    break;
+                case '298':
+                    //KBBM
+                    $header_start_row = 4;
+                    $header_right_start_row = 4;
+                    $detail_table_header_row = 9;
+                    $detail_start_row = $detail_table_header_row + 1;
+
+                    $header_columns = [
+                        [
+                            'label' => 'No Bukti',
+                            'index' => 'nobukti',
+                        ],
+                        [
+                            'label' => 'Tanggal',
+                            'index' => 'tglbukti',
+                        ],
+                        [
+                            'label' => 'No Bukti Pengeluaran',
+                            'index' => 'pengeluaran_nobukti',
+                        ],
+
+                        [
+                            'label' => 'Bank',
+                            'index' => 'bank_id',
+                        ]
+                    ];
+
+                    $header_right_columns = [
+                        [
+                            'label' => 'Pengeluaran Trucking',
+                            'index' => 'pengeluarantrucking_id',
+                        ],
+                        [
+                            'label' => 'Periode Dari',
+                            'index' => 'periodedari',
+                        ],
+                        [
+                            'label' => 'Periode Sampai',
+                            'index' => 'periodesampai',
+                        ],
+                        [
+                            'label' => 'Nama Perkiraan',
+                            'index' => 'coa',
+                        ],
+
+                    ];
+
+                    //LOOPING HEADER        
+                    foreach ($header_columns as $header_column) {
+                        $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                        if ($header_column['index'] == 'tglbukti') {
+                            $pengeluaran_TruckingHeader->{$header_column['index']} = date('d-m-Y', strtotime($pengeluaran_TruckingHeader->{$header_column['index']}));
+                        }
+                        $sheet->setCellValue('C' . $header_start_row++, ': ' . $pengeluaran_TruckingHeader->{$header_column['index']});
+                    }
+                    foreach ($header_right_columns as $header_right_column) {
+                        $sheet->setCellValue('D' . $header_right_start_row, $header_right_column['label']);
+                        if ($header_right_column['index'] == 'periodedari' || $header_right_column['index'] == 'periodesampai') {
+                            $pengeluaran_TruckingHeader->{$header_right_column['index']} = date('d-m-Y', strtotime($pengeluaran_TruckingHeader->{$header_right_column['index']}));
+                        }
+                        $sheet->setCellValue('E' . $header_right_start_row++, ': ' . $pengeluaran_TruckingHeader->{$header_right_column['index']});
+                    }
+
+                    $detail_columns = [
+                        [
+                            'label' => 'NO',
+                        ],
+                        [
+                            'label' => 'NO BUKTI PENERIMAAN TRUCKING',
+                            'index' => 'penerimaantruckingheader_nobukti',
+                        ],
+                        [
+                            'label' => 'KETERANGAN',
+                            'index' => 'keterangan',
+                        ],
+                        [
+                            'label' => 'NOMINAL',
+                            'index' => 'nominal',
+                            'format' => 'currency'
+                        ]
+                    ];
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                    }
+
+                    $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->applyFromArray($styleArray);
+
+                    // LOOPING DETAIL
+                    $nominal = 0;
+                    foreach ($pengeluaran_TruckingDetail as $response_index => $response_detail) {
+
+                        foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                            $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : $response_index + 1);
+                            $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getFont()->setBold(true);
+                            $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                        }
+
+                        $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                        $sheet->setCellValue("B$detail_start_row", $response_detail->penerimaantruckingheader_nobukti);
+                        $sheet->setCellValue("C$detail_start_row", $response_detail->keterangan);
+                        $sheet->setCellValue("D$detail_start_row", $response_detail->nominal);
+
+                        $sheet->getColumnDimension('C')->setWidth(50);
+
+                        $sheet->getStyle("A$detail_start_row:C$detail_start_row")->applyFromArray($styleArray);
+                        $sheet->getStyle("D$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                        $detail_start_row++;
+                    }
+
+                    $total_start_row = $detail_start_row;
+                    $sheet->mergeCells('A' . $total_start_row . ':C' . $total_start_row);
+                    $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':C' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                    $totalKredit = "=SUM(D" . ($detail_table_header_row + 1) . ":D" . ($detail_start_row - 1) . ")";
+                    $sheet->setCellValue("D$total_start_row", $totalKredit)->getStyle("D$total_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->getStyle("D$total_start_row")->getFont()->setBold(true);
+
+                    $sheet->getColumnDimension('A')->setAutoSize(true);
+                    $sheet->getColumnDimension('B')->setAutoSize(true);
+                    $sheet->getColumnDimension('D')->setAutoSize(true);
+                    $writer = new Xlsx($spreadsheet);
+                    $filename = 'LAPORAN PENGELUARAN TRUCKING (KBBM)' . date('dmYHis');
+                    header('Content-Type: application/vnd.ms-excel');
+                    header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                    header('Cache-Control: max-age=0');
+                    header('Filename: ' . $filename);
+                    $writer->save('php://output');
+                    break;
+                case '279':
+                    //BLS
+                    $header_start_row = 4;
+                    $header_right_start_row = 4;
+                    $detail_table_header_row = 8;
+                    $detail_start_row = $detail_table_header_row + 1;
+
+                    $header_columns = [
+                        [
+                            'label' => 'No Bukti',
+                            'index' => 'nobukti',
+                        ],
+                        [
+                            'label' => 'Tanggal',
+                            'index' => 'tglbukti',
+                        ],
+                        [
+                            'label' => 'No Bukti Pengeluaran',
+                            'index' => 'pengeluaran_nobukti',
+                        ],
+                    ];
+
+                    $header_right_columns = [
+                        [
+                            'label' => 'Pengeluaran Trucking',
+                            'index' => 'pengeluarantrucking_id',
+                        ],
+                        [
+                            'label' => 'Nama Perkiraan',
+                            'index' => 'coa',
+                        ],
+                        [
+                            'label' => 'Bank',
+                            'index' => 'bank_id',
+                        ],
+
+                    ];
+
+                    //LOOPING HEADER        
+                    foreach ($header_columns as $header_column) {
+                        $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                        if ($header_column['index'] == 'tglbukti') {
+                            $pengeluaran_TruckingHeader->{$header_column['index']} = date('d-m-Y', strtotime($pengeluaran_TruckingHeader->{$header_column['index']}));
+                        }
+                        $sheet->setCellValue('C' . $header_start_row++, ': ' . $pengeluaran_TruckingHeader->{$header_column['index']});
+                    }
+                    foreach ($header_right_columns as $header_right_column) {
+                        $sheet->setCellValue('D' . $header_right_start_row, $header_right_column['label']);
+                        $sheet->setCellValue('E' . $header_right_start_row++, ': ' . $pengeluaran_TruckingHeader->{$header_right_column['index']});
+                    }
+
+                    $detail_columns = [
+                        [
+                            'label' => 'NO',
+                        ],
+                        [
+                            'label' => 'SUPIR',
+                            'index' => 'supir_id',
+                        ],
+                        [
+                            'label' => 'KETERANGAN',
+                            'index' => 'keterangan',
+                        ],
+                        [
+                            'label' => 'NOMINAL',
+                            'index' => 'nominal',
+                            'format' => 'currency'
+                        ]
+                    ];
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                    }
+                    // $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FF1F456E');
+                    $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->applyFromArray($styleArray);
+
+                    // LOOPING DETAIL
+                    $nominal = 0;
+                    foreach ($pengeluaran_TruckingDetail as $response_index => $response_detail) {
+
+                        foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                            $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : $response_index + 1);
+                            $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getFont()->setBold(true);
+                            $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                        }
+
+                        $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                        $sheet->setCellValue("B$detail_start_row", $response_detail->supir_id);
+                        $sheet->setCellValue("C$detail_start_row", $response_detail->keterangan);
+                        $sheet->setCellValue("D$detail_start_row", $response_detail->nominal);
+
+                        // $sheet->getStyle("C$detail_start_row")->getAlignment()->setWrapText(true);
+                        $sheet->getColumnDimension('C')->setWidth(50);
+
+                        $sheet->getStyle("A$detail_start_row:C$detail_start_row")->applyFromArray($styleArray);
+                        $sheet->getStyle("D$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                        $detail_start_row++;
+                    }
+
+                    $total_start_row = $detail_start_row;
+                    $sheet->mergeCells('A' . $total_start_row . ':C' . $total_start_row);
+                    $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':C' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                    $totalKredit = "=SUM(D" . ($detail_table_header_row + 1) . ":D" . ($detail_start_row - 1) . ")";
+                    $sheet->setCellValue("D$total_start_row", $totalKredit)->getStyle("D$total_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->getStyle("D$total_start_row")->getFont()->setBold(true);
+
+                    $sheet->getColumnDimension('A')->setAutoSize(true);
+                    $sheet->getColumnDimension('B')->setAutoSize(true);
+                    $sheet->getColumnDimension('D')->setAutoSize(true);
+                    $writer = new Xlsx($spreadsheet);
+                    $filename = 'LAPORAN PENGELUARAN TRUCKING (BLS)' . date('dmYHis');
+                    header('Content-Type: application/vnd.ms-excel');
+                    header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                    header('Cache-Control: max-age=0');
+                    header('Filename: ' . $filename);
+                    $writer->save('php://output');
+                    break;
+                case '318':
+                    //KLAIM
+                    $header_start_row = 4;
+                    $header_right_start_row = 4;
+                    $detail_table_header_row = 8;
+                    $detail_start_row = $detail_table_header_row + 1;
+
+                    $header_columns = [
+                        [
+                            'label' => 'No Bukti',
+                            'index' => 'nobukti',
+                        ],
+                        [
+                            'label' => 'Tanggal',
+                            'index' => 'tglbukti',
+                        ],
+                        [
+                            'label' => 'No Bukti Pengeluaran',
+                            'index' => 'pengeluarantrucking_nobukti',
+                        ],
+                    ];
+
+                    $header_right_columns = [
+                        [
+                            'label' => 'Pengeluaran Trucking',
+                            'index' => 'pengeluarantrucking_id',
+                        ],
+                        [
+                            'label' => 'Supir',
+                            'index' => 'supir',
+                        ],
+                        [
+                            'label' => 'Trado',
+                            'index' => 'trado',
+                        ],
+
+                    ];
+                    //LOOPING HEADER        
+                    foreach ($header_columns as $header_column) {
+                        $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                        if ($header_column['index'] == 'tglbukti') {
+                            $pengeluaran_TruckingHeader->{$header_column['index']} = date('d-m-Y', strtotime($pengeluaran_TruckingHeader->{$header_column['index']}));
+                        }
+                        $sheet->setCellValue('C' . $header_start_row++, ': ' . $pengeluaran_TruckingHeader->{$header_column['index']});
+                    }
+                    foreach ($header_right_columns as $header_right_column) {
+                        $sheet->setCellValue('D' . $header_right_start_row, $header_right_column['label']);
+                        $sheet->setCellValue('E' . $header_right_start_row++, ': ' . $pengeluaran_TruckingHeader->{$header_right_column['index']});
+                    }
+
+                    $detail_columns = [
+                        [
+                            'label' => 'NO',
+                        ],
+                        [
+                            'label' => 'NO BUKTI PENGELUARAN STOK',
+                            'index' => 'pengeluaranstok_nobukti',
+                        ],
+                        [
+                            'label' => 'STOK',
+                            'index' => 'stok_id',
+                        ],
+                        [
+                            'label' => 'KETERANGAN',
+                            'index' => 'keterangan',
+                        ],
+                        [
+                            'label' => 'HARGA',
+                            'index' => 'harga',
+                            'format' => 'currency'
+                        ],
+                        [
+                            'label' => 'QTY',
+                            'index' => 'qty',
+                            'format' => 'currency'
+                        ],
+                        [
+                            'label' => 'NOMINAL',
+                            'index' => 'nominal',
+                            'format' => 'currency'
+                        ]
+                    ];
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                    }
+                    // $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FF1F456E');
+                    $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->applyFromArray($styleArray);
+
+                    // LOOPING DETAIL
+                    $nominal = 0;
+                    foreach ($pengeluaran_TruckingDetail as $response_index => $response_detail) {
+
+                        foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                            $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : $response_index + 1);
+                            $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getFont()->setBold(true);
+                            $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                        }
+
+                        $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                        $sheet->setCellValue("B$detail_start_row", $response_detail->pengeluaranstok_nobukti);
+                        $sheet->setCellValue("C$detail_start_row", $response_detail->stok_id);
+                        $sheet->setCellValue("D$detail_start_row", $response_detail->keterangan);
+                        $sheet->setCellValue("E$detail_start_row", $response_detail->harga);
+                        $sheet->setCellValue("F$detail_start_row", $response_detail->qty);
+                        $sheet->setCellValue("G$detail_start_row", $response_detail->nominal);
+
+                        // $sheet->getStyle("D$detail_start_row")->getAlignment()->setWrapText(true);
+                        $sheet->getColumnDimension('D')->setWidth(50);
+
+                        $sheet->getStyle("A$detail_start_row:D$detail_start_row")->applyFromArray($styleArray);
+                        $sheet->getStyle("E$detail_start_row:G$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                        $detail_start_row++;
+                    }
+
+                    $total_start_row = $detail_start_row;
+                    $sheet->mergeCells('A' . $total_start_row . ':F' . $total_start_row);
+                    $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':F' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                    $totalKredit = "=SUM(G" . ($detail_table_header_row + 1) . ":G" . ($detail_start_row - 1) . ")";
+                    $sheet->setCellValue("G$total_start_row", $totalKredit)->getStyle("G$total_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->getStyle("G$total_start_row")->getFont()->setBold(true);
+
+                    $sheet->getColumnDimension('A')->setAutoSize(true);
+                    $sheet->getColumnDimension('B')->setAutoSize(true);
+                    $sheet->getColumnDimension('C')->setAutoSize(true);
+                    $sheet->getColumnDimension('E')->setAutoSize(true);
+                    $sheet->getColumnDimension('F')->setAutoSize(true);
+                    $sheet->getColumnDimension('G')->setAutoSize(true);
+                    $writer = new Xlsx($spreadsheet);
+                    $filename = 'LAPORAN PENGELUARAN TRUCKING (KLAIM)' . date('dmYHis');
+                    header('Content-Type: application/vnd.ms-excel');
+                    header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                    header('Cache-Control: max-age=0');
+                    header('Filename: ' . $filename);
+                    $writer->save('php://output');
+                    break;
+                case '369':
+                    //PJK
+                    $header_start_row = 4;
+                    $header_right_start_row = 4;
+                    $detail_table_header_row = 8;
+                    $detail_start_row = $detail_table_header_row + 1;
+
+                    $header_columns = [
+                        [
+                            'label' => 'No Bukti',
+                            'index' => 'nobukti',
+                        ],
+                        [
+                            'label' => 'Tanggal',
+                            'index' => 'tglbukti',
+                        ],
+                        [
+                            'label' => 'No Bukti Pengeluaran',
+                            'index' => 'pengeluaran_nobukti',
+                        ],
+                    ];
+
+                    $header_right_columns = [
+                        [
+                            'label' => 'Pengeluaran Trucking',
+                            'index' => 'pengeluarantrucking_id',
+                        ],
+                        [
+                            'label' => 'Nama Perkiraan',
+                            'index' => 'coa',
+                        ],
+                        [
+                            'label' => 'Bank',
+                            'index' => 'bank_id',
+                        ]
+
+                    ];
+
+                    //LOOPING HEADER        
+                    foreach ($header_columns as $header_column) {
+                        $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                        if ($header_column['index'] == 'tglbukti') {
+                            $pengeluaran_TruckingHeader->{$header_column['index']} = date('d-m-Y', strtotime($pengeluaran_TruckingHeader->{$header_column['index']}));
+                        }
+                        $sheet->setCellValue('C' . $header_start_row++, ': ' . $pengeluaran_TruckingHeader->{$header_column['index']});
+                    }
+                    foreach ($header_right_columns as $header_right_column) {
+                        $sheet->setCellValue('D' . $header_right_start_row, $header_right_column['label']);
+                        $sheet->setCellValue('E' . $header_right_start_row++, ': ' . $pengeluaran_TruckingHeader->{$header_right_column['index']});
+                    }
+
+                    $detail_columns = [
+                        [
+                            'label' => 'NO',
+                        ],
+                        [
+                            'label' => 'KARYAWAN',
+                            'index' => 'karyawan_id',
+                        ],
+                        [
+                            'label' => 'KETERANGAN',
+                            'index' => 'keterangan',
+                        ],
+                        [
+                            'label' => 'NOMINAL',
+                            'index' => 'nominal',
+                            'format' => 'currency'
+                        ]
+                    ];
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                    }
+
+                    $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->applyFromArray($styleArray);
+
+                    // LOOPING DETAIL
+                    $nominal = 0;
+                    foreach ($pengeluaran_TruckingDetail as $response_index => $response_detail) {
+
+                        foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                            $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : $response_index + 1);
+                            $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getFont()->setBold(true);
+                            $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                        }
+
+                        $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                        $sheet->setCellValue("B$detail_start_row", $response_detail->karyawan_id);
+                        $sheet->setCellValue("C$detail_start_row", $response_detail->keterangan);
+                        $sheet->setCellValue("D$detail_start_row", $response_detail->nominal);
+
+                        $sheet->getColumnDimension('C')->setWidth(50);
+
+                        $sheet->getStyle("A$detail_start_row:C$detail_start_row")->applyFromArray($styleArray);
+                        $sheet->getStyle("D$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                        $detail_start_row++;
+                    }
+
+                    $total_start_row = $detail_start_row;
+                    $sheet->mergeCells('A' . $total_start_row . ':C' . $total_start_row);
+                    $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':C' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                    $totalKredit = "=SUM(D" . ($detail_table_header_row + 1) . ":D" . ($detail_start_row - 1) . ")";
+                    $sheet->setCellValue("D$total_start_row", $totalKredit)->getStyle("D$total_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->getStyle("D$total_start_row")->getFont()->setBold(true);
+
+                    $sheet->getColumnDimension('A')->setAutoSize(true);
+                    $sheet->getColumnDimension('B')->setAutoSize(true);
+                    $sheet->getColumnDimension('D')->setAutoSize(true);
+                    $writer = new Xlsx($spreadsheet);
+                    $filename = 'LAPORAN PENGELUARAN TRUCKING (PJK)' . date('dmYHis');
+                    header('Content-Type: application/vnd.ms-excel');
+                    header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                    header('Cache-Control: max-age=0');
+                    header('Filename: ' . $filename);
+                    $writer->save('php://output');
+                    break;
+                case '411':
+                    //BBT
+                    $header_start_row = 4;
+                    $header_right_start_row = 4;
+                    $detail_table_header_row = 8;
+                    $detail_start_row = $detail_table_header_row + 1;
+
+                    $header_columns = [
+                        [
+                            'label' => 'No Bukti',
+                            'index' => 'nobukti',
+                        ],
+                        [
+                            'label' => 'Tanggal',
+                            'index' => 'tglbukti',
+                        ],
+                        [
+                            'label' => 'No Bukti Pengeluaran',
+                            'index' => 'pengeluaran_nobukti',
+                        ],
+                    ];
+
+                    $header_right_columns = [
+                        [
+                            'label' => 'Pengeluaran Trucking',
+                            'index' => 'pengeluarantrucking_id',
+                        ],
+                        [
+                            'label' => 'Nama Perkiraan',
+                            'index' => 'coa',
+                        ],
+                        [
+                            'label' => 'Bank',
+                            'index' => 'bank_id',
+                        ]
+
+                    ];
+
+                    //LOOPING HEADER        
+                    foreach ($header_columns as $header_column) {
+                        $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                        if ($header_column['index'] == 'tglbukti') {
+                            $pengeluaran_TruckingHeader->{$header_column['index']} = date('d-m-Y', strtotime($pengeluaran_TruckingHeader->{$header_column['index']}));
+                        }
+                        $sheet->setCellValue('C' . $header_start_row++, ': ' . $pengeluaran_TruckingHeader->{$header_column['index']});
+                    }
+                    foreach ($header_right_columns as $header_right_column) {
+                        $sheet->setCellValue('D' . $header_right_start_row, $header_right_column['label']);
+                        $sheet->setCellValue('E' . $header_right_start_row++, ': ' . $pengeluaran_TruckingHeader->{$header_right_column['index']});
+                    }
+
+                    $detail_columns = [
+                        [
+                            'label' => 'NO',
+                        ],
+                        [
+                            'label' => 'STATUS TITIPAN EMKL',
+                            'index' => 'statustitipanemkl',
+                        ],
+                        [
+                            'label' => 'NO BUKTI SURAT PENGANTAR',
+                            'index' => 'suratpengantar_nobukti',
+                        ],
+                        [
+                            'label' => 'KETERANGAN',
+                            'index' => 'keterangan',
+                        ],
+                        [
+                            'label' => 'JENIS ORDER',
+                            'index' => 'jenisorderan',
+                        ],
+                        [
+                            'label' => 'TRADO',
+                            'index' => 'trado_id',
+                        ],
+                        [
+                            'label' => 'NOMINAL TAGIH',
+                            'index' => 'nominaltagih',
+                            'format' => 'currency'
+                        ],
+                        [
+                            'label' => 'NOMINAL',
+                            'index' => 'nominal',
+                            'format' => 'currency'
+                        ]
+                    ];
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                    }
+                    // $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FF1F456E');
+                    $sheet->getStyle("A$detail_table_header_row:H$detail_table_header_row")->applyFromArray($styleArray);
+
+                    // LOOPING DETAIL
+                    $nominal = 0;
+                    foreach ($pengeluaran_TruckingDetail as $response_index => $response_detail) {
+
+                        foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                            $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : $response_index + 1);
+                            $sheet->getStyle("A$detail_table_header_row:H$detail_table_header_row")->getFont()->setBold(true);
+                            $sheet->getStyle("A$detail_table_header_row:H$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                        }
+
+                        $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                        $sheet->setCellValue("B$detail_start_row", $response_detail->statustitipanemkl);
+                        $sheet->setCellValue("C$detail_start_row", $response_detail->suratpengantar_nobukti);
+                        $sheet->setCellValue("D$detail_start_row", $response_detail->keterangan);
+                        $sheet->setCellValue("E$detail_start_row", $response_detail->jenisorderan);
+                        $sheet->setCellValue("F$detail_start_row", $response_detail->trado_id);
+                        $sheet->setCellValue("G$detail_start_row", $response_detail->nominaltagih);
+                        $sheet->setCellValue("H$detail_start_row", $response_detail->nominal);
+
+                        // $sheet->getStyle("D$detail_start_row")->getAlignment()->setWrapText(true);
+
+                        $sheet->getStyle("A$detail_start_row:F$detail_start_row")->applyFromArray($styleArray);
+                        $sheet->getStyle("G$detail_start_row:H$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                        $detail_start_row++;
+                    }
+
+                    $total_start_row = $detail_start_row;
+                    $sheet->mergeCells('A' . $total_start_row . ':G' . $total_start_row);
+                    $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':G' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                    $totalKredit = "=SUM(H" . ($detail_table_header_row + 1) . ":H" . ($detail_start_row - 1) . ")";
+                    $sheet->setCellValue("H$total_start_row", $totalKredit)->getStyle("H$total_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->getStyle("H$total_start_row")->getFont()->setBold(true);
+
+                    $sheet->getColumnDimension('A')->setAutoSize(true);
+                    $sheet->getColumnDimension('B')->setAutoSize(true);
+                    $sheet->getColumnDimension('C')->setAutoSize(true);
+                    $sheet->getColumnDimension('D')->setWidth(50);
+                    $sheet->getColumnDimension('E')->setAutoSize(true);
+                    $sheet->getColumnDimension('F')->setAutoSize(true);
+                    $sheet->getColumnDimension('G')->setAutoSize(true);
+                    $sheet->getColumnDimension('H')->setAutoSize(true);
+                    $writer = new Xlsx($spreadsheet);
+                    $filename = 'LAPORAN PENGELUARAN TRUCKING (BBT)' . date('dmYHis');
+                    header('Content-Type: application/vnd.ms-excel');
+                    header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                    header('Cache-Control: max-age=0');
+                    header('Filename: ' . $filename);
+                    $writer->save('php://output');
+                    break;
+                case '545':
+                    //TDEK
+                    $header_start_row = 4;
+                    $header_right_start_row = 4;
+                    $detail_table_header_row = 9;
+                    $detail_start_row = $detail_table_header_row + 1;
+
+
+                    $header_columns = [
+                        [
+                            'label' => 'No Bukti',
+                            'index' => 'nobukti',
+                        ],
+                        [
+                            'label' => 'Tanggal',
+                            'index' => 'tglbukti',
+                        ],
+                        [
+                            'label' => 'No Bukti Pengeluaran',
+                            'index' => 'pengeluaran_nobukti',
+                        ],
+                    ];
+
+                    $header_right_columns = [
+                        [
+                            'label' => 'Pengeluaran Trucking',
+                            'index' => 'pengeluarantrucking_id',
+                        ],
+                        [
+                            'label' => 'Nama Perkiraan',
+                            'index' => 'coa',
+                        ],
+                        [
+                            'label' => 'Bank',
+                            'index' => 'bank_id',
+                        ]
+
+                    ];
+
+                    //LOOPING HEADER        
+                    foreach ($header_columns as $header_column) {
+                        $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                        if ($header_column['index'] == 'tglbukti') {
+                            $pengeluarantrucking[$header_column['index']] = date('d-m-Y', strtotime($pengeluarantrucking[$header_column['index']]));
+                        }
+                        $sheet->setCellValue('C' . $header_start_row++, ': ' . $pengeluarantrucking[$header_column['index']]);
+                    }
+                    foreach ($header_right_columns as $header_right_column) {
+                        $sheet->setCellValue('D' . $header_right_start_row, $header_right_column['label']);
+                        $sheet->setCellValue('E' . $header_right_start_row++, ': ' . $pengeluarantrucking[$header_right_column['index']]);
+                    }
+
+                    $detail_columns = [
+                        [
+                            'label' => 'NO',
+                        ],
+                        [
+                            'label' => 'NO BUKTI PENERIMAAN TRUCKING',
+                            'index' => 'penerimaantruckingheader_nobukti',
+                        ],
+                        [
+                            'label' => 'KARYAWAN',
+                            'index' => 'karyawan_id',
+                        ],
+                        [
+                            'label' => 'KETERANGAN',
+                            'index' => 'keterangan',
+                        ],
+                        [
+                            'label' => 'NOMINAL',
+                            'index' => 'nominal',
+                            'format' => 'currency'
+                        ]
+                    ];
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                    }
+                    // $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FF1F456E');
+                    $sheet->getStyle("A$detail_table_header_row:E$detail_table_header_row")->applyFromArray($styleArray);
+
+                    // LOOPING DETAIL
+                    $nominal = 0;
+                    foreach ($pengeluarantrucking_details as $response_index => $response_detail) {
+
+                        foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                            $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail[$detail_column['index']] : $response_index + 1);
+                            $sheet->getStyle("A$detail_table_header_row:E$detail_table_header_row")->getFont()->setBold(true);
+                            $sheet->getStyle("A$detail_table_header_row:E$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                        }
+
+                        $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                        $sheet->setCellValue("B$detail_start_row", $response_detail['penerimaantruckingheader_nobukti']);
+                        $sheet->setCellValue("C$detail_start_row", $response_detail['karyawan_id']);
+                        $sheet->setCellValue("D$detail_start_row", $response_detail['keterangan']);
+                        $sheet->setCellValue("E$detail_start_row", $response_detail['nominal']);
+
+                        // $sheet->getStyle("D$detail_start_row")->getAlignment()->setWrapText(true);
+                        $sheet->getColumnDimension('D')->setWidth(50);
+
+                        $sheet->getStyle("A$detail_start_row:D$detail_start_row")->applyFromArray($styleArray);
+                        $sheet->getStyle("E$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                        $detail_start_row++;
+                    }
+
+                    $total_start_row = $detail_start_row;
+                    $sheet->mergeCells('A' . $total_start_row . ':D' . $total_start_row);
+                    $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':D' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                    $totalKredit = "=SUM(E" . ($detail_table_header_row + 1) . ":E" . ($detail_start_row - 1) . ")";
+                    $sheet->setCellValue("E$total_start_row", $totalKredit)->getStyle("E$total_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->getStyle("E$total_start_row")->getFont()->setBold(true);
+
+                    $sheet->getColumnDimension('A')->setAutoSize(true);
+                    $sheet->getColumnDimension('B')->setAutoSize(true);
+                    $sheet->getColumnDimension('C')->setAutoSize(true);
+                    $sheet->getColumnDimension('E')->setAutoSize(true);
+                    $writer = new Xlsx($spreadsheet);
+                    $filename = 'Laporan Pengeluaran Trucking (TDEK)' . date('dmYHis');
+                    header('Content-Type: application/vnd.ms-excel');
+                    header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                    header('Cache-Control: max-age=0');
+                    $writer->save('php://output');
+                    break;
+                case '556':
+                case '557':
+                    //OTOK&OTOL
+                    $header_start_row = 4;
+                    $header_right_start_row = 4;
+                    $detail_table_header_row = 10;
+                    $detail_start_row = $detail_table_header_row + 1;
+
+
+                    $header_columns = [
+                        [
+                            'label' => 'No Bukti',
+                            'index' => 'nobukti',
+                        ],
+                        [
+                            'label' => 'Tanggal',
+                            'index' => 'tglbukti',
+                        ],
+                        [
+                            'label' => 'No Bukti Pengeluaran',
+                            'index' => 'pengeluaran_nobukti',
+                        ],
+
+                        [
+                            'label' => 'Bank',
+                            'index' => 'bank_id',
+                        ],
+                        [
+                            'label' => 'Nama Perkiraan',
+                            'index' => 'coa',
+                        ],
+                    ];
+
+                    $header_right_columns = [
+                        [
+                            'label' => 'Pengeluaran Trucking',
+                            'index' => 'pengeluarantrucking_id',
+                        ],
+                        [
+                            'label' => 'Periode Dari',
+                            'index' => 'periodedari',
+                        ],
+                        [
+                            'label' => 'Periode Sampai',
+                            'index' => 'periodesampai',
+                        ],
+                        [
+                            'label' => 'Customer',
+                            'index' => 'agen_id',
+                        ],
+                        [
+                            'label' => 'Container',
+                            'index' => 'containerheader_id',
+                        ],
+
+                    ];
+                    // dd($pengeluarantrucking);
+                    //LOOPING HEADER        
+                    foreach ($header_columns as $header_column) {
+                        $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                        if ($header_column['index'] == 'tglbukti') {
+                            $pengeluarantrucking[$header_column['index']] = date('d-m-Y', strtotime($pengeluarantrucking[$header_column['index']]));
+                        }
+                        $sheet->setCellValue('C' . $header_start_row++, ': ' . $pengeluarantrucking[$header_column['index']]);
+                    }
+                    foreach ($header_right_columns as $header_right_column) {
+                        $sheet->setCellValue('D' . $header_right_start_row, $header_right_column['label']);
+                        if ($header_right_column['index'] == 'periodedari' || $header_right_column['index'] == 'periodesampai') {
+                            $pengeluarantrucking[$header_right_column['index']] = date('d-m-Y', strtotime($pengeluarantrucking[$header_right_column['index']]));
+                        }
+                        $sheet->setCellValue('E' . $header_right_start_row++, ': ' . $pengeluarantrucking[$header_right_column['index']]);
+                    }
+
+                    $detail_columns = [
+                        [
+                            'label' => 'NO',
+                        ],
+                        [
+                            'label' => 'NO BUKTI INVOICE',
+                            'index' => 'invoice_nobukti',
+                        ],
+                        [
+                            'label' => 'NO ORDERAN TRUCKING',
+                            'index' => 'orderantrucking_nobukti',
+                        ],
+                        [
+                            'label' => 'KETERANGAN',
+                            'index' => 'keterangan',
+                        ],
+                        [
+                            'label' => 'NOMINAL',
+                            'index' => 'nominal',
+                            'format' => 'currency'
+                        ]
+                    ];
+
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                    }
+                    // $sheet->getStyle("A$detail_table_header_row:G$detail_table_header_row")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FF1F456E');
+                    $sheet->getStyle("A$detail_table_header_row:E$detail_table_header_row")->applyFromArray($styleArray);
+
+                    // LOOPING DETAIL
+                    $nominal = 0;
+                    foreach ($pengeluarantrucking_details as $response_index => $response_detail) {
+
+                        foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                            $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail[$detail_column['index']] : $response_index + 1);
+                            $sheet->getStyle("A$detail_table_header_row:E$detail_table_header_row")->getFont()->setBold(true);
+                            $sheet->getStyle("A$detail_table_header_row:E$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                        }
+
+                        $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                        $sheet->setCellValue("B$detail_start_row", $response_detail['invoice_nobukti']);
+                        $sheet->setCellValue("C$detail_start_row", $response_detail['orderantrucking_nobukti']);
+                        $sheet->setCellValue("D$detail_start_row", $response_detail['keterangan']);
+                        $sheet->setCellValue("E$detail_start_row", $response_detail['nominal']);
+
+                        // $sheet->getStyle("D$detail_start_row")->getAlignment()->setWrapText(true);
+                        $sheet->getColumnDimension('D')->setWidth(50);
+
+                        $sheet->getStyle("A$detail_start_row:D$detail_start_row")->applyFromArray($styleArray);
+                        $sheet->getStyle("E$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                        $detail_start_row++;
+                    }
+
+                    $total_start_row = $detail_start_row;
+                    $sheet->mergeCells('A' . $total_start_row . ':D' . $total_start_row);
+                    $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':D' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                    $totalKredit = "=SUM(E" . ($detail_table_header_row + 1) . ":E" . ($detail_start_row - 1) . ")";
+                    $sheet->setCellValue("E$total_start_row", $totalKredit)->getStyle("E$total_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->getStyle("E$total_start_row")->getFont()->setBold(true);
+
+                    $sheet->getColumnDimension('A')->setAutoSize(true);
+                    $sheet->getColumnDimension('B')->setAutoSize(true);
+                    $sheet->getColumnDimension('C')->setAutoSize(true);
+                    $sheet->getColumnDimension('E')->setAutoSize(true);
+                    $writer = new Xlsx($spreadsheet);
+                    $filename = 'Laporan Pengeluaran Trucking (' . $pengeluarantrucking['kodepengeluaran'] . ')' . date('dmYHis');
+                    header('Content-Type: application/vnd.ms-excel');
+                    header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                    header('Cache-Control: max-age=0');
+                    $writer->save('php://output');
+                    break;
+                default:
+
+                    $spreadsheet = new Spreadsheet();
+                    $sheet = $spreadsheet->getActiveSheet();
+                    $spreadsheet->getDefaultStyle()->getFont()->setSize(10);
+                    $sheet->setCellValue('A1', $pengeluaran_TruckingHeader->judul);
+                    $sheet->setCellValue('A2', $pengeluaran_TruckingHeader->judulLaporan);
+                    $sheet->getStyle("A1")->getFont()->setSize(11);
+                    $sheet->getStyle("A2")->getFont()->setSize(11);
+                    $sheet->getStyle("A1")->getFont()->setBold(true);
+                    $sheet->getStyle("A2")->getFont()->setBold(true);
+                    $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+                    $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+                    $sheet->mergeCells('A1:G1');
+                    $sheet->mergeCells('A2:G2');
+
+                    $header_start_row = 4;
+                    $header_right_start_row = 4;
+                    $detail_table_header_row = 8;
+                    $detail_start_row = $detail_table_header_row + 1;
+
+                    $alphabets = range('A', 'Z');
+
+                    $header_columns = [
+                        [
+                            'label' => 'No Bukti',
+                            'index' => 'nobukti',
+                        ],
+                        [
+                            'label' => 'Tanggal',
+                            'index' => 'tglbukti',
+                        ],
+                        [
+                            'label' => 'No Bukti Pengeluaran',
+                            'index' => 'pengeluaran_nobukti',
+                        ],
+                    ];
+
+                    $header_right_columns = [
+                        [
+                            'label' => 'Pengeluaran Trucking',
+                            'index' => 'pengeluarantrucking_id',
+                        ],
+
+                        [
+                            'label' => 'Bank',
+                            'index' => 'bank_id',
+                        ],
+                        [
+                            'label' => 'Nama Perkiraan',
+                            'index' => 'coa',
+                        ],
+
+                    ];
+
+                    $detail_columns = [
+                        [
+                            'label' => 'NO',
+                        ],
+                        [
+                            'label' => 'SUPIR',
+                            'index' => 'supir_id',
+                        ],
+                        [
+                            'label' => 'NOMINAL',
+                            'index' => 'nominal',
+                            'format' => 'currency'
+                        ],
+                        [
+                            'label' => 'TANDA TANGAN',
+                        ],
+                    ];
+
+                    //LOOPING HEADER        
+                    foreach ($header_columns as $header_column) {
+                        $sheet->setCellValue('B' . $header_start_row, $header_column['label']);
+                        if ($header_column['index'] == 'tglbukti') {
+                            $pengeluaran_TruckingHeader->{$header_column['index']} = date('d-m-Y', strtotime($pengeluaran_TruckingHeader->{$header_column['index']}));
+                        }
+                        $sheet->setCellValue('C' . $header_start_row++, ': ' . $pengeluaran_TruckingHeader->{$header_column['index']});
+                    }
+                    foreach ($header_right_columns as $header_right_column) {
+                        $sheet->setCellValue('D' . $header_right_start_row, $header_right_column['label']);
+                        $sheet->setCellValue('E' . $header_right_start_row++, ': ' . $pengeluaran_TruckingHeader->{$header_right_column['index']});
+                    }
+                    foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                        $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_table_header_row, $detail_column['label'] ?? $detail_columns_index + 1);
+                    }
+
+                    $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->applyFromArray($styleArray);
+
+                    // LOOPING DETAIL
+                    $nominal = 0;
+                    foreach ($pengeluaran_TruckingDetail as $response_index => $response_detail) {
+
+                        foreach ($detail_columns as $detail_columns_index => $detail_column) {
+                            $sheet->setCellValue($alphabets[$detail_columns_index] . $detail_start_row, isset($detail_column['index']) ? $response_detail->{$detail_column['index']} : $response_index + 1);
+                            $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getFont()->setBold(true);
+                            $sheet->getStyle("A$detail_table_header_row:D$detail_table_header_row")->getAlignment()->setHorizontal('center');
+                        }
+
+                        $sheet->setCellValue("A$detail_start_row", $response_index + 1);
+                        $sheet->setCellValue("B$detail_start_row", $response_detail->supir_id);
+                        $sheet->setCellValue("C$detail_start_row", $response_detail->nominal);
+                        $sheet->setCellValue("D$detail_start_row", $response_index + 1);
+
+                        if (($response_index + 1) % 2 == 0) {
+                            $sheet->getStyle("D$detail_start_row")->getAlignment()->setHorizontal('center');
+                        } else {
+                            $sheet->getStyle("D$detail_start_row")->getAlignment()->setHorizontal('left');
+                        }
+                        $sheet->getStyle("A$detail_start_row:D$detail_start_row")->applyFromArray($styleArray);
+                        $sheet->getStyle("C$detail_start_row")->applyFromArray($style_number)->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                        $detail_start_row++;
+                    }
+
+                    $total_start_row = $detail_start_row;
+                    $sheet->mergeCells('A' . $total_start_row . ':B' . $total_start_row);
+                    $totalKredit = "=SUM(C" . ($detail_table_header_row + 1) . ":C" . ($detail_start_row - 1) . ")";
+                    $sheet->setCellValue("A$total_start_row", 'Total')->getStyle('A' . $total_start_row . ':D' . $total_start_row)->applyFromArray($styleArray)->getFont()->setBold(true);
+                    $sheet->setCellValue("C$total_start_row", $totalKredit)->getStyle("C$detail_start_row")->getNumberFormat()->setFormatCode("#,##0.00_);(#,##0.00)");
+                    $sheet->getStyle("C$total_start_row")->applyFromArray($style_number)->getFont()->setBold(true);
+
+                    $sheet->getColumnDimension('A')->setAutoSize(true);
+                    $sheet->getColumnDimension('B')->setAutoSize(true);
+                    $sheet->getColumnDimension('C')->setAutoSize(true);
+                    $sheet->getColumnDimension('D')->setAutoSize(true);
+                    $writer = new Xlsx($spreadsheet);
+                    $filename = 'LAPORAN PENGELUARAN TRUCKING (' . $pengeluaran_TruckingHeader->kodepengeluaran . ')' . date('dmYHis');
+                    header('Content-Type: application/vnd.ms-excel');
+                    header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');
+                    header('Cache-Control: max-age=0');
+                    header('Filename: ' . $filename);
+                    $writer->save('php://output');
+                    break;
+            }
+        } else {
+            return response([
+                'data' => $pengeluaran_TruckingHeader
+            ]);
+        }
     }
 
     /**
      * @ClassName 
      * @Keterangan PINJAMAN SUPIR
      */
-    public function pengeluarantruckingpinjamansupir()
-    {
-    }
+    public function pengeluarantruckingpinjamansupir() {}
 
     /**
      * @ClassName 
      * @Keterangan PENARIKAN DEPOSITO SUPIR
      */
-    public function pengeluarantruckingpenarikandeposito()
-    {
-    }
+    public function pengeluarantruckingpenarikandeposito() {}
 
     /**
      * @ClassName 
      * @Keterangan SUMBANGAN SOSIAL
      */
-    public function pengeluarantruckingsumbangansosial()
-    {
-    }
+    public function pengeluarantruckingsumbangansosial() {}
 
     /**
      * @ClassName 
      * @Keterangan INSENTIF SUPIR
      */
-    public function pengeluarantruckinginsentifsupir()
-    {
-    }
+    public function pengeluarantruckinginsentifsupir() {}
     /**
      * @ClassName 
      * @Keterangan PELUNASAN HUTANG BBM
      */
-    public function pengeluarantruckingpelunasanhutangbbm()
-    {
-    }
+    public function pengeluarantruckingpelunasanhutangbbm() {}
 
     /**
      * @ClassName 
      * @Keterangan BIAYA LAIN SUPIR
      */
-    public function pengeluarantruckingbiayalainsupir()
-    {
-    }
+    public function pengeluarantruckingbiayalainsupir() {}
 
     /**
      * @ClassName 
      * @Keterangan KLAIM SUPIR
      */
-    public function pengeluarantruckingklaimsupir()
-    {
-    }
+    public function pengeluarantruckingklaimsupir() {}
 
     /**
      * @ClassName 
      * @Keterangan PINJAMAN KARYAWAN
      */
-    public function pengeluarantruckingpinjamankaryawan()
-    {
-    }
+    public function pengeluarantruckingpinjamankaryawan() {}
 
     /**
      * @ClassName 
      * @Keterangan TITIPAN EMKL
      */
-    public function pengeluarantruckingtitipanemkl()
-    {
-    }
+    public function pengeluarantruckingtitipanemkl() {}
     /**
      * @ClassName 
      * @Keterangan LAPANGAN LEMBUR
      */
-    public function pengeluarantruckinglapanganlembur()
-    {
-    }
+    public function pengeluarantruckinglapanganlembur() {}
 
     /**
      * @ClassName 
      * @Keterangan LAPANGAN NGINAP
      */
-    public function pengeluarantruckinglapangannginap()
-    {
-    }
+    public function pengeluarantruckinglapangannginap() {}
     /**
      * @ClassName 
      * @Keterangan BIAYA PORTAL
      */
-    public function pengeluarantruckingportal()
-    {
-    }
+    public function pengeluarantruckingportal() {}
 
     /**
      * @ClassName 
      * @Keterangan BIAYA GAJI SUPIR
      */
-    public function pengeluarantruckinggajisupir()
-    {
-    }
+    public function pengeluarantruckinggajisupir() {}
     /**
      * @ClassName 
      * @Keterangan BIAYA LAIN INSENTIF
      */
-    public function pengeluarantruckingbiayainsentif()
-    {
-    }
+    public function pengeluarantruckingbiayainsentif() {}
     /**
      * @ClassName 
      * @Keterangan LAPANGAN UANG JALAN
      */
-    public function pengeluarantruckinglapanganuangjalan()
-    {
-    }
+    public function pengeluarantruckinglapanganuangjalan() {}
     /**
      * @ClassName 
      * @Keterangan PENARIKAN DEPOSITO KARYAWAN
      */
-    public function pengeluarantruckingpenarikandepositokaryawan()
-    {
-    }
+    public function pengeluarantruckingpenarikandepositokaryawan() {}
     /**
      * @ClassName
      * @Keterangan BIAYA OTOBON
      */
-    public function pengeluarantruckingotobon()
-    {
-    }
+    public function pengeluarantruckingotobon() {}
     /**
      * @ClassName 
      * @Keterangan BIAYA LAPANGAN
      */
-    public function pengeluarantruckingbiayalapangan()
-    {
-    }
+    public function pengeluarantruckingbiayalapangan() {}
 
     /**
      * @ClassName 
      * @Keterangan APPROVAL BUKA CETAK
      */
-    public function approvalbukacetak()
-    {
-    }
+    public function approvalbukacetak() {}
     /**
      * @ClassName 
      * @Keterangan APPROVAL KIRIM BERKAS
      */
-    public function approvalkirimberkas()
-    {
-    }
+    public function approvalkirimberkas() {}
 
     /**
      * @ClassName 
      * @Keterangan BIAYA UANG MAKAN SUPIR
      */
-    public function pengeluarantruckingbiayauangmakansupir()
-    {
-    }
+    public function pengeluarantruckingbiayauangmakansupir() {}
 
     /**
      * @ClassName 
      * @Keterangan BIAYA LAPANGAN KAWAL
      */
-    public function pengeluarantruckingbiayalapangankawal()
-    {
-    }
+    public function pengeluarantruckingbiayalapangankawal() {}
 
     /**
      * @ClassName 
      * @Keterangan BIAYA LAPANGAN BORONGAN
      */
-    public function pengeluarantruckingbiayalapanganborongan()
-    {
-    }
+    public function pengeluarantruckingbiayalapanganborongan() {}
 
     /**
      * @ClassName
      * @Keterangan BIAYA OTOBON KANTOR
      */
-    public function pengeluarantruckingotobonkantor()
-    {
-    }
+    public function pengeluarantruckingotobonkantor() {}
     /**
      * @ClassName
      * @Keterangan BIAYA OTOBON LAPANGAN
      */
-    public function pengeluarantruckingotobonlapangan()
-    {
-    }
+    public function pengeluarantruckingotobonlapangan() {}
 
     /**
      * @ClassName 
      * @Keterangan LAPANGAN TAMBAHAN TOL
      */
-    public function pengeluarantruckinglapangantambahantol()
-    {
-    }
+    public function pengeluarantruckinglapangantambahantol() {}
 }
