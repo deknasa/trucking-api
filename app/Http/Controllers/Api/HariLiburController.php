@@ -160,7 +160,7 @@ class HariLiburController extends Controller
 
     public function show($id)
     {
-        $hariLibur = HariLibur::where('id', $id)->first();
+        $hariLibur = HariLibur::findAll($id);
         return response([
             'status' => true,
             'data' => $hariLibur
