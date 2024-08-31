@@ -161,9 +161,15 @@ class ProsesGajiSupirDetailController extends Controller
 
             }
             if ($fetch != null) {
-                $penerimaantrucking = PengembalianKasGantungHeader::from(DB::raw("pengembaliankasgantungheader with (readuncommitted)"))
-                    ->leftJoin(DB::raw("pengembaliankasgantungdetail with (readuncommitted)"), 'pengembaliankasgantungheader.id', 'pengembaliankasgantungdetail.pengembaliankasgantung_id')
-                    ->where('pengembaliankasgantungdetail.kasgantung_nobukti', $fetch->kasgantung_nobukti)
+                // $penerimaantrucking = PengembalianKasGantungHeader::from(DB::raw("pengembaliankasgantungheader with (readuncommitted)"))
+                //     ->leftJoin(DB::raw("pengembaliankasgantungdetail with (readuncommitted)"), 'pengembaliankasgantungheader.id', 'pengembaliankasgantungdetail.pengembaliankasgantung_id')
+                //     ->where('pengembaliankasgantungdetail.kasgantung_nobukti', $fetch->kasgantung_nobukti)
+                //     ->first();
+                $penerimaantrucking = db::table("prosesgajisupirheader")->from(db::raw("prosesgajisupirheader with (readuncommitted)"))
+                    ->select('pengembaliankasgantungheader.penerimaan_nobukti', 'pengembaliankasgantungheader.bank_id', 'bank.namabank')
+                    ->join(db::raw("pengembaliankasgantungheader with (readuncommitted)"), 'prosesgajisupirheader.pengembaliankasgantung_nobukti', 'pengembaliankasgantungheader.nobukti')
+                    ->join(db::raw("bank with (readuncommitted)"), 'pengembaliankasgantungheader.bank_id', 'bank.id')
+                    ->where('prosesgajisupirheader.nobukti', $nobuktiEbs)
                     ->first();
 
                 request()->nobukti = $penerimaantrucking->penerimaan_nobukti;
@@ -171,7 +177,6 @@ class ProsesGajiSupirDetailController extends Controller
         }
 
         if ($fetch != null) {
-
             return response()->json([
                 'data' => $jurnalDetail->getJurnalFromAnotherTable(request()->nobukti),
                 'attributes' => [
