@@ -50,6 +50,8 @@ class UpdateStokRequest extends FormRequest
             "kategori"=>'required',
             'statusaktif' => ['required', Rule::in($status)],
             // "namaterpusat"=>'required',
+            "satuan"=>'required',
+            "satuan_id"=>'required',
             "qtymin"=> [new NotDecimal(), new MinNull(),'numeric','max:10000'],
             "qtymax"=> [new NotDecimal(), new NumberMax(),'numeric','max:10000'],
             'statusban' => [Rule::requiredIf($kelompokBan->id == $this->input('kelompok_id'))],
