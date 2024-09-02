@@ -785,6 +785,10 @@ class KartuStok extends MyModel
         // DB::table($tempFilter)->insert(
         //     ["filter" => $filter->id]
         // );
+        $stokdari_id = 0;
+        $stokdari = '';
+        $stoksampai_id = 0;
+        $stoksampai = '';
         DB::table($tempdefault)->insert(
             ["stokdari_id" => $stokdari_id, "stokdari" => $stokdari, "stoksampai_id" => $stoksampai_id, "stoksampai" => $stoksampai, "gudang_id" => $gudang_id, "gudang" => $namagudang, "trado_id" => $trado_id, "trado" => $namatrado, "gandengan_id" => $gandengan_id, "gandengan" => $namagandengan, "filter" => $idstokpersediaan, "statustampil" => $idstatusstok]
         );
