@@ -2187,19 +2187,17 @@ class PenerimaanTruckingHeader extends MyModel
                         } else {
 
                             // tanpaprosesnobukti = 3 dari pendapatan supir
-                            if ($tanpaprosesnobukti == 3) {
-                                if ($fetchFormat->kodepenerimaan == 'DPO') {
-                                    $coakredit_detail = [];
-                                    $coadebet_detail = [];
-                                    $nominal_detail = [];
-                                    $keterangan_detail = [];
-                                    $tgljatuhtempo = [];
-                                    $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
-                                    $coakredit_detail[] = $data['coa'];
-                                    $coadebet_detail[] = $coadebet;
-                                    $nominal_detail[] = $totalNominal;
-                                    $keterangan_detail[] = 'DEPOSITO DARI PENDAPATAN SUPIR ' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'];
-                                }
+                            if ($fetchFormat->kodepenerimaan == 'DPO') {
+                                $coakredit_detail = [];
+                                $coadebet_detail = [];
+                                $nominal_detail = [];
+                                $keterangan_detail = [];
+                                $tgljatuhtempo = [];
+                                $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
+                                $coakredit_detail[] = $data['coa'];
+                                $coadebet_detail[] = $coadebet;
+                                $nominal_detail[] = $totalNominal;
+                                $keterangan_detail[] = 'DEPOSITO DARI PENDAPATAN SUPIR ' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'];
                             }
                             /*UPDATE PENERIMAAN*/
                             $penerimaanRequest = [
