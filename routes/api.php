@@ -317,6 +317,7 @@ use App\Http\Controllers\Api\SuratPengantarApprovalInputTripController;
 use App\Http\Controllers\Api\ApprovalBukaTanggalSuratPengantarController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
+use App\Http\Controllers\Api\StatusGandenganTradoController;
 
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
@@ -2192,6 +2193,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('biayaextrasupirheader/{id}/cekValidasiAksi', [BiayaExtraSupirHeaderController::class, 'cekValidasiAksi'])->name('biayaextrasupirheader.cekValidasiAksi')->whereNumber('id');
     Route::resource('biayaextrasupirheader', BiayaExtraSupirHeaderController::class)->whereNumber('biayaextrasupirheader');
     Route::resource('biayaextrasupirdetail', BiayaExtraSupirDetailController::class)->whereNumber('biayaextrasupirdetail');
+
+    Route::resource('statusgandengantrado', StatusGandenganTradoController::class)->whereNumber('statusgandengantrado');
 
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);
